@@ -49,8 +49,12 @@ const Header: React.FC<HeaderProps> = ({
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center gap-6">
-          <div className="text-2xl font-black tracking-tighter cursor-pointer" onClick={() => navigateTo('home')}>
-            MR. <span className="text-gold-500">X</span>
+          <div className="cursor-pointer" onClick={() => navigateTo('home')}>
+            <img
+              src="/logo_MrXSteroid.png"
+              alt="Mr. X Steroid Logo"
+              className="h-10 w-auto object-contain brightness-100 dark:brightness-110 rounded-xl"
+            />
           </div>
 
           {/* Desktop Nav */}
