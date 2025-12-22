@@ -78,7 +78,14 @@ const Hero: React.FC<HeroProps> = ({ content, isRTL, openCheckout, playerState }
         <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto mb-10 leading-relaxed">{content.heroSubtitle}</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 flex-wrap">
           <button onClick={() => openCheckout(content.pricingTiers[0])} className="px-8 py-4 bg-gold-500 hover:bg-gold-400 text-black border border-zinc-900 font-bold text-lg rounded-full transition-all shadow-lg shadow-gold-500/20 hover:scale-105 hover:shadow-gold-500/30">{content.heroCta}</button>
-          <button className="px-8 py-4 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:border-gold-500 dark:hover:border-gold-500 font-bold text-lg rounded-full transition-all flex items-center gap-2 group"><Download className="w-5 h-5 group-hover:text-gold-500 transition-colors" />{content.downloadPreview}</button>
+          <a
+            href={isRTL ? "/Example_MrXSteroid_Book_Ar.pdf" : "/Example_MrXSteroid_Book.pdf"}
+            download
+            className="px-8 py-4 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:border-gold-500 dark:hover:border-gold-500 font-bold text-lg rounded-full transition-all flex items-center gap-2 group"
+          >
+            <Download className="w-5 h-5 group-hover:text-gold-500 transition-colors" />
+            {content.downloadPreview}
+          </a>
           <button onClick={playerState.togglePlay} className={`px-8 py-4 border font-bold text-lg rounded-full transition-all flex items-center gap-2 group ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-lg shadow-gold-500/30' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500 hover:text-gold-600 dark:hover:text-gold-500'}`}>{playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Volume2 className="w-5 h-5 group-hover:scale-110 transition-transform" />}{content.audioPreviewBtn}</button>
         </div>
         <BookCover content={content} isRTL={isRTL} onClick={() => openCheckout(content.pricingTiers[0])} />
