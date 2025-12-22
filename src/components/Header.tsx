@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({
             <img
               src="/logo_MrXSteroid.png"
               alt="Mr. X Steroid Logo"
-              className="h-10 w-auto object-contain brightness-100 dark:brightness-110 rounded-xl"
+              className="h-10 w-auto object-contain brightness-100 dark:brightness-110 rounded-2xl"
             />
           </div>
 

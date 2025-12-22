@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MadeWithDyad } from "@/components/made-with-dyad";
+
 import CountdownTimer from "@/components/CountdownTimer"; // Import the new CountdownTimer component
 import { getTranslation, Language } from "@/lib/i18n";
 
@@ -264,7 +264,7 @@ const BookLandingPage = () => {
         </div>
       </section>
 
-      <MadeWithDyad />
+
     </div>
   );
 };

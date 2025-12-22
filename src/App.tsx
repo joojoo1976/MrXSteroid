@@ -25,7 +25,7 @@ import HalfLifeVisualizer from './components/HalfLifeVisualizer';
 import SmartLabReference from './components/SmartLabReference';
 import GeneticPotentialCalculator from './components/GeneticPotentialCalculator';
 import CycleCalendarExporter from './components/CycleCalendarExporter';
-import { MadeWithDyad } from './components/made-with-dyad';
+
 
 // Refactored Components
 import BlockingDisclaimerModal from './components/BlockingDisclaimerModal';
@@ -37,6 +37,7 @@ import BenefitsSection from './components/BenefitsSection';
 import DailyIQChallenge from './components/DailyIQChallenge';
 import AuthorSection from './components/AuthorSection';
 import WhatsAppButton from './components/WhatsAppButton';
+import FloatingSideIcon from './components/FloatingSideIcon';
 import ChatWidget from './components/ChatWidget';
 import SalesToast from './components/SalesToast';
 import SmartBookLanding from './components/SmartBookLanding';
@@ -207,6 +208,7 @@ export default function App() {
         <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : footerKeywordsPoolEn} />
         <ChatWidget content={content} isRTL={isRTL} />
         <WhatsAppButton isRTL={isRTL} />
+        <FloatingSideIcon isRTL={isRTL} />
       </div>
     );
   }
@@ -278,8 +280,9 @@ export default function App() {
       <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : footerKeywordsPoolEn} />
       <ChatWidget content={content} isRTL={isRTL} />
       <WhatsAppButton isRTL={isRTL} />
+      <FloatingSideIcon isRTL={isRTL} />
       <SalesToast content={content} data={salesData} isRTL={isRTL} />
-      <div className="py-12 flex justify-center opacity-50"><MadeWithDyad /></div>
+
     </div>
   );
 }
