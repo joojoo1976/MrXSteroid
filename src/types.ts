@@ -471,6 +471,7 @@ export interface ContentStrings {
     maintain: string;
     bulk: string;
   };
+  calcMealNames: string[];
   calcActivityLevels: {
     sedentary: string;
     light: string;
@@ -586,6 +587,14 @@ export interface ContentStrings {
       low: string;
       high: string;
     };
+    goldenHourTitle: string;
+    goldenHourDesc: string;
+    goldenAdvice: string;
+    rotationTrackerTitle: string;
+    cumulativeGrowthLabel: string;
+    efficiencyLabel: string;
+    comfortableSpot: string;
+
     sites: InjectionSite[];
   };
 

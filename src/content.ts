@@ -402,6 +402,7 @@ export const arContent: ContentStrings = {
     bulk: "زيادة هائلة في الكتلة العضلية والقوة. ستبدو أضخم في ملابسك مع امتلاء عضلي واضح في الأكتاف والصدر."
   },
   calcSelectGoal: { cut: "تنشيف (حرق دهون)", maintain: "محافظة على الوزن", bulk: "تضخيم (بناء عضل)" },
+  calcMealNames: ["الإفطار", "الغداء", "قبل التمرين", "العشاء"],
   calcActivityLevels: { sedentary: "خامل (لا تمرين)", light: "خفيف (1-3 أيام/أسبوع)", moderate: "متوسط (3-5 أيام/أسبوع)", active: "نشيط (6-7 أيام/أسبوع)", veryActive: "نشيط جداً (تمرين مرتين يومياً)" },
   calcTrainingStyles: { hypertrophy: "بناء عضلي (Hypertrophy)", strength: "قوة بدنية (Strength)", endurance: "تحمل (Endurance)" },
   geneticCalculator: {
@@ -488,6 +489,13 @@ export const arContent: ContentStrings = {
       low: "منخفض",
       high: "عالي"
     },
+    goldenHourTitle: "بعد الحقن (The Golden Hour)",
+    goldenHourDesc: "بمجرد الحقن، يبدأ التحول! يتدفق المركب ليعيد صياغة أنسجتك، ويزيد من تخليق البروتين فوراً، مما يحول تمرينك القادم إلى انفجار من القوة",
+    goldenAdvice: "التدوير هو السر. لا ترهق عضلة واحدة؛ اجعل جسدك خريطة متوازنة للنمو",
+    rotationTrackerTitle: "تتبع التدوير الذكي",
+    cumulativeGrowthLabel: "النمو التراكمي",
+    efficiencyLabel: "كفاءة الامتصاص",
+    comfortableSpot: "الأكثر راحة",
     sites: injectionSitesAr,
   },
   timeUnits: {
@@ -892,6 +900,7 @@ export const enContent: ContentStrings = {
     bulk: "Massive increase in muscle mass and strength. You'll look bigger in clothes with obvious muscle fullness in shoulders and chest."
   },
   calcSelectGoal: { cut: "Cutting (Fat Loss)", maintain: "Maintenance", bulk: "Bulking (Muscle Gain)" },
+  calcMealNames: ["Breakfast", "Lunch", "Pre-Workout", "Dinner"],
   calcActivityLevels: { sedentary: "Sedentary (No exercise)", light: "Light (1-3 days/week)", moderate: "Moderate (3-5 days/week)", active: "Active (6-7 days/week)", veryActive: "Very Active (2x daily)" },
   calcTrainingStyles: { hypertrophy: "Hypertrophy", strength: "Strength", endurance: "Endurance" },
   geneticCalculator: {
@@ -990,6 +999,13 @@ export const enContent: ContentStrings = {
       low: "Low",
       high: "High"
     },
+    goldenHourTitle: "Post-Injection (The Golden Hour)",
+    goldenHourDesc: "Transformation begins immediately! The compound flows to reshape your tissues, instantly boosting protein synthesis, turning your next workout into an explosion of power.",
+    goldenAdvice: "Rotation is key. Don't exhaust one muscle; make your body a balanced map of growth.",
+    rotationTrackerTitle: "Smart Rotation Tracker",
+    cumulativeGrowthLabel: "Cumulative Growth",
+    efficiencyLabel: "Absorption Efficiency",
+    comfortableSpot: "Most Comfortable",
     sites: injectionSitesEn,
   },
   mealPlanTitle: "Meal Plan",
@@ -1328,6 +1344,13 @@ export const heContent: ContentStrings = {
       low: "נמוך",
       high: "גבוה"
     },
+    goldenHourTitle: "אחרי ההזרקה (שעת הזהב)",
+    goldenHourDesc: "השינוי מתחיל מיד! החומר זורם ומעצב מחדש את הרקמות, מגביר סינתזת חלבון מיידית והופך את האימון הבא שלך להתפרצות של כוח.",
+    goldenAdvice: "רוטציה היא הסוד. אל תתיש שריר אחד; הפוך את הגוף שלך למפה מאוזנת של גדילה.",
+    rotationTrackerTitle: "מעקב רוטציה חכם",
+    cumulativeGrowthLabel: "גדילה מצטברת",
+    efficiencyLabel: "יעילות ספיגה",
+    comfortableSpot: "הנוח ביותר",
     sites: injectionSitesHe,
   },
   contactPageTitle: "צור קשר",
@@ -1399,6 +1422,7 @@ export const heContent: ContentStrings = {
   calcBeastNames: { cut: "לוחם חיטוב", maintain: "מכונת שימור", bulk: "ענק מסה" },
   calcPredictions: { cut: "איבוד שומן מואץ", maintain: "רה-קומפוזיציה", bulk: "צמיחת שריר מקסימלית" },
   calcSelectGoal: { cut: "חיטוב יבש", maintain: "שמירה ושיפור", bulk: "מסה נקייה" },
+  calcMealNames: ["ארוחת בוקר", "ארוחת צהריים", "לפני אימון", "ארוחת ערב"],
   calcActivityLevels: { sedentary: "יושבני", light: "פעיל מעט", moderate: "פעילות מתונה", active: "פעיל מאוד", veryActive: "ספורטאי מקצועי" },
   calcTrainingStyles: { hypertrophy: "היפרטרופיה", strength: "כוח", endurance: "סיבולת" },
   geneticCalculator: {

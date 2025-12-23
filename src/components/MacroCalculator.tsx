@@ -51,6 +51,7 @@ const FloatingIcon: React.FC<{ children: React.ReactNode; color: string }> = ({ 
 );
 
 const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSystem = 'metric' }) => {
+  const isAr = lang === 'ar';
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
@@ -148,7 +149,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSy
     const carbs = foodDatabase.filter(f => f.type === 'carb');
     const fats = foodDatabase.filter(f => f.type === 'fat');
 
-    const mealNames = isAr ? ["الإفطار", "الغداء", "قبل التمرين", "العشاء"] : ["Breakfast", "Lunch", "Pre-Workout", "Dinner"];
+    const mealNames = content.calcMealNames;
 
     mealNames.forEach((name) => {
       const pSource = proteins[Math.floor(Math.random() * proteins.length)];
