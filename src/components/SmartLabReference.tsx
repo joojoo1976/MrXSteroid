@@ -37,7 +37,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content }) => {
                 <div className="mt-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 animate-fade-in">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-sm font-bold">{content.labReference.analyzeTitle}</span>
-                    <button onClick={() => setAnalyzingId(null)} className="text-xs text-zinc-400 hover:text-zinc-600 underline">Cancel</button>
+                    <button onClick={() => setAnalyzingId(null)} className="text-xs text-zinc-400 hover:text-zinc-600 underline">{content.labReference.labels.cancel}</button>
                   </div>
                   <div className="flex gap-2">
                     <input
@@ -63,7 +63,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content }) => {
                 </button>
               )}
 
-              <div className="grid md:grid-cols-2 gap-4 text-sm bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl mt-6"><div><strong className="text-red-500 block mb-1">High:</strong> {test.elevationMeaning}</div><div><strong className="text-blue-500 block mb-1">Low:</strong> {test.lowMeaning}</div></div>
+              <div className="grid md:grid-cols-2 gap-4 text-sm bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl mt-6"><div><strong className="text-red-500 block mb-1">{content.labReference.labels.high}:</strong> {test.elevationMeaning}</div><div><strong className="text-blue-500 block mb-1">{content.labReference.labels.low}:</strong> {test.lowMeaning}</div></div>
             </div>
           );
         })}

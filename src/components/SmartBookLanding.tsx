@@ -33,6 +33,12 @@ const KEYWORD_DB: SEOKeywordDb = {
             i + 1,
             ['bodybuilding guide', 'workout routines', 'steroid education', 'muscle growth', 'hypertrophy', 'fat loss', 'performance enhancement', 'gym motivation']
         ]))
+    },
+    he: {
+        ...Object.fromEntries(Array.from({ length: 52 }, (_, i) => [
+            i + 1,
+            ['פיתוח גוף', 'אימונים', 'תוכנית אימונים', 'סטרואידים', 'בניית שריר', 'חיטוב', 'מסה', 'בריאות']
+        ]))
     }
 };
 
@@ -41,7 +47,7 @@ const KEYWORD_DB: SEOKeywordDb = {
  * Features: Auto-Localization, Live Currency, Weekly SEO Keywords
  */
 interface SmartBookLandingProps {
-    externalLang?: 'en' | 'ar';
+    externalLang?: 'en' | 'ar' | 'he';
     externalIsRTL?: boolean;
 }
 
@@ -120,7 +126,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         const week = 1 + Math.ceil((firstThursday - target.getTime()) / 604800000);
 
         // Use external language if provided, otherwise detect from RTL state
-        const lang = externalLang || (loc.isRTL ? 'ar' : 'en');
+        const lang = externalLang || (loc.isRTL ? (loc.countryCode === 'IL' ? 'he' : 'ar') : 'en');
         const keywords = KEYWORD_DB[lang]?.[week] || KEYWORD_DB['en'][1];
 
         return { weekNumber: week, currentKeywords: keywords, currentLang: lang };
@@ -145,23 +151,25 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                     <div className="space-y-8 animate-fade-in">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-500 text-sm font-bold">
                             <Globe className="w-4 h-4" />
-                            {loc.isRTL ? `متاح الآن في ${loc.countryCode}` : `Now Available in ${loc.countryCode}`}
+                            {currentLang === 'he' ? `זמין כעת בישראל` : loc.isRTL ? `متاح الآن في ${loc.countryCode}` : `Now Available in ${loc.countryCode}`}
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500">
-                            {loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'}
+                            {currentLang === 'he' ? 'המדריך הסודי לשינוי קיצוני' : loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'}
                         </h1>
 
                         <p className="text-xl text-zinc-400 leading-relaxed max-w-xl">
-                            {loc.isRTL
-                                ? 'انضم إلى آلاف المحترفين الذين كسروا حواجزهم الجينية باستخدام أكثر التقنيات تقدماً وبحثاً.'
-                                : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.'}
+                            {currentLang === 'he'
+                                ? 'הצטרף לאלפי מקצוענים שפרצו את הגבולות הגנטיים שלהם באמצעות הטכניקות המתקדמות והנחקרות ביותר.'
+                                : loc.isRTL
+                                    ? 'انضم إلى آلاف المحترفين الذين كسروا حواجزهم الجينية باستخدام أكثر التقنيات تقدماً وبحثاً.'
+                                    : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.'}
                         </p>
 
                         {/* Dynamic Price Display */}
                         <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl relative group hover:border-gold-500/30 transition-all">
                             <div className="absolute -top-4 -right-4 bg-gold-500 text-black px-4 py-1 rounded-full font-bold text-sm shadow-xl">
-                                {loc.isRTL ? 'خصم محدود' : 'Limited Offer'}
+                                {currentLang === 'he' ? 'מבצע מוגבל' : loc.isRTL ? 'خصم محدود' : 'Limited Offer'}
                             </div>
 
                             <div className="flex items-baseline gap-4">
@@ -178,12 +186,12 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             </div>
                             <p className="mt-4 text-sm text-zinc-500 flex items-center gap-2">
                                 <ShieldCheck className="w-4 h-4 text-green-500" />
-                                {loc.isRTL ? 'دفع آمن بنسبة 100%' : '100% Encrypted & Secure Payment'}
+                                {currentLang === 'he' ? 'תשלום מאובטח ומוצפן' : loc.isRTL ? 'دفع آمن بنسبة 100%' : '100% Encrypted & Secure Payment'}
                             </p>
                         </div>
 
                         <button className="w-full sm:w-auto px-12 py-5 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-2xl shadow-gold-500/20">
-                            {loc.isRTL ? 'احصل على نسختك الآن' : 'Get Your Copy Now'}
+                            {currentLang === 'he' ? 'קבל את העותק שלך עכשיו' : loc.isRTL ? 'احصل على نسختك الآن' : 'Get Your Copy Now'}
                             <ArrowRight className={`w-6 h-6 ${loc.isRTL ? 'rotate-180' : ''}`} />
                         </button>
                     </div>
@@ -201,8 +209,8 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                         <TrendingUp className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-lg">{loc.isRTL ? 'تريندات البحث الحالية' : 'Live Search Trends'}</h4>
-                                        <p className="text-xs text-zinc-500">{loc.isRTL ? `الأسبوع رقم ${weekNumber}` : `Week #${weekNumber} Index`}</p>
+                                        <h4 className="font-bold text-lg">{currentLang === 'he' ? 'טרנדים חמים בחיפוש' : loc.isRTL ? 'تريندات البحث الحالية' : 'Live Search Trends'}</h4>
+                                        <p className="text-xs text-zinc-500">{currentLang === 'he' ? `אנדקס שבוע ${weekNumber}` : loc.isRTL ? `الأسبوع رقم ${weekNumber}` : `Week #${weekNumber} Index`}</p>
                                     </div>
                                 </div>
 
@@ -220,9 +228,11 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                 <div className="mt-8 pt-8 border-t border-zinc-800/50 flex items-start gap-4">
                                     <Info className="w-5 h-5 text-zinc-500 mt-1" />
                                     <p className="text-xs text-zinc-500 leading-relaxed italic">
-                                        {loc.isRTL
-                                            ? 'تم اشتقاق هذه الكلمات بناءً على أعلى تريندات البحث في Google لهذا الأسبوع لضمان وصول المحتوى للجمهور المستهدف بدقة.'
-                                            : 'These keywords are derived based on the highest Google Search trends for this week to ensure content reaches the targeted audience accurately.'}
+                                        {currentLang === 'he'
+                                            ? 'מילות מפתח אלו נגזרו על בסיס טרנדים של Google לחיפוש השבוע כדי להבטיח שהתוכן יגיע לקהל היעד בצורה מדויקת.'
+                                            : loc.isRTL
+                                                ? 'تم اشتقاق هذه الكلمات بناءً على أعلى تريندات البحث في Google لهذا الأسبوع لضمان وصول المحتوى للجمهور المستهدف بدقة.'
+                                                : 'These keywords are derived based on the highest Google Search trends for this week to ensure content reaches the targeted audience accurately.'}
                                     </p>
                                 </div>
                             </div>
@@ -232,13 +242,13 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl">
                                 <BookOpen className="w-8 h-8 text-gold-500 mb-4" />
-                                <h5 className="font-bold mb-1">{loc.isRTL ? '+300 صفحة' : '300+ Pages'}</h5>
-                                <p className="text-xs text-zinc-500">{loc.isRTL ? 'من الأسرار الحصرية' : 'of exclusive secrets'}</p>
+                                <h5 className="font-bold mb-1">{currentLang === 'he' ? '300+ עמודים' : loc.isRTL ? '+300 صفحة' : '300+ Pages'}</h5>
+                                <p className="text-xs text-zinc-500">{currentLang === 'he' ? 'של סודות בלעדיים' : loc.isRTL ? 'من الأسرار الحصرية' : 'of exclusive secrets'}</p>
                             </div>
                             <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl">
                                 <DollarSign className="w-8 h-8 text-emerald-500 mb-4" />
-                                <h5 className="font-bold mb-1">{loc.isRTL ? 'ضمان استبدال' : 'Money Back'}</h5>
-                                <p className="text-xs text-zinc-500">{loc.isRTL ? 'لمدة 30 يوماً' : '30-day guarantee'}</p>
+                                <h5 className="font-bold mb-1">{currentLang === 'he' ? 'אחריות כספית' : loc.isRTL ? 'ضمان استبدال' : 'Money Back'}</h5>
+                                <p className="text-xs text-zinc-500">{currentLang === 'he' ? 'למשך 30 יום' : loc.isRTL ? 'لمدة 30 يوماً' : '30-day guarantee'}</p>
                             </div>
                         </div>
                     </div>

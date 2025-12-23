@@ -18,7 +18,8 @@ export enum Page {
   HALFLIFE = 'halflife',
   LAB = 'lab',
   GENETIC = 'genetic',
-  CYCLE_ARCHITECT = 'cycle'
+  CYCLE_ARCHITECT = 'cycle',
+  SMART_LANDING = 'smart-landing'
 }
 
 export interface PricingTier {
@@ -29,6 +30,7 @@ export interface PricingTier {
   features: string[];
   buttonText: string;
   isPopular?: boolean;
+  popularLabel?: string;
 }
 
 export interface TargetAudience {
@@ -52,7 +54,7 @@ export interface BenefitItem {
 export interface LabTest {
   id: string;
   name: string;
-  category: 'hormones' | 'organs' | 'blood';
+  category: string;
   description: string;
   range: string;
   unit: string;
@@ -104,7 +106,7 @@ export interface InjectionLog {
 export interface InjectionSite {
   id: string;
   name: string;
-  category: 'Upper Body' | 'Lower Body';
+  category: string;
   view: 'front' | 'back';
   needle: string;
   volume: string;
@@ -147,6 +149,8 @@ export interface QuizContent {
   subtitle: string;
   startBtn: string;
   questions: QuizQuestion[];
+  questionLabel: string;
+  totalLabel: string;
   results: {
     natural: {
       title: string;
@@ -172,10 +176,14 @@ export interface IQQuestion {
 export interface DailyIQContent {
   title: string;
   subtitle: string;
+  challengeLabel: string;
   winTitle: string;
   winDesc: string;
   loseTitle: string;
   loseDesc: string;
+  explanationLabel: string;
+  copySuccess: string;
+  toastCorrect: string;
   couponLabel: string;
   claimBtn: string;
   expiresIn: string;
@@ -237,6 +245,11 @@ export interface ContentStrings {
     genetic: string;
     cycleArchitect: string;
   };
+  themeNames: {
+    light: string;
+    dark: string;
+    system: string;
+  };
   backToHome: string;
 
   // SEO Specific Fields
@@ -294,6 +307,7 @@ export interface ContentStrings {
   disclaimerTitle: string;
   disclaimerContent: string;
   agreeButton: string;
+  disclaimerAcknowledgement: string;
   importantDisclaimer: string;
   downloadFullBook: string;
   processing: string;
@@ -331,6 +345,9 @@ export interface ContentStrings {
       elevationMeaning: string;
       lowMeaning: string;
       management: string;
+      cancel: string;
+      high: string;
+      low: string;
     };
     tests: LabTest[];
   };
@@ -417,6 +434,38 @@ export interface ContentStrings {
   calcMealPlanTitle: string;
   calcMealPlanSubtitle: string;
   calcDisclaimer: string;
+  calcTdeeLabel: string;
+  calcBmrLabel: string;
+  calcTefLabel: string;
+  calcBeastTitle: string;
+  calcPredictionTitle: string;
+  calcWindowBtn: string;
+  calcTrainingTime: string;
+  calcTrainingWindows: {
+    morning: string;
+    afternoon: string;
+    evening: string;
+    advice: string;
+  };
+  calcAnalysisLabel: string;
+  calcBmiStatusLabel: string;
+
+  calcShuffleLabel: string;
+  calcAwaitingInputLabel: string;
+  calcAiEngineLabel: string;
+  calcAnalyzingLabel: string;
+  calcMetabolicActiveLabel: string;
+  calcAnabolicPotentialLabel: string;
+  calcBeastNames: {
+    cut: string;
+    maintain: string;
+    bulk: string;
+  };
+  calcPredictions: {
+    cut: string;
+    maintain: string;
+    bulk: string;
+  };
   calcSelectGoal: {
     cut: string;
     maintain: string;
@@ -445,7 +494,11 @@ export interface ContentStrings {
       ankle: string;
       bodyFat: string;
       frameSize: string;
+      boneThickness: string;
+      lowerBody: string;
     };
+    modelLabel: string;
+    awaitingDataTitle: string;
     frameOptions: {
       small: string;
       medium: string;
@@ -477,6 +530,11 @@ export interface ContentStrings {
     pctZone: string;
     pctStartMsg: string;
     peakLevelMsg: string;
+    addToStackBtn: string;
+    activeStackTitle: string;
+    serumTitle: string;
+    peakLabel: string;
+    emptyStackMsg: string;
     compounds: Compound[];
     frequencies: {
       ed: string;
@@ -522,6 +580,12 @@ export interface ContentStrings {
     };
     riskLevel: string;
     tapToExplore: string;
+    interactiveMapLabel: string;
+    medicalInsightLabel: string;
+    riskLevels: {
+      low: string;
+      high: string;
+    };
     sites: InjectionSite[];
   };
 
@@ -544,6 +608,19 @@ export interface ContentStrings {
     biologicalTitle: string;
     feelingTitle: string;
     actionTitle: string;
+    phaseLabel: string;
+  };
+  timeUnits: {
+    days: string;
+    hours: string;
+    minutes: string;
+    seconds: string;
+  };
+  offerExpired: string;
+  heroEditions: {
+    ar: string;
+    en: string;
+    he: string;
   };
 
   // Sales Toast
@@ -551,6 +628,7 @@ export interface ContentStrings {
     purchased: string;
     verified: string;
     justNow: string;
+    fromLabel: string;
   };
 
   // Audio Player
@@ -576,6 +654,22 @@ export interface ContentStrings {
 
   // Daily IQ Challenge
   dailyIQ: DailyIQContent;
+
+  // Common Abbreviations & Units
+  units: {
+    mg: string;
+    g: string;
+    ml: string;
+    kcal: string;
+    days: string;
+    weeks: string;
+    percentage: string;
+    liters: string;
+    ed: string;
+    eod: string;
+    twiceWeekly: string;
+    weekly: string;
+  };
 
   // Cycle Architect (NEW)
   cycleArchitect: CycleArchitectContent;

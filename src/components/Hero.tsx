@@ -5,23 +5,28 @@ import { ContentStrings, PricingTier } from '../types';
 interface HeroProps {
   content: ContentStrings;
   isRTL: boolean;
+  lang: string;
   openCheckout: (tier: PricingTier) => void;
   playerState: { isPlaying: boolean; togglePlay: () => void; };
 }
 
 // Internal BookCover Component to keep Hero self-contained
-const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, onClick: () => void }> = ({ content, isRTL, onClick }) => {
-  const [imgSrc, setImgSrc] = useState<string>(isRTL ? "/cover-ar.webp" : "/cover-en.webp");
+const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, lang: string, onClick: () => void }> = ({ content, isRTL, lang, onClick }) => {
+  const getDefaultImg = () => {
+    if (lang === 'he') return "/cover-he.png";
+    return isRTL ? "/cover-ar.webp" : "/cover-en.webp";
+  };
+  const [imgSrc, setImgSrc] = useState<string>(getDefaultImg());
   const [retryCount, setRetryCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
     setRetryCount(0);
-    setImgSrc(isRTL ? "/cover-ar.webp" : "/cover-en.webp");
-  }, [isRTL]);
+    setImgSrc(getDefaultImg());
+  }, [lang, isRTL]);
 
   const handleError = () => {
-    const base = isRTL ? "/cover-ar" : "/cover-en";
+    const base = lang === 'he' ? "/cover-he" : isRTL ? "/cover-ar" : "/cover-en";
     if (retryCount === 0) { setImgSrc(`${base}.jpg`); setRetryCount(1); }
     else if (retryCount === 1) { setImgSrc(`${base}.png`); setRetryCount(2); }
     else if (retryCount === 2) { setImgSrc("https://placehold.co/600x900/18181b/EAB308?text=MR+X+STEROID&font=oswald"); setRetryCount(3); }
@@ -35,7 +40,9 @@ const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, onClick: ()
         <div className="absolute inset-0 [backface-visibility:hidden] z-20">
           <div className={`relative w-full h-full ${isRTL ? 'rounded-l-xl rounded-r-sm' : 'rounded-r-xl rounded-l-sm'} shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-zinc-900 ${isRTL ? 'border-l' : 'border-r'} border-t border-b border-zinc-700 overflow-hidden`}>
             <div className={`absolute top-[2px] bottom-[2px] ${isRTL ? 'right-0' : 'left-0'} w-4 bg-gradient-to-r ${isRTL ? 'from-zinc-600 to-zinc-800' : 'from-zinc-800 to-zinc-600'} ${isRTL ? 'rounded-r-sm' : 'rounded-l-sm'} z-10 ${isRTL ? 'border-r' : 'border-l'} border-zinc-600`}></div>
-            <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} bg-gold-500 text-black text-[10px] font-black px-2 py-1 rounded-sm z-30 shadow-md uppercase tracking-wider`}>{isRTL ? "نسخة عربية" : "English Edition"}</div>
+            <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} bg-gold-500 text-black text-[10px] font-black px-2 py-1 rounded-sm z-30 shadow-md uppercase tracking-wider`}>
+              {content.heroEditions[lang as keyof typeof content.heroEditions]}
+            </div>
             <div className={`absolute inset-0 ${isRTL ? 'mr-4' : 'ml-4'} bg-zinc-900 ${isRTL ? 'rounded-l-xl' : 'rounded-r-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-r' : 'border-l'} border-zinc-800 h-full p-1`}>
               <img key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-cover ${isRTL ? 'rounded-l-lg' : 'rounded-r-lg'}`} onError={handleError} />
             </div>
@@ -58,7 +65,7 @@ const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, onClick: ()
 
 const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying: boolean, togglePlay: () => void } }> = ({ content, playerState }) => (
   <div className="mt-8 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center gap-4 animate-fade-in-up">
-    <button onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform">
+    <button aria-label={playerState.isPlaying ? "Pause Audio" : "Play Audio"} title={playerState.isPlaying ? "Pause Audio" : "Play Audio"} onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform">
       {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
     </button>
     <div className="flex-1 text-left rtl:text-right">
@@ -69,7 +76,7 @@ const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying:
   </div>
 );
 
-const Hero: React.FC<HeroProps> = ({ content, isRTL, openCheckout, playerState }) => {
+const Hero: React.FC<HeroProps> = ({ content, isRTL, lang, openCheckout, playerState }) => {
   return (
     <section className="pt-12 pb-20 px-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-white/5 [mask-image:linear-gradient(0deg,white,transparent)] pointer-events-none" />
@@ -88,7 +95,7 @@ const Hero: React.FC<HeroProps> = ({ content, isRTL, openCheckout, playerState }
           </a>
           <button onClick={playerState.togglePlay} className={`px-8 py-4 border font-bold text-lg rounded-full transition-all flex items-center gap-2 group ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-lg shadow-gold-500/30' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500 hover:text-gold-600 dark:hover:text-gold-500'}`}>{playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Volume2 className="w-5 h-5 group-hover:scale-110 transition-transform" />}{content.audioPreviewBtn}</button>
         </div>
-        <BookCover content={content} isRTL={isRTL} onClick={() => openCheckout(content.pricingTiers[0])} />
+        <BookCover content={content} isRTL={isRTL} lang={lang} onClick={() => openCheckout(content.pricingTiers[0])} />
         <div className="max-w-md mx-auto"><AudioPlayer content={content} playerState={playerState} /></div>
       </div>
     </section>

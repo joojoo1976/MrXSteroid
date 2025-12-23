@@ -69,6 +69,34 @@ export const teaserTablesEN: TeaserTableData[] = [
   }
 ];
 
+export const teaserTablesHE: TeaserTableData[] = [
+  {
+    title: "טבלת מסה למתחילים (דוגמה)",
+    headers: ["שבוע", "חומר", "מינון"],
+    rows: [
+      { col1: "1-5", col2: "Testosterone Enanthate", col3: "500 מ״ג / שבוע" },
+      { col1: "1-5", col2: "Dianabol (Kickstart)", col3: "30 מ״ג / יום" },
+      { col1: "1-12", col2: "Arimidex", col3: "0.5 מ״ג / פעם ביומיים" },
+      { col1: "6-12", col2: "Testosterone Enanthate", col3: "500 מ״ג / שבוע" },
+      { col1: "13-15", col2: "תקופת המתנה (Clearance)", col3: "ללא חומרים" },
+      { col1: "16-17", col2: "PCT: Nolvadex", col3: "40 מ״ג / יום" },
+      { col1: "18-19", col2: "PCT: Clomid", col3: "50 מ״ג / יום" }
+    ]
+  },
+  {
+    title: "טבלת חיטוב מתקדם (דוגמה)",
+    headers: ["שבוע", "חומר", "מינון"],
+    rows: [
+      { col1: "1-4", col2: "Testosterone Propionate", col3: "100 מ״ג / פעם ביומיים" },
+      { col1: "1-4", col2: "Trenbolone Acetate", col3: "75 מ״ג / פעם ביומיים" },
+      { col1: "1-8", col2: "Masteron Propionate", col3: "100 מ״ג / פעם ביומיים" },
+      { col1: "5-10", col2: "Winstrol (Injectable)", col3: "50 מ״ג / פעם ביומיים" },
+      { col1: "1-10", col2: "T3 (Cytomel)", col3: "25 mcg (פירמידה)" },
+      { col1: "11-14", col2: "פרוטוקול PCT", col3: "HCG + SERMs" }
+    ]
+  }
+];
+
 const commonCompounds: Compound[] = [
   { id: 'test_e', name: 'Testosterone Enanthate', halfLife: 4.5 },
   { id: 'test_p', name: 'Testosterone Propionate', halfLife: 0.8 },
@@ -128,6 +156,29 @@ const labTestsEn: LabTest[] = [
   { id: 'hematocrit', name: 'Hematocrit', category: 'blood', range: '38.3 - 48.6', unit: '%', min: 38.3, max: 52, description: 'Blood viscosity (thickness).', elevationMeaning: 'Thick blood = Clot risk.', lowMeaning: 'Anemia.', management: 'Donate blood if > 52%.' }
 ];
 
+const injectionSitesHe: InjectionSite[] = [
+  { id: 'glute_dorso', name: 'גלוט (Dorsogluteal)', category: 'פלג גוף תחתון', view: 'back', needle: '23G - 25G (1.5")', volume: '3.0 - 4.0 ml', recoveryDays: 7, riskLevel: 'Low', description: 'הסטנדרט המוזהב. שריר גדול, פחות עצבים, מתמודד עם נפח גבוה.', pathD: '' },
+  { id: 'glute_ventro', name: 'גלוט (Ventrogluteal)', category: 'פלג גוף תחתון', view: 'front', needle: '23G - 25G (1.5")', volume: '2.5 - 3.0 ml', recoveryDays: 7, riskLevel: 'Low', description: 'בטוח מאוד, רחוק מעצב השת. האתר הטוב ביותר לרוטציה.', pathD: '' },
+  { id: 'delt_side', name: 'כתף צידית', category: 'פלג גוף עליון', view: 'front', needle: '25G - 27G (1")', volume: '1.0 - 2.0 ml', recoveryDays: 5, riskLevel: 'Low', description: 'אתר נגיש מאוד. טוב לנפחים בינוניים.', pathD: '' },
+  { id: 'quad_outer', name: 'ירך חיצונית', category: 'פלג גוף תחתון', view: 'front', needle: '23G - 25G (1")', volume: '2.0 - 3.0 ml', recoveryDays: 7, riskLevel: 'Medium', warning: 'הישאר חיצוני! הירך הפנימית מכילה עצבים מרכזיים.', description: 'גישה קלה בזמן ישיבה. עלול לגרום לכאב לאחר הזרקה (PIP).', pathD: '' },
+  { id: 'pecs', name: 'חזה', category: 'פלג גוף עליון', view: 'front', needle: '25G - 27G (1")', volume: '1.0 - 1.5 ml', recoveryDays: 5, riskLevel: 'Medium', warning: 'למשתמשים מתקדמים בלבד.', description: 'משמש לרוטציה כדי למנוע רקמה צלקתית באתרים אחרים.', pathD: '' },
+  { id: 'lats', name: 'לת׳ס (גב)', category: 'פלג גוף עליון', view: 'back', needle: '25G (1")', volume: '2.0 - 3.0 ml', recoveryDays: 6, riskLevel: 'Medium', description: 'אתר מעולה לנפח. דורש גמישות מסוימת כדי להגיע.', pathD: '' },
+  { id: 'triceps', name: 'תלת-ראשי', category: 'פלג גוף עליון', view: 'back', needle: '27G - 29G (0.5")', volume: '1.0 ml', recoveryDays: 4, riskLevel: 'Medium', description: 'מצוין לנפחים קטנים עם מחטי אינסולין. הימנע מהראש הצידי.', pathD: '' },
+  { id: 'biceps', name: 'דו-ראשי', category: 'פלג גוף עליון', view: 'front', needle: '27G - 30G (0.5")', volume: '1.0 ml', recoveryDays: 5, riskLevel: 'High', warning: 'אזור סכנה! עצבים וכלי דם רבים.', description: 'למומחים בלבד. משמש לעיתים לשיפור מראה האתר.', pathD: '' },
+  { id: 'traps', name: 'טרפזים', category: 'פלג גוף עליון', view: 'back', needle: '25G (1")', volume: '1.5 - 2.0 ml', recoveryDays: 5, riskLevel: 'Medium', description: 'גישה קלה מאוד ובדרך כלל ללא כאב. נותן מראה בולט.', pathD: '' },
+  { id: 'calves', name: 'תאומים', category: 'פלג גוף תחתון', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'אזהרת PIP קיצונית.', description: 'עלול להקשות על הליכה. מוצא אחרון לרוטציה.', pathD: '' }
+];
+
+const labTestsHe: LabTest[] = [
+  { id: 'test_total', name: 'טסטוסטרון כללי', category: 'hormones', range: '264 - 916', unit: 'ng/dL', min: 264, max: 916, description: 'טסטוסטרון כללי במחזור הדם.', elevationMeaning: 'צפוי בסייקל. מעל 1500 אומר שהחומרים אמיתיים.', lowMeaning: 'היפוגונדיזם, דיכאון, איבוד שריר.', management: 'גבוה: טוב בסייקל. נמוך: התחל PCT.' },
+  { id: 'e2', name: 'אסטרדיול (E2)', category: 'hormones', range: '7.6 - 42.6', unit: 'pg/mL', min: 7.6, max: 42.6, description: 'אסטרוגן המומר מטסטוסטרון.', elevationMeaning: 'סיכון לג׳ינו, אגירת נוזלים, לחץ דם גבוה.', lowMeaning: 'כאבי מפרקים, בעיות זקפה, עור יבש.', management: 'גבוה: קח AI (ארימידקס). נמוך: הפסק AI.' },
+  { id: 'alt', name: 'ALT (SGPT)', category: 'organs', range: '7 - 56', unit: 'U/L', min: 7, max: 56, description: 'אנזים כבד.', elevationMeaning: 'לחץ על הכבד (נפוץ עם כדורים).', lowMeaning: 'לא מדאיג.', management: 'הפסק כדורים, הוסף TUDCA/NAC.' },
+  { id: 'ast', name: 'AST (SGOT)', category: 'organs', range: '8 - 48', unit: 'U/L', min: 8, max: 48, description: 'אנזים כבד ושריר.', elevationMeaning: 'לחץ על הכבד או נזק מאימون קשה.', lowMeaning: 'לא מדאיג.', management: 'בדוק ALT לאישור מצב הכבד.' },
+  { id: 'creatinine', name: 'קריאטינין', category: 'organs', range: '0.74 - 1.35', unit: 'mg/dL', min: 0.74, max: 1.35, description: 'מדד לתפקוד כליות.', elevationMeaning: 'לחץ על הכליות, התייבשות, או מסת שריר גבוהה.', lowMeaning: 'מסת שריר נמוכה.', management: 'שתה מים (4 ליטר+). עקוב אחר לחץ דם.' },
+  { id: 'hdl', name: 'HDL כולסטרול', category: 'blood', range: '> 40', unit: 'mg/dL', min: 40, max: 100, description: 'כולסטרול טוב.', elevationMeaning: 'מגן על הלב.', lowMeaning: 'סכנה. נפוץ מאוד בסייקל.', management: 'שמן דגים 4 גרם, אירובי, ניאצין.' },
+  { id: 'hematocrit', name: 'המטוקריט', category: 'blood', range: '38.3 - 48.6', unit: '%', min: 38.3, max: 52, description: 'צמיגות הדם.', elevationMeaning: 'דם סמיך = סיכון לקרישים.', lowMeaning: 'אנמיה.', management: 'תרום דם אם מעל 52%.' }
+];
+
 export const arContent: ContentStrings = {
   navAiTools: "أدوات كمال الأجسام الذكية",
   navPremiumResources: "الموارد الحصرية",
@@ -139,6 +190,11 @@ export const arContent: ContentStrings = {
     lab: "المرجع الذكي للتحاليل",
     genetic: "حاسبة الإمكانيات الجينية",
     cycleArchitect: "مُصدر تقويم الكورسات (Cycle Calendar)",
+  },
+  themeNames: {
+    light: "الوضع المضيء",
+    dark: "الوضع الليلي",
+    system: "وضع النظام",
   },
   backToHome: "العودة للرئيسية",
   seoTitle: "مستر إكس-سترويد Mr. X-Steroid | الدليل الشامل لكمال الأجسام والهرمونات",
@@ -205,12 +261,14 @@ export const arContent: ContentStrings = {
   pricingTitle: "اختر خطتك",
   pricingSubtitle: "استثمار بسيط في صحتك ومعرفتك سيوفر عليك آلاف الدولارات ومخاطر صحية لا حصر لها.",
   pricingTiers: [
-    { name: "الباقة الاحترافية", price: "$49.99", originalPrice: "$79.99", description: "الكتاب + أدوات حصرية", features: ["الكتاب الكامل (300+ صفحة)", "ملف إكسل لحساب الجرعات", "وصول لمجتمع المشتركين الخاص", "دليل المكملات الإضافي"], buttonText: "الأكثر مبيعاً", isPopular: true },
+    { name: "الباقة الاحترافية", price: "$49.99", originalPrice: "$79.99", description: "الكتاب + أدوات حصرية", features: ["الكتاب الكامل (300+ صفحة)", "ملف إكسل لحساب الجرعات", "وصول لمجتمع المشتركين الخاص", "دليل المكملات الإضافي"], buttonText: "الأكثر مبيعاً", isPopular: true, popularLabel: "الأكثر طلباً" },
     { name: "باقة التدريب", price: "$199.99", description: "تدريب شخصي مع الكتاب", features: ["كل مميزات الباقة الاحترافية", "استشارة أونلاين (30 دقيقة)", "تصميم كورس مخصص لك", "متابعة لمدة شهر"], buttonText: "ابدأ التحول" }
   ],
   disclaimerTitle: "تنبيه هام جداً وإخلاء مسؤولية",
   disclaimerContent: fullArabicDisclaimer,
-  agreeButton: "أوافق وأتحمل المسؤولية",
+  agreeButton: "أوافق وأتحمل المسؤولية الكاملة وعمري فوق الـ 18 عاماً",
+  disclaimerAcknowledgement: "بالضغط على الزر أدناه، فإنك تقر بأنك قد قرأت وفهمت ووافقت على جميع الشروط المذكورة أعلاه.",
+
   importantDisclaimer: "تنبيه هام",
   downloadFullBook: "تحميل الكتاب الكامل",
   processing: "جاري المعالجة...",
@@ -233,7 +291,7 @@ export const arContent: ContentStrings = {
     resultLabel: "التصنيف",
     status: { low: "منخفض", normal: "طبيعي", high: "مرتفع" },
     categories: { all: "الكل", hormones: "هرمونات", organs: "وظائف أعضاء", blood: "دم ومناعة" },
-    labels: { whatIsIt: "ما هو؟", normalRange: "المعدل الطبيعي", elevationMeaning: "ماذا يعني الارتفاع؟", lowMeaning: "ماذا يعني الانخفاض؟", management: "كيف تتصرف؟" },
+    labels: { whatIsIt: "ما هو؟", normalRange: "المعدل الطبيعي", elevationMeaning: "ماذا يعني الارتفاع؟", lowMeaning: "ماذا يعني الانخفاض؟", management: "كيف تتصرف؟", cancel: "إلغاء", high: "مرتفع", low: "منخفض" },
     tests: labTestsAr,
   },
   whoIsTitle: "لمن هذا الكتاب؟",
@@ -312,13 +370,54 @@ export const arContent: ContentStrings = {
   calcMealPlanTitle: "جدولك الغذائي المقترح",
   calcMealPlanSubtitle: "تم توليده بواسطة AI بناءً على أرقامك",
   calcDisclaimer: "هذه الأرقام تقريبية وتعتمد على معادلات رياضية. استشر أخصائي تغذية.",
+  calcTdeeLabel: "إجمالي الطاقة اليومية (TDEE)",
+  calcBmrLabel: "معدل الحرق الأساسي (BMR)",
+  calcTefLabel: "تأثير الطعام الحراري (TEF)",
+  calcBeastTitle: "تصنيف الوحش الكامن",
+  calcAnalysisLabel: "تحليل المحرك الذكي",
+  calcBmiStatusLabel: "حالة BMI",
+  calcShuffleLabel: "تغيير الأصناف (Shuffle)",
+  calcAwaitingInputLabel: "بانتظار المدخلات العضلية",
+  calcAiEngineLabel: "AI POWERED ENGINE",
+  calcAnalyzingLabel: "جاري التحليل...",
+  calcMetabolicActiveLabel: "نشاط أيضي مفعل",
+  calcAnabolicPotentialLabel: "مستوى بناء العضلات المتوقع",
+  calcPredictionTitle: "توقعات الجسد بعد 12 أسبوعاً",
+  calcWindowBtn: "نصيحة النافذة الأيضية",
+  calcTrainingTime: "وقت التمرين المفضل",
+  calcTrainingWindows: {
+    morning: "صباحاً",
+    afternoon: "ظهراً",
+    evening: "مساءً",
+    advice: "بما أن تمرينك {time}، ننصح بتركيز 40% من الكاربوهيدرات حول نافذة التمرين."
+  },
+  calcBeastNames: {
+    cut: "Shredded Beast (الوحش الممزق)",
+    maintain: "Hybrid Warrior (المحارب الهجين)",
+    bulk: "Anabolic Titan (العملاق الأنابوليكي)"
+  },
+  calcPredictions: {
+    cut: "ستظهر عضلاتك بشكل حاد، مع اختفاء الدهون العنيدة حول الخصر. ستبرز التفاصيل التي لم ترها من قبل.",
+    maintain: "تطور ملحوظ في كثافة العضلات مع الحفاظ على مستوى دهون منخفض. جسد رياضي قوي ومتناسق.",
+    bulk: "زيادة هائلة في الكتلة العضلية والقوة. ستبدو أضخم في ملابسك مع امتلاء عضلي واضح في الأكتاف والصدر."
+  },
   calcSelectGoal: { cut: "تنشيف (حرق دهون)", maintain: "محافظة على الوزن", bulk: "تضخيم (بناء عضل)" },
   calcActivityLevels: { sedentary: "خامل (لا تمرين)", light: "خفيف (1-3 أيام/أسبوع)", moderate: "متوسط (3-5 أيام/أسبوع)", active: "نشيط (6-7 أيام/أسبوع)", veryActive: "نشيط جداً (تمرين مرتين يومياً)" },
   calcTrainingStyles: { hypertrophy: "بناء عضلي (Hypertrophy)", strength: "قوة بدنية (Strength)", endurance: "تحمل (Endurance)" },
   geneticCalculator: {
     title: "حاسبة الإمكانيات الجينية",
     subtitle: "اكتشف الحد الأقصى الطبيعي لحجم عضلاتك والمستوى الذي يمكن الوصول إليه بالهرمونات بناءً على نموذج Casey Butt.",
-    labels: { height: "الطول (سم)", wrist: "محيط المعصم (سم)", ankle: "محيط الكاحل (سم)", bodyFat: "نسبة الدهون المستهدفة (%)", frameSize: "حجم الهيكل" },
+    labels: {
+      height: "الطول (سم)",
+      wrist: "محيط المعصم (سم)",
+      ankle: "محيط الكاحل (سم)",
+      bodyFat: "نسبة الدهون المستهدفة (%)",
+      frameSize: "حجم الهيكل",
+      boneThickness: "سماكة العظام",
+      lowerBody: "بنية الجزء السفلي"
+    },
+    modelLabel: "بناءً على نموذج Casey Butt",
+    awaitingDataTitle: "بانتظار البيانات...",
     frameOptions: { small: "صغير", medium: "متوسط", large: "ضخم" },
     unknownMeasurements: "لا تعرف قياساتك؟ قدرها تقريباً",
     cta: "تحليل إمكانياتي",
@@ -344,6 +443,11 @@ export const arContent: ContentStrings = {
     pctZone: "منطقة الخروج الآمن (PCT)",
     pctStartMsg: "يمكنك بدء التنظيف هنا",
     peakLevelMsg: "أعلى تركيز",
+    addToStackBtn: "أضف للStack",
+    activeStackTitle: "المواد المفعلة",
+    serumTitle: "تركيز المادة في الدم",
+    peakLabel: "القمة",
+    emptyStackMsg: "أضف مواد لتشاهد منحنى التراكم",
     compounds: commonCompounds,
     frequencies: { ed: "يومياً (ED)", eod: "يوم بعد يوم (EOD)", e3d: "كل 3 أيام (E3D)", e7d: "أسبوعياً (E7D)" },
     tooltipDay: "اليوم",
@@ -378,7 +482,25 @@ export const arContent: ContentStrings = {
     status: { ready: "جاهز", recovering: "في التعافي", warning: "تجنب" },
     riskLevel: "مستوى الخطورة",
     tapToExplore: "اضغط على أي عضلة لمعرفة التفاصيل",
+    interactiveMapLabel: "خريطة تفاعلية",
+    medicalInsightLabel: "رؤية طبية",
+    riskLevels: {
+      low: "منخفض",
+      high: "عالي"
+    },
     sites: injectionSitesAr,
+  },
+  timeUnits: {
+    days: "أيام",
+    hours: "ساعات",
+    minutes: "دقيقة",
+    seconds: "ثانية"
+  },
+  offerExpired: "انتهى العرض!",
+  heroEditions: {
+    ar: "نسخة عربية",
+    en: "English Edition",
+    he: "מהדורה עברית"
   },
   mealPlanTitle: "خطة الوجبات",
   mealPlanBtn: "توليد خطة",
@@ -392,14 +514,16 @@ export const arContent: ContentStrings = {
     { week: "7-10", title: "مرحلة الصلابة (Hardening)", shortDesc: "ثبات الوزن وبداية حرق الدهون", iconKey: "trophy", stats: { strength: 90, hypertrophy: 90, waterRetention: 40, fatLoss: 40, mood: 70 }, details: { biological: "استقرار مستويات الدم. الجسم يبدأ في استخدام الدهون للطاقة بكفاءة.", feeling: "شكل العضلات يصبح أصعب وأكثر تفصيلاً.", action: "ابدأ الكارديو بانتظام. راقب وظائف الكبد." } },
     { week: "11-12", title: "مرحلة الختام (Peaking)", shortDesc: "اللمسات الأخيرة قبل الخروج", iconKey: "flag", stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 }, details: { biological: "أقصى كثافة عضلية. الاستعداد لسحب الهرمونات.", feeling: "إرهاق بسيط. جاهزية تامة.", action: "خطط للـ PCT. ابدأ في تقليل السعرات قليلاً." } }
   ],
-  timelineLabels: { strength: "القوة", hypertrophy: "الضخامة", water: "احتباس الماء", fatLoss: "حرق الدهون", mood: "المزاج", biologicalTitle: "ماذا يحدث بيولوجياً؟", feelingTitle: "كيف ستشعر؟", actionTitle: "ماذا يجب أن تفعل؟" },
-  salesToast: { purchased: "اشترى النسخة الكاملة", verified: "موثوق", justNow: "الآن" },
+  timelineLabels: { strength: "القوة", hypertrophy: "الضخامة", water: "احتباس الماء", fatLoss: "حرق الدهون", mood: "المزاج", biologicalTitle: "ماذا يحدث بيولوجياً؟", feelingTitle: "كيف ستشعر؟", actionTitle: "ماذا يجب أن تفعل؟", phaseLabel: "المرحلة" },
+  salesToast: { purchased: "اشترى النسخة الكاملة", verified: "موثوق", justNow: "الآن", fromLabel: "من" },
   audioPlayer: { title: "مقدمة صوتية من المؤلف", subtitle: "استمع لرسالة خاصة من جورج موريس", duration: "02:15" },
   aiChat: { fabLabel: "مساعد Mr. X", title: "مستر إكس AI", subtitle: "مساعدك الذكي للإجابة عن الأسئلة", placeholder: "اكتب سؤالك هنا...", send: "إرسال", disclaimer: "الذكاء الاصطناعي قد يخطئ. استشر طبيباً دائماً.", welcomeMessage: "أهلاً يا بطل. أنا نسخة الذكاء الاصطناعي من مستر إكس. كيف أقدر أساعدك اليوم في تمرينك أو تغذيتك؟" },
   quiz: {
     title: "هل أنت جاهز للكورس؟",
     subtitle: "اختبار سريع يحدد مستواك وما إذا كنت مستعداً لدخول عالم الهرمونات أو تحتاج للمزيد من الأساسيات.",
     startBtn: "ابدأ الاختبار",
+    questionLabel: "سؤال",
+    totalLabel: "الإجمالي",
     questions: [
       {
         question: "كم سنة تدريب منتظم ومستمر لديك؟",
@@ -453,10 +577,14 @@ export const arContent: ContentStrings = {
   dailyIQ: {
     title: "تحدي الـ Steroid IQ اليومي",
     subtitle: "سؤال واحد جديد كل 24 ساعة. جاوب صح واحصل على خصم فوري.",
+    challengeLabel: "تحدي اليوم",
     winTitle: "إجابة صحيحة! يا وحش",
     winDesc: "لقد أثبتت خبرتك. ها هو كود الخصم الخاص بك (صالح لمدة 60 دقيقة فقط).",
     loseTitle: "إجابة خاطئة",
     loseDesc: "لا تقلق، التعلم جزء من اللعبة. عد غداً لسؤال جديد ومحاولة أخرى.",
+    explanationLabel: "الشرح:",
+    copySuccess: "تم نسخ الكود بنجاح!",
+    toastCorrect: "رائع! تم تفعيل كוד الخصم بنجاح.",
     couponLabel: "كود الخصم",
     claimBtn: "نسخ الكود والشراء",
     expiresIn: "ينتهي العرض في:",
@@ -524,6 +652,20 @@ export const arContent: ContentStrings = {
       successMsg: "تم التحقق! الميزة مفتوحة الآن.",
       errorMsg: "لم يتم العثور على طلب بهذا البيانات."
     }
+  },
+  units: {
+    mg: "مجم",
+    g: "جم",
+    ml: "مل",
+    kcal: "سعرة",
+    days: "أيام",
+    weeks: "أسابيع",
+    percentage: "%",
+    liters: "لتر",
+    ed: "يومياً",
+    eod: "يوم بعد يوم",
+    twiceWeekly: "مرتين أسبوعياً",
+    weekly: "أسبوعياً"
   }
 };
 
@@ -538,6 +680,11 @@ export const enContent: ContentStrings = {
     lab: "Smart Lab Reference",
     genetic: "Genetic Potential",
     cycleArchitect: "Cycle Calendar Exporter",
+  },
+  themeNames: {
+    light: "Light",
+    dark: "Dark",
+    system: "System",
   },
   backToHome: "Back to Home",
   seoTitle: "Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide",
@@ -604,12 +751,13 @@ export const enContent: ContentStrings = {
   pricingTitle: "Choose Your Plan",
   pricingSubtitle: "A small investment in your health and knowledge will save you thousands of dollars and endless health risks.",
   pricingTiers: [
-    { name: "Pro Bundle", price: "$49.99", originalPrice: "$79.99", description: "Book + Exclusive Tools", features: ["Full Book (300+ Pages)", "Dosage Calculator Excel", "Access to Private Community", "Bonus Supplement Guide"], buttonText: "Best Seller", isPopular: true },
+    { name: "Pro Bundle", price: "$49.99", originalPrice: "$79.99", description: "Full Book + Exclusive Tools", features: ["Full Book (300+ Pages)", "Dosage Calculator Excel", "Access to Private Community", "Bonus Supplement Guide"], buttonText: "Best Seller", isPopular: true, popularLabel: "Best Value" },
     { name: "Coaching Package", price: "$199.99", description: "Personal Training + Book", features: ["All Pro Features", "Online Consultation (30 min)", "Custom Cycle Design", "1 Month Follow-up"], buttonText: "Start Transformation" }
   ],
   disclaimerTitle: "Important Warning & Disclaimer",
   disclaimerContent: fullEnglishDisclaimer,
-  agreeButton: "I Agree, Accept Responsibility and I'm over 18+",
+  agreeButton: "I agree & I take full responsibility and I am over 18+",
+  disclaimerAcknowledgement: "By clicking the button below, you acknowledge that you have read, understood, and agreed to all terms listed above.",
   importantDisclaimer: "Important Warning",
   downloadFullBook: "Download Full Book",
   processing: "Processing...",
@@ -632,7 +780,7 @@ export const enContent: ContentStrings = {
     resultLabel: "Status",
     status: { low: "Low", normal: "Normal", high: "High" },
     categories: { all: "All", hormones: "Hormones", organs: "Organs", blood: "Blood" },
-    labels: { whatIsIt: "What is it?", normalRange: "Normal Range", elevationMeaning: "High Meaning", lowMeaning: "Low Meaning", management: "Management" },
+    labels: { whatIsIt: "What is it?", normalRange: "Normal Range", elevationMeaning: "High Meaning", lowMeaning: "Low Meaning", management: "Management", cancel: "Cancel", high: "High", low: "Low" },
     tests: labTestsEn,
   },
   whoIsTitle: "Who is this book for?",
@@ -711,13 +859,55 @@ export const enContent: ContentStrings = {
   calcMealPlanTitle: "Your Suggested Meal Plan",
   calcMealPlanSubtitle: "Generated by AI based on your macros",
   calcDisclaimer: "These figures are estimates based on formulas. Consult a nutritionist.",
+  calcTdeeLabel: "Total Daily Energy Expenditure (TDEE)",
+  calcBmrLabel: "Basal Metabolic Rate (BMR)",
+  calcTefLabel: "Thermic Effect of Food (TEF)",
+  calcBeastTitle: "Dormant Beast Classification",
+  calcAnalysisLabel: "SMART ENGINE ANALYSIS",
+  calcBmiStatusLabel: "BMI Status",
+
+  calcShuffleLabel: "Shuffle Meals",
+  calcAwaitingInputLabel: "Awaiting Muscle Input",
+  calcAiEngineLabel: "AI POWERED ENGINE",
+  calcAnalyzingLabel: "Analyzing Data...",
+  calcMetabolicActiveLabel: "Metabolic Drive Active",
+  calcAnabolicPotentialLabel: "EXPECTED ANABOLIC POTENTIAL",
+  calcWindowBtn: "Metabolic Window Insight",
+  calcTrainingTime: "Preferred Training Time",
+  calcTrainingWindows: {
+    morning: "Morning",
+    afternoon: "Afternoon",
+    evening: "Evening",
+    advice: "Since you train in the {time}, focus 40% of your carbs around the workout window."
+  },
+  calcPredictionTitle: "12-Week Body Prediction",
+  calcBeastNames: {
+    cut: "Shredded Beast",
+    maintain: "Hybrid Warrior",
+    bulk: "Anabolic Titan"
+  },
+  calcPredictions: {
+    cut: "Your muscles will look sharp, with stubborn fat around the waist disappearing. You'll see details you've never seen before.",
+    maintain: "Significant improvement in muscle density while maintaining low body fat. A powerful and symmetrical athletic physique.",
+    bulk: "Massive increase in muscle mass and strength. You'll look bigger in clothes with obvious muscle fullness in shoulders and chest."
+  },
   calcSelectGoal: { cut: "Cutting (Fat Loss)", maintain: "Maintenance", bulk: "Bulking (Muscle Gain)" },
   calcActivityLevels: { sedentary: "Sedentary (No exercise)", light: "Light (1-3 days/week)", moderate: "Moderate (3-5 days/week)", active: "Active (6-7 days/week)", veryActive: "Very Active (2x daily)" },
   calcTrainingStyles: { hypertrophy: "Hypertrophy", strength: "Strength", endurance: "Endurance" },
   geneticCalculator: {
     title: "Genetic Potential Calculator",
     subtitle: "Discover your natural maximum muscular potential based on the Casey Butt model.",
-    labels: { height: "Height (cm)", wrist: "Wrist Girth (cm)", ankle: "Ankle Girth (cm)", bodyFat: "Target Body Fat (%)", frameSize: "Frame Size" },
+    labels: {
+      height: "Height (cm)",
+      wrist: "Wrist Girth (cm)",
+      ankle: "Ankle Girth (cm)",
+      bodyFat: "Target Body Fat (%)",
+      frameSize: "Frame Size",
+      boneThickness: "Bone thickness",
+      lowerBody: "Lower body structure"
+    },
+    modelLabel: "Based on Casey Butt Model",
+    awaitingDataTitle: "Awaiting Data...",
     frameOptions: { small: "Small", medium: "Medium", large: "Large" },
     unknownMeasurements: "Don't know measurements? Estimate",
     cta: "Analyze Potential",
@@ -743,6 +933,11 @@ export const enContent: ContentStrings = {
     pctZone: "PCT Safe Zone",
     pctStartMsg: "Start PCT Here",
     peakLevelMsg: "Peak Level",
+    addToStackBtn: "Add to Stack",
+    activeStackTitle: "Active Compounds",
+    serumTitle: "Serum Concentration",
+    peakLabel: "Peak",
+    emptyStackMsg: "Add compounds to visualize the cycle",
     compounds: commonCompounds,
     frequencies: { ed: "Every Day (ED)", eod: "Every Other Day (EOD)", e3d: "Every 3 Days (E3D)", e7d: "Weekly (E7D)" },
     tooltipDay: "Day",
@@ -759,6 +954,18 @@ export const enContent: ContentStrings = {
       cons: ["Slow saturation", "Long clearance time", "Requires careful PCT planning"],
       advice: "This chart visualizes how compounds accumulate in your blood. Stability is key to avoiding side effects. Note when PCT starts."
     }
+  },
+  timeUnits: {
+    days: "Days",
+    hours: "Hours",
+    minutes: "Mins",
+    seconds: "Secs"
+  },
+  offerExpired: "Offer Expired!",
+  heroEditions: {
+    ar: "نسخة عربية",
+    en: "English Edition",
+    he: "מהדורה עברית"
   },
   injectionMap: {
     title: "Safe Injection Map",
@@ -777,6 +984,12 @@ export const enContent: ContentStrings = {
     status: { ready: "Ready", recovering: "Recovering", warning: "Avoid" },
     riskLevel: "Risk Level",
     tapToExplore: "Tap any muscle for details",
+    interactiveMapLabel: "Interactive 3D Map",
+    medicalInsightLabel: "Medical Insight",
+    riskLevels: {
+      low: "Low",
+      high: "High"
+    },
     sites: injectionSitesEn,
   },
   mealPlanTitle: "Meal Plan",
@@ -791,14 +1004,16 @@ export const enContent: ContentStrings = {
     { week: "7-10", title: "Hardening Phase", shortDesc: "Weight stabilizes, fat burning starts", iconKey: "trophy", stats: { strength: 90, hypertrophy: 90, waterRetention: 40, fatLoss: 40, mood: 70 }, details: { biological: "Blood levels stable. Body uses fat for fuel efficiently.", feeling: "Muscles look harder and more detailed.", action: "Start regular cardio. Monitor liver values." } },
     { week: "11-12", title: "Peaking", shortDesc: "Final touches before exit", iconKey: "flag", stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 }, details: { biological: "Max muscle density. Preparing for withdrawal.", feeling: "Slight fatigue. Fully ready.", action: "Plan PCT. Slight calorie deficit." } }
   ],
-  timelineLabels: { strength: "Strength", hypertrophy: "Size", water: "Water", fatLoss: "Fat Loss", mood: "Mood", biologicalTitle: "Biological Impact", feelingTitle: "How You Feel", actionTitle: "Action Plan" },
-  salesToast: { purchased: "purchased Full Version", verified: "Verified", justNow: "Just Now" },
+  timelineLabels: { strength: "Strength", hypertrophy: "Size", water: "Water", fatLoss: "Fat Loss", mood: "Mood", biologicalTitle: "Biological Impact", feelingTitle: "How You Feel", actionTitle: "Action Plan", phaseLabel: "Phase" },
+  salesToast: { purchased: "purchased Full Version", verified: "Verified", justNow: "Just Now", fromLabel: "from" },
   audioPlayer: { title: "Author's Intro", subtitle: "Listen to a special message from George", duration: "02:15" },
   aiChat: { fabLabel: "Mr. X AI", title: "Mr. X AI Assistant", subtitle: "Your smart assistant for questions", placeholder: "Ask a question...", send: "Send", disclaimer: "AI may make mistakes. Always consult a doctor.", welcomeMessage: "Hey champ. I'm Mr. X AI. How can I help with your training or nutrition today?" },
   quiz: {
     title: "Are You Ready?",
     subtitle: "A quick quiz to determine your level and whether you are ready to enter the hormonal world or need more foundation.",
     startBtn: "Start Quiz",
+    questionLabel: "Question",
+    totalLabel: "Total",
     questions: [
       {
         question: "How many years of consistent training do you have?",
@@ -852,10 +1067,14 @@ export const enContent: ContentStrings = {
   dailyIQ: {
     title: "Daily Steroid IQ Challenge",
     subtitle: "New question every 24h. Answer correctly to unlock an instant discount.",
+    challengeLabel: "DAILY CHALLENGE",
     winTitle: "Correct! You're sharp.",
     winDesc: "You proved your knowledge. Here is your discount code (Valid for 60 mins).",
     loseTitle: "Incorrect",
     loseDesc: "Don't worry, learning is part of the game. Come back tomorrow for a new question.",
+    explanationLabel: "Explanation:",
+    copySuccess: "Code copied!",
+    toastCorrect: "Awesome! Discount code applied successfully.",
     couponLabel: "Discount Code",
     claimBtn: "Copy & Buy Now",
     expiresIn: "Offer expires in:",
@@ -923,12 +1142,27 @@ export const enContent: ContentStrings = {
       successMsg: "Verified! Feature Unlocked.",
       errorMsg: "Order not found."
     }
+  },
+  units: {
+    mg: "mg",
+    g: "g",
+    ml: "ml",
+    kcal: "kcal",
+    days: "days",
+    weeks: "weeks",
+    percentage: "%",
+    liters: "liters",
+    ed: "Daily",
+    eod: "EOD",
+    twiceWeekly: "Twice Weekly",
+    weekly: "Weekly"
   }
 };
 
 export const heContent: ContentStrings = {
   ...enContent,
-  navAiTools: "כלי AI למפתחי גוף",
+  navAiTools: "כלי AI למפתח הגוף",
+
   navPremiumResources: "משאבי פרימיום",
   navFeatures: "תכונות",
   navToolNames: {
@@ -939,10 +1173,20 @@ export const heContent: ContentStrings = {
     genetic: "פוטנציאל גנטי",
     cycleArchitect: "מתכנן סייקלים",
   },
-  backToHome: "חזרה לבית",
-  heroTitle: "מר איקס-סטרואיד",
-  heroSubtitle: "גלה את המדריך המדעי האולטימטיבי לבניית שרירים וסייקלים הורמונליים: גישה מדעית מקיפה המגובה בטבלאות מפורטות ופרוטוקולים ברורים. הספר יעזור לך להשיג כוח עצום וגוף מחוטב בצורה בטוחה וחכמה.",
-  heroCta: "השג את העותק שלך",
+  themeNames: {
+    light: "מצב בהיר",
+    dark: "מצב כהה",
+    system: "מצב מערכת",
+  },
+  backToHome: "חזרה לדף הבית",
+  homeLink: "בית",
+  seoTitle: "מר איקס-סטרואיד Mr. X-Steroid | המדריך המלא לפיתוח גוף וסטרואידים",
+  seoDescription: "גלו את המדריך המדעי החזק ביותר לבניית שרירים וסייקלים הורמונליים. הספר מר איקס-סטרואיד מאת ג'ורג' מוריס מציע טבלאות תזונה, פרוטוקולי הגנה ומדריך תוספים מלא.",
+  seoKeywords: "פיתוח גוף, סטרואידים, הורמונים, בניית שריר, חיטוב, מסה, קרוספיט, כושר, בריאות, ג'ורג' מוריס",
+
+  heroTitle: "מר איקס-סטרואיד Mr. X-Steroid",
+  heroSubtitle: "גלה את המדריך האולטימטיבי לבניית שרירים וסייקלים הורמונליים: גישה מדעית מקיפה המגובה בטבלאות מפורטות ופרוטוקולים ברורים. הספר יעזור לך להשיג כוח עצום וגוף מחוטב בצורה בטוחה וחכמה.",
+  heroCta: "קבל את העותק שלך עכשיו",
   downloadPreview: "הורד הצצה חינם (PDF)",
   audioPreviewBtn: "האזן להקדמה",
   authorSection: "על המחבר",
@@ -955,30 +1199,356 @@ export const heContent: ContentStrings = {
   buyNow: "קנה עכשיו",
   contact: "צור קשר",
   copyright: "כל הזכויות שמורות © 2025 ג׳ורג׳ מוריס",
-  pricingTitle: "בחר את התוכנית שלך",
-  pricingSubtitle: "השקעה קטנה בבריאות ובידע שלך תחסוך לך אלפי דולרים וסיכונים בריאותיים אינסופיים.",
-  whoIsTitle: "למי מיועד הספר?",
-  whoIsSubtitle: "התוכן תוכנן בקפידה לשרת קבוצות ספציפיות ביעילות מירבית",
-  targetAudiences: [
-    { title: "מפתח גוף מתחיל", description: "שרוצה לקצר את הדרך ולבנות גוף מושלם על בסיס מדעי.", iconKey: "athlete" },
-    { title: "מאמן מקצועי", description: "שמחפש מקור מדעי אמין לבניית תוכניות למתאמנים.", iconKey: "coach" },
-    { title: "מחפש האמת", description: "שנמאס לו ממידע מוטעה ומיתוסים בחדר הכושר.", iconKey: "truth" },
-    { title: "מודע לבריאות", description: "שרוצה להבין את ההשפעה ההורמונלית וכיצד למנוע נזק.", iconKey: "shield" }
+  features: [
+    {
+      title: "טבלאות הורמונים מקיפות: מאפס למקצוען",
+      description: "די למנחש ולסמוך על 'עצות מחדר הכושר'. הספר מספק טבלאות סייקל מובנות מדעית, שמובילות אותך בבטחה מרמת מתחיל למתקדם. תוכניות מסה וחיטוב עם מינונים וזמנים מדויקים.",
+      iconKey: "chart"
+    },
+    {
+      title: "אמנות ה-'יציאה הבטוחה': פרוטוקולי PCT קפדניים",
+      description: "להתחיל סייקל זה קל; לצאת בבטחה זו האמנות. הספר מפרט כיצד להגן על המערכת ההורמונלית ולהחזיר את ייצור הטסטוסטרון הטבעי כדי למנוע איבוד שריר ודיכאון. תוכניות PCT מוכחות עם תרופות ומינונים.",
+      iconKey: "exit"
+    },
+    {
+      title: "מדריך תוספים: האמת, ללא שיווק",
+      description: "חסוך את הכסף שלך. הפסק לקנות אבקות חסרות תועלת. המדריך חושף אילו תוספים באמת עובדים (כמו קריאטין, חלבון, חומצות אמינו) וחושף את התרמיות המסחריות שמרוקנות לך את הארנק.",
+      iconKey: "shield"
+    }
   ],
-  whoIsClosing: "אם אתה אחד מאלה, הספר הזה הוא ההשקעה החכמה ביותר שלך.",
-  whoIsCta: "התחל את המסע שלך",
+  testimonialsTitle: "מה אומרים הלקוחות?",
+  testimonials: [
+    { name: "אחמד ס.", title: "מפתח גוף חובב", text: "הייתי אבוד בתוך המידע הסותר באינטרנט. הספר הזה העלה אותי על המסלול הנכון וחסך לי שנים של ניסוי וטעייה." },
+    { name: "מוחמד א.", title: "מאמן אישי", text: "מקור חובה לכל מאמן שרוצה להיות ישר עם הלקוחות שלו ולהגן על בריאותם." },
+    { name: "כרים מ.", title: "אלוף מקומי", text: "הטבלאות בספר הזה מדויקות להפליא ועזרו לי להגיע לצורה הטובה ביותר בחיי." }
+  ],
   faqTitle: "שאלות נפוצות",
-  faqSubtitle: "תשובות ישירות לשאלות נפוצות",
+  faqSubtitle: "תשובות ישירות לשאלות הנפוצות ביותר",
   faqSearchPlaceholder: "חפש שאלות...",
   faqCategories: { all: "הכל", safety: "בטיחות", general: "כללי", legal: "חוקי", women: "נשים", strategy: "אסטרטגיה" },
-  contactPageTitle: "צור קשר",
-  contactPageSubtitle: "אנחנו כאן כדי לעזור ולענות על שאלותיך",
-  contactFormSubmit: "שלח הודעה",
-  contactInfoAddress: "דובאי, איחוד האמירויות",
-  agreeButton: "אני מסכים ומקבל אחריות, ואני מעל גיל 18",
-  disclaimerTitle: "אזהרה חשובה והסרת אחריות",
+  faqs: [
+    { question: "האם הספר מתאים למתחילים?", answer: "כן, הספר מתחיל מהיסודות ומסביר הכל בצורה פשוטה ומדעית, כולל טבלאות למתחילים.", category: "general" },
+    { question: "האם זה חוקי?", answer: "הספר הוא למטרות חינוכיות ומידע בלבד. האחריות על השימוש במידע היא על הקורא בלבד בהתאם לחוקי מדינתו.", category: "legal" },
+    { question: "איך מקבלים את הספר לאחר התשלום?", answer: "מיד לאחר השלמת התשלום, יישלח אליך אימייל עם קישור ישיר להורדת הספר בפורמט PDF.", category: "general" },
+    { question: "האם יש תמיכה לאחר הרכישה?", answer: "בוודאי. לקוחות חבילת הפרו מקבלים גישה לקהילה הפרטית שלנו לשאלות ותמיכה.", category: "general" }
+  ],
+  privacyPolicy: "מדיניות פרטיות",
+  termsOfService: "תנאי שימוש",
+  refundPolicy: "מדיניות החזרים",
+  legalDisclaimer: "הצהרה משפטית",
+  aboutUs: "עלינו",
+  legal: "משפטי",
+  quickLinks: "קישורים מהירים",
+  privacyPolicyContent: "אנו מכבדים את הפרטיות שלך ומחויבים להגן על המידע האישי שלך. המידע שנאסף משמש אך ורק לעיבוד הזמנות ולשיפור השירות שלנו. איננו משתפים את פרטיך עם צדדים שלישיים ללא הסכמתך.",
+  termsOfServiceContent: "בעצם השימוש באתר זה ובביצוע רכישה, אתה מסכים לתנאי השימוש שלנו. המידע באתר מיועד למטרות חינוכיות בלבד ואין לראות בו ייעוץ רפואי.",
+  refundPolicyContent: "בשל האופי הדיגיטלי של הספר, לא ניתן לבצע החזר כספי לאחר שליחת קישור ההורדה. אם נתקלת בבעיה טכנית, אנא צור קשר עם התמיכה.",
+  pricingTitle: "בחר את התוכנית שלך",
+  pricingSubtitle: "השקעה קטנה בבריאות ובידע שלך תחסוך לך אלפי דולרים וסיכונים אינסופיים.",
   pricingTiers: [
-    { name: "חבילת פרו", price: "$49.99", originalPrice: "$79.99", description: "הספר + כלים בלעדיים", features: ["הספר המלא (300+ עמודים)", "מחשבון מינונים (Excel)", "גישה לקהילה פרטית", "מדריך תוספים בונוס"], buttonText: "הנמכר ביותר", isPopular: true },
+    { name: "חבילת פרו", price: "$49.99", originalPrice: "$79.99", description: "הספר + כלים בלעדיים", features: ["הספר המלא (300+ עמודים)", "מחשבון מינונים (Excel)", "גישה לקהילה פרטית", "מדריך תוספים בונוס"], buttonText: "הנמכר ביותר", isPopular: true, popularLabel: "המשתלם ביותר" },
     { name: "חבילת אימון", price: "$199.99", description: "אימון אישי + הספר", features: ["כל פיצ'רי הפרו", "ייעוץ אונליין (30 דק')", "בניית סייקל מותאם אישית", "מעקב למשך חודש"], buttonText: "התחל שינוי" }
-  ]
+  ],
+  disclaimerTitle: "אזהרה חשובה והסרת אחריות",
+  disclaimerContent: "המידע המוצג באתר זה ובספר 'מר איקס-סטרואיד' נועד למטרות חינוכיות ומידע בלבד. אין לראות במידע זה כייעוץ רפואי, חוות דעת מקצועית או המלצה לשימוש בחומרים בלתי חוקיים או מסוכנים. \n\nשימוש בסטרואידים אנאבוליים וחקי הורמונים עלול לגרום לנזקים בריאותיים חמורים ובלתי הפיכים, כולל נזק לכבד, למערכת הלב והדם, למערכת הרבייה ולבריאות הנפש. \n\nאנחנו ממליצים בחום להתייעץ עם רופא מוסמך לפני ביצוע כל שינוי בתזונה, בתוכנית האימונים או שימוש בתוספים כלשהם. המחברים והבעלים של האתר אינם נושאים באחריות לכל נזק, ישיר או עקיף, שעלול להיגרם מהשימוש במידע זה.",
+  agreeButton: "אני מסכים, לוקח אחריות מלאה ואני מעל גיל 18+",
+  disclaimerAcknowledgement: "בלחיצה על הכפתור למטה, אתה מאשר שקראת, הבנת והסכמת לכל התנאים המפורטים לעיל.",
+  importantDisclaimer: "שים לב: שימוש לא נכון עלול לסכן את בריאותך.",
+  downloadFullBook: "הורד את הספר המלא",
+  processing: "מעבד...",
+  purchaseSuccess: "הרכישה בוצעה בצלחה!",
+  benefitsTitle: "למה לבחור במר איקס-סטרואיד?",
+  benefitsSubtitle: "המדריך המקיף ביותר במזרח התיכון",
+  benefits: [
+    { title: "חוסך זמן", description: "כל המידע שאתה צריך במקום אחד, ללא צורך בחיפושים אינסופיים.", iconKey: "time" },
+    { title: "מגובה במדע", description: "פרוטוקולים המבוססים על מחקרים ולא רק על ניסיון אישי.", iconKey: "science" }
+  ],
+  whoIsTitle: "למי מיועד הספר?",
+  whoIsSubtitle: "התוכן תוכנן בקפידה עבור:",
+  targetAudiences: [
+    { title: "מפתח גוף מתחיל", description: "שרוצה לקצר את הדרך על בסיס מדעי.", iconKey: "athlete" },
+    { title: "מאמן מקצועי", description: "שמחפש מקור אמין לבניית תוכניות.", iconKey: "coach" },
+    { title: "מודע לבריאות", description: "שרוצה להבין את ההשפעות ולמנוע נזק.", iconKey: "shield" }
+  ],
+  whoIsClosing: "אם אתה חלק מאלה, הספר הזה הוא ההשקעה הטובה ביותר שלך.",
+  whoIsCta: "התחל את השינוי עכשיו",
+  checkoutTitle: "תשלום מאובטח",
+  billingDetails: "פרטי חיוב",
+  fullName: "שם מלא",
+  emailAddress: "כתובת אימייל",
+  paymentMethod: "שיטת תשלום",
+  creditCard: "כרטיס אשראי",
+  cardNumber: "מספר כרטיס",
+  expiryDate: "תוקף",
+  cvc: "CVC",
+  payNow: "שלם עכשיו",
+  cancel: "ביטול",
+  orderSummary: "סיכום הזמנה",
+  total: "סה״כ",
+  secureCheckout: "תשלום מאובטח בטכנולוגיית SSL",
+  aboutPageTitle: "על מר איקס-סטרואיד",
+  aboutPageContent: "מר איקס-סטרואיד הוא הפרויקט המוביל במזרח התיכון להנגשת ידע מדעי בתחום פיתוח הגוף והשימוש המושכל בהורמונים. אנו מאמינים שידע הוא הכוח החזק ביותר להשגת תוצאות תוך שמירה על הבריאות.",
+  aboutPageStoryTitle: "הסיפור שלנו",
+  aboutPageStory: "מה שהתחיל כבלוג קטן של חובבי כושר, הפך למקור המידע האמין ביותר עבור אלפי ספורטאים. זיהינו את הפער העצום בין המיתוסים בחדר הכושר לבין המדע האמיתי, והחלטנו לגשר עליו.",
+  aboutPageMissionTitle: "המשימה שלנו",
+  aboutPageMission: "המשימה שלנו היא להפסיק את הניחושים בחדר הכושר, להנגיש פרוטוקולים בטוחים המבוססים על מחקר, ולהגן על הדור הבא של הספורטאים מפני טעויות קריטיות.",
+  labReference: {
+    title: "המרجع החכם לבדיקות מעבדה",
+    subtitle: "הבן את תוצאות בדיקות הדם שלך בעצמך. מדריך זה עוזר לזהות סימני אזהרה.",
+    searchPlaceholder: "חפש שם בדיקה (למשל: Test, ALT)...",
+    noResults: "לא נמצאו תוצאות",
+    analyzeBtn: "נתח תוצאה",
+    analyzeTitle: "הזן תוצאה",
+    enterValue: "ערך",
+    resultLabel: "סטטוס",
+    status: { low: "נמוך", normal: "תקין", high: "גבוה" },
+    categories: { all: "הכל", hormones: "הורמונים", organs: "איברים", blood: "לב וכלי דם" },
+    labels: { whatIsIt: "מה זה?", normalRange: "טווח תקין", elevationMeaning: "משמעות חריגה", lowMeaning: "משמעות חוסר", management: "המלצות", cancel: "ביטול", high: "גבוה", low: "נמוך" },
+    tests: labTestsHe,
+  },
+  injectionMap: {
+    title: "מפת הזרקות בטוחה",
+    subtitle: "מדריך אינטראקטיבי לאתרי הזרקה תוך-שרירית, סיכונים וכלים.",
+    viewFront: "מבט קדמי",
+    viewBack: "מבט אחורי",
+    needleSizeLabel: "גודל מחט",
+    maxVolumeLabel: "נפח מקסימלי",
+    painLevelLabel: "רמת כאב",
+    riskLevelLabel: "רמת סיכון",
+    recoveryLabel: "זמן התאוששות",
+    lastInjectedLabel: "הזרקה אחרונה",
+    logInjectionBtn: "תעד הזרקה",
+    suggestBtn: "הצע אתר",
+    suggesting: "מציע...",
+    status: { ready: "מוכן", recovering: "בהתאוששות", warning: "הימנע" },
+    riskLevel: "רמת סיכון",
+    tapToExplore: "לחץ על שריר לפרטים",
+    interactiveMapLabel: "מפה תפעולית אינטראקטיבית",
+    medicalInsightLabel: "תובנה רפואית",
+    riskLevels: {
+      low: "נמוך",
+      high: "גבוה"
+    },
+    sites: injectionSitesHe,
+  },
+  contactPageTitle: "צור קשר",
+  contactPageSubtitle: "אנחנו כאן לכל שאלה",
+  contactFormNamePlaceholder: "השם שלך",
+  contactFormEmailPlaceholder: "האימייל שלך",
+  contactFormMessagePlaceholder: "ההודעה שלך",
+  contactFormSubjectPlaceholder: "נושא",
+  contactFormSubmit: "שלח הודעה",
+  contactFormSuccessMessage: "הודעתך נשלחה בהצלחה!",
+  contactInfoAddress: "דובאי, איחוד האמירויות",
+  contactInfoEmail: "support@mrxsteroid.com",
+  contactInfoPhone: "+971 XXX XXX XXX",
+  contactInfoHours: "24/7 תמיכה",
+  viewOnMap: "צפה במפה",
+  cookieTitle: "עוגיות ופרטיות",
+  cookieMessage: "אנו משתמשים בעוגיות כדי לשפר את החוויה שלך.",
+  cookieAccept: "אשר",
+  cookieReject: "דחה",
+  calcTitle: "מחשבון מאקרו מתקדם",
+  calcSubtitle: "חשב את הסעורת והמאקרו המדויקים שלך לפי היעדים",
+  calcGender: "מין",
+  calcMale: "גבר",
+  calcFemale: "אישה",
+  calcAge: "גיל",
+  calcWeight: "משקל",
+  calcHeight: "גובה",
+  calcActivity: "רמת פעילות",
+  calcTrainingStyle: "סגנון אימון",
+  calcGoal: "יעד",
+  calcCalculate: "חשב עכשיו",
+  calcResults: "התוצאות שלך",
+  calcCalories: "קלוריות",
+  calcProtein: "חלבון",
+  calcCarbs: "פחמימות",
+  calcFats: "שומנים",
+  calcCta: "קבל תוכנית מותאמת אישית",
+  calcSmartMode: "מצב חכם",
+  calcBodyFat: "אחוז שומן",
+  calcWater: "צריכת מים מומלצת",
+  calcLiters: "ליטרים",
+  calcRecalculate: "חשב מחדש",
+  calcGenerateMealPlan: "צור תוכנית ארוחות",
+  calcGenerating: "יוצר תוכנית...",
+  calcMealPlanTitle: "תוכנית תזונה מוצעת",
+  calcMealPlanSubtitle: "ארוחות מבוססות על המאקרו שלך",
+  calcDisclaimer: "הערכים הם הערכה בלבד. התייעץ עם תזונאי.",
+  calcTdeeLabel: "הוצאה אנרגטית יומית (TDEE)",
+  calcBmrLabel: "קצב חילוף חומרים בסיסי (BMR)",
+  calcTefLabel: "אפקט תרמי של מזון (TEF)",
+  calcBeastTitle: "מצב 'חיה' מופעל",
+  calcAnalysisLabel: "ניתוח מנוע חכם",
+  calcBmiStatusLabel: "סטטוס BMI",
+  calcShuffleLabel: "ערבב ארוחות",
+  calcAwaitingInputLabel: "ממתין לנתוני שריר",
+  calcAiEngineLabel: "מנוע מבוסס AI",
+  calcAnalyzingLabel: "מנתח נתונים...",
+  calcMetabolicActiveLabel: "פעילות מטבולית פעילה",
+  calcAnabolicPotentialLabel: "פוטנציאל אנבולי צפוי",
+  calcWindowBtn: "צפה בתוכנית המלאה",
+  calcTrainingTime: "זמן אימון",
+  calcTrainingWindows: {
+    morning: "בוקר",
+    afternoon: "צהריים",
+    evening: "ערב",
+    advice: "מכיוון שהאימון שלך ב{time}، אנו ממליצים לרכז 40% מהפחמימות סביב חלון האימון."
+  },
+  calcPredictionTitle: "תחזית התקדמות",
+  calcBeastNames: { cut: "לוחם חיטוב", maintain: "מכונת שימור", bulk: "ענק מסה" },
+  calcPredictions: { cut: "איבוד שומן מואץ", maintain: "רה-קומפוזיציה", bulk: "צמיחת שריר מקסימלית" },
+  calcSelectGoal: { cut: "חיטוב יבש", maintain: "שמירה ושיפור", bulk: "מסה נקייה" },
+  calcActivityLevels: { sedentary: "יושבני", light: "פעיל מעט", moderate: "פעילות מתונה", active: "פעיל מאוד", veryActive: "ספורטאי מקצועי" },
+  calcTrainingStyles: { hypertrophy: "היפרטרופיה", strength: "כוח", endurance: "סיבולת" },
+  geneticCalculator: {
+    title: "מחשבון פוטנציאל גנטי",
+    subtitle: "כמה שריר אתה יכול לבנות בפיזיולוגיה שלך?",
+    labels: {
+      height: "גובה",
+      wrist: "היקף שורש כף יד",
+      ankle: "היקף קרסול",
+      bodyFat: "אחוז שומן רצוי",
+      frameSize: "מבנה שלד",
+      boneThickness: "עובי עצם",
+      lowerBody: "מבנה גוף תחתון"
+    },
+    modelLabel: "מבוסס על מודל Casey Butt",
+    awaitingDataTitle: "ממתין לנתונים...",
+    frameOptions: { small: "קטן", medium: "בינוני", large: "רחב" },
+    unknownMeasurements: "לא בטוח לגבי המדידות?",
+    cta: "נתח פוטנציאל",
+    reset: "איפוס",
+    yourBodyType: "סוג הגוף שלך",
+    resultTitle: "תחזית מסה מקסימלית",
+    naturalLabel: "פוטנציאל טבעי",
+    enhancedLabel: "פוטנציאל 'משופר'",
+    differenceLabel: "ההפרש הצפוי",
+    disclaimer: "התוצאות מבוססות על נוסחאות מדעיות והערכות סטטיסטיות.",
+    unlockMsg: "לפתח את הפוטנציאל המלא? קנה את הספר.",
+    errorMsg: "אנא מלא את כל השדות."
+  },
+  halfLifeVisualizer: {
+    title: "סימולטור זמן מחצית חיים",
+    subtitle: "ראה כיצד רמות ההורמונים בדם משתנות בזמן אמת",
+    compoundLabel: "חומר",
+    dosageLabel: "מינון",
+    durationLabel: "משך (שבועות)",
+    frequencyLabel: "תדירות הזרקה",
+    yAxis: "ריכוז בדם",
+    xAxis: "ימים",
+    pctZone: "אזור ניקוי (PCT)",
+    pctStartMsg: "זמן מומלץ להתחלת PCT",
+    peakLevelMsg: "שיא הריכוז בשימוש נכון",
+    addToStackBtn: "הוסף לערימה",
+    activeStackTitle: "חומרים פעילים",
+    serumTitle: "ריכוז בדם",
+    peakLabel: "שיא",
+    emptyStackMsg: "הוסף חומרים כדי לראות את הגרף",
+    compounds: enContent.halfLifeVisualizer.compounds, // Keeping technical IDs/Names
+    frequencies: { ed: "כל יום", eod: "יום כן יום לא", e3d: "כל 3 ימים", e7d: "אחת לשבוע" },
+    tooltipDay: "יום",
+    tooltipLevel: "רמה",
+    tooltipPctReady: "מוכן ל-PCT",
+    tooltipWait: "יש להמתין",
+    tooltipInject: "מועד הזרקה",
+    analysis: {
+      title: "ניתוח סייקל חכם",
+      prosTitle: "יתרונות",
+      consTitle: "סיכונים",
+      adviceTitle: "טיפ ממר איקס",
+      pros: ["רמות דם יציבות", "שיא ביו-זמינות"],
+      cons: ["צורך בהזרקות תכופות", "עלייה בלחץ דם"],
+      advice: "זכור לבצע בדיקות דם באמצע הסייקל."
+    }
+  },
+  mealPlanTitle: "תוכנית תזונה",
+  mealPlanBtn: "צור תוכנית",
+  mealPlanLoading: "מכין...",
+  mealPlanError: "אירעה שגיאה",
+  timelineTitle: "ציר זמן השינוי",
+  timelineSubtitle: "מה קורה בתוך הגוף שלך שבוע אחר שבוע? המסע הביולוגי המלא.",
+  timelinePhases: [
+    { week: "1-2", title: "שלב ההתנעה (The Kickstart)", shortDesc: "כניסת ההורמון והתחלת שינויים", iconKey: "spark", stats: { strength: 20, hypertrophy: 10, waterRetention: 30, fatLoss: 5, mood: 80 }, details: { biological: "עלייה חדה ברמות האנדרוגנים בדם. עלייה באגירת חנקן בשריר.", feeling: "שיפור ניכר במצב הרוח, חשק מיני גבוה ותחושת 'פאמפ' תמידית.", action: "היצמד לתזונה ב-100%. שתה 4 ליטר מים ביום." } },
+    { week: "3-6", title: "שלב ההתפוצצות (Hypertrophy Surge)", shortDesc: "צמיחת שריר מהירה ועלייה במשקל", iconKey: "muscle", stats: { strength: 60, hypertrophy: 70, waterRetention: 50, fatLoss: 10, mood: 90 }, details: { biological: "רוויה של קולטנים. סינתזת חלבון בשיא.", feeling: "כוח מטורף באימון. הבגדים נהיים צמודים. תיאבון גבוה.", action: "העלה משקלים באימון. עקוב אחר לחץ דם ואסטרוגן." } },
+    { week: "7-10", title: "שלב ההתקשחות (Hardening)", shortDesc: "ייצוב משקל ותחילת שרפת שומן", iconKey: "trophy", stats: { strength: 90, hypertrophy: 90, waterRetention: 40, fatLoss: 40, mood: 70 }, details: { biological: "ייצוב רמות בדם. הגוף מתחיל להשתמש בשומן לאנרגיה ביעילות.", feeling: "מראה שרירי קשה ומפורט יותר.", action: "התחל אירובי קבוע. עקוב אחר תפקודי כבד." } },
+    { week: "11-12", title: "שלב הגימור (Peaking)", shortDesc: "נגיעות אחרונות לפני היציאה", iconKey: "flag", stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 }, details: { biological: "צפיפות שריר מקסימלית. הכנה להפסקת ההורמון.", feeling: "עייפות קלה. מוכנות מלאה.", action: "תכנן PCT. הפחת מעט קלוריות." } }
+  ],
+  timelineLabels: { strength: "כוח", hypertrophy: "מסה", water: "נוזלים", fatLoss: "שרפת שומן", mood: "מצב רוח", biologicalTitle: "מה קורה ביולוגית?", feelingTitle: "איך תרגיש?", actionTitle: "תוכנית פעולה", phaseLabel: "שלב" },
+  salesToast: { purchased: "רכש את הגרסה המלאה", verified: "מוסמך", justNow: "ממש עכשיו", fromLabel: "מ-" },
+  audioPlayer: { title: "הקדמה קולית מהמחבר", subtitle: "האזן להודעה מיוחדת מג׳ורג׳", duration: "02:15" },
+  aiChat: { fabLabel: "העוזר של מר איקס", title: "מר איקס AI", subtitle: "העוזר החכם שלך לכל שאלה", placeholder: "שאל אותי משהו...", send: "שלח", disclaimer: "הבינה המלאכותית עלולה לטעות. התייעץ תמיד עם רופא.", welcomeMessage: "אהלן אלוף. אני העוזר של מר איקס. איך אני יכול לעזור לך היום באימונים או בתזונה?" },
+  quiz: {
+    title: "האם אתה מוכן לסייקל?",
+    subtitle: "מבחן מהיר שיקבע אם אתה מוכן להיכנס לעולם ההורמונים או שאתה זקוק ליסודות נוספים.",
+    startBtn: "התחל מבחן",
+    questionLabel: "שאלה",
+    totalLabel: "סה״כ",
+    questions: [
+      { question: "כמה שנים של אימון עקבי יש לך?", options: [{ text: "פחות מ-3 שנים", score: 0 }, { text: "יותר מ-5 שנים", score: 1 }] },
+      { question: "מה אחוז השומן הנוכחי שלך?", options: [{ text: "מעל 15% (שומן גלוי)", score: 0 }, { text: "מתחת ל-12% (קוביות גלויות)", score: 1 }] }
+    ],
+    results: {
+      natural: { title: "הישאר טבעי (לבינתיים)", desc: "יש לך פוטנציאל גדול לגדילה טבעית. שימוש בהורמונים עכשיו עלול להזיק.", cta: "קבל את הספר למיקסום היכולת הטבעית" },
+      enhanced: { title: "אתה מוכן לשלב הבא", desc: "יש לך את הניסיון והבסיס הנכון. השלב הבא דורש מדע מדויק להגנה.", cta: "קבל את הספר והתחל את הסייקל" }
+    }
+  },
+  dailyIQ: {
+    title: "אתגר ה-Steroid IQ היומי",
+    subtitle: "שאלה אחת חדשה כל 24 שעות. ענה נכון וקבל הנחה מיידית.",
+    challengeLabel: "אתגר היום",
+    winTitle: "נכון מאוד! אתה חד.",
+    winDesc: "הוכחת את הידע שלך. הנה קוד הקופון שלך (בתוקף ל-60 דקות).",
+    loseTitle: "לא מדויק",
+    loseDesc: "אל דאגה, למידה היא חלק מהמשחק. חזור מחר לשאלה חדשה.",
+    explanationLabel: "הסבר:",
+    copySuccess: "הקוד הועתק בהצלחה!",
+    toastCorrect: "מעולה! קוד ההנחה הופעל בהצלחה.",
+    couponLabel: "קוד קופון",
+    claimBtn: "העתק וקנה עכשיו",
+    expiresIn: "המבצע מסתיים בעוד:",
+    comeBackTomorrow: "השאלה הבאה בעוד:",
+    questions: [
+      { id: 1, question: "מה ההבדל העיקרי בין נולבדקס לכלומייד ב-PCT?", options: ["הם בדיוק אותו דבר", "נולבדקס עדיף לג׳ינו, כלומייד חזק יותר לגירוי LH", "כלומייד עוצר ג׳ינו טוב יותר", "נולבדקס הוא מעכב ארומטאז (AI)"], correctIndex: 1, explanation: "נולבדקס חוסם אסטרוגן ברקמת השד, בעוד כלומייד פועל חזק יותר על בלוטת יותרת המוח." }
+    ]
+  },
+  cycleArchitect: {
+    title: "מסנכרן הסייקלים החכם (Cycle Architect)",
+    subtitle: "עצב את הפרוטוקול שלך בדיוק מקסימלי, קבל יומן ביצוע (ICS) עם רוטציה והגנה.",
+    presetsTitle: "תבניות מוכנות:",
+    stealthModeLabel: "מצב פרטיות (שמות בדויים)",
+    rotationLabel: "רוטציית הזרקות אוטומטית",
+    pctLabel: "חישוב מועד תחילת PCT",
+    stealthAliases: ["אימון אירובי", "זריקת ויטמנים", "פגישת עבודה", "פיזיותרפיה", "קרדיו"],
+    rotationSites: ["ישבן ימין", "ישבן שמאל", "כתף ימין", "כתף שמאל", "ירך ימין", "ירך שמאל"],
+    presets: { beginnerBulk: "מסה למתחילים", cutting: "חיטוב מתקדם", trt: "פרוטוקול TRT" },
+    form: { startDateLabel: "תאריך התחלה", compoundLabel: "חומר", dosageLabel: "מינון (מ״ג)", frequencyLabel: "תדירות", weeksLabel: "משך (שבועות)", halfLifeLabel: "זמן מחצית חיים (ימים)", addCompoundBtn: "הוסף חומר", removeBtn: "הסר", frequencies: { daily: "יומי (ED)", eod: "יום כן יום לא (EOD)", twiceWeekly: "פעמיים בשבוע", weekly: "פעם בשבוע" } },
+    premiumLock: { lockedTitle: "תכונת פרימיום נעולה", lockedDesc: "ייצוא ליומן הטלפון עם רוטציה חכמה ומצב פרטיות זמין רק ללקוחות מאומתים.", verifyBtn: "אמת רכישה לפתיחה", exportBtn: "ייצא יומן חכם (.ics)", placeholder: "הזן אימייל או מספר הזמנה", successMsg: "אומת! התכונה פתוחה.", errorMsg: "הזמנה לא נמצאה." }
+  },
+  timeUnits: {
+    days: "ימים",
+    hours: "שעות",
+    minutes: "דקות",
+    seconds: "שניות"
+  },
+  offerExpired: "ההצעה פגה!",
+  heroEditions: {
+    ar: "نسخة عربية",
+    en: "English Edition",
+    he: "מהדורה עברית"
+  },
+  units: {
+    mg: "מ״ג",
+    g: "גרם",
+    ml: "מ״ל",
+    kcal: "קלוריות",
+    days: "ימים",
+    weeks: "שבועות",
+    percentage: "%",
+    liters: "ליטר",
+    ed: "פעם ביום",
+    eod: "פעם ביומיים",
+    twiceWeekly: "פעמיים בשבוע",
+    weekly: "פעם בשבוע"
+  }
 };

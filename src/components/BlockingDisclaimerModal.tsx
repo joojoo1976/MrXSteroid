@@ -23,7 +23,7 @@ const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ conten
                     <div className="prose dark:prose-invert max-w-none text-justify leading-relaxed whitespace-pre-wrap text-sm md:text-base text-zinc-700 dark:text-zinc-300">{content.disclaimerContent}</div>
                 </div>
                 <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded-b-2xl flex flex-col items-center gap-4">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center max-w-2xl">By clicking the button below, you acknowledge that you have read, understood, and agreed to all terms listed above.</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center max-w-2xl">{content.disclaimerAcknowledgement}</p>
                     <button onClick={handleAgree} className="w-full max-w-md py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-lg shadow-gold-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"><ShieldCheck className="w-6 h-6" />{content.agreeButton}</button>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&family=Noto+Sans+Hebrew:wght@100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -108,4 +108,90 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes pulse-background {
+
+  0%,
+  100% {
+    background-color: rgb(24, 24, 27);
+  }
+
+  50% {
+    background-color: rgb(39, 39, 42);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-pulse-background {
+  animation: pulse-background 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.font-permanent-marker {
+  font-family: 'Permanent Marker', cursive;
+}
+
+.font-arabic {
+  font-family: 'Noto Sans Arabic', sans-serif;
+}
+
+.font-hebrew {
+  font-family: 'Noto Sans Hebrew', sans-serif;
+}
+
+.dynamic-width {
+  width: var(--dynamic-width, 0%);
+}
+
+.dynamic-bg {
+  background-color: var(--dynamic-bg, transparent);
+}
+
+.bg-stack-0 {
+  background-color: #eab308;
+}
+
+.bg-stack-1 {
+  background-color: #3b82f6;
+}
+
+.bg-stack-2 {
+  background-color: #ef4444;
+}
+
+.bg-stack-3 {
+  background-color: #10b981;
+}
+
+.bg-stack-4 {
+  background-color: #8b5cf6;
 }

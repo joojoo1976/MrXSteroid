@@ -6,8 +6,8 @@ import { Toaster, toast } from 'sonner';
 
 // Types & Data
 import { Language, Currency, Page, PricingTier } from './types';
-import { arContent, enContent, heContent, teaserTablesAR, teaserTablesEN } from './content';
-import { salesDataAr, salesDataEn, footerKeywordsPoolAr, footerKeywordsPoolEn } from './content-data';
+import { arContent, enContent, heContent, teaserTablesAR, teaserTablesEN, teaserTablesHE } from './content';
+import { salesDataAr, salesDataEn, salesDataHe, footerKeywordsPoolAr, footerKeywordsPoolEn, footerKeywordsPoolHe } from './content-data';
 
 // Utils
 import { RevealOnScroll } from './utils/shared';
@@ -157,8 +157,8 @@ export default function App() {
   };
 
   const content = lang === Language.AR ? arContent : lang === Language.HE ? heContent : enContent;
-  const teaserTables = lang === Language.AR ? teaserTablesAR : teaserTablesEN;
-  const salesData = lang === Language.AR ? salesDataAr : salesDataEn;
+  const teaserTables = lang === Language.AR ? teaserTablesAR : lang === Language.HE ? teaserTablesHE : teaserTablesEN;
+  const salesData = lang === Language.AR ? salesDataAr : lang === Language.HE ? salesDataHe : salesDataEn;
   const isRTL = lang === Language.AR || lang === Language.HE;
 
   useEffect(() => { document.title = content.seoTitle; const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute('content', content.seoDescription); }, [lang, content]);
@@ -192,20 +192,20 @@ export default function App() {
 
   if (currentPage !== Page.HOME) {
     return (
-      <div className={`min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${isRTL ? 'font-arabic' : 'font-sans'}`}>
-        <Header lang={lang} toggleLang={toggleLang} theme={theme as any} toggleTheme={toggleTheme} content={content} currentPage={currentPage} navigateTo={navigateTo} />
+      <div className={`min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : lang === Language.HE ? 'font-hebrew' : 'font-sans'}`}>
+        <Header lang={lang} toggleLang={toggleLang} theme={theme} setTheme={setTheme} content={content} currentPage={currentPage} navigateTo={navigateTo} />
         <main className="pt-24 pb-20 container mx-auto px-4 min-h-screen">
           <button onClick={() => navigateTo(Page.HOME)} className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-gold-500 transition-colors font-bold"><ArrowLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} /> {content.backToHome}</button>
           {currentPage === Page.MACRO && <MacroCalculator content={content} lang={lang} unitSystem={unitSystem} />}
-          {currentPage === Page.INJECTION && <InjectionMap content={content} />}
+          {currentPage === Page.INJECTION && <InjectionMap content={content} lang={lang} />}
           {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} />}
           {currentPage === Page.LAB && <SmartLabReference content={content} />}
-          {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} />}
+          {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} unitSystem={unitSystem} />}
           {currentPage === Page.CYCLE_ARCHITECT && <CycleCalendarExporter content={content} isRTL={isRTL} />}
           {/* Previewing the new Senior Developer Component */}
-          {currentPage as any === 'smart-landing' && <SmartBookLanding externalLang={lang === (Language.AR as any) ? 'ar' : 'en'} externalIsRTL={isRTL} />}
+          {currentPage === Page.SMART_LANDING && <SmartBookLanding externalLang={lang === Language.AR ? 'ar' : lang === Language.HE ? 'he' : 'en'} externalIsRTL={isRTL} />}
         </main>
-        <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : footerKeywordsPoolEn} />
+        <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : lang === Language.HE ? footerKeywordsPoolHe : footerKeywordsPoolEn} lang={lang} />
         <ChatWidget content={content} isRTL={isRTL} />
         <WhatsAppButton isRTL={isRTL} />
         <FloatingSideIcon isRTL={isRTL} />
@@ -214,16 +214,16 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${isRTL ? 'font-arabic' : 'font-sans'}`}>
+    <div className={`min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : lang === Language.HE ? 'font-hebrew' : 'font-sans'}`}>
       <Toaster position="top-center" richColors />
       <BlockingDisclaimerModal content={content} />
       <LegalModal isOpen={legalState.isOpen} onClose={() => setLegalState({ ...legalState, isOpen: false })} title={legalState.title} content={legalState.content} />
       <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} tier={selectedTier} content={content} formattedPrice={selectedTier ? formatPrice(selectedTier.price) : ''} onSuccess={() => setHasPurchased(true)} />
 
-      <Header lang={lang} toggleLang={toggleLang} theme={theme as any} toggleTheme={toggleTheme} content={content} currentPage={currentPage} navigateTo={navigateTo} />
+      <Header lang={lang} toggleLang={toggleLang} theme={theme} setTheme={setTheme} content={content} currentPage={currentPage} navigateTo={navigateTo} />
 
       <main>
-        <Hero content={content} isRTL={isRTL} openCheckout={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} playerState={playerState} />
+        <Hero content={content} isRTL={isRTL} lang={lang} openCheckout={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} playerState={playerState} />
         <Features content={content} />
 
         <section className="py-20 bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-200 dark:border-zinc-800"><div className="container mx-auto px-4"><TransformationTimeline content={content} isRTL={isRTL} /></div></section>
@@ -254,7 +254,7 @@ export default function App() {
 
         <BenefitsSection content={content} />
 
-        <DailyIQChallenge content={content} onWin={() => toast.success("Code: STEROIDMASTERY25 applied!")} />
+        <DailyIQChallenge content={content} onWin={() => { /* Handled inside the component now */ }} />
 
         <section id="pricing" className="py-20 border-t border-zinc-200 dark:border-zinc-800">
           <div className="container mx-auto px-4">
@@ -262,7 +262,7 @@ export default function App() {
             <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {content.pricingTiers.map((tier, idx) => (
                 <div key={idx} className={`relative p-8 rounded-3xl border transition-all duration-300 flex flex-col h-full ${tier.isPopular ? 'bg-zinc-900 dark:bg-zinc-800 border-gold-500 shadow-2xl scale-105 z-10' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-gold-500/50'}`}>
-                  {tier.isPopular && (<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold-500 text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-lg">Best Value</div>)}
+                  {tier.isPopular && (<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold-500 text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-lg">{tier.popularLabel || (isRTL ? 'الأكثر طلباً' : 'Best Value')}</div>)}
                   <div className="mb-6"><h3 className={`text-xl font-bold mb-2 ${tier.isPopular ? 'text-white' : 'text-zinc-900 dark:text-white'}`}>{tier.name}</h3><div className="flex items-baseline gap-2"><span className={`text-4xl font-black ${tier.isPopular ? 'text-gold-500' : 'text-zinc-900 dark:text-white'}`}>{formatPrice(tier.price)}</span>{tier.originalPrice && (<span className="text-zinc-500 line-through text-lg decoration-2 decoration-red-500/50">{formatPrice(tier.originalPrice)}</span>)}</div></div>
                   <ul className="space-y-4 mb-8 flex-1">{tier.features.map((feature, fIdx) => (<li key={fIdx} className={`flex items-start gap-3 text-sm ${tier.isPopular ? 'text-zinc-300' : 'text-zinc-600 dark:text-zinc-400'}`}><CheckCircle className={`w-5 h-5 shrink-0 ${tier.isPopular ? 'text-gold-500' : 'text-zinc-400'}`} /><span>{feature}</span></li>))}</ul>
                   <button onClick={() => openCheckout(tier)} className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:scale-105 active:scale-95 ${tier.isPopular ? 'bg-gold-500 hover:bg-gold-400 text-black' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white'}`}>{tier.buttonText}</button>
@@ -277,7 +277,7 @@ export default function App() {
         <AuthorSection content={content} />
       </main>
 
-      <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : footerKeywordsPoolEn} />
+      <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={lang === Language.AR ? footerKeywordsPoolAr : lang === Language.HE ? footerKeywordsPoolHe : footerKeywordsPoolEn} lang={lang} />
       <ChatWidget content={content} isRTL={isRTL} />
       <WhatsAppButton isRTL={isRTL} />
       <FloatingSideIcon isRTL={isRTL} />

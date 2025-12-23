@@ -4,9 +4,10 @@ import { ContentStrings } from '../types';
 
 interface InjectionMapProps {
   content: ContentStrings;
+  lang: string;
 }
 
-const InjectionMap: React.FC<InjectionMapProps> = ({ content }) => {
+const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang }) => {
   const [activeSite, setActiveSite] = useState<string | null>(null);
   const [view, setView] = useState<'front' | 'back'>('front');
   const siteData = content.injectionMap.sites.find(s => s.id === activeSite);
@@ -205,7 +206,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content }) => {
           </div>
 
           <div className="absolute bottom-6 left-6 flex items-center gap-2 text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-700">
-            <Rotate3D className="w-3 h-3" /> Interactive 3D Map
+            <Rotate3D className="w-3 h-3" /> {content.injectionMap.interactiveMapLabel}
           </div>
         </div>
         <div>
@@ -213,13 +214,13 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content }) => {
             <div className="bg-zinc-900 text-white p-8 rounded-3xl shadow-xl animate-fade-in border-t-4 border-gold-500">
               <div className="flex justify-between items-start mb-6"><div><h3 className="text-2xl font-bold">{siteData.name}</h3><span className="text-gold-500 text-sm font-bold uppercase tracking-wider">{siteData.category}</span></div>{siteData.riskLevel === 'Low' ? <ShieldCheck className="text-green-500 w-8 h-8" /> : <AlertTriangle className="text-orange-500 w-8 h-8" />}</div>
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4"><div className="bg-zinc-800 p-4 rounded-xl"><div className="text-xs text-zinc-400 mb-1">{content.injectionMap.needleSizeLabel}</div><div className="font-bold font-mono text-lg">{siteData.needle}</div></div><div className="bg-zinc-800 p-4 rounded-xl"><div className="text-xs text-zinc-400 mb-1">{content.injectionMap.maxVolumeLabel}</div><div className="font-bold font-mono text-lg">{siteData.volume}</div></div></div>
-                <div className="bg-zinc-800 p-4 rounded-xl border-l-4 border-blue-500"><div className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-wider">Medical Insight</div><p className="text-sm leading-relaxed text-zinc-300">{siteData.description}</p></div>
+                <div className="grid grid-cols-2 gap-4"><div className="bg-zinc-800 p-4 rounded-xl"><div className="text-xs text-zinc-400 mb-1">{content.injectionMap.needleSizeLabel}</div><div className="font-bold font-mono text-lg">{siteData.needle}</div></div><div className="bg-zinc-800 p-4 rounded-xl"><div className="text-xs text-zinc-400 mb-1">{content.injectionMap.maxVolumeLabel}</div><div className="font-bold font-mono text-lg">{siteData.volume} {content.units.ml}</div></div></div>
+                <div className="bg-zinc-800 p-4 rounded-xl border-l-4 border-blue-500"><div className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-wider">{content.injectionMap.medicalInsightLabel}</div><p className="text-sm leading-relaxed text-zinc-300">{siteData.description}</p></div>
                 {siteData.warning && (<div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl flex gap-3 items-start"><AlertTriangle className="w-5 h-5 text-red-500 shrink-0" /><p className="text-sm text-red-200">{siteData.warning}</p></div>)}
 
                 <div className="pt-4 border-t border-zinc-800 flex justify-between items-center text-xs text-zinc-500">
-                  <span>Recovery: <span className="text-white font-bold">{siteData.recoveryDays} Days</span></span>
-                  <span>Risk: <span className={`font-bold ${siteData.riskLevel === 'Low' ? 'text-green-500' : 'text-orange-500'}`}>{siteData.riskLevel}</span></span>
+                  <span>{content.injectionMap.recoveryLabel}: <span className="text-white font-bold">{siteData.recoveryDays} {content.units.days}</span></span>
+                  <span>{content.injectionMap.riskLevelLabel}: <span className={`font-bold ${siteData.riskLevel === 'Low' ? 'text-green-500' : 'text-orange-500'}`}>{siteData.riskLevel === 'Low' ? content.injectionMap.riskLevels.low : content.injectionMap.riskLevels.high}</span></span>
                 </div>
               </div>
             </div>

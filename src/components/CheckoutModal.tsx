@@ -14,7 +14,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, co
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
             <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 relative z-10 overflow-hidden animate-fade-in-up">
                 <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950">
-                    <h3 className="font-bold text-lg flex items-center gap-2">{step === 'success' ? <CheckCircle className="text-green-500" /> : <Lock className="text-gold-500 w-5 h-5" />}{step === 'success' ? content.purchaseSuccess.split('!')[0] : content.checkoutTitle}</h3><button onClick={onClose} className="text-zinc-500 hover:text-red-500"><X className="w-5 h-5" /></button>
+                    <h3 className="font-bold text-lg flex items-center gap-2">{step === 'success' ? <CheckCircle className="text-green-500" /> : <Lock className="text-gold-500 w-5 h-5" />}{step === 'success' ? content.purchaseSuccess.split('!')[0] : content.checkoutTitle}</h3><button onClick={onClose} aria-label="Close modal" title="Close modal" className="text-zinc-500 hover:text-red-500"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="p-6">
                     {step === 'form' && (
