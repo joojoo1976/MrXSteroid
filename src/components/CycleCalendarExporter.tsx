@@ -31,7 +31,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
         setCompounds(compounds.filter(c => c.id !== id));
     };
 
-    const updateCompound = (id: string, field: string, value: any) => {
+    const updateCompound = (id: string, field: string, value: string | number) => {
         setCompounds(compounds.map(c => c.id === id ? { ...c, [field]: value } : c));
     };
 
@@ -55,7 +55,13 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
     };
 
     const generateICS = () => {
-        let events = [];
+        interface ICSEvent {
+            start: string;
+            end: string;
+            summary: string;
+            description: string;
+        }
+        const events: ICSEvent[] = [];
         const start = new Date(startDate);
         let maxCycleEndDate = new Date(start);
         let maxHalfLife = 0;
@@ -79,7 +85,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
             if (endDate > maxCycleEndDate) maxCycleEndDate = endDate;
             if (comp.halfLife > maxHalfLife) maxHalfLife = comp.halfLife;
 
-            let currentDate = new Date(start);
+            const currentDate = new Date(start);
             let count = 0;
 
             while (currentDate < endDate) {
@@ -102,7 +108,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                     summary = stealthAliases[Math.floor(Math.random() * stealthAliases.length)];
                 }
 
-                let description = `Protocol: ${comp.name} ${comp.dosage}mg.`.replace(/[,;]/g, '\\$&');
+                let description = `${content.cycleArchitect.form.compoundLabel}: ${comp.name} ${comp.dosage}${content.units.mg}.`.replace(/[,;]/g, '\\$&');
                 if (autoRotate && comp.halfLife > 1) {
                     description += ` Site: ${rotationSites[rotationIndex % rotationSites.length]}`;
                     rotationIndex++;
@@ -135,8 +141,8 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
             events.push({
                 start: startString,
                 end: endString,
-                summary: stealthMode ? "Recovery Phase Start" : "🔰 START PCT PROTOCOL 🔰",
-                description: "Clearance time passed. Begin SERMs protocol now."
+                summary: stealthMode ? content.cycleArchitect.stealthPctAlias : content.cycleArchitect.pctEventSummary,
+                description: content.cycleArchitect.pctEventDescription
             });
         }
 
@@ -176,7 +182,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                             <input type="text" placeholder={content.cycleArchitect.premiumLock.placeholder} className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 focus:border-gold-500 outline-none" />
                             <button onClick={handleVerify} className="px-6 py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold rounded-xl whitespace-nowrap transition-colors">{content.cycleArchitect.premiumLock.verifyBtn}</button>
                         </div>
-                        <p className="text-[10px] text-zinc-400 mt-4">Try "demo" to unlock instantly</p>
+                        <p className="text-[10px] text-zinc-400 mt-4">{content.cycleArchitect.premiumLock.demoHint}</p>
                     </div>
                 </div>
             </div>

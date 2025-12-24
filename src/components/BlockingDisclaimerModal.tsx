@@ -3,13 +3,12 @@ import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { ContentStrings } from '../types';
 
 const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ content }) => {
-    const [show, setShow] = useState(false);
+    const [show, setShow] = useState(() => !localStorage.getItem('mr_x_disclaimer_accepted_v4'));
     useEffect(() => {
-        const hasAccepted = localStorage.getItem('mr_x_disclaimer_accepted_v4');
-        if (!hasAccepted) { setShow(true); document.body.style.overflow = 'hidden'; }
+        if (show) { document.body.style.overflow = 'hidden'; }
         else { document.body.style.overflow = 'auto'; }
         return () => { document.body.style.overflow = 'auto'; };
-    }, []);
+    }, [show]);
     const handleAgree = () => { localStorage.setItem('mr_x_disclaimer_accepted_v4', 'true'); setShow(false); document.body.style.overflow = 'auto'; };
     if (!show) return null;
     return (

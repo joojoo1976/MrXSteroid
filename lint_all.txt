@@ -1,0 +1,921 @@
+
+C:\MrXSteroid-main\src\App.tsx
+   95:6  warning  React Hook useEffect has a missing dependency: 'isPlaying'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  147:9  error    'newLang' is never reassigned. Use 'const' instead                                                            prefer-const
+
+C:\MrXSteroid-main\src\components\BlockingDisclaimerModal.tsx
+  9:29  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\MrXSteroid-main\src\components\BlockingDisclaimerModal.tsx:9:29
+   7 |     useEffect(() => {
+   8 |         const hasAccepted = localStorage.getItem('mr_x_disclaimer_accepted_v4');
+>  9 |         if (!hasAccepted) { setShow(true); document.body.style.overflow = 'hidden'; }
+     |                             ^^^^^^^ Avoid calling setState() directly within an effect
+  10 |         else { document.body.style.overflow = 'auto'; }
+  11 |         return () => { document.body.style.overflow = 'auto'; };
+  12 |     }, []);  react-hooks/set-state-in-effect
+
+C:\MrXSteroid-main\src\components\CheckoutModal.tsx
+  9:35  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\MrXSteroid-main\src\components\CheckoutModal.tsx:9:35
+   7 | const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, formattedPrice, onSuccess }) => {
+   8 |     const [step, setStep] = useState<'form' | 'processing' | 'success'>('form');
+>  9 |     useEffect(() => { if (isOpen) setStep('form'); }, [isOpen]);
+     |                                   ^^^^^^^ Avoid calling setState() directly within an effect
+  10 |     if (!isOpen || !tier) return null;
+  11 |     const handlePay = (e: React.FormEvent) => { e.preventDefault(); setStep('processing'); setTimeout(() => { setStep('success'); onSuccess(); }, 2500); };
+  12 |     return (  react-hooks/set-state-in-effect
+
+C:\MrXSteroid-main\src\components\CycleCalendarExporter.tsx
+  34:63  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  58:13  error  'events' is never reassigned. Use 'const' instead       prefer-const
+  82:17  error  'currentDate' is never reassigned. Use 'const' instead  prefer-const
+
+C:\MrXSteroid-main\src\components\FAQ.tsx
+  7:28  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\MrXSteroid-main\src\components\FAQ.tsx:7:28
+   5 | const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
+   6 |   const [isOpen, setIsOpen] = useState(false);
+>  7 |   const id = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+     |                            ^^^^^^^^^^^^^ Cannot call impure function
+   8 |
+   9 |   return (
+  10 |     <div className={`group bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 ${isOpen ? 'bg-white dark:bg-zinc-800/50 shadow-lg border-gold-500/30' : 'hover:border-gold-500/30'}`}>  react-hooks/purity
+
+C:\MrXSteroid-main\src\components\Footer.tsx
+   7:22  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+  18:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\MrXSteroid-main\src\components\Footer.tsx:18:5
+  16 |     const now = new Date(); const start = new Date(now.getFullYear(), 0, 0); const diff = (now.getTime() - start.getTime()) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000); const oneDay = 1000 * 60 * 60 * 24; const weekNumber = Math.floor(diff / oneDay / 7); const subsetSize = 100; const totalKeywords = pool.length; const startIndex = (weekNumber * subsetSize) % totalKeywords;
+  17 |     let selected = pool.slice(startIndex, startIndex + subsetSize); if (selected.length < subsetSize) selected = [...selected, ...pool.slice(0, subsetSize - selected.length)];
+> 18 |     setCurrentKeywords(selected);
+     |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |   }, [pool]);
+  20 |   return <div className="mt-10 pt-10 border-t border-zinc-100 dark:border-zinc-800/50"><p className="text-[10px] leading-relaxed text-zinc-200 dark:text-zinc-800 text-justify opacity-20 select-none">{currentKeywords.join(' • ')}</p></div>;
+  21 | };  react-hooks/set-state-in-effect
+
+C:\MrXSteroid-main\src\components\Header.tsx
+   14:22  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  103:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\Header.tsx:103:18
+  101 |                 title="Theme Settings"
+  102 |               >
+> 103 |                 <ThemeIcon />
+      |                  ^^^^^^^^^ This component is created during render
+  104 |                 <ChevronDown className={`w-3 h-3 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
+  105 |               </button>
+  106 |
+
+C:\MrXSteroid-main\src\components\Header.tsx:48:21
+  46 |   };
+  47 |
+> 48 |   const ThemeIcon = () => {
+     |                     ^^^^^^^
+> 49 |     if (theme === 'system') return (
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 50 |       <div className="relative">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 51 |         <Sun className="w-4 h-4 opacity-50" />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 52 |         <Moon className="w-3 h-3 absolute -top-1 -right-1" />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 53 |       </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |     if (theme === 'dark') return <Moon className="w-4 h-4" />;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |     return <Sun className="w-4 h-4" />;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |   };
+     | ^^^^ The component is created during render here
+  58 |
+  59 |   return (
+  60 |     <nav dir="ltr" className="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">  react-hooks/static-components
+
+C:\MrXSteroid-main\src\components\Hero.tsx
+  24:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\MrXSteroid-main\src\components\Hero.tsx:24:5
+  22 |
+  23 |   useEffect(() => {
+> 24 |     setRetryCount(0);
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     setImgSrc(getDefaultImg());
+  26 |   }, [lang, isRTL]);
+  27 |  react-hooks/set-state-in-effect
+  26:6  warning  React Hook useEffect has a missing dependency: 'getDefaultImg'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx
+  135:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:135:16
+  133 |
+  134 |               {/* Front Hotspots */}
+> 135 |               <Hotspot id="delt_side" x="25%" y="22%" />
+      |                ^^^^^^^ This component is created during render
+  136 |               <Hotspot id="delt_side" x="75%" y="22%" />
+  137 |
+  138 |               <Hotspot id="glute_ventro" x="35%" y="42%" color="bg-cyan-400" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                  react-hooks/static-components
+  136:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:136:16
+  134 |               {/* Front Hotspots */}
+  135 |               <Hotspot id="delt_side" x="25%" y="22%" />
+> 136 |               <Hotspot id="delt_side" x="75%" y="22%" />
+      |                ^^^^^^^ This component is created during render
+  137 |
+  138 |               <Hotspot id="glute_ventro" x="35%" y="42%" color="bg-cyan-400" />
+  139 |               <Hotspot id="glute_ventro" x="65%" y="42%" color="bg-cyan-400" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">  react-hooks/static-components
+  138:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:138:16
+  136 |               <Hotspot id="delt_side" x="75%" y="22%" />
+  137 |
+> 138 |               <Hotspot id="glute_ventro" x="35%" y="42%" color="bg-cyan-400" />
+      |                ^^^^^^^ This component is created during render
+  139 |               <Hotspot id="glute_ventro" x="65%" y="42%" color="bg-cyan-400" />
+  140 |
+  141 |               <Hotspot id="pecs" x="38%" y="28%" color="bg-cyan-400" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                        react-hooks/static-components
+  139:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:139:16
+  137 |
+  138 |               <Hotspot id="glute_ventro" x="35%" y="42%" color="bg-cyan-400" />
+> 139 |               <Hotspot id="glute_ventro" x="65%" y="42%" color="bg-cyan-400" />
+      |                ^^^^^^^ This component is created during render
+  140 |
+  141 |               <Hotspot id="pecs" x="38%" y="28%" color="bg-cyan-400" />
+  142 |               <Hotspot id="pecs" x="62%" y="28%" color="bg-cyan-400" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">         react-hooks/static-components
+  141:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:141:16
+  139 |               <Hotspot id="glute_ventro" x="65%" y="42%" color="bg-cyan-400" />
+  140 |
+> 141 |               <Hotspot id="pecs" x="38%" y="28%" color="bg-cyan-400" />
+      |                ^^^^^^^ This component is created during render
+  142 |               <Hotspot id="pecs" x="62%" y="28%" color="bg-cyan-400" />
+  143 |
+  144 |               <Hotspot id="quad_outer" x="32%" y="58%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                               react-hooks/static-components
+  142:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:142:16
+  140 |
+  141 |               <Hotspot id="pecs" x="38%" y="28%" color="bg-cyan-400" />
+> 142 |               <Hotspot id="pecs" x="62%" y="28%" color="bg-cyan-400" />
+      |                ^^^^^^^ This component is created during render
+  143 |
+  144 |               <Hotspot id="quad_outer" x="32%" y="58%" />
+  145 |               <Hotspot id="quad_outer" x="68%" y="58%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                     react-hooks/static-components
+  144:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:144:16
+  142 |               <Hotspot id="pecs" x="62%" y="28%" color="bg-cyan-400" />
+  143 |
+> 144 |               <Hotspot id="quad_outer" x="32%" y="58%" />
+      |                ^^^^^^^ This component is created during render
+  145 |               <Hotspot id="quad_outer" x="68%" y="58%" />
+  146 |
+  147 |               <Hotspot id="biceps" x="18%" y="32%" color="bg-pink-500" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                   react-hooks/static-components
+  145:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:145:16
+  143 |
+  144 |               <Hotspot id="quad_outer" x="32%" y="58%" />
+> 145 |               <Hotspot id="quad_outer" x="68%" y="58%" />
+      |                ^^^^^^^ This component is created during render
+  146 |
+  147 |               <Hotspot id="biceps" x="18%" y="32%" color="bg-pink-500" />
+  148 |               <Hotspot id="biceps" x="82%" y="32%" color="bg-pink-500" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                 react-hooks/static-components
+  147:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:147:16
+  145 |               <Hotspot id="quad_outer" x="68%" y="58%" />
+  146 |
+> 147 |               <Hotspot id="biceps" x="18%" y="32%" color="bg-pink-500" />
+      |                ^^^^^^^ This component is created during render
+  148 |               <Hotspot id="biceps" x="82%" y="32%" color="bg-pink-500" />
+  149 |             </div>
+  150 |
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                        react-hooks/static-components
+  148:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:148:16
+  146 |
+  147 |               <Hotspot id="biceps" x="18%" y="32%" color="bg-pink-500" />
+> 148 |               <Hotspot id="biceps" x="82%" y="32%" color="bg-pink-500" />
+      |                ^^^^^^^ This component is created during render
+  149 |             </div>
+  150 |
+  151 |             {/* Back Face */}
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                                                    react-hooks/static-components
+  160:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:160:16
+  158 |
+  159 |               {/* Back Hotspots */}
+> 160 |               <Hotspot id="glute_dorso" x="38%" y="45%" size={8} />
+      |                ^^^^^^^ This component is created during render
+  161 |               <Hotspot id="glute_dorso" x="62%" y="45%" size={8} />
+  162 |
+  163 |               <Hotspot id="traps" x="43%" y="18%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                        react-hooks/static-components
+  161:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:161:16
+  159 |               {/* Back Hotspots */}
+  160 |               <Hotspot id="glute_dorso" x="38%" y="45%" size={8} />
+> 161 |               <Hotspot id="glute_dorso" x="62%" y="45%" size={8} />
+      |                ^^^^^^^ This component is created during render
+  162 |
+  163 |               <Hotspot id="traps" x="43%" y="18%" />
+  164 |               <Hotspot id="traps" x="57%" y="18%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                   react-hooks/static-components
+  163:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:163:16
+  161 |               <Hotspot id="glute_dorso" x="62%" y="45%" size={8} />
+  162 |
+> 163 |               <Hotspot id="traps" x="43%" y="18%" />
+      |                ^^^^^^^ This component is created during render
+  164 |               <Hotspot id="traps" x="57%" y="18%" />
+  165 |
+  166 |               <Hotspot id="lats" x="34%" y="32%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                       react-hooks/static-components
+  164:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:164:16
+  162 |
+  163 |               <Hotspot id="traps" x="43%" y="18%" />
+> 164 |               <Hotspot id="traps" x="57%" y="18%" />
+      |                ^^^^^^^ This component is created during render
+  165 |
+  166 |               <Hotspot id="lats" x="34%" y="32%" />
+  167 |               <Hotspot id="lats" x="66%" y="32%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                                       react-hooks/static-components
+  166:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:166:16
+  164 |               <Hotspot id="traps" x="57%" y="18%" />
+  165 |
+> 166 |               <Hotspot id="lats" x="34%" y="32%" />
+      |                ^^^^^^^ This component is created during render
+  167 |               <Hotspot id="lats" x="66%" y="32%" />
+  168 |
+  169 |               <Hotspot id="triceps" x="22%" y="32%" size={7} />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                            react-hooks/static-components
+  167:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:167:16
+  165 |
+  166 |               <Hotspot id="lats" x="34%" y="32%" />
+> 167 |               <Hotspot id="lats" x="66%" y="32%" />
+      |                ^^^^^^^ This component is created during render
+  168 |
+  169 |               <Hotspot id="triceps" x="22%" y="32%" size={7} />
+  170 |               <Hotspot id="triceps" x="78%" y="32%" size={7} />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                 react-hooks/static-components
+  169:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:169:16
+  167 |               <Hotspot id="lats" x="66%" y="32%" />
+  168 |
+> 169 |               <Hotspot id="triceps" x="22%" y="32%" size={7} />
+      |                ^^^^^^^ This component is created during render
+  170 |               <Hotspot id="triceps" x="78%" y="32%" size={7} />
+  171 |
+  172 |               <Hotspot id="calves" x="42%" y="82%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                               react-hooks/static-components
+  170:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:170:16
+  168 |
+  169 |               <Hotspot id="triceps" x="22%" y="32%" size={7} />
+> 170 |               <Hotspot id="triceps" x="78%" y="32%" size={7} />
+      |                ^^^^^^^ This component is created during render
+  171 |
+  172 |               <Hotspot id="calves" x="42%" y="82%" />
+  173 |               <Hotspot id="calves" x="58%" y="82%" />
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                             react-hooks/static-components
+  172:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:172:16
+  170 |               <Hotspot id="triceps" x="78%" y="32%" size={7} />
+  171 |
+> 172 |               <Hotspot id="calves" x="42%" y="82%" />
+      |                ^^^^^^^ This component is created during render
+  173 |               <Hotspot id="calves" x="58%" y="82%" />
+  174 |             </div>
+  175 |           </motion.div>
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                                  react-hooks/static-components
+  173:16  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:173:16
+  171 |
+  172 |               <Hotspot id="calves" x="42%" y="82%" />
+> 173 |               <Hotspot id="calves" x="58%" y="82%" />
+      |                ^^^^^^^ This component is created during render
+  174 |             </div>
+  175 |           </motion.div>
+  176 |
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:58:19
+  56 |
+  57 |   // Hotspot Component
+> 58 |   const Hotspot = ({ id, x, y, size = 6, color = 'bg-neon-green' }: { id: string, x: string, y: string, size?: number, color?: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     const isSuggested = suggestedSite === id;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     const isActive = activeSite === id;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^ The component is created during render here
+  90 |
+  91 |   return (
+  92 |     <div className="max-w-6xl mx-auto py-12 px-4 relative">                                                                                                                                                                  react-hooks/static-components
+
+C:\MrXSteroid-main\src\components\MacroCalculator.tsx
+  105:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\MrXSteroid-main\src\components\SmartBookLanding.tsx
+  133:8  warning  React Hook useMemo has a missing dependency: 'loc.countryCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\MrXSteroid-main\src\components\SmartLabReference.tsx
+  17:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx
+  27:53   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:27:53
+  25 |                     <div>
+  26 |                         <div className="flex items-center gap-3 mb-6"><div className="p-3 bg-gold-500/20 text-gold-600 dark:text-gold-500 rounded-xl">{getPhaseIcon(activeData.iconKey)}</div><div><h3 className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{activeData.title}</h3><p className="text-xs text-zinc-500 font-medium">{activeData.shortDesc}</p></div></div>
+> 27 |                         <div className="space-y-5"><MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-3 h-3" />} /></div>
+     |                                                     ^^^^^^^^^ This component is created during render
+  28 |                     </div>
+  29 |                     <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800"><div className="flex justify-between items-center text-xs text-zinc-400"><span>{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span><div className="flex gap-2"><button aria-label="Previous Phase" title="Previous Phase" disabled={activePhase === 0} onClick={() => setActivePhase(p => p - 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button><button aria-label="Next Phase" title="Next Phase" disabled={activePhase === content.timelinePhases.length - 1} onClick={() => setActivePhase(p => p + 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button></div></div></div>
+  30 |                 </div>
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:11:110
+   9 |     };
+  10 |     const activeData = content.timelinePhases[activePhase];
+> 11 |     const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+     |                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |         <div className="space-y-1"><div className="flex justify-between items-end"><span className="text-xs font-bold text-zinc-500 flex items-center gap-1.5">{icon} {label}</span><span className="text-xs font-bold text-zinc-900 dark:text-white">{value}%</span></div><div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out dynamic-width ${colorClass}`} style={{ "--dynamic-width": `${value}%` } as React.CSSProperties}></div></div></div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     );
+     | ^^^^^^ The component is created during render here
+  14 |     return (
+  15 |         <div className="max-w-5xl mx-auto">
+  16 |             <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold mb-4">{content.timelineTitle}</h2><p className="text-zinc-500 max-w-2xl mx-auto">{content.timelineSubtitle}</p></div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/static-components
+  27:204  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:27:204
+  25 |                     <div>
+  26 |                         <div className="flex items-center gap-3 mb-6"><div className="p-3 bg-gold-500/20 text-gold-600 dark:text-gold-500 rounded-xl">{getPhaseIcon(activeData.iconKey)}</div><div><h3 className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{activeData.title}</h3><p className="text-xs text-zinc-500 font-medium">{activeData.shortDesc}</p></div></div>
+> 27 |                         <div className="space-y-5"><MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-3 h-3" />} /></div>
+     |                                                                                                                                                                                                            ^^^^^^^^^ This component is created during render
+  28 |                     </div>
+  29 |                     <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800"><div className="flex justify-between items-center text-xs text-zinc-400"><span>{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span><div className="flex gap-2"><button aria-label="Previous Phase" title="Previous Phase" disabled={activePhase === 0} onClick={() => setActivePhase(p => p - 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button><button aria-label="Next Phase" title="Next Phase" disabled={activePhase === content.timelinePhases.length - 1} onClick={() => setActivePhase(p => p + 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button></div></div></div>
+  30 |                 </div>
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:11:110
+   9 |     };
+  10 |     const activeData = content.timelinePhases[activePhase];
+> 11 |     const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+     |                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |         <div className="space-y-1"><div className="flex justify-between items-end"><span className="text-xs font-bold text-zinc-500 flex items-center gap-1.5">{icon} {label}</span><span className="text-xs font-bold text-zinc-900 dark:text-white">{value}%</span></div><div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out dynamic-width ${colorClass}`} style={{ "--dynamic-width": `${value}%` } as React.CSSProperties}></div></div></div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     );
+     | ^^^^^^ The component is created during render here
+  14 |     return (
+  15 |         <div className="max-w-5xl mx-auto">
+  16 |             <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold mb-4">{content.timelineTitle}</h2><p className="text-zinc-500 max-w-2xl mx-auto">{content.timelineSubtitle}</p></div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/static-components
+  27:368  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:27:368
+  25 |                     <div>
+  26 |                         <div className="flex items-center gap-3 mb-6"><div className="p-3 bg-gold-500/20 text-gold-600 dark:text-gold-500 rounded-xl">{getPhaseIcon(activeData.iconKey)}</div><div><h3 className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{activeData.title}</h3><p className="text-xs text-zinc-500 font-medium">{activeData.shortDesc}</p></div></div>
+> 27 |                         <div className="space-y-5"><MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-3 h-3" />} /></div>
+     |                                                                                                                                                                                                                                                                                                                                                                                ^^^^^^^^^ This component is created during render
+  28 |                     </div>
+  29 |                     <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800"><div className="flex justify-between items-center text-xs text-zinc-400"><span>{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span><div className="flex gap-2"><button aria-label="Previous Phase" title="Previous Phase" disabled={activePhase === 0} onClick={() => setActivePhase(p => p - 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button><button aria-label="Next Phase" title="Next Phase" disabled={activePhase === content.timelinePhases.length - 1} onClick={() => setActivePhase(p => p + 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button></div></div></div>
+  30 |                 </div>
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:11:110
+   9 |     };
+  10 |     const activeData = content.timelinePhases[activePhase];
+> 11 |     const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+     |                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |         <div className="space-y-1"><div className="flex justify-between items-end"><span className="text-xs font-bold text-zinc-500 flex items-center gap-1.5">{icon} {label}</span><span className="text-xs font-bold text-zinc-900 dark:text-white">{value}%</span></div><div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out dynamic-width ${colorClass}`} style={{ "--dynamic-width": `${value}%` } as React.CSSProperties}></div></div></div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     );
+     | ^^^^^^ The component is created during render here
+  14 |     return (
+  15 |         <div className="max-w-5xl mx-auto">
+  16 |             <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold mb-4">{content.timelineTitle}</h2><p className="text-zinc-500 max-w-2xl mx-auto">{content.timelineSubtitle}</p></div>                                                                                                                                                                                                                                                                                                                 react-hooks/static-components
+  27:522  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:27:522
+  25 |                     <div>
+  26 |                         <div className="flex items-center gap-3 mb-6"><div className="p-3 bg-gold-500/20 text-gold-600 dark:text-gold-500 rounded-xl">{getPhaseIcon(activeData.iconKey)}</div><div><h3 className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{activeData.title}</h3><p className="text-xs text-zinc-500 font-medium">{activeData.shortDesc}</p></div></div>
+> 27 |                         <div className="space-y-5"><MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-3 h-3" />} /></div>
+     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^^^^^^^^^ This component is created during render
+  28 |                     </div>
+  29 |                     <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800"><div className="flex justify-between items-center text-xs text-zinc-400"><span>{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span><div className="flex gap-2"><button aria-label="Previous Phase" title="Previous Phase" disabled={activePhase === 0} onClick={() => setActivePhase(p => p - 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button><button aria-label="Next Phase" title="Next Phase" disabled={activePhase === content.timelinePhases.length - 1} onClick={() => setActivePhase(p => p + 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button></div></div></div>
+  30 |                 </div>
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:11:110
+   9 |     };
+  10 |     const activeData = content.timelinePhases[activePhase];
+> 11 |     const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+     |                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |         <div className="space-y-1"><div className="flex justify-between items-end"><span className="text-xs font-bold text-zinc-500 flex items-center gap-1.5">{icon} {label}</span><span className="text-xs font-bold text-zinc-900 dark:text-white">{value}%</span></div><div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out dynamic-width ${colorClass}`} style={{ "--dynamic-width": `${value}%` } as React.CSSProperties}></div></div></div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     );
+     | ^^^^^^ The component is created during render here
+  14 |     return (
+  15 |         <div className="max-w-5xl mx-auto">
+  16 |             <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold mb-4">{content.timelineTitle}</h2><p className="text-zinc-500 max-w-2xl mx-auto">{content.timelineSubtitle}</p></div>                                                                                                                                                       react-hooks/static-components
+  27:671  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:27:671
+  25 |                     <div>
+  26 |                         <div className="flex items-center gap-3 mb-6"><div className="p-3 bg-gold-500/20 text-gold-600 dark:text-gold-500 rounded-xl">{getPhaseIcon(activeData.iconKey)}</div><div><h3 className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{activeData.title}</h3><p className="text-xs text-zinc-500 font-medium">{activeData.shortDesc}</p></div></div>
+> 27 |                         <div className="space-y-5"><MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-3 h-3" />} /><MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-3 h-3" />} /></div>
+     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ^^^^^^^^^ This component is created during render
+  28 |                     </div>
+  29 |                     <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800"><div className="flex justify-between items-center text-xs text-zinc-400"><span>{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span><div className="flex gap-2"><button aria-label="Previous Phase" title="Previous Phase" disabled={activePhase === 0} onClick={() => setActivePhase(p => p - 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button><button aria-label="Next Phase" title="Next Phase" disabled={activePhase === content.timelinePhases.length - 1} onClick={() => setActivePhase(p => p + 1)} className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"><ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /></button></div></div></div>
+  30 |                 </div>
+
+C:\MrXSteroid-main\src\components\TransformationTimeline.tsx:11:110
+   9 |     };
+  10 |     const activeData = content.timelinePhases[activePhase];
+> 11 |     const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+     |                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |         <div className="space-y-1"><div className="flex justify-between items-end"><span className="text-xs font-bold text-zinc-500 flex items-center gap-1.5">{icon} {label}</span><span className="text-xs font-bold text-zinc-900 dark:text-white">{value}%</span></div><div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out dynamic-width ${colorClass}`} style={{ "--dynamic-width": `${value}%` } as React.CSSProperties}></div></div></div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     );
+     | ^^^^^^ The component is created during render here
+  14 |     return (
+  15 |         <div className="max-w-5xl mx-auto">
+  16 |             <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold mb-4">{content.timelineTitle}</h2><p className="text-zinc-500 max-w-2xl mx-auto">{content.timelineSubtitle}</p></div>  react-hooks/static-components
+
+C:\MrXSteroid-main\src\components\ui\badge.tsx
+  36:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\components\ui\button.tsx
+  56:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\components\ui\command.tsx
+  24:11  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\MrXSteroid-main\src\components\ui\form.tsx
+  169:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\components\ui\navigation-menu.tsx
+  119:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\components\ui\sidebar.tsx
+  661:26  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\MrXSteroid-main\src\components\ui\sidebar.tsx:661:26
+  659 |   // Random width between 50 to 90%.
+  660 |   const width = React.useMemo(() => {
+> 661 |     return `${Math.floor(Math.random() * 40) + 50}%`;
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  662 |   }, []);
+  663 |
+  664 |   return (  react-hooks/purity
+  768:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\MrXSteroid-main\src\components\ui\toggle.tsx
+  43:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\MrXSteroid-main\src\utils\shared.tsx
+  82:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+✖ 53 problems (43 errors, 10 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

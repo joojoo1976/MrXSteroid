@@ -1,22 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { ContentStrings } from '../types';
+import { ContentStrings, Page } from '../types';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 
 interface FooterProps {
   content: ContentStrings;
-  navigateTo: (page: any) => void;
+  navigateTo: (page: Page) => void;
   openLegal: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
   pool: string[];
   lang: string;
 }
 
 const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
-  const [currentKeywords, setCurrentKeywords] = useState<string[]>([]);
-  useEffect(() => {
-    const now = new Date(); const start = new Date(now.getFullYear(), 0, 0); const diff = (now.getTime() - start.getTime()) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000); const oneDay = 1000 * 60 * 60 * 24; const weekNumber = Math.floor(diff / oneDay / 7); const subsetSize = 100; const totalKeywords = pool.length; const startIndex = (weekNumber * subsetSize) % totalKeywords;
-    let selected = pool.slice(startIndex, startIndex + subsetSize); if (selected.length < subsetSize) selected = [...selected, ...pool.slice(0, subsetSize - selected.length)];
-    setCurrentKeywords(selected);
-  }, [pool]);
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = (now.getTime() - start.getTime()) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+  const oneDay = 1000 * 60 * 60 * 24;
+  const weekNumber = Math.floor(diff / oneDay / 7);
+  const subsetSize = 100;
+  const totalKeywords = pool.length;
+  const startIndex = (weekNumber * subsetSize) % totalKeywords;
+  let currentKeywords = pool.slice(startIndex, startIndex + subsetSize);
+  if (currentKeywords.length < subsetSize) currentKeywords = [...currentKeywords, ...pool.slice(0, subsetSize - currentKeywords.length)];
+
   return <div className="mt-10 pt-10 border-t border-zinc-100 dark:border-zinc-800/50"><p className="text-[10px] leading-relaxed text-zinc-200 dark:text-zinc-800 text-justify opacity-20 select-none">{currentKeywords.join(' • ')}</p></div>;
 };
 
@@ -74,9 +78,9 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
           <div>
             <h4 className="font-bold mb-6 text-white">{content.quickLinks}</h4>
             <ul className="space-y-4 text-sm text-zinc-500">
-              <li><button onClick={() => navigateTo('home')} className="hover:text-gold-500 transition-colors">{content.homeLink}</button></li>
-              <li><button onClick={() => { navigateTo('home'); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="hover:text-gold-500 transition-colors">{content.pricingTitle}</button></li>
-              <li><button onClick={() => { navigateTo('home'); setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="hover:text-gold-500 transition-colors">{content.contact}</button></li>
+              <li><button onClick={() => navigateTo(Page.HOME)} className="hover:text-gold-500 transition-colors">{content.homeLink}</button></li>
+              <li><button onClick={() => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="hover:text-gold-500 transition-colors">{content.pricingTitle}</button></li>
+              <li><button onClick={() => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="hover:text-gold-500 transition-colors">{content.contact}</button></li>
             </ul>
           </div>
           <div>

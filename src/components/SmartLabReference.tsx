@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
-import { ContentStrings } from '../types';
+import { ContentStrings, LabTest } from '../types';
 
 interface SmartLabReferenceProps {
   content: ContentStrings;
+  isRTL?: boolean;
 }
 
-const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content }) => {
+const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, isRTL }) => {
   const [search, setSearch] = useState('');
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [value, setValue] = useState('');
 
   const filtered = content.labReference.tests.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase()));
 
-  const getAnalysis = (test: any) => {
+  const getAnalysis = (test: LabTest) => {
     const val = parseFloat(value);
     if (isNaN(val)) return null;
     if (val < test.min) return { text: content.labReference.status.low, color: 'text-blue-500', bg: 'bg-blue-500/10' };
@@ -24,7 +25,16 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content }) => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-10"><h1 className="text-3xl font-bold mb-2">{content.labReference.title}</h1><p className="text-zinc-500">{content.labReference.subtitle}</p></div>
-      <div className="relative mb-8"><Search className="absolute top-1/2 left-4 -translate-y-1/2 w-5 h-5 text-zinc-400" /><input type="text" value={search} onChange={e => { setSearch(e.target.value); setAnalyzingId(null); }} placeholder={content.labReference.searchPlaceholder} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-4 shadow-sm focus:border-gold-500 outline-none" /></div>
+      <div className="relative mb-8">
+        <Search className={`absolute top-1/2 ${isRTL ? 'right-4' : 'left-4'} -translate-y-1/2 w-5 h-5 text-zinc-400`} />
+        <input
+          type="text"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setAnalyzingId(null); }}
+          placeholder={content.labReference.searchPlaceholder}
+          className={`w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} shadow-sm focus:border-gold-500 outline-none`}
+        />
+      </div>
       <div className="grid gap-4">
         {filtered.map(test => {
           const analysis = analyzingId === test.id ? getAnalysis(test) : null;

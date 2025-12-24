@@ -130,7 +130,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         const keywords = KEYWORD_DB[lang]?.[week] || KEYWORD_DB['en'][1];
 
         return { weekNumber: week, currentKeywords: keywords, currentLang: lang };
-    }, [loc.isRTL, externalLang]);
+    }, [loc.isRTL, loc.countryCode, externalLang]);
 
     // Price Calculation & Formatting
     const formattedPrice = new Intl.NumberFormat(loc.locale, {

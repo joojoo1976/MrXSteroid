@@ -1,6 +1,7 @@
 import React from 'react';
 import { ContentStrings } from '../types';
-import { RevealOnScroll, getIcon } from '../utils/shared';
+import { RevealOnScroll } from '../utils/shared';
+import { IconRenderer } from '../utils/icon-utils';
 
 interface FeaturesProps {
   content: ContentStrings;
@@ -19,7 +20,7 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
             <RevealOnScroll key={idx} delay={idx * 100}>
               <div className="p-8 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-gold-500/30 transition-all hover:shadow-2xl hover:-translate-y-1 h-full group">
                 <div className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                  {getIcon(feature.iconKey)}
+                  <IconRenderer iconKey={feature.iconKey} />
                 </div>
                 <h3 className="text-xl font-bold mb-4 group-hover:text-gold-600 dark:group-hover:text-gold-500 transition-colors">
                   {feature.title}

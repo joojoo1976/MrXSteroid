@@ -120,7 +120,9 @@ const injectionSitesAr: InjectionSite[] = [
   { id: 'triceps', name: 'التراي (الرأس الطويل)', category: 'Upper Body', view: 'back', needle: '27G - 29G (0.5")', volume: '1.0 ml', recoveryDays: 4, riskLevel: 'Medium', description: 'ممتازة للكميات الصغيرة (Insulin Pin). تجنب الرأس الجانبي لتفادي الأعصاب.', pathD: '' },
   { id: 'biceps', name: 'البايسبس', category: 'Upper Body', view: 'front', needle: '27G - 30G (0.5")', volume: '1.0 ml', recoveryDays: 5, riskLevel: 'High', warning: 'خطر! مليئة بالأوردة والأعصاب.', description: 'للمحترفين جداً. تستخدم للحقن الموضعي (Site Enhancement).', pathD: '' },
   { id: 'traps', name: 'الترابيس', category: 'Upper Body', view: 'back', needle: '25G (1")', volume: '1.5 - 2.0 ml', recoveryDays: 5, riskLevel: 'Medium', description: 'سهلة جداً وحقنها غير مؤلم غالباً. تعطي مظهراً ممتلئاً للمنطقة.', pathD: '' },
-  { id: 'calves', name: 'السمانة', category: 'Lower Body', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'مؤلمة جداً (High PIP).', description: 'قد تعيق المشي لعدة أيام. تستخدم فقط عند استنفاد الأماكن الأخرى.', pathD: '' }
+  { id: 'calves', name: 'السمانة', category: 'Lower Body', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'مؤلمة جداً (High PIP).', description: 'قد تعيق المشي لعدة أيام. تستخدم فقط عند استنفاد الأماكن الأخرى.', pathD: '' },
+  { id: 'forearms', name: 'الساعد', category: 'Upper Body', view: 'back', needle: '27G - 30G (0.5")', volume: '0.5 - 1.0 ml', recoveryDays: 4, riskLevel: 'High', warning: 'خطر عالي! أعصاب وأوردة كثيفة.', description: 'للمحترفين فقط. تستخدم غالباً للحقن الموضعي الصغير جداً.', pathD: '' },
+  { id: 'pecs_lower', name: 'الصدر السفلي', category: 'Upper Body', view: 'front', needle: '25G - 27G (1")', volume: '1.0 - 1.5 ml', recoveryDays: 5, riskLevel: 'Medium', warning: 'تجنب منطقة الحلمة تماماً.', description: 'تساعد في توزيع الحقن في عضلة الصدر الكبيرة.', pathD: '' }
 ];
 
 const injectionSitesEn: InjectionSite[] = [
@@ -133,7 +135,9 @@ const injectionSitesEn: InjectionSite[] = [
   { id: 'triceps', name: 'Triceps (Long Head)', category: 'Upper Body', view: 'back', needle: '27G - 29G (0.5")', volume: '1.0 ml', recoveryDays: 4, riskLevel: 'Medium', description: 'Excellent for small volumes using insulin pins. Avoid lateral head.', pathD: '' },
   { id: 'biceps', name: 'Biceps', category: 'Upper Body', view: 'front', needle: '27G - 30G (0.5")', volume: '1.0 ml', recoveryDays: 5, riskLevel: 'High', warning: 'Danger zone! Many nerves and veins.', description: 'Expert only. Often used for site enhancement protocols.', pathD: '' },
   { id: 'traps', name: 'Traps', category: 'Upper Body', view: 'back', needle: '25G (1")', volume: '1.5 - 2.0 ml', recoveryDays: 5, riskLevel: 'Medium', description: 'Very easy access and usually painless. Visual "pop" effect.', pathD: '' },
-  { id: 'calves', name: 'Calves', category: 'Lower Body', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'Extreme PIP warning.', description: 'Can make walking difficult. Last resort for rotation.', pathD: '' }
+  { id: 'calves', name: 'Calves', category: 'Lower Body', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'Extreme PIP warning.', description: 'Can make walking difficult. Last resort for rotation.', pathD: '' },
+  { id: 'forearms', name: 'Forearms', category: 'Upper Body', view: 'back', needle: '27G - 30G (0.5")', volume: '0.5 - 1.0 ml', recoveryDays: 4, riskLevel: 'High', warning: 'High risk! Dense nerves and veins.', description: 'Advanced only. Primarily used for small site-specific micro-injections.', pathD: '' },
+  { id: 'pecs_lower', name: 'Lower Pecs', category: 'Upper Body', view: 'front', needle: '25G - 27G (1")', volume: '1.0 - 1.5 ml', recoveryDays: 5, riskLevel: 'Medium', warning: 'Avoid nipple area completely.', description: 'Expands the injection surface area of the chest.', pathD: '' }
 ];
 
 const labTestsAr: LabTest[] = [
@@ -166,7 +170,9 @@ const injectionSitesHe: InjectionSite[] = [
   { id: 'triceps', name: 'תלת-ראשי', category: 'פלג גוף עליון', view: 'back', needle: '27G - 29G (0.5")', volume: '1.0 ml', recoveryDays: 4, riskLevel: 'Medium', description: 'מצוין לנפחים קטנים עם מחטי אינסולין. הימנע מהראש הצידי.', pathD: '' },
   { id: 'biceps', name: 'דו-ראשי', category: 'פלג גוף עליון', view: 'front', needle: '27G - 30G (0.5")', volume: '1.0 ml', recoveryDays: 5, riskLevel: 'High', warning: 'אזור סכנה! עצבים וכלי דם רבים.', description: 'למומחים בלבד. משמש לעיתים לשיפור מראה האתר.', pathD: '' },
   { id: 'traps', name: 'טרפזים', category: 'פלג גוף עליון', view: 'back', needle: '25G (1")', volume: '1.5 - 2.0 ml', recoveryDays: 5, riskLevel: 'Medium', description: 'גישה קלה מאוד ובדרך כלל ללא כאב. נותן מראה בולט.', pathD: '' },
-  { id: 'calves', name: 'תאומים', category: 'פלג גוף תחתון', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'אזהרת PIP קיצונית.', description: 'עלול להקשות על הליכה. מוצא אחרון לרוטציה.', pathD: '' }
+  { id: 'calves', name: 'תאומים', category: 'פלג גוף תחתון', view: 'back', needle: '27G (1")', volume: '1.0 ml', recoveryDays: 8, riskLevel: 'High', warning: 'אזהרת PIP קיצונית.', description: 'עלול להקשות על הליכה. מוצא אחרון לרוטציה.', pathD: '' },
+  { id: 'forearms', name: 'אמות', category: 'פלג גוף עליון', view: 'back', needle: '27G - 30G (0.5")', volume: '0.5 - 1.0 ml', recoveryDays: 4, riskLevel: 'High', warning: 'סיכון גבוה! עצבים וכלי דם צפופים.', description: 'למשתמשים מתקדמים בלבד. משמש בעיקר להזרקות מקומיות קטנות.', pathD: '' },
+  { id: 'pecs_lower', name: 'חזה תחתון', category: 'פלג גוף עליון', view: 'front', needle: '25G - 27G (1")', volume: '1.0 - 1.5 ml', recoveryDays: 5, riskLevel: 'Medium', warning: 'הימנע לחלוטין מאזור הפטמה.', description: 'מרחיב את שטח הפנים להזרקה בשרירי החזה.', pathD: '' }
 ];
 
 const labTestsHe: LabTest[] = [
@@ -430,7 +436,12 @@ export const arContent: ContentStrings = {
     differenceLabel: "الفرق المتوقع",
     disclaimer: "هذه الحسابات تعتمد على معادلات رياضية وإحصائية ولا تعتبر حتمية. الجينات الفردية تلعب دوراً كبيراً.",
     unlockMsg: "للوصول لهذا المستوى، تحتاج للمعرفة الصحيحة.",
-    errorMsg: "الرجاء التأكد من إدخال جميع البيانات بشكل صحيح."
+    errorMsg: "الرجاء التأكد من إدخال جميع البيانات بشكل صحيح.",
+    bodyTypes: {
+      ecto: "نحيف (Ectomorph)",
+      meso: "عضلي (Mesomorph)",
+      endo: "ضخم (Endomorph)"
+    }
   },
   halfLifeVisualizer: {
     title: "محاكي نصف العمر (Half-Life)",
@@ -658,8 +669,12 @@ export const arContent: ContentStrings = {
       exportBtn: "تصدير للتقويم (.ics)",
       placeholder: "أدخل بريدك الإلكتروني أو رقم الطلب",
       successMsg: "تم التحقق! الميزة مفتوحة الآن.",
-      errorMsg: "لم يتم العثور على طلب بهذا البيانات."
-    }
+      errorMsg: "لم يتم العثور على طلب بهذا البيانات.",
+      demoHint: "جرّب \"demo\" للفتح الفوري"
+    },
+    pctEventSummary: "🔰 ابدأ بروتوكول التنظيف (PCT) 🔰",
+    pctEventDescription: "انتهت فترة بقاء الهرمون في الجسم. ابدأ أدوية التنظيف (SERMs) الآن.",
+    stealthPctAlias: "بداية مرحلة الاستشفاء"
   },
   units: {
     mg: "مجم",
@@ -928,7 +943,12 @@ export const enContent: ContentStrings = {
     differenceLabel: "Expected Difference",
     disclaimer: "These calculations are estimates based on statistical models. Individual genetics play a huge role.",
     unlockMsg: "To reach this level, you need the right knowledge.",
-    errorMsg: "Please ensure all fields are filled correctly."
+    errorMsg: "Please ensure all fields are filled correctly.",
+    bodyTypes: {
+      ecto: "Ectomorph",
+      meso: "Mesomorph",
+      endo: "Endomorph"
+    }
   },
   halfLifeVisualizer: {
     title: "Half-Life Plotter",
@@ -1156,8 +1176,12 @@ export const enContent: ContentStrings = {
       exportBtn: "Export Smart Calendar (.ics)",
       placeholder: "Enter Email or Order ID",
       successMsg: "Verified! Feature Unlocked.",
-      errorMsg: "Order not found."
-    }
+      errorMsg: "Order not found.",
+      demoHint: "Try \"demo\" to unlock instantly"
+    },
+    pctEventSummary: "🔰 START PCT PROTOCOL 🔰",
+    pctEventDescription: "Clearance time passed. Begin SERMs protocol now.",
+    stealthPctAlias: "Recovery Phase Start"
   },
   units: {
     mg: "mg",
@@ -1450,7 +1474,12 @@ export const heContent: ContentStrings = {
     differenceLabel: "ההפרש הצפוי",
     disclaimer: "התוצאות מבוססות על נוסחאות מדעיות והערכות סטטיסטיות.",
     unlockMsg: "לפתח את הפוטנציאל המלא? קנה את הספר.",
-    errorMsg: "אנא מלא את כל השדות."
+    errorMsg: "אנא מלא את כל השדות.",
+    bodyTypes: {
+      ecto: "אקטומורף (Ectomorph)",
+      meso: "מזומורף (Mesomorph)",
+      endo: "אנדומורף (Endomorph)"
+    }
   },
   halfLifeVisualizer: {
     title: "סימולטור זמן מחצית חיים",
@@ -1547,7 +1576,10 @@ export const heContent: ContentStrings = {
     rotationSites: ["ישבן ימין", "ישבן שמאל", "כתף ימין", "כתף שמאל", "ירך ימין", "ירך שמאל"],
     presets: { beginnerBulk: "מסה למתחילים", cutting: "חיטוב מתקדם", trt: "פרוטוקול TRT" },
     form: { startDateLabel: "תאריך התחלה", compoundLabel: "חומר", dosageLabel: "מינון (מ״ג)", frequencyLabel: "תדירות", weeksLabel: "משך (שבועות)", halfLifeLabel: "זמן מחצית חיים (ימים)", addCompoundBtn: "הוסף חומר", removeBtn: "הסר", frequencies: { daily: "יומי (ED)", eod: "יום כן יום לא (EOD)", twiceWeekly: "פעמיים בשבוע", weekly: "פעם בשבוע" } },
-    premiumLock: { lockedTitle: "תכונת פרימיום נעולה", lockedDesc: "ייצוא ליומן הטלפון עם רוטציה חכמה ומצב פרטיות זמין רק ללקוחות מאומתים.", verifyBtn: "אמת רכישה לפתיחה", exportBtn: "ייצא יומן חכם (.ics)", placeholder: "הזן אימייל או מספר הזמנה", successMsg: "אומת! התכונה פתוחה.", errorMsg: "הזמנה לא נמצאה." }
+    premiumLock: { lockedTitle: "תכונת פרימיום נעולה", lockedDesc: "ייצוא ליומן הטלפון עם רוטציה חכמה ומצב פרטיות זמין רק ללקוחות מאומתים.", verifyBtn: "אמת רכישה לפתיحة", exportBtn: "ייצא יומן חכם (.ics)", placeholder: "הזן אימייל أو מספר הזמנה", successMsg: "אומת! התכונה פתוחה.", errorMsg: "הזמנה לא נמצאה.", demoHint: "נסה \"demo\" לפתיחה מיידית" },
+    pctEventSummary: "🔰 התחל פרוטוקול ניקוי (PCT) 🔰",
+    pctEventDescription: "זמן פינוי ההורמון עבר. התחל טיפול תרופתי (SERMs) עכשיו.",
+    stealthPctAlias: "התחלת שלב התאוששות"
   },
   timeUnits: {
     days: "ימים",

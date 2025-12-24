@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight } from 'lucide-react';
 import { ContentStrings } from '../types';
 
@@ -16,7 +17,14 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                     {!finished ? (
                         <>
                             <h2 className="text-3xl font-black mb-4">{content.quiz.title}</h2><p className="text-zinc-400 mb-8">{content.quiz.subtitle}</p>
-                            <div className="mb-8"><div className="flex justify-between text-xs text-zinc-500 mb-2"><span>{content.quiz.questionLabel} {currentQ + 1}</span><span>{content.quiz.questions.length} {content.quiz.totalLabel}</span></div><div className="h-2 bg-zinc-700 rounded-full overflow-hidden"><div className="h-full bg-gold-500 transition-all duration-300 dynamic-width" style={{ "--dynamic-width": `${((currentQ + 1) / content.quiz.questions.length) * 100}%` } as React.CSSProperties}></div></div></div>
+                            <div className="mb-8"><div className="flex justify-between text-xs text-zinc-500 mb-2"><span>{content.quiz.questionLabel} {currentQ + 1}</span><span>{content.quiz.questions.length} {content.quiz.totalLabel}</span></div><div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="h-full bg-gold-500"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${((currentQ + 1) / content.quiz.questions.length) * 100}%` }}
+                                    transition={{ duration: 0.5, ease: "easeOut" }}
+                                />
+                            </div></div>
                             <h3 className="text-xl font-bold mb-6">{content.quiz.questions[currentQ].question}</h3>
                             <div className="space-y-4">{content.quiz.questions[currentQ].options.map((opt, idx) => (<button key={idx} onClick={() => handleAnswer(opt.score)} className="w-full p-4 rounded-xl bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 hover:border-gold-500 text-left transition-all flex justify-between items-center group"><span>{opt.text}</span><ChevronRight className="w-5 h-5 text-zinc-500 group-hover:text-gold-500" /></button>))}</div>
                         </>

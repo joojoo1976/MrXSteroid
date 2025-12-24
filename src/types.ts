@@ -229,7 +229,11 @@ export interface CycleArchitectContent {
     placeholder: string;
     successMsg: string;
     errorMsg: string;
+    demoHint: string;
   };
+  pctEventSummary: string;
+  pctEventDescription: string;
+  stealthPctAlias: string;
 }
 
 export interface ContentStrings {
@@ -516,6 +520,11 @@ export interface ContentStrings {
     disclaimer: string;
     unlockMsg: string;
     errorMsg: string;
+    bodyTypes: {
+      ecto: string;
+      meso: string;
+      endo: string;
+    };
   };
 
   // Half-Life Visualizer

@@ -4,40 +4,40 @@ import { Search, MessageSquare, ChevronDown } from 'lucide-react';
 
 const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const id = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  const id = React.useId();
 
   return (
     <div className={`group bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 ${isOpen ? 'bg-white dark:bg-zinc-800/50 shadow-lg border-gold-500/30' : 'hover:border-gold-500/30'}`}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        aria-expanded={isOpen}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen ? "true" : "false"}
         aria-controls={`faq-${id}`}
         className="w-full flex justify-between items-start p-6 cursor-pointer list-none font-bold text-lg select-none text-left"
       >
         <span className="flex items-start gap-4">
           <div className={`mt-1 p-2 rounded-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}>
-             <MessageSquare className="w-5 h-5" />
+            <MessageSquare className="w-5 h-5" />
           </div>
           <div className="flex-1 pt-1">
-             <span className={`block transition-colors ${isOpen ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-700 dark:text-zinc-200'}`}>
-                {item.question}
-             </span>
-             <span className="text-[10px] text-zinc-400 font-normal uppercase tracking-wider mt-1 block">{item.category}</span>
+            <span className={`block transition-colors ${isOpen ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-700 dark:text-zinc-200'}`}>
+              {item.question}
+            </span>
+            <span className="text-[10px] text-zinc-400 font-normal uppercase tracking-wider mt-1 block">{item.category}</span>
           </div>
         </span>
         <div className={`mt-1 p-1 rounded-full transition-all duration-300 ${isOpen ? 'bg-gold-500/20 rotate-180' : ''}`}>
-           <ChevronDown className={`w-5 h-5 transition-colors ${isOpen ? 'text-gold-500' : 'text-zinc-400'}`} />
+          <ChevronDown className={`w-5 h-5 transition-colors ${isOpen ? 'text-gold-500' : 'text-zinc-400'}`} />
         </div>
       </button>
-      <div 
+      <div
         id={`faq-${id}`}
         role="region"
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
       >
         <div className="overflow-hidden">
-           <div className="px-6 pb-6 pl-[4.5rem] text-zinc-600 dark:text-zinc-300 leading-relaxed text-base">
-             {item.answer}
-           </div>
+          <div className="px-6 pb-6 pl-[4.5rem] text-zinc-600 dark:text-zinc-300 leading-relaxed text-base">
+            {item.answer}
+          </div>
         </div>
       </div>
     </div>

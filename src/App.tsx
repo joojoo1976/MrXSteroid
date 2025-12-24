@@ -92,7 +92,7 @@ export default function App() {
         audioRef.current.play().catch(e => console.debug("Audio play failed on source change:", e));
       }
     }
-  }, [lang]);
+  }, [lang, isPlaying]);
 
   useEffect(() => {
     const initCurrency = async () => {
@@ -144,7 +144,7 @@ export default function App() {
   };
 
   const toggleLang = () => {
-    let newLang = lang === Language.EN ? Language.AR : lang === Language.AR ? Language.HE : Language.EN;
+    const newLang = lang === Language.EN ? Language.AR : lang === Language.AR ? Language.HE : Language.EN;
     setLang(newLang);
     localStorage.setItem('lang', newLang);
   };
@@ -199,7 +199,7 @@ export default function App() {
           {currentPage === Page.MACRO && <MacroCalculator content={content} lang={lang} unitSystem={unitSystem} />}
           {currentPage === Page.INJECTION && <InjectionMap content={content} lang={lang} />}
           {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} />}
-          {currentPage === Page.LAB && <SmartLabReference content={content} />}
+          {currentPage === Page.LAB && <SmartLabReference content={content} isRTL={isRTL} />}
           {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} unitSystem={unitSystem} />}
           {currentPage === Page.CYCLE_ARCHITECT && <CycleCalendarExporter content={content} isRTL={isRTL} />}
           {/* Previewing the new Senior Developer Component */}
@@ -218,7 +218,7 @@ export default function App() {
       <Toaster position="top-center" richColors />
       <BlockingDisclaimerModal content={content} />
       <LegalModal isOpen={legalState.isOpen} onClose={() => setLegalState({ ...legalState, isOpen: false })} title={legalState.title} content={legalState.content} />
-      <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} tier={selectedTier} content={content} formattedPrice={selectedTier ? formatPrice(selectedTier.price) : ''} onSuccess={() => setHasPurchased(true)} />
+      <CheckoutModal key={isCheckoutOpen ? 'open' : 'closed'} isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} tier={selectedTier} content={content} formattedPrice={selectedTier ? formatPrice(selectedTier.price) : ''} onSuccess={() => setHasPurchased(true)} />
 
       <Header lang={lang} toggleLang={toggleLang} theme={theme} setTheme={setTheme} content={content} currentPage={currentPage} navigateTo={navigateTo} />
 

@@ -20,10 +20,7 @@ const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, lang: strin
   const [retryCount, setRetryCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  useEffect(() => {
-    setRetryCount(0);
-    setImgSrc(getDefaultImg());
-  }, [lang, isRTL]);
+  // State is reset via key on BookCover in Hero component when lang or isRTL changes
 
   const handleError = () => {
     const base = lang === 'he' ? "/cover-he" : isRTL ? "/cover-ar" : "/cover-en";
@@ -95,7 +92,7 @@ const Hero: React.FC<HeroProps> = ({ content, isRTL, lang, openCheckout, playerS
           </a>
           <button onClick={playerState.togglePlay} className={`px-8 py-4 border font-bold text-lg rounded-full transition-all flex items-center gap-2 group ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-lg shadow-gold-500/30' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500 hover:text-gold-600 dark:hover:text-gold-500'}`}>{playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Volume2 className="w-5 h-5 group-hover:scale-110 transition-transform" />}{content.audioPreviewBtn}</button>
         </div>
-        <BookCover content={content} isRTL={isRTL} lang={lang} onClick={() => openCheckout(content.pricingTiers[0])} />
+        <BookCover key={`${lang}-${isRTL}`} content={content} isRTL={isRTL} lang={lang} onClick={() => openCheckout(content.pricingTiers[0])} />
         <div className="max-w-md mx-auto"><AudioPlayer content={content} playerState={playerState} /></div>
       </div>
     </section>

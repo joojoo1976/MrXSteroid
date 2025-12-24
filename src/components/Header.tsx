@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon } from 'lucide-react';
-import { Language, ContentStrings } from '../types';
-import { USFlag, EGFlag, ILFlag } from '../utils/shared';
+import { Language, ContentStrings, Page } from '../types';
+import { USFlag, EGFlag, ILFlag } from '../utils/icon-utils';
 
 interface HeaderProps {
   lang: Language;
@@ -10,9 +10,20 @@ interface HeaderProps {
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   content: ContentStrings;
-  currentPage: string;
-  navigateTo: (page: any) => void;
+  currentPage: Page;
+  navigateTo: (page: Page) => void;
 }
+
+const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
+  if (theme === 'system') return (
+    <div className="relative">
+      <Sun className="w-4 h-4 opacity-50" />
+      <Moon className="w-3 h-3 absolute -top-1 -right-1" />
+    </div>
+  );
+  if (theme === 'dark') return <Moon className="w-4 h-4" />;
+  return <Sun className="w-4 h-4" />;
+};
 
 const Header: React.FC<HeaderProps> = ({
   lang, toggleLang, theme, setTheme, content, currentPage, navigateTo
@@ -21,10 +32,20 @@ const Header: React.FC<HeaderProps> = ({
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   const handleNav = (target: string) => {
-    if (['macro', 'injection', 'halflife', 'lab', 'genetic', 'cycle'].includes(target)) {
-      navigateTo(target);
+    // Basic mapping for section anchors vs internal pages
+    const pageMap: Record<string, Page> = {
+      'macro': Page.MACRO,
+      'injection': Page.INJECTION,
+      'halflife': Page.HALFLIFE,
+      'lab': Page.LAB,
+      'genetic': Page.GENETIC,
+      'cycle': Page.CYCLE_ARCHITECT
+    };
+
+    if (pageMap[target]) {
+      navigateTo(pageMap[target]);
     } else {
-      navigateTo('home');
+      navigateTo(Page.HOME);
       setTimeout(() => {
         const el = document.getElementById(target);
         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -45,23 +66,12 @@ const Header: React.FC<HeaderProps> = ({
     return <USFlag />;
   };
 
-  const ThemeIcon = () => {
-    if (theme === 'system') return (
-      <div className="relative">
-        <Sun className="w-4 h-4 opacity-50" />
-        <Moon className="w-3 h-3 absolute -top-1 -right-1" />
-      </div>
-    );
-    if (theme === 'dark') return <Moon className="w-4 h-4" />;
-    return <Sun className="w-4 h-4" />;
-  };
-
   return (
     <nav dir="ltr" className="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
       <div className="container mx-auto px-4 py-4 flex flex-row items-center gap-4">
         {/* Left Side: Logo & Controls */}
         <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('home')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo(Page.HOME)}>
             <img
               src="/logo_MrXSteroid.png"
               alt="Mr. X Steroid Logo"
@@ -100,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
                 className="p-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-400 hover:text-gold-500 dark:hover:text-gold-500 transition-all shadow-sm flex items-center justify-center gap-2"
                 title="Theme Settings"
               >
-                <ThemeIcon />
+                <ThemeIcon theme={theme} />
                 <ChevronDown className={`w-3 h-3 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -134,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex-1 flex justify-end items-center gap-6">
           {/* Desktop Nav */}
           <div className="hidden md:flex gap-6 items-center">
-            <button onClick={() => navigateTo('home')} className={`text-sm font-bold transition-colors ${currentPage === 'home' ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+            <button onClick={() => navigateTo(Page.HOME)} className={`text-sm font-bold transition-colors ${currentPage === Page.HOME ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
               {content.homeLink}
             </button>
             <button onClick={() => handleNav('features')} className="text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">
@@ -143,28 +153,28 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Tools Dropdown */}
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${(currentPage !== 'home' && currentPage !== 'cycle') ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navAiTools} <ChevronDown className="w-3 h-3" />
               </button>
               <div className="absolute top-full right-0 pt-2 w-56 hidden group-hover:block animate-fade-in-up">
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
-                  <button onClick={() => navigateTo('macro')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.macro}</button>
-                  <button onClick={() => navigateTo('injection')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.injection}</button>
-                  <button onClick={() => navigateTo('halflife')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.halflife}</button>
-                  <button onClick={() => navigateTo('lab')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.lab}</button>
-                  <button onClick={() => navigateTo('genetic')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.genetic}</button>
+                  <button onClick={() => navigateTo(Page.MACRO)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.macro}</button>
+                  <button onClick={() => navigateTo(Page.INJECTION)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.injection}</button>
+                  <button onClick={() => navigateTo(Page.HALFLIFE)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.halflife}</button>
+                  <button onClick={() => navigateTo(Page.LAB)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.lab}</button>
+                  <button onClick={() => navigateTo(Page.GENETIC)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames.genetic}</button>
                 </div>
               </div>
             </div>
 
             {/* Premium Dropdown */}
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${currentPage === 'cycle' ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navPremiumResources} <ChevronDown className="w-3 h-3" />
               </button>
               <div className="absolute top-full right-0 pt-2 w-64 hidden group-hover:block animate-fade-in-up">
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
-                  <button onClick={() => navigateTo('cycle')} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2">
+                  <button onClick={() => navigateTo(Page.CYCLE_ARCHITECT)} className="block w-full text-start px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2">
                     <CalendarCheck className="w-4 h-4 text-gold-500" />{content.navToolNames.cycleArchitect}
                   </button>
                 </div>

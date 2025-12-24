@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BicepsFlexed, Utensils, Droplet, ChefHat, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Heart, Award } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ContentStrings, Language, DailyMeal, MealItem } from '../types';
@@ -102,15 +103,25 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSy
       }
 
       const bmr = 10 * w + 6.25 * h - 5 * a + (gender === 'male' ? 5 : -161);
-      const multipliers: any = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9 };
+      const multipliers: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9 };
       const tdee = bmr * multipliers[activity];
 
-      const goals: any = { cut: 0.8, maintain: 1, bulk: 1.15 };
+      const goals: Record<string, number> = { cut: 0.8, maintain: 1, bulk: 1.15 };
       const targetCalories = Math.round(tdee * goals[goal]);
 
-      const protein = Math.round(w * 2.2);
-      const fat = Math.round((targetCalories * 0.25) / 9);
-      const carbs = Math.round((targetCalories - (protein * 4 + fat * 9)) / 4);
+      let protein = Math.round(w * 2.2);
+      let fat = Math.round((targetCalories * 0.25) / 9);
+      let carbs = Math.round((targetCalories - (protein * 4 + fat * 9)) / 4);
+
+      // Handle low calorie edge cases to prevent negative macros
+      if (carbs < 10) {
+        carbs = Math.max(0, carbs);
+        if (carbs < 5) {
+          // Prioritize minimum fat for hormonal health and adjust protein
+          fat = Math.max(Math.round(w * 0.6), Math.round((targetCalories * 0.2) / 9));
+          protein = Math.max(20, Math.round((targetCalories - (fat * 9) - (carbs * 4)) / 4));
+        }
+      }
 
       const bmi = w / ((h / 100) * (h / 100));
       const tef = targetCalories * 0.1; // 10% estimation
@@ -190,9 +201,9 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSy
         <p className="text-zinc-500 text-lg max-w-2xl mx-auto">{content.calcSubtitle}</p>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8 items-start">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-start">
         {/* --- INPUT PANEL --- */}
-        <div className="lg:col-span-5 bg-white dark:bg-zinc-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-6 h-fit sticky top-24">
+        <div className="w-full lg:col-span-5 bg-white dark:bg-zinc-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-6 lg:sticky lg:top-24 h-fit">
           <div className="flex gap-4 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
             <button onClick={() => setGender('male')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'bg-white dark:bg-zinc-700 shadow-xl text-gold-600 dark:text-gold-400' : 'text-zinc-500'}`}>{content.calcMale}</button>
             <button onClick={() => setGender('female')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'bg-white dark:bg-zinc-700 shadow-xl text-gold-600 dark:text-gold-400' : 'text-zinc-500'}`}>{content.calcFemale}</button>
@@ -247,7 +258,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSy
         </div>
 
         {/* --- RESULTS DASHBOARD --- */}
-        <div className="lg:col-span-7">
+        <div className="w-full lg:col-span-7">
           {result ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
               {/* Main Calories Card */}
@@ -310,9 +321,11 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, unitSy
                     <span className="text-gold-500">{result.growthPotential}%</span>
                   </div>
                   <div className="h-4 bg-zinc-800 rounded-full overflow-hidden p-1 shadow-inner">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-gold-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all duration-1000 ease-out animate-pulse dynamic-width"
-                      style={{ "--dynamic-width": `${result.growthPotential}%` } as React.CSSProperties}
+                    <motion.div
+                      className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-gold-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] animate-pulse"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${result.growthPotential}%` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
                     />
                   </div>
                 </div>

@@ -6,7 +6,6 @@ interface CheckoutModalProps { isOpen: boolean; onClose: () => void; tier: Prici
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, formattedPrice, onSuccess }) => {
     const [step, setStep] = useState<'form' | 'processing' | 'success'>('form');
-    useEffect(() => { if (isOpen) setStep('form'); }, [isOpen]);
     if (!isOpen || !tier) return null;
     const handlePay = (e: React.FormEvent) => { e.preventDefault(); setStep('processing'); setTimeout(() => { setStep('success'); onSuccess(); }, 2500); };
     return (

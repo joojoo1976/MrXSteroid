@@ -39,10 +39,10 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
     // Enhanced Limit (Approx 25% more mass capacity)
     const enhancedWeight = naturalWeight * 1.25;
 
-    let type = "Mesomorph";
+    let type = content.geneticCalculator.bodyTypes.meso;
     const ratio = w / h;
-    if (ratio < 0.10) type = "Ectomorph";
-    else if (ratio > 0.115) type = "Endomorph";
+    if (ratio < 0.10) type = content.geneticCalculator.bodyTypes.ecto;
+    else if (ratio > 0.115) type = content.geneticCalculator.bodyTypes.endo;
 
     setResult({ natural: Math.round(naturalWeight), enhanced: Math.round(enhancedWeight), type });
   };
