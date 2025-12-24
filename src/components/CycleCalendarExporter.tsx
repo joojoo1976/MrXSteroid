@@ -210,24 +210,24 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                     </div>
 
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                        <h3 className="font-bold mb-4">Configuration</h3>
+                        <h3 className="font-bold mb-4">{content.cycleArchitect.configLabel}</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-zinc-600 dark:text-zinc-400">{content.cycleArchitect.stealthModeLabel}</span>
-                                <button aria-label="Toggle Stealth Mode" onClick={() => setStealthMode(!stealthMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${stealthMode ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${stealthMode ? 'translate-x-6' : ''}`}></div>
+                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.stealthModeLabel}</span>
+                                <button aria-label={content.cycleArchitect.toggleStealth} onClick={() => setStealthMode(!stealthMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${stealthMode ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
+                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${stealthMode ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-zinc-600 dark:text-zinc-400">{content.cycleArchitect.rotationLabel}</span>
-                                <button aria-label="Toggle Auto Rotation" onClick={() => setAutoRotate(!autoRotate)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoRotate ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoRotate ? 'translate-x-6' : ''}`}></div>
+                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.rotationLabel}</span>
+                                <button aria-label={content.cycleArchitect.toggleRotation} onClick={() => setAutoRotate(!autoRotate)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoRotate ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
+                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoRotate ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-zinc-600 dark:text-zinc-400">{content.cycleArchitect.pctLabel}</span>
-                                <button aria-label="Toggle Auto PCT" onClick={() => setAutoPCT(!autoPCT)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoPCT ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoPCT ? 'translate-x-6' : ''}`}></div>
+                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.pctLabel}</span>
+                                <button aria-label={content.cycleArchitect.togglePct} onClick={() => setAutoPCT(!autoPCT)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoPCT ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
+                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoPCT ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
                             </div>
                         </div>

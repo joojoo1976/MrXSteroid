@@ -55,12 +55,35 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
       <div className="grid lg:grid-cols-2 gap-10">
         <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl h-fit">
           <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="space-y-2"><label className="text-xs font-bold text-zinc-500 uppercase">{content.geneticCalculator.labels.height} ({isImperial ? 'in' : 'cm'})</label><div className="relative"><Ruler className="absolute top-1/2 -translate-y-1/2 left-3 w-4 h-4 text-zinc-400" /><input type="number" value={formData.height} onChange={e => setFormData({ ...formData, height: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 pl-10 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "70" : "180"} /></div></div>
-            <div className="space-y-2"><label className="text-xs font-bold text-zinc-500 uppercase">{content.geneticCalculator.labels.bodyFat} (%)</label><div className="relative"><Activity className="absolute top-1/2 -translate-y-1/2 left-3 w-4 h-4 text-zinc-400" /><input type="number" value={formData.bodyFat} onChange={e => setFormData({ ...formData, bodyFat: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 pl-10 focus:border-gold-500 outline-none font-mono" placeholder="10" /></div></div>
-            <div className="space-y-2"><label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-1">{content.geneticCalculator.labels.wrist} <Info className="w-3 h-3 text-zinc-400" /></label><input type="number" value={formData.wrist} onChange={e => setFormData({ ...formData, wrist: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "7.0" : "17.5"} /><p className="text-[10px] text-zinc-400">{content.geneticCalculator.labels.boneThickness}</p></div>
-            <div className="space-y-2"><label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-1">{content.geneticCalculator.labels.ankle} <Info className="w-3 h-3 text-zinc-400" /></label><input type="number" value={formData.ankle} onChange={e => setFormData({ ...formData, ankle: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "9.0" : "22.5"} /><p className="text-[10px] text-zinc-400">{content.geneticCalculator.labels.lowerBody}</p></div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase">{content.geneticCalculator.labels.height} ({isImperial ? 'in' : 'cm'})</label>
+              <div className="relative">
+                <Ruler className="absolute top-1/2 -translate-y-1/2 left-3 w-4 h-4 text-zinc-400" />
+                <input type="number" value={formData.height} onChange={e => setFormData({ ...formData, height: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 pl-10 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "70" : "180"} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase">{content.geneticCalculator.labels.bodyFat} (%)</label>
+              <div className="relative">
+                <Activity className="absolute top-1/2 -translate-y-1/2 left-3 w-4 h-4 text-zinc-400" />
+                <input type="number" value={formData.bodyFat} onChange={e => setFormData({ ...formData, bodyFat: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 pl-10 focus:border-gold-500 outline-none font-mono" placeholder="10" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-1">{content.geneticCalculator.labels.wrist} ({isImperial ? 'in' : 'cm'}) <Info className="w-3 h-3 text-zinc-400" /></label>
+              <input type="number" value={formData.wrist} onChange={e => setFormData({ ...formData, wrist: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "7.0" : "17.5"} />
+              <p className="text-[10px] text-zinc-400">{content.geneticCalculator.labels.boneThickness}</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-1">{content.geneticCalculator.labels.ankle} ({isImperial ? 'in' : 'cm'}) <Info className="w-3 h-3 text-zinc-400" /></label>
+              <input type="number" value={formData.ankle} onChange={e => setFormData({ ...formData, ankle: e.target.value })} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 focus:border-gold-500 outline-none font-mono" placeholder={isImperial ? "9.0" : "22.5"} />
+              <p className="text-[10px] text-zinc-400">{content.geneticCalculator.labels.lowerBody}</p>
+            </div>
           </div>
-          <div className="flex gap-4 mt-8"><button onClick={calculatePotential} className="flex-1 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-lg">{content.geneticCalculator.cta}</button><button onClick={reset} className="px-4 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-xl hover:text-red-500 transition-colors"><RefreshCcw className="w-5 h-5" /></button></div>
+          <div className="flex gap-4 mt-8">
+            <button onClick={calculatePotential} className="flex-1 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-lg">{content.geneticCalculator.cta}</button>
+            <button onClick={reset} aria-label={content.geneticCalculator.reset} className="px-4 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-xl hover:text-red-500 transition-colors"><RefreshCcw className="w-5 h-5" /></button>
+          </div>
         </div>
         <div className="flex flex-col justify-center">
           {result ? (

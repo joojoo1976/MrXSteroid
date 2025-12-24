@@ -195,9 +195,13 @@ export interface CycleArchitectContent {
   title: string;
   subtitle: string;
   presetsTitle: string;
+  configLabel: string;
   stealthModeLabel: string;
   rotationLabel: string;
   pctLabel: string;
+  toggleStealth: string;
+  toggleRotation: string;
+  togglePct: string;
   stealthAliases: string[];
   rotationSites: string[];
   presets: {
