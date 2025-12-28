@@ -1,0 +1,46 @@
+
+C:\MrXSteroid-main\src\components\Footer.tsx
+  131:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\MrXSteroid-main\src\components\GeneticPotentialCalculator.tsx
+  121:9  error  'h' is never reassigned. Use 'const' instead             prefer-const
+  122:9  error  'w' is never reassigned. Use 'const' instead             prefer-const
+  123:9  error  'a' is never reassigned. Use 'const' instead             prefer-const
+  124:9  error  'curChest' is never reassigned. Use 'const' instead      prefer-const
+  125:9  error  'curShoulders' is never reassigned. Use 'const' instead  prefer-const
+  126:9  error  'curWaist' is never reassigned. Use 'const' instead      prefer-const
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx
+   97:30  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  160:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\MrXSteroid-main\src\components\InjectionMap.tsx:160:7
+  158 |         }
+  159 |       });
+> 160 |       setActiveHotspots(result);
+      |       ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  161 |     }
+  162 |   }, [mapContent]);
+  163 |  react-hooks/set-state-in-effect
+
+C:\MrXSteroid-main\src\components\MacroCalculator.tsx
+  114:11  error  'potential' is never reassigned. Use 'const' instead  prefer-const
+
+C:\MrXSteroid-main\src\components\SmartBookLanding.tsx
+  74:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\MrXSteroid-main\src\components\SmartLabReference.tsx
+  19:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\MrXSteroid-main\src\types.ts
+  21:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 13 problems (13 errors, 0 warnings)
+  7 errors and 0 warnings potentially fixable with the `--fix` option.
+

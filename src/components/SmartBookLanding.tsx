@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Globe, TrendingUp, Info, DollarSign, ArrowRight, BookOpen, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, TrendingUp, Info, DollarSign, ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
+import { DisclaimerModal } from './DisclaimerModal';
+import {
+    arContent, enContent, heContent, frContent, esContent, deContent, itContent, ruContent, trContent, ptContent, faContent, urContent
+} from '../content';
+import { ContentStrings } from '../types';
 
 /**
  * INTERFACES
@@ -60,9 +66,16 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         currency: 'USD',
         rate: 1,
         locale: 'en-US',
+
         isRTL: externalIsRTL || false
     });
     const [loading, setLoading] = useState(true);
+    const [showDisclaimer, setShowDisclaimer] = useState(true);
+
+    const contentMap: { [key: string]: ContentStrings } = {
+        ar: arContent, en: enContent, he: heContent, fr: frContent, es: esContent, de: deContent,
+        it: itContent, ru: ruContent, tr: trContent, pt: ptContent, fa: faContent, ur: urContent
+    };
 
     // Sync with external state if provided
     useEffect(() => {
@@ -138,96 +151,173 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         currency: loc.currency
     }).format(BASE_PRICE_USD * loc.rate);
 
-    return (
-        <div className={`min-h-screen bg-zinc-950 text-white font-sans ${loc.isRTL ? 'rtl' : 'ltr'}`} dir={loc.isRTL ? 'rtl' : 'ltr'}>
-            {/* Premium Background */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gold-500/10 via-transparent to-transparent opacity-50 pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
+    // SpaceRemit Integration
+    useEffect(() => {
+        const scriptId = 'spaceremit-script';
+        if (!document.getElementById(scriptId)) {
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.src = 'https://spaceremit.com/api/v2/js_script/spaceremit.js';
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, []);
 
-            <main className="container mx-auto px-6 py-24 relative z-10">
-                <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    const handlePayment = () => {
+        if (window.SpaceRemit) {
+            window.SpaceRemit.Pay({
+                publicKey: 'pk_test_POTENTIAL_CLIENT', // Replace with config if available
+                amount: BASE_PRICE_USD * loc.rate,
+                currency: loc.currency,
+                productName: 'Mr. X-Steroid Complete Guide',
+                productDescription: 'The ultimate bodybuilding and steroid cycle guide.',
+                referenceId: `ORDER-${Date.now()}`
+            });
+        } else {
+            console.error('SpaceRemit SDK not loaded');
+            alert('Payment system loading... please try again in a moment.');
+        }
+    };
+
+
+
+    const content = contentMap[currentLang] || enContent;
+
+    return (
+        <div className={`min-h-screen bg-zinc-950 text-white font-sans ${loc.isRTL ? 'rtl' : 'ltr'} relative overflow-hidden`} dir={loc.isRTL ? 'rtl' : 'ltr'}>
+
+            {showDisclaimer && (
+                <DisclaimerModal
+                    content={content}
+                    isRTL={loc.isRTL}
+                    onAgree={() => setShowDisclaimer(false)}
+                />
+            )}
+
+            {/* Massive Background Glows */}
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gold-500/10 blur-[150px] rounded-full animate-float-slow -z-10"></div>
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[130px] rounded-full animate-float-slow -z-10 [animation-delay:-5s]"></div>
+
+            <main className="container mx-auto px-6 py-32 relative z-10">
+                <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
 
                     {/* Left: Content & Price */}
-                    <div className="space-y-8 animate-fade-in">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-500 text-sm font-bold">
-                            <Globe className="w-4 h-4" />
+                    <div className="space-y-10">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gold-500/10 border-2 border-gold-500/20 text-gold-500 text-lg font-black shadow-[0_0_20px_rgba(234,179,8,0.2)] animate-glow"
+                        >
+                            <Globe className="w-5 h-5 animate-spin-slow" />
                             {currentLang === 'he' ? `זמין כעת בישראל` : loc.isRTL ? `متاح الآن في ${loc.countryCode}` : `Now Available in ${loc.countryCode}`}
-                        </div>
+                        </motion.div>
 
-                        <h1 className="text-5xl md:text-7xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500">
-                            {currentLang === 'he' ? 'המדריך הסודי לשינוי קיצוני' : loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'}
-                        </h1>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-6xl md:text-8xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500 animate-text-flash tracking-tighter"
+                        >
+                            {currentLang === 'he' ? 'המדריך הסודי לשינוي קיצוני' : loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'}
+                        </motion.h1>
 
-                        <p className="text-xl text-zinc-400 leading-relaxed max-w-xl">
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-2xl text-zinc-400 leading-relaxed max-w-2xl font-medium italic"
+                        >
                             {currentLang === 'he'
-                                ? 'הצטרף לאלפי מקצוענים שפרצו את הגבולות הגנטיים שלהם באמצעות הטכניקות המתקדמות והנחקרות ביותר.'
+                                ? 'הצטרף לאלפי מקצוענים שפרצו את הגבולות הגנטיים שלהם באמצעות הטכניקות המתקדמות והנحקרות ביותר.'
                                 : loc.isRTL
                                     ? 'انضم إلى آلاف المحترفين الذين كسروا حواجزهم الجينية باستخدام أكثر التقنيات تقدماً وبحثاً.'
                                     : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.'}
-                        </p>
+                        </motion.p>
 
-                        {/* Dynamic Price Display */}
-                        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl relative group hover:border-gold-500/30 transition-all">
-                            <div className="absolute -top-4 -right-4 bg-gold-500 text-black px-4 py-1 rounded-full font-bold text-sm shadow-xl">
-                                {currentLang === 'he' ? 'מבצע מוגבל' : loc.isRTL ? 'خصم محدود' : 'Limited Offer'}
+                        {/* Updated Flashy Price Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, rotate: [-0.5, 0.5, 0] }}
+                            className="p-10 rounded-[3rem] bg-zinc-900/50 border-4 border-gold-500/30 backdrop-blur-3xl relative group shadow-[0_0_50px_rgba(234,179,8,0.1)] card-shine animate-glow"
+                        >
+                            <div className="absolute -top-6 -right-6 bg-gold-500 text-black px-6 py-2 rounded-full font-black text-lg shadow-[0_0_30px_rgba(234,179,8,0.5)] animate-bounce">
+                                {currentLang === 'he' ? 'מבצע מוגבל' : loc.isRTL ? 'خصم مذهل' : 'FLASH SALE'}
                             </div>
 
-                            <div className="flex items-baseline gap-4">
+                            <div className="flex items-center gap-6 flex-wrap">
                                 {loading ? (
-                                    <div className="h-12 w-48 bg-zinc-800 animate-pulse rounded-lg" />
+                                    <div className="h-20 w-64 bg-zinc-800 animate-pulse rounded-2xl" />
                                 ) : (
-                                    <span className="text-6xl font-black text-white group-hover:scale-105 transition-transform duration-500 block">
+                                    <span className="text-7xl md:text-8xl font-black text-white group-hover:scale-110 transition-transform duration-500 block drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                                         {formattedPrice}
                                     </span>
                                 )}
-                                <span className="text-zinc-500 line-through text-xl">
-                                    {new Intl.NumberFormat(loc.locale, { style: 'currency', currency: loc.currency }).format(BASE_PRICE_USD * 2 * loc.rate)}
-                                </span>
+                                <div className="flex flex-col">
+                                    <span className="text-zinc-500 line-through text-3xl font-black">
+                                        {new Intl.NumberFormat(loc.locale, { style: 'currency', currency: loc.currency }).format(BASE_PRICE_USD * 2.5 * loc.rate)}
+                                    </span>
+                                    <span className="text-gold-500 text-sm font-black uppercase tracking-widest mt-1">SAVE 60% TODAY</span>
+                                </div>
                             </div>
-                            <p className="mt-4 text-sm text-zinc-500 flex items-center gap-2">
-                                <ShieldCheck className="w-4 h-4 text-green-500" />
-                                {currentLang === 'he' ? 'תשלום מאובטח ומוצפן' : loc.isRTL ? 'دفع آمن بنسبة 100%' : '100% Encrypted & Secure Payment'}
-                            </p>
-                        </div>
 
-                        <button className="w-full sm:w-auto px-12 py-5 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-2xl shadow-gold-500/20">
-                            {currentLang === 'he' ? 'קבל את העותק שלך עכשיו' : loc.isRTL ? 'احصل على نسختك الآن' : 'Get Your Copy Now'}
-                            <ArrowRight className={`w-6 h-6 ${loc.isRTL ? 'rotate-180' : ''}`} />
-                        </button>
+                            <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+                                <p className="text-lg text-zinc-400 flex items-center gap-3 font-bold">
+                                    <ShieldCheck className="w-6 h-6 text-green-500 animate-pulse" />
+                                    {currentLang === 'he' ? 'תשלום מאובטח ומוצפן' : loc.isRTL ? 'دفع آمن بنسبة 100%' : '100% SECURE & ENCRYPTED'}
+                                </p>
+                                <Zap className="w-8 h-8 text-gold-500 animate-pulse fill-gold-500" />
+                            </div>
+                        </motion.div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.1, rotateX: 10 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={handlePayment}
+                            className="w-full sm:w-auto px-16 py-6 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] flex items-center justify-center gap-4 transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
+                        >
+                            <span className="relative z-10">
+                                {currentLang === 'he' ? 'קבל את העותק שלך עכשיו' : loc.isRTL ? 'احصل على نسختك الآن' : 'CLAIM YOUR DOWNLOAD'}
+                            </span>
+                            <ArrowRight className={`w-8 h-8 relative z-10 ${loc.isRTL ? 'rotate-180' : ''} group-hover:translate-x-2 transition-transform`} />
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                        </motion.button>
                     </div>
 
                     {/* Right: Smart SEO Section */}
-                    <div className="space-y-6">
-                        <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <TrendingUp className="w-32 h-32 text-gold-500" />
+                    <div className="space-y-8">
+                        <motion.div
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            className="bg-zinc-900/40 p-10 rounded-[4rem] border-2 border-zinc-800 shadow-2xl relative overflow-hidden group backdrop-blur-3xl animate-glow"
+                        >
+                            <div className="absolute -top-10 -right-10 p-12 opacity-5 group-hover:opacity-20 transition-all duration-700 transform group-hover:rotate-45 group-hover:scale-150">
+                                <TrendingUp className="w-48 h-48 text-gold-500" />
                             </div>
 
                             <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-gold-500/20 flex items-center justify-center text-gold-500">
-                                        <TrendingUp className="w-5 h-5" />
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-14 h-14 rounded-2xl bg-gold-500/20 flex items-center justify-center text-gold-500 shadow-xl group-hover:scale-110 transition-transform">
+                                        <TrendingUp className="w-8 h-8" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-lg">{currentLang === 'he' ? 'טרנדים חמים בחיפוש' : loc.isRTL ? 'تريندات البحث الحالية' : 'Live Search Trends'}</h4>
-                                        <p className="text-xs text-zinc-500">{currentLang === 'he' ? `אנדקס שבוע ${weekNumber}` : loc.isRTL ? `الأسبوع رقم ${weekNumber}` : `Week #${weekNumber} Index`}</p>
+                                        <h4 className="font-black text-2xl tracking-tight">{currentLang === 'he' ? 'טרנדים חמים בחיפוש' : loc.isRTL ? 'تريندات البحث الحالية' : 'LIVE SEARCH TRENDS'}</h4>
+                                        <p className="text-sm text-zinc-500 font-black tracking-widest uppercase">{currentLang === 'he' ? `WEEKLY INDEX #${weekNumber}` : loc.isRTL ? `الأسبوع رقم ${weekNumber}` : `WEEK #${weekNumber} INDEX`}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-3">
                                     {currentKeywords.map((kw, i) => (
-                                        <span
+                                        <motion.span
+                                            whileHover={{ scale: 1.1, backgroundColor: "rgba(234, 179, 8, 0.2)", color: "#EAB308" }}
                                             key={`${kw}-${i}`}
-                                            className="px-4 py-2 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm border border-zinc-700 hover:border-gold-500/50 transition-all cursor-default"
+                                            className="px-5 py-3 bg-white/5 text-zinc-300 rounded-2xl text-base font-bold border border-white/10 transition-all cursor-pointer hover:border-gold-500/50"
                                         >
                                             #{kw}
-                                        </span>
+                                        </motion.span>
                                     ))}
                                 </div>
 
-                                <div className="mt-8 pt-8 border-t border-zinc-800/50 flex items-start gap-4">
-                                    <Info className="w-5 h-5 text-zinc-500 mt-1" />
-                                    <p className="text-xs text-zinc-500 leading-relaxed italic">
+                                <div className="mt-10 pt-10 border-t border-white/5 flex items-start gap-6">
+                                    <Info className="w-8 h-8 text-zinc-600 mt-1" />
+                                    <p className="text-sm text-zinc-500 leading-relaxed italic font-medium">
                                         {currentLang === 'he'
                                             ? 'מילות מפתח אלו נגזרו על בסיס טרנדים של Google לחיפוש השבוע כדי להבטיח שהתוכן יגיע לקהל היעד בצורה מדויקת.'
                                             : loc.isRTL
@@ -236,20 +326,26 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
-                        {/* Mini Features */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl">
-                                <BookOpen className="w-8 h-8 text-gold-500 mb-4" />
-                                <h5 className="font-bold mb-1">{currentLang === 'he' ? '300+ עמודים' : loc.isRTL ? '+300 صفحة' : '300+ Pages'}</h5>
-                                <p className="text-xs text-zinc-500">{currentLang === 'he' ? 'של סודות בלעדיים' : loc.isRTL ? 'من الأسرار الحصرية' : 'of exclusive secrets'}</p>
-                            </div>
-                            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl">
-                                <DollarSign className="w-8 h-8 text-emerald-500 mb-4" />
-                                <h5 className="font-bold mb-1">{currentLang === 'he' ? 'אחריות כספית' : loc.isRTL ? 'ضمان استبدال' : 'Money Back'}</h5>
-                                <p className="text-xs text-zinc-500">{currentLang === 'he' ? 'למשך 30 יום' : loc.isRTL ? 'لمدة 30 يوماً' : '30-day guarantee'}</p>
-                            </div>
+                        {/* Mini Features Cards */}
+                        <div className="grid grid-cols-2 gap-8">
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                className="p-8 bg-zinc-900/80 border-2 border-zinc-800 rounded-[2.5rem] shadow-xl animate-glow"
+                            >
+                                <BookOpen className="w-10 h-10 text-gold-500 mb-6 animate-pulse" />
+                                <h5 className="font-black text-2xl mb-2">{currentLang === 'he' ? '300+ עמודים' : loc.isRTL ? '+300 صفحة' : '300+ PAGES'}</h5>
+                                <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">{currentLang === 'he' ? 'EXCLUSIVE SECRETS' : loc.isRTL ? 'أسرار حصرية' : 'EXCLUSIVE SECRETS'}</p>
+                            </motion.div>
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                className="p-8 bg-zinc-900/80 border-2 border-zinc-800 rounded-[2.5rem] shadow-xl animate-glow"
+                            >
+                                <DollarSign className="w-10 h-10 text-emerald-500 mb-6 animate-pulse" />
+                                <h5 className="font-black text-2xl mb-2">{currentLang === 'he' ? 'אחריות כספית' : loc.isRTL ? 'ضمان استرداد' : 'MONEY BACK'}</h5>
+                                <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">{currentLang === 'he' ? '30-DAY GUARANTEE' : loc.isRTL ? 'لمدة 30 يوماً' : '30-DAY GUARANTEE'}</p>
+                            </motion.div>
                         </div>
                     </div>
 

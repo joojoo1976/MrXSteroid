@@ -1,420 +1,653 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rotate3D, ShieldCheck, AlertTriangle, Target, Zap, Activity, Info, RefreshCw } from 'lucide-react';
-import { ContentStrings } from '../types';
+import { Shield, Zap, Activity, Info, AlertTriangle, Move, Save } from 'lucide-react';
+import { ContentStrings, InjectionSite } from '../types';
 
 interface InjectionMapProps {
   content: ContentStrings;
   lang: string;
 }
 
-interface HotspotProps {
+interface Hotspot {
   id: string;
-  x: string;
-  y: string;
-  size?: number;
-  color?: string;
-  suggestedSite: string | null;
-  activeSite: string | null;
-  lastInjected: string | null;
-  setActiveSite: (id: string) => void;
-  content: ContentStrings;
+  name: string;
+  side: 'front' | 'back';
+  x: number;
+  y: number;
+  absorption: number;
+  advice: string;
+  icon: string;
+  needle: string;
+  volume: string;
+  recoveryDays: number;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  warning?: string;
+  steps?: string[];
+  painLevel?: string;
+  bestFor?: string;
 }
 
-const Hotspot = ({ id, x, y, size = 6, suggestedSite, activeSite, lastInjected, setActiveSite, content }: HotspotProps) => {
-  const getBaseId = (val: string | null) => val?.replace(/_[lr]$/, '');
-  const baseId = getBaseId(id);
+// User-defined fixed coordinates for FRONT view
+// Back view uses legacy generation for now
+const FIXED_FRONT_POINTS = [
+  // Delts (Needle)
+  { id: 'delt_side_l', baseId: 'delt_side', x: 28, y: 26 },
+  { id: 'delt_side_r', baseId: 'delt_side', x: 69, y: 26 },
+  // Pecs (Shield)
+  { id: 'pecs_l', baseId: 'pecs', x: 38, y: 29 },
+  { id: 'pecs_r', baseId: 'pecs', x: 60, y: 30 },
+  // Pecs Lower (Lightning) - actually labeled pecs_lower
+  { id: 'pecs_lower_l', baseId: 'pecs_lower', x: 46, y: 27 },
+  { id: 'pecs_lower_r', baseId: 'pecs_lower', x: 51, y: 28 },
+  // Biceps (Arm)
+  { id: 'biceps_l', baseId: 'biceps', x: 30, y: 33 },
+  { id: 'biceps_r', baseId: 'biceps', x: 66, y: 33 },
+  // Ventro Glute (Fire)
+  { id: 'glute_ventro_l', baseId: 'glute_ventro', x: 34, y: 50 },
+  { id: 'glute_ventro_r', baseId: 'glute_ventro', x: 63, y: 50 },
+  // Quad Outer (Rocket)
+  { id: 'quad_outer_l', baseId: 'quad_outer', x: 34, y: 62 },
+  { id: 'quad_outer_r', baseId: 'quad_outer', x: 62, y: 62 },
+];
 
-  const isSuggested = suggestedSite === id || (suggestedSite !== null && suggestedSite === baseId);
-  const isActive = activeSite === id;
-  const isLast = lastInjected === id || (lastInjected !== null && getBaseId(lastInjected) === baseId);
-
-  return (
-    <motion.button
-      className={`absolute rounded-full cursor-pointer z-20 flex items-center justify-center
-        ${isActive ? 'z-30' : ''}`}
-      style={{ left: x, top: y, width: `${size * 4}px`, height: `${size * 4}px` }}
-      whileHover={{ scale: 1.4, zIndex: 50 }}
-      whileTap={{ scale: 0.9 }}
-      onClick={(e) => { e.stopPropagation(); setActiveSite(id); }}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-    >
-      {/* Outer Glow Ring */}
-      <motion.div
-        className={`absolute inset-[-8px] rounded-full border-2 opacity-0
-          ${isActive ? 'border-gold-500 opacity-100' : isSuggested ? 'border-cyan-400 opacity-100' : 'border-emerald-500/30'}`}
-        animate={isActive || isSuggested ? { scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] } : {}}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-
-      {/* Main Pulse Circle */}
-      <div className={`w-full h-full rounded-full relative shadow-lg transition-colors duration-500
-        ${isActive ? 'bg-gold-500 shadow-gold-500/50' :
-          isSuggested ? 'bg-cyan-500 shadow-cyan-500/50 animate-pulse' :
-            isLast ? 'bg-red-500/60 shadow-red-500/30' :
-              'bg-emerald-500/40 shadow-emerald-500/20'}`}>
-
-        {/* Inner Core */}
-        <div className="absolute inset-1 rounded-full bg-white/30 backdrop-blur-sm" />
-
-        {/* Scanning Ping */}
-        {(isActive || isSuggested) && (
-          <span className={`absolute inset-0 rounded-full scale-150 opacity-20 animate-ping
-            ${isActive ? 'bg-gold-500' : 'bg-cyan-500'}`} />
-        )}
-      </div>
-
-      {isActive && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: -45 }}
-          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
-        >
-          <div className="bg-black/90 backdrop-blur-md text-gold-500 text-[10px] font-black px-2 py-1 rounded-md border border-gold-500/50 shadow-[0_0_20px_rgba(234,179,8,0.5)] whitespace-nowrap uppercase tracking-tighter">
-            {content.injectionMap.sites.find(s => s.id === id)?.name}
-          </div>
-          <div className="w-px h-6 bg-gradient-to-t from-gold-500 to-transparent" />
-        </motion.div>
-      )}
-    </motion.button>
-  );
-};
+const FIXED_BACK_POINTS = [
+  // Traps (High)
+  { id: 'traps_l', baseId: 'traps', x: 35, y: 23 },
+  { id: 'traps_r', baseId: 'traps', x: 60, y: 23 },
+  // Rear Delts (Shoulder/Arm Outer)
+  { id: 'delt_rear_l', baseId: 'delt_rear', x: 29, y: 31 },
+  { id: 'delt_rear_r', baseId: 'delt_rear', x: 67, y: 30 },
+  // Triceps (Inner Upper - Mapped per user image layout)
+  { id: 'triceps_l', baseId: 'triceps', x: 45, y: 31 },
+  { id: 'triceps_r', baseId: 'triceps', x: 51, y: 31 },
+  // Lats (Mid Back)
+  { id: 'lats_l', baseId: 'lats', x: 37, y: 33 },
+  { id: 'lats_r', baseId: 'lats', x: 58, y: 33 },
+  // Glutes (Buttocks)
+  { id: 'glute_dorso_l', baseId: 'glute_dorso', x: 40, y: 48 },
+  { id: 'glute_dorso_r', baseId: 'glute_dorso', x: 58, y: 47 },
+  // Calves (Legs)
+  { id: 'calves_l', baseId: 'calves', x: 35, y: 81 },
+  { id: 'calves_r', baseId: 'calves', x: 58, y: 81 },
+];
 
 const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang }) => {
-  const [activeSite, setActiveSite] = useState<string | null>(null);
-  const [view, setView] = useState<'front' | 'back'>('front');
   const [rotation, setRotation] = useState(0);
-  const [cumulativeGrowth, setCumulativeGrowth] = useState(1240); // Starting dummy value
+  const [activeSite, setActiveSite] = useState<Hotspot | null>(null);
+  const [hoverSite, setHoverSite] = useState<Hotspot | null>(null);
 
-  // Normalize ID for content lookup (strips _l or _r suffix)
-  const getBaseId = (id: string | null) => id?.replace(/_[lr]$/, '');
+  // Hotspots state derived from content
+  const activeHotspots = useMemo(() => {
+    const mapContent = content.injectionMap;
+    if (mapContent.sites) {
+      const sites = mapContent.sites;
+      const findSite = (id: string) => sites.find(s => s.id === id);
+      const result: Hotspot[] = [];
+      const absorptionMap: Record<string, number> = {
+        'glute_dorso': 98, 'delt_side': 95, 'quad_outer': 92, 'pecs': 88,
+        'lats': 85, 'traps': 90, 'glute_ventro': 93, 'biceps': 82,
+        'triceps': 84, 'calves': 78, 'forearms': 75, 'pecs_lower': 86,
+        'delt_rear': 87
+      };
 
-  const siteData = content.injectionMap.sites.find(s => s.id === getBaseId(activeSite));
+      const getName = (data: InjectionSite, sideLabel: string) => `${data.name} (${sideLabel})`;
+      const leftLabel = mapContent.labels?.left || "L";
+      const rightLabel = mapContent.labels?.right || "R";
 
-  // Toggle view and rotation
-  const toggleView = (newView: 'front' | 'back') => {
-    if (view === newView) return;
-    setView(newView);
-    setRotation(prev => prev + 180);
-  };
+      // 1. Process Fixed Front Points
+      FIXED_FRONT_POINTS.forEach(fixed => {
+        const data = findSite(fixed.baseId);
+        if (data) {
+          const abs = absorptionMap[fixed.baseId] || 85;
+          const isRight = fixed.id.endsWith('_r');
+          const sideName = isRight ? rightLabel : leftLabel;
 
-  // Auto-suggest logic (Rotation Tracker)
-  const [suggestedSite, setSuggestedSite] = useState<string | null>(null);
-  const [lastInjected, setLastInjected] = useState<string | null>(null);
+          result.push({
+            ...data,
+            id: fixed.id,
+            name: getName(data, sideName),
+            side: 'front',
+            x: fixed.x,
+            y: fixed.y,
+            absorption: abs,
+            icon: data.icon || "💉", // Fallback incase icon missing in data
+            riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
+            steps: data.steps,
+            painLevel: data.painLevel,
+            bestFor: data.bestFor,
+            needle: data.needle,
+            volume: data.volume,
+            recoveryDays: data.recoveryDays,
+            advice: data.advice || "",
+            warning: data.warning
+          });
+        }
+      });
 
-  useEffect(() => {
-    if (activeSite) {
-      // Simulate cumulative growth counter increasing
-      const interval = setInterval(() => {
-        setCumulativeGrowth(prev => prev + Math.floor(Math.random() * 5));
-      }, 200);
+      // 2. Process Fixed Back Points
+      FIXED_BACK_POINTS.forEach(fixed => {
+        const data = findSite(fixed.baseId);
+        if (data) {
+          const abs = absorptionMap[fixed.baseId] || 85;
+          const isRight = fixed.id.endsWith('_r');
+          const sideName = isRight ? rightLabel : leftLabel;
 
-      return () => clearInterval(interval);
+          result.push({
+            ...data,
+            id: fixed.id,
+            name: getName(data, sideName),
+            side: 'back', // Explicitly Back
+            x: fixed.x,
+            y: fixed.y,
+            absorption: abs,
+            icon: data.icon || "💉",
+            riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
+            steps: data.steps,
+            painLevel: data.painLevel,
+            bestFor: data.bestFor,
+            needle: data.needle,
+            volume: data.volume,
+            recoveryDays: data.recoveryDays,
+            advice: data.advice || "",
+            warning: data.warning
+          });
+        }
+      });
+      return result;
     }
-  }, [activeSite]);
+    return [];
+  }, [content.injectionMap]);
 
-  const handleSuggest = () => {
-    const allSites = content.injectionMap.sites;
-    // Heuristic: Suggest a low risk site that wasn't the last one and isn't the current active one
-    const potentials = allSites.filter(s => s.id !== getBaseId(activeSite) && s.id !== getBaseId(lastInjected) && s.riskLevel === 'Low');
-    const random = potentials[Math.floor(Math.random() * potentials.length)];
-    if (random) setSuggestedSite(random.id);
-  };
+  const mapContent = content.injectionMap;
 
-  const handleLog = () => {
-    if (!activeSite) return;
-    setLastInjected(activeSite);
-    setSuggestedSite(null);
-    // Visual feedback
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-    audio.play().catch(() => { });
-  };
+
+  const currentView = rotation <= 50 ? 'front' : 'back';
+
+  // Dynamic values derived from Active Site or Rotation (fallback)
+  const dynamicStats = useMemo(() => {
+    if (activeSite) {
+      // Logic for active site
+      const baseAbs = activeSite.absorption || 85;
+      const riskMap = { 'Low': 98, 'Medium': 75, 'High': 45 };
+      const baseSafety = riskMap[activeSite.riskLevel] || 70;
+
+      // Calculate "Cells" based on volume capacity (proxy for muscle size)
+      // e.g. "3.0 - 4.0 ml" -> approx 3.5 -> larger count
+      const volNum = parseFloat(activeSite.volume.match(/[0-9.]+/)?.[0] || "1.0");
+      const baseCells = Math.floor(volNum * 1250000 + 500000); // 1ml = 1.75M, 4ml = 5.5M etc
+
+      return {
+        absorption: baseAbs,
+        safety: baseSafety,
+        cells: baseCells.toLocaleString(),
+        // Dynamic footer texts
+        powerDesc: `${mapContent.featureCards?.power.desc.split('...')[0]} ${lang === 'ar' ? 'في' : 'in'} ${activeSite.name}`,
+        tissueDesc: `${mapContent.featureCards?.tissue.desc.split('...')[0]} (${activeSite.bestFor || 'Hypertrophy'})`,
+        burnDesc: `${mapContent.featureCards?.burn.desc.split('...')[0]} [${activeSite.riskLevel} Risk]`
+      };
+    } else {
+      // Fallback relative to rotation (current behavior)
+      return {
+        absorption: Math.floor(rotation * 0.9 + 10),
+        safety: 100 - Math.floor(rotation / 10),
+        cells: (rotation * 12500 + 100000).toLocaleString(),
+        powerDesc: mapContent.featureCards?.power.desc || "Within minutes...",
+        tissueDesc: mapContent.featureCards?.tissue.desc || "Muscle fibers...",
+        burnDesc: mapContent.featureCards?.burn.desc || "Metabolism spikes..."
+      };
+    }
+  }, [activeSite, rotation, mapContent, lang]);
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-4 relative">
-      {/* Header */}
-      <div className="text-center mb-16 relative z-10">
+    <div className="max-w-6xl mx-auto py-12 px-4 relative font-cairo overflow-hidden" dir={lang === 'ar' || lang === 'he' ? 'rtl' : 'ltr'}>
+
+      {/* Background Glows */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Main Header */}
+      <header className="text-center mb-12 relative z-10">
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-neon-green to-gold-500 tracking-tight text-glow-cyan animate-hologram"
+          initial={{ opacity: 0, y: -20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 15 }}
+          className="text-4xl md:text-6xl font-black text-gold-500 mb-4 drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]"
         >
-          {content.injectionMap.title}
+          {mapContent.title}
         </motion.h1>
-        <p className="text-lg text-zinc-500 max-w-2xl mx-auto leading-relaxed">{content.injectionMap.subtitle}</p>
-      </div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-primary font-bold tracking-widest text-sm uppercase"
+        >
+          {mapContent.subtitle}
+        </motion.p>
+      </header>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
 
-        {/* 3D Map Section */}
-        <div className="w-full lg:col-span-7 relative min-h-[500px] lg:min-h-[700px] perspective-2000 border-glow-cyan rounded-[4rem] glass-morphism overflow-hidden">
-          {/* Controls */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 flex gap-2 bg-zinc-900/80 backdrop-blur-2xl p-2 rounded-2xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-            <button onClick={() => toggleView('front')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'front' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' : 'text-zinc-500 hover:text-white'}`}>
-              {content.injectionMap.viewFront}
-            </button>
-            <button onClick={() => toggleView('back')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'back' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' : 'text-zinc-500 hover:text-white'}`}>
-              {content.injectionMap.viewBack}
-            </button>
-          </div>
+        {/* Left Stats Panel (Absorption, Safety, Cells) */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          <AnimatePresence mode="wait">
+            <StatCard
+              key={`stat-abs-${activeSite?.id || 'none'}`}
+              label={mapContent.efficiencyLabel || mapContent.labels?.efficiency || "Efficiency"}
+              value={`${dynamicStats.absorption}%`}
+              color="text-gold-400"
+              icon={<Zap className="w-4 h-4" />}
+              delay={0}
+            />
+            <StatCard
+              key={`stat-safe-${activeSite?.id || 'none'}`}
+              label={mapContent.riskLevelLabel}
+              value={`${dynamicStats.safety}%`}
+              color={dynamicStats.safety > 80 ? "text-green-400" : dynamicStats.safety > 50 ? "text-yellow-400" : "text-red-400"}
+              icon={<Shield className="w-4 h-4" />}
+              delay={0.1}
+            />
+            <StatCard
+              key={`stat-cells-${activeSite?.id || 'none'}`}
+              label={mapContent.stimulatedCellsLabel}
+              value={dynamicStats.cells}
+              color="text-cyan-400"
+              icon={<Activity className="w-4 h-4" />}
+              delay={0.2}
+            />
+          </AnimatePresence>
+        </div>
 
-          {/* Scifi Scanning Line Effect */}
-          <div className="absolute inset-0 z-10 pointer-events-none opacity-20">
-            <motion.div
-              animate={{ y: ['0%', '100%', '0%'] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              className="w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,0.5)]"
+        {/* Center 3D Viewport */}
+        <div className="lg:col-span-6 flex flex-col items-center">
+          <div className="w-full max-w-md mb-8 space-y-2">
+            <div className="flex justify-between text-[10px] font-black text-gold-500/80 uppercase tracking-widest">
+              <span>{mapContent.viewFront} 0°</span>
+              <span className="animate-bounce">{mapContent.rotateHint}</span>
+              <span>{mapContent.viewBack} 180°</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={rotation}
+              onChange={(e) => setRotation(parseInt(e.target.value))}
+              className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-gold-500 border border-gold-500/20 shadow-[0_0_15px_hsl(var(--gold-500)/0.2)]"
+              title={mapContent.medicalInsightLabel}
+              aria-label={mapContent.medicalInsightLabel}
             />
           </div>
 
-          {/* HUD Corner Accents */}
-          <div className="absolute top-8 left-8 w-12 h-12 border-t-2 border-l-2 border-cyan-500/40 rounded-tl-2xl z-20 pointer-events-none" />
-          <div className="absolute top-8 right-8 w-12 h-12 border-t-2 border-r-2 border-cyan-500/40 rounded-tr-2xl z-20 pointer-events-none" />
-          <div className="absolute bottom-8 left-8 w-12 h-12 border-b-2 border-l-2 border-cyan-500/40 rounded-bl-2xl z-20 pointer-events-none" />
-          <div className="absolute bottom-8 right-8 w-12 h-12 border-b-2 border-r-2 border-cyan-500/40 rounded-br-2xl z-20 pointer-events-none" />
+          <div className="relative group perspective-1000">
+            {/* Viewport Frame */}
+            <div className="relative w-[450px] h-[700px] rounded-[3rem] bg-gradient-to-b from-zinc-900 to-black border-2 border-yellow-500/20 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden" id="map-container">
 
-          {/* Grid Background Overlay */}
-          <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:20px_20px]" />
-
-          {/* Rotating Container */}
-          <motion.div
-            className="w-full relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-auto lg:h-[700px]"
-            animate={{ rotateY: rotation }}
-            transition={{ type: "spring", stiffness: 35, damping: 20 }}
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {/* Front Face */}
-            <div
-              className="absolute inset-0 bg-neutral-950 rounded-[4rem] overflow-hidden border border-cyan-500/20 shadow-[0_0_80px_rgba(6,182,212,0.1)] group"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              {/* Holographic Body Image with Filters */}
-              <div className="relative w-full h-full p-8 md:p-12 transition-transform duration-700 group-hover:scale-105">
-                <img
-                  src="/Safe_Injection_Map_Face.webp"
-                  alt="Body Map Front"
-                  className="w-full h-full object-contain filter brightness-110 contrast-125 sepia-[0.3] hue-rotate-[160deg] saturate-150 drop-shadow-[0_0_30px_rgba(34,211,238,0.3)] animate-hologram"
-                />
-                {/* Holographic Interference Mask */}
-                <div className="absolute inset-0 opacity-[0.1] mix-blend-overlay bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(34,211,238,0.5)_3px)] pointer-events-none" />
+              {/* Biometric Overlays */}
+              <div className="absolute top-10 left-8 z-30 font-mono text-[8px] text-cyan-500/40 flex flex-col gap-0.5 tracking-tighter uppercase pointer-events-none">
+                <div className="flex gap-2"><span>SCANNING_ID:</span> <span className="text-cyan-400/60">BODY_PRO_X</span></div>
+                <div className="flex gap-2"><span>DNA_AUTH:</span> <span className="text-cyan-400/60">VERIFIED</span></div>
+                <div className="flex gap-2"><span>BIOMETRIC:</span> <span className="text-cyan-400/60">SYNCED</span></div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
 
-              {/* Front Hotspots - Anatomically precise positioning for Safe_Injection_Map_Face.webp */}
-              <Hotspot id="delt_side_l" x="24%" y="25%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="delt_side_r" x="76%" y="25%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="glute_ventro_l" x="32%" y="46%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="glute_ventro_r" x="68%" y="46%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="pecs_l" x="37%" y="30%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="pecs_r" x="63%" y="30%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="pecs_lower_l" x="37%" y="38%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="pecs_lower_r" x="63%" y="38%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="quad_outer_l" x="33%" y="65%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="quad_outer_r" x="67%" y="65%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="biceps_l" x="18%" y="36%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="biceps_r" x="82%" y="36%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-            </div>
-
-            {/* Back Face */}
-            <div
-              className="absolute inset-0 bg-neutral-950 rounded-[4rem] overflow-hidden border border-gold-500/20 shadow-[0_0_80px_rgba(234,179,8,0.1)]"
-              style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
-            >
-              <div className="relative w-full h-full p-8 md:p-12">
-                <img
-                  src="/Safe_Injection_Map_back.webp"
-                  alt="Body Map Back"
-                  className="w-full h-full object-contain filter brightness-90 contrast-110 sepia-[0.4] hue-rotate-[180deg] saturate-100 opacity-60"
-                />
+              <div className="absolute bottom-12 right-8 z-30 font-mono text-[8px] text-yellow-500/40 flex flex-col gap-0.5 tracking-tighter uppercase items-end pointer-events-none">
+                <div className="flex gap-2"><span className="text-yellow-400/60">ACTIVE</span> <span>SEC_LOCKED</span></div>
+                <div className="flex gap-2"><span className="text-yellow-400/60">v4.2.0</span> <span>FIRMWARE</span></div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
 
-              {/* Back Hotspots - Anatomically precise positioning for Safe_Injection_Map_back.webp */}
-              <Hotspot id="glute_dorso_l" x="38%" y="50%" size={8} suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="glute_dorso_r" x="62%" y="50%" size={8} suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
+              {/* Laser Scanner Effect */}
+              <motion.div
+                animate={{ top: ['-10%', '110%'] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="absolute left-0 right-0 h-[2px] bg-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.5)] z-20 pointer-events-none"
+              />
 
-              <Hotspot id="traps_l" x="42%" y="22%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="traps_r" x="58%" y="22%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
+              {/* Body Images Container */}
+              <div className="relative w-full h-full flex items-center justify-center p-8">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentView}
+                    initial={{ opacity: 0, rotateY: currentView === 'front' ? -45 : 45 }}
+                    animate={{ opacity: 1, rotateY: 0 }}
+                    exit={{ opacity: 0, rotateY: currentView === 'front' ? 45 : -45 }}
+                    transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img
+                      src={currentView === 'front' ? "/Safe_Injection_Map_Face.webp" : "/Safe_Injection_Map_back.webp"}
+                      alt="Body Map"
+                      className="max-w-full max-h-full object-contain scale-[1.35] translate-y-14 filter drop-shadow-[0_0_30px_rgba(255,215,0,0.15)] contrast-110 brightness-110"
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
-              <Hotspot id="lats_l" x="35%" y="38%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="lats_r" x="65%" y="38%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
+                {/* Hotspots */}
+                {activeHotspots.filter(h => h.side === currentView).map(spot => {
+                  return (
+                    <React.Fragment key={spot.id}>
+                      {/* Connection Line & Box when Hovered */}
+                      <AnimatePresence>
+                        {hoverSite?.id === spot.id && (
+                          <>
+                            <motion.svg
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="absolute inset-0 pointer-events-none z-20 overflow-visible"
+                              style={{ width: '100%', height: '100%' }}
+                            >
+                              <motion.line
+                                x1={`${spot.x}%`}
+                                y1={`${spot.y}%`}
+                                x2={`${spot.x > 50 ? spot.x - 25 : spot.x + 25}%`}
+                                y2={`${spot.y - 15}%`}
+                                stroke="url(#gradient-line)"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                initial={{ pathLength: 0 }}
+                                animate={{ pathLength: 1 }}
+                                transition={{ duration: 0.3 }}
+                              />
+                              <defs>
+                                <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="hsl(var(--gold-500))" stopOpacity="0" />
+                                  <stop offset="50%" stopColor="hsl(var(--gold-500))" stopOpacity="1" />
+                                  <stop offset="100%" stopColor="hsl(var(--gold-500))" stopOpacity="0" />
+                                </linearGradient>
+                              </defs>
+                            </motion.svg>
 
-              <Hotspot id="triceps_l" x="22%" y="38%" size={7} suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="triceps_r" x="78%" y="38%" size={7} suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                              className="absolute z-50 bg-zinc-900/90 backdrop-blur-md border border-gold-500/50 rounded-xl p-3 shadow-2xl flex flex-col gap-1 w-40 pointer-events-none"
+                              style={{
+                                top: `${spot.y - 15}%`,
+                                left: `${spot.x > 50 ? spot.x - 25 : spot.x + 25}%`,
+                                transform: 'translate(-50%, -100%)'
+                              }}
+                            >
+                              <div className="text-[10px] font-black text-gold-500 uppercase tracking-wider">{spot.name}</div>
+                              <div className="flex gap-2">
+                                <span className={`text-[9px] font-bold px-1.5 rounded-md ${spot.riskLevel === 'Low' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                  {mapContent.riskLevelLabel}: {spot.riskLevel}
+                                </span>
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
 
-              <Hotspot id="forearms_l" x="15%" y="50%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="forearms_r" x="85%" y="50%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-
-              <Hotspot id="calves_l" x="43%" y="86%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-              <Hotspot id="calves_r" x="57%" y="86%" suggestedSite={suggestedSite} activeSite={activeSite} lastInjected={lastInjected} setActiveSite={setActiveSite} content={content} />
-            </div>
-          </motion.div>
-
-          {/* Biometric Analysis Overlay (Floating) */}
-          <div className="absolute top-[20%] right-[-20px] lg:right-[-40px] z-50 pointer-events-none hidden xl:block">
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
-              className="bg-black/80 backdrop-blur-xl p-4 rounded-xl border border-white/10 shadow-2xl w-48"
-            >
-              <div className="text-[9px] text-cyan-400 font-black uppercase mb-3 tracking-widest border-b border-white/5 pb-2">Biometric Analysis</div>
-              <div className="space-y-4">
-                {[
-                  { label: "Muscle Density", val: 84 },
-                  { label: "Serum Saturation", val: 62 },
-                  { label: "Recovery Rate", val: 91 }
-                ].map((stat, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between text-[8px] text-zinc-500 font-bold uppercase">
-                      <span>{stat.label}</span>
-                      <span className="text-white">{stat.val}%</span>
-                    </div>
-                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                       <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${stat.val}%` }}
-                        transition={{ duration: 2, delay: i * 0.2 }}
-                        className="h-full bg-cyan-500"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+                        className={`absolute w-5 h-5 rounded-full z-30 flex items-center justify-center cursor-pointer
+                        ${activeSite?.id === spot.id ? 'bg-gold-400' : 'bg-primary'}
+                        shadow-[0_0_15px_hsl(var(--primary)/0.6)] border border-white/20`}
+                        style={{
+                          top: `${spot.y}%`,
+                          left: `${spot.x}%`,
+                          touchAction: 'none',
+                          zIndex: activeSite?.id === spot.id ? 50 : 30
+                        }}
+                        onClick={() => {
+                          setActiveSite(spot);
+                        }}
+                        onMouseEnter={() => setHoverSite(spot)}
+                        onMouseLeave={() => setHoverSite(null)}
+                        whileHover={{ scale: 1.5, rotate: 15, zIndex: 40 }}
+                        whileTap={{ scale: 0.8 }}
+                      >
 
-          {/* Cumulative Growth Counter */}
-          <div className="absolute bottom-8 right-8 z-40">
-            <div className="bg-zinc-900/90 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-cyan-400/20 shadow-[0_0_40px_rgba(34,211,238,0.1)] group transition-all hover:scale-105 border-b-4 border-b-cyan-500">
-              <div className="text-[10px] text-cyan-400 uppercase tracking-[0.3em] font-black mb-1 opacity-70">Structural Integrity</div>
-              <div className="text-3xl font-mono font-black text-white tabular-nums flex items-center gap-3">
-                <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-                {cumulativeGrowth.toLocaleString()}
+                        <>
+                          <div className="absolute inset-0 rounded-full bg-inherit animate-ping opacity-40" />
+                          <div className="w-2 h-2 rounded-full bg-white opacity-40" />
+                        </>
+
+                      </motion.div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
+
+              {/* Grid Overlay */}
+              <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.05] bg-[radial-gradient(#ffd700_1px,transparent_1px)] [background-size:20px_20px]" />
             </div>
+
+            {/* Corner HUD Details */}
+            <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 border-yellow-500/40 rounded-tl-2xl pointer-events-none" />
+            <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 border-yellow-500/40 rounded-br-2xl pointer-events-none" />
           </div>
         </div>
 
-        {/* Info Panel */}
-        <div className="w-full lg:col-span-5 h-full">
+        {/* Right Info Panel */}
+        <div className="lg:col-span-3">
           <AnimatePresence mode="wait">
-            {siteData ? (
+            {activeSite ? (
               <motion.div
-                key="site-info"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-neutral-900/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[3.5rem] shadow-[0_0_50px_rgba(0,0,0,0.3)] relative overflow-hidden h-full flex flex-col"
+                key={activeSite.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="h-full bg-zinc-900/40 backdrop-blur-xl border border-yellow-500/20 rounded-[2.5rem] p-6 flex flex-col shadow-2xl relative overflow-hidden"
               >
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
-                <div className="absolute -left-10 top-1/2 w-32 h-32 bg-gold-500/5 rounded-full blur-[60px]" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 blur-3xl rounded-full" />
 
-                <div className="relative z-10 flex flex-col h-full flex-grow">
-                  <div className="flex justify-between items-center mb-8">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Anatomy Group</span>
-                      <span className="text-white font-black text-lg">{siteData.category}</span>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gold-500/10 flex items-center justify-center text-2xl border border-gold-500/20">
+                    {activeSite.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-gold-400 leading-tight">{activeSite.name}</h3>
+                    <div className="flex gap-2">
+                      <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase
+                             ${activeSite.riskLevel === 'Low' ? 'bg-green-500/20 text-green-400' :
+                          activeSite.riskLevel === 'Medium' ? 'bg-gold-500/20 text-gold-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {mapContent.riskLevelLabel}: {activeSite.riskLevel}
+                      </span>
                     </div>
-                    <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase border-2 ${siteData.riskLevel === 'Low' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                      siteData.riskLevel === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                        'bg-red-500/10 text-red-400 border-red-500/20'
-                      }`}>
-                      {siteData.riskLevel} Risk
+                  </div>
+                </div>
+
+                <div className="space-y-4 flex-grow overflow-y-auto custom-scrollbar pr-2">
+                  {/* Absorption Bar */}
+                  <div className="p-4 bg-black/40 rounded-2xl border border-white/5">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">{mapContent.efficiencyLabel || mapContent.labels?.efficiency}</span>
+                      <span className="text-lg font-black text-green-400">{activeSite.absorption}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${activeSite.absorption}%` }}
+                        className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                      />
                     </div>
                   </div>
 
-                  <h2 className="text-5xl font-black text-white mb-6 tracking-tighter leading-[0.9] border-l-4 border-cyan-500 pl-6 text-glow-cyan">{siteData.name}</h2>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-10 font-bold opacity-80">{siteData.description}</p>
-
-                  <div className="grid grid-cols-2 gap-4 mb-10">
-                    <div className="p-6 bg-white/[0.03] rounded-3xl border border-white/5 group hover:bg-white/[0.05] transition-colors">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                        <span className="text-[9px] text-zinc-500 uppercase font-black tracking-tight">{content.injectionMap.maxVolumeLabel}</span>
-                      </div>
-                      <div className="text-2xl font-black text-white font-mono">{siteData.volume}</div>
+                  {/* Technical Specs */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 bg-zinc-800/50 rounded-xl border border-white/5">
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase mb-1">{mapContent.needleSizeLabel}</p>
+                      <p className="text-xs font-black text-white">{activeSite.needle}</p>
                     </div>
-                    <div className="p-6 bg-white/[0.03] rounded-3xl border border-white/5 group hover:bg-white/[0.05] transition-colors">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                        <span className="text-[9px] text-zinc-500 uppercase font-black tracking-tight">{content.injectionMap.needleSizeLabel}</span>
-                      </div>
-                      <div className="text-2xl font-black text-white font-mono">{siteData.needle}</div>
+                    <div className="p-3 bg-zinc-800/50 rounded-xl border border-white/5">
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase mb-1">{mapContent.maxVolumeLabel}</p>
+                      <p className="text-xs font-black text-white">{activeSite.volume}</p>
+                    </div>
+                    <div className="p-3 bg-zinc-800/50 rounded-xl border border-white/5">
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase mb-1">{mapContent.recoveryLabel}</p>
+                      <p className="text-xs font-black text-white">{activeSite.recoveryDays} {mapContent.labels?.days || "Days"}</p>
+                    </div>
+                    <div className="p-3 bg-zinc-800/50 rounded-xl border border-white/5">
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase mb-1">{mapContent.riskLevelLabel}</p>
+                      <p className={`text-xs font-black ${activeSite.riskLevel === 'Low' ? 'text-green-400' : activeSite.riskLevel === 'Medium' ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {activeSite.riskLevel}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Scifi Advice Card */}
-                  <div className="p-6 bg-gradient-to-br from-gold-500/10 to-transparent border border-gold-500/20 rounded-3xl mb-10 relative group">
-                    <div className="absolute top-4 right-4 text-gold-500/20"><Info className="w-12 h-12" /></div>
-                    <h3 className="text-gold-500 font-black text-[10px] uppercase mb-3 flex items-center gap-2 tracking-[0.2em]">
-                      <Zap className="w-3 h-3" /> System Insight
-                    </h3>
-                    <p className="text-xs text-white leading-relaxed font-bold italic">
-                      {content.injectionMap.goldenHourDesc}
+                  {/* Warnings */}
+                  {activeSite.warning && (
+                    <div className="p-4 bg-red-500/10 rounded-2xl border border-red-500/20 flex gap-3">
+                      <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                      <p className="text-xs text-red-200 font-bold leading-tight">{activeSite.warning}</p>
+                    </div>
+                  )}
+
+                  {/* Mr. X Advice */}
+                  <div className="p-4 bg-yellow-500/5 rounded-2xl border border-yellow-500/10 relative">
+                    <div className="flex items-center gap-2 mb-2 text-yellow-500">
+                      <Zap className="w-3 h-3" />
+                      <span className="text-[10px] font-black uppercase tracking-tighter">{mapContent.mrxInsightLabel}</span>
+                    </div>
+                    <p className="text-sm text-zinc-200 font-bold leading-relaxed italic">
+                      "{activeSite.advice}"
                     </p>
                   </div>
 
-                  <div className="mt-auto pt-6 border-t border-white/5">
-                    <div className="flex gap-4">
-                      <button
-                        onClick={handleLog}
-                        className="flex-1 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-gold-500 transition-all active:scale-95 flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
-                      >
-                        <ShieldCheck className="w-4 h-4" /> {content.injectionMap.logInjectionBtn}
-                      </button>
-                      <button
-                        onClick={handleSuggest}
-                        className="p-4 bg-zinc-800 text-white rounded-2xl border border-white/10 hover:border-cyan-500 hover:text-cyan-400 transition-all active:scale-95"
-                        title={content.injectionMap.suggestBtn}
-                        aria-label={content.injectionMap.suggestBtn}
-                      >
-                        <RefreshCw className="w-5 h-5" />
-                      </button>
+
+                  {/* Enhanced Data: Best For & Pain Level */}
+                  {(activeSite.bestFor || activeSite.painLevel) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {activeSite.bestFor && (
+                        <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
+                          <p className="text-[9px] text-blue-300 font-bold uppercase mb-1">{mapContent.labels?.bestFor || "Best For"}</p>
+                          <p className="text-xs font-bold text-white leading-snug">{activeSite.bestFor}</p>
+                        </div>
+                      )}
+                      {activeSite.painLevel && (
+                        <div className="p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20">
+                          <p className="text-[9px] text-purple-300 font-bold uppercase mb-1">{mapContent.labels?.painLevel || "Pain Level"}</p>
+                          <p className="text-xs font-bold text-white leading-snug">{activeSite.painLevel}</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Step-by-Step Guide */}
+                  {activeSite.steps && (
+                    <div className="p-5 bg-zinc-800/30 rounded-3xl border border-white/5">
+                      <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Activity className="w-3 h-3" /> {mapContent.labels?.injectionSteps || "Injection Steps"}
+                      </h4>
+                      <ul className={`space-y-3 relative before:absolute before:inset-y-0 ${lang === 'ar' || lang === 'he' ? 'before:right-[7px]' : 'before:left-[7px]'} before:w-[2px] before:bg-zinc-800`}>
+                        {activeSite.steps.map((step, idx) => (
+                          <li key={idx} className={`relative text-xs text-zinc-300 leading-relaxed font-medium ${lang === 'ar' || lang === 'he' ? 'pr-6 text-right' : 'pl-6 text-left'}`}>
+                            <span className={`absolute top-1.5 w-3.5 h-3.5 bg-zinc-700 rounded-full border-2 border-black z-10 ${lang === 'ar' || lang === 'he' ? 'right-0' : 'left-0'}`}></span>
+                            {step}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveSite(null)}
+                  className="mt-6 w-full py-4 bg-gold-500 text-black font-black uppercase text-xs rounded-2xl hover:bg-gold-400 transition-all flex items-center justify-center gap-2 shadow-lg shadow-gold-500/20"
+                >
+                  {mapContent.closeDetailsBtn}
+                </motion.button>
               </motion.div>
+
             ) : (
               <motion.div
-                key="empty-state"
+                key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 border-2 border-dashed border-zinc-900 rounded-[3.5rem] bg-zinc-950/20 relative"
+                className="h-full flex flex-col items-center justify-center text-center p-8 bg-zinc-900/20 border-2 border-dashed border-white/5 rounded-[2.5rem]"
               >
-                {/* Scanning HUD Element */}
-                <div className="absolute top-10 left-10 w-20 h-20 border-t-2 border-l-2 border-white/10 rounded-tl-3xl" />
-                <div className="absolute bottom-10 right-10 w-20 h-20 border-b-2 border-r-2 border-white/10 rounded-br-3xl" />
-
-                <div className="relative mb-12">
-                  <div className="absolute inset-0 bg-cyan-500 blur-[60px] opacity-10 rounded-full animate-pulse" />
-                  <div className="w-40 h-40 bg-zinc-900/80 rounded-full flex items-center justify-center relative border border-white/10 shadow-2xl">
-                    <Target className="w-16 h-16 text-cyan-500 animate-spin-slow" />
-                  </div>
+                <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center mb-6 border border-white/10 animate-blob">
+                  <Info className="w-10 h-10 text-gold-500/50" />
                 </div>
-                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase italic">{content.injectionMap.interactiveMapLabel}</h3>
-                <p className="text-zinc-500 max-w-xs leading-relaxed font-bold text-sm opacity-60">
-                  {content.injectionMap.tapToExplore}
+                <h3 className="text-xl font-bold text-white mb-2">{mapContent.labels?.selectPoint || "Select Injection Point"}</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed max-w-[200px]">
+                  {mapContent.tapToExplore}
                 </p>
-                <button
-                  onClick={handleSuggest}
-                  className="mt-12 px-12 py-5 bg-neutral-900 text-cyan-400 rounded-2xl border-2 border-cyan-500/20 font-black uppercase text-xs tracking-[0.3em] hover:bg-cyan-500 hover:text-black hover:border-cyan-500 transition-all shadow-lg"
-                >
-                  Initiate Scan
-                </button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </div>
-    </div>
+      </div >
+
+      {/* Footer Section: What happens after? */}
+      <footer className="mt-16 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 blur-[100px] pointer-events-none" />
+        <div className="relative p-8 md:p-12 bg-zinc-950/50 backdrop-blur-3xl border border-white/5 rounded-[4rem] overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+
+          <h2 className="text-3xl md:text-4xl font-black text-center mb-10 text-glow-white">
+            {mapContent.goldenHourTitle}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              <FeatureCard
+                key={`feat-power-${activeSite?.id || 'all'}`}
+                icon="🚀"
+                title={mapContent.featureCards?.power.title || "Power Explosion"}
+                desc={dynamicStats.powerDesc}
+                color="bg-blue-500/10 border-blue-500/20"
+                glow="shadow-blue-500/20"
+              />
+              <FeatureCard
+                key={`feat-tissue-${activeSite?.id || 'all'}`}
+                icon="🛡️"
+                title={mapContent.featureCards?.tissue.title || "Tissue Building"}
+                desc={dynamicStats.tissueDesc}
+                color="bg-green-500/10 border-green-500/20"
+                glow="shadow-green-500/20"
+              />
+              <FeatureCard
+                key={`feat-burn-${activeSite?.id || 'all'}`}
+                icon="🔥"
+                title={mapContent.featureCards?.burn.title || "Burn & Define"}
+                desc={dynamicStats.burnDesc}
+                color="bg-red-500/10 border-red-500/20"
+                glow="shadow-red-500/20"
+              />
+            </AnimatePresence>
+          </div>
+        </div>
+      </footer>
+    </div >
   );
 };
+
+// Sub-components for cleaner structure
+
+const StatCard = ({ label, value, color, icon, delay = 0 }: { label: string, value: string, color: string, icon: React.ReactNode, delay?: number }) => (
+  <motion.div
+    initial={{ opacity: 0, x: -20, scale: 0.9 }}
+    animate={{ opacity: 1, x: 0, scale: 1 }}
+    transition={{ delay, type: "spring", stiffness: 200 }}
+    whileHover={{ scale: 1.05, x: 5 }}
+    className="flex-1 bg-zinc-900/60 backdrop-blur-md border border-white/5 rounded-3xl p-5 hover:border-gold-500/30 transition-colors group relative overflow-hidden"
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="flex items-center gap-2 mb-2 text-zinc-300 font-bold text-[11px] uppercase tracking-widest relative z-10">
+      {icon}
+      {label}
+    </div>
+    <div className={`text-2xl font-black ${color} relative z-10 drop-shadow-sm`}>
+      {value}
+    </div>
+  </motion.div>
+);
+
+const FeatureCard = ({ icon, title, desc, color, glow }: { icon: string, title: string, desc: string, color: string, glow: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3 }}
+    className={`p-6 rounded-[2.5rem] border ${color} shadow-lg ${glow} transition-all hover:-translate-y-2 relative overflow-hidden`}
+  >
+    <div className="absolute inset-0 opacity-0 hover:opacity-10 transition-opacity bg-white"></div>
+    <div className="text-4xl mb-4 p-4 bg-black/20 w-fit rounded-2xl animate-bounce-slow">{icon}</div>
+    <h4 className="text-xl font-black text-white mb-2">{title}</h4>
+    <p className="text-sm text-zinc-400 leading-relaxed font-bold">{desc}</p>
+  </motion.div>
+);
 
 export default InjectionMap;

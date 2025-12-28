@@ -3,7 +3,24 @@
 export enum Language {
   AR = 'ar',
   EN = 'en',
-  HE = 'he'
+  HE = 'he',
+  FR = 'fr',
+  ES = 'es',
+  DE = 'de',
+  IT = 'it',
+  RU = 'ru',
+  TR = 'tr',
+  PT = 'pt',
+  FA = 'fa',
+  UR = 'ur'
+}
+
+declare global {
+  interface Window {
+    SpaceRemit: {
+      Pay: (paymentDetails: Record<string, unknown>) => void;
+    };
+  }
 }
 
 export enum Currency {
@@ -19,7 +36,9 @@ export enum Page {
   LAB = 'lab',
   GENETIC = 'genetic',
   CYCLE_ARCHITECT = 'cycle',
-  SMART_LANDING = 'smart-landing'
+  SMART_LANDING = 'smart-landing',
+  LOGIN = 'login',
+  SIGNUP = 'signup'
 }
 
 export interface PricingTier {
@@ -48,7 +67,7 @@ export interface FeatureItem {
 export interface BenefitItem {
   title: string;
   description: string;
-  iconKey: 'time' | 'science' | 'shield' | 'source' | 'health' | 'guide' | 'truth';
+  iconKey: 'time' | 'science' | 'shield' | 'source' | 'health' | 'guide' | 'truth' | 'roi' | 'safety' | 'simplified' | 'smart';
 }
 
 export interface LabTest {
@@ -82,7 +101,7 @@ export interface TimelinePhase {
   week: string;
   title: string;
   shortDesc: string;
-  iconKey: 'spark' | 'muscle' | 'trophy' | 'flag';
+  iconKey: 'spark' | 'muscle' | 'trophy' | 'flag' | string;
   stats: TimelinePhaseStats;
   details: {
     biological: string; // What happens inside
@@ -114,8 +133,13 @@ export interface InjectionSite {
   riskLevel: 'Low' | 'Medium' | 'High';
   warning?: string;
   description: string;
+  steps?: string[]; // Detailed instructions
+  painLevel?: string; // e.g. "Low (2/10)"
+  bestFor?: string; // e.g. "High Volume, Oil Based"
   // SVG Coordinates for the heatmap
   pathD: string; // SVG Path Data
+  icon?: string; // e.g. "💉"
+  advice?: string; // e.g. "Rotation is key..."
 }
 
 export interface FaqItem {
@@ -240,7 +264,19 @@ export interface CycleArchitectContent {
   stealthPctAlias: string;
 }
 
+
+
 export interface ContentStrings {
+  // Auth
+  loginSuccess?: string;
+  signupSuccess?: string;
+  invalidCredentials?: string;
+  logout?: string; // Add logout here
+  welcomeUser?: string; // Optional: for 'Welcome, User'
+  loginWithGoogle?: string;
+  loginWithMicrosoft?: string;
+  orDivider?: string;
+
   // Navigation & Tools
   navAiTools: string;
   navPremiumResources: string;
@@ -263,7 +299,7 @@ export interface ContentStrings {
   // SEO Specific Fields
   seoTitle: string;
   seoDescription: string;
-  seoKeywords: string;
+  seoKeywords: string[];
 
   heroTitle: string;
   heroSubtitle: string;
@@ -320,6 +356,16 @@ export interface ContentStrings {
   downloadFullBook: string;
   processing: string;
   purchaseSuccess: string;
+  loginTitle: string;
+  signupTitle: string;
+  emailLabel: string;
+  passwordLabel: string;
+  nameLabel: string;
+  loginBtn: string;
+  signupBtn: string;
+  noAccount: string;
+  haveAccount: string;
+
 
   // Benefits Section
   benefitsTitle: string;
@@ -346,6 +392,9 @@ export interface ContentStrings {
       hormones: string;
       organs: string;
       blood: string;
+      vitamins: string;
+      minerals: string;
+      thyroid: string;
     };
     labels: {
       whatIsIt: string;
@@ -505,6 +554,18 @@ export interface ContentStrings {
       frameSize: string;
       boneThickness: string;
       lowerBody: string;
+      shoulders: string;
+      chest: string;
+      waist: string;
+      thigh: string;
+      calf: string;
+      current: string;
+      potential: string;
+      analysis: string;
+      roadmap: string;
+      ffmi: string;
+      goldenRatio: string;
+      physiqueScore: string;
     };
     modelLabel: string;
     awaitingDataTitle: string;
@@ -574,6 +635,22 @@ export interface ContentStrings {
 
   // Injection Map
   injectionMap: {
+    labels: {
+      left: string;
+      right: string;
+      days: string;
+      injectionSteps: string;
+      selectPoint: string;
+      efficiency: string;
+      recovery: string;
+      bestFor: string;
+      painLevel: string;
+    };
+    featureCards: {
+      power: { title: string; desc: string };
+      tissue: { title: string; desc: string };
+      burn: { title: string; desc: string };
+    };
     title: string;
     subtitle: string;
     viewFront: string;
@@ -606,6 +683,10 @@ export interface ContentStrings {
     rotationTrackerTitle: string;
     cumulativeGrowthLabel: string;
     efficiencyLabel: string;
+    stimulatedCellsLabel: string;
+    rotateHint: string;
+    mrxInsightLabel: string;
+    closeDetailsBtn: string;
     comfortableSpot: string;
 
     sites: InjectionSite[];
@@ -639,11 +720,7 @@ export interface ContentStrings {
     seconds: string;
   };
   offerExpired: string;
-  heroEditions: {
-    ar: string;
-    en: string;
-    he: string;
-  };
+  heroEditions: Record<Language, string>;
 
   // Sales Toast
   salesToast: {
