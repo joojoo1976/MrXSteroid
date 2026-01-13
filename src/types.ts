@@ -3,16 +3,8 @@
 export enum Language {
   AR = 'ar',
   EN = 'en',
-  HE = 'he',
-  FR = 'fr',
-  ES = 'es',
   DE = 'de',
-  IT = 'it',
-  RU = 'ru',
-  TR = 'tr',
-  PT = 'pt',
-  FA = 'fa',
-  UR = 'ur'
+  JA = 'ja'
 }
 
 declare global {
@@ -25,7 +17,9 @@ declare global {
 
 export enum Currency {
   USD = 'USD',
-  EGP = 'EGP'
+  EGP = 'EGP',
+  SAR = 'SAR',
+  EUR = 'EUR'
 }
 
 export enum Page {
@@ -38,18 +32,37 @@ export enum Page {
   CYCLE_ARCHITECT = 'cycle',
   SMART_LANDING = 'smart-landing',
   LOGIN = 'login',
-  SIGNUP = 'signup'
+  SIGNUP = 'signup',
+  PROFILE = 'profile',
+  MEDICAL_DISCLAIMER = 'medical_disclaimer',
+  RESET_PASSWORD = 'reset_password',
+  CHECKOUT = 'checkout'
+}
+
+export type ProductVariant = 'digital' | 'paperback' | 'hardcover';
+export type ShippingZone = 'egypt' | 'global';
+
+export interface CheckoutState {
+  variant: ProductVariant;
+  quantity: number;
+  shippingZone: ShippingZone;
 }
 
 export interface PricingTier {
+  id: ProductVariant;
   name: string;
-  price: string;
+  price: number;
   originalPrice?: string;
   description: string;
   features: string[];
   buttonText: string;
   isPopular?: boolean;
   popularLabel?: string;
+  requiresShipping: boolean;
+  requiresBodyStats: boolean;
+  includesEbook: boolean;
+  includesAudiobook: boolean;
+  includesCoaching: boolean;
 }
 
 export interface TargetAudience {
@@ -67,7 +80,7 @@ export interface FeatureItem {
 export interface BenefitItem {
   title: string;
   description: string;
-  iconKey: 'time' | 'science' | 'shield' | 'source' | 'health' | 'guide' | 'truth' | 'roi' | 'safety' | 'simplified' | 'smart';
+  iconKey: 'time' | 'science' | 'shield' | 'source' | 'health' | 'guide' | 'truth' | 'roi' | 'safety' | 'simplified' | 'smart' | 'chart' | 'exit' | 'women' | 'injection' | string;
 }
 
 export interface LabTest {
@@ -113,7 +126,10 @@ export interface TimelinePhase {
 export interface Compound {
   id: string;
   name: string;
+  nameAr?: string;
   halfLife: number; // in days
+  tips?: string[];
+  warnings?: string[];
 }
 
 export interface InjectionLog {
@@ -156,6 +172,7 @@ export interface MealItem {
 export interface DailyMeal {
   mealName: string;
   foods: MealItem[];
+  steps?: string[];
 }
 
 export interface QuizOption {
@@ -276,6 +293,17 @@ export interface ContentStrings {
   loginWithGoogle?: string;
   loginWithMicrosoft?: string;
   orDivider?: string;
+  forgotPassword?: string;
+  resetPassword?: string;
+  sendResetLink?: string;
+  newPassword?: string;
+  confirmNewPassword?: string;
+  passwordResetSuccess?: string;
+  passwordResetError?: string;
+  emailSentSuccess?: string;
+  backToLogin?: string;
+  resetPasswordTitle?: string;
+  resetPasswordDesc?: string;
 
   // Navigation & Tools
   navAiTools: string;
@@ -294,12 +322,12 @@ export interface ContentStrings {
     dark: string;
     system: string;
   };
-  backToHome: string;
+  backToHome?: string;
 
   // SEO Specific Fields
-  seoTitle: string;
-  seoDescription: string;
-  seoKeywords: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string[];
 
   heroTitle: string;
   heroSubtitle: string;
@@ -308,14 +336,14 @@ export interface ContentStrings {
   audioPreviewBtn: string;
   authorSection: string;
   authorName: string;
-  authorBio: string;
-  featuresTitle: string;
+  authorBio?: string;
+  featuresTitle?: string;
   sneakPeekTitle: string;
   sneakPeekSubtitle: string;
   unlockText: string;
-  buyNow: string;
-  contact: string;
-  copyright: string;
+  buyNow?: string;
+  contact?: string;
+  copyright?: string;
   features: FeatureItem[];
   testimonials: {
     name: string;
@@ -335,10 +363,10 @@ export interface ContentStrings {
     strategy: string;
   };
   faqs: FaqItem[];
-  privacyPolicy: string;
-  termsOfService: string;
-  refundPolicy: string;
-  legalDisclaimer: string;
+  privacyPolicy?: string;
+  termsOfService?: string;
+  refundPolicy?: string;
+  legalDisclaimer?: string;
   aboutUs: string;
   legal: string;
   quickLinks: string;
@@ -348,23 +376,49 @@ export interface ContentStrings {
   pricingTitle: string;
   pricingSubtitle: string;
   pricingTiers: PricingTier[];
-  disclaimerTitle: string;
-  disclaimerContent: string;
-  agreeButton: string;
-  disclaimerAcknowledgement: string;
-  importantDisclaimer: string;
+  disclaimerTitle?: string;
+  disclaimerContent?: string;
+  agreeButton?: string;
+  disclaimerAcknowledgement?: string;
+  importantDisclaimer?: string;
   downloadFullBook: string;
   processing: string;
   purchaseSuccess: string;
-  loginTitle: string;
-  signupTitle: string;
-  emailLabel: string;
-  passwordLabel: string;
-  nameLabel: string;
-  loginBtn: string;
-  signupBtn: string;
-  noAccount: string;
-  haveAccount: string;
+  // Checkout & Shipping
+  billingAddress?: string;
+  shippingAddress?: string;
+  city?: string;
+  zipCode?: string;
+  shippingProvider?: string;
+  weight?: string;
+  height?: string;
+  age?: string;
+  goal?: string;
+  securePaymentMessage?: string;
+  orderSummary?: string;
+  subtotal?: string;
+  shipping?: string;
+  transactionFee?: string;
+  total?: string;
+  payNow?: string;
+  secureCheckout?: string;
+  fullName?: string;
+  emailAddress?: string;
+  checkoutTitle?: string;
+  billingDetails?: string;
+  paymentMethod?: string;
+  cancel?: string;
+  loginTitle?: string;
+  signupTitle?: string;
+  emailLabel?: string;
+  passwordLabel?: string;
+  nameLabel?: string;
+  loginBtn?: string;
+  signupBtn?: string;
+  noAccount?: string;
+  haveAccount?: string;
+  usernameLabel?: string;
+  profileTitle?: string;
 
 
   // Benefits Section
@@ -416,51 +470,44 @@ export interface ContentStrings {
   whoIsClosing: string;
   whoIsCta: string;
 
-  // Checkout Section
-  checkoutTitle: string;
-  billingDetails: string;
-  fullName: string;
-  emailAddress: string;
-  paymentMethod: string;
-  creditCard: string;
-  cardNumber: string;
-  expiryDate: string;
-  cvc: string;
-  payNow: string;
-  cancel: string;
-  orderSummary: string;
-  total: string;
-  secureCheckout: string;
 
   // About Page
-  aboutPageTitle: string;
-  aboutPageContent: string;
-  aboutPageStoryTitle: string;
-  aboutPageStory: string;
-  aboutPageMissionTitle: string;
-  aboutPageMission: string;
+  aboutPageTitle?: string;
+  aboutPageContent?: string;
+  aboutPageStoryTitle?: string;
+  aboutPageStory?: string;
+  aboutPageMissionTitle?: string;
+  aboutPageMission?: string;
 
   // Contact Page
-  contactPageTitle: string;
-  contactPageSubtitle: string;
-  contactFormNamePlaceholder: string;
-  contactFormEmailPlaceholder: string;
-  contactFormMessagePlaceholder: string;
-  contactFormSubjectPlaceholder: string;
-  contactFormSubmit: string;
-  contactFormSuccessMessage: string;
-  contactInfoAddress: string;
-  contactInfoEmail: string;
-  contactInfoPhone: string;
-  contactInfoHours: string;
-  homeLink: string;
-  viewOnMap: string;
+  contactPageTitle?: string;
+  contactPageSubtitle?: string;
+  contactFormNamePlaceholder?: string;
+  contactFormEmailPlaceholder?: string;
+  contactFormMessagePlaceholder?: string;
+  contactFormSubjectPlaceholder?: string;
+  contactFormSubmit?: string;
+  contactFormSuccessMessage?: string;
+  contactInfoAddress?: string;
+  contactInfoEmail?: string;
+  contactInfoPhone?: string;
+  contactInfoHours?: string;
+  homeLink?: string;
+  viewOnMap?: string;
 
   // Cookie Consent
-  cookieTitle: string;
-  cookieMessage: string;
-  cookieAccept: string;
-  cookieReject: string;
+  cookieTitle?: string;
+  cookieMessage?: string;
+  cookieAccept?: string;
+  cookieReject?: string;
+
+  medicalDisclaimerPage: {
+    title: string;
+    sections: {
+      title: string;
+      content: string;
+    }[];
+  };
 
   // Macro Calculator
   calcTitle: string;
@@ -506,6 +553,7 @@ export interface ContentStrings {
   };
   calcAnalysisLabel: string;
   calcBmiStatusLabel: string;
+  calcDistributionTitle: string;
 
   calcShuffleLabel: string;
   calcAwaitingInputLabel: string;
@@ -541,6 +589,24 @@ export interface ContentStrings {
     strength: string;
     endurance: string;
   };
+  calcAiInsightTitle: string;
+  calcAiInsightText: string;
+  calcPredictiveAccuracy: string;
+  calcEcosystemStatus: string;
+  calcMealBalanceLabel: string;
+  calcRecipeStepsLabel: string;
+  calcPatternAnalysisLabel: string;
+  calcMetabolicEfficiencyLabel: string;
+  calcSimulateBtn: string;
+  macroEcosystem: {
+    syncStatus: string;
+    analysisTitle: string;
+    evolutionaryTitle: string;
+    aiInsightTitle: string;
+    stepsLabel: string;
+    ingredientsLabel: string;
+  };
+
 
   // Genetic Potential Calculator
   geneticCalculator: {
@@ -593,12 +659,14 @@ export interface ContentStrings {
   };
 
   // Half-Life Visualizer
+  adLabel: string;
   halfLifeVisualizer: {
     title: string;
     subtitle: string;
     compoundLabel: string;
     dosageLabel: string;
     durationLabel: string;
+    startWeekLabel: string;
     frequencyLabel: string;
     yAxis: string;
     xAxis: string;
@@ -609,6 +677,15 @@ export interface ContentStrings {
     activeStackTitle: string;
     serumTitle: string;
     peakLabel: string;
+    saturationTitle: string;
+    stabilityTitle: string;
+    estrogenRisk: string;
+    prolactinRisk: string;
+    riskLevels: {
+      low: string;
+      med: string;
+      high: string;
+    };
     emptyStackMsg: string;
     compounds: Compound[];
     frequencies: {
@@ -627,10 +704,25 @@ export interface ContentStrings {
       prosTitle: string;
       consTitle: string;
       adviceTitle: string;
+      stabilityAdviceTitle: string;
+      safetyAdviceTitle: string;
+      pctTableTitle: string;
       pros: string[];
       cons: string[];
       advice: string;
+      pctNote: string;
+      protocolLevelLabel: string;
+      recoveryPowerLabel: string;
+      tableHeaders: {
+        compound: string;
+        first10Days: string;
+        weeks2to4: string;
+        frequency: string;
+      };
     };
+    consistencyLabel: string;
+    mgSerumLabel: string;
+    loadLevelLabel: string;
   };
 
   // Injection Map
@@ -712,6 +804,8 @@ export interface ContentStrings {
     feelingTitle: string;
     actionTitle: string;
     phaseLabel: string;
+    chartTitle: string;
+    chartSubtitle: string;
   };
   timeUnits: {
     days: string;
@@ -746,6 +840,8 @@ export interface ContentStrings {
     send: string;
     disclaimer: string;
     welcomeMessage: string;
+    label: string;
+    suggestions: string[];
   };
 
   // Readiness Quiz
@@ -772,6 +868,7 @@ export interface ContentStrings {
 
   // Cycle Architect (NEW)
   cycleArchitect: CycleArchitectContent;
+  checkoutAgree: string;
 }
 
 export interface TableRow {

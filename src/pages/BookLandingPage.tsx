@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import CountdownTimer from "@/components/CountdownTimer"; // Import the new CountdownTimer component
 import { getTranslation, Language } from "@/lib/i18n";
+import { renderStyledBrandName } from "@/utils/logic";
 
 const BookLandingPage = () => {
   const [lang, setLang] = useState<Language>("ar");
@@ -40,7 +41,7 @@ const BookLandingPage = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-          {t.bookTitle}
+          {renderStyledBrandName(t.bookTitle)}
         </h1>
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
           {t.tagline}
