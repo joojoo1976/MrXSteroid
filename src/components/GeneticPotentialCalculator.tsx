@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { Scale, Ruler, Activity, Info, RefreshCcw, User, ScanLine, Target, Brain, Trophy, Zap, Share2 } from 'lucide-react';
-import { ContentStrings } from '../types';
+import { toast } from 'sonner';
+import BrandLogo from './BrandLogo';
+import AdPlaceholder from './AdPlaceholder';
+import KineticCounter from './KineticCounter';
+import { ContentStrings, Page } from '../types';
+import { renderStyledBrandName } from '../utils/logic';
+import { convertValue, toMetric } from '../utils/logic';
+
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;
   unitSystem?: 'metric' | 'imperial';
   isRTL?: boolean;
+  navigateTo: (page: Page) => void;
 }
 
-// Kinetic Counter Component
-const KineticCounter = ({ value, duration = 2, decimals = 1, prefix = "", suffix = "" }: { value: number, duration?: number, decimals?: number, prefix?: string, suffix?: string }) => {
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { damping: 50, stiffness: 100 });
-  const displayValue = useTransform(springValue, (latest) => `${prefix}${latest.toFixed(decimals)}${suffix}`);
 
-  useEffect(() => {
-    motionValue.set(value);
-  }, [value, motionValue]);
 
-  return <motion.span>{displayValue}</motion.span>;
-};
 
 // Radar Chart Component
 const RadarChart = ({ data, color = "#EAB308" }: { data: { label: string; value: number; fullMark: number }[]; color?: string }) => {
@@ -68,7 +66,7 @@ const RadarChart = ({ data, color = "#EAB308" }: { data: { label: string; value:
           return (
             <g key={i}>
               <line x1={center} y1={center} x2={x} y2={y} stroke="currentColor" className="text-zinc-200 dark:text-zinc-800" />
-              <text x={labelX} y={labelY} textAnchor="middle" dominantBaseline="middle" className="text-[9px] font-bold fill-zinc-400 uppercase">
+              <text x={labelX} y={labelY} textAnchor="middle" dominantBaseline="middle" className="text-xs font-black fill-zinc-400 uppercase">
                 {d.label.substring(0, 3)}
               </text>
             </g>
@@ -91,7 +89,7 @@ const RadarChart = ({ data, color = "#EAB308" }: { data: { label: string; value:
   );
 };
 
-const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({ content, unitSystem = 'metric', isRTL }) => {
+const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({ content, unitSystem = 'metric', isRTL, navigateTo }) => {
   const isImperial = unitSystem === 'imperial';
 
   const [formData, setFormData] = useState({
@@ -106,6 +104,34 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
     calf: ''
   });
 
+  const [baseMeasurements, setBaseMeasurements] = useState<Record<string, number>>({});
+
+  // Synchronize display values when unitSystem changes - using the "Adjusting state during render" pattern
+  const [prevUnitSystem, setPrevUnitSystem] = useState(unitSystem);
+  if (unitSystem !== prevUnitSystem) {
+    setPrevUnitSystem(unitSystem);
+    const updatedForm = { ...formData };
+    Object.keys(baseMeasurements).forEach(key => {
+      updatedForm[key as keyof typeof formData] = convertValue(baseMeasurements[key], 'height', unitSystem).toFixed(1);
+    });
+    setFormData(updatedForm);
+  }
+
+  const handleInputChange = (key: keyof typeof formData, val: string) => {
+    const newForm = { ...formData, [key]: val };
+    setFormData(newForm);
+
+    if (key !== 'bodyFat') {
+      const num = parseFloat(normalizeNum(val));
+      if (!isNaN(num)) {
+        setBaseMeasurements(prev => ({
+          ...prev,
+          [key]: unitSystem === 'imperial' ? toMetric(num, 'height') : num
+        }));
+      }
+    }
+  };
+
   const [result, setResult] = useState<{
     natural: number;
     enhanced: number;
@@ -117,22 +143,30 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
     potentials: { name: string; current: number; potential: number; unit: string }[];
   } | null>(null);
 
+  const normalizeNum = (val: string) => {
+    return val.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
+  };
+
   const calculatePotential = () => {
-    const h = parseFloat(formData.height);
-    const w = parseFloat(formData.wrist);
-    const a = parseFloat(formData.ankle);
-    const curChest = parseFloat(formData.chest) || 0;
-    const curShoulders = parseFloat(formData.shoulders) || 0;
-    const curWaist = parseFloat(formData.waist) || 0;
+    const h = baseMeasurements.height || 0;
+    const w = baseMeasurements.wrist || 0;
+    const a = baseMeasurements.ankle || 0;
+    const curChest = baseMeasurements.chest || 0;
+    const curShoulders = baseMeasurements.shoulders || 0;
+    const curWaist = baseMeasurements.waist || 0;
 
     const bf = parseFloat(formData.bodyFat) || 12;
+    const isAr = isRTL ?? false; // Simple check for Arabic
 
-    if (!h || !w || !a) return;
+    if (!h || !w || !a) {
+      toast.error(isAr ? "يرجى إدخال الطول ومعصم اليد والكاحل للمتابعة" : "Please enter Height, Wrist, and Ankle to proceed");
+      return;
+    }
 
-    const hIn = isImperial ? h : h / 2.54;
-    const wIn = isImperial ? w : w / 2.54;
-    const aIn = isImperial ? a : a / 2.54;
-    const hM = isImperial ? h * 0.0254 : h / 100;
+    const hIn = h / 2.54;
+    const wIn = w / 2.54;
+    const aIn = a / 2.54;
+    const hM = h / 100;
 
     const maxWeightPounds = Math.pow(hIn, 1.5) * (
       (Math.sqrt(wIn) / 21.0) +
@@ -178,8 +212,8 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
         { name: content.geneticCalculator.labels.chest, current: curChest, potential: naturalPotentials.chest, unit: isImperial ? 'in' : 'cm' },
         { name: content.geneticCalculator.labels.shoulders, current: curShoulders, potential: naturalPotentials.shoulders, unit: isImperial ? 'in' : 'cm' },
         { name: content.geneticCalculator.labels.waist, current: curWaist, potential: naturalPotentials.waist, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.thigh, current: parseFloat(formData.thigh) || 0, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.calf, current: parseFloat(formData.calf) || 0, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
+        { name: content.geneticCalculator.labels.thigh, current: parseFloat(normalizeNum(formData.thigh)) || 0, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
+        { name: content.geneticCalculator.labels.calf, current: parseFloat(normalizeNum(formData.calf)) || 0, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
       ]
     });
   };
@@ -196,15 +230,19 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
-        className="text-center mb-16 relative"
+        className="text-start mb-16 relative"
       >
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold-500/10 rounded-full blur-[120px] -z-10 animate-float-slow"></div>
+        <div className="mb-4">
+          <BrandLogo className="text-3xl md:text-5xl" onClick={() => navigateTo(Page.HOME)} />
+        </div>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="inline-flex items-center justify-center p-6 mb-8 rounded-full bg-zinc-900/5 dark:bg-zinc-100/5 border-2 border-gold-500/20 backdrop-blur-md relative overflow-hidden group shadow-2xl"
+          className="inline-flex items-center justify-center p-6 mb-8 rounded-full bg-zinc-900/5 dark:bg-card/5 border-2 border-gold-500/20 backdrop-blur-md relative overflow-hidden group shadow-2xl"
         >
           <Brain className="w-12 h-12 text-gold-500 relative z-10 animate-pulse" />
+
           <div className="absolute inset-0 bg-gold-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </motion.div>
 
@@ -216,19 +254,24 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
         </p>
       </motion.div>
 
+      {/* AdSlot: Top Banner */}
+      <div className="mb-12">
+        <AdPlaceholder slotId="genetic_top_banner" format="horizontal" content={content} />
+      </div>
+
       <div className="grid lg:grid-cols-12 gap-12">
         {/* Input Panel */}
         <div className="lg:col-span-5 space-y-10">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white dark:bg-zinc-900/90 p-10 rounded-[3rem] border-2 border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden backdrop-blur-2xl card-shine group animate-glow"
+            className="bg-white dark:bg-background/90 p-10 rounded-[3rem] border-2 border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden backdrop-blur-2xl card-shine group animate-glow"
           >
             <div className="space-y-8">
               <motion.h3
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                className="text-xs font-black uppercase tracking-[0.3em] text-gold-600 mb-10 flex items-center gap-3"
+                className="text-sm font-black uppercase tracking-[0.3em] text-gold-600 mb-10 flex items-center gap-3"
               >
                 <div className="w-2 h-2 bg-gold-500 rounded-full animate-ping"></div>
                 <ScanLine className="w-5 h-5" />
@@ -237,55 +280,58 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{content.geneticCalculator.labels.height}</label>
+                  <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{content.geneticCalculator.labels.height}</label>
                   <motion.input
                     whileFocus={{ scale: 1.05, borderColor: "rgba(234, 179, 8, 0.5)" }}
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={formData.height}
-                    onChange={e => setFormData({ ...formData, height: e.target.value })}
-                    className="w-full bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent rounded-2xl p-5 text-center font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
+                    onChange={e => handleInputChange('height', e.target.value)}
+                    className="w-full bg-zinc-100 dark:bg-background border-2 border-transparent rounded-2xl p-5 text-center font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
                     placeholder={isImperial ? "70" : "180"}
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{content.geneticCalculator.labels.bodyFat} %</label>
+                  <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{content.geneticCalculator.labels.bodyFat} %</label>
                   <motion.input
                     whileFocus={{ scale: 1.05, borderColor: "rgba(234, 179, 8, 0.5)" }}
                     type="number"
                     value={formData.bodyFat}
                     onChange={e => setFormData({ ...formData, bodyFat: e.target.value })}
-                    className="w-full bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent rounded-2xl p-5 text-center font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
+                    className="w-full bg-zinc-100 dark:bg-background border-2 border-transparent rounded-2xl p-5 text-center font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
                     placeholder="12"
                   />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                   {content.geneticCalculator.labels.wrist}
-                  <span className="text-gold-500/50 text-[10px] lowercase italic font-bold">REQUIRED</span>
+                  <span className="text-gold-500/50 text-xs lowercase italic font-bold">REQUIRED</span>
                 </label>
                 <motion.input
                   whileFocus={{ scale: 1.02, borderColor: "rgba(234, 179, 8, 0.5)" }}
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={formData.wrist}
-                  onChange={e => setFormData({ ...formData, wrist: e.target.value })}
-                  className="w-full bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent rounded-2xl p-5 font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
+                  onChange={e => handleInputChange('wrist', e.target.value)}
+                  className="w-full bg-zinc-100 dark:bg-background border-2 border-transparent rounded-2xl p-5 font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
                   placeholder={isImperial ? "7.0" : "17.5"}
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                   {content.geneticCalculator.labels.ankle}
-                  <span className="text-gold-500/50 text-[10px] lowercase italic font-bold">REQUIRED</span>
+                  <span className="text-gold-500/50 text-xs lowercase italic font-bold">REQUIRED</span>
                 </label>
                 <motion.input
                   whileFocus={{ scale: 1.02, borderColor: "rgba(234, 179, 8, 0.5)" }}
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={formData.ankle}
-                  onChange={e => setFormData({ ...formData, ankle: e.target.value })}
-                  className="w-full bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent rounded-2xl p-5 font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
+                  onChange={e => handleInputChange('ankle', e.target.value)}
+                  className="w-full bg-zinc-100 dark:bg-background border-2 border-transparent rounded-2xl p-5 font-mono font-black text-2xl focus:ring-4 ring-gold-500/20 outline-none transition-all shadow-inner"
                   placeholder={isImperial ? "9.0" : "22.5"}
                 />
               </div>
@@ -319,11 +365,11 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                 {/* Top Stats Row */}
                 <div className="grid md:grid-cols-2 gap-10">
                   {/* Physics Score Card */}
-                  <div className="bg-zinc-900 dark:bg-zinc-950 text-white p-10 rounded-[3.5rem] relative overflow-hidden border-4 border-gold-500/50 shadow-[0_0_50px_rgba(234,179,8,0.2)] group animate-glow">
+                  <div className="bg-zinc-900 dark:bg-card text-white p-10 rounded-[3.5rem] relative overflow-hidden border-4 border-gold-500/50 shadow-[0_0_50px_rgba(255,255,160,0.2)] group animate-glow">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/20 rounded-full blur-[100px] group-hover:bg-gold-500/30 transition-all duration-700 animate-float-slow"></div>
                     <div className="relative z-10">
                       <div className="flex justify-between items-start mb-8">
-                        <h4 className="text-sm font-black text-gold-500 uppercase tracking-[0.2em] animate-pulse">{content.geneticCalculator.labels.physiqueScore}</h4>
+                        <h4 className="text-base font-black text-gold-500 uppercase tracking-[0.2em] animate-pulse">{content.geneticCalculator.labels.physiqueScore}</h4>
                         <Trophy className="w-8 h-8 text-gold-500 animate-bounce" />
                       </div>
                       <div className="text-8xl font-black font-mono mb-4 flex items-baseline gap-3 animate-text-flash">
@@ -340,7 +386,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
                         </motion.div>
                       </div>
-                      <p className="mt-6 text-sm text-zinc-400 font-bold uppercase tracking-widest text-center">
+                      <p className="mt-6 text-base text-zinc-400 font-bold uppercase tracking-widest text-center">
                         THEORETICAL MAXIMUM ATTAINED
                       </p>
                     </div>
@@ -349,17 +395,17 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                   {/* Natural Limit Card */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="bg-white dark:bg-zinc-900 p-10 rounded-[3.5rem] border-4 border-zinc-100 dark:border-zinc-800 relative overflow-hidden text-center flex flex-col items-center justify-center shadow-2xl animate-glow"
+                    className="bg-white dark:bg-background p-10 rounded-[3.5rem] border-4 border-zinc-100 dark:border-zinc-800 relative overflow-hidden text-center flex flex-col items-center justify-center shadow-2xl animate-glow"
                   >
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 to-blue-500"></div>
-                    <p className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <p className="text-base font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                       <Activity className="w-4 h-4 text-green-500" />
                       {content.geneticCalculator.naturalLabel}
                     </p>
                     <div className="text-7xl font-black text-zinc-900 dark:text-white font-mono mb-4 tracking-tighter">
                       <KineticCounter value={result.natural} decimals={1} suffix={isImperial ? " LB" : " KG"} />
                     </div>
-                    <div className="text-sm font-black text-green-600 dark:text-green-400 bg-green-500/10 px-5 py-2 rounded-full uppercase tracking-widest border border-green-500/20 animate-pulse">
+                    <div className="text-base font-black text-green-600 dark:text-green-400 bg-green-500/10 px-5 py-2 rounded-full uppercase tracking-widest border border-green-500/20 animate-pulse">
                       ELITE FFMI: {result.normalizedFfmi.toFixed(1)}
                     </div>
                   </motion.div>
@@ -367,8 +413,8 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
                 {/* Radar & Enhanced Stats */}
                 <div className="grid md:grid-cols-12 gap-10">
-                  <div className="md:col-span-5 bg-white dark:bg-zinc-900 p-8 rounded-[3.5rem] border-4 border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center relative shadow-2xl group card-shine">
-                    <h4 className="absolute top-8 left-8 text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">{content.geneticCalculator.labels.analysis}</h4>
+                  <div className="md:col-span-5 bg-white dark:bg-background p-8 rounded-[3.5rem] border-4 border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center relative shadow-2xl group card-shine">
+                    <h4 className="absolute top-8 left-8 text-sm font-black text-zinc-400 uppercase tracking-[0.2em]">{content.geneticCalculator.labels.analysis}</h4>
                     <motion.div
                       animate={{ scale: [1, 1.02, 1] }}
                       transition={{ duration: 4, repeat: Infinity }}
@@ -390,18 +436,18 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                       >
                         {result.type} MORPHOTYPE
                       </motion.p>
-                      <p className="text-xs text-zinc-400 font-bold uppercase mt-1 tracking-widest">Genotype Identity</p>
+                      <p className="text-sm text-zinc-400 font-bold uppercase mt-1 tracking-widest">Genotype Identity</p>
                     </div>
                   </div>
 
-                  <div className="md:col-span-7 bg-zinc-900 text-white p-10 rounded-[3.5rem] border-4 border-zinc-800 shadow-2xl relative overflow-hidden group">
+                  <div className="md:col-span-7 bg-zinc-900 dark:bg-card text-white p-10 rounded-[3.5rem] border-4 border-zinc-800 shadow-2xl relative overflow-hidden group">
                     <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] animate-float-slow"></div>
                     <div className="flex justify-between items-center mb-10">
-                      <h4 className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Genetic Boundaries</h4>
+                      <h4 className="text-sm font-black text-zinc-500 uppercase tracking-[0.3em]">Genetic Boundaries</h4>
                       <motion.span
                         animate={{ opacity: [1, 0.3, 1] }}
                         transition={{ repeat: Infinity, duration: 1 }}
-                        className="text-[10px] bg-red-600 text-white font-black px-3 py-1.5 rounded-full uppercase tracking-tighter"
+                        className="text-xs bg-red-600 text-white font-black px-3 py-1.5 rounded-full uppercase tracking-tighter"
                       >
                         HARD LIMIT
                       </motion.span>
@@ -410,7 +456,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                     <div className="space-y-8">
                       {result.potentials.slice(0, 4).map((m, i) => (
                         <div key={i} className="space-y-3">
-                          <div className="flex justify-between text-sm font-black text-zinc-300">
+                          <div className="flex justify-between text-base font-black text-zinc-300">
                             <span className="flex items-center gap-2">
                               <div className="w-1.5 h-1.5 bg-gold-500 rounded-full"></div>
                               {m.name}
@@ -431,11 +477,11 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
                     <div className="mt-12 pt-8 border-t border-zinc-800 flex items-center justify-between group">
                       <div>
-                        <p className="text-sm font-black text-gold-500 uppercase tracking-widest animate-text-flash flex items-center gap-2">
+                        <p className="text-base font-black text-gold-500 uppercase tracking-widest animate-text-flash flex items-center gap-2">
                           <Zap className="w-4 h-4 fill-gold-500" />
                           ENHANCED THERMAL LIMIT
                         </p>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Pharmacological Potential (+35%)</p>
+                        <p className="text-xs text-zinc-500 font-bold uppercase mt-1">Pharmacological Potential (+35%)</p>
                       </div>
                       <motion.div
                         whileHover={{ scale: 1.2, rotate: 5 }}
@@ -452,7 +498,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                   whileHover={{ scale: 1.1, color: "#ef4444" }}
                   whileTap={{ scale: 0.9 }}
                   onClick={reset}
-                  className="mx-auto flex items-center gap-3 text-xs font-black text-zinc-500 uppercase tracking-[0.3em] transition-all"
+                  className="mx-auto flex items-center gap-3 text-sm font-black text-zinc-500 uppercase tracking-[0.3em] transition-all"
                 >
                   <RefreshCcw className="w-5 h-5 animate-spin-slow" />
                   RECALIBRATE BIO-DATA
@@ -464,22 +510,22 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                 key="empty"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 border-4 border-dashed border-zinc-200 dark:border-zinc-800/50 rounded-[4rem] bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-3xl relative overflow-hidden animate-glow"
+                className="h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 border-4 border-dashed border-zinc-200 dark:border-zinc-800/50 rounded-[4rem] bg-zinc-50/50 dark:bg-background/40 backdrop-blur-3xl relative overflow-hidden animate-glow"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rotate-45 transform translate-x-16 -translate-y-16"></div>
                 <motion.div
                   animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
                   transition={{ repeat: Infinity, duration: 4 }}
-                  className="w-32 h-32 bg-zinc-200/50 dark:bg-zinc-800 rounded-[2.5rem] flex items-center justify-center mb-10 shadow-inner"
+                  className="w-32 h-32 bg-zinc-200/50 dark:bg-card rounded-[2.5rem] flex items-center justify-center mb-10 shadow-inner"
                 >
                   <Activity className="w-16 h-16 text-zinc-400 dark:text-zinc-600" />
                 </motion.div>
                 <h3 className="text-3xl font-black text-zinc-800 dark:text-zinc-200 mb-4 tracking-tight">{content.geneticCalculator.awaitingDataTitle}</h3>
-                <p className="text-zinc-500 max-w-sm mx-auto text-lg font-medium leading-relaxed italic">{content.geneticCalculator.unknownMeasurements}</p>
+                <p className="text-zinc-500 max-w-sm mx-auto text-lg font-medium leading-relaxed italic">{renderStyledBrandName(content.geneticCalculator.unknownMeasurements)}</p>
                 <div className="mt-10 flex gap-2">
                   <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                 </div>
               </motion.div>
             )}

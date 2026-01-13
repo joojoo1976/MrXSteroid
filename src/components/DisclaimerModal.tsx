@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { ContentStrings } from '../types';
+import { renderStyledBrandName } from '../utils/logic';
 
 interface DisclaimerModalProps {
     content: ContentStrings;
@@ -50,20 +51,20 @@ export const DisclaimerModal: React.FC<DisclaimerModalProps> = ({ content, onAgr
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-white">{content.disclaimerTitle || "Disclaimer"}</h2>
-                            <p className="text-red-400 font-medium text-sm mt-1 uppercase tracking-wider">{content.importantDisclaimer || "IMPORTANT WARNING"}</p>
+                            <p className="text-red-400 font-medium text-base mt-1 uppercase tracking-wider">{content.importantDisclaimer || "IMPORTANT WARNING"}</p>
                         </div>
                     </div>
 
                     {/* Scrollable Content */}
-                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1 text-zinc-300 text-sm leading-relaxed whitespace-pre-line bg-zinc-950/50">
-                        {content.disclaimerContent}
+                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1 text-zinc-300 text-base leading-relaxed whitespace-pre-line bg-zinc-950/50">
+                        {renderStyledBrandName(content.disclaimerContent)}
                     </div>
 
                     {/* Footer */}
                     <div className="p-6 border-t border-zinc-800 bg-zinc-900 flex flex-col gap-4">
                         <div className="flex items-start gap-3 p-4 bg-zinc-800/50 rounded-lg">
                             <input type="checkbox" className="mt-1 w-5 h-5 rounded border-zinc-600 text-red-600 focus:ring-red-500 bg-zinc-700" id="ack" disabled={!canAgree} />
-                            <label htmlFor="ack" className={`text-sm ${canAgree ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                            <label htmlFor="ack" className={`text-base ${canAgree ? 'text-zinc-300' : 'text-zinc-500'}`}>
                                 {content.disclaimerAcknowledgement}
                             </label>
                         </div>

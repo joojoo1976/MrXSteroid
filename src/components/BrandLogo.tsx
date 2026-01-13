@@ -1,33 +1,101 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface BrandLogoProps {
-    className?: string; // For font size mainly
+    className?: string;
+    isLink?: boolean;
+    onClick?: () => void;
+    isHero?: boolean;
+    variant?: 'full' | 'short';
 }
 
-const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-2xl" }) => {
-    // Colors based on user attachment
-    // M (Yellow), r (Cyan), . (Blue)
-    // X (Blue), - (Blue)
-    // S (Yellow), t (Green), e (Red), r (Yellow), o (Blue), i (Cyan), d (Red)
+const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = false, onClick, isHero = false, variant = 'full' }) => {
+    // Spacing logic: Hero gets negative margins for tight cluster, Small (default) gets slightly relaxed spacing
+    const spacingClass = isHero ? "mx-[-1px]" : "mx-[0.5px]";
+    const brandClass = isHero ? "brand-cartoon logo-glow-intense" : "brand-cartoon-sm";
 
-    const spanClass = ""; // Base class for spans
+    const containerVariants = {
+        animate: {
+            transition: {
+                staggerChildren: 0.05
+            }
+        }
+    };
 
-    return (
-        <span className={`font-black tracking-tighter font-permanent-marker ${className}`}>
-            <span className="text-yellow-400">M</span>
-            <span className="text-cyan-400">r</span>
-            <span className="text-blue-600">.</span>
-            <span className="text-blue-600 mx-1">X</span>
-            <span className="text-blue-600">-</span>
-            <span className="text-yellow-400">S</span>
-            <span className="text-green-500">t</span>
-            <span className="text-red-500">e</span>
-            <span className="text-yellow-400">r</span>
-            <span className="text-blue-600">o</span>
-            <span className="text-cyan-400">i</span>
-            <span className="text-red-500">d</span>
-        </span>
+    const letterVariants = {
+        animate: {
+            scale: [1, 1.1, 1],
+            rotate: [0, -1, 1, 0],
+            filter: [
+                "drop-shadow(0 0 0px rgba(234, 179, 8, 0))",
+                "drop-shadow(0 0 10px rgba(234, 179, 8, 0.8))",
+                "drop-shadow(0 0 0px rgba(234, 179, 8, 0))"
+            ],
+            transition: {
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut" as const
+            }
+        },
+        hover: {
+            scale: 1.2,
+            rotate: [-5, 5, -5, 5, 0],
+            transition: { duration: 0.3 }
+        }
+    };
+
+    const LogoContent = (
+        <motion.span
+            dir="ltr"
+            variants={containerVariants}
+            animate="animate"
+            whileHover="hover"
+            className={`font-chiller inline-flex items-center select-none whitespace-nowrap ${brandClass} force-ltr cursor-pointer ${className}`}
+        >
+            <motion.span variants={letterVariants} className={`logo-c-m ${spacingClass} brand-glint`}>M</motion.span>
+            <motion.span variants={letterVariants} className={`logo-c-r-cyan ${spacingClass} brand-glint`}>r</motion.span>
+            <motion.span variants={letterVariants} className={`logo-c-dot ${spacingClass}`}>.</motion.span>
+
+            <span className="w-1"></span>
+
+            <span className="logo-c-x-wrapper">
+                <motion.span variants={letterVariants} className="logo-c-x inline-block">X</motion.span>
+            </span>
+
+            {variant !== 'short' && (
+                <>
+                    <motion.span variants={letterVariants} className={`logo-c-dash ${spacingClass}`}>-</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-s ${spacingClass} brand-glint`}>S</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-t ${spacingClass} brand-glint`}>t</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-e ${spacingClass} brand-glint`}>e</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-r-black ${spacingClass} brand-glint`}>r</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-o ${spacingClass} brand-glint`}>o</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-i ${spacingClass} brand-glint`}>i</motion.span>
+                    <motion.span variants={letterVariants} className={`logo-c-d ${spacingClass} brand-glint`}>d</motion.span>
+                </>
+            )}
+        </motion.span>
     );
+
+    if (isLink || onClick) {
+        return (
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    if (onClick) {
+                        onClick();
+                    } else if (isLink) {
+                        window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }));
+                    }
+                }}
+                className="focus:outline-none focus:ring-2 focus:ring-gold-500/50 rounded-lg p-1 transition-all"
+            >
+                {LogoContent}
+            </button>
+        );
+    }
+
+    return LogoContent;
 };
 
 export default BrandLogo;
