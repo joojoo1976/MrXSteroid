@@ -1,0 +1,100 @@
+﻿
+src/components/checkou
+t/CheckoutForm.tsx(241
+,67): error TS2339: 
+Property 'fullName' 
+does not exist on 
+type 'ContentStrings'.
+src/components/checkou
+t/CheckoutForm.tsx(254
+,67): error TS2339: 
+Property 
+'emailAddress' does 
+not exist on type 
+'ContentStrings'.
+src/i18n/ar.ts(899,5):
+ error TS2353: Object 
+literal may only 
+specify known 
+properties, and 
+'fullName' does not 
+exist in type 
+'ContentStrings'.
+src/i18n/ar.ts(906,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/ar.ts(908,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/ar.ts(909,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/ar.ts(910,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/de.ts(549,5):
+ error TS2353: Object 
+literal may only 
+specify known 
+properties, and 
+'fullName' does not 
+exist in type 'Partial
+<ContentStrings>'.
+src/i18n/de.ts(566,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/en.ts(878,5):
+ error TS2353: Object 
+literal may only 
+specify known 
+properties, and 
+'fullName' does not 
+exist in type 
+'ContentStrings'.
+src/i18n/en.ts(885,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/en.ts(887,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/en.ts(888,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/i18n/en.ts(889,5):
+ error TS1117: An 
+object literal cannot 
+have multiple 
+properties with the 
+same name.
+src/pages/ProfilePage.
+tsx(130,107): error 
+TS2339: Property 
+'fullName' does not 
+exist on type 
+'ContentStrings'.
+
+
