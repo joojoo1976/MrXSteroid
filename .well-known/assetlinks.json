@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.mrxsteroid.app",
+            "sha256_cert_fingerprints": [
+                "9b08abcde768e9f2c4cfe8406c94b466c3e9b6d5846924beb6e253d147b46587"
+            ]
+        }
+    }
+]
