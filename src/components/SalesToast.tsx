@@ -12,7 +12,7 @@ const SalesToast: React.FC<{ content: ContentStrings, data: SalesNotificationDat
             setCurrentSale(random);
             setVisible(true);
             setTimeout(() => setVisible(false), 5000);
-        }, 20000);
+        }, 60000);
         return () => clearInterval(interval);
     }, [data]);
 

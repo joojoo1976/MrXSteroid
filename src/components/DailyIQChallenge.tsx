@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentStrings } from '../types';
+import { renderStyledBrandName } from '../utils/logic';
 
 const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }> = ({ content, onWin }) => {
     const [answered, setAnswered] = useState(false);
@@ -20,7 +21,7 @@ const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }>
     return (
         <section className="py-20 bg-gradient-to-br from-zinc-900 to-black text-white">
             <div className="container mx-auto px-4 text-center">
-                <div className="inline-block p-2 px-4 rounded-full bg-gold-500/20 text-gold-500 text-xs font-bold mb-6 border border-gold-500/30">{content.dailyIQ.challengeLabel}</div>
+                <div className="inline-block p-2 px-4 rounded-full bg-gold-500/20 text-gold-500 text-sm font-bold mb-6 border border-gold-500/30">{content.dailyIQ.challengeLabel}</div>
                 <h2 className="text-3xl md:text-4xl font-black mb-4">{content.dailyIQ.title}</h2><p className="text-zinc-400 max-w-2xl mx-auto mb-12">{content.dailyIQ.subtitle}</p>
                 <div className="max-w-2xl mx-auto bg-zinc-800/50 backdrop-blur-sm rounded-2xl p-8 border border-zinc-700">
                     {!answered ? (
@@ -42,7 +43,7 @@ const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }>
                                     <h3 className="text-2xl font-bold text-red-500 mb-2">{content.dailyIQ.loseTitle}</h3><p className="text-zinc-400 mb-6">{content.dailyIQ.loseDesc}</p>
                                 </>
                             )}
-                            <div className="bg-zinc-900/50 p-4 rounded-lg text-sm text-zinc-300 text-left rtl:text-right"><strong className="text-gold-500 block mb-1">{content.dailyIQ.explanationLabel}</strong>{question.explanation}</div>
+                            <div className="bg-zinc-900/50 p-4 rounded-lg text-base text-zinc-300 text-left rtl:text-right"><strong className="text-gold-500 block mb-1">{content.dailyIQ.explanationLabel}</strong>{renderStyledBrandName(question.explanation)}</div>
                         </div>
                     )}
                 </div>

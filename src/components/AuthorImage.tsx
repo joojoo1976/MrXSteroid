@@ -9,6 +9,7 @@ const AuthorImage: React.FC<{ name: string }> = ({ name }) => {
                     src="/Author_MrXSteroid.jpg"
                     alt={name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             </div>

@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ContentStrings, Page } from '../types';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Zap, ShieldCheck, Heart } from 'lucide-react';
+import BrandLogo from './BrandLogo';
+import { renderStyledBrandName } from '../utils/logic';
 
 interface FooterProps {
   content: ContentStrings;
@@ -25,7 +27,7 @@ const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
 
   return (
     <div className="mt-16 pt-10 border-t border-white/5">
-      <p className="text-[10px] leading-relaxed text-zinc-800 text-justify opacity-20 select-none font-mono tracking-tighter uppercase italic">
+      <p className="text-xs leading-relaxed text-zinc-800 text-justify opacity-20 select-none font-mono tracking-tighter uppercase italic">
         {currentKeywords.join(' • ')}
       </p>
     </div>
@@ -60,11 +62,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
               >
                 <Zap className="w-8 h-8" />
               </motion.div>
-              {lang === 'ar' ? (
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gold-500 italic">مستر إكس-سترويد</span>
-              ) : (
-                <span className="font-permanent-marker text-5xl tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-gold-500 via-white to-gold-500 animate-text-flash">MR. X-STEROID</span>
-              )}
+              <BrandLogo className="text-5xl" isLink={true} />
             </motion.div>
 
             <p className="text-xl text-zinc-500 leading-relaxed max-w-xl mb-12 font-bold italic animate-glow">
@@ -95,7 +93,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
 
           {/* Quick Navigation */}
           <div className="lg:col-span-3">
-            <h4 className="text-xs font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
+            <h4 className="text-sm font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
               <span className="w-8 h-0.5 bg-gold-500"></span>
               {content.quickLinks}
             </h4>
@@ -105,44 +103,59 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
                 { label: content.pricingTitle, action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); } },
                 { label: content.contact, action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 100); } }
               ].map((link, idx) => (
-                <motion.li key={idx} whileHover={{ x: isRTL ? -10 : 10 }}>
-                  <button onClick={link.action} className="text-zinc-500 hover:text-gold-500 transition-colors uppercase tracking-tight">
+                <li key={idx}>
+                  <motion.button
+                    onClick={link.action}
+                    whileHover={{ x: isRTL ? -10 : 10 }}
+                    className="text-zinc-500 hover:text-gold-500 transition-colors uppercase tracking-tight"
+                  >
                     {link.label}
-                  </button>
-                </motion.li>
+                  </motion.button>
+                </li>
               ))}
             </ul>
           </div>
 
           {/* Legal Protocol */}
           <div className="lg:col-span-4">
-            <h4 className="text-xs font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
+            <h4 className="text-sm font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
               <span className="w-8 h-0.5 bg-gold-500"></span>
               {content.legal}
             </h4>
             <ul className="space-y-4">
               {[
                 { label: content.privacyPolicy, key: 'privacy' },
+                { label: content.medicalDisclaimerPage.title, key: 'medical_page' },
                 { label: content.termsOfService, key: 'terms' },
                 { label: content.refundPolicy, key: 'refund' },
-                { label: content.legalDisclaimer, key: 'disclaimer' }
+                { label: content.legalDisclaimer, key: 'disclaimer' },
               ].map((link, idx) => (
-                <motion.li key={idx} whileHover={{ opacity: 1, scale: 1.05 }} className="opacity-60 hover:opacity-100 transition-all">
-                  <button onClick={() => openLegal(link.key as 'privacy' | 'terms' | 'refund' | 'disclaimer')} className="text-zinc-400 hover:text-white font-bold text-sm uppercase tracking-widest block text-start w-full">
+                <li key={idx}>
+                  <motion.button
+                    onClick={() => {
+                      if (link.key === 'medical_page') {
+                        navigateTo(Page.MEDICAL_DISCLAIMER);
+                      } else {
+                        openLegal(link.key as 'privacy' | 'terms' | 'refund' | 'disclaimer');
+                      }
+                    }}
+                    whileHover={{ opacity: 1, scale: 1.05 }}
+                    className="text-zinc-400 hover:text-white font-bold text-base uppercase tracking-widest block text-start w-full opacity-60 hover:opacity-100 transition-all"
+                  >
                     {link.label}
-                  </button>
-                </motion.li>
+                  </motion.button>
+                </li>
               ))}
             </ul>
 
             <div className="mt-12 p-6 bg-white/5 rounded-[2rem] border-2 border-white/5 backdrop-blur-3xl animate-glow">
               <div className="flex items-center gap-4 mb-2">
                 <ShieldCheck className="w-5 h-5 text-green-500" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">System Status: Protected</span>
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">System Status: Protected</span>
               </div>
               <div className="flex items-center gap-4">
                 <Heart className="w-5 h-5 text-red-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Biometric Integrity: Verified</span>
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Biometric Integrity: Verified</span>
               </div>
             </div>
           </div>
@@ -151,22 +164,22 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
         <WeeklyKeywords pool={pool} />
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 text-center md:text-start">
-            {content.copyright} • <span className="text-gold-500/20">Design by Antigravity OS</span>
+          <p className="text-xs font-black tracking-[0.3em] text-zinc-700 text-center md:text-start">
+            {content.copyright} • <span className="text-gold-500/20">{renderStyledBrandName('Mr. X-Steroid')} "George Mourice"</span>
           </p>
           <div className="flex gap-10">
             <div className="flex items-center gap-3 opacity-30">
               <Zap className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white">SSL: 4096-BIT</span>
+              <span className="text-xs font-black uppercase tracking-widest text-white">SSL: 4096-BIT</span>
             </div>
             <div className="flex items-center gap-3 opacity-30">
               <ShieldCheck className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white">SECURE GATEWAY</span>
+              <span className="text-xs font-black uppercase tracking-widest text-white">SECURE GATEWAY</span>
             </div>
           </div>
         </div>
       </div>
-    </footer>
+    </footer >
   );
 };
 

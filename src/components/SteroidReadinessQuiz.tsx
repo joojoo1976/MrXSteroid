@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight, Zap, Target, Activity } from 'lucide-react';
 import { ContentStrings } from '../types';
+import { renderStyledBrandName } from '../utils/logic';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () => void }> = ({ content, onComplete }) => {
     const [currentQ, setCurrentQ] = useState(0);
@@ -20,12 +21,12 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
     const result = score >= 3 ? content.quiz.results.enhanced : content.quiz.results.natural;
 
     return (
-        <section id="readiness-quiz" className="py-32 bg-zinc-950 text-white relative overflow-hidden">
+        <section id="readiness-quiz" className="py-12 lg:py-16 bg-background text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
 
             {/* Background Kinetic Effects */}
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gold-500/10 blur-[150px] rounded-full animate-float-slow -z-10"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full animate-float-slow -z-10" style={{ animationDelay: '-5s' }}></div>
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full animate-float-slow -z-10 [animation-delay:-5s]"></div>
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="max-w-4xl mx-auto">
@@ -33,7 +34,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                     {/* Main Quiz Card */}
                     <motion.div
                         layout
-                        className="relative bg-zinc-900/40 backdrop-blur-3xl rounded-[4rem] p-10 md:p-16 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-4 border-zinc-800/50 overflow-hidden card-shine animate-glow"
+                        className="relative bg-background/40 backdrop-blur-3xl rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-4 border-zinc-800/50 overflow-hidden card-shine animate-glow"
                     >
                         {/* Dynamic Top Stripe */}
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-gold-600 via-white to-gold-400"></div>
@@ -47,7 +48,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                     exit={{ opacity: 0, x: -50 }}
                                     className="relative z-10"
                                 >
-                                    <div className="text-center mb-16">
+                                    <div className="text-center mb-6">
                                         <motion.div
                                             animate={{ scale: [1, 1.1, 1] }}
                                             transition={{ repeat: Infinity, duration: 2 }}
@@ -55,21 +56,21 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         >
                                             <Target className="w-10 h-10 text-gold-500" />
                                         </motion.div>
-                                        <h2 className="text-4xl md:text-6xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-400 to-white animate-text-flash tracking-tight">
+                                        <h2 className="text-3xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-400 to-white animate-text-flash tracking-tight">
                                             {content.quiz.title}
                                         </h2>
-                                        <p className="text-2xl text-zinc-500 font-bold italic animate-glow">
+                                        <p className="text-xl text-zinc-300 font-bold italic animate-glow">
                                             {content.quiz.subtitle}
                                         </p>
                                     </div>
 
                                     {/* Progress Visualizer */}
-                                    <div className="mb-16">
+                                    <div className="mb-6">
                                         <div className="flex justify-between items-end mb-4">
-                                            <span className="text-sm font-black text-gold-500 uppercase tracking-[0.3em]">
+                                            <span className="text-base font-black text-gold-500 uppercase tracking-[0.3em]">
                                                 {content.quiz.questionLabel} {currentQ + 1}
                                             </span>
-                                            <span className="text-sm font-black text-zinc-500 uppercase tracking-widest">
+                                            <span className="text-base font-black text-zinc-300 uppercase tracking-widest">
                                                 {content.quiz.questions.length} {content.quiz.totalLabel}
                                             </span>
                                         </div>
@@ -90,19 +91,19 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         key={currentQ}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className="space-y-10"
+                                        className="space-y-6"
                                     >
-                                        <h3 className="text-3xl md:text-4xl font-black leading-tight text-center mb-12">
+                                        <h3 className="text-xl md:text-2xl font-black leading-tight text-center mb-6">
                                             {content.quiz.questions[currentQ].question}
                                         </h3>
-                                        <div className="grid gap-6">
+                                        <div className="grid gap-4">
                                             {content.quiz.questions[currentQ].options.map((opt, idx) => (
                                                 <motion.button
                                                     key={idx}
                                                     whileHover={{ scale: 1.05, x: 10, borderColor: "rgba(234, 179, 8, 0.5)" }}
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={() => handleAnswer(opt.score)}
-                                                    className="w-full p-8 rounded-[2rem] bg-zinc-950/50 hover:bg-zinc-900 border-4 border-zinc-800 text-left transition-all flex justify-between items-center group shadow-2xl relative overflow-hidden"
+                                                    className="w-full p-3 md:p-4 rounded-[1.2rem] bg-background/50 hover:bg-zinc-900 border-4 border-zinc-800 text-left transition-all flex justify-between items-center group shadow-xl relative overflow-hidden"
                                                 >
                                                     <div className="relative z-10 flex items-center gap-6">
                                                         <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-black text-gold-500 group-hover:bg-gold-500 group-hover:text-black transition-colors">
@@ -150,10 +151,10 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         initial={{ y: 20, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
                                         transition={{ delay: 0.4 }}
-                                        className="bg-black/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
+                                        className="bg-background/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
                                     >
                                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
-                                        <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"{result.desc}"</p>
+                                        <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"{renderStyledBrandName(result.desc)}"</p>
                                         <Activity className="absolute bottom-6 right-10 w-16 h-16 text-white/5 group-hover:text-gold-500/10 transition-colors" />
                                     </motion.div>
 
@@ -177,12 +178,12 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                     <div className="mt-12 flex justify-center items-center gap-8 opacity-40">
                         <div className="flex items-center gap-2">
                             <ShieldCheck className="w-5 h-5" />
-                            <span className="text-xs font-black uppercase tracking-widest">Secure Protocol</span>
+                            <span className="text-sm font-black uppercase tracking-widest">Secure Protocol</span>
                         </div>
                         <div className="w-1.5 h-1.5 bg-zinc-700 rounded-full"></div>
                         <div className="flex items-center gap-2">
                             <Zap className="w-5 h-5" />
-                            <span className="text-xs font-black uppercase tracking-widest">Live Bio-Data Screening</span>
+                            <span className="text-sm font-black uppercase tracking-widest">Live Bio-Data Screening</span>
                         </div>
                     </div>
 

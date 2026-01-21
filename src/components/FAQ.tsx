@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ContentStrings, FaqItem } from '../types';
-import { Search, MessageSquare, ChevronDown, Zap, HelpCircle } from 'lucide-react';
+import { renderStyledBrandName } from '../utils/logic';
+import { Search, MessageSquare, ChevronDown, Zap, HelpCircle, ShieldAlert, Award } from 'lucide-react';
 
 const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false);
   const id = React.useId();
+  const ariaProps = {
+    "aria-expanded": isOpen,
+    "aria-controls": `faq-${id}`
+  };
 
   return (
     <motion.div
       initial={false}
-      className={`group rounded-[2rem] border-2 transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white dark:bg-zinc-800/80 shadow-[0_0_50px_rgba(234,179,8,0.1)] border-gold-500/50' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-gold-500/30'}`}
+      className={`group rounded-[2rem] border-2 transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white dark:bg-zinc-800/80 shadow-[0_0_50px_rgba(234,179,8,0.1)] border-gold-500/50' : 'bg-zinc-50 dark:bg-card border-zinc-100 dark:border-zinc-800 hover:border-gold-500/30'}`}
     >
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        aria-controls={`faq-${id}`}
-        className="w-full flex justify-between items-center p-8 cursor-pointer text-start select-none relative"
+        {...ariaProps}
+        id={`faq-btn-${id}`}
+        className="w-full flex justify-between items-center p-5 cursor-pointer text-start select-none relative"
       >
         <span className="flex items-center gap-6">
           <motion.div
@@ -25,11 +31,10 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
           >
             <MessageSquare className="w-6 h-6" />
           </motion.div>
-          <div className="flex-1">
-            <span className={`block text-xl font-black transition-colors ${isOpen ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-700 dark:text-zinc-200 group-hover:text-gold-500'}`}>
-              {item.question}
-            </span>
-            <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">{item.category}</span>
+          <div className="flex-1 text-2xl font-bold">
+            {renderStyledBrandName(item.question)}
+
+            <span className="text-base text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">{item.category}</span>
           </div>
         </span>
         <motion.div
@@ -49,11 +54,12 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="px-8 pb-8 ltr:pl-24 rtl:pr-24 text-zinc-600 dark:text-zinc-300 leading-relaxed text-lg font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-6">
-              {item.answer}
+            <div className="px-5 pb-5 ltr:pl-20 rtl:pr-20 text-zinc-600 dark:text-zinc-300 leading-relaxed text-2xl font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-4">
+              {renderStyledBrandName(item.answer)}
+
               <div className="mt-6 flex gap-2">
                 <Zap className="w-5 h-5 text-gold-500 animate-pulse" />
-                <span className="text-xs font-black text-gold-500 uppercase tracking-tighter">EXPERT PROTOCOL</span>
+                <span className="text-base font-black text-gold-500 uppercase tracking-tighter">EXPERT PROTOCOL</span>
               </div>
             </div>
           </motion.div>
@@ -75,12 +81,12 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
   });
 
   return (
-    <section id="faq" className="py-32 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
+    <section id="faq" className="py-32 bg-white dark:bg-background border-t border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
 
       {/* Dynamic Background Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-30 -z-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow" style={{ animationDelay: '-4s' }}></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
       </div>
 
       <div className="container mx-auto px-4 max-w-5xl relative z-10">
@@ -107,7 +113,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
             className="relative max-w-2xl mx-auto group"
           >
             <div className="absolute -inset-2 bg-gradient-to-r from-gold-500 via-blue-500 to-purple-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-700 animate-pulse"></div>
-            <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border-2 border-zinc-100 dark:border-zinc-800 overflow-hidden flex items-center p-2">
+            <div className="relative bg-white dark:bg-card rounded-[2rem] shadow-2xl border-2 border-zinc-100 dark:border-zinc-800 overflow-hidden flex items-center p-2">
               <Search className="ml-6 w-8 h-8 text-zinc-300 group-focus-within:text-gold-500 transition-all group-hover:scale-110" />
               <input
                 type="text"
@@ -135,7 +141,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setFilter(cat as string)}
-                className={`px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-xl ${filter === cat ? 'bg-gold-500 text-black shadow-gold-500/40 ring-4 ring-gold-500/20 animate-glow' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 border-2 border-transparent hover:border-gold-500/30 hover:text-gold-500'}`}
+                className={`px-8 py-4 rounded-2xl text-base font-black uppercase tracking-widest transition-all shadow-xl ${filter === cat ? 'bg-gold-500 text-black shadow-gold-500/40 ring-4 ring-gold-500/20 animate-glow' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 border-2 border-transparent hover:border-gold-500/30 hover:text-gold-500'}`}
               >
                 {content.faqCategories[cat]}
               </motion.button>

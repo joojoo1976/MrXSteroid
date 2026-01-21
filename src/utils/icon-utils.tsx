@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Dumbbell, Heart, Activity, ShieldAlert, ShieldCheck, Clock, TestTube2,
     BookOpen, Map, TrendingUp, RotateCcw, Zap, BicepsFlexed, Trophy, Flag, Star,
-    Brain, CircleDollarSign, Sparkles
+    Brain, CircleDollarSign, Sparkles, Syringe
 } from 'lucide-react';
 
 export const USFlag = () => (
@@ -171,6 +171,7 @@ export const IconRenderer = ({ iconKey, className }: { iconKey: string, classNam
         case 'safety': return <ShieldCheck className="w-8 h-8 text-green-500" {...props} />;
         case 'simplified': return <Sparkles className="w-8 h-8 text-blue-400" {...props} />;
         case 'smart': return <Brain className="w-8 h-8 text-purple-400" {...props} />;
+        case 'injection': return <Syringe className="w-8 h-8 text-gold-500" {...props} />;
         default: return <Star className="w-8 h-8 text-gold-500" {...props} />;
     }
 };

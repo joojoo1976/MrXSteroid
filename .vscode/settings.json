@@ -1,0 +1,6 @@
+{
+    "html.validate.scripts": false,
+    "javascript.validate.enable": false,
+    "css.validate": false,
+    "webhint.enable": false
+}

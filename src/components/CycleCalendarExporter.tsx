@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock } from 'lucide-react';
-import { ContentStrings } from '../types';
+import BrandLogo from './BrandLogo';
+import { ContentStrings, Page } from '../types';
+
 
 interface CycleCalendarExporterProps {
     content: ContentStrings;
     isRTL: boolean;
+    navigateTo: (page: Page) => void;
 }
 
-const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, isRTL }) => {
+const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, isRTL, navigateTo }) => {
+
+
     const [isUnlocked, setIsUnlocked] = useState(false);
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [stealthMode, setStealthMode] = useState(false);
@@ -171,23 +176,30 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
     if (!isUnlocked) {
         return (
             <div className="max-w-4xl mx-auto py-10">
-                <div className="text-center mb-10"><h1 className="text-3xl font-bold mb-2">{content.cycleArchitect.title}</h1><p className="text-zinc-500">{content.cycleArchitect.subtitle}</p></div>
-                <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-12 text-center shadow-xl relative overflow-hidden">
+                <div className="text-center mb-10">
+                    <div className="mb-4">
+                        <BrandLogo className="text-3xl md:text-5xl" onClick={() => navigateTo(Page.HOME)} />
+                    </div>
+                    <h1 className="text-3xl font-bold mb-2">{content.cycleArchitect.title}</h1>
+                    <p className="text-zinc-500">{content.cycleArchitect.subtitle}</p>
+                </div>
+                <div className="bg-white dark:bg-background rounded-3xl border border-zinc-200 dark:border-zinc-800 p-12 text-center shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
                     <div className="relative z-10 flex flex-col items-center">
-                        <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6 animate-pulse"><Lock className="w-10 h-10 text-gold-500" /></div>
+                        <div className="w-20 h-20 bg-zinc-100 dark:bg-card rounded-full flex items-center justify-center mb-6 animate-pulse"><Lock className="w-10 h-10 text-gold-500" /></div>
                         <h3 className="text-2xl font-black mb-3">{content.cycleArchitect.premiumLock.lockedTitle}</h3>
                         <p className="text-zinc-500 mb-8 max-w-md mx-auto leading-relaxed">{content.cycleArchitect.premiumLock.lockedDesc}</p>
                         <div className="flex gap-3 w-full max-w-sm">
-                            <input type="text" placeholder={content.cycleArchitect.premiumLock.placeholder} className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 focus:border-gold-500 outline-none" />
+                            <input type="text" placeholder={content.cycleArchitect.premiumLock.placeholder} className="flex-1 bg-zinc-50 dark:bg-background border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 focus:border-gold-500 outline-none" />
                             <button onClick={handleVerify} className="px-6 py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold rounded-xl whitespace-nowrap transition-colors">{content.cycleArchitect.premiumLock.verifyBtn}</button>
                         </div>
-                        <p className="text-[10px] text-zinc-400 mt-4">{content.cycleArchitect.premiumLock.demoHint}</p>
+                        <p className="text-xs text-zinc-400 mt-4">{content.cycleArchitect.premiumLock.demoHint}</p>
                     </div>
                 </div>
             </div>
         );
     }
+
 
     return (
         <div className="max-w-5xl mx-auto py-10 animate-fade-in-up">
@@ -200,32 +212,32 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Settings Panel */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                    <div className="bg-white dark:bg-background p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                         <h3 className="font-bold mb-4 flex items-center gap-2"><Target className="w-5 h-5 text-gold-500" /> {content.cycleArchitect.presetsTitle}</h3>
                         <div className="space-y-2">
-                            <button onClick={() => loadPreset('beginnerBulk')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-sm font-medium transition-colors">{content.cycleArchitect.presets.beginnerBulk}</button>
-                            <button onClick={() => loadPreset('cutting')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-sm font-medium transition-colors">{content.cycleArchitect.presets.cutting}</button>
-                            <button onClick={() => loadPreset('trt')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-sm font-medium transition-colors">{content.cycleArchitect.presets.trt}</button>
+                            <button onClick={() => loadPreset('beginnerBulk')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-background hover:bg-zinc-100 dark:hover:bg-card border border-zinc-200 dark:border-zinc-800 text-base font-medium transition-colors">{content.cycleArchitect.presets.beginnerBulk}</button>
+                            <button onClick={() => loadPreset('cutting')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-background hover:bg-zinc-100 dark:hover:bg-card border border-zinc-200 dark:border-zinc-800 text-base font-medium transition-colors">{content.cycleArchitect.presets.cutting}</button>
+                            <button onClick={() => loadPreset('trt')} className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 dark:bg-background hover:bg-zinc-100 dark:hover:bg-card border border-zinc-200 dark:border-zinc-800 text-base font-medium transition-colors">{content.cycleArchitect.presets.trt}</button>
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                    <div className="bg-white dark:bg-background p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                         <h3 className="font-bold mb-4">{content.cycleArchitect.configLabel}</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.stealthModeLabel}</span>
+                                <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.stealthModeLabel}</span>
                                 <button aria-label={content.cycleArchitect.toggleStealth} onClick={() => setStealthMode(!stealthMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${stealthMode ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${stealthMode ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.rotationLabel}</span>
+                                <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.rotationLabel}</span>
                                 <button aria-label={content.cycleArchitect.toggleRotation} onClick={() => setAutoRotate(!autoRotate)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoRotate ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoRotate ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className={`text-sm text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.pctLabel}</span>
+                                <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.pctLabel}</span>
                                 <button aria-label={content.cycleArchitect.togglePct} onClick={() => setAutoPCT(!autoPCT)} className={`w-12 h-6 rounded-full p-1 transition-colors ${autoPCT ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${autoPCT ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
                                 </button>
@@ -236,37 +248,37 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
 
                 {/* Builder Panel */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl">
+                    <div className="bg-white dark:bg-background p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="flex-1">
-                                <label htmlFor="start-date" className="text-xs font-bold text-zinc-500 uppercase block mb-2">{content.cycleArchitect.form.startDateLabel}</label>
-                                <input id="start-date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 outline-none focus:border-gold-500" />
+                                <label htmlFor="start-date" className="text-sm font-bold text-zinc-500 uppercase block mb-2">{content.cycleArchitect.form.startDateLabel}</label>
+                                <input id="start-date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-zinc-50 dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 outline-none focus:border-gold-500" />
                             </div>
                             <div className="flex-1"></div>
                         </div>
 
                         <div className="space-y-4">
                             {compounds.map((comp, idx) => (
-                                <div key={comp.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 relative group">
+                                <div key={comp.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-background border border-zinc-200 dark:border-zinc-800 relative group">
                                     <button aria-label="Remove Compound" onClick={() => removeCompound(comp.id)} className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                                         <div className="md:col-span-4 space-y-1">
-                                            <label htmlFor={`compound-${comp.id}`} className="text-[10px] font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.compoundLabel}</label>
-                                            <input id={`compound-${comp.id}`} type="text" value={comp.name} onChange={e => updateCompound(comp.id, 'name', e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-sm outline-none" />
+                                            <label htmlFor={`compound-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.compoundLabel}</label>
+                                            <input id={`compound-${comp.id}`} type="text" value={comp.name} onChange={e => updateCompound(comp.id, 'name', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
                                         </div>
                                         <div className="md:col-span-2 space-y-1">
-                                            <label htmlFor={`dosage-${comp.id}`} className="text-[10px] font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.dosageLabel}</label>
-                                            <input id={`dosage-${comp.id}`} type="number" value={comp.dosage} onChange={e => updateCompound(comp.id, 'dosage', e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-sm outline-none" />
+                                            <label htmlFor={`dosage-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.dosageLabel}</label>
+                                            <input id={`dosage-${comp.id}`} type="number" value={comp.dosage} onChange={e => updateCompound(comp.id, 'dosage', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
                                         </div>
                                         <div className="md:col-span-3 space-y-1">
-                                            <label htmlFor={`freq-${comp.id}`} className="text-[10px] font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.frequencyLabel}</label>
-                                            <select id={`freq-${comp.id}`} value={comp.freq} onChange={e => updateCompound(comp.id, 'freq', e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-sm outline-none">
+                                            <label htmlFor={`freq-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.frequencyLabel}</label>
+                                            <select id={`freq-${comp.id}`} value={comp.freq} onChange={e => updateCompound(comp.id, 'freq', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none">
                                                 {Object.entries(content.cycleArchitect.form.frequencies).map(([k, v]) => <option key={k} value={k}>{v as string}</option>)}
                                             </select>
                                         </div>
                                         <div className="md:col-span-2 space-y-1">
-                                            <label htmlFor={`weeks-${comp.id}`} className="text-[10px] font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.weeksLabel}</label>
-                                            <input id={`weeks-${comp.id}`} type="number" value={comp.duration} onChange={e => updateCompound(comp.id, 'duration', e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-sm outline-none" />
+                                            <label htmlFor={`weeks-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.weeksLabel}</label>
+                                            <input id={`weeks-${comp.id}`} type="number" value={comp.duration} onChange={e => updateCompound(comp.id, 'duration', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
                                         </div>
                                         <div className="md:col-span-1 flex justify-center pb-2">
                                             <div className="w-2 h-2 rounded-full bg-gold-500"></div>

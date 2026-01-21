@@ -3,8 +3,10 @@ import { Quote } from 'lucide-react';
 import { ContentStrings } from '../types';
 import AuthorImage from './AuthorImage';
 
+import { renderStyledBrandName } from '../utils/logic';
+
 const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
-    <section className="py-24 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
+    <section className="py-24 bg-zinc-50 dark:bg-background relative overflow-hidden">
         {/* Background Elements */}
         <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-1/2 right-[10%] w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full -translate-y-1/2"></div>
@@ -19,7 +21,7 @@ const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
                 </div>
 
                 <div className="flex-1 text-center md:text-start relative">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gold-500/10 border border-gold-500/20 text-gold-600 dark:text-gold-500 text-xs font-black uppercase tracking-widest rounded-full mb-6 shadow-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gold-500/10 border border-gold-500/20 text-gold-600 dark:text-gold-500 text-sm font-black uppercase tracking-widest rounded-full mb-6 shadow-sm">
                         <Quote className="w-3 h-3 fill-current" />
                         {content.authorSection}
                     </div>
@@ -31,7 +33,7 @@ const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
                     <div className="relative">
                         <Quote className="absolute -top-6 -left-6 w-12 h-12 text-gold-500/10 transform -scale-x-100" />
                         <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400 leading-loose text-lg mb-8 relative z-10">
-                            <p>{content.authorBio}</p>
+                            <p>{renderStyledBrandName(content.authorBio)}</p>
                         </div>
                     </div>
 
