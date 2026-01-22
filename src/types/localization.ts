@@ -13,7 +13,10 @@ export enum SupportedCountry {
     US = 'US', // United States
     GB = 'GB', // United Kingdom
     DE = 'DE', // Germany
-    JP = 'JP'  // Japan
+    JP = 'JP',  // Japan
+    MM = 'MM', // Myanmar
+    LR = 'LR',  // Liberia
+    RU = 'RU'   // Russia
 }
 
 export interface CurrencyInfo {
@@ -131,5 +134,38 @@ export const COUNTRY_CONFIGS: Record<SupportedCountry, CountryConfig> = {
         language: SupportedLanguage.JA,
         currency: { code: 'JPY', symbol: '¥', rate: 149.5, locale: 'ja-JP' },
         flag: '🇯🇵'
+    },
+    [SupportedCountry.MM]: {
+        code: SupportedCountry.MM,
+        name: 'Myanmar',
+        nameAr: 'ميانمار',
+        nameEn: 'Myanmar',
+        nameDe: 'Myanmar',
+        nameJa: 'ミャンマー',
+        language: SupportedLanguage.EN,
+        currency: { code: 'MMK', symbol: 'K', rate: 2100, locale: 'my-MM' },
+        flag: '🇲🇲'
+    },
+    [SupportedCountry.LR]: {
+        code: SupportedCountry.LR,
+        name: 'Liberia',
+        nameAr: 'ليبيريا',
+        nameEn: 'Liberia',
+        nameDe: 'Liberia',
+        nameJa: 'リベリア',
+        language: SupportedLanguage.EN,
+        currency: { code: 'LRD', symbol: '$', rate: 190, locale: 'en-LR' },
+        flag: '🇱🇷'
+    },
+    [SupportedCountry.RU]: {
+        code: SupportedCountry.RU,
+        name: 'Russia',
+        nameAr: 'روسيا',
+        nameEn: 'Russia',
+        nameDe: 'Russland',
+        nameJa: 'ロシア',
+        language: SupportedLanguage.EN,
+        currency: { code: 'RUB', symbol: '₽', rate: 90, locale: 'ru-RU' },
+        flag: '🇷🇺'
     }
 };

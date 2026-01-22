@@ -4,9 +4,11 @@ import { Bot, X, Send, Sparkles } from 'lucide-react';
 import { streamResponse, ChatMessage } from '../utils/geminiService';
 import { ContentStrings } from '../types';
 import BrandLogo from './BrandLogo';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
+import { usePreferences } from '../context/PreferencesContext';
 
-const ChatWidget: React.FC<{ content: ContentStrings, isRTL: boolean }> = ({ content, isRTL }) => {
+const ChatWidget: React.FC<{ content: ContentStrings }> = ({ content }) => {
+    const { isRTL } = usePreferences();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
@@ -85,8 +87,8 @@ const ChatWidget: React.FC<{ content: ContentStrings, isRTL: boolean }> = ({ con
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-black/10 rounded-full"><Bot className="w-6 h-6" /></div>
                             <div className="flex flex-col leading-tight">
-                                <span className="text-lg">{renderStyledBrandName(content.aiChat.title)}</span>
-                                <span className="text-xs opacity-75 font-normal uppercase tracking-wider">{renderStyledBrandName(content.aiChat.fabLabel)}</span>
+                                <span className="text-lg"><StyledBrandName text={content.aiChat.title} /></span>
+                                <span className="text-xs opacity-75 font-normal uppercase tracking-wider"><StyledBrandName text={content.aiChat.fabLabel} /></span>
                             </div>
                         </div>
                         <button onClick={() => setIsOpen(false)} title="Close Chat" className="hover:bg-black/10 p-2 rounded-full transition-colors"><X className="w-6 h-6" /></button>
@@ -98,7 +100,7 @@ const ChatWidget: React.FC<{ content: ContentStrings, isRTL: boolean }> = ({ con
                             <div className="mt-8 space-y-6">
                                 <div className="text-center space-y-2">
                                     <BrandLogo variant="short" className="text-5xl opacity-50 block mb-4 mx-auto" />
-                                    <p className="text-zinc-500 font-medium px-6">{renderStyledBrandName(content.aiChat.welcomeMessage)}</p>
+                                    <p className="text-zinc-500 font-medium px-6"><StyledBrandName text={content.aiChat.welcomeMessage} /></p>
                                 </div>
 
                                 {/* Smart Suggestions */}
@@ -132,7 +134,7 @@ const ChatWidget: React.FC<{ content: ContentStrings, isRTL: boolean }> = ({ con
                                         </div>
                                     )}
                                     <div className="whitespace-pre-wrap">
-                                        {renderStyledBrandName(String(m.parts || ''))}
+                                        <StyledBrandName text={String(m.parts || '')} />
                                     </div>
                                 </div>
                             </div>

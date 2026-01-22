@@ -4,8 +4,7 @@ import { Book, Smartphone, Hexagon, Plus, Minus, Check, LucideIcon } from 'lucid
 import { Card } from '../ui/card';
 import { cn } from '../../lib/utils'; // Assuming utils exists, or I will use simple classnames
 
-// Define types locally or import (refactoring later)
-export type ProductVariant = 'digital' | 'paperback' | 'hardcover';
+import { ProductVariant } from '../../types';
 
 interface ProductSelectorProps {
     selectedVariant: ProductVariant;
@@ -65,13 +64,13 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                             className={cn(
                                 "relative cursor-pointer rounded-2xl border-2 transition-all duration-300 p-6 flex flex-col justify-between h-full group overflow-hidden",
                                 isSelected
-                                    ? "bg-gold-500/10 border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.1)]"
+                                    ? "bg-gradient-to-br from-gold-500/20 via-black to-black border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.2)]"
                                     : "bg-zinc-900/50 border-zinc-800 hover:border-gold-500/50 hover:bg-zinc-900"
                             )}
                         >
                             {/* Selected Indicator */}
                             {isSelected && (
-                                <div className="absolute top-4 right-4 bg-gold-500 text-black rounded-full p-1 animate-in zoom-in">
+                                <div className="absolute top-4 right-4 bg-gold-500 text-black rounded-full p-1 animate-in zoom-in shadow-[0_0_20px_rgba(234,179,8,0.5)]">
                                     <Check className="w-3 h-3 md:w-4 md:h-4 stroke-[4]" />
                                 </div>
                             )}
@@ -79,20 +78,20 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                             <div>
                                 <div className={cn(
                                     "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
-                                    isSelected ? "bg-gold-500 text-black" : "bg-zinc-800 text-zinc-400 group-hover:text-white"
+                                    isSelected ? "bg-gold-500 text-black shadow-lg shadow-gold-500/20" : "bg-zinc-800 text-zinc-400 group-hover:text-white"
                                 )}>
                                     <Icon className="w-6 h-6" />
                                 </div>
-                                <h4 className="font-black text-lg text-white mb-2 leading-tight">
+                                <h4 className={cn("font-black text-lg text-white mb-2 leading-tight uppercase tracking-tight", isSelected ? "text-gold-100" : "")}>
                                     {isAr ? variant.labelAr : variant.labelEn}
                                 </h4>
-                                <div className="text-2xl font-black text-gold-500 mb-4">
+                                <div className="text-2xl font-black text-gold-500 mb-4 tracking-tighter shadow-gold-500/10">
                                     ${variant.price}
                                 </div>
                                 <ul className="space-y-2 mb-4">
                                     {(isAr ? variant.featuresAr : variant.featuresEn).map((feature, i) => (
                                         <li key={i} className="flex items-start gap-2 text-[10px] md:text-xs text-zinc-400 font-bold">
-                                            <div className="w-1 h-1 rounded-full bg-gold-500 mt-1.5 shrink-0" />
+                                            <div className={cn("w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 transition-colors", isSelected ? "bg-gold-500 shadow-[0_0_10px_rgba(234,179,8,0.4)]" : "bg-zinc-700")} />
                                             {feature}
                                         </li>
                                     ))}

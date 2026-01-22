@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { usePreferences } from '../context/PreferencesContext';
 
 interface BrandLogoProps {
     className?: string;
@@ -10,6 +11,7 @@ interface BrandLogoProps {
 }
 
 const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = false, onClick, isHero = false, variant = 'full' }) => {
+    const { isRTL } = usePreferences();
     // Spacing logic: Hero gets negative margins for tight cluster, Small (default) gets slightly relaxed spacing
     const spacingClass = isHero ? "mx-[-1px]" : "mx-[0.5px]";
     const brandClass = isHero ? "brand-cartoon logo-glow-intense" : "brand-cartoon-sm";
@@ -44,7 +46,23 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = 
         }
     };
 
-    const LogoContent = (
+    const LogoContent = isRTL ? (
+        <motion.span
+            variants={containerVariants}
+            animate="animate"
+            whileHover="hover"
+            className={`inline-flex items-center select-none whitespace-nowrap cursor-pointer ${className} space-x-reverse space-x-1`}
+        >
+            <motion.span variants={letterVariants} className="text-gold-500 font-black brand-glint">مستر</motion.span>
+            <motion.span variants={letterVariants} className="text-cyan-400 font-black">إكس</motion.span>
+            {variant !== 'short' && (
+                <>
+                    <motion.span variants={letterVariants} className="text-zinc-500 font-black">-</motion.span>
+                    <motion.span variants={letterVariants} className="text-gold-500 font-black brand-glint">سترويد</motion.span>
+                </>
+            )}
+        </motion.span>
+    ) : (
         <motion.span
             dir="ltr"
             variants={containerVariants}

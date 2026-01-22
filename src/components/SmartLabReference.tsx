@@ -24,20 +24,20 @@ import {
 import BrandLogo from './BrandLogo';
 import AdPlaceholder from './AdPlaceholder';
 import { ContentStrings, LabTest, Page } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { usePreferences } from '../context/PreferencesContext';
+import { StyledBrandName } from './StyledBrandName';
 import { formatLabRange } from '../utils/logic';
 
 interface SmartLabReferenceProps {
   content: ContentStrings;
-  isRTL?: boolean;
   navigateTo: (page: Page) => void;
-  unitSystem?: 'metric' | 'imperial';
 }
 
 
 
 
-const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, isRTL, navigateTo, unitSystem = 'metric' }) => {
+const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigateTo }) => {
+  const { unitSystem, isRTL } = usePreferences();
 
   const [search, setSearch] = useState('');
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
@@ -193,7 +193,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, isRTL, n
                     </div>
                     <h3 className="text-lg font-black tracking-tight text-zinc-900 dark:text-white mb-1 line-clamp-1">{test.name}</h3>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-tight italic line-clamp-2 mb-3">
-                      {renderStyledBrandName(test.description)}
+                      <StyledBrandName text={test.description} />
                     </p>
 
                     <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900 text-white border border-white/5 mb-4">
@@ -214,14 +214,14 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, isRTL, n
                         <AlertCircle className="w-3 h-3" />
                         <span className="text-[8px] font-black uppercase tracking-widest">{content.labReference.labels.high}</span>
                       </div>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight">{renderStyledBrandName(test.elevationMeaning)}</p>
+                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight"><StyledBrandName text={test.elevationMeaning} /></p>
                     </div>
                     <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
                       <div className="flex items-center gap-1.5 mb-1 text-blue-500">
                         <AlertCircle className="w-3 h-3" />
                         <span className="text-[8px] font-black uppercase tracking-widest">{content.labReference.labels.low}</span>
                       </div>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight">{renderStyledBrandName(test.lowMeaning)}</p>
+                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight"><StyledBrandName text={test.lowMeaning} /></p>
                     </div>
                   </div>
 
@@ -286,7 +286,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, isRTL, n
                                 <analysis.icon className="w-6 h-6" />
                               </div>
                               <span className="text-xl font-black uppercase tracking-tighter mb-0.5">
-                                {renderStyledBrandName(analysis.text)}
+                                <StyledBrandName text={analysis.text} />
                               </span>
                               <div className="flex items-center gap-1">
                                 <span className="text-[7px] font-black opacity-60 uppercase tracking-widest">

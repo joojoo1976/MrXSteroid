@@ -3,14 +3,15 @@ import { motion } from 'framer-motion';
 import { ContentStrings, Page } from '../types';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Zap, ShieldCheck, Heart } from 'lucide-react';
 import BrandLogo from './BrandLogo';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
+
+import { usePreferences } from '../context/PreferencesContext';
 
 interface FooterProps {
   content: ContentStrings;
   navigateTo: (page: Page) => void;
   openLegal: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
   pool: string[];
-  lang: string;
 }
 
 const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
@@ -34,8 +35,8 @@ const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
   );
 };
 
-const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, lang }) => {
-  const isRTL = lang === 'ar' || lang === 'he';
+const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool }) => {
+  const { isRTL } = usePreferences();
 
   return (
     <footer className={`bg-black text-white pt-32 pb-16 border-t-8 border-gold-500/20 relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`}>
@@ -45,128 +46,153 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool, l
       <div className="absolute bottom-0 end-0 w-[800px] h-[800px] bg-gold-500/5 blur-[150px] rounded-full animate-float-slow -z-10"></div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16 mb-24">
+        <div className="grid lg:grid-cols-5 gap-12 mb-24">
 
           {/* Branding & Mission */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-1">
             <motion.div
-              initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="text-4xl font-black mb-10 flex items-center gap-4"
+              className="mb-10"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-14 h-14 bg-gold-500 rounded-2xl flex items-center justify-center text-black shadow-2xl animate-glow"
-              >
-                <Zap className="w-8 h-8" />
-              </motion.div>
-              <BrandLogo className="text-5xl" isLink={true} />
+              <BrandLogo className="text-4xl" isLink={true} variant="short" />
             </motion.div>
 
-            <p className="text-xl text-zinc-500 leading-relaxed max-w-xl mb-12 font-bold italic animate-glow">
-              {content.heroSubtitle.slice(0, 180)}...
-            </p>
-
-            <div className="flex flex-wrap gap-6">
+            <div className="flex flex-wrap gap-4">
               {[
-                { icon: Facebook, href: "https://www.facebook.com/mrxsteroid/", color: "hover:bg-blue-600" },
-                { icon: Twitter, href: "https://x.com/Mr_X_Steroid", color: "hover:bg-zinc-800" },
-                { icon: Instagram, href: "https://www.instagram.com/prince_alex_ana/", color: "hover:bg-pink-600" },
-                { icon: Linkedin, href: "https://www.linkedin.com/in/prince-speaks-234849131/", color: "hover:bg-blue-700" },
-                { icon: Youtube, href: "https://www.youtube.com/@IamPrince", color: "hover:bg-red-600" }
+                { icon: Facebook, href: "https://www.facebook.com/mrxsteroid/" },
+                { icon: Twitter, href: "https://x.com/Mr_X_Steroid" },
+                { icon: Instagram, href: "https://www.instagram.com/prince_alex_ana/" },
+                { icon: Youtube, href: "https://www.youtube.com/@IamPrince" }
               ].map((social, idx) => (
                 <motion.a
                   key={idx}
-                  whileHover={{ y: -10, scale: 1.1 }}
+                  whileHover={{ y: -5, scale: 1.1 }}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-14 h-14 rounded-[1.2rem] bg-zinc-900 border-2 border-zinc-800 flex items-center justify-center text-zinc-400 transition-all shadow-2xl ${social.color} hover:text-white hover:border-transparent group`}
+                  className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-gold-500 transition-all shrink-0"
+                  aria-label={`Visit our ${social.icon.name}`}
                 >
-                  <social.icon className="w-6 h-6 group-hover:scale-125 transition-transform" />
+                  <social.icon className="w-5 h-5" />
                 </motion.a>
               ))}
             </div>
           </div>
 
-          {/* Quick Navigation */}
-          <div className="lg:col-span-3">
-            <h4 className="text-sm font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
-              <span className="w-8 h-0.5 bg-gold-500"></span>
-              {content.quickLinks}
+          {/* General Menu */}
+          <div className="lg:col-span-1">
+            <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-4 h-0.5 bg-gold-500"></span>
+              {content.generalLinks}
             </h4>
-            <ul className="space-y-6 text-xl font-black">
+            <ul className="space-y-4">
               {[
                 { label: content.homeLink, action: () => navigateTo(Page.HOME) },
-                { label: content.pricingTitle, action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); } },
-                { label: content.contact, action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 100); } }
+                { label: content.nav?.about || "About Us", action: () => navigateTo(Page.ABOUT) },
+                { label: content.pricingTitle || "Choose Your Plan", action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); } },
+                { label: content.blogTitle, action: () => navigateTo(Page.BLOG) },
+                { label: content.careersTitle, action: () => navigateTo(Page.CAREERS) },
+                { label: content.nav?.sitemap || "Sitemap", action: () => navigateTo(Page.SITEMAP) }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <motion.button
-                    onClick={link.action}
-                    whileHover={{ x: isRTL ? -10 : 10 }}
-                    className="text-zinc-500 hover:text-gold-500 transition-colors uppercase tracking-tight"
-                  >
+                  <button onClick={link.action} className="text-zinc-500 hover:text-white transition-colors text-sm font-bold uppercase tracking-tight text-start">
                     {link.label}
-                  </motion.button>
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Legal Protocol */}
-          <div className="lg:col-span-4">
-            <h4 className="text-sm font-black mb-10 text-gold-500 uppercase tracking-[0.4em] flex items-center gap-3">
-              <span className="w-8 h-0.5 bg-gold-500"></span>
-              {content.legal}
+          {/* Commercial */}
+          <div className="lg:col-span-1">
+            <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-4 h-0.5 bg-gold-500"></span>
+              {content.commercialLinks}
             </h4>
             <ul className="space-y-4">
               {[
-                { label: content.privacyPolicy, key: 'privacy' },
-                { label: content.medicalDisclaimerPage.title, key: 'medical_page' },
-                { label: content.termsOfService, key: 'terms' },
-                { label: content.refundPolicy, key: 'refund' },
-                { label: content.legalDisclaimer, key: 'disclaimer' },
+                { label: content.nav?.signup || "Cart / Checkout", action: () => navigateTo(Page.CHECKOUT) },
+                { label: content.shippingPolicyTitle, action: () => navigateTo(Page.SHIPPING_POLICY) },
+                { label: content.returnPolicyTitle, action: () => navigateTo(Page.RETURN_POLICY) },
+                { label: content.refundTitle, action: () => navigateTo(Page.REFUND) }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <motion.button
-                    onClick={() => {
-                      if (link.key === 'medical_page') {
-                        navigateTo(Page.MEDICAL_DISCLAIMER);
-                      } else {
-                        openLegal(link.key as 'privacy' | 'terms' | 'refund' | 'disclaimer');
-                      }
-                    }}
-                    whileHover={{ opacity: 1, scale: 1.05 }}
-                    className="text-zinc-400 hover:text-white font-bold text-base uppercase tracking-widest block text-start w-full opacity-60 hover:opacity-100 transition-all"
-                  >
+                  <button onClick={link.action} className="text-zinc-500 hover:text-white transition-colors text-sm font-bold uppercase tracking-tight text-start">
                     {link.label}
-                  </motion.button>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* International Legal */}
+          <div className="lg:col-span-1">
+            <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-4 h-0.5 bg-gold-500"></span>
+              {content.internationalLegalLinks}
+            </h4>
+            <ul className="space-y-4">
+              {[
+                { label: content.privacyTitle || content.privacyPolicy, action: () => navigateTo(Page.PRIVACY) },
+                { label: content.termsTitle || content.termsOfService, action: () => navigateTo(Page.TERMS) },
+                { label: content.cookiePolicyTitle, action: () => navigateTo(Page.COOKIE_POLICY) },
+                { label: content.legalDisclaimerTitle || content.legalDisclaimer, action: () => navigateTo(Page.LEGAL_DISCLAIMER_PAGE) },
+                { label: content.medicalDisclaimerPage.title, action: () => navigateTo(Page.MEDICAL_DISCLAIMER) }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <button onClick={link.action} className="text-zinc-500 hover:text-white transition-colors text-sm font-bold uppercase tracking-tight text-start">
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support & Compliance */}
+          <div className="lg:col-span-1">
+            <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-4 h-0.5 bg-gold-500"></span>
+              {content.supportLinks}
+            </h4>
+            <ul className="space-y-4 mb-8">
+              {[
+                { label: content.contactPageTitle || content.contact, action: () => navigateTo(Page.CONTACT) },
+                { label: content.supportTitle, action: () => navigateTo(Page.SUPPORT) },
+                { label: content.faqPageTitle, action: () => navigateTo(Page.FAQ) }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <button onClick={link.action} className="text-zinc-500 hover:text-white transition-colors text-sm font-bold uppercase tracking-tight text-start">
+                    {link.label}
+                  </button>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-12 p-6 bg-white/5 rounded-[2rem] border-2 border-white/5 backdrop-blur-3xl animate-glow">
-              <div className="flex items-center gap-4 mb-2">
-                <ShieldCheck className="w-5 h-5 text-green-500" />
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">System Status: Protected</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <Heart className="w-5 h-5 text-red-500 animate-pulse" />
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Biometric Integrity: Verified</span>
-              </div>
-            </div>
+            <h4 className="text-xs font-black mb-4 text-zinc-600 uppercase tracking-[0.3em]">{content.complianceLinks}</h4>
+            <ul className="space-y-2">
+              {[
+                { label: content.accessibilityTitle, action: () => navigateTo(Page.ACCESSIBILITY) },
+                { label: content.gdprTitle, action: () => navigateTo(Page.GDPR) },
+                { label: content.ccpaTitle, action: () => navigateTo(Page.CCPA) }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <button onClick={link.action} className="text-zinc-700 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest text-start">
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
         <WeeklyKeywords pool={pool} />
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-xs font-black tracking-[0.3em] text-zinc-700 text-center md:text-start">
-            {content.copyright} • <span className="text-gold-500/20">{renderStyledBrandName('Mr. X-Steroid')} "George Mourice"</span>
-          </p>
+          <div className="text-xs font-black tracking-[0.3em] text-zinc-700 text-center md:text-start">
+            {content.copyright} • <span className="text-gold-500/20"><StyledBrandName text="Mr. X-Steroid" /> "George Mourice"</span>
+          </div>
           <div className="flex gap-10">
             <div className="flex items-center gap-3 opacity-30">
               <Zap className="w-4 h-4" />

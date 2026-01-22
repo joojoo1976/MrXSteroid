@@ -7,7 +7,7 @@ import {
 } from '../i18n';
 import { ContentStrings } from '../types';
 import AdPlaceholder from './AdPlaceholder';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 /**
  * INTERFACES
@@ -142,16 +142,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     }).format(BASE_PRICE_USD * loc.rate);
 
     // SpaceRemit Integration
-    useEffect(() => {
-        const scriptId = 'spaceremit-script';
-        if (!document.getElementById(scriptId)) {
-            const script = document.createElement('script');
-            script.id = scriptId;
-            script.src = 'https://spaceremit.com/api/v2/js_script/spaceremit.js';
-            script.async = true;
-            document.body.appendChild(script);
-        }
-    }, []);
+    // SpaceRemit Integration (Script loaded in index.html)
 
     const handlePayment = () => {
         if (window.SpaceRemit) {
@@ -212,7 +203,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             animate={{ opacity: 1, y: 0 }}
                             className="text-6xl md:text-8xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500 animate-text-flash tracking-tighter"
                         >
-                            {renderStyledBrandName(loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results')}
+                            <StyledBrandName text={loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'} />
                         </motion.h1>
 
                         <motion.p
@@ -221,9 +212,9 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             transition={{ delay: 0.3 }}
                             className="text-2xl text-zinc-400 leading-relaxed max-w-2xl font-medium italic"
                         >
-                            {renderStyledBrandName(loc.isRTL
+                            <StyledBrandName text={loc.isRTL
                                 ? 'انضم إلى آلاف المحترفين الذين كسروا حواجزهم الجينية باستخدام أكثر التقنيات تقدماً وبحثاً.'
-                                : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.')}
+                                : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.'} />
                         </motion.p>
 
                         {/* Updated Flashy Price Card */}
@@ -311,9 +302,9 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                 <div className="mt-10 pt-10 border-t border-white/5 flex items-start gap-6">
                                     <Info className="w-8 h-8 text-zinc-600 mt-1" />
                                     <p className="text-base text-zinc-500 leading-relaxed italic font-medium">
-                                        {renderStyledBrandName(loc.isRTL
+                                        <StyledBrandName text={loc.isRTL
                                             ? 'تم اشتقاق هذه الكلمات بناءً على أعلى تريندات البحث في Google لهذا الأسبوع لضمان وصول المحتوى للجمهور المستهدف بدقة.'
-                                            : 'These keywords are derived based on the highest Google Search trends for this week to ensure content reaches the targeted audience accurately.')}
+                                            : 'These keywords are derived based on the highest Google Search trends for this week to ensure content reaches the targeted audience accurately.'} />
                                     </p>
                                 </div>
                             </div>

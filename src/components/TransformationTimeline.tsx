@@ -1,42 +1,33 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, LineChart, TrendingUp } from 'lucide-react';
+import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import KineticCounter from './KineticCounter';
+import { usePreferences } from '../context/PreferencesContext';
 
-interface MetricBarProps {
-    label: string;
-    value: number;
-    colorClass: string;
-    icon: React.ReactNode;
-}
-
-const MetricBar: React.FC<MetricBarProps> = ({ label, value, colorClass, icon }) => (
-    <div className="space-y-1 group/metric">
-        <div className="flex justify-between items-end">
-            <span className="text-base font-black text-zinc-500 flex items-center gap-2 group-hover/metric:text-zinc-900 dark:group-hover/metric:text-white transition-colors">{icon} {label}</span>
-            <KineticCounter
-                value={value}
-                suffix="%"
-                className="text-base font-black text-zinc-900 dark:text-white font-mono"
-            />
+const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
+    <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30">
+        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tight text-zinc-500">
+            <div className="flex items-center gap-1">
+                <span className="opacity-70">{icon}</span>
+                {label}
+            </div>
+            <span className="text-zinc-900 dark:text-zinc-100">{value}%</span>
         </div>
-        <div className="h-2.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-200 dark:border-zinc-800 shadow-inner">
+        <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
             <motion.div
-                className={`h-full rounded-full ${colorClass} relative overflow-hidden`}
                 initial={{ width: 0 }}
                 animate={{ width: `${value}%` }}
-                transition={{ duration: 1.5, type: "spring", bounce: 0.4 }}
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-            </motion.div>
+                className={`h-full ${colorClass} rounded-full`}
+            />
         </div>
     </div>
 );
 
-const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean }> = ({ content, isRTL }) => {
+const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content }) => {
+    const { isRTL } = usePreferences();
     const [activePhase, setActivePhase] = useState(0);
 
     const chartData = content.timelinePhases.map(phase => ({
@@ -74,7 +65,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                 >
                     {content.timelineTitle}
                 </motion.h2>
-                <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-bold italic animate-glow">{renderStyledBrandName(content.timelineSubtitle)}</p>
+                <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-bold italic animate-glow"><StyledBrandName text={content.timelineSubtitle} /></p>
             </div>
 
             {/* Dashboard Container */}
@@ -85,13 +76,28 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                     {/* Luminous Connector Strip */}
                     <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent lg:w-1 lg:h-full lg:left-1/2 lg:top-0 lg:bg-gradient-to-b -z-10 blur-sm"></div>
                     <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gold-500/30 lg:w-0.5 lg:h-full lg:left-1/2 lg:top-0 -z-10"></div>
+
+                    {/* Pulsing Line Effect (Mobile Horizontal) */}
+                    <motion.div
+                        className="absolute block lg:hidden top-1/2 -translate-y-1/2 h-1 w-24 bg-gradient-to-r from-transparent via-white to-transparent blur-md z-0"
+                        animate={{ left: ['-20%', '120%'] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+
+                    {/* Pulsing Line Effect (Desktop Vertical) */}
+                    <motion.div
+                        className="absolute hidden lg:block left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-transparent via-white to-transparent blur-md z-0"
+                        animate={{ top: ['-20%', '120%'] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+
                     {content.timelinePhases.map((phase, idx) => {
                         const isActive = idx === activePhase;
                         const isCompleted = idx < activePhase;
                         return (
                             <motion.div
                                 key={idx}
-                                className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0"
+                                className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group/phase"
                                 onClick={() => setActivePhase(idx)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -107,7 +113,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                                         )}
                                     </AnimatePresence>
                                 </div>
-                                <span className={`text-sm font-black uppercase tracking-widest transition-colors ${isActive ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-400'}`}>{phase.week}</span>
+                                <div className={`flex flex-col items-center leading-none transition-colors duration-300 ${isActive ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-400 group-hover/phase:text-zinc-600 dark:group-hover/phase:text-zinc-300'}`}>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase opacity-80 mb-0.5">{isRTL ? 'الأسبوع' : 'WEEK'}</span>
+                                    <span className="text-xl md:text-2xl font-black">{phase.week}</span>
+                                </div>
                             </motion.div>
                         );
                     })}
@@ -248,7 +257,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                                         <Activity className="w-4 h-4" />
                                         {content.timelineLabels.biologicalTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium">{renderStyledBrandName(activeData.details.biological)}</p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium"><StyledBrandName text={activeData.details.biological} /></p>
                                 </div>
                             </motion.div>
 
@@ -259,7 +268,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                                         <Brain className="w-4 h-4" />
                                         {content.timelineLabels.feelingTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium">{renderStyledBrandName(activeData.details.feeling)}</p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium"><StyledBrandName text={activeData.details.feeling} /></p>
                                 </div>
                             </motion.div>
 
@@ -268,7 +277,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings, isRTL: boolean
                                     <Zap className="w-4 h-4 fill-gold-500" />
                                     {content.timelineLabels.actionTitle}
                                 </h4>
-                                <p className="text-base font-black leading-tight relative italic text-white dark:text-black">{renderStyledBrandName(activeData.details.action)}</p>
+                                <p className="text-base font-black leading-tight relative italic text-white dark:text-black"><StyledBrandName text={activeData.details.action} /></p>
                             </motion.div>
                         </div>
 

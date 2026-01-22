@@ -9,6 +9,8 @@ import { md5 } from '../utils/cryptoUtils';
 import BrandLogo from './BrandLogo';
 import UnitToggle from './UnitToggle';
 
+import { usePreferences } from '../context/PreferencesContext';
+
 type HeaderSection = 'logo' | 'lang-theme' | 'nav' | 'auth';
 
 interface LayoutConfig {
@@ -18,8 +20,6 @@ interface LayoutConfig {
 }
 
 interface HeaderProps {
-  lang: Language;
-  changeLang: (lang: Language) => void;
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   content: ContentStrings;
@@ -29,8 +29,7 @@ interface HeaderProps {
   changeColorTheme: (theme: string) => void;
   user?: User | null;
   onLogout?: () => void;
-  unitSystem: 'metric' | 'imperial';
-  setUnitSystem: (system: 'metric' | 'imperial') => void;
+  onOpenPreferences: () => void;
 }
 
 const getProfilePic = (user: User | null | undefined) => {
@@ -52,16 +51,15 @@ const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
 };
 
 const Header: React.FC<HeaderProps> = ({
-  lang, changeLang, theme, setTheme, content, currentPage, navigateTo, colorTheme, changeColorTheme, user, onLogout,
-  unitSystem, setUnitSystem
+  theme, setTheme, content, currentPage, navigateTo, colorTheme, changeColorTheme, user, onLogout, onOpenPreferences
 }) => {
+  const { language: lang, setLanguage: changeLang, unitSystem, setUnitSystem, isRTL } = usePreferences();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
-  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
-  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   // Design Mode State
   const [isDesignMode, setIsDesignMode] = useState(false);
+  // ... rest of state
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() => {
     const saved = localStorage.getItem('header_layout_config');
     return saved ? JSON.parse(saved) : {
@@ -113,7 +111,6 @@ const Header: React.FC<HeaderProps> = ({
   ];
 
   const currentLang = languages.find(l => l.code === lang) || languages[1];
-  const isRTL = [Language.AR].includes(lang);
 
   const renderSection = (id: HeaderSection) => {
     switch (id) {
@@ -135,99 +132,43 @@ const Header: React.FC<HeaderProps> = ({
       case 'lang-theme':
         return (
           <div key="lang-theme" className="flex items-center gap-2">
-            <div className="relative">
-              <button
-                onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                onBlur={() => setTimeout(() => setIsLangDropdownOpen(false), 200)}
-                className="flex items-center gap-2 px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-gold-500/50 transition-all text-sm font-medium text-zinc-700 dark:text-zinc-200 group shadow-sm min-w-[80px]"
-                title="Switch Language"
-              >
-                {currentLang.flag}
-                <span className="hidden sm:inline uppercase">{currentLang.code}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isLangDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isLangDropdownOpen && (
-                <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP}`}>
-                  {languages.map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => { changeLang(l.code); setIsLangDropdownOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors ${lang === l.code ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-                    >
-                      {l.flag}
-                      <span>{l.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
-                onBlur={() => setTimeout(() => setIsThemeDropdownOpen(false), 200)}
-                className="p-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-400 hover:text-gold-500 transition-all shadow-sm flex items-center justify-center gap-2"
-                title="Theme Settings"
-              >
-                <ThemeIcon theme={theme} />
-                <ChevronDown className={`w-3 h-3 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isThemeDropdownOpen && (
-                <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-40 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP}`}>
-                  {(['light', 'dark', 'system'] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => { setTheme(t); setIsThemeDropdownOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors ${theme === t ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-                    >
-                      {t === 'light' ? <Sun className="w-4 h-4" /> : t === 'dark' ? <Moon className="w-4 h-4" /> : (
-                        <div className="relative">
-                          <Sun className="w-3 h-3 opacity-50" /><Moon className="w-2 h-2 absolute -top-1 -right-1" />
-                        </div>
-                      )}
-                      {content.themeNames[t]}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {/* Unit Toggle */}
-            <div className="flex-shrink-0">
-              <UnitToggle lang={lang} />
-            </div>
+            <button
+              onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
+              onBlur={() => setTimeout(() => setIsThemeDropdownOpen(false), 200)}
+              className="flex items-center justify-center gap-2 px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[40px]"
+              title="Toggle Theme"
+            >
+              <ThemeIcon theme={theme} />
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isThemeDropdownOpen && (
+              <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-1.5`}>
+                {(['light', 'dark', 'system'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => { setTheme(t); setIsThemeDropdownOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all rounded-xl ${theme === t ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-black' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    {t === 'light' ? <Sun className="w-4 h-4" /> : t === 'dark' ? <Moon className="w-4 h-4" /> : (
+                      <div className="relative">
+                        <Sun className="w-3.5 h-3.5 opacity-50" /><Moon className="w-2.5 h-2.5 absolute -top-1 -right-1" />
+                      </div>
+                    )}
+                    {content.themeNames[t]}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Color Palette */}
-            <div className="relative">
-              <button
-                onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
-                onBlur={() => setTimeout(() => setIsColorDropdownOpen(false), 200)}
-                className="p-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-400 hover:text-gold-500 transition-all shadow-sm flex items-center justify-center gap-2"
-                title="Color Theme"
-              >
-                <Palette className="w-4 h-4" />
-                <ChevronDown className={`w-3 h-3 transition-transform ${isColorDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isColorDropdownOpen && (
-                <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-2`}>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[
-                      { name: 'gold', bgClass: 'bg-yellow-500' },
-                      { name: 'blue', bgClass: 'bg-blue-500' },
-                      { name: 'red', bgClass: 'bg-red-500' },
-                      { name: 'green', bgClass: 'bg-green-500' },
-                      { name: 'purple', bgClass: 'bg-purple-500' }
-                    ].map((c) => (
-                      <button
-                        key={c.name}
-                        onClick={() => { changeColorTheme(c.name); setIsColorDropdownOpen(false); }}
-                        className={`w-8 h-8 rounded-full ${c.bgClass} border-2 ${colorTheme === c.name ? 'border-zinc-900 dark:border-white scale-110' : 'border-transparent hover:scale-110'} transition-all`}
-                        title={c.name}
-                        aria-label={c.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Smart Globe Button - Opens Unified Settings */}
+            <button
+              onClick={onOpenPreferences}
+              className="flex items-center justify-center gap-2 px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[40px]"
+              title="Preferences"
+            >
+              <Globe className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span className="hidden sm:inline uppercase text-[10px] tracking-widest">{lang}</span>
+            </button>
           </div>
         );
       case 'nav':
@@ -285,7 +226,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={onLogout}
-                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-red-500 transition-colors"
+                  className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-900/10 text-zinc-500 hover:text-red-600 transition-all text-xs font-bold shadow-sm group min-w-[32px]"
                   title={content.logout || "Logout"}
                   aria-label={content.logout || "Logout"}
                 >
@@ -313,10 +254,10 @@ const Header: React.FC<HeaderProps> = ({
       {/* Design Mode Toggle */}
       <button
         onClick={() => setIsDesignMode(!isDesignMode)}
-        className={`absolute top-full ltr:right-4 rtl:left-4 mt-2 p-2 rounded-full shadow-lg border transition-all z-50 ${isDesignMode ? 'bg-gold-500 text-black border-gold-600 animate-pulse' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 opacity-0 group-hover/nav:opacity-100'}`}
+        className={`absolute top-full ltr:right-4 rtl:left-4 mt-2 flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg shadow-lg border transition-all z-50 ${isDesignMode ? 'bg-gold-500 text-black border-gold-600 animate-pulse' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 opacity-0 group-hover/nav:opacity-100'}`}
         title="Toggle Visual Editor"
       >
-        <Settings2 className="w-5 h-5" />
+        <Settings2 className="w-4 h-4" />
       </button>
 
       {/* Editor Toolbar */}
@@ -386,12 +327,12 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile menu toggle stays right-aligned regardless */}
         <button
-          className="p-2 text-zinc-700 dark:text-zinc-200 md:hidden ml-auto"
+          className="md:hidden ml-auto flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 shadow-sm"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           title={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
           aria-label={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
         >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 

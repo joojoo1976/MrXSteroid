@@ -6,14 +6,13 @@ import BrandLogo from './BrandLogo';
 import AdPlaceholder from './AdPlaceholder';
 import KineticCounter from './KineticCounter';
 import { ContentStrings, Page } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import { convertValue, toMetric } from '../utils/logic';
+import { usePreferences } from '../context/PreferencesContext';
 
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;
-  unitSystem?: 'metric' | 'imperial';
-  isRTL?: boolean;
   navigateTo: (page: Page) => void;
 }
 
@@ -89,7 +88,8 @@ const RadarChart = ({ data, color = "#EAB308" }: { data: { label: string; value:
   );
 };
 
-const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({ content, unitSystem = 'metric', isRTL, navigateTo }) => {
+const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({ content, navigateTo }) => {
+  const { unitSystem, isRTL } = usePreferences();
   const isImperial = unitSystem === 'imperial';
 
   const [formData, setFormData] = useState({
@@ -534,7 +534,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                   <Activity className="w-16 h-16 text-zinc-400 dark:text-zinc-600" />
                 </motion.div>
                 <h3 className="text-3xl font-black text-zinc-800 dark:text-zinc-200 mb-4 tracking-tight">{content.geneticCalculator.awaitingDataTitle}</h3>
-                <p className="text-zinc-500 max-w-sm mx-auto text-lg font-medium leading-relaxed italic">{renderStyledBrandName(content.geneticCalculator.unknownMeasurements)}</p>
+                <p className="text-zinc-500 max-w-sm mx-auto text-lg font-medium leading-relaxed italic"><StyledBrandName text={content.geneticCalculator.unknownMeasurements} /></p>
                 <div className="mt-10 flex gap-2">
                   <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
                   <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>

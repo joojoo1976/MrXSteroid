@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://alghvtpkpspnqupbvodu.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Use VITE_ prefix for client-side environment variables in Vite
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseAnonKey) {
-    console.warn("Supabase Anon Key is missing! Auth features will not work.");
+if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase URL or Anon Key is missing. Access valid credentials in ENV_SETUP_GUIDE.md');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey || 'dummy-key');
+export const supabase = createClient(
+    supabaseUrl || '',
+    supabaseAnonKey || ''
+);

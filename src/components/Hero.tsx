@@ -3,20 +3,20 @@ import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion';
 import { ContentStrings, PricingTier } from '../types';
 import BrandLogo from './BrandLogo';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
+
+import { usePreferences } from '../context/PreferencesContext';
 
 interface HeroProps {
   content: ContentStrings;
-  isRTL: boolean;
-  lang: string;
   openCheckout: (tier: PricingTier) => void;
   playerState: { isPlaying: boolean; togglePlay: () => void; };
 }
 
 // Internal BookCover Component to keep Hero self-contained
-const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, lang: string, onClick: () => void }> = ({ content, isRTL, lang, onClick }) => {
+const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({ content, onClick }) => {
+  const { language: lang, isRTL } = usePreferences();
   const getDefaultImg = () => {
-    if (lang === 'he') return "/cover-en.webp";
     return isRTL ? "/cover-ar.webp" : "/cover-en.webp";
   };
   const [imgSrc, setImgSrc] = useState<string>(getDefaultImg());
@@ -24,7 +24,7 @@ const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, lang: strin
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleError = () => {
-    const base = lang === 'he' ? "/cover-en" : isRTL ? "/cover-ar" : "/cover-en";
+    const base = isRTL ? "/cover-ar" : "/cover-en";
     if (retryCount === 0) { setImgSrc(`${base}.jpg`); setRetryCount(1); }
     else if (retryCount === 1) { setImgSrc(`${base}.png`); setRetryCount(2); }
     else if (retryCount === 2) { setImgSrc("https://placehold.co/600x900/18181b/EAB308?text=MR+X+STEROID&font=oswald"); setRetryCount(3); }
@@ -61,20 +61,24 @@ const BookCover: React.FC<{ content: ContentStrings, isRTL: boolean, lang: strin
   );
 };
 
-const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying: boolean, togglePlay: () => void }, isRTL: boolean }> = ({ content, playerState, isRTL }) => (
-  <div className={`mt-8 p-4 bg-zinc-100 dark:bg-background rounded-2xl flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-    <button aria-label={playerState.isPlaying ? "Pause Audio" : "Play Audio"} title={playerState.isPlaying ? "Pause Audio" : "Play Audio"} onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform shrink-0">
-      {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-    </button>
-    <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-      <h4 className="font-bold text-base text-zinc-900 dark:text-white">{content.audioPlayer.title}</h4>
-      <p className="text-sm text-zinc-500">{content.audioPlayer.subtitle}</p>
+const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying: boolean, togglePlay: () => void } }> = ({ content, playerState }) => {
+  const { isRTL } = usePreferences();
+  return (
+    <div className={`mt-8 p-4 bg-zinc-100 dark:bg-background rounded-2xl flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+      <button aria-label={playerState.isPlaying ? "Pause Audio" : "Play Audio"} title={playerState.isPlaying ? "Pause Audio" : "Play Audio"} onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform shrink-0">
+        {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+      </button>
+      <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+        <h4 className="font-bold text-base text-zinc-900 dark:text-white">{content.audioPlayer.title}</h4>
+        <p className="text-sm text-zinc-500">{content.audioPlayer.subtitle}</p>
+      </div>
+      <div className="text-sm font-mono font-bold text-zinc-400 shrink-0">{content.audioPlayer.duration}</div>
     </div>
-    <div className="text-sm font-mono font-bold text-zinc-400 shrink-0">{content.audioPlayer.duration}</div>
-  </div>
-);
+  );
+};
 
-const Hero: React.FC<HeroProps> = ({ content, isRTL, lang, openCheckout, playerState }) => {
+const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
+  const { language: lang, isRTL } = usePreferences();
   return (
     <section className="pt-32 pb-20 px-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-white/5 [mask-image:linear-gradient(0deg,white,transparent)] pointer-events-none" />
@@ -110,7 +114,7 @@ const Hero: React.FC<HeroProps> = ({ content, isRTL, lang, openCheckout, playerS
           transition={{ delay: 0.3 }}
           className="text-lg md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white max-w-4xl mx-auto mb-12 leading-relaxed animate-text-flash text-center px-2"
         >
-          {renderStyledBrandName(content.heroSubtitle)}
+          <StyledBrandName text={content.heroSubtitle} />
         </motion.p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-16 flex-wrap px-4">
@@ -152,11 +156,11 @@ const Hero: React.FC<HeroProps> = ({ content, isRTL, lang, openCheckout, playerS
 
         <div className="relative">
           <div className="absolute inset-0 bg-gold-500/20 blur-[100px] rounded-full -z-10 animate-float-slow"></div>
-          <BookCover key={`${lang}-${isRTL}`} content={content} isRTL={isRTL} lang={lang} onClick={() => openCheckout(content.pricingTiers[0])} />
+          <BookCover content={content} onClick={() => openCheckout(content.pricingTiers[0])} />
         </div>
 
         <div className="max-w-md mx-auto mt-12 animate-float-slow">
-          <AudioPlayer content={content} playerState={playerState} isRTL={isRTL} />
+          <AudioPlayer content={content} playerState={playerState} />
         </div>
       </div>
     </section>

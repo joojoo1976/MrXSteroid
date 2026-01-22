@@ -8,15 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import CountdownTimer from "@/components/CountdownTimer"; // Import the new CountdownTimer component
-import { getTranslation, Language } from "@/lib/i18n";
-import { renderStyledBrandName } from "@/utils/logic";
+import { getTranslation } from "@/lib/i18n";
+import { Language } from "@/types";
+import { StyledBrandName } from "@/components/StyledBrandName";
+import { usePreferences } from "@/context/PreferencesContext";
 
 const BookLandingPage = () => {
-  const [lang, setLang] = useState<Language>("ar");
-  const t = getTranslation(lang);
+  const { language: lang, setLanguage } = usePreferences();
+  const t = getTranslation(lang === Language.AR ? 'ar' : 'en');
 
   const handleLanguageChange = (value: string) => {
-    setLang(value as Language);
+    setLanguage(value as Language);
   };
 
   // Set the end date for the offer (7 days from now for demonstration)
@@ -24,7 +26,7 @@ const BookLandingPage = () => {
   offerEndDate.setDate(offerEndDate.getDate() + 7);
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white ${lang === 'ar' ? 'font-arabic text-right' : 'font-sans text-left'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white ${lang === Language.AR ? 'font-arabic text-right' : 'font-sans text-left'}`}>
       {/* Language Selector */}
       <div className="flex justify-end p-4">
         <Select onValueChange={handleLanguageChange} defaultValue={lang}>
@@ -41,7 +43,7 @@ const BookLandingPage = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-          {renderStyledBrandName(t.bookTitle)}
+          <StyledBrandName text={t.bookTitle} />
         </h1>
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
           {t.tagline}
@@ -81,7 +83,7 @@ const BookLandingPage = () => {
           <p className="text-4xl font-extrabold text-yellow-400">{t.newPrice}</p>
         </div>
         <p className="text-lg text-red-400 mb-4">{t.offerEnds}</p>
-        <CountdownTimer endDate={offerEndDate} lang={lang} />
+        <CountdownTimer endDate={offerEndDate} lang={lang === Language.AR ? 'ar' : 'en'} />
         <div className="mt-8">
           <a href="#purchase-options">
             <Button className="bg-red-600 hover:bg-red-700 text-white text-xl px-10 py-4 rounded-full shadow-lg transition-all duration-300 animate-pulse">

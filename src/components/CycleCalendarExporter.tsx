@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { ContentStrings, Page } from '../types';
+import { usePreferences } from '../context/PreferencesContext';
 
 
 interface CycleCalendarExporterProps {
     content: ContentStrings;
-    isRTL: boolean;
     navigateTo: (page: Page) => void;
 }
 
-const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, isRTL, navigateTo }) => {
+const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, navigateTo }) => {
+    const { isRTL } = usePreferences();
 
 
     const [isUnlocked, setIsUnlocked] = useState(false);

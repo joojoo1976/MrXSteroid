@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, StripeElementLocale } from '@stripe/stripe-js';
 import {
     Elements,
     CardElement,
@@ -21,32 +21,27 @@ import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 import { getShippingProviders, ShippingProvider, validatePromoCode, calculateShippingRates } from '../../utils/logic';
 import { supabase } from '../../lib/supabase';
-import { useUnitSystem } from '../../context/UnitContext';
+import { usePreferences } from '../../context/PreferencesContext';
 
 // Initialize Stripe (Environment Variable with fallback for localized testing)
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder_key_demo_only';
 const stripePromise = loadStripe(STRIPE_KEY);
 
-const baseSchema = z.object({
-    fullName: z.string().min(3, { message: "Name must be at least 3 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
-    country: z.string().min(2, { message: "Country is required" }),
-    address: z.string().optional(),
-    city: z.string().optional(),
-    zipCode: z.string().optional(),
-    shippingProvider: z.string().optional(),
-    // Body Stats (Tier 3)
-    weight: z.string().optional(),
-    height: z.string().optional(),
-    age: z.string().optional(),
-    goal: z.string().optional(),
-    createAccount: z.boolean(),
-    agreeToTerms: z.boolean().refine(val => val === true, {
-        message: "You must agree to the terms and medical disclaimer"
-    }),
-});
-
-type CheckoutFormData = z.infer<typeof baseSchema>;
+interface CheckoutFormData {
+    fullName: string;
+    email: string;
+    country: string;
+    address?: string;
+    city?: string;
+    zipCode?: string;
+    shippingProvider?: string;
+    weight?: string;
+    height?: string;
+    age?: string;
+    goal?: string;
+    createAccount: boolean;
+    agreeToTerms: boolean;
+}
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -84,32 +79,49 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
-    const isAr = lang === 'ar';
+    const { unitSystem, language: prefLang, locale: detectedLocale } = usePreferences();
+    const isAr = prefLang === 'ar';
     const isPhysical = productVariant !== 'digital';
-    const { unitSystem } = useUnitSystem();
     const isImperial = unitSystem === 'imperial';
 
-    const schema = baseSchema.superRefine((data, ctx) => {
+    // Dynamic Localization-ready Schema
+    const schema = z.object({
+        fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
+        email: z.string().email({ message: content.checkout.validation.emailInvalid }),
+        country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
+        address: z.string().optional(),
+        city: z.string().optional(),
+        zipCode: z.string().optional(),
+        shippingProvider: z.string().optional(),
+        weight: z.string().optional(),
+        height: z.string().optional(),
+        age: z.string().optional(),
+        goal: z.string().optional(),
+        createAccount: z.boolean(),
+        agreeToTerms: z.boolean().refine(val => val === true, {
+            message: content.checkout.validation.termsRequired
+        }),
+    }).superRefine((data, ctx) => {
         if (selectedTier.requiresShipping) {
             if (!data.address || data.address.length < 5) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Address is required for physical shipping", path: ["address"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.addressRequired, path: ["address"] });
             }
             if (!data.city) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "City is required", path: ["city"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.cityRequired, path: ["city"] });
             }
             if (!data.zipCode) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "ZIP Code is required", path: ["zipCode"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.zipRequired, path: ["zipCode"] });
             }
             if (!data.shippingProvider) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Please select a shipping provider", path: ["shippingProvider"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.shippingRequired, path: ["shippingProvider"] });
             }
         }
         if (selectedTier.requiresBodyStats) {
             if (!data.weight) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Weight is required for coaching", path: ["weight"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.weightRequired, path: ["weight"] });
             }
             if (!data.height) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Height is required for coaching", path: ["height"] });
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.heightRequired, path: ["height"] });
             }
         }
     });
@@ -305,8 +317,8 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                             <User className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
                             <Input
                                 {...register("fullName")}
-                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all", errors.fullName && "border-red-500")}
-                                placeholder={isAr ? "محمد أحمد" : "John Doe"}
+                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.fullName && "border-red-500")}
+                                placeholder={content.checkout.placeholders.fullName}
                             />
                         </div>
                         {errors.fullName && <p className="text-xs text-red-500 font-bold">{errors.fullName.message}</p>}
@@ -319,8 +331,8 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                             <Input
                                 {...register("email")}
                                 type="email"
-                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all", errors.email && "border-red-500")}
-                                placeholder="mrx@example.com"
+                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.email && "border-red-500")}
+                                placeholder={content.checkout.placeholders.email}
                             />
                         </div>
                         {errors.email && <p className="text-xs text-red-500 font-bold">{errors.email.message}</p>}
@@ -344,19 +356,24 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     </div>
 
                     <AnimatePresence>
-                        {isPhysical && (
+                        {selectedTier.requiresShipping && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="space-y-4 overflow-hidden"
+                                className="space-y-6 pt-6 border-t border-zinc-800"
                             >
+                                <h4 className="text-sm font-black uppercase tracking-widest text-gold-500 flex items-center gap-2">
+                                    <Truck className="w-4 h-4" />
+                                    {isAr ? 'تفاصيل الشحن' : 'Shipping Details'}
+                                </h4>
+
                                 <div className="space-y-2">
-                                    <Label className="text-zinc-300">{isAr ? "العنوان" : "Address"}</Label>
+                                    <Label className="text-zinc-300">{isAr ? "العنوان بالتفصيل" : "Full Address"}</Label>
                                     <Input
                                         {...register("address")}
-                                        className={cn("bg-black/40 border-zinc-800 focus:border-gold-500", errors.address && "border-red-500")}
-                                        placeholder={isAr ? "123 شارع التحرير" : "123 Main St"}
+                                        className={cn("bg-black/40 border-zinc-800 focus:border-gold-500 text-sm", errors.address && "border-red-500")}
+                                        placeholder={content.checkout.placeholders.address}
                                     />
                                     {errors.address && <p className="text-xs text-red-500 font-bold">{errors.address.message}</p>}
                                 </div>
@@ -368,6 +385,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                                             {...register("city")}
                                             className={cn("bg-black/40 border-zinc-800 focus:border-gold-500", errors.city && "border-red-500")}
                                         />
+                                        {errors.city && <p className="text-xs text-red-500 font-bold">{errors.city.message}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-zinc-300">{isAr ? "الرمز البريدي" : "ZIP Code"}</Label>
@@ -375,106 +393,51 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                                             {...register("zipCode")}
                                             className={cn("bg-black/40 border-zinc-800 focus:border-gold-500", errors.zipCode && "border-red-500")}
                                         />
+                                        {errors.zipCode && <p className="text-xs text-red-500 font-bold">{errors.zipCode.message}</p>}
                                     </div>
+                                </div>
+
+                                {/* Shipping Provider Selection */}
+                                <div className="space-y-3">
+                                    <Label className="text-zinc-300">{isAr ? 'شركة الشحن' : 'Shipping Provider'}</Label>
+                                    {isLoadingShipping ? (
+                                        <div className="h-20 flex items-center justify-center bg-white/5 rounded-xl border border-zinc-800 animate-pulse">
+                                            <Loader2 className="w-5 h-5 text-gold-500 animate-spin" />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {shippingProviders.map((provider) => (
+                                                <label
+                                                    key={provider.id}
+                                                    className={cn(
+                                                        "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all",
+                                                        watch('shippingProvider') === provider.id
+                                                            ? "border-gold-500 bg-gold-500/10"
+                                                            : "border-zinc-800 bg-black/20 hover:border-zinc-700"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="radio"
+                                                            value={provider.id}
+                                                            {...register('shippingProvider')}
+                                                            className="w-4 h-4 accent-gold-500"
+                                                        />
+                                                        <div>
+                                                            <p className="text-xs font-black text-white">{provider.name}</p>
+                                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{provider.estimatedDays} days delivery</p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-sm font-black text-gold-500">+${provider.price}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {errors.shippingProvider && <p className="text-xs text-red-500 font-bold">{errors.shippingProvider.message}</p>}
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
-
-                    {/* Physical Shipping Fields */}
-                    {selectedTier.requiresShipping && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800"
-                        >
-                            <h4 className="text-sm font-black uppercase tracking-widest text-gold-500">
-                                {lang === 'ar' ? 'تفاصيل الشحن' : 'Shipping Details'}
-                            </h4>
-                            <div>
-                                <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                    {lang === 'ar' ? 'العنوان بالتفصيل' : 'Full Address'}
-                                </label>
-                                <input
-                                    {...register('address')}
-                                    className={cn(
-                                        "w-full bg-zinc-50 dark:bg-zinc-900 border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 transition-all",
-                                        errors.address ? "border-red-500" : "border-zinc-200 dark:border-zinc-800"
-                                    )}
-                                    placeholder={lang === 'ar' ? 'الشارع، رقم المبنى، الشقة' : 'Street name, building, apartment'}
-                                />
-                                {errors.address && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.address.message}</p>}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? 'المدينة' : 'City'}
-                                    </label>
-                                    <input
-                                        {...register('city')}
-                                        className={cn(
-                                            "w-full bg-zinc-50 dark:bg-zinc-900 border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 transition-all",
-                                            errors.city ? "border-red-500" : "border-zinc-200 dark:border-zinc-800"
-                                        )}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? 'الرمز البريدي' : 'ZIP Code'}
-                                    </label>
-                                    <input
-                                        {...register('zipCode')}
-                                        className={cn(
-                                            "w-full bg-zinc-50 dark:bg-zinc-900 border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 transition-all",
-                                            errors.zipCode ? "border-red-500" : "border-zinc-200 dark:border-zinc-800"
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Shipping Provider Selection */}
-                            <div className="space-y-3">
-                                <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                    {lang === 'ar' ? 'شركة الشحن' : 'Shipping Provider'}
-                                </label>
-                                {isLoadingShipping ? (
-                                    <div className="h-20 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800/50 rounded-lg animate-pulse">
-                                        <div className="w-5 h-5 border-2 border-gold-500 border-t-transparent rounded-full animate-spin" />
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {shippingProviders.map((provider) => (
-                                            <label
-                                                key={provider.id}
-                                                className={cn(
-                                                    "flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all",
-                                                    watch('shippingProvider') === provider.id
-                                                        ? "border-gold-500 bg-gold-500/10 dark:bg-gold-500/10"
-                                                        : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                                                )}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="radio"
-                                                        value={provider.id}
-                                                        {...register('shippingProvider')}
-                                                        className="w-4 h-4 accent-gold-500"
-                                                    />
-                                                    <div>
-                                                        <p className="text-xs font-black">{provider.name}</p>
-                                                        <p className="text-[10px] text-zinc-500">{provider.estimatedDays} days</p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-xs font-black text-gold-500">+${provider.price}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                )}
-                                {errors.shippingProvider && <p className="text-[10px] text-red-500 font-bold">{errors.shippingProvider.message}</p>}
-                            </div>
-                        </motion.div>
-                    )}
 
                     {/* Body Stats Fields (Tier 3) */}
                     {selectedTier.requiresBodyStats && (
@@ -689,6 +652,37 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                         {isProcessing ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
                         {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} $${finalTotal.toFixed(2)}`}
                     </Button>
+
+                    {/* SpaceRemit Integration */}
+                    {window.SpaceRemit && (
+                        <>
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-zinc-700" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-zinc-900 px-2 text-zinc-500 font-bold">{isAr ? "أو" : "Or"}</span>
+                                </div>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    if (window.SpaceRemit) {
+                                        window.SpaceRemit.Pay({
+                                            amount: finalTotal,
+                                            currency: 'USD',
+                                            description: selectedTier.name,
+                                            customer_email: watch('email'),
+                                            customer_name: watch('fullName')
+                                        });
+                                    }
+                                }}
+                                className="w-full py-6 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-lg rounded-xl border border-zinc-700"
+                            >
+                                {isAr ? "الدفع عبر SpaceRemit" : "Pay with SpaceRemit"}
+                            </Button>
+                        </>
+                    )}
                     <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
                         <div className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{content.secureCheckout}</div>
                     </div>
@@ -699,8 +693,9 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
 };
 
 export const CheckoutForm: React.FC<CheckoutFormProps> = (props) => {
+    const { locale } = usePreferences();
     return (
-        <Elements stripe={stripePromise}>
+        <Elements stripe={stripePromise} options={{ locale: locale as StripeElementLocale }}>
             <CheckoutFormInner {...props} />
         </Elements>
     );

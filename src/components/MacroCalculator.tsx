@@ -8,7 +8,7 @@ import KineticCounter from './KineticCounter';
 import { ContentStrings, Language, DailyMeal, Page } from '../types';
 import { toast } from 'sonner';
 import { convertValue, toMetric, formatUnit } from '../utils/logic';
-import { useUnitSystem } from '../context/UnitContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { UnitToggle } from './UnitToggle';
 
 
@@ -26,7 +26,6 @@ interface CalcResult {
 
 interface MacroCalculatorProps {
   content: ContentStrings;
-  lang: Language;
   navigateTo: (page: Page) => void;
 }
 
@@ -45,8 +44,8 @@ interface SimulationPoint {
 
 
 
-const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, lang, navigateTo }) => {
-  const { unitSystem } = useUnitSystem();
+const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }) => {
+  const { language: lang, setLanguage: changeLang, content: _, isRTL, unitSystem, setUnitSystem } = usePreferences();
   const isAr = lang === 'ar';
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');

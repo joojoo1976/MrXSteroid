@@ -1354,7 +1354,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         stepsLabel: "Smart Preparation Steps",
         ingredientsLabel: "Bio-Active Ingredients"
     },
-    checkoutAgree: "I have read and agree to the [Terms of Service], [Medical Disclaimer], and [Refund Policy]. I confirm that I am over 18 years old.",
+    checkoutAgree: "I agree to the [Terms of Service], [Privacy Policy], and [Medical & Legal Disclaimer].",
     medicalDisclaimerPage: {
         title: "Medical Disclaimer & High-Risk Warning",
         sections: [
@@ -1384,4 +1384,80 @@ These Terms shall be governed and construed in accordance with the laws of <stro
             }
         ]
     },
+
+    nav: {
+        home: "Home",
+        about: "About Us",
+        macro: "Macro Calculator",
+        injection: "Injection Map",
+        halflife: "Half-Life Visualizer",
+        lab: "Lab Reference",
+        genetic: "Genetic Potential",
+        cycle: "Cycle Architect",
+        sitemap: "Sitemap",
+        login: "Login",
+        signup: "Sign Up"
+    },
+    accessibilityTitle: "Accessibility Statement",
+    gdprTitle: "GDPR Compliance",
+    ccpaTitle: "CCPA Compliance",
+    blogTitle: "Scientific Blog",
+    shippingPolicyTitle: "Shipping Policy",
+    returnPolicyTitle: "Return & Exchange Policy",
+    cookiePolicyTitle: "Cookie Policy",
+    complianceLinks: "Global Compliance",
+    commercialLinks: "Commercial",
+    generalLinks: "General Menu",
+    internationalLegalLinks: "International Legal",
+    supportTitle: "Support & Help Center",
+    careersTitle: "Careers & Opportunities",
+    faqPageTitle: "Frequently Asked Questions",
+    privacyTitle: "Privacy Policy",
+    termsTitle: "Terms of Service",
+    refundTitle: "Refund Policy",
+    legalDisclaimerTitle: "Legal Disclaimer",
+    supportLinks: "Support & Help",
+    pricingPlans: [
+        {
+            id: 'digital',
+            name: "Digital Protocol",
+            description: "Immediate Access. Zero Friction.",
+            features: ["eBook (PDF/EPUB)", "Instant Delivery", "Basic Cycle Templates"],
+            cta: "Instant Access"
+        },
+        {
+            id: 'bundle',
+            name: "Tactical Bundle",
+            description: "Maximum Value. The Complete Arsenal.",
+            features: ["Glossy Paperback", "Digital Copy Included", "Bonus: Audiobook", "Home Workout PDF", "Free Shipping"],
+            cta: "Get The Bundle"
+        },
+        {
+            id: 'coaching',
+            name: "Smart Professional",
+            description: "Elite Status. Full Optimization.",
+            features: ["Hardcover Premium Edition", "VIP Community Access", "Priority Global Shipping", "Safe Exit Protocol"],
+            upsellFeatures: ["1-on-1 Cycle Coaching (1 Full Cycle)", "Bloodwork Analysis", "Custom PCT Protocol"],
+            cta: "Get Pro Edition"
+        }
+    ],
+    checkout: {
+        validation: {
+            nameRequired: "Name must be at least 3 characters",
+            emailInvalid: "Invalid email address",
+            countryRequired: "Country is required",
+            addressRequired: "Address is required for physical shipping",
+            cityRequired: "City is required",
+            zipRequired: "ZIP Code is required",
+            shippingRequired: "Please select a shipping provider",
+            weightRequired: "Weight is required for coaching",
+            heightRequired: "Height is required for coaching",
+            termsRequired: "You must agree to the terms and medical disclaimer"
+        },
+        placeholders: {
+            fullName: "John Doe",
+            email: "mrx@example.com",
+            address: "Street name, building, apartment"
+        }
+    }
 };

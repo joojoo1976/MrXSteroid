@@ -13,4 +13,5 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    // Server restart trigger: logic.ts refactor
 })

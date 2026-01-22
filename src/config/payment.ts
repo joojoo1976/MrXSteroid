@@ -3,7 +3,8 @@ export const PAYMENT_CONFIG = {
         scriptUrl: 'https://spaceremit.com/api/v2/js_script/spaceremit.js',
         // PLACEHOLDER KEYS - Connect to User's Account Later
         publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
-        secretKey: import.meta.env.VITE_STRIPE_SECRET_KEY,
-        testMode: import.meta.env.MODE !== 'production' // Set to false in production
+        // WARNING: Secret Key must NEVER be used on client-side.
+        // Use Supabase Edge Functions for handling secrets.
+        testMode: import.meta.env.MODE !== 'production'
     }
 };

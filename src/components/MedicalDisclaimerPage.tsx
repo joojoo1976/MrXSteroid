@@ -4,16 +4,16 @@ import { AlertTriangle, ShieldCheck, FileCheck } from 'lucide-react';
 import { ContentStrings, Page } from '../types';
 import BrandLogo from './BrandLogo';
 import { replaceBrandWithHtml } from '../utils/logic';
+import { usePreferences } from '../context/PreferencesContext';
 
 interface MedicalDisclaimerPageProps {
     content: ContentStrings;
     navigateTo: (page: Page) => void;
-    lang: string;
 }
 
-const MedicalDisclaimerPage: React.FC<MedicalDisclaimerPageProps> = ({ content, navigateTo, lang }) => {
+const MedicalDisclaimerPage: React.FC<MedicalDisclaimerPageProps> = ({ content, navigateTo }) => {
     const { title, sections } = content.medicalDisclaimerPage;
-    const isRTL = lang === 'ar';
+    const { isRTL } = usePreferences();
 
     return (
         <div className={`min-h-screen py-12 px-4 ${isRTL ? 'font-cairo' : 'font-sans'}`} dir={isRTL ? 'rtl' : 'ltr'}>

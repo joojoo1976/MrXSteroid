@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scale, Ruler, ChevronDown } from 'lucide-react';
-import { useUnitSystem } from '../context/UnitContext';
-import { Language } from '../types';
+import { usePreferences } from '../context/PreferencesContext';
 
 interface UnitToggleProps {
     className?: string;
-    lang?: Language;
 }
 
-export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '', lang }) => {
-    const { unitSystem, setUnitSystem } = useUnitSystem();
+export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '' }) => {
+    const { unitSystem, setUnitSystem, language, isRTL } = usePreferences();
     const [isOpen, setIsOpen] = useState(false);
     const isMetric = unitSystem === 'metric';
 
     const currentIcon = isMetric ? <Scale className="w-4 h-4" /> : <Ruler className="w-4 h-4" />;
-    const currentLabel = isMetric ? (lang === 'ar' ? 'متري' : 'Metric') : (lang === 'ar' ? 'إمبراطوري' : 'Imperial');
+    const currentLabel = isMetric ? (isRTL ? 'متري' : 'Metric') : (isRTL ? 'إمبراطوري' : 'Imperial');
     const currentShort = isMetric ? 'KG/CM' : 'LBS/IN';
 
     return (
@@ -24,7 +22,7 @@ export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '', lang }) 
                 onClick={() => setIsOpen(!isOpen)}
                 onBlur={() => setTimeout(() => setIsOpen(false), 200)}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group"
-                title={lang === 'ar' ? 'نظام القياس' : 'Unit System'}
+                title={isRTL ? 'نظام القياس' : 'Unit System'}
             >
                 <span className="text-gold-500 group-hover:scale-110 transition-transform">{currentIcon}</span>
                 <span className="hidden sm:inline">{currentLabel}</span>
@@ -45,14 +43,14 @@ export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '', lang }) 
                             className={`w-full flex items-center gap-3 px-3 py-2 text-xs transition-colors ${isMetric ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
                         >
                             <Scale className="w-3.5 h-3.5" />
-                            <span>{lang === 'ar' ? 'نظام متري (kg)' : 'Metric (kg)'}</span>
+                            <span>{isRTL ? 'نظام متري (kg)' : 'Metric (kg)'}</span>
                         </button>
                         <button
                             onClick={() => { setUnitSystem('imperial'); setIsOpen(false); }}
                             className={`w-full flex items-center gap-3 px-3 py-2 text-xs transition-colors ${!isMetric ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
                         >
                             <Ruler className="w-3.5 h-3.5" />
-                            <span>{lang === 'ar' ? 'نظام إمبراطوري (lbs)' : 'Imperial (lbs)'}</span>
+                            <span>{isRTL ? 'نظام إمبراطوري (lbs)' : 'Imperial (lbs)'}</span>
                         </button>
                     </motion.div>
                 )}

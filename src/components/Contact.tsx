@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ContentStrings } from '../types';
-import { Mail, MapPin, Send, Zap, ShieldCheck } from 'lucide-react';
-import { renderStyledBrandName } from '../utils/logic';
+import { Mail, Send, Zap, ShieldCheck } from 'lucide-react';
+import { StyledBrandName } from './StyledBrandName';
+import { usePreferences } from '../context/PreferencesContext';
 
 interface ContactProps {
   content: ContentStrings;
-  isRTL: boolean;
 }
 
-const Contact: React.FC<ContactProps> = ({ content, isRTL }) => {
+const Contact: React.FC<ContactProps> = ({ content }) => {
+  const { isRTL } = usePreferences();
   return (
     <section id="contact" className={`py-8 lg:py-12 bg-zinc-50 dark:bg-background border-t-8 border-gold-500/20 relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Background Kinetic Effects */}
@@ -30,10 +31,10 @@ const Contact: React.FC<ContactProps> = ({ content, isRTL }) => {
               <Zap className="w-4 h-4 animate-pulse" /> Protocol: Secure
             </div>
             <h2 className="text-4xl md:text-6xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter text-start">
-              {renderStyledBrandName(content.contactPageTitle)}
+              <StyledBrandName text={content.contactPageTitle} />
             </h2>
             <p className="text-xl text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed font-bold italic animate-glow text-start">
-              {renderStyledBrandName(content.contactPageSubtitle)}
+              <StyledBrandName text={content.contactPageSubtitle} />
             </p>
 
             <div className="space-y-8">

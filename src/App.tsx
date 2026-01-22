@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense, lazy, useMemo } from 'react';
 import {
-  ChevronRight, AlertTriangle, ArrowLeft, Zap, Lock, FileCheck, CheckCircle
+  ChevronRight, AlertTriangle, ArrowLeft, Zap, Lock, FileCheck, CheckCircle, Globe
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -16,8 +16,6 @@ import { SupportedLanguage, LocalizationState } from './types/localization';
 import { initializeLocalization } from './utils/logic';
 
 // Utils
-import RevealOnScroll from './components/RevealOnScroll';
-
 // Major Components
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -25,16 +23,8 @@ import Features from './components/Features';
 import Footer from './components/Footer';
 import AdPlaceholder from './components/AdPlaceholder';
 
-// Lazy Loaded Components
-const MacroCalculator = React.lazy(() => import('./components/MacroCalculator'));
-const InjectionMap = React.lazy(() => import('./components/InjectionMap'));
-const HalfLifeVisualizer = React.lazy(() => import('./components/HalfLifeVisualizer'));
-const SmartLabReference = React.lazy(() => import('./components/SmartLabReference'));
-const GeneticPotentialCalculator = React.lazy(() => import('./components/GeneticPotentialCalculator'));
-const CycleCalendarExporter = React.lazy(() => import('./components/CycleCalendarExporter'));
-const MedicalDisclaimerPage = React.lazy(() => import('./components/MedicalDisclaimerPage'));
-const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
-const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
+// Utils
+import RevealOnScroll from './components/RevealOnScroll';
 
 // Refactored Components
 import BlockingDisclaimerModal from './components/BlockingDisclaimerModal';
@@ -51,6 +41,37 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import Settings from './components/Settings';
 import { ConsentModal } from './components/compliance/ConsentModal';
 
+// Lazy Loaded Components
+const MacroCalculator = React.lazy(() => import('./components/MacroCalculator'));
+const InjectionMap = React.lazy(() => import('./components/InjectionMap'));
+const HalfLifeVisualizer = React.lazy(() => import('./components/HalfLifeVisualizer'));
+const SmartLabReference = React.lazy(() => import('./components/SmartLabReference'));
+const GeneticPotentialCalculator = React.lazy(() => import('./components/GeneticPotentialCalculator'));
+const CycleCalendarExporter = React.lazy(() => import('./components/CycleCalendarExporter'));
+const MedicalDisclaimerPage = React.lazy(() => import('./components/MedicalDisclaimerPage'));
+const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
+const AboutPage = React.lazy(() => import('./pages/AboutPage'));
+const SitemapPage = React.lazy(() => import('./pages/SitemapPage'));
+const AccessibilityPage = React.lazy(() => import('./pages/AccessibilityPage'));
+const GDPRPage = React.lazy(() => import('./pages/GDPRPage'));
+const CCPAPage = React.lazy(() => import('./pages/CCPAPage'));
+const BlogPage = React.lazy(() => import('./pages/BlogPage'));
+const ShippingPolicyPage = React.lazy(() => import('./pages/ShippingPolicyPage'));
+const ReturnPolicyPage = React.lazy(() => import('./pages/ReturnPolicyPage'));
+const CookiePolicyPage = React.lazy(() => import('./pages/CookiePolicyPage'));
+const SupportPage = React.lazy(() => import('./pages/SupportPage'));
+const CareersPage = React.lazy(() => import('./pages/CareersPage'));
+const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+const ContactPage = React.lazy(() => import('./pages/ContactPage'));
+const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
+const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const RefundPage = React.lazy(() => import('./pages/RefundPage'));
+const LegalDisclaimerPage = React.lazy(() => import('./pages/LegalDisclaimerPage'));
+
+// End of imports cleanup
+
 // Lazy Loaded Below-the-fold Components
 const TransformationTimeline = React.lazy(() => import('./components/TransformationTimeline'));
 const SteroidReadinessQuiz = React.lazy(() => import('./components/SteroidReadinessQuiz'));
@@ -59,10 +80,12 @@ const DailyIQChallenge = React.lazy(() => import('./components/DailyIQChallenge'
 const AuthorSection = React.lazy(() => import('./components/AuthorSection'));
 const PricingSection = React.lazy(() => import('./components/PricingSection'));
 const FAQ = React.lazy(() => import('./components/FAQ'));
-const Contact = React.lazy(() => import('./components/Contact'));
+const ContactSection = React.lazy(() => import('./components/ContactSection'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { usePreferences } from './context/PreferencesContext';
+import { PreferencesProvider } from './context/PreferencesProvider';
+
 
 interface AppContentProps {
   theme: 'light' | 'dark' | 'system';
@@ -80,23 +103,44 @@ interface AppContentProps {
   setLegalState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; title: string; content: string }>>;
   setHasPurchased: (purchased: boolean) => void;
   setCurrencyState: React.Dispatch<React.SetStateAction<{ code: string; symbol: string; rate: number; locale: string }>>;
-  unitSystem: 'metric' | 'imperial';
-  setUnitSystem: (system: 'metric' | 'imperial') => void;
 }
+
+import PreferencesModal from './components/PreferencesModal';
 
 function AppContent({
   theme, setTheme, colorTheme, changeColorTheme,
   currencyState, currentPage, navigateTo, isCheckoutOpen, setIsCheckoutOpen,
   selectedTier, setSelectedTier,
-  legalState, setLegalState, setHasPurchased, setCurrencyState,
-  unitSystem, setUnitSystem
+  legalState, setLegalState, setHasPurchased, setCurrencyState
 }: AppContentProps) {
-  const { language: lang, setLanguage: changeLang, content, isRTL } = useLanguage();
+  const { language: lang, setLanguage: changeLang, content, isRTL, unitSystem, setUnitSystem, isAutoDetected } = usePreferences();
   const { user, signOut } = useAuth();
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
   // Audio Player State (Moved here to access lang)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // Auto-detection Toast Logic
+  useEffect(() => {
+    if (isAutoDetected) {
+      const countryCode = localStorage.getItem('advanced_localization_state')
+        ? JSON.parse(localStorage.getItem('advanced_localization_state')!).country
+        : 'US';
+
+      toast(isRTL ? 'إعدادات مخصصة' : 'Smart Localization', {
+        description: isRTL
+          ? `تم ضبط اللغة والوحدات بناءً على موقعك (${countryCode})`
+          : `Language and units optimized for your region (${countryCode}).`,
+        action: {
+          label: isRTL ? 'تغيير' : 'Change',
+          onClick: () => setIsPreferencesOpen(true),
+        },
+        duration: 5000,
+        icon: <Globe className="w-4 h-4 text-gold-500" />,
+      });
+    }
+  }, [isAutoDetected, isRTL]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -122,6 +166,7 @@ function AppContent({
       audioRef.current = null;
     };
   }, [lang]);
+
 
 
   const openCheckout = (tier: PricingTier) => {
@@ -165,34 +210,41 @@ function AppContent({
   const sharedComponents = (
     <>
       <Header
-        lang={lang} changeLang={changeLang} theme={theme} setTheme={setTheme}
+        theme={theme} setTheme={setTheme}
         colorTheme={colorTheme} changeColorTheme={changeColorTheme}
         content={content} currentPage={currentPage} navigateTo={navigateTo}
-        user={user} onLogout={signOut} unitSystem={unitSystem} setUnitSystem={setUnitSystem}
+        user={user} onLogout={signOut}
+        onOpenPreferences={() => setIsPreferencesOpen(true)}
+      />
+      <PreferencesModal
+        isOpen={isPreferencesOpen}
+        onClose={() => setIsPreferencesOpen(false)}
+        colorTheme={colorTheme}
+        changeColorTheme={changeColorTheme}
       />
       <Settings />
       <div className="flex-1">
         {currentPage === Page.HOME ? (
           <div className="animate-fade-in">
-            <Hero content={content} isRTL={isRTL} lang={lang} openCheckout={openCheckout} playerState={playerState} />
+            <Hero content={content} openCheckout={openCheckout} playerState={playerState} />
             <div className="container mx-auto px-4 mb-20 animate-fade-in-up">
               <AdPlaceholder slotId="home_hero_bottom" content={content} />
             </div>
             <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin"></div></div>}>
               <RevealOnScroll><Features content={content} /></RevealOnScroll>
-              <RevealOnScroll><TransformationTimeline content={content} isRTL={isRTL} /></RevealOnScroll>
+              <RevealOnScroll><TransformationTimeline content={content} /></RevealOnScroll>
               <RevealOnScroll><SteroidReadinessQuiz content={content} onComplete={() => navigateTo(Page.SIGNUP)} /></RevealOnScroll>
               <RevealOnScroll><BenefitsSection content={content} /></RevealOnScroll>
               <RevealOnScroll>
                 <PricingSection
-                  content={content} currency={currencyState.code as Currency}
-                  locale={currencyState.locale} openCheckout={openCheckout} isRTL={isRTL}
+                  content={content}
+                  openCheckout={openCheckout}
                 />
               </RevealOnScroll>
               <RevealOnScroll><DailyIQChallenge content={content} onWin={() => toast.success(content.dailyIQ?.toastCorrect || "Correct!")} /></RevealOnScroll>
               <RevealOnScroll><AuthorSection content={content} /></RevealOnScroll>
               <RevealOnScroll><FAQ content={content} /></RevealOnScroll>
-              <RevealOnScroll><Contact content={content} isRTL={isRTL} /></RevealOnScroll>
+              <RevealOnScroll><ContactSection content={content} /></RevealOnScroll>
             </Suspense>
             <div className="container mx-auto px-4 mb-20">
               <AdPlaceholder slotId="home_footer_top" content={content} />
@@ -204,21 +256,39 @@ function AppContent({
               <ArrowLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} /> {content.backToHome}
             </button>
             <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-gold-500 font-black">LOADING MR. X TOOL...</div>}>
-              {currentPage === Page.MACRO && <MacroCalculator content={content} lang={lang} navigateTo={navigateTo} />}
-              {currentPage === Page.INJECTION && <InjectionMap content={content} lang={lang} navigateTo={navigateTo} unitSystem={unitSystem} />}
+              {currentPage === Page.MACRO && <MacroCalculator content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.INJECTION && <InjectionMap content={content} navigateTo={navigateTo} />}
               {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} navigateTo={navigateTo} />}
-              {currentPage === Page.LAB && <SmartLabReference content={content} isRTL={isRTL} navigateTo={navigateTo} unitSystem={unitSystem} />}
-              {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} unitSystem={unitSystem} isRTL={isRTL} navigateTo={navigateTo} />}
-              {currentPage === Page.CYCLE_ARCHITECT && <CycleCalendarExporter content={content} isRTL={isRTL} navigateTo={navigateTo} />}
-              {currentPage === Page.SMART_LANDING && <SmartBookLanding externalLang={lang === Language.AR ? 'ar' : 'en'} externalIsRTL={isRTL} />}
-              {currentPage === Page.LOGIN && <LoginPage content={content} navigateTo={navigateTo} isRTL={isRTL} />}
-              {currentPage === Page.SIGNUP && <SignupPage content={content} navigateTo={navigateTo} isRTL={isRTL} />}
-              {currentPage === Page.RESET_PASSWORD && <ResetPasswordPage content={content} navigateTo={navigateTo} isRTL={isRTL} />}
-              {currentPage === Page.PROFILE && <ProfilePage user={user} content={content} isRTL={isRTL} navigateTo={navigateTo} />}
-              {currentPage === Page.MEDICAL_DISCLAIMER && <MedicalDisclaimerPage content={content} navigateTo={navigateTo} lang={lang} />}
+              {currentPage === Page.LAB && <SmartLabReference content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.CYCLE_ARCHITECT && <CycleCalendarExporter content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.SMART_LANDING && <SmartBookLanding />}
+              {currentPage === Page.LOGIN && <LoginPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.SIGNUP && <SignupPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.RESET_PASSWORD && <ResetPasswordPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.DASHBOARD && <Dashboard navigateTo={navigateTo} />}
+              {currentPage === Page.PROFILE && <ProfilePage user={user} content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.MEDICAL_DISCLAIMER && <MedicalDisclaimerPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.ABOUT && <AboutPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.SITEMAP && <SitemapPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.ACCESSIBILITY && <AccessibilityPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.GDPR && <GDPRPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.CCPA && <CCPAPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.BLOG && <BlogPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.SHIPPING_POLICY && <ShippingPolicyPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.RETURN_POLICY && <ReturnPolicyPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.COOKIE_POLICY && <CookiePolicyPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.SUPPORT && <SupportPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.CAREERS && <CareersPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.FAQ && <FAQPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.CONTACT && <ContactPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.PRIVACY && <PrivacyPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.TERMS && <TermsPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.REFUND && <RefundPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.LEGAL_DISCLAIMER_PAGE && <LegalDisclaimerPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.CHECKOUT && (
                 <CheckoutPage
-                  content={content} lang={lang} selectedTier={selectedTier}
+                  content={content} selectedTier={selectedTier}
                   navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
                 />
               )}
@@ -226,17 +296,17 @@ function AppContent({
           </main>
         )}
       </div>
-      <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={footerKeywords} lang={lang} />
-      <ChatWidget content={content} isRTL={isRTL} />
-      <WhatsAppButton isRTL={isRTL} />
-      <FloatingSideIcon isRTL={isRTL} />
-      {currentPage === Page.HOME && <SalesToast content={content} data={salesData} isRTL={isRTL} />}
+      <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={footerKeywords} />
+      <ChatWidget content={content} />
+      <WhatsAppButton />
+      <FloatingSideIcon />
+      {currentPage === Page.HOME && <SalesToast content={content} data={salesData} />}
       <ConsentModal />
       <BlockingDisclaimerModal content={content} />
       <LegalModal isOpen={legalState.isOpen} onClose={() => setLegalState(prev => ({ ...prev, isOpen: false }))} title={legalState.title} content={legalState.content} />
       <CheckoutModal
         isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} tier={selectedTier}
-        content={content} lang={lang} navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
+        content={content} navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
         formattedPrice={selectedTier ? (currencyState.symbol + (selectedTier.price * currencyState.rate).toFixed(2)) : ''}
       />
       <Toaster position={isRTL ? 'top-left' : 'top-right'} />
@@ -257,7 +327,6 @@ export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'dark');
   const [colorTheme, setColorTheme] = useState<string>(() => localStorage.getItem('colorTheme') || 'gold');
   const [currencyState, setCurrencyState] = useState<{ code: string; symbol: string; rate: number; locale: string }>({ code: 'USD', symbol: '$', rate: 1, locale: 'en-US' });
-  const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>(() => (localStorage.getItem('mrx_unit_system') as 'metric' | 'imperial') || 'metric');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null);
   const [hasPurchased, setHasPurchased] = useState(false);
@@ -271,6 +340,52 @@ export default function App() {
       // But we still need currency and other detection from advancedLocalization
       const state = await initializeLocalization();
       setCurrencyState(state.currency);
+
+      // Simple URL Router (Deep Linking)
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/dashboard') {
+        setCurrentPage(Page.DASHBOARD);
+      } else if (path === '/login') {
+        setCurrentPage(Page.LOGIN);
+      } else if (path === '/signup') {
+        setCurrentPage(Page.SIGNUP);
+      } else if (path === '/profile') {
+        setCurrentPage(Page.PROFILE);
+      } else if (path === '/about') {
+        setCurrentPage(Page.ABOUT);
+      } else if (path === '/sitemap') {
+        setCurrentPage(Page.SITEMAP);
+      } else if (path === '/accessibility') {
+        setCurrentPage(Page.ACCESSIBILITY);
+      } else if (path === '/gdpr') {
+        setCurrentPage(Page.GDPR);
+      } else if (path === '/ccpa') {
+        setCurrentPage(Page.CCPA);
+      } else if (path === '/blog') {
+        setCurrentPage(Page.BLOG);
+      } else if (path === '/shipping') {
+        setCurrentPage(Page.SHIPPING_POLICY);
+      } else if (path === '/returns') {
+        setCurrentPage(Page.RETURN_POLICY);
+      } else if (path === '/cookies') {
+        setCurrentPage(Page.COOKIE_POLICY);
+      } else if (path === '/support') {
+        setCurrentPage(Page.SUPPORT);
+      } else if (path === '/careers') {
+        setCurrentPage(Page.CAREERS);
+      } else if (path === '/faq') {
+        setCurrentPage(Page.FAQ);
+      } else if (path === '/contact') {
+        setCurrentPage(Page.CONTACT);
+      } else if (path === '/privacy') {
+        setCurrentPage(Page.PRIVACY);
+      } else if (path === '/terms') {
+        setCurrentPage(Page.TERMS);
+      } else if (path === '/refund') {
+        setCurrentPage(Page.REFUND);
+      } else if (path === '/disclaimer') {
+        setCurrentPage(Page.LEGAL_DISCLAIMER_PAGE);
+      }
 
       // Check for reset_password flow
       const urlParams = new URLSearchParams(window.location.search);
@@ -325,7 +440,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <LanguageProvider>
+      <PreferencesProvider>
         <div id="scroll-progress" />
         <AppContent
           theme={theme} setTheme={setTheme}
@@ -336,10 +451,8 @@ export default function App() {
           selectedTier={selectedTier} setSelectedTier={setSelectedTier}
           legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
           setCurrencyState={setCurrencyState}
-          unitSystem={unitSystem}
-          setUnitSystem={(s) => { setUnitSystem(s); localStorage.setItem('mrx_unit_system', s); }}
         />
-      </LanguageProvider>
+      </PreferencesProvider>
     </AuthProvider>
   );
 }

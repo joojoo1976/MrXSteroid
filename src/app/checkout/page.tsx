@@ -26,7 +26,6 @@ export default function NextCheckoutPage() {
       */}
             <CheckoutPage
                 content={content}
-                lang={lang}
                 selectedTier={null} // Usually retrieved from a global state/cart
                 navigateTo={(page) => { }}
                 onSuccess={() => { }}

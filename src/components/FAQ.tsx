@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ContentStrings, FaqItem } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import { Search, MessageSquare, ChevronDown, Zap, HelpCircle, ShieldAlert, Award } from 'lucide-react';
 
 const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
@@ -32,7 +32,7 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
             <MessageSquare className="w-6 h-6" />
           </motion.div>
           <div className="flex-1 text-2xl font-bold">
-            {renderStyledBrandName(item.question)}
+            <StyledBrandName text={item.question} />
 
             <span className="text-base text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">{item.category}</span>
           </div>
@@ -55,7 +55,7 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
             <div className="px-5 pb-5 ltr:pl-20 rtl:pr-20 text-zinc-600 dark:text-zinc-300 leading-relaxed text-2xl font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-4">
-              {renderStyledBrandName(item.answer)}
+              <StyledBrandName text={item.answer} />
 
               <div className="mt-6 flex gap-2">
                 <Zap className="w-5 h-5 text-gold-500 animate-pulse" />

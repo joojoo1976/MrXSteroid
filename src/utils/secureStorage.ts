@@ -1,6 +1,9 @@
 import CryptoJS from 'crypto-js';
 
-const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'mrx_default_secret_key_change_in_prod';
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || '';
+if (!ENCRYPTION_KEY && import.meta.env.PROD) {
+    console.warn("CRITICAL: VITE_ENCRYPTION_KEY is missing in Production. SecureStorage will fail.");
+}
 const PREFIX = 'mrx_enc_';
 
 /**

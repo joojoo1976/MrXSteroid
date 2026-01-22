@@ -4,15 +4,16 @@ import { ArrowLeft, ShieldCheck, Lock, CheckCircle2, ShoppingBag } from 'lucide-
 import { CheckoutForm, NewPricingTier } from '../components/checkout/CheckoutForm';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { ContentStrings, Language, Page, PricingTier } from '../types';
+import { ContentStrings, Language, Page, PricingTier, ProductVariant } from '../types';
 import BrandLogo from '../components/BrandLogo';
+import { usePreferences } from '../context/PreferencesContext';
 
-import { ProductSelector, ProductVariant } from '../components/checkout/ProductSelector';
+import { ProductSelector } from '../components/checkout/ProductSelector';
+import { OrderSummary } from '../components/checkout/OrderSummary';
 import { ShippingZone } from '../types';
 
 interface CheckoutPageProps {
     content: ContentStrings;
-    lang: Language;
     selectedTier: PricingTier | null;
     navigateTo: (page: Page) => void;
     onSuccess: () => void;
@@ -22,11 +23,15 @@ interface CheckoutPageProps {
 const VARIANT_PRICES: Record<ProductVariant, number> = {
     'digital': 49.99,
     'paperback': 72.00,
-    'hardcover': 249.99
+    'bundle': 72.00,
+    'hardcover': 82.00,
+    'coaching': 82.00,
+    'coaching_plus': 282.00
 };
 
-const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, lang, selectedTier, navigateTo, onSuccess, openLegal }) => {
-    const isAr = lang === 'ar';
+const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navigateTo, onSuccess, openLegal }) => {
+    const { language } = usePreferences();
+    const isAr = language === 'ar';
 
     // Initialize variant based on selectedTier or default to digital
     const [variant, setVariant] = useState<ProductVariant>(() => {
@@ -136,7 +141,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, lang, selectedTier
                             </h3>
                             <CheckoutForm
                                 content={content}
-                                lang={lang}
+                                lang={language}
                                 selectedTier={(selectedTier as NewPricingTier | null) || {
                                     id: variant,
                                     name: variant,
@@ -168,79 +173,13 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, lang, selectedTier
                         animate={{ x: 0, opacity: 1 }}
                         className="lg:col-span-4 lg:sticky lg:top-32"
                     >
-                        <Card className="bg-zinc-900 border-zinc-800 shadow-3xl overflow-hidden border-2 rounded-[2.5rem]">
-                            <div className="p-8 border-b border-zinc-800 bg-black/40">
-                                <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
-                                    <ShoppingBag className="w-5 h-5 text-gold-500" />
-                                    {content.orderSummary || (isAr ? "ملخص الطلب" : "Order Summary")}
-                                </h3>
-                            </div>
-
-                            <CardContent className="p-8 space-y-8">
-                                <div className="flex gap-6 items-center">
-                                    <div className="w-24 h-32 bg-zinc-800 rounded-xl flex-shrink-0 relative group overflow-hidden border border-white/5 shadow-2xl">
-                                        <img
-                                            src={isAr ? "/cover-ar.webp" : "/cover-en.webp"}
-                                            alt="Product Cover"
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/20 to-transparent pointer-events-none" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h4 className="text-xl font-black leading-tight text-white mb-1">
-                                            Mr. X-Steroid: <span className="text-gold-500 capitalize">{variant} Edition</span>
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-white/5 text-zinc-400 rounded-md border border-white/5">
-                                                Quantity: {quantity}
-                                            </span>
-                                            {variant !== 'digital' && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-white/5 text-zinc-400 rounded-md border border-white/5">
-                                                    Weight: {variant === 'hardcover' ? '1.2kg' : '0.8kg'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 pt-4">
-                                    <div className="flex justify-between text-zinc-400 font-bold">
-                                        <span>{content.subtotal}</span>
-                                        <span>${totals.subtotal.toFixed(2)}</span>
-                                    </div>
-                                    {totals.shippingCost > 0 && (
-                                        <div className="flex justify-between text-zinc-400 font-bold">
-                                            <span>{content.shipping}</span>
-                                            <span>+${totals.shippingCost.toFixed(2)}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="pt-8 border-t border-zinc-800 flex justify-between items-end">
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-1">
-                                            {content.total}
-                                        </p>
-                                        <p className="text-sm text-zinc-400 flex items-center gap-1">
-                                            <Lock className="w-3 h-3" />
-                                            {content.secureCheckout}
-                                        </p>
-                                    </div>
-                                    <div className="text-5xl font-black tracking-tighter text-gold-500">
-                                        ${totals.grandTotal.toFixed(2)}
-                                    </div>
-                                </div>
-                            </CardContent>
-
-                            <div className="p-8 bg-black/40 border-t border-zinc-800">
-                                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-                                    <CheckCircle2 className="w-5 h-5 text-gold-500 shrink-0 mt-1" />
-                                    <div className="text-xs text-zinc-400 leading-relaxed font-bold">
-                                        {content.securePaymentMessage}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
+                        <OrderSummary
+                            content={content}
+                            variant={variant}
+                            quantity={quantity}
+                            totals={totals}
+                            isAr={isAr}
+                        />
                     </motion.div>
                 </div>
             </div>

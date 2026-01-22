@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { ContentStrings } from '../types';
 import { getCookie, setCookie } from '../utils/logic';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ content }) => {
     const [show, setShow] = useState(() => !getCookie('mr_x_disclaimer_v2'));
@@ -27,7 +27,7 @@ const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ conten
                     <AlertTriangle className="w-8 h-8 text-gold-500 shrink-0" /><h2 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white uppercase tracking-tight">{content.disclaimerTitle}</h2>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 bg-white dark:bg-background scrollbar-thin scrollbar-thumb-gold-500 scrollbar-track-zinc-200 dark:scrollbar-track-zinc-800">
-                    <div className="prose dark:prose-invert max-w-none text-justify leading-relaxed whitespace-pre-wrap text-base md:text-lg text-zinc-700 dark:text-zinc-300">{renderStyledBrandName(content.disclaimerContent)}</div>
+                    <div className="prose dark:prose-invert max-w-none text-justify leading-relaxed whitespace-pre-wrap text-base md:text-lg text-zinc-700 dark:text-zinc-300"><StyledBrandName text={content.disclaimerContent} /></div>
                 </div>
                 <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-card rounded-b-2xl flex flex-col items-center gap-4">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center max-w-2xl">{content.disclaimerAcknowledgement}</p>

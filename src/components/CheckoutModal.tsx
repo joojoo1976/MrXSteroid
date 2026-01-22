@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { CheckCircle, Lock, X, Download, Loader2 } from 'lucide-react';
-import { PricingTier, ContentStrings, Page, Language, ProductVariant } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { CheckCircle, Lock, X, Download } from 'lucide-react';
+import { PricingTier, ContentStrings, Page, Language } from '../types';
+import { StyledBrandName } from './StyledBrandName';
 import { CheckoutForm, NewPricingTier } from './checkout/CheckoutForm';
+import { usePreferences } from '../context/PreferencesContext';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -13,10 +14,10 @@ interface CheckoutModalProps {
     onSuccess: () => void;
     openLegal: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
     navigateTo: (page: Page) => void;
-    lang: Language;
 }
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, formattedPrice, onSuccess, openLegal, navigateTo, lang }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, formattedPrice, onSuccess, openLegal, navigateTo }) => {
+    const { language: lang } = usePreferences();
     const [step, setStep] = useState<'form' | 'success'>('form');
     const [isEgypt, setIsEgypt] = useState(false);
 
@@ -53,7 +54,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, co
                         </div>
                     )}
 
-                    {step === 'success' && <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center animate-fade-in"><div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center"><CheckCircle className="w-10 h-10 text-green-500" /></div><div><h4 className="text-xl font-bold mb-2">{renderStyledBrandName(content.purchaseSuccess)}</h4><p className="text-sm text-zinc-500 dark:text-zinc-400">Please check your email for the receipt.</p></div><a href="/dummy-book.pdf" download className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-transform"><Download className="w-5 h-5" />{content.downloadFullBook}</a></div>}
+                    {step === 'success' && <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center animate-fade-in"><div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center"><CheckCircle className="w-10 h-10 text-green-500" /></div><div><h4 className="text-xl font-bold mb-2"><StyledBrandName text={content.purchaseSuccess} /></h4><p className="text-sm text-zinc-500 dark:text-zinc-400">Please check your email for the receipt.</p></div><a href="/dummy-book.pdf" download className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-transform"><Download className="w-5 h-5" />{content.downloadFullBook}</a></div>}
                 </div>
             </div>
         </div>

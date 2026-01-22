@@ -2,17 +2,16 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Activity, Info, AlertTriangle } from 'lucide-react';
 import BrandLogo from './BrandLogo';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import AdPlaceholder from './AdPlaceholder';
 import { convertValue, formatUnit } from '../utils/logic';
-import { ContentStrings, InjectionSite, Page } from '../types';
+import { ContentStrings, InjectionSite, Page, Language } from '../types';
+import { usePreferences } from '../context/PreferencesContext';
 
 
 interface InjectionMapProps {
   content: ContentStrings;
-  lang: string;
   navigateTo: (page: Page) => void;
-  unitSystem?: 'metric' | 'imperial';
 }
 
 
@@ -66,7 +65,9 @@ const FIXED_BACK_POINTS = [
   { id: 'calves_r', baseId: 'calves', x: 58, y: 81 },
 ];
 
-const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang, navigateTo, unitSystem = 'metric' }) => {
+const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
+  const { unitSystem, language } = usePreferences();
+  const lang = language as Language;
   const isImperial = unitSystem === 'imperial';
   const [rotation, setRotation] = useState(0);
   const [activeSite, setActiveSite] = useState<Hotspot | null>(null);
@@ -135,7 +136,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang, navigateTo, 
       return result;
     }
     return [];
-  }, [mapContent, isImperial]);
+  }, [mapContent]);
 
   const dynamicStats = useMemo(() => {
     if (activeSite) {
@@ -166,10 +167,10 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang, navigateTo, 
       tissueDesc: mapContent.featureCards?.tissue.desc || "Muscle fibers...",
       burnDesc: mapContent.featureCards?.burn.desc || "Metabolism spikes..."
     };
-  }, [activeSite, rotation, mapContent, lang]);
+  }, [activeSite, rotation, mapContent, lang, isImperial]);
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-4 relative font-cairo" dir={lang === 'ar' || lang === 'he' ? 'rtl' : 'ltr'}>
+    <div className="max-w-6xl mx-auto py-12 px-4 relative font-cairo" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Background Kinetic Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gold-500/5 blur-[150px] rounded-full animate-float-slow"></div>
@@ -381,13 +382,13 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang, navigateTo, 
                     <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
                       <p className="text-lg text-red-400 font-black leading-relaxed flex items-center gap-3">
                         <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-                        {renderStyledBrandName(activeSite.warning)}
+                        <StyledBrandName text={activeSite.warning} />
                       </p>
                     </div>
                   )}
                   <div className="relative p-6 bg-gold-500/10 border border-gold-500/20 rounded-2xl">
                     <p className="text-xl md:text-2xl text-zinc-200 mt-2 font-black italic leading-relaxed">
-                      "{renderStyledBrandName(activeSite.advice)}"
+                      "<StyledBrandName text={activeSite.advice} />"
                     </p>
                   </div>
                 </div>
@@ -413,9 +414,9 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, lang, navigateTo, 
         <div className="relative p-8 bg-zinc-950/50 border border-white/5 rounded-[4rem]">
           <h2 className="text-3xl font-black text-center mb-10">{mapContent.goldenHourTitle}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard icon="🚀" title={mapContent.featureCards?.power.title || "Power"} desc={renderStyledBrandName(dynamicStats.powerDesc) as string} color="bg-blue-500/10 border-blue-500/20" glow="shadow-blue-500/20" />
-            <FeatureCard icon="🛡️" title={mapContent.featureCards?.tissue.title || "Tissue"} desc={renderStyledBrandName(dynamicStats.tissueDesc) as string} color="bg-green-500/10 border-green-500/20" glow="shadow-green-500/20" />
-            <FeatureCard icon="🔥" title={mapContent.featureCards?.burn.title || "Burn"} desc={renderStyledBrandName(dynamicStats.burnDesc) as string} color="bg-red-500/10 border-red-500/20" glow="shadow-red-500/20" />
+            <FeatureCard icon="🚀" title={mapContent.featureCards?.power.title || "Power"} desc={<StyledBrandName text={dynamicStats.powerDesc} />} color="bg-blue-500/10 border-blue-500/20" glow="shadow-blue-500/20" />
+            <FeatureCard icon="🛡️" title={mapContent.featureCards?.tissue.title || "Tissue"} desc={<StyledBrandName text={dynamicStats.tissueDesc} />} color="bg-green-500/10 border-green-500/20" glow="shadow-green-500/20" />
+            <FeatureCard icon="🔥" title={mapContent.featureCards?.burn.title || "Burn"} desc={<StyledBrandName text={dynamicStats.burnDesc} />} color="bg-red-500/10 border-red-500/20" glow="shadow-red-500/20" />
           </div>
         </div>
       </footer>
@@ -432,7 +433,7 @@ const StatCard = ({ label, value, color, icon }: { label: string, value: string,
   </div>
 );
 
-const FeatureCard = ({ icon, title, desc, color, glow }: { icon: string, title: string, desc: string, color: string, glow: string }) => (
+const FeatureCard = ({ icon, title, desc, color, glow }: { icon: string, title: string, desc: React.ReactNode, color: string, glow: string }) => (
   <div className={`p-6 rounded-[2.5rem] border ${color} shadow-lg ${glow}`}>
     <div className="text-4xl mb-4">{icon}</div>
     <h4 className="text-xl font-black text-white mb-2">{title}</h4>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight, Zap, Target, Activity } from 'lucide-react';
 import { ContentStrings } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () => void }> = ({ content, onComplete }) => {
     const [currentQ, setCurrentQ] = useState(0);
@@ -154,7 +154,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         className="bg-background/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
                                     >
                                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
-                                        <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"{renderStyledBrandName(result.desc)}"</p>
+                                        <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"<StyledBrandName text={result.desc} />"</p>
                                         <Activity className="absolute bottom-6 right-10 w-16 h-16 text-white/5 group-hover:text-gold-500/10 transition-colors" />
                                     </motion.div>
 

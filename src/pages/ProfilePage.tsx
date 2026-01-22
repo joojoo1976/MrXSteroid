@@ -2,23 +2,34 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from '../components/StyledBrandName';
 import { md5 } from '../utils/cryptoUtils';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, User, Mail, Shield, ArrowLeft, Camera } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
+
 interface ProfilePageProps {
-    user: SupabaseUser;
+    user: SupabaseUser | null;
     content: ContentStrings;
-    isRTL: boolean;
     navigateTo: (page: Page) => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, isRTL, navigateTo }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) => {
+    const { isRTL } = usePreferences();
+    const { loading } = useAuth();
+
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-background">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold-500"></div>
+        </div>;
+    }
+
     if (!user) {
         navigateTo(Page.LOGIN);
-        return null;
+        return null; // or empty fragment
     }
 
     const userData = user.user_metadata || {};
@@ -93,7 +104,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, isRTL, navigat
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl shadow-zinc-200/50 dark:shadow-none">
                             <h1 className="text-2xl font-black mb-8 border-b border-zinc-100 dark:border-zinc-800 pb-4 flex items-center gap-3">
                                 {isRTL ? "صفحة مستخدم " : "Profile of "}
-                                <span className="text-gold-500">{renderStyledBrandName("Mr. X-Steroid")}</span>
+                                <span className="text-gold-500"><StyledBrandName text="Mr. X-Steroid" /></span>
                             </h1>
 
                             {!isEmailConfirmed && (

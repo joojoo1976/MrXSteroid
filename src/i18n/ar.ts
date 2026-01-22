@@ -1375,7 +1375,7 @@ export const arContent: ContentStrings = {
         stepsLabel: "خطوات التحضير الذكية",
         ingredientsLabel: "المكونات الحيوية النشطة"
     },
-    checkoutAgree: "لقد قرأت وأوافق على [شروط الخدمة]، [إخلاء المسؤولية الطبية]، و[سياسة الاسترجاع]. أؤكد أن عمري يتجاوز 18 عاماً.",
+    checkoutAgree: "أوافق على [شروط الخدمة]، [سياسة الخصوصية]، و [إخلاء المسؤولية الطبية والقانونية].",
     medicalDisclaimerPage: {
         title: "إخلاء المسؤولية الطبية وتحذير المخاطر",
         sections: [
@@ -1404,5 +1404,81 @@ export const arContent: ContentStrings = {
                 content: "على الرغم من سعينا الدائم لتقديم معلومات دقيقة ومحدثة تستند إلى أحدث الأبحاث العلمية، إلا أن مجال الغدد الصماء وعلوم الرياضة يتطور باستمرار. نحن لا نضمن أن المعلومات الواردة في هذا الموقع خالي تماماً من الأخطاء أو أنها تعكس أحدث التطورات الطبية في كل لحظة."
             }
         ]
+    },
+
+    nav: {
+        home: "الرئيسية",
+        about: "من نحن",
+        macro: "حاسبة السعرات",
+        injection: "خريطة الحقن",
+        halflife: "متتبع عمر النصف",
+        lab: "مرجع التحاليل",
+        genetic: "الجهد الجيني",
+        cycle: "مهندس الدورات",
+        sitemap: "خريطة الموقع",
+        login: "تسجيل الدخول",
+        signup: "إنشاء حساب"
+    },
+    accessibilityTitle: "بيان سهولة الوصول",
+    gdprTitle: "قوانين حماية البيانات (GDPR)",
+    ccpaTitle: "قوانين حماية المستهلك (CCPA)",
+    blogTitle: "المدونة العلمية",
+    shippingPolicyTitle: "سياسة الشحن",
+    returnPolicyTitle: "سياسة الإرجاع والاستبدال",
+    cookiePolicyTitle: "سياسة ملفات الارتباط (Cookies)",
+    complianceLinks: "الامتثال العالمي",
+    commercialLinks: "موقع تجاري",
+    generalLinks: "القائمة العامة",
+    internationalLegalLinks: "International Legal",
+    supportTitle: "مركز الدعم والمساعدة",
+    careersTitle: "الوظائف والفرص",
+    faqPageTitle: "الأسئلة الشائعة",
+    privacyTitle: "سياسة الخصوصية",
+    termsTitle: "شروط الاستخدام",
+    refundTitle: "سياسة الاسترجاع",
+    legalDisclaimerTitle: "إخلاء المسؤولية القانونية",
+    supportLinks: "الدعم والمساعدة",
+    pricingPlans: [
+        {
+            id: 'digital',
+            name: "البروتوكول الرقمي",
+            description: "وصول فوري. بدون احتكاك.",
+            features: ["كتاب إلكتروني (PDF/EPUB)", "تسليم فوري", "قوالب دورات أساسية"],
+            cta: "دخول فوري"
+        },
+        {
+            id: 'bundle',
+            name: "الحزمة التكتيكية",
+            description: "أقصى قيمة. الترسانة الكاملة.",
+            features: ["نسخة ورقية فاخرة", "نسخة رقمية مجانية", "هدية: كتاب صوتي", "تمارين منزلية PDF", "شحن مجاني"],
+            cta: "احصل على الحزمة"
+        },
+        {
+            id: 'coaching',
+            name: "الاحتراف الذكي",
+            description: "نخبة الحالة. تحسين كامل.",
+            features: ["نسخة ورقية غلاف مقوى", "وصول لمجتمع VIP", "شحن عالمي ذو أولوية", "بروتوكول الخروج الآمن"],
+            upsellFeatures: ["تدريب 1-على-1 (دورة كاملة)", "تحليل تحاليل الدم", "بروتوكول PCT مخصص"],
+            cta: "احصل على النسخة الاحترافية"
+        }
+    ],
+    checkout: {
+        validation: {
+            nameRequired: "الاسم يجب أن يكون 3 أحرف على الأقل",
+            emailInvalid: "بريد إلكتروني غير صالح",
+            countryRequired: "الدولة مطلوبة",
+            addressRequired: "العنوان مطلوب للشحن الفيزيائي",
+            cityRequired: "المدينة مطلوبة",
+            zipRequired: "الرمز البريدي مطلوب",
+            shippingRequired: "يرجى اختيار شركة شحن",
+            weightRequired: "الوزن مطلوب للتدريب الشخصي",
+            heightRequired: "الطول مطلوب للتدريب الشخصي",
+            termsRequired: "يجب الموافقة على الشروط وإخلاء المسؤولية الطبي"
+        },
+        placeholders: {
+            fullName: "محمد أحمد",
+            email: "mrx@example.com",
+            address: "اسم الشارع، رقم المبنى، الشقة"
+        }
     }
 };

@@ -1,4 +1,0 @@
-﻿
-> 008mr.-x-steroid-landing-page@0.0.0 build
-> tsc && vite build
-

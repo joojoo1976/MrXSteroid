@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ContentStrings } from '../types';
 import RevealOnScroll from './RevealOnScroll';
 import { IconRenderer } from '../utils/icon-utils';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 interface FeaturesProps {
   content: ContentStrings;
@@ -57,10 +57,10 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
 
                   <div className="relative z-10">
                     <h3 className="text-2xl md:text-3xl font-black mb-3 text-zinc-900 dark:text-white group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors tracking-tight">
-                      {renderStyledBrandName(feature.title)}
+                      <StyledBrandName text={feature.title} />
                     </h3>
                     <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-2xl font-medium">
-                      {renderStyledBrandName(feature.description)}
+                      <StyledBrandName text={feature.description} />
                     </p>
                   </div>
 

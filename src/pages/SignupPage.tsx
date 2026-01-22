@@ -4,6 +4,7 @@ import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign }
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { ContentStrings, Page } from '../types';
+import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,10 +26,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 interface SignupPageProps {
     content: ContentStrings;
     navigateTo: (page: Page) => void;
-    isRTL: boolean;
 }
 
-export default function SignupPage({ content, navigateTo, isRTL }: SignupPageProps) {
+export default function SignupPage({ content, navigateTo }: SignupPageProps) {
+    const { isRTL } = usePreferences();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 

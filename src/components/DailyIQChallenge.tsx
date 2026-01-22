@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentStrings } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }> = ({ content, onWin }) => {
     const [answered, setAnswered] = useState(false);
@@ -43,7 +43,7 @@ const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }>
                                     <h3 className="text-2xl font-bold text-red-500 mb-2">{content.dailyIQ.loseTitle}</h3><p className="text-zinc-400 mb-6">{content.dailyIQ.loseDesc}</p>
                                 </>
                             )}
-                            <div className="bg-zinc-900/50 p-4 rounded-lg text-base text-zinc-300 text-left rtl:text-right"><strong className="text-gold-500 block mb-1">{content.dailyIQ.explanationLabel}</strong>{renderStyledBrandName(question.explanation)}</div>
+                            <div className="bg-zinc-900/50 p-4 rounded-lg text-base text-zinc-300 text-left rtl:text-right"><strong className="text-gold-500 block mb-1">{content.dailyIQ.explanationLabel}</strong><StyledBrandName text={question.explanation} /></div>
                         </div>
                     )}
                 </div>

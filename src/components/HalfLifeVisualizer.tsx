@@ -12,7 +12,7 @@ import {
 import BrandLogo from './BrandLogo';
 import AdPlaceholder from './AdPlaceholder';
 import { ContentStrings, Page } from '../types';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import KineticCounter from './KineticCounter';
 
 interface HalfLifeVisualizerProps {
@@ -451,10 +451,10 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                   <div className="space-y-8 relative z-10 h-full flex flex-col">
                     <div>
                       <h4 className="font-black text-lg uppercase tracking-widest mb-4 flex items-center gap-3">
-                        <Zap size={20} /> {renderStyledBrandName(content.halfLifeVisualizer.analysis.adviceTitle)}
+                        <Zap size={20} /> <StyledBrandName text={content.halfLifeVisualizer.analysis.adviceTitle} />
                       </h4>
                       <p className="text-xl font-black italic leading-tight">
-                        "{renderStyledBrandName(content.halfLifeVisualizer.analysis.advice)}"
+                        "<StyledBrandName text={content.halfLifeVisualizer.analysis.advice} />"
                       </p>
                     </div>
 

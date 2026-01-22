@@ -4,6 +4,7 @@ import { Lock, ShieldCheck, Loader2, CheckCircle, ArrowLeft } from 'lucide-react
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { ContentStrings, Page } from '../types';
+import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,10 +25,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 interface ResetPasswordProps {
     content: ContentStrings;
     navigateTo: (page: Page) => void;
-    isRTL: boolean;
 }
 
-export default function ResetPasswordPage({ content, navigateTo, isRTL }: ResetPasswordProps) {
+export default function ResetPasswordPage({ content, navigateTo }: ResetPasswordProps) {
+    const { isRTL } = usePreferences();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 

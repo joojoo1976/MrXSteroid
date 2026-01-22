@@ -35,21 +35,7 @@ export const dismissToast = (toastId: string) => toast.dismiss(toastId);
 /**
  * ANIMATION UTILITIES
  */
-export function useReducedMotion() {
-    const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-        if (typeof window === 'undefined') return false;
-        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    });
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        const handler = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
-        mediaQuery.addEventListener('change', handler);
-        return () => mediaQuery.removeEventListener('change', handler);
-    }, []);
-
-    return prefersReducedMotion;
-}
 
 export const TRANSITIONS = {
     FADE_IN: 'animate-fadeIn transition-opacity duration-300 ease-out',
@@ -61,24 +47,7 @@ export const TRANSITIONS = {
 /**
  * BRAND STYLING UTILITIES
  */
-export const renderStyledBrandName = (text: string, logoClassName?: string): React.ReactNode => {
-    if (!text) return text;
-    const brandFull = "Mr. X-Steroid";
-    const brandShort = "Mr. X";
-    const brandArFull = "مستر إكس-ستيرويد";
-    const brandArShort = "مستر إكس";
-    const regex = new RegExp(`(${brandFull}|${brandArFull}|${brandShort}|${brandArShort})`, 'g');
-    const parts = text.split(regex);
-    return parts.map((part, index) => {
-        if (part === brandFull || part === brandArFull) {
-            return <BrandLogo key={index} isLink={true} className={logoClassName || "text-inherit"} />;
-        }
-        if (part === brandShort || part === brandArShort) {
-            return <BrandLogo key={index} variant="short" isLink={true} className={logoClassName || "text-inherit"} />;
-        }
-        return part;
-    });
-};
+
 
 export const replaceBrandWithHtml = (text: string): string => {
     if (!text) return text;
@@ -119,10 +88,16 @@ export const convertCurrency = (amount: number, from: Currency, to: Currency): n
 export const formatCurrency = (amount: number, currency: Currency, locale?: string): string => {
     const currencyInfo = CURRENCY_RATES[currency];
     const useLocale = locale || currencyInfo.locale;
+
+    // For Arabic locales, we can force the numbering system if requested, 
+    // but Intl usually handles it based on the locale tag (e.g., ar-EG)
     try {
         return new Intl.NumberFormat(useLocale, {
-            style: 'currency', currency, currencyDisplay: 'symbol',
-            minimumFractionDigits: 2, maximumFractionDigits: 2,
+            style: 'currency',
+            currency: currency,
+            currencyDisplay: 'symbol',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
         }).format(amount);
     } catch (error) {
         return `${currencyInfo.symbol}${amount.toFixed(2)}`;
@@ -136,7 +111,10 @@ export const formatCurrencyWithLocale = (
     options?: Intl.NumberFormatOptions
 ): string => {
     try {
-        return new Intl.NumberFormat(locale, {
+        // Handle Eastern Arabic numerals for specific locales if necessary
+        const finalLocale = locale.startsWith('ar') ? `${locale}-u-nu-arab` : locale;
+
+        return new Intl.NumberFormat(finalLocale, {
             style: 'currency',
             currency: currency,
             currencyDisplay: 'symbol',
@@ -145,7 +123,7 @@ export const formatCurrencyWithLocale = (
             ...options,
         }).format(amount);
     } catch (error) {
-        const currencyInfo = CURRENCY_RATES[currency];
+        const currencyInfo = CURRENCY_RATES[currency as Currency] || CURRENCY_RATES[Currency.USD];
         return `${currencyInfo.symbol}${amount.toFixed(2)}`;
     }
 };
@@ -198,7 +176,7 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
     ];
 };
 
-export const calculateShippingRates = async (address: any): Promise<ShippingProvider[]> => {
+export const calculateShippingRates = async (address: { country: string }): Promise<ShippingProvider[]> => {
     // Mock reusing existing logic or just returning consistent data
     // In a real app this uses the full address
     return getShippingProviders(address?.country || 'US');
@@ -424,6 +402,22 @@ export function detectCountryFromBrowser(): SupportedCountry {
  */
 export function getLanguageByCountry(country: SupportedCountry): SupportedLanguage {
     return COUNTRY_CONFIGS[country].language;
+}
+
+/**
+ * Gets the unit system (metric/imperial) based on the country code.
+ * Implementation of "Smart Geo-Adaptation" algorithm for Mr. X.
+ */
+export function getSystemFromRegion(countryCode: string): UnitSystem {
+    const imperialCountries = ['US', 'MM', 'LR'];
+    const hybridCountries = ['GB', 'UK']; // UK often uses stones/imperial for bodybuilding
+
+    const code = countryCode.toUpperCase();
+
+    if (imperialCountries.includes(code)) return 'imperial';
+    if (hybridCountries.includes(code)) return 'imperial'; // Defaulting UK to imperial for Bodybuilding standards
+
+    return 'metric'; // Default fallback
 }
 
 /**

@@ -9,7 +9,7 @@ export enum Language {
 
 declare global {
   interface Window {
-    SpaceRemit: {
+    SpaceRemit?: {
       Pay: (paymentDetails: Record<string, unknown>) => void;
     };
   }
@@ -20,6 +20,11 @@ export enum Currency {
   EGP = 'EGP',
   SAR = 'SAR',
   EUR = 'EUR'
+}
+
+export enum Theme {
+  DARK = 'dark',
+  GOLD = 'gold'
 }
 
 export enum Page {
@@ -36,7 +41,25 @@ export enum Page {
   PROFILE = 'profile',
   MEDICAL_DISCLAIMER = 'medical_disclaimer',
   RESET_PASSWORD = 'reset_password',
-  CHECKOUT = 'checkout'
+  CHECKOUT = 'checkout',
+  DASHBOARD = 'dashboard',
+  ABOUT = 'about',
+  SITEMAP = 'sitemap',
+  ACCESSIBILITY = 'accessibility',
+  GDPR = 'gdpr',
+  CCPA = 'ccpa',
+  BLOG = 'blog',
+  SHIPPING_POLICY = 'shipping_policy',
+  RETURN_POLICY = 'return_policy',
+  COOKIE_POLICY = 'cookie_policy',
+  SUPPORT = 'support',
+  CAREERS = 'careers',
+  FAQ = 'faq',
+  CONTACT = 'contact',
+  PRIVACY = 'privacy',
+  TERMS = 'terms',
+  REFUND = 'refund',
+  LEGAL_DISCLAIMER_PAGE = 'legal_disclaimer_page'
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus';
@@ -475,10 +498,70 @@ export interface ContentStrings {
   // About Page
   aboutPageTitle?: string;
   aboutPageContent?: string;
+  accessibilityTitle?: string;
+  gdprTitle?: string;
+  ccpaTitle?: string;
+  blogTitle?: string;
+  shippingPolicyTitle?: string;
+  returnPolicyTitle?: string;
+  cookiePolicyTitle?: string;
+  complianceLinks?: string;
+  commercialLinks?: string;
+  generalLinks?: string;
+  internationalLegalLinks?: string;
+  supportTitle?: string;
+  careersTitle?: string;
+  faqPageTitle?: string;
+  privacyTitle?: string;
+  termsTitle?: string;
+  refundTitle?: string;
+  legalDisclaimerTitle?: string;
+  supportLinks?: string;
+  pricingPlans: {
+    id: ProductVariant;
+    name: string;
+    description: string;
+    features: string[];
+    upsellFeatures?: string[];
+    cta: string;
+  }[];
+  checkout: {
+    validation: {
+      nameRequired: string;
+      emailInvalid: string;
+      countryRequired: string;
+      addressRequired: string;
+      cityRequired: string;
+      zipRequired: string;
+      shippingRequired: string;
+      weightRequired: string;
+      heightRequired: string;
+      termsRequired: string;
+    };
+    placeholders: {
+      fullName: string;
+      email: string;
+      address: string;
+    };
+  };
+  nav?: {
+    home: string;
+    about: string;
+    macro: string;
+    injection: string;
+    halflife: string;
+    lab: string;
+    genetic: string;
+    cycle: string;
+    sitemap: string;
+    login: string;
+    signup: string;
+  };
   aboutPageStoryTitle?: string;
   aboutPageStory?: string;
   aboutPageMissionTitle?: string;
   aboutPageMission?: string;
+
 
   // Contact Page
   contactPageTitle?: string;

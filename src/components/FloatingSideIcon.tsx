@@ -1,6 +1,8 @@
 import React from 'react';
+import { usePreferences } from '../context/PreferencesContext';
 
-const FloatingSideIcon: React.FC<{ isRTL: boolean }> = ({ isRTL }) => {
+const FloatingSideIcon: React.FC = () => {
+    const { isRTL } = usePreferences();
     return (
         <div
             className={`fixed top-1/2 -translate-y-1/2 ${isRTL ? 'left-0' : 'right-0'} z-50 hidden md:block`}

@@ -3,7 +3,7 @@ import { Quote } from 'lucide-react';
 import { ContentStrings } from '../types';
 import AuthorImage from './AuthorImage';
 
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
     <section className="py-24 bg-zinc-50 dark:bg-background relative overflow-hidden">
@@ -33,7 +33,7 @@ const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
                     <div className="relative">
                         <Quote className="absolute -top-6 -left-6 w-12 h-12 text-gold-500/10 transform -scale-x-100" />
                         <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400 leading-loose text-lg mb-8 relative z-10">
-                            <p>{renderStyledBrandName(content.authorBio)}</p>
+                            <p><StyledBrandName text={content.authorBio} /></p>
                         </div>
                     </div>
 

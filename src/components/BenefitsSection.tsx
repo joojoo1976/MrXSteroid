@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ContentStrings } from '../types';
 import { IconRenderer } from '../utils/icon-utils';
 import RevealOnScroll from './RevealOnScroll';
-import { renderStyledBrandName } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 
 const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => (
     <section className="py-24 bg-zinc-50 dark:bg-background relative overflow-hidden">
@@ -21,7 +21,7 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
                     viewport={{ once: true }}
                     className="text-4xl md:text-6xl font-black mb-8 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash"
                 >
-                    {renderStyledBrandName(content.benefitsTitle)}
+                    <StyledBrandName text={content.benefitsTitle} />
                 </motion.h2>
                 <div className="w-32 h-2 bg-gradient-to-r from-gold-600 to-gold-400 mx-auto rounded-full shadow-[0_0_20px_rgba(255,255,160,0.4)] mb-8 animate-pulse"></div>
                 <motion.p
@@ -57,7 +57,7 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
                                 </h3>
 
                                 <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-2xl font-bold">
-                                    {renderStyledBrandName(benefit.description)}
+                                    <StyledBrandName text={benefit.description} />
                                 </p>
 
                                 {/* Interactive Accent Line */}
