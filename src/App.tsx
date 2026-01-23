@@ -17,24 +17,24 @@ import { initializeLocalization } from './utils/logic';
 
 // Utils
 // Major Components
-import Header from './components/Header';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Footer from './components/Footer';
-import AdPlaceholder from './components/AdPlaceholder';
+import Header from './components/layout/Header';
+import Hero from './components/layout/Hero';
+import Features from './components/marketing/Features';
+import Footer from './components/layout/Footer';
+import AdPlaceholder from './components/shared/AdPlaceholder';
 
 // Utils
-import RevealOnScroll from './components/RevealOnScroll';
+import RevealOnScroll from './components/shared/RevealOnScroll';
 
 // Refactored Components
-import BlockingDisclaimerModal from './components/BlockingDisclaimerModal';
-import LegalModal from './components/LegalModal';
-import CheckoutModal from './components/CheckoutModal';
-import SalesToast from './components/SalesToast';
-import WhatsAppButton from './components/WhatsAppButton';
-import FloatingSideIcon from './components/FloatingSideIcon';
-import ChatWidget from './components/ChatWidget';
-import SmartBookLanding from './components/SmartBookLanding';
+import BlockingDisclaimerModal from './components/modals/BlockingDisclaimerModal';
+import LegalModal from './components/modals/LegalModal';
+import CheckoutModal from './components/modals/CheckoutModal';
+import SalesToast from './components/shared/SalesToast';
+import WhatsAppButton from './components/shared/WhatsAppButton';
+import FloatingSideIcon from './components/layout/FloatingSideIcon';
+import ChatWidget from './components/shared/ChatWidget';
+import SmartBookLanding from './components/marketing/SmartBookLanding';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -42,12 +42,12 @@ import Settings from './components/Settings';
 import { ConsentModal } from './components/compliance/ConsentModal';
 
 // Lazy Loaded Components
-const MacroCalculator = React.lazy(() => import('./components/MacroCalculator'));
-const InjectionMap = React.lazy(() => import('./components/InjectionMap'));
-const HalfLifeVisualizer = React.lazy(() => import('./components/HalfLifeVisualizer'));
-const SmartLabReference = React.lazy(() => import('./components/SmartLabReference'));
-const GeneticPotentialCalculator = React.lazy(() => import('./components/GeneticPotentialCalculator'));
-const CycleCalendarExporter = React.lazy(() => import('./components/CycleCalendarExporter'));
+const MacroCalculator = React.lazy(() => import('./components/tools/MacroCalculator'));
+const InjectionMap = React.lazy(() => import('./components/tools/InjectionMap'));
+const HalfLifeVisualizer = React.lazy(() => import('./components/tools/HalfLifeVisualizer'));
+const SmartLabReference = React.lazy(() => import('./components/tools/SmartLabReference'));
+const GeneticPotentialCalculator = React.lazy(() => import('./components/tools/GeneticPotentialCalculator'));
+const CycleCalendarExporter = React.lazy(() => import('./components/tools/CycleCalendarExporter'));
 const MedicalDisclaimerPage = React.lazy(() => import('./components/MedicalDisclaimerPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -73,14 +73,14 @@ const LegalDisclaimerPage = React.lazy(() => import('./pages/LegalDisclaimerPage
 // End of imports cleanup
 
 // Lazy Loaded Below-the-fold Components
-const TransformationTimeline = React.lazy(() => import('./components/TransformationTimeline'));
-const SteroidReadinessQuiz = React.lazy(() => import('./components/SteroidReadinessQuiz'));
-const BenefitsSection = React.lazy(() => import('./components/BenefitsSection'));
-const DailyIQChallenge = React.lazy(() => import('./components/DailyIQChallenge'));
-const AuthorSection = React.lazy(() => import('./components/AuthorSection'));
-const PricingSection = React.lazy(() => import('./components/PricingSection'));
-const FAQ = React.lazy(() => import('./components/FAQ'));
-const ContactSection = React.lazy(() => import('./components/ContactSection'));
+const TransformationTimeline = React.lazy(() => import('./components/tools/TransformationTimeline'));
+const SteroidReadinessQuiz = React.lazy(() => import('./components/tools/SteroidReadinessQuiz'));
+const BenefitsSection = React.lazy(() => import('./components/marketing/BenefitsSection'));
+const DailyIQChallenge = React.lazy(() => import('./components/tools/DailyIQChallenge'));
+const AuthorSection = React.lazy(() => import('./components/marketing/AuthorSection'));
+const PricingSection = React.lazy(() => import('./components/marketing/PricingSection'));
+const FAQ = React.lazy(() => import('./components/marketing/FAQ'));
+const ContactSection = React.lazy(() => import('./components/marketing/ContactSection'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
@@ -105,7 +105,7 @@ interface AppContentProps {
   setCurrencyState: React.Dispatch<React.SetStateAction<{ code: string; symbol: string; rate: number; locale: string }>>;
 }
 
-import PreferencesModal from './components/PreferencesModal';
+import PreferencesModal from './components/modals/PreferencesModal';
 
 function AppContent({
   theme, setTheme, colorTheme, changeColorTheme,

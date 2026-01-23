@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, ShieldCheck, FileCheck } from 'lucide-react';
 import { ContentStrings, Page } from '../types';
-import BrandLogo from './BrandLogo';
+import BrandLogo from './shared/BrandLogo';
 import { replaceBrandWithHtml } from '../utils/logic';
 import { usePreferences } from '../context/PreferencesContext';
 

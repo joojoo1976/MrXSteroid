@@ -14,4 +14,10 @@ export default defineConfig({
         },
     },
     // Server restart trigger: logic.ts refactor
+    esbuild: {
+        drop: ['console', 'debugger'],
+    },
+    build: {
+        // build options
+    },
 })

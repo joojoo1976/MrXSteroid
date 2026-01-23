@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import CountdownTimer from "@/components/CountdownTimer"; // Import the new CountdownTimer component
 import { getTranslation } from "@/lib/i18n";
 import { Language } from "@/types";
-import { StyledBrandName } from "@/components/StyledBrandName";
+import { StyledBrandName } from "@/components/shared/StyledBrandName";
 import { usePreferences } from "@/context/PreferencesContext";
 
 const BookLandingPage = () => {

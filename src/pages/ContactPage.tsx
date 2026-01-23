@@ -1,6 +1,6 @@
 import React from 'react';
 import { Page, ContentStrings } from '../types';
-import ContactSection from '../components/ContactSection';
+import ContactSection from '../components/marketing/ContactSection';
 
 interface ContactPageProps {
     content: ContentStrings;

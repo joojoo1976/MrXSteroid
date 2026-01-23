@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import BrandLogo from '../components/BrandLogo';
+import BrandLogo from '../components/shared/BrandLogo';
 import { Currency, Page } from '../types';
 
 /**

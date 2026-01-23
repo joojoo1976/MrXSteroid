@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, BookOpen, Star, Users, Target, Globe } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
-import BrandLogo from '../components/BrandLogo';
+import BrandLogo from '../components/shared/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface AboutPageProps {

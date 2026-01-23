@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
-import { StyledBrandName } from '../components/StyledBrandName';
+import { StyledBrandName } from '../components/shared/StyledBrandName';
 import { md5 } from '../utils/cryptoUtils';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';

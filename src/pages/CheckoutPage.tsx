@@ -5,7 +5,7 @@ import { CheckoutForm, NewPricingTier } from '../components/checkout/CheckoutFor
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { ContentStrings, Language, Page, PricingTier, ProductVariant } from '../types';
-import BrandLogo from '../components/BrandLogo';
+import BrandLogo from '../components/shared/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 
 import { ProductSelector } from '../components/checkout/ProductSelector';
