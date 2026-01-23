@@ -10,10 +10,13 @@ if (!rootElement) {
 }
 
 
+import { SpeedInsights } from "@vercel/speed-insights/react";
+
 const root = createRoot(rootElement);
 root.render(
     <React.StrictMode>
         <App />
+        <SpeedInsights />
     </React.StrictMode>
 );
 
