@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./main.css";
 import "./styles/chiller-font.css";
+console.log('Mr. X-Steroid: Chiller Font Loaded (v2)');
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
