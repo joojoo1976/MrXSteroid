@@ -67,7 +67,7 @@ const CurrencyPrice: React.FC<CurrencyPriceProps> = ({
 
     return (
         <span
-            className={`currency-price inline-block transition-all duration-[400ms] ease-in-out ${isBlurred ? 'blur-[4px] opacity-60' : 'blur-0 opacity-100'
+            className={`currency-price inline-block transition-all duration-500 ease-in-out ${isBlurred ? 'blur-[4px] opacity-60' : 'blur-0 opacity-100'
                 } ${className}`}
         >
             {displayPrice}

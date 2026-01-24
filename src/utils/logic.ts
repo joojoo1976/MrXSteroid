@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import BrandLogo from '../components/shared/BrandLogo';
-import { Currency, Page } from '../types';
+import { Currency } from '../types';
 
 /**
  * SHARED & COOKIE UTILITIES
@@ -161,7 +159,7 @@ export interface ShippingProvider {
 
 export const getShippingProviders = async (country: string): Promise<ShippingProvider[]> => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    const isEgypt = country.toLowerCase() === 'egypt' || country === 'مصر';
+    const isEgypt = country && (country.toLowerCase() === 'egypt' || country === 'مصر');
     if (isEgypt) {
         return [
             { id: 'bosta_standard', name: 'Bosta Standard (3-5 Days)', price: 5.00, estimatedDays: '3-5' },

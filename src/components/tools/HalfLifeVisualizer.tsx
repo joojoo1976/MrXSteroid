@@ -146,7 +146,9 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
           );
 
           if (injectionDay < startDay + totalDurationDays && injectionDay >= startDay && t >= injectionDay) {
-            serumLevel += item.dosage * Math.exp(-k * (t - injectionDay));
+            // Apply Ester Weight Adjustment (e.g., Enanthate is ~70% hormone, 30% ester)
+            const activeDosage = item.dosage * (compound.esterWeight || 1.0);
+            serumLevel += activeDosage * Math.exp(-k * (t - injectionDay));
           }
         }
         dataByDay[t][key] = serumLevel;
@@ -304,7 +306,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
               <label htmlFor="half-life-compound" className="text-sm font-black uppercase tracking-[0.3em] text-gold-500 flex items-center gap-2">
                 <Zap className="w-4 h-4" /> {content.halfLifeVisualizer.compoundLabel}
               </label>
-              <div className="relative group/select">
+              <div className="relative group/select z-20">
                 <select
                   id="half-life-compound"
                   value={compoundId}
@@ -323,21 +325,61 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
             <div className="grid grid-cols-3 gap-6">
               <div className="space-y-3">
                 <label htmlFor="dosage-input" className="text-sm font-black uppercase tracking-widest text-zinc-400">{content.halfLifeVisualizer.dosageLabel}</label>
-                <input id="dosage-input" type="number" value={dosage} onChange={e => setDosage(Number(e.target.value))} placeholder="0" title={content.halfLifeVisualizer.dosageLabel} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner" />
+                <input
+                  id="dosage-input"
+                  type="number"
+                  min="0"
+                  value={dosage}
+                  onChange={e => setDosage(Math.max(0, Number(e.target.value)))}
+                  placeholder="0"
+                  title={content.halfLifeVisualizer.dosageLabel}
+                  className={`w-full bg-zinc-900 border-zinc-800 text-white border-2 focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner ${dosage > 1000 ? 'border-red-500 text-red-500' : 'border-transparent'}`}
+                />
+                {dosage > 1000 && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black text-red-500 bg-red-500/10 p-2 rounded-xl border border-red-500/20 flex items-center gap-1 justify-center mt-1">
+                    <ShieldAlert size={12} />
+                    {isRTL ? 'تحذير: جرعة عالية جداً' : 'CRITICAL HAZARD: High Dose'}
+                  </motion.div>
+                )}
               </div>
               <div className="space-y-3">
                 <label htmlFor="duration-input" className="text-sm font-black uppercase tracking-widest text-zinc-400">{content.halfLifeVisualizer.durationLabel}</label>
-                <input id="duration-input" type="number" value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="0" title={content.halfLifeVisualizer.durationLabel} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner" />
+                <input
+                  id="duration-input"
+                  type="number"
+                  min="1"
+                  value={duration}
+                  onChange={e => setDuration(Math.max(1, Number(e.target.value)))}
+                  placeholder="0"
+                  title={content.halfLifeVisualizer.durationLabel}
+                  className="w-full bg-zinc-900 border-zinc-800 text-white border-2 border-transparent focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner"
+                />
               </div>
               <div className="space-y-3">
                 <label htmlFor="start-week-input" className="text-sm font-black uppercase tracking-widest text-zinc-400">{content.halfLifeVisualizer.startWeekLabel}</label>
-                <input id="start-week-input" type="number" value={startWeek} onChange={e => setStartWeek(Number(e.target.value))} placeholder="1" title={content.halfLifeVisualizer.startWeekLabel} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner" />
+                <input
+                  id="start-week-input"
+                  type="number"
+                  min="1"
+                  value={startWeek}
+                  onChange={e => setStartWeek(Math.max(1, Number(e.target.value)))}
+                  placeholder="1"
+                  title={content.halfLifeVisualizer.startWeekLabel}
+                  className="w-full bg-zinc-900 border-zinc-800 text-white border-2 border-transparent focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner"
+                />
               </div>
             </div>
 
             <div className="space-y-3">
-              <label htmlFor="frequency-select" className="text-sm font-black uppercase tracking-widest text-zinc-400">{content.halfLifeVisualizer.frequencyLabel}</label>
-              <select id="frequency-select" value={frequency} onChange={e => setFrequency(e.target.value)} title={content.halfLifeVisualizer.frequencyLabel} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-5 text-lg font-black outline-none appearance-none">
+              <div className="flex justify-between items-center">
+                <label htmlFor="frequency-select" className="text-sm font-black uppercase tracking-widest text-zinc-400">{content.halfLifeVisualizer.frequencyLabel}</label>
+                {selectedCompound?.esterWeight && selectedCompound.esterWeight < 1 && (
+                  <span className="text-[10px] font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full" title={`Real dose adjusted by ${(selectedCompound.esterWeight * 100).toFixed(0)}% for ester weight`}>
+                    Ester Adjusted
+                  </span>
+                )}
+              </div>
+              <select id="frequency-select" value={frequency} onChange={e => setFrequency(e.target.value)} title={content.halfLifeVisualizer.frequencyLabel} className="w-full bg-zinc-900 border-zinc-800 text-white border-2 border-transparent focus:border-gold-500 rounded-2xl p-5 text-lg font-black outline-none appearance-none">
                 {Object.entries(content.halfLifeVisualizer.frequencies).map(([k, v]) => <option key={k} value={k}>{v as string}</option>)}
               </select>
             </div>

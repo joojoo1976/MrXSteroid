@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'ChillerBrand';
+    /* 
+       INSTRUCTION: 
+       1. Go to a "Font to Base64" converter online (e.g., transfonter.org).
+       2. Upload your 'Chiller' font file (.ttf or .woff).
+       3. Convert it to WOFF2 format.
+       4. Copy the Base64 string from the result.
+       
+    src: url('data:font/woff2;charset=utf-8;base64,AAEAAAASAQAABAAgRFNJRwAAAAEAAm4QAAAACEdERUYLdgunAAJQ6AAAAGpHUE9T8FKzewACUVQAAA6uR1NVQs2IHvIAAmAEAAAOCk9TLzJkugeBAAABqAAAAGBjbWFwcndspwAACEQAAARYY3Z0IAb1AQAAABBsAAAAOGZwZ20Avo26AAAMnAAAAtVnYXNwAAAAEAACUOAAAAAIZ2x5Zvw6BlUAABCkAAIazGhlYWT/h3
+
+The user wants me to perform a refactoring.
+The cursor is located before the `src: url(...)` line.
+The user's instruction in the code block is:
+```css
+           src: url('data:font/woff2;charset=utf-8;base64,AAEAAAASAQAABAAgRFNJRwAAAAEAAm4QAAAACEdERUYLdgunAAJQ6AAAAGpHUE9T8FKzewACUVQAAA6uR1NVQs2IHvIAAmAEAAAOCk9TLzJkugeBAAABqAAAAGBjbWFwcndspwAACEQAAARYY3Z0IAb1AQAAABBsAAAAOGZwZ20Avo26AAAMnAAAAtVnYXNwAAAAEAACUOAAAAAIZ2x5Zvw6BlUAABCkAAIazGhlYWT/h3Y
+    */
+    ``` Wait,
+    the user's prompt text says: "Please perform the following refactoring: [long base64 string]". This implies I should replace the placeholder in the code.
+
+    The existing code is:
+        src: url('data:font/woff2;charset=utf-8;base64,INSERT_BASE64_STRING_HERE') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

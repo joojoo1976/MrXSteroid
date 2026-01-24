@@ -58,6 +58,9 @@ export default {
                     600: "hsl(var(--gold-600))"
                 }
             },
+            fontFamily: {
+                chiller: ["ChillerBrand", "cursive", "system-ui"],
+            },
             borderRadius: {
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",

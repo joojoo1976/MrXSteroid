@@ -1,26 +1,26 @@
 import { Compound, SalesNotificationData, TeaserTableData } from '../types';
 
 export const commonCompounds: Compound[] = [
-    { id: 'test_e', name: 'Testosterone Enanthate', nameAr: 'تيستوستيرون إينانثات', halfLife: 4.5, tips: ['Use twice weekly', 'Standard base for any cycle'] },
-    { id: 'test_p', name: 'Testosterone Propionate', nameAr: 'تيستوستيرون بروبيونات', halfLife: 0.8, tips: ['Inject daily or EOD', 'Fast acting'] },
-    { id: 'test_c', name: 'Testosterone Cypionate', nameAr: 'تيستوستيرون سيبيونات', halfLife: 5, tips: ['Similar to Enanthate', 'Inject twice weekly'] },
-    { id: 'deca', name: 'Deca Durabolin (Nandrolone)', nameAr: 'ديكا ديورابولين', halfLife: 7, tips: ['Good for joints', 'Requires Test base'] },
-    { id: 'tren_a', name: 'Trenbolone Acetate', nameAr: 'ترينبولون أسيتات', halfLife: 1, tips: ['Very potent', 'Short half-life', 'Potential insomnia'] },
-    { id: 'tren_e', name: 'Trenbolone Enanthate', nameAr: 'ترينبولون إينانثات', halfLife: 5.5, tips: ['Powerful bulker', 'Long half-life'] },
-    { id: 'bold', name: 'Equipoise (Boldenone)', nameAr: 'بولدينون (إكويبويز)', halfLife: 14, tips: ['Increases appetite', 'Very long half-life'] },
-    { id: 'mast_e', name: 'Masteron Enanthate', nameAr: 'ماسترون إينانثات', halfLife: 4.5, tips: ['Hardener', 'Good for cutting'] },
-    { id: 'mast_p', name: 'Masteron Propionate', nameAr: 'ماسترون بروبيونات', halfLife: 1, tips: ['Short ester', 'Use near end of cut'] },
-    { id: 'primo', name: 'Primobolan (Methenolone)', nameAr: 'بريموبولان', halfLife: 5, tips: ['High quality gains', 'Very safe'] },
-    { id: 'anadrol', name: 'Anadrol (Oxymetholone)', nameAr: 'أنادرول (أوكسيميثولون)', halfLife: 0.4, tips: ['Oral', 'Very strong size/strength', 'High water retention'] },
-    { id: 'win_o', name: 'Winstrol (Oral)', nameAr: 'وينسترول (فموي)', halfLife: 0.4, tips: ['Dry gains', 'Great for cutting', 'Joint pain possible'] },
-    { id: 'win_i', name: 'Winstrol (Injectable)', nameAr: 'وينسترول (حقن)', halfLife: 1.0, tips: ['Similar to oral but higher bio-availability', 'Often injected daily'] },
-    { id: 'npp', name: 'NPP (Nandrolone Phenylpropionate)', nameAr: 'NPP (ناندرولون فينايل)', halfLife: 2.0, tips: ['Short ester Deca', 'Faster relief', 'Inject EOD'] },
-    { id: 'tbol', name: 'Turinabol', nameAr: 'تورينبول', halfLife: 0.6, tips: ['Lean gains', 'No water retention', 'Great for performance'] },
-    { id: 'sdrol', name: 'Superdrol', nameAr: 'سوبردرول', halfLife: 0.4, tips: ['extremely potent oral', 'Brutal strength', 'Liver toxic - stay under 4 weeks'] },
-    { id: 'proviron', name: 'Proviron', nameAr: 'بروفيرون', halfLife: 0.5, tips: ['Hardener', 'Libido boost', 'SHBG binder'] },
-    { id: 'arimidex', name: 'Arimidex (Anastrozole)', nameAr: 'أريدميكس (أناستروزول)', halfLife: 2.0, tips: ['Aromatase Inhibitor', 'Controls estrogen', 'Take 0.5mg EOD or as needed'] },
-    { id: 'anavar', name: 'Anavar (Oxandrolone)', nameAr: 'أنافار', halfLife: 0.4, tips: ['Oral', 'Great for strength/cutting'] },
-    { id: 'dbol', name: 'Dianabol (Methandienone)', nameAr: 'ديانابول', halfLife: 0.2, tips: ['Oral', 'Massive water retention/strength'] }
+    { id: 'test_e', name: 'Testosterone Enanthate', nameAr: 'تيستوستيرون إينانثات', halfLife: 4.5, esterWeight: 0.72, tips: ['Use twice weekly', 'Standard base for any cycle'] },
+    { id: 'test_p', name: 'Testosterone Propionate', nameAr: 'تيستوستيرون بروبيونات', halfLife: 0.8, esterWeight: 0.83, tips: ['Inject daily or EOD', 'Fast acting'] },
+    { id: 'test_c', name: 'Testosterone Cypionate', nameAr: 'تيستوستيرون سيبيونات', halfLife: 5, esterWeight: 0.70, tips: ['Similar to Enanthate', 'Inject twice weekly'] },
+    { id: 'deca', name: 'Deca Durabolin (Nandrolone)', nameAr: 'ديكا ديورابولين', halfLife: 7, esterWeight: 0.64, tips: ['Good for joints', 'Requires Test base'] },
+    { id: 'tren_a', name: 'Trenbolone Acetate', nameAr: 'ترينبولون أسيتات', halfLife: 1, esterWeight: 0.87, tips: ['Very potent', 'Short half-life', 'Potential insomnia'] },
+    { id: 'tren_e', name: 'Trenbolone Enanthate', nameAr: 'ترينبولون إينانثات', halfLife: 5.5, esterWeight: 0.70, tips: ['Powerful bulker', 'Long half-life'] },
+    { id: 'bold', name: 'Equipoise (Boldenone)', nameAr: 'بولدينون (إكويبويز)', halfLife: 14, esterWeight: 0.61, tips: ['Increases appetite', 'Very long half-life'] },
+    { id: 'mast_e', name: 'Masteron Enanthate', nameAr: 'ماسترون إينانثات', halfLife: 4.5, esterWeight: 0.70, tips: ['Hardener', 'Good for cutting'] },
+    { id: 'mast_p', name: 'Masteron Propionate', nameAr: 'ماسترون بروبيونات', halfLife: 1, esterWeight: 0.83, tips: ['Short ester', 'Use near end of cut'] },
+    { id: 'primo', name: 'Primobolan (Methenolone)', nameAr: 'بريموبولان', halfLife: 5, esterWeight: 0.70, tips: ['High quality gains', 'Very safe'] },
+    { id: 'anadrol', name: 'Anadrol (Oxymetholone)', nameAr: 'أنادرول (أوكسيميثولون)', halfLife: 0.4, esterWeight: 1.0, tips: ['Oral', 'Very strong size/strength', 'High water retention'] },
+    { id: 'win_o', name: 'Winstrol (Oral)', nameAr: 'وينسترول (فموي)', halfLife: 0.4, esterWeight: 1.0, tips: ['Dry gains', 'Great for cutting', 'Joint pain possible'] },
+    { id: 'win_i', name: 'Winstrol (Injectable)', nameAr: 'وينسترول (حقن)', halfLife: 1.0, esterWeight: 1.0, tips: ['Similar to oral but higher bio-availability', 'Often injected daily'] },
+    { id: 'npp', name: 'NPP (Nandrolone Phenylpropionate)', nameAr: 'NPP (ناندرولون فينايل)', halfLife: 2.0, esterWeight: 0.67, tips: ['Short ester Deca', 'Faster relief', 'Inject EOD'] },
+    { id: 'tbol', name: 'Turinabol', nameAr: 'تورينبول', halfLife: 0.6, esterWeight: 1.0, tips: ['Lean gains', 'No water retention', 'Great for performance'] },
+    { id: 'sdrol', name: 'Superdrol', nameAr: 'سوبردرول', halfLife: 0.4, esterWeight: 1.0, tips: ['extremely potent oral', 'Brutal strength', 'Liver toxic - stay under 4 weeks'] },
+    { id: 'proviron', name: 'Proviron', nameAr: 'بروفيرون', halfLife: 0.5, esterWeight: 1.0, tips: ['Hardener', 'Libido boost', 'SHBG binder'] },
+    { id: 'arimidex', name: 'Arimidex (Anastrozole)', nameAr: 'أريدميكس (أناستروزول)', halfLife: 2.0, esterWeight: 1.0, tips: ['Aromatase Inhibitor', 'Controls estrogen', 'Take 0.5mg EOD or as needed'] },
+    { id: 'anavar', name: 'Anavar (Oxandrolone)', nameAr: 'أنافار', halfLife: 0.4, esterWeight: 1.0, tips: ['Oral', 'Great for strength/cutting'] },
+    { id: 'dbol', name: 'Dianabol (Methandienone)', nameAr: 'ديانابول', halfLife: 0.2, esterWeight: 1.0, tips: ['Oral', 'Massive water retention/strength'] }
 ];
 
 export const teaserTablesEN: TeaserTableData[] = [
