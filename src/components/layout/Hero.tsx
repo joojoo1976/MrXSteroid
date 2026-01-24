@@ -42,7 +42,7 @@ const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({
               {content.heroEditions[lang as keyof typeof content.heroEditions]}
             </div>
             <div className={`absolute inset-0 ${isRTL ? 'mr-4' : 'ml-4'} bg-zinc-900 ${isRTL ? 'rounded-l-xl' : 'rounded-r-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-r' : 'border-l'} border-zinc-800 h-full p-1`}>
-              <img key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-l-lg' : 'rounded-r-lg'}`} onError={handleError} />
+              <img key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-l-lg' : 'rounded-r-lg'}`} onError={handleError} loading="lazy" />
             </div>
             <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-l-xl mr-4' : 'rounded-r-xl ml-4'} z-30`}></div>
           </div>
