@@ -7,6 +7,7 @@ import { Language, ContentStrings, Page } from '../../types';
 import { USFlag, EGFlag } from '../../utils/icon-utils';
 import { md5 } from '../../utils/cryptoUtils';
 import BrandLogo from '../shared/BrandLogo';
+import BrandBranding from './BrandBranding';
 import UnitToggle from '../shared/UnitToggle';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -117,17 +118,8 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <img
-              src="/logo_MrXSteroid.png"
-              alt="Mr. X Steroid Logo"
-              className="h-10 w-auto object-contain brightness-100 dark:brightness-110 rounded-2xl cursor-pointer"
-              onClick={() => navigateTo(Page.HOME)}
-            />
-            <div className="hidden lg:block">
-              <BrandLogo className="text-2xl" onClick={() => navigateTo(Page.HOME)} />
-            </div>
+            <BrandBranding />
           </div>
-
         );
       case 'lang-theme':
         return (
