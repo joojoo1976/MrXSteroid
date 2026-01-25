@@ -7,7 +7,7 @@ import { Language, ContentStrings, Page } from '../../types';
 import { USFlag, EGFlag } from '../../utils/icon-utils';
 import { md5 } from '../../utils/cryptoUtils';
 import BrandLogo from '../shared/BrandLogo';
-import BrandBranding from './BrandBranding';
+import DynamicBrandLogo from './DynamicBrandLogo';
 import UnitToggle from '../shared/UnitToggle';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <BrandBranding onClick={() => navigateTo(Page.HOME)} />
+            <DynamicBrandLogo variant='full' onClick={() => navigateTo(Page.HOME)} />
           </div>
         );
       case 'lang-theme':
