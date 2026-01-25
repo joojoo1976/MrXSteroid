@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, CheckCircle2, AlertTriangle, Play } from 'lucide-react';
 import Cookies from 'js-cookie';
+import DynamicBrandLogo from '../layout/DynamicBrandLogo';
 
 export const ConsentModal: React.FC = () => {
     // Lazy usage of cookies to initialize state, preventing effect synchronization issues
@@ -93,11 +94,11 @@ export const ConsentModal: React.FC = () => {
                                         <div className="text-zinc-400 font-medium text-sm text-left bg-black/40 p-6 rounded-2xl border border-zinc-800 max-h-60 overflow-y-auto custom-scrollbar">
                                             <p className="mb-4">
                                                 <strong className="text-white block mb-2">1. No Medical Advice:</strong>
-                                                Mr. X and associated materials are strictly for informational purposes. We are not doctors. Consult a physician before starting any protocol.
+                                                <DynamicBrandLogo inline variant="short" /> and associated materials are strictly for informational purposes. We are not doctors. Consult a physician before starting any protocol.
                                             </p>
                                             <p className="mb-4">
                                                 <strong className="text-white block mb-2">2. Assumption of Risk:</strong>
-                                                Usage of any compound discussed here carries inherent risks. By proceeding, you agree to hold Mr. X harmless from any liability.
+                                                Usage of any compound discussed here carries inherent risks. By proceeding, you agree to hold <DynamicBrandLogo inline variant="short" /> harmless from any liability.
                                             </p>
                                             <p>
                                                 <strong className="text-white block mb-2">3. Compliance:</strong>

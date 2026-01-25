@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield, EyeOff, Info, Scale } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface CCPAPageProps {
     content: ContentStrings;
@@ -58,8 +59,8 @@ const CCPAPage: React.FC<CCPAPageProps> = ({ content, navigateTo }) => {
                     <h2 className="text-3xl font-black uppercase">{isRTL ? "سياسة عدم الحذف" : "Anti-Discrimination Policy"}</h2>
                     <p className="text-zinc-400 text-lg leading-relaxed">
                         {isRTL
-                            ? "نؤكد في منصة Mr. X-Steroid أننا لن نمارس أي تمييز ضدك بسبب ممارسة حقوقك في الخصوصية، بما في ذلك تقديم نفس مستوى جودة الخدمة لجميع المستخدمين."
-                            : "We confirm on the Mr. X-Steroid platform that we will not discriminate against you for exercising your privacy rights, including providing the same level of service quality to all users."}
+                            ? <>نؤكد في منصة <DynamicBrandLogo inline variant="full" /> أننا لن نمارس أي تمييز ضدك بسبب ممارسة حقوقك في الخصوصية، بما في ذلك تقديم نفس مستوى جودة الخدمة لجميع المستخدمين.</>
+                            : <>We confirm on the <DynamicBrandLogo inline variant="full" /> platform that we will not discriminate against you for exercising your privacy rights, including providing the same level of service quality to all users.</>}
                     </p>
                 </div>
                 <Shield className="absolute -bottom-10 -right-10 w-64 h-64 text-indigo-500/5 rotate-12" />

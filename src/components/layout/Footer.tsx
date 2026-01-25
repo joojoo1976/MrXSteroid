@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ContentStrings, Page } from '../../types';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Zap, ShieldCheck, Heart } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
+import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from '../shared/StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -191,7 +192,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool })
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-xs font-black tracking-[0.3em] text-zinc-700 text-center md:text-start">
-            {content.copyright} • <span className="text-gold-500/20"><StyledBrandName text="Mr. X-Steroid" /> "George Mourice"</span>
+            {content.copyright} • <span className="text-gold-500/20"><DynamicBrandLogo inline variant="full" /> "George Mourice"</span>
           </div>
           <div className="flex gap-10">
             <div className="flex items-center gap-3 opacity-30">

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Map, Zap, Settings, ShieldAlert, ShoppingCart, Home, User, Info } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface SitemapPageProps {
     content: ContentStrings;
@@ -103,8 +104,8 @@ const SitemapPage: React.FC<SitemapPageProps> = ({ content, navigateTo }) => {
             <div className="mt-20 p-10 rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800">
                 <p className="text-zinc-500 text-sm leading-relaxed max-w-4xl italic">
                     {isRTL
-                        ? "تساعد خريطة الموقع محركات البحث على فهم هيكلية موقع Mr. X-Steroid بشكل أفضل، مما يضمن وصول المحتوى العلمي والبروتوكولات للأشخاص الذين يبحثون عنها بدقة."
-                        : "The sitemap helps search engines better understand the structure of Mr. X-Steroid, ensuring that scientific content and protocols reach the people looking for them accurately."}
+                        ? <>تساعد خريطة الموقع محركات البحث على فهم هيكلية موقع <DynamicBrandLogo inline variant="full" /> بشكل أفضل، مما يضمن وصول المحتوى العلمي والبروتوكولات للأشخاص الذين يبحثون عنها بدقة.</>
+                        : <>The sitemap helps search engines better understand the structure of <DynamicBrandLogo inline variant="full" />, ensuring that scientific content and protocols reach the people looking for them accurately.</>}
                 </p>
             </div>
         </div>

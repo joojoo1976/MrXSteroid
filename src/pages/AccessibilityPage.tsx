@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Accessibility, Eye, Ear, Keyboard, MousePointer2 } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface AccessibilityPageProps {
     content: ContentStrings;
@@ -15,8 +16,8 @@ const AccessibilityPage: React.FC<AccessibilityPageProps> = ({ content, navigate
         {
             title: isRTL ? "التزامنا" : "Our Commitment",
             content: isRTL
-                ? "يلتزم Mr. X-Steroid بجعل محتواه العلمي متاحًا للجميع، بغض النظر عن القدرات الجسدية. نحن نسعى دائماً لتحسين تجربة المستخدم لضمان وصول المعلومات للجميع."
-                : "Mr. X-Steroid is committed to making its scientific content accessible to everyone, regardless of physical abilities. We strive to improve user experience to ensure information reaches everyone.",
+                ? <>يلتزم <DynamicBrandLogo inline variant="full" /> بجعل محتواه العلمي متاحًا للجميع، بغض النظر عن القدرات الجسدية. نحن نسعى دائماً لتحسين تجربة المستخدم لضمان وصول المعلومات للجميع.</>
+                : <><DynamicBrandLogo inline variant="full" /> is committed to making its scientific content accessible to everyone, regardless of physical abilities. We strive to improve user experience to ensure information reaches everyone.</>,
             icon: Accessibility
         },
         {

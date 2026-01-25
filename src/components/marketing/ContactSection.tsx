@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../shared/StyledBrandName';
+import DynamicBrandLogo from '../layout/DynamicBrandLogo';
 import { ContentStrings } from '../../types';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -163,7 +164,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                 <Zap className="w-3 h-3 animate-pulse" /> Support Command Center
                             </motion.div>
                             <h2 className="text-5xl md:text-7xl font-black mb-6 text-white tracking-tighter leading-none">
-                                <StyledBrandName text={isRTL ? "اتصالات الـ " + "Mr. X" : "Contact the Source"} />
+                                {isRTL ? <StyledBrandName text={"اتصالات الـ " + "Mr. X"} /> : <span className="flex items-center gap-3">Contact the <DynamicBrandLogo inline variant="short" /> Source</span>}
                             </h2>
                             <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg">
                                 Direct relay for cycle optimization, technical support, and protocol verification. Secure, encrypted, and authoritative.

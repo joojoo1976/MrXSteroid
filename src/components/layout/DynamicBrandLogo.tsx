@@ -91,7 +91,7 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
     };
 
     return (
-        <div
+        <span
             onClick={handleClick}
             className={wrapperClass}
             role="button"
@@ -103,7 +103,7 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
             }}
             aria-label={variant === 'full' ? "Mr. X-Steroid Home" : "Mr. X Home"}
         >
-            <motion.div
+            <motion.span
                 variants={containerVariants}
                 whileHover="hover"
                 className={`flex items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'} gap-2`}
@@ -119,7 +119,7 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
 
                 {isEn ? (
                     /* ENGLISH: Image-based Logo */
-                    <div className="relative">
+                    <span className="relative inline-block align-middle">
                         <img
                             src={variant === 'full' ? "/images/MrXSteroid_Labol2.png" : "/images/MrX_Labol2.png"}
                             alt={variant === 'full' ? "Mr. X-Steroid" : "Mr. X"}
@@ -135,13 +135,13 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
                         />
                         {/* Subtle Glow Effect */}
                         {!inline && <div className={`absolute inset-0 bg-gold-500/10 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />}
-                    </div>
+                    </span>
                 ) : (
                     /* NON-ENGLISH: Text-based Logo (Arabic/etc) */
                     <BrandText isRTL={isRTL} variant={variant} />
                 )}
-            </motion.div>
-        </div>
+            </motion.span>
+        </span>
     );
 };
 

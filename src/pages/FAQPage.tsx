@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Plus, Minus, Search, ShieldCheck, Zap, FlaskConical, Dna } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface FAQPageProps {
     content: ContentStrings;
@@ -16,7 +17,11 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
 
     const faqs = [
         {
+            qText: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
             q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
+            aText: isRTL
+                ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
+                : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
             a: isRTL
                 ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
                 : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
@@ -24,7 +29,13 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             icon: ShieldCheck
         },
         {
-            q: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
+            qText: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
+            q: isRTL
+                ? <span className="flex items-center gap-1">كيف أبدأ مع <DynamicBrandLogo inline variant="full" />؟</span>
+                : <span className="flex items-center gap-1">How do I start with <DynamicBrandLogo inline variant="full" />?</span>,
+            aText: isRTL
+                ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
+                : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
             a: isRTL
                 ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
                 : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
@@ -32,7 +43,11 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             icon: Zap
         },
         {
+            qText: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
             q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
+            aText: isRTL
+                ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
+                : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
             a: isRTL
                 ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
                 : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
@@ -40,7 +55,11 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             icon: Dna
         },
         {
+            qText: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
             q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
+            aText: isRTL
+                ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
+                : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
             a: isRTL
                 ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
                 : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
@@ -50,8 +69,8 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
     ];
 
     const filteredFaqs = faqs.filter(faq =>
-        faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        faq.a.toLowerCase().includes(searchTerm.toLowerCase())
+        faq.qText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.aText.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

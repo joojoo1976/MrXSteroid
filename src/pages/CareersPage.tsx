@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Briefcase, Rocket, Users, Target, Code, Brain } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface CareersPageProps {
     content: ContentStrings;
@@ -52,8 +53,8 @@ const CareersPage: React.FC<CareersPageProps> = ({ content, navigateTo }) => {
                     </h2>
                     <p className="text-zinc-400 text-lg leading-relaxed">
                         {isRTL
-                            ? "في Mr. X-Steroid، نحن لا نوظف موظفين عاديين؛ نحن نبحث عن المبدعين والمتحمسين للعلوم الذين يرون ما وراء الحدود التقليدية للأداء البدني."
-                            : "At Mr. X-Steroid, we don't just hire ordinary employees; we look for innovators and science enthusiasts who see beyond traditional boundaries of physical performance."}
+                            ? <>في <DynamicBrandLogo inline variant="full" />، نحن لا نوظف موظفين عاديين؛ نحن نبحث عن المبدعين والمتحمسين للعلوم الذين يرون ما وراء الحدود التقليدية للأداء البدني.</>
+                            : <>At <DynamicBrandLogo inline variant="full" />, we don't just hire ordinary employees; we look for innovators and science enthusiasts who see beyond traditional boundaries of physical performance.</>}
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                         {[

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Cookie, Settings, Eye, ShieldCheck, PieChart } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface CookiePolicyPageProps {
     content: ContentStrings;
@@ -51,8 +52,8 @@ const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({ content, navigateTo
                 <div className="space-y-6 text-zinc-400 text-lg leading-relaxed">
                     <p>
                         {isRTL
-                            ? "نحن نستخدم ملفات تعريف الارتباط (Cookies) لتحسين أداء منصة Mr. X-Steroid وضمان تجربة تسوق آمنة وسلسة. هذه الملفات لا تقوم بجمع أي معلومات شخصية حساسة دون موافقتك الصريحة."
-                            : "We use cookies to improve the performance of the Mr. X-Steroid platform and ensure a safe and smooth shopping experience. These files do not collect any sensitive personal information without your explicit consent."}
+                            ? <>نحن نستخدم ملفات تعريف الارتباط (Cookies) لتحسين أداء منصة <DynamicBrandLogo inline variant="full" /> وضمان تجربة تسوق آمنة وسلسة. هذه الملفات لا تقوم بجمع أي معلومات شخصية حساسة دون موافقتك الصريحة.</>
+                            : <>We use cookies to improve the performance of the <DynamicBrandLogo inline variant="full" /> platform and ensure a safe and smooth shopping experience. These files do not collect any sensitive personal information without your explicit consent.</>}
                     </p>
                 </div>
 

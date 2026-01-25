@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, ShieldCheck, FileCheck } from 'lucide-react';
 import { ContentStrings, Page } from '../types';
 import BrandLogo from './shared/BrandLogo';
+import DynamicBrandLogo from './layout/DynamicBrandLogo';
 import { replaceBrandWithHtml } from '../utils/logic';
 import { usePreferences } from '../context/PreferencesContext';
 
@@ -64,7 +65,7 @@ const MedicalDisclaimerPage: React.FC<MedicalDisclaimerPageProps> = ({ content, 
                 })}
 
                 <div className="mt-12 text-center text-zinc-500 text-sm">
-                    <p>© {new Date().getFullYear()} Mr. X-Steroid. All Rights Reserved.</p>
+                    <p>© {new Date().getFullYear()} <DynamicBrandLogo inline variant="full" />. All Rights Reserved.</p>
                 </div>
             </div>
         </div>

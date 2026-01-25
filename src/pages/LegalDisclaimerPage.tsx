@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Gavel, ShieldCheck, HeartPulse, Scale } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface LegalDisclaimerPageProps {
     content: ContentStrings;
@@ -35,8 +36,8 @@ const LegalDisclaimerPage: React.FC<LegalDisclaimerPageProps> = ({ content, navi
                         </div>
                         <p className="text-zinc-400 text-xl leading-relaxed italic">
                             {isRTL
-                                ? "المحتوى المنشور على منصة Mr. X-Steroid مخصص حصرياً للأغراض التعليمية، العلمية، والبحثية. نحن لا نشجع، لا نؤيد، ولا نحث على استخدام أي مواد غير قانونية أو طبية دون استشارة طبية متخصصة."
-                                : "The content published on the Mr. X-Steroid platform is intended exclusively for educational, scientific, and research purposes. We do not encourage, endorse, or urge the use of any illegal or medical substances without specialized medical consultation."}
+                                ? <>المحتوى المنشور على منصة <DynamicBrandLogo inline variant="full" /> مخصص حصرياً للأغراض التعليمية، العلمية، والبحثية. نحن لا نشجع، لا نؤيد، ولا نحث على استخدام أي مواد غير قانونية أو طبية دون استشارة طبية متخصصة.</>
+                                : <>The content published on the <DynamicBrandLogo inline variant="full" /> platform is intended exclusively for educational, scientific, and research purposes. We do not encourage, endorse, or urge the use of any illegal or medical substances without specialized medical consultation.</>}
                         </p>
                     </div>
                     <Scale className="absolute -bottom-10 -right-10 w-64 h-64 text-zinc-900/50 -rotate-12" />

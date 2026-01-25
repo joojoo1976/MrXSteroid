@@ -2,6 +2,7 @@ import React from 'react';
 import { ShoppingBag, Lock, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { ContentStrings } from '../../types';
+import DynamicBrandLogo from '../layout/DynamicBrandLogo';
 
 interface OrderSummaryProps {
     content: ContentStrings;
@@ -37,8 +38,8 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                         <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/20 to-transparent pointer-events-none" />
                     </div>
                     <div className="space-y-2">
-                        <h4 className="text-xl font-black leading-tight text-white mb-1">
-                            Mr. X-Steroid: <span className="text-gold-500 capitalize">{variant} Edition</span>
+                        <h4 className="text-xl font-black leading-tight text-white mb-1 flex items-center gap-2">
+                            <DynamicBrandLogo inline variant="full" />: <span className="text-gold-500 capitalize">{variant} Edition</span>
                         </h4>
                         <div className="flex flex-wrap gap-2">
                             <span className="text-[10px] font-bold px-2 py-0.5 bg-white/5 text-zinc-400 rounded-md border border-white/5 uppercase tracking-wider">

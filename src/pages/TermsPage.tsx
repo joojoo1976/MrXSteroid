@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FileText, Scale, AlertTriangle, CheckCircle2, UserCheck } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface TermsPageProps {
     content: ContentStrings;
@@ -34,8 +35,8 @@ const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo }) => {
                     </div>
                     <p className="text-zinc-400 leading-relaxed">
                         {isRTL
-                            ? "باستخدامك لموقع Mr. X-Steroid، فإنك تقر بأن عمرك لا يقل عن 18 عاماً وأنك تمتلك الأهلية القانونية للالتزام بهذه الشروط."
-                            : "By using Mr. X-Steroid, you represent that you are at least 18 years old and have the legal capacity to abide by these terms."}
+                            ? <>باستخدامك لموقع <DynamicBrandLogo inline variant="full" />، فإنك تقر بأن عمرك لا يقل عن 18 عاماً وأنك تمتلك الأهلية القانونية للالتزام بهذه الشروط.</>
+                            : <>By using <DynamicBrandLogo inline variant="full" />, you represent that you are at least 18 years old and have the legal capacity to abide by these terms.</>}
                     </p>
                 </section>
 
@@ -58,8 +59,8 @@ const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo }) => {
                     </div>
                     <p className="text-zinc-400 leading-relaxed">
                         {isRTL
-                            ? "المعلومات المقدمة هي لأغراض تعليمية وبحثية فقط. استخدامك لهذه المعلومات يقع على مسؤوليتك الشخصية والمنصة غير مسؤولة عن أي نتائج طبية أو قانونية."
-                            : "The information provided is for educational and research purposes only. Your use of this information is at your own risk, and the platform is not responsible for any medical or legal outcomes."}
+                            ? <>المعلومات المقدمة هي لأغراض تعليمية وبحثية فقط. استخدامك لهذه المعلومات يقع على مسؤوليتك الشخصية والمنصة غير مسؤولة عن أي نتائج طبية أو قانونية.</>
+                            : <>The information provided is for educational and research purposes only. Your use of this information is at your own risk, and the platform is not responsible for any medical or legal outcomes.</>}
                     </p>
                 </section>
             </div>
