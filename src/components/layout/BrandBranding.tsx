@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { usePreferences } from '../../context/PreferencesContext';
 import { motion } from 'framer-motion';
 
@@ -38,7 +37,11 @@ const BrandText: React.FC<{ isRTL: boolean }> = ({ isRTL }) => {
     );
 };
 
-export const BrandBranding: React.FC = () => {
+export interface BrandBrandingProps {
+    onClick?: () => void;
+}
+
+export const BrandBranding: React.FC<BrandBrandingProps> = ({ onClick }) => {
     const { language, isRTL } = usePreferences();
     const isEn = language === 'en';
 
@@ -57,7 +60,18 @@ export const BrandBranding: React.FC = () => {
     };
 
     return (
-        <Link to="/" className="inline-block outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg">
+        <div
+            onClick={onClick}
+            className="inline-block outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onClick?.();
+                }
+            }}
+        >
             <motion.div
                 variants={containerVariants}
                 initial="initial"
@@ -85,7 +99,7 @@ export const BrandBranding: React.FC = () => {
                 {!isEn && <BrandText isRTL={isRTL} />}
 
             </motion.div>
-        </Link>
+        </div>
     );
 };
 

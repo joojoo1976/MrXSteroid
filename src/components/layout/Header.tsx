@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <BrandBranding />
+            <BrandBranding onClick={() => navigateTo(Page.HOME)} />
           </div>
         );
       case 'lang-theme':
