@@ -32,15 +32,23 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{ padding: '20px', color: 'white', backgroundColor: 'darkred', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <h1>Something went wrong.</h1>
-                    <pre style={{ maxWidth: '800px', overflow: 'auto', background: 'rgba(0,0,0,0.5)', padding: '10px' }}>
-                        {this.state.error?.toString()}
-                    </pre>
-                    <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>
+                <div className="min-h-screen flex flex-col items-center justify-center bg-red-950 text-white p-6 font-sans">
+                    <h1 className="text-3xl font-bold mb-4">Something went wrong.</h1>
+                    <div className="w-full max-w-3xl bg-black/50 rounded-lg p-4 overflow-auto border border-red-800/50">
+                        <pre className="text-sm font-mono text-red-100 whitespace-pre-wrap">
+                            {this.state.error?.toString()}
+                        </pre>
+                    </div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-6 px-6 py-3 bg-white text-red-950 font-bold rounded-xl hover:bg-red-50 transition-colors shadow-lg"
+                    >
                         Reload Page
                     </button>
-                    <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{ marginTop: '10px', padding: '10px 20px', cursor: 'pointer' }}>
+                    <button
+                        onClick={() => { localStorage.clear(); window.location.reload(); }}
+                        className="mt-3 px-6 py-3 bg-transparent border border-red-800 text-red-400 font-medium rounded-xl hover:bg-red-900/50 transition-colors"
+                    >
                         Clear Cache & Reload
                     </button>
                 </div>
