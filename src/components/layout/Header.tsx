@@ -62,11 +62,12 @@ const Header: React.FC<HeaderProps> = ({
   const [isDesignMode, setIsDesignMode] = useState(false);
   // ... rest of state
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() => {
-    const saved = localStorage.getItem('header_layout_config');
+    // Updated key to 'header_layout_v2' to force reset for user
+    const saved = localStorage.getItem('header_layout_v2');
     return saved ? JSON.parse(saved) : {
-      sections: ['logo', 'lang-theme', 'nav', 'auth'],
+      sections: ['logo', 'nav', 'lang-theme', 'auth'],
       alignment: 'justify-between',
-      gap: 'gap-6'
+      gap: 'gap-4'
     };
   });
   const [isScrolled, setIsScrolled] = useState(false);
@@ -81,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({
 
   const saveLayout = (config: LayoutConfig) => {
     setLayoutConfig(config);
-    localStorage.setItem('header_layout_config', JSON.stringify(config));
+    localStorage.setItem('header_layout_v2', JSON.stringify(config));
   };
 
   const handleNav = (target: string) => {
@@ -293,12 +294,12 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 ${isScrolled ? 'py-2' : 'py-3'}`}>
+      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 ${isScrolled ? 'py-1' : 'py-2'}`}>
         <Reorder.Group
           axis="x"
           values={layoutConfig.sections}
           onReorder={(newOrder) => saveLayout({ ...layoutConfig, sections: newOrder })}
-          className={`flex items-center w-full ${layoutConfig.alignment} ${layoutConfig.gap}`}
+          className={`flex items-center w-full ${layoutConfig.alignment} gap-2 lg:gap-4`}
         >
           {layoutConfig.sections.map((sectionId) => (
             <Reorder.Item

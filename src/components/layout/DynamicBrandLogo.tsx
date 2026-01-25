@@ -106,7 +106,7 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
             <motion.span
                 variants={containerVariants}
                 whileHover="hover"
-                className={`flex items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'} gap-2`}
+                className={`flex items-center flex-row gap-2`}
             >
                 {/* RESTORED MASCOT / LOGO */}
                 {showMascot && (
