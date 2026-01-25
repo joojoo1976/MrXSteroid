@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <DynamicBrandLogo variant='full' onClick={() => navigateTo(Page.HOME)} />
+            <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-1" />
           </div>
         );
       case 'lang-theme':

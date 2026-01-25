@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
 import { StyledBrandName } from '../components/shared/StyledBrandName';
+import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 import { md5 } from '../utils/cryptoUtils';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
@@ -104,7 +105,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl shadow-zinc-200/50 dark:shadow-none">
                             <h1 className="text-2xl font-black mb-8 border-b border-zinc-100 dark:border-zinc-800 pb-4 flex items-center gap-3">
                                 {isRTL ? "صفحة مستخدم " : "Profile of "}
-                                <span className="text-gold-500"><StyledBrandName text="Mr. X-Steroid" /></span>
+                                <DynamicBrandLogo variant="full" inline />
                             </h1>
 
                             {!isEmailConfirmed && (

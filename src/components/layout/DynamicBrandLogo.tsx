@@ -54,12 +54,16 @@ export interface DynamicBrandLogoProps {
     variant?: 'full' | 'short';
     onClick?: () => void;
     className?: string; // Allow extra styling from parent
+    inline?: boolean;   // For use within text/paragraphs
+    showMascot?: boolean; // Restore the 'lost' logo/mascot
 }
 
 export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
     variant = 'full',
     onClick,
-    className = ""
+    className = "",
+    inline = false,
+    showMascot = false
 }) => {
     const { language, isRTL } = usePreferences();
     const isEn = language === 'en';
@@ -67,22 +71,34 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
     // Animation variants
     const containerVariants = {
         hover: {
-            scale: 1.05,
-            rotate: isEn ? -2 : 0,
+            scale: inline ? 1.02 : 1.05,
+            rotate: isEn ? -1 : 0,
             transition: { duration: 0.3 }
+        }
+    };
+
+    // Base wrapper classes
+    const wrapperClass = inline
+        ? `inline-flex items-center align-middle ${className}`
+        : `flex items-center justify-center ${className} outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg cursor-pointer`;
+
+    const handleClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+        if (onClick) {
+            e.preventDefault();
+            e.stopPropagation();
+            onClick();
         }
     };
 
     return (
         <div
-            onClick={onClick}
-            className={`inline-block outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg cursor-pointer ${className}`}
+            onClick={handleClick}
+            className={wrapperClass}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onClick?.();
+                    handleClick(e);
                 }
             }}
             aria-label={variant === 'full' ? "Mr. X-Steroid Home" : "Mr. X Home"}
@@ -90,8 +106,17 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
             <motion.div
                 variants={containerVariants}
                 whileHover="hover"
-                className="flex items-center justify-center"
+                className={`flex items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'} gap-2`}
             >
+                {/* RESTORED MASCOT / LOGO */}
+                {showMascot && (
+                    <img
+                        src="/logo_MrXSteroid.png"
+                        alt="Mascot"
+                        className={`object-contain ${inline ? 'h-[1.2em]' : 'h-10 md:h-12'}`}
+                    />
+                )}
+
                 {isEn ? (
                     /* ENGLISH: Image-based Logo */
                     <div className="relative">
@@ -102,14 +127,14 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
                             className={`
                                 object-contain drop-shadow-md
                                 transition-all duration-300
-                                ${variant === 'full'
-                                    ? 'h-16 md:h-20 w-auto' // Full variant resizing
-                                    : 'h-10 md:h-12 w-auto' // Short variant resizing
+                                ${inline
+                                    ? 'h-[1em] w-auto translate-y-[-2px]' // Inline adjustment
+                                    : (variant === 'full' ? 'h-10 md:h-14 w-auto' : 'h-8 md:h-10 w-auto') // Block adjustment (Compressed as requested)
                                 }
                             `}
                         />
                         {/* Subtle Glow Effect */}
-                        <div className={`absolute inset-0 bg-gold-500/10 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                        {!inline && <div className={`absolute inset-0 bg-gold-500/10 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />}
                     </div>
                 ) : (
                     /* NON-ENGLISH: Text-based Logo (Arabic/etc) */

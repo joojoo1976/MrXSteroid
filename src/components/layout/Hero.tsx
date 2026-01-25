@@ -3,6 +3,7 @@ import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion';
 import { ContentStrings, PricingTier } from '../../types';
 import BrandLogo from '../shared/BrandLogo';
+import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from '../shared/StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -95,13 +96,14 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           className="mb-8"
         >
           <h1 className="mb-6 pb-2 inline-block relative">
-            <BrandLogo
+            <DynamicBrandLogo
+              variant="full"
+              inline={false}
               className="text-6xl md:text-8xl lg:text-[10rem] filter drop-shadow-[0_0_30px_rgba(234,179,8,0.4)]"
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }));
               }}
-              isHero={true}
             />
             <div className="absolute -inset-8 bg-gold-500/10 blur-3xl rounded-full -z-10 animate-pulse"></div>
           </h1>
