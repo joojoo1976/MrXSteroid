@@ -70,6 +70,12 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = 
             whileHover="hover"
             className={`font-chiller inline-flex items-center select-none whitespace-nowrap ${brandClass} force-ltr cursor-pointer ${className}`}
         >
+            {/* Added Logo Image */}
+            <img
+                src="/mrx-sticky-logo.png"
+                alt="Mr. X Logo"
+                className="h-[1em] w-auto mr-2 object-contain"
+            />
             <motion.span variants={letterVariants} className={`logo-c-m ${spacingClass} brand-glint`}>M</motion.span>
             <motion.span variants={letterVariants} className={`logo-c-r-cyan ${spacingClass} brand-glint`}>r</motion.span>
             <motion.span variants={letterVariants} className={`logo-c-dot ${spacingClass}`}>.</motion.span>
