@@ -8,6 +8,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { createSignupSchema, SignupFormValues } from '../lib/schemas';
 import { cn } from "@/lib/utils";
 
 // Design System Components
@@ -34,22 +35,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
     const [success, setSuccess] = useState(false);
 
     // Registration Schema with complexity and matching password
-    const signupSchema = z.object({
-        fullName: z.string().min(2, { message: isRTL ? "الاسم يجب أن يكون طويلاً بما يكفي" : "Full name is too short" }),
-        username: z.string().min(3, { message: isRTL ? "اسم المستخدم يجب أن يكون 3 أحرف على الأقل" : "Username must be at least 3 characters" })
-            .regex(/^[a-zA-Z0-9_]+$/, { message: isRTL ? "اسم المستخدم يجب أن يحتوي فقط على أحرف وأرقام" : "Username must be alphanumeric" }),
-        email: z.string().email({ message: isRTL ? "بريد إلكتروني غير صحيح" : "Invalid email address" }),
-        password: z.string()
-            .min(8, { message: isRTL ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "Password must be at least 8 characters" })
-            .regex(/[A-Z]/, { message: isRTL ? "يجب أن تحتوي على حرف كبير واحد على الأقل" : "Must contain at least one uppercase letter" })
-            .regex(/[0-9]/, { message: isRTL ? "يجب أن تحتوي على رقم واحد على الأقل" : "Must contain at least one number" }),
-        confirmPassword: z.string(),
-    }).refine((data) => data.password === data.confirmPassword, {
-        message: isRTL ? "كلمتا المرور غير متطابقتين" : "Passwords do not match",
-        path: ["confirmPassword"],
-    });
-
-    type SignupFormValues = z.infer<typeof signupSchema>;
+    const signupSchema = createSignupSchema(isRTL);
 
     const form = useForm<SignupFormValues>({
         resolver: zodResolver(signupSchema),
