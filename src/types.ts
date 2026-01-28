@@ -316,9 +316,6 @@ export interface ContentStrings {
   invalidCredentials?: string;
   logout?: string; // Add logout here
   welcomeUser?: string; // Optional: for 'Welcome, User'
-  loginWithGoogle?: string;
-  loginWithMicrosoft?: string;
-  orDivider?: string;
   forgotPassword?: string;
   resetPassword?: string;
   sendResetLink?: string;
