@@ -30,6 +30,7 @@ export enum Theme {
 export enum Page {
   HOME = 'home',
   MACRO = 'macro',
+  BODYFAT = 'bodyfat',
   INJECTION = 'injection',
   HALFLIFE = 'halflife',
   LAB = 'lab',
@@ -336,6 +337,7 @@ export interface ContentStrings {
   navFeatures: string;
   navToolNames: {
     macro: string;
+    bodyfat: string;
     injection: string;
     halflife: string;
     lab: string;

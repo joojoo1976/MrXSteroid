@@ -336,6 +336,7 @@ export const deContent: Partial<ContentStrings> = {
     navFeatures: "Funktionen",
     navToolNames: {
         macro: "MacroCalc Pro - Intelligente Ernährung",
+        bodyfat: "Körperfett Rechner",
         injection: "Injektionskarte",
         halflife: "Halbwertszeit-Plotter",
         lab: "Intelligente Laborwerte-Referenz",

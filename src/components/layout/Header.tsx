@@ -88,6 +88,7 @@ const Header: React.FC<HeaderProps> = ({
   const handleNav = (target: string) => {
     const pageMap: Record<string, Page> = {
       'macro': Page.MACRO,
+      'bodyfat': Page.BODYFAT,
       'injection': Page.INJECTION,
       'halflife': Page.HALFLIFE,
       'lab': Page.LAB,
@@ -179,8 +180,14 @@ const Header: React.FC<HeaderProps> = ({
               </button>
               <div className={`absolute top-full ${isRTL ? 'left-0' : 'right-0'} pt-2 w-56 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
-                  {(['macro', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
-                    <button key={tool} onClick={() => navigateTo(Page[tool.toUpperCase() as keyof typeof Page])} className="block w-full text-start px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{content.navToolNames[tool]}</button>
+                  {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
+                    <button
+                      key={tool}
+                      onClick={() => navigateTo(Page[tool.toUpperCase() as keyof typeof Page])}
+                      className={`block w-full text-start px-3 py-2 text-sm transition-colors ${currentPage === Page[tool.toUpperCase() as keyof typeof Page] ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                    >
+                      {content.navToolNames[tool]}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -341,7 +348,7 @@ const Header: React.FC<HeaderProps> = ({
             <button onClick={() => { handleNav('features'); setIsMobileMenuOpen(false); }} className="text-lg font-bold text-start">{content.navFeatures}</button>
             <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
             <p className="text-sm text-zinc-500 uppercase font-bold">{content.navAiTools}</p>
-            {(['macro', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
+            {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
               <button key={tool} onClick={() => { navigateTo(Page[tool.toUpperCase() as keyof typeof Page]); setIsMobileMenuOpen(false); }} className="text-sm text-start ltr:pl-4 rtl:pr-4">{content.navToolNames[tool]}</button>
             ))}
             <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
@@ -387,7 +394,7 @@ const Header: React.FC<HeaderProps> = ({
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-2 py-2">
-            {(['macro', 'injection', 'halflife', 'lab', 'genetic'] as const).map((tool) => (
+            {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map((tool) => (
               <button
                 key={tool}
                 onClick={() => navigateTo(Page[tool.toUpperCase() as keyof typeof Page])}

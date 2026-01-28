@@ -43,6 +43,7 @@ import { ConsentModal } from './components/compliance/ConsentModal';
 
 // Lazy Loaded Components
 const MacroCalculator = React.lazy(() => import('./components/tools/MacroCalculator'));
+const BodyFatCalculator = React.lazy(() => import('./components/tools/BodyFatCalculator'));
 const InjectionMap = React.lazy(() => import('./components/tools/InjectionMap'));
 const HalfLifeVisualizer = React.lazy(() => import('./components/tools/HalfLifeVisualizer'));
 const SmartLabReference = React.lazy(() => import('./components/tools/SmartLabReference'));
@@ -257,6 +258,7 @@ function AppContent({
             </button>
             <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-gold-500 font-black">LOADING MR. X TOOL...</div>}>
               {currentPage === Page.MACRO && <MacroCalculator content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.BODYFAT && <BodyFatCalculator content={content} navigateTo={navigateTo} />}
               {currentPage === Page.INJECTION && <InjectionMap content={content} navigateTo={navigateTo} />}
               {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} navigateTo={navigateTo} />}
               {currentPage === Page.LAB && <SmartLabReference content={content} navigateTo={navigateTo} />}

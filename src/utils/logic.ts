@@ -240,13 +240,14 @@ export const CONVERSIONS = {
 /**
  * Universal conversion function that ensures data integrity.
  */
-export const convertValue = (value: number, type: 'weight' | 'height' | 'volume', toSystem: UnitSystem): number => {
+export const convertValue = (value: number, type: 'weight' | 'height' | 'volume' | 'length', toSystem: UnitSystem): number => {
     if (isNaN(value)) return 0;
 
     switch (type) {
         case 'weight':
             return toSystem === 'imperial' ? value * CONVERSIONS.KG_TO_LBS : value;
         case 'height':
+        case 'length':
             return toSystem === 'imperial' ? value * CONVERSIONS.CM_TO_INCHES : value;
         case 'volume':
             return toSystem === 'imperial' ? value * CONVERSIONS.ML_TO_OZ : value;
@@ -258,13 +259,14 @@ export const convertValue = (value: number, type: 'weight' | 'height' | 'volume'
 /**
  * Inverse conversion to get the base metric value from an imperial input.
  */
-export const toMetric = (value: number, type: 'weight' | 'height' | 'volume'): number => {
+export const toMetric = (value: number, type: 'weight' | 'height' | 'volume' | 'length'): number => {
     if (isNaN(value)) return 0;
 
     switch (type) {
         case 'weight':
             return value * CONVERSIONS.LBS_TO_KG;
         case 'height':
+        case 'length':
             return value * CONVERSIONS.INCHES_TO_CM;
         case 'volume':
             return value * CONVERSIONS.OZ_TO_ML;

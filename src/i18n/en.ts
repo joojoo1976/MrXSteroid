@@ -530,6 +530,7 @@ export const enContent: ContentStrings = {
     navFeatures: "Features",
     navToolNames: {
         macro: "Macro Calculator",
+        bodyfat: "Body Fat Calculator",
         injection: "Interactive Injection Map",
         halflife: "Half-Life Simulator",
         lab: "Smart Lab Reference",

@@ -558,6 +558,7 @@ export const arContent: ContentStrings = {
     navFeatures: "المميزات",
     navToolNames: {
         macro: "حاسبة الماكروز المتطورة",
+        bodyfat: "حاسبة نسبة الدهون الجسمية",
         injection: "خريطة الحقن التفاعلية",
         halflife: "محاكي نصف العمر",
         lab: "المرجع الذكي للتحاليل",

@@ -84,6 +84,7 @@ const SAFETY_SETTINGS = [
 
 // Available models confirmed by diagnostic listing (Jan 2026)
 const MODELS = [
+    'giga-potato',
     'gemini-2.0-flash',
     'gemini-1.5-flash-latest',
     'gemini-pro-latest',

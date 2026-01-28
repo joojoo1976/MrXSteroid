@@ -13,6 +13,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo }) => {
   const { isRTL } = usePreferences();
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
@@ -28,6 +30,26 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo }) => {
       if (error) throw error;
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.message || 'Failed to login with Google');
+      setLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return toast.error(isRTL ? 'الرجاء إدخال البريد الإلكتروني وكلمة المرور' : 'Please enter email and password');
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
+      navigateTo(Page.DASHBOARD);
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      toast.error(error.message || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login'));
+    } finally {
       setLoading(false);
     }
   };
@@ -116,7 +138,47 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo }) => {
             <span className="w-full border-t border-zinc-700"></span>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-zinc-900 text-zinc-500">Or with phone</span>
+            <span className="px-2 bg-zinc-900 text-zinc-500">{isRTL ? 'أو عبر البريد الإلكتروني' : 'Or with email'}</span>
+          </div>
+        </div>
+
+        {/* Email Login */}
+        <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-md px-4 py-2 focus:ring-2 focus:ring-gold-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">{isRTL ? 'كلمة المرور' : 'Password'}</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-md px-4 py-2 focus:ring-2 focus:ring-gold-500 focus:outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 px-4 rounded-md transition-colors border border-zinc-700"
+          >
+            {loading ? (isRTL ? 'جاري التحقق...' : 'Logging in...') : (isRTL ? 'تسجيل الدخول' : 'Login')}
+          </button>
+        </form>
+
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-zinc-700"></span>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-zinc-900 text-zinc-500">{isRTL ? 'أو عبر الهاتف' : 'Or with phone'}</span>
           </div>
         </div>
 

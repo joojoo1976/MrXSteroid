@@ -5,14 +5,13 @@ import { getCookie, setCookie } from '../../utils/logic';
 import { StyledBrandName } from '../shared/StyledBrandName';
 
 const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ content }) => {
-    const [show, setShow] = useState(() => !getCookie('mr_x_disclaimer_v2'));
+    const [show, setShow] = useState(false);
     useEffect(() => {
         if (show) { document.body.style.overflow = 'hidden'; }
         else { document.body.style.overflow = 'auto'; }
         return () => { document.body.style.overflow = 'auto'; };
     }, [show]);
     const handleAgree = () => {
-        setCookie('mr_x_disclaimer_v2', 'true', 30); // Store for 30 days
         setShow(false);
         document.body.style.overflow = 'auto';
     };

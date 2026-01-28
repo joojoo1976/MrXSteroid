@@ -81,6 +81,7 @@ export const jaContent: Partial<ContentStrings> = {
     navFeatures: "機能",
     navToolNames: {
         macro: "MacroCalc Pro - インテリジェント栄養",
+        bodyfat: "体脂肪計算機",
         injection: "注射マップ",
         halflife: "半減期プロッター",
         lab: "スマート検査値リファレンス",
