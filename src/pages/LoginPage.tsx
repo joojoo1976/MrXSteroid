@@ -81,8 +81,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
         },
       });
       if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to login with Google');
+    } catch (error) {
+      toast.error((error as Error).message || 'Failed to login with Google');
       setLoading(false);
     }
   };
@@ -107,8 +107,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
 
       toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
       navigateTo(Page.DASHBOARD);
-    } catch (error: any) {
-      toast.error(error.message || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login'));
+    } catch (error) {
+      toast.error((error as Error).message || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login'));
     } finally {
       setLoading(false);
     }
@@ -126,8 +126,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
       if (error) throw error;
       setOtpSent(true);
       toast.success('OTP sent! Check your phone.');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send OTP');
+    } catch (error) {
+      toast.error((error as Error).message || 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
@@ -147,8 +147,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
       if (error) throw error;
       toast.success('Login successful!');
       navigateTo(Page.DASHBOARD);
-    } catch (error: any) {
-      toast.error(error.message || 'Invalid OTP');
+    } catch (error) {
+      toast.error((error as Error).message || 'Invalid OTP');
     } finally {
       setLoading(false);
     }

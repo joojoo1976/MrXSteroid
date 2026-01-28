@@ -1,4 +1,5 @@
 import { createLoginSchema, createSignupSchema } from './schemas';
+import { ZodError } from 'zod';
 
 // Simple test runner since we might not have a full test suite setup
 async function runTests() {
