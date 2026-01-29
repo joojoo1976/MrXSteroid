@@ -70,6 +70,7 @@ const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const RefundPage = React.lazy(() => import('./pages/RefundPage'));
 const LegalDisclaimerPage = React.lazy(() => import('./pages/LegalDisclaimerPage'));
+const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage'));
 
 // End of imports cleanup
 
@@ -268,6 +269,7 @@ function AppContent({
               {currentPage === Page.SIGNUP && <SignupPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.RESET_PASSWORD && <ResetPasswordPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.DASHBOARD && <Dashboard navigateTo={navigateTo} />}
+              {currentPage === Page.DIAGNOSTIC && <DiagnosticPage />}
               {currentPage === Page.PROFILE && <ProfilePage user={user} content={content} navigateTo={navigateTo} />}
               {currentPage === Page.MEDICAL_DISCLAIMER && <MedicalDisclaimerPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.ABOUT && <AboutPage content={content} navigateTo={navigateTo} />}
@@ -348,6 +350,8 @@ export default function App() {
       const path = window.location.pathname.toLowerCase();
       if (path === '/dashboard') {
         setCurrentPage(Page.DASHBOARD);
+      } else if (path === '/diagnostic') {
+        setCurrentPage(Page.DIAGNOSTIC);
       } else if (path === '/login') {
         setCurrentPage(Page.LOGIN);
       } else if (path === '/signup') {

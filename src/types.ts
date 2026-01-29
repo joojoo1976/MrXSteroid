@@ -44,6 +44,7 @@ export enum Page {
   RESET_PASSWORD = 'reset_password',
   CHECKOUT = 'checkout',
   DASHBOARD = 'dashboard',
+  DIAGNOSTIC = 'diagnostic',
   ABOUT = 'about',
   SITEMAP = 'sitemap',
   ACCESSIBILITY = 'accessibility',

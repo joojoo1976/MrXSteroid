@@ -88,8 +88,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
 
       toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
       navigateTo(Page.DASHBOARD);
-    } catch (error) {
-      toast.error((error as Error).message || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login'));
+    } catch (error: Error | { message?: string; error_description?: string } | unknown) {
+      console.error("Login error details:", error);
+      const err = error as { message?: string; error_description?: string };
+      const errorMessage = err.message || err.error_description || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login');
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
