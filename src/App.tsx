@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, Suspense, lazy, useMemo } from 'rea
 import {
   ChevronRight, AlertTriangle, ArrowLeft, Zap, Lock, FileCheck, CheckCircle, Globe
 } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 
 // Types & Data
 import { Page, Language, Currency, PricingTier, ContentStrings, SalesNotificationData } from './types';
@@ -38,7 +39,6 @@ import SmartBookLanding from './components/marketing/SmartBookLanding';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import Settings from './components/Settings';
 import { ConsentModal } from './components/compliance/ConsentModal';
 
 // Lazy Loaded Components
@@ -223,7 +223,6 @@ function AppContent({
         colorTheme={colorTheme}
         changeColorTheme={changeColorTheme}
       />
-      <Settings />
       <div className="flex-1">
         {currentPage === Page.HOME ? (
           <div className="animate-fade-in">
@@ -311,14 +310,16 @@ function AppContent({
         content={content} navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
         formattedPrice={selectedTier ? (currencyState.symbol + (selectedTier.price * currencyState.rate).toFixed(2)) : ''}
       />
-      <Toaster position={isRTL ? 'top-left' : 'top-right'} />
+      <Toaster
+        position={isRTL ? 'top-left' : 'top-right'}
+      />
     </>
   );
 
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
-      className={`min-h-screen flex flex-col bg-zinc-50 dark:bg-background text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : 'font-sans'} ${isRTL ? 'text-right' : 'text-left'}`}
+      className={`min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : 'font-sans'} ${isRTL ? 'text-right' : 'text-left'}`}
     >
       {sharedComponents}
     </div>

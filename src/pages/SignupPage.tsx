@@ -70,9 +70,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
             // Auto-redirect to login after 5 seconds
             setTimeout(() => navigateTo(Page.LOGIN), 5000);
-        } catch (error) {
-            const err = error as Error;
-            toast.error(err.message || (isRTL ? "فشل عملية التسجيل" : "Signup failed"));
+        } catch (error: any) {
+            console.error("Signup error details:", error);
+            const errorMessage = error.message || error.error_description || (isRTL ? "فشل عملية التسجيل" : "Signup failed");
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }

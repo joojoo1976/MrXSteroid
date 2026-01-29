@@ -23,9 +23,9 @@ import { getShippingProviders, ShippingProvider, validatePromoCode, calculateShi
 import { supabase } from '../../lib/supabase';
 import { usePreferences } from '../../context/PreferencesContext';
 
-// Initialize Stripe (Environment Variable with fallback for localized testing)
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder_key_demo_only';
-const stripePromise = loadStripe(STRIPE_KEY);
+// Initialize SpaceRemit (Environment Variable with fallback for localized testing)
+const SPACEREMIT_KEY = import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'sb_publishable_placeholder_key_demo_only';
+const stripePromise = loadStripe(SPACEREMIT_KEY);
 
 interface CheckoutFormData {
     fullName: string;
