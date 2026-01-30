@@ -287,7 +287,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     currency: 'USD',
                     email: data.email,
                     description: `Order for ${selectedTier.name} (${selectedTier.selectedLanguage})`,
-                    reference: txnId, // Crucial for idempotency matching
+                    referenceId: txnId, // Crucial for idempotency matching
                     metadata: { ...data, tierId: selectedTier.id, internal_txn: txnId }
                 });
             } else {

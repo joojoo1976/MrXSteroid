@@ -71,6 +71,8 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const RefundPage = React.lazy(() => import('./pages/RefundPage'));
 const LegalDisclaimerPage = React.lazy(() => import('./pages/LegalDisclaimerPage'));
 const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage'));
+const SuccessPage = React.lazy(() => import('./pages/SuccessPage'));
+const CancelPage = React.lazy(() => import('./pages/CancelPage'));
 
 // End of imports cleanup
 
@@ -295,9 +297,11 @@ function AppContent({
               {currentPage === Page.CHECKOUT && (
                 <CheckoutPage
                   content={content} selectedTier={selectedTier}
-                  navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
+                  navigateTo={navigateTo} onSuccess={() => navigateTo(Page.PAYMENT_SUCCESS)} openLegal={openLegal}
                 />
               )}
+              {currentPage === Page.PAYMENT_SUCCESS && <SuccessPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.PAYMENT_CANCEL && <CancelPage content={content} navigateTo={navigateTo} />}
             </Suspense>
           </main>
         )}
@@ -395,6 +399,10 @@ export default function App() {
         setCurrentPage(Page.REFUND);
       } else if (path === '/disclaimer') {
         setCurrentPage(Page.LEGAL_DISCLAIMER_PAGE);
+      } else if (path === '/success') {
+        setCurrentPage(Page.PAYMENT_SUCCESS);
+      } else if (path === '/cancel') {
+        setCurrentPage(Page.PAYMENT_CANCEL);
       }
 
       // Check for reset_password flow
