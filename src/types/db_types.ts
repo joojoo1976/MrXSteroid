@@ -134,6 +134,9 @@ export type Database = {
                     shipping_provider: string | null
                     body_stats: Json | null
                     status: string
+                    transaction_id: string | null
+                    error_log: string | null
+                    attempts: number
                     created_at: string
                 }
                 Insert: {
@@ -150,6 +153,9 @@ export type Database = {
                     shipping_provider?: string | null
                     body_stats?: Json | null
                     status?: string
+                    transaction_id?: string | null
+                    error_log?: string | null
+                    attempts?: number
                     created_at?: string
                 }
                 Update: {
@@ -166,6 +172,9 @@ export type Database = {
                     shipping_provider?: string | null
                     body_stats?: Json | null
                     status?: string
+                    transaction_id?: string | null
+                    error_log?: string | null
+                    attempts?: number
                     created_at?: string
                 }
                 Relationships: []
