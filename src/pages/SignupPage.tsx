@@ -61,6 +61,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                         full_name: values.fullName,
                         username: values.username,
                     },
+                    emailRedirectTo: 'https://mrxsteroid.vercel.app/dashboard',
                 },
             });
 

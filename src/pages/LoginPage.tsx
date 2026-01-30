@@ -38,6 +38,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
+  // Check for verified parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'true') {
+      toast.success(isRTL ? "تم تفعيل حسابك بنجاح! يمكنك الآن تسجيل الدخول." : "Account verified successfully! You can now log in.");
+    }
+  }, [isRTL]);
+
   // Rate Limiting Logic
   useEffect(() => {
     if (attempts >= MAX_ATTEMPTS) {
