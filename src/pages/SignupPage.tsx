@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
+import { errorHandler } from '../lib/error-handler';
 import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
@@ -70,10 +71,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
             // Auto-redirect to login after 5 seconds
             setTimeout(() => navigateTo(Page.LOGIN), 5000);
-        } catch (error: any) {
-            console.error("Signup error details:", error);
-            const errorMessage = error.message || error.error_description || (isRTL ? "فشل عملية التسجيل" : "Signup failed");
-            toast.error(errorMessage);
+        } catch (error) {
+            errorHandler.handle(error, 'Signup');
         } finally {
             setLoading(false);
         }

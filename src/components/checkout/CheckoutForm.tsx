@@ -22,6 +22,7 @@ import { cn } from '../../lib/utils';
 import { getShippingProviders, ShippingProvider, validatePromoCode, calculateShippingRates } from '../../utils/logic';
 import { supabase } from '../../lib/supabase';
 import { usePreferences } from '../../context/PreferencesContext';
+import { errorHandler } from '../../lib/error-handler';
 
 // Initialize SpaceRemit (Environment Variable with fallback for localized testing)
 const SPACEREMIT_KEY = import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'sb_publishable_placeholder_key_demo_only';
@@ -270,7 +271,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                 }]);
 
             if (dbError) {
-                console.warn("Could not save to database (this is expected if 'orders' table doesn't exist yet):", dbError);
+                errorHandler.handle(dbError, 'CheckoutOrderSave');
             }
 
 
@@ -292,7 +293,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                 onSuccess();
             }
         } catch (error) {
-            toast.error("Payment failed. Please try again.");
+            errorHandler.handle(error, 'CheckoutPayment');
         } finally {
             setIsProcessing(false);
         }

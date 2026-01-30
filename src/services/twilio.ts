@@ -1,6 +1,6 @@
-
 import { TwilioResponse, TwilioMessage } from '../types/twilio';
 import { env } from '../config/env';
+import { errorHandler } from '../lib/error-handler';
 
 /**
  * Enterprise Service for Twilio Integration
@@ -40,7 +40,7 @@ class TwilioService {
                 }
             };
         } catch (error) {
-            console.error('Twilio Error:', error);
+            errorHandler.handle(error, 'Twilio');
             return { success: false, error: (error as Error).message };
         }
     }

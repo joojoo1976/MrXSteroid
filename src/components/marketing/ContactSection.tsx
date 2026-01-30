@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
+import { errorHandler } from '../../lib/error-handler';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../shared/StyledBrandName';
 import DynamicBrandLogo from '../layout/DynamicBrandLogo';
@@ -130,8 +131,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
             // Reset success state after few seconds
             setTimeout(() => setIsSubmitted(false), 5000);
         } catch (error) {
-            console.error('Submission error:', error);
-            toast.error(content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again or email us directly.");
+            errorHandler.handle(error, 'ContactForm');
         } finally {
             setIsSubmitting(false);
         }
