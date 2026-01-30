@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { Currency } from '../types';
+import { errorHandler } from '../lib/error-handler';
 
 /**
  * SHARED & COOKIE UTILITIES
@@ -378,7 +379,7 @@ export async function detectCountryFromIP(): Promise<SupportedCountry> {
 
         return detectCountryFromBrowser();
     } catch (error) {
-        console.warn('IP detection failed, falling back to browser detection:', error);
+        errorHandler.handle(error, 'GeoDetection');
         return detectCountryFromBrowser();
     }
 }

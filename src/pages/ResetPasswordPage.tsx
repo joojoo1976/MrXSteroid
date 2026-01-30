@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Lock, ShieldCheck, Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
+import { errorHandler } from '../lib/error-handler';
 import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
@@ -68,8 +69,7 @@ export default function ResetPasswordPage({ content, navigateTo }: ResetPassword
 
             setTimeout(() => navigateTo(Page.LOGIN), 3000);
         } catch (error) {
-            const err = error as Error;
-            toast.error(err.message || content.passwordResetError || "Failed to update password");
+            errorHandler.handle(error, 'ResetPassword');
         } finally {
             setLoading(false);
         }

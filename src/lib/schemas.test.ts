@@ -22,7 +22,7 @@ async function runTests() {
     const result2 = loginSchemaEn.safeParse(invalidEmail);
     if (!result2.success) {
         console.log("✅ PASS: Invalid email rejected");
-        console.log("   Error:", (result2.error as any).errors[0].message);
+        console.log("   Error:", (result2.error as ZodError).issues[0].message);
     } else {
         console.error("❌ FAIL: Invalid email accepted");
     }
@@ -40,7 +40,7 @@ async function runTests() {
     const result3 = signupSchemaEn.safeParse(mismatchSignup);
     if (!result3.success) {
         console.log("✅ PASS: Password mismatch rejected");
-        console.log("   Error:", (result3.error as any).errors[0].message);
+        console.log("   Error:", (result3.error as ZodError).issues[0].message);
     } else {
         console.error("❌ FAIL: Password mismatch accepted");
     }
@@ -51,7 +51,7 @@ async function runTests() {
     const invalidLoginAr = { email: "bad-email", password: "123" };
     const result4 = loginSchemaAr.safeParse(invalidLoginAr);
     if (!result4.success) {
-        const msg = (result4.error as any).errors[0].message;
+        const msg = (result4.error as ZodError).issues[0].message;
         if (msg === "بريد إلكتروني غير صحيح") {
             console.log("✅ PASS: Arabic error message correct");
         } else {

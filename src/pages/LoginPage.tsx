@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
+import { errorHandler } from '../lib/error-handler';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
@@ -88,11 +89,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
 
       toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
       navigateTo(Page.DASHBOARD);
-    } catch (error: Error | { message?: string; error_description?: string } | unknown) {
-      console.error("Login error details:", error);
-      const err = error as { message?: string; error_description?: string };
-      const errorMessage = err.message || err.error_description || (isRTL ? 'فشل تسجيل الدخول' : 'Failed to login');
-      toast.error(errorMessage);
+    } catch (error) {
+      errorHandler.handle(error, 'Login');
     } finally {
       setLoading(false);
     }
