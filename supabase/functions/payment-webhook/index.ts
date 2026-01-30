@@ -1,5 +1,16 @@
+// @ts-expect-error: Deno standard library URL import
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-expect-error: Supabase ESM URL import
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+/**
+ * EXTREME VERIFICATION: satisfying IDE environment for Deno globals
+ */
+declare const Deno: {
+    env: {
+        get(key: string): string | undefined;
+    };
+};
 
 console.log("💳 Payment Webhook: Listening for SpaceRemit events...")
 
@@ -49,7 +60,8 @@ serve(async (req: Request) => {
         }
 
         return new Response(JSON.stringify({ success: true }), { status: 200 })
-    } catch (error: any) {
+    } catch (err: unknown) {
+        const error = err as Error;
         console.error("❌ Webhook Error:", error.message)
         return new Response(JSON.stringify({ error: error.message }), { status: 500 })
     }

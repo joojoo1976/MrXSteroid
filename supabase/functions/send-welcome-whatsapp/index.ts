@@ -1,4 +1,14 @@
+// @ts-expect-error: Deno standard library URL import
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+/**
+ * EXTREME VERIFICATION: satisfying IDE environment for Deno globals
+ */
+declare const Deno: {
+    env: {
+        get(key: string): string | undefined;
+    };
+};
 
 console.log("📱 WhatsApp Trigger: Ready to send notifications...")
 
@@ -33,7 +43,8 @@ serve(async (req: Request) => {
             status: 200,
             headers: { "Content-Type": "application/json" }
         })
-    } catch (error: any) {
+    } catch (err: unknown) {
+        const error = err as Error;
         return new Response(JSON.stringify({ error: error.message }), { status: 500 })
     }
 })

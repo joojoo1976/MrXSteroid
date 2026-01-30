@@ -42,6 +42,8 @@ declare global {
                 productDescription?: string;
                 referenceId?: string;
                 metadata?: Record<string, unknown>;
+                success_url?: string;
+                cancel_url?: string;
             }) => void;
         };
     }
