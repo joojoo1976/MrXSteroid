@@ -288,7 +288,9 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     email: data.email,
                     description: `Order for ${selectedTier.name} (${selectedTier.selectedLanguage})`,
                     referenceId: txnId, // Crucial for idempotency matching
-                    metadata: { ...data, tierId: selectedTier.id, internal_txn: txnId }
+                    metadata: { ...data, tierId: selectedTier.id, internal_txn: txnId },
+                    success_url: `${window.location.origin}/success`,
+                    cancel_url: `${window.location.origin}/cancel`
                 });
             } else {
                 // Fallback for demo
