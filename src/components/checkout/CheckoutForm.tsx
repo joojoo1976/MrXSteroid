@@ -274,6 +274,10 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
 
             if (dbError) {
                 errorHandler.handle(dbError, 'CheckoutOrderSave');
+                setPaymentError(isAr
+                    ? "حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى."
+                    : "Error saving order. Please try again.");
+                return;
             }
 
 

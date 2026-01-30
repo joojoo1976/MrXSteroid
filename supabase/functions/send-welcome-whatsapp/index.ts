@@ -2,29 +2,38 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 console.log("📱 WhatsApp Trigger: Ready to send notifications...")
 
-serve(async (req) => {
+serve(async (req: Request) => {
     try {
-        const { record } = await req.json() // Expected from Supabase DB Webhook
+        const { record } = await req.json()
         const email = record.email
         const tier = record.tier
+        const lang = record.language || 'en'
 
-        console.log(`🚀 Sending Welcome WhatsApp to ${email} for tier ${tier}`)
+        console.log(`🚀 Sending Welcome WhatsApp to ${email} for tier ${tier} in ${lang}`)
 
         // Twilio API Integration (Conceptual template as per QA plan)
         // const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')
         // const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')
 
+        // Template logic for multi-language consistency
+        const templates = {
+            ar: `مرحباً بك في عالم مستر إكس! 🦅 تم تفعيل اشتراكك في باقة ${tier}. يمكنك تحميل كتابك الآن من الرابط: mrxsteroid.vercel.app/dashboard`,
+            en: `Welcome to the Mr. X protocols! 🦅 Your ${tier} subscription is now active. You can download your book from: mrxsteroid.vercel.app/dashboard`
+        }
+
+        const body = templates[lang as keyof typeof templates] || templates.en
+
         // Simulation of Outgoing Signal
         const payload = {
             to: `whatsapp:${record.phone || 'customer'}`,
-            body: `مرحباً بك في عالم مستر إكس! 🦅 تم تفعيل اشتراكك في باقة ${tier}. يمكنك تحميل كتابك الآن من الرابط: mrxsteroid.vercel.app/dashboard`
+            body: body
         }
 
         return new Response(JSON.stringify({ success: true, payload }), {
             status: 200,
             headers: { "Content-Type": "application/json" }
         })
-    } catch (error) {
+    } catch (error: any) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 })
     }
 })

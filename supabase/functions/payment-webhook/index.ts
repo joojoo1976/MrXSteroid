@@ -3,12 +3,19 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 console.log("💳 Payment Webhook: Listening for SpaceRemit events...")
 
-serve(async (req) => {
+serve(async (req: Request) => {
     try {
         const payload = await req.json()
         const signature = req.headers.get('x-spaceremit-signature')
+        const webhookSecret = Deno.env.get('SPACEREMIT_WEBHOOK_SECRET')
 
-        // 1. Validate Idempotency using transaction_id (reference)
+        // 1. Validate Signature (Production Hardening)
+        if (!signature || signature !== webhookSecret) {
+            console.error("🔒 Invalid Webhook Signature Rejected")
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+        }
+
+        // 2. Validate Idempotency using transaction_id (reference)
         const referenceId = payload.reference || payload.id
 
         const supabase = createClient(
@@ -42,7 +49,7 @@ serve(async (req) => {
         }
 
         return new Response(JSON.stringify({ success: true }), { status: 200 })
-    } catch (error) {
+    } catch (error: any) {
         console.error("❌ Webhook Error:", error.message)
         return new Response(JSON.stringify({ error: error.message }), { status: 500 })
     }
