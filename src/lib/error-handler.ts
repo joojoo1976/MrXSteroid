@@ -48,22 +48,42 @@ class ErrorHandlerService {
     }
 
     private parseError(error: unknown): AppError {
+        // 1. Handle standard Error objects
         if (error instanceof Error) {
-            // Check for specific Supabase or API error patterns
-            if (error.message.includes('fetch') || error.message.includes('network')) {
+            const msg = error.message;
+            if (msg.includes('fetch') || msg.includes('network')) {
                 return { type: ErrorType.NETWORK, message: 'Connection issue. Please check your internet.', originalError: error };
             }
-            if (error.message.includes('payment') || error.message.includes('decline')) {
+            if (msg.includes('payment') || msg.includes('decline')) {
                 return { type: ErrorType.PAYMENT, message: 'Payment failed. Please check your card details.', originalError: error };
             }
-            return { type: ErrorType.UNKNOWN, message: error.message, originalError: error };
+            return { type: ErrorType.UNKNOWN, message: msg, originalError: error };
         }
 
+        // 2. Handle Supabase-specific error objects or plain objects with message
+        if (error && typeof error === 'object') {
+            const errObj = error as Record<string, any>;
+            const message = errObj.message || errObj.error_description || errObj.error || 'An unexpected error occurred.';
+
+            // Check for common error strings
+            const msgStr = String(message);
+            if (msgStr.toLowerCase().includes('network') || msgStr.toLowerCase().includes('fetch')) {
+                return { type: ErrorType.NETWORK, message: 'Network error. Verify your connection.', originalError: error };
+            }
+
+            return {
+                type: (errObj.status || errObj.code) ? ErrorType.AUTH : ErrorType.UNKNOWN,
+                message: msgStr,
+                originalError: error
+            };
+        }
+
+        // 3. Handle string errors
         if (typeof error === 'string') {
             return { type: ErrorType.UNKNOWN, message: error };
         }
 
-        return { type: ErrorType.UNKNOWN, message: 'An unexpected error occurred.', originalError: error };
+        return { type: ErrorType.UNKNOWN, message: 'An unexpected technical error occurred.', originalError: error };
     }
 }
 
