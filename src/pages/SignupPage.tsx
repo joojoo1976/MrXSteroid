@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign } from 'lucide-react';
+import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { errorHandler } from '../lib/error-handler';
@@ -94,7 +94,15 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                         </div>
                         <CardTitle className="text-3xl font-black mb-4">{content.signupTitle}</CardTitle>
                         <CardDescription className="text-zinc-500 mb-8 leading-relaxed text-lg font-medium">
-                            {content.signupSuccess || "Account created successfully! Please check your email to verify your account."}
+                            {content.signupSuccess || (isRTL
+                                ? "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب."
+                                : "Account created successfully! Please check your email to verify your account.")}
+                            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold flex items-center justify-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                {isRTL
+                                    ? "هام: يرجى فحص صندوق البريد المزعج (Junk / Spam) إذا لم تجد الرسالة."
+                                    : "Important: Please check your Junk / Spam folder if you don't see the email."}
+                            </div>
                         </CardDescription>
                         <Button
                             onClick={() => navigateTo(Page.LOGIN)}
