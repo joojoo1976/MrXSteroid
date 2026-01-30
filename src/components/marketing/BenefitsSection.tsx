@@ -10,7 +10,7 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
         {/* Decorative Background */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-[30%] left-[5%] w-96 h-96 bg-gold-500/10 blur-[130px] rounded-full animate-float-slow"></div>
-            <div className="absolute bottom-[10%] right-[5%] w-80 h-80 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
+            <div className="absolute bottom-[10%] right-[5%] w-80 h-80 bg-emerald-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -43,7 +43,7 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
                             className="group relative h-full"
                         >
                             {/* Animated Background Glow */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-gold-600 via-blue-500 to-purple-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-50 animate-pulse transition-opacity duration-500"></div>
+                            <div className="absolute -inset-1 bg-gradient-to-r from-gold-600 via-emerald-500 to-gold-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-50 animate-pulse transition-opacity duration-500"></div>
 
                             <div className="flex flex-col gap-4 p-8 bg-zinc-50 dark:bg-background rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-all">
 

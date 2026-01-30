@@ -13,20 +13,20 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
     const contactMethods = [
         {
-            title: isRTL ? "البريد الإلكتروني" : "Email Support",
-            value: "support@mrxsteroid.com",
+            title: content.supportEmailTitle,
+            value: content.contactInfoEmail || "support@mrxsteroid.com",
             icon: Mail,
-            action: "mailto:support@mrxsteroid.com"
+            action: `mailto:${content.contactInfoEmail || "support@mrxsteroid.com"}`
         },
         {
-            title: isRTL ? "واتساب الدعم" : "WhatsApp Support",
-            value: "+20 123 456 789",
+            title: content.supportWhatsAppTitle,
+            value: content.contactInfoPhone || "+20 123 456 789",
             icon: MessageSquare,
-            action: "https://wa.me/20123456789"
+            action: `https://wa.me/${(content.contactInfoPhone || "20123456789").replace(/\D/g, '')}`
         },
         {
-            title: isRTL ? "ساعات العمل" : "Support Hours",
-            value: isRTL ? "يومياً: 10 ص - 10 م" : "Daily: 10 AM - 10 PM",
+            title: content.supportHoursTitle,
+            value: content.supportHoursValue,
             icon: Clock,
             action: null
         }
@@ -47,7 +47,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
                     {content.supportTitle}
                 </h1>
                 <p className="text-zinc-500 text-lg font-bold max-w-2xl mx-auto uppercase tracking-widest text-balance">
-                    {isRTL ? "نحن هنا لمساعدتك في الحصول على أفضل تجربة وتجاوز جميع التحديات." : "We are here to help you get the best experience and overcome all challenges."}
+                    {content.supportHeroDesc}
                 </p>
 
                 {/* Search Bar Placeholder */}
@@ -55,7 +55,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
                     <Search className="absolute start-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-gold-500 transition-colors w-5 h-5" />
                     <input
                         type="text"
-                        placeholder={isRTL ? "ابحث عن إجابة لمشكلتك..." : "Search for an answer..."}
+                        placeholder={content.supportSearchPlaceholder}
                         className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-5 ps-16 pe-6 text-white focus:border-gold-500/50 focus:ring-0 transition-all text-lg font-bold"
                     />
                 </div>
@@ -88,11 +88,11 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
 
             {/* Useful Links */}
             <section className="p-12 rounded-[4rem] bg-zinc-900 border border-zinc-800">
-                <h2 className="text-3xl font-black mb-10 text-center uppercase tracking-tight">{isRTL ? "روابط سريعة للمساعدة" : "Quick Help Links"}</h2>
+                <h2 className="text-3xl font-black mb-10 text-center uppercase tracking-tight">{content.supportQuickLinksTitle}</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                         { label: content.faqPageTitle, page: Page.FAQ },
-                        { label: isRTL ? "دليل المستخدم" : "User Guide", page: Page.HOME },
+                        { label: content.supportUserGuide, page: Page.HOME },
                         { label: content.returnPolicyTitle, page: Page.RETURN_POLICY },
                         { label: content.shippingPolicyTitle, page: Page.SHIPPING_POLICY }
                     ].map((link, idx) => (
@@ -110,12 +110,12 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
 
             {/* FAQ Preview */}
             <div className="text-center py-10">
-                <p className="text-zinc-600 font-bold mb-6 italic">{isRTL ? "لم تجد ما تبحث عنه؟" : "Didn't find what you're looking for?"}</p>
+                <p className="text-zinc-600 font-bold mb-6 italic">{content.supportNotFoundText}</p>
                 <button
                     onClick={() => navigateTo(Page.CONTACT)}
                     className="px-12 py-5 bg-gold-500 text-black font-black uppercase rounded-2xl hover:bg-gold-400 transition-all shadow-[0_0_40px_-10px_rgba(234,179,8,0.5)] scale-110"
                 >
-                    {isRTL ? "تواصل مباشرة مع جورج موريس" : "Contact George Mourice Directly"}
+                    {content.supportContactDirect}
                 </button>
             </div>
         </div>

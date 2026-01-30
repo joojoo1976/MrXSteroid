@@ -80,7 +80,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                     <HelpCircle className="w-10 h-10" />
                 </motion.div>
                 <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-                    {content.faqPageTitle || (isRTL ? "الأسئلة الشائعة" : "FAQ Support")}
+                    {content.faqPageTitle}
                 </h1>
                 <div className="relative max-w-xl mx-auto">
                     <Search className="absolute start-4 top-1/2 -translate-y-1/2 text-zinc-600" />
@@ -88,7 +88,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder={isRTL ? "ابحث عن سؤالك هنا..." : "Search your question here..."}
+                        placeholder={content.faqSearchPlaceholder}
                         className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 ps-12 pe-4 text-white focus:border-gold-500/50 transition-all font-bold"
                     />
                 </div>
@@ -128,14 +128,14 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             </div>
 
             <div className="p-12 rounded-[4rem] bg-gold-500/5 border border-gold-500/10 text-center space-y-6">
-                <h3 className="text-2xl font-black uppercase">{isRTL ? "هل لديك سؤال آخر؟" : "Have another question?"}</h3>
-                <p className="text-zinc-500 font-bold italic">{isRTL ? "فريق الخبراء لدينا متاح لمساعدتك على مدار الساعة." : "Our expert team is available to help you around the clock."}</p>
+                <h3 className="text-2xl font-black uppercase">{content.faqAnotherQuestion}</h3>
+                <p className="text-zinc-500 font-bold italic">{content.faqExpertHelpText}</p>
                 <div className="flex flex-wrap justify-center gap-4">
                     <button onClick={() => navigateTo(Page.CONTACT)} className="px-8 py-3 bg-gold-500 text-black font-black uppercase rounded-xl hover:bg-gold-400 transition-all">
-                        {isRTL ? "اتصل بنا" : "Contact Us"}
+                        {content.faqContactBtn}
                     </button>
                     <button onClick={() => navigateTo(Page.SUPPORT)} className="px-8 py-3 bg-zinc-900 text-white font-black uppercase rounded-xl hover:bg-zinc-800 border border-zinc-800 transition-all">
-                        {isRTL ? "مركز الدعم" : "Support Center"}
+                        {content.faqSupportBtn}
                     </button>
                 </div>
             </div>

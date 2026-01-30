@@ -120,18 +120,21 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
         </motion.p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-16 flex-wrap px-4">
-          <motion.button
-            whileHover={{ scale: 1.05, rotate: -1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => openCheckout(content.pricingTiers[0])}
-            className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 bg-gold-500 hover:bg-gold-400 text-black border-2 border-black/10 dark:border-white/20 font-black text-lg md:text-xl rounded-2xl md:rounded-full transition-all shadow-[0_10px_30px_rgba(234,179,8,0.3)] hover:shadow-[0_20px_40px_rgba(234,179,8,0.5)] animate-glow relative overflow-hidden group"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {content.heroCta}
-              <CheckCircle className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-          </motion.button>
+          <div className="relative w-full sm:w-auto flex flex-col items-center">
+            <motion.button
+              whileHover={{ scale: 1.05, rotate: -1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => openCheckout(content.pricingTiers[0])}
+              className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black border-2 border-transparent font-black text-xl rounded-full transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {content.heroCta}
+                <CheckCircle className="w-6 h-6 animate-pulse" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+            </motion.button>
+            <span className="text-xs font-mono text-gold-500 mt-2 tracking-widest uppercase opacity-80 animate-pulse">2-Step Fast Checkout</span>
+          </div>
 
           <motion.a
             whileHover={{ scale: 1.05 }}

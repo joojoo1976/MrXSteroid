@@ -83,6 +83,7 @@ const AuthorSection = React.lazy(() => import('./components/marketing/AuthorSect
 const PricingSection = React.lazy(() => import('./components/marketing/PricingSection'));
 const FAQ = React.lazy(() => import('./components/marketing/FAQ'));
 const ContactSection = React.lazy(() => import('./components/marketing/ContactSection'));
+const LiveSchedule = React.lazy(() => import('./components/marketing/LiveSchedule'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
@@ -108,6 +109,7 @@ interface AppContentProps {
 }
 
 import PreferencesModal from './components/modals/PreferencesModal';
+import AuthGuard from './components/auth/AuthGuard';
 
 function AppContent({
   theme, setTheme, colorTheme, changeColorTheme,
@@ -233,6 +235,7 @@ function AppContent({
             </div>
             <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin"></div></div>}>
               <RevealOnScroll><Features content={content} /></RevealOnScroll>
+              <RevealOnScroll><LiveSchedule /></RevealOnScroll>
               <RevealOnScroll><TransformationTimeline content={content} /></RevealOnScroll>
               <RevealOnScroll><SteroidReadinessQuiz content={content} onComplete={() => navigateTo(Page.SIGNUP)} /></RevealOnScroll>
               <RevealOnScroll><BenefitsSection content={content} /></RevealOnScroll>
@@ -263,14 +266,14 @@ function AppContent({
               {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} navigateTo={navigateTo} />}
               {currentPage === Page.LAB && <SmartLabReference content={content} navigateTo={navigateTo} />}
               {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} navigateTo={navigateTo} />}
-              {currentPage === Page.CYCLE_ARCHITECT && <CycleCalendarExporter content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.CYCLE_ARCHITECT && <AuthGuard requireSubscription={true}><CycleCalendarExporter content={content} navigateTo={navigateTo} /></AuthGuard>}
               {currentPage === Page.SMART_LANDING && <SmartBookLanding />}
               {currentPage === Page.LOGIN && <LoginPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.SIGNUP && <SignupPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.RESET_PASSWORD && <ResetPasswordPage content={content} navigateTo={navigateTo} />}
-              {currentPage === Page.DASHBOARD && <Dashboard navigateTo={navigateTo} />}
+              {currentPage === Page.DASHBOARD && <AuthGuard><Dashboard navigateTo={navigateTo} /></AuthGuard>}
               {currentPage === Page.DIAGNOSTIC && <DiagnosticPage />}
-              {currentPage === Page.PROFILE && <ProfilePage user={user} content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.PROFILE && <AuthGuard><ProfilePage user={user} content={content} navigateTo={navigateTo} /></AuthGuard>}
               {currentPage === Page.MEDICAL_DISCLAIMER && <MedicalDisclaimerPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.ABOUT && <AboutPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.SITEMAP && <SitemapPage content={content} navigateTo={navigateTo} />}

@@ -66,7 +66,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                         whileInView={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-500 font-black uppercase tracking-widest text-xs"
                     >
-                        <Zap className="w-4 h-4 fill-current" /> Initialize Protocol
+                        <Zap className="w-4 h-4 fill-current" /> {content.pricingInitialize}
                     </motion.div>
                     <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
                         {t('pricingTitle')}
@@ -85,7 +85,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                         const originalPrice = isCoachingTier && isCoachingActive ? grandTotal * 1.5 : basePrice * 1.4;
 
                         const config = {
-                            color: plan.id === 'bundle' ? 'gold' : plan.id === 'coaching' ? 'red' : 'zinc',
+                            color: plan.id === 'bundle' ? 'gold' : plan.id === 'coaching' ? 'emerald' : 'zinc',
                             icon: plan.id === 'bundle' ? Package : plan.id === 'coaching' ? Crown : Monitor
                         };
 
@@ -101,12 +101,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                             >
                                 {isPopular && (
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 bg-gold-500 text-black font-black text-xs uppercase tracking-widest rounded-full shadow-lg flex items-center gap-2">
-                                        <Star className="w-3 h-3 fill-black" /> Best Value
+                                        <Star className="w-3 h-3 fill-black" /> {content.pricingBestValue}
                                     </div>
                                 )}
 
                                 <div className="mb-8">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-2xl bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'red' ? 'from-red-500 to-rose-700' : 'from-zinc-700 to-zinc-900'}`}>
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-2xl bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'emerald' ? 'from-emerald-500 to-green-600' : 'from-zinc-700 to-zinc-900'}`}>
                                         <config.icon className="w-7 h-7" />
                                     </div>
                                     <h3 className="text-xl font-black text-white uppercase tracking-wider mb-2">{plan.name}</h3>
@@ -122,19 +122,19 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                             {formatPrice(originalPrice)}
                                         </span>
                                     </div>
-                                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-black mt-1">Billed in USD</div>
+                                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-black mt-1">{content.pricingBilledInUsd}</div>
                                 </div>
 
                                 {isCoachingTier && (
                                     <div className="mb-6 p-1 bg-zinc-800 rounded-xl relative group-hover:scale-[1.02] transition-transform">
                                         <label className="flex items-center justify-between p-3 cursor-pointer group/label">
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isCoachingActive ? 'bg-red-500 border-red-500' : 'border-zinc-500'}`}>
-                                                    {isCoachingActive && <Check className="w-3 h-3 text-white" />}
+                                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isCoachingActive ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>
+                                                    {isCoachingActive && <Check className="w-3 h-3 text-black" />}
                                                 </div>
                                                 <div>
-                                                    <div className="text-sm font-black text-white uppercase tracking-wider">Add Coaching</div>
-                                                    <div className="text-[10px] text-red-500 font-bold uppercase tracking-widest">+ $200.00 / Cycle</div>
+                                                    <div className="text-sm font-black text-white uppercase tracking-wider">{content.pricingAddCoaching}</div>
+                                                    <div className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">{content.pricingCoachingRate}</div>
                                                 </div>
                                             </div>
                                             <input type="checkbox" className="hidden" checked={isCoachingActive} onChange={() => setIsCoachingActive(!isCoachingActive)} />
@@ -149,10 +149,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                                     className="overflow-hidden"
                                                 >
                                                     <div className="p-3 pt-0 text-xs text-zinc-400 font-medium leading-relaxed border-t border-zinc-700/50 mt-2 pt-2">
-                                                        <div className="flex items-center gap-2 mb-2 text-red-400 font-bold">
-                                                            <AlertTriangle className="w-3 h-3" /> Requires Body Stats
+                                                        <div className="flex items-center gap-2 mb-2 text-emerald-400 font-bold">
+                                                            <AlertTriangle className="w-3 h-3" /> {content.pricingRequiresStats}
                                                         </div>
-                                                        Unlocks 1-on-1 analysis of bloodwork, diet, and compound titration.
+                                                        {content.pricingCoachingUnlock}
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -174,7 +174,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                             key={`upsell-${i}`}
                                             className="flex items-start gap-3"
                                         >
-                                            <Zap className="w-4 h-4 mt-0.5 text-red-500 fill-red-500/20" />
+                                            <Zap className="w-4 h-4 mt-0.5 text-emerald-500 fill-emerald-500/20" />
                                             <span className="text-sm text-white font-bold">{feature}</span>
                                         </motion.div>
                                     ))}
@@ -187,7 +187,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                         ${isPopular
                                             ? 'bg-gold-500 text-black hover:bg-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
                                             : isCoachingTier && isCoachingActive
-                                                ? 'bg-red-600 text-white hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)]'
+                                                ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                                                 : 'bg-white text-black hover:bg-zinc-200'
                                         }
                                     `}

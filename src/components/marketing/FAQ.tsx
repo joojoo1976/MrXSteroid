@@ -86,7 +86,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
       {/* Dynamic Background Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-30 -z-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
       </div>
 
       <div className="container mx-auto px-4 max-w-5xl relative z-10">
@@ -112,7 +112,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
             whileInView={{ y: 0, opacity: 1 }}
             className="relative max-w-2xl mx-auto group"
           >
-            <div className="absolute -inset-2 bg-gradient-to-r from-gold-500 via-blue-500 to-purple-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-700 animate-pulse"></div>
+            <div className="absolute -inset-2 bg-gradient-to-r from-gold-500 via-emerald-500 to-gold-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-700 animate-pulse"></div>
             <div className="relative bg-white dark:bg-card rounded-[2rem] shadow-2xl border-2 border-zinc-100 dark:border-zinc-800 overflow-hidden flex items-center p-2">
               <Search className="ml-6 w-8 h-8 text-zinc-300 group-focus-within:text-gold-500 transition-all group-hover:scale-110" />
               <input

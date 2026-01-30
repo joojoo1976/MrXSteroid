@@ -13,24 +13,18 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
     const sections = [
         {
-            title: isRTL ? "جمع المعلومات" : "Data Collection",
-            content: isRTL
-                ? "نجمع فقط البيانات الضرورية لتزويدك بالبروتوكولات الرياضية وتأمين حسابك، مثل البريد الإلكتروني وقياسات الجسم الأساسية."
-                : "We collect only the data necessary to provide you with sports protocols and secure your account, such as email and basic body metrics.",
+            title: content.privacyCollectionTitle,
+            content: content.privacyCollectionDesc,
             icon: Eye
         },
         {
-            title: isRTL ? "تأمين البيانات" : "Data Security",
-            content: isRTL
-                ? "نستخدم تشفيراً بمعيار 4096-bit وبروتوكولات SSL لضمان أن بياناتك تحت إشراف George Mourice تظل سرية تماماً وغير قابلة للاختراق."
-                : "We use 4096-bit standard encryption and SSL protocols to ensure your data stays completely confidential and impenetrable under George Mourice's supervision.",
+            title: content.privacySecurityTitle,
+            content: content.privacySecurityDesc,
             icon: Lock
         },
         {
-            title: isRTL ? "حقوق المستخدم" : "User Rights",
-            content: isRTL
-                ? "لك الحق الكامل في طلب نسخة من بياناتك، تصحيحها، أو حذف الحساب بالكامل في أي وقت عبر إعدادات الملف الشخصي."
-                : "You have the full right to request a copy of your data, correct it, or delete the account entirely at any time via profile settings.",
+            title: content.privacyRightsTitle,
+            content: content.privacyRightsDesc,
             icon: FileText
         }
     ];
@@ -69,9 +63,7 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ content, navigateTo }) => {
 
             <div className="p-10 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 text-center">
                 <p className="text-zinc-500 text-sm italic">
-                    {isRTL
-                        ? "هذه السياسة متوافقة مع معايير حماية البيانات العالمية وتم تحديثها لعام 2026."
-                        : "This policy is compliant with global data protection standards and has been updated for 2026."}
+                    {content.privacyComplianceNote}
                 </p>
             </div>
         </div>

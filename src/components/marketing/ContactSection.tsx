@@ -124,14 +124,14 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
             if (error) throw error;
 
             setIsSubmitted(true);
-            toast.success("Transmission Securely Received");
+            toast.success(content.contactTransmissionReceivedTitle || "Transmission Securely Received");
             reset();
 
             // Reset success state after few seconds
             setTimeout(() => setIsSubmitted(false), 5000);
         } catch (error) {
             console.error('Submission error:', error);
-            toast.error("Transmission Interrupted. Please try again or email us directly.");
+            toast.error(content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again or email us directly.");
         } finally {
             setIsSubmitting(false);
         }
@@ -161,13 +161,13 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 className="inline-flex items-center gap-2 px-3 py-1 bg-gold-500/10 text-gold-500 rounded-full text-xs font-black uppercase tracking-[0.3em] mb-6 border border-gold-500/20"
                             >
-                                <Zap className="w-3 h-3 animate-pulse" /> Support Command Center
+                                <Zap className="w-3 h-3 animate-pulse" /> {content.contactSupportCommandCenter || "Support Command Center"}
                             </motion.div>
                             <h2 className="text-5xl md:text-7xl font-black mb-6 text-white tracking-tighter leading-none">
                                 {isRTL ? <StyledBrandName text={"اتصالات الـ " + "Mr. X"} /> : <span className="flex items-center gap-3">Contact the <DynamicBrandLogo inline variant="short" /> Source</span>}
                             </h2>
                             <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg">
-                                Direct relay for cycle optimization, technical support, and protocol verification. Secure, encrypted, and authoritative.
+                                {content.contactPageSubtitle || "Direct relay for cycle optimization, technical support, and protocol verification. Secure, encrypted, and authoritative."}
                             </p>
                         </div>
 
@@ -183,12 +183,12 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                             <Mail className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Direct Secure Line</p>
-                                            <p className="text-xl font-bold text-white tracking-tight">contact@mrx-steroid.com</p>
+                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
+                                            <p className="text-xl font-bold text-white tracking-tight">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => copyToClipboard('contact@mrx-steroid.com')}
+                                        onClick={() => copyToClipboard(content.contactInfoEmail || 'support@mrxsteroid.com')}
                                         className="p-3 bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors"
                                     >
                                         {copiedEmail ? <CheckCircle2 className="w-5 h-5 text-gold-500" /> : <Copy className="w-5 h-5" />}
@@ -202,8 +202,8 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                     <img src="/author-small.jpg" alt="George Mourice" className="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <p className="text-white font-black text-lg">George Mourice</p>
-                                    <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Lead Protocol Architect</p>
+                                    <p className="text-white font-black text-lg">{content.authorName || 'George Mourice'}</p>
+                                    <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">{isRTL ? 'معماري البروتوكول الرئيسي' : 'Lead Protocol Architect'}</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                                         <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">In Command / 24h Relay</span>
@@ -264,15 +264,15 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                             <CheckCircle2 className="w-12 h-12 text-gold-500" />
                                         </div>
                                         <div>
-                                            <h4 className="text-3xl font-black text-white mb-2">Message Securely Received</h4>
-                                            <p className="text-zinc-400 font-medium">The Command Center will process your transmission and respond within the next 24-hour cycle.</p>
+                                            <h4 className="text-3xl font-black text-white mb-2">{content.contactTransmissionReceivedTitle || "Message Securely Received"}</h4>
+                                            <p className="text-zinc-400 font-medium">{content.contactTransmissionReceivedDesc || "The Command Center will process your transmission and respond within the next 24-hour cycle."}</p>
                                         </div>
                                         <Button
                                             variant="outline"
                                             className="border-zinc-800 text-zinc-400 hover:text-white"
                                             onClick={() => setIsSubmitted(false)}
                                         >
-                                            New Transmission
+                                            {content.contactExecuteTransmissionBtn || "New Transmission"}
                                         </Button>
                                     </motion.div>
                                 ) : (
@@ -282,16 +282,16 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
 
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Operator Identity</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactOperatorIdentityLabel}</label>
                                                 <Input
-                                                    placeholder="Your Name"
+                                                    placeholder={content.contactFormNamePlaceholder || "Your Name"}
                                                     className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.name ? 'border-red-500/50' : ''}`}
                                                     {...register('name')}
                                                 />
                                                 {errors.name && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.name.message}</p>}
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Signal Hash (Email)</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactSignalHashLabel}</label>
                                                 <Input
                                                     placeholder="example@secure.com"
                                                     className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.email ? 'border-red-500/50' : ''}`}
@@ -302,7 +302,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Mission Type</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionTypeLabel}</label>
                                             <Select
                                                 onValueChange={(value) => setValue('topic', value as ContactFormData['topic'])}
                                                 defaultValue="general"
@@ -339,7 +339,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                                     exit={{ opacity: 0, height: 0 }}
                                                     className="space-y-2"
                                                 >
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Transmission Reference (Order ID)</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionReferenceLabel}</label>
                                                     <Input
                                                         placeholder="#MRX-XXXXXX"
                                                         className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.orderId ? 'border-red-500/50' : ''}`}
@@ -351,7 +351,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </AnimatePresence>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Transmission Header</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionHeaderLabel}</label>
                                             <Input
                                                 placeholder="Purpose of signal..."
                                                 className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.subject ? 'border-red-500/50' : ''}`}
@@ -361,7 +361,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Mission Payload (Message)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionPayloadLabel}</label>
                                             <Textarea
                                                 placeholder="Detailed transmission data..."
                                                 rows={5}
@@ -412,12 +412,12 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                             {isSubmitting ? (
                                                 <span className="flex items-center gap-2">
                                                     <Zap className="w-5 h-5 animate-spin" />
-                                                    SYCHRONIZING...
+                                                    {content.contactSynchronizingBtn}
                                                 </span>
                                             ) : (
                                                 <>
                                                     <Send className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
-                                                    EXECUTE TRANSMISSION
+                                                    {content.contactExecuteTransmissionBtn}
                                                 </>
                                             )}
 

@@ -23,34 +23,30 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <BrandLogo className="text-5xl mb-6 mx-auto" />
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">
-                            {isRTL ? "من نحن" : "About Us"}
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4 text-balance">
+                            {content.aboutPageTitle}
                         </h1>
                         <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed italic">
-                            {isRTL
-                                ? "الموسوعة العلمية الأولى والوحيدة التي تدمج العلم بالتجربة في عالم بناء الأجسام."
-                                : "The first and only scientific encyclopedia that blends science with experience in the world of bodybuilding."}
+                            {content.aboutPageContent}
                         </p>
                     </motion.div>
                 </div>
             </section>
 
-            {/* Mission & Vision */}
+            {/* Mission & Story */}
             <div className="grid md:grid-cols-2 gap-8">
                 <motion.div
                     whileHover={{ y: -5 }}
                     className="p-10 rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800 space-y-6"
                 >
                     <div className="w-16 h-16 rounded-2xl bg-gold-500/20 flex items-center justify-center text-gold-500">
-                        <Target className="w-8 h-8" />
+                        <BookOpen className="w-8 h-8" />
                     </div>
                     <h3 className="text-3xl font-black uppercase tracking-tight">
-                        {isRTL ? "رسالتنا" : "Our Mission"}
+                        {content.aboutPageStoryTitle}
                     </h3>
                     <p className="text-zinc-400 text-lg leading-relaxed">
-                        {isRTL
-                            ? "تمكين الرياضيين بالأدوات العلمية والبروتوكولات الآمنة لتحقيق نتائج استثنائية دون المساس بالصحة العامة."
-                            : "Empowering athletes with scientific tools and safe protocols to achieve exceptional results without compromising health."}
+                        {content.aboutPageStory}
                     </p>
                 </motion.div>
 
@@ -59,15 +55,13 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
                     className="p-10 rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800 space-y-6"
                 >
                     <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-500">
-                        <Globe className="w-8 h-8" />
+                        <Target className="w-8 h-8" />
                     </div>
                     <h3 className="text-3xl font-black uppercase tracking-tight">
-                        {isRTL ? "رؤيتنا" : "Our Vision"}
+                        {content.aboutPageMissionTitle}
                     </h3>
                     <p className="text-zinc-400 text-lg leading-relaxed">
-                        {isRTL
-                            ? "أن نكون المرجع العالمي الأول والآمن لرفع كفاءة الأداء البدني القائم على الأدلة العلمية الحديثة."
-                            : "To be the world's leading safe reference for enhancing physical performance based on modern scientific evidence."}
+                        {content.aboutPageMission}
                     </p>
                 </motion.div>
             </div>
@@ -75,7 +69,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
             {/* Values */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                    { icon: Shield, label: isRTL ? "الأمان" : "Safety", color: "text-green-500" },
+                    { icon: Shield, label: content.labReference.labels.low || (isRTL ? "الأمان" : "Safety"), color: "text-green-500" },
                     { icon: BookOpen, label: isRTL ? "العلم" : "Science", color: "text-blue-500" },
                     { icon: Star, label: isRTL ? "التميز" : "Excellence", color: "text-gold-500" },
                     { icon: Users, label: isRTL ? "المجتمع" : "Community", color: "text-purple-500" },
@@ -91,12 +85,12 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
             <section className="p-12 rounded-[3rem] bg-gradient-to-r from-zinc-900 via-zinc-900 to-gold-500/5 border border-zinc-800">
                 <div className="max-w-3xl space-y-6">
                     <h2 className="text-4xl font-black uppercase tracking-tighter">
-                        {isRTL ? "عن المؤلف" : "About the Author"}
+                        {content.authorSection}
                     </h2>
                     <p className="text-xl text-zinc-400 italic font-medium leading-relaxed">
-                        {isRTL
+                        {content.authorBio || (isRTL
                             ? "جورج موريس، باحث وخبير في العلوم الفيزيولوجية الرياضية، كرس سنوات من البحث لترجمة أصعب البروتوكولات العلمية إلى خطط عملية قابلة للتطبيق."
-                            : "George Mourice, a researcher and expert in sports physiological sciences, has dedicated years to translating the most complex scientific protocols into actionable plans."}
+                            : "George Mourice, a researcher and expert in sports physiological sciences, has dedicated years to translating the most complex scientific protocols into actionable plans.")}
                     </p>
                 </div>
             </section>

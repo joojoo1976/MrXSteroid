@@ -580,6 +580,74 @@ export interface ContentStrings {
   homeLink?: string;
   viewOnMap?: string;
 
+  // Branded Contact Form
+  contactOperatorIdentityLabel?: string;
+  contactSignalHashLabel?: string;
+  contactMissionTypeLabel?: string;
+  contactTransmissionReferenceLabel?: string;
+  contactTransmissionHeaderLabel?: string;
+  contactMissionPayloadLabel?: string;
+  contactExecuteTransmissionBtn?: string;
+  contactSynchronizingBtn?: string;
+  contactTransmissionReceivedTitle?: string;
+  contactTransmissionReceivedDesc?: string;
+  contactTransmissionInterrupted?: string;
+  contactDirectSecureLine?: string;
+  contactSupportCommandCenter?: string;
+
+  // Support & FAQ Additional
+  supportHeroDesc?: string;
+  supportSearchPlaceholder?: string;
+  supportQuickLinksTitle?: string;
+  supportUserGuide?: string;
+  supportNotFoundText?: string;
+  supportContactDirect?: string;
+  supportEmailTitle?: string;
+  supportWhatsAppTitle?: string;
+  supportHoursTitle?: string;
+  supportHoursValue?: string;
+  faqAnotherQuestion?: string;
+  faqExpertHelpText?: string;
+  faqContactBtn?: string;
+  faqSupportBtn?: string;
+
+  // Privacy & Terms
+  privacyCollectionTitle?: string;
+  privacyCollectionDesc?: string;
+  privacySecurityTitle?: string;
+  privacySecurityDesc?: string;
+  privacyRightsTitle?: string;
+  privacyRightsDesc?: string;
+  privacyComplianceNote?: string;
+  termsEligibilityTitle?: string;
+  termsEligibilityDesc?: string;
+  termsPropertyTitle?: string;
+  termsPropertyDesc?: string;
+  termsLiabilityTitle?: string;
+  termsLiabilityDesc?: string;
+  termsAgreeBtn?: string;
+
+  // Landing & Pricing Polish
+  landingAvailableIn?: string;
+  landingSubtitle?: string;
+  landingDescription?: string;
+  landingFlashSale?: string;
+  landingSavePercentage?: string;
+  landingSecurePayment?: string;
+  landingClaimDownload?: string;
+  landingLiveTrends?: string;
+  landingWeekIndex?: string;
+  landingTrendsDisclaimer?: string;
+  landingExclusiveSecrets?: string;
+  landingMoneyBackGuarantee?: string;
+  pricingInitialize?: string;
+  pricingBestValue?: string;
+  pricingBilledInUsd?: string;
+  pricingAddCoaching?: string;
+  pricingCoachingRate?: string;
+  pricingRequiresStats?: string;
+  pricingCoachingUnlock?: string;
+
   // Cookie Consent
   cookieTitle?: string;
   cookieMessage?: string;

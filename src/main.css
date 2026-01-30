@@ -5,99 +5,87 @@
 /* --- CSS VARIABLES & THEMES --- */
 @layer base {
   :root {
-    /* Enforced Dark Mode (Mr. X Standard) */
-    --background: 0 0% 2%;
-    /* #050505 */
-    --foreground: 210 40% 98%;
+    /* Mr. X Elite Theme (Carbon & Gold) */
+    --background: 0 0% 4%; /* #0a0a0a Carbon Black */
+    --foreground: 45 20% 96%; /* Warm White */
 
-    --card: 0 0% 3.5%;
-    /* Slightly lighter for cards ~#090909 */
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 6%; /* #0f0f0f */
+    --card-foreground: 45 20% 96%;
 
-    --popover: 0 0% 2%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 45 20% 96%;
 
-    --primary: 46 65% 52%;
-    /* Gold #D4AF37 as Primary */
-    --primary-foreground: 224 71% 4%;
+    --primary: 46 85% 55%; /* #f4c430 Vibrant Gold */
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 9%; /* Dark Carbon */
+    --secondary-foreground: 45 20% 96%;
 
-    --muted: 222 47% 11%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 222 47% 11%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 125 100% 54%; /* #39FF14 Fluorescent Green */
+    --accent-foreground: 0 0% 5%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 46 65% 52%;
-    /* Gold Ring */
+    --border: 46 30% 15%; /* Subtle Gold Border */
+    --input: 0 0% 12%;
+    --ring: 46 85% 55%; /* Gold Ring */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Mr. X Gold Palette (#D4AF37) */
-    --gold-500: 46 65% 52%;
-    --gold-400: 46 70% 60%;
-    --gold-600: 46 60% 42%;
+    /* Mr. X Gold Palette */
+    --gold-500: 46 85% 55%;
+    --gold-400: 46 90% 65%;
+    --gold-600: 46 80% 45%;
 
     /* Sidebar Variables (Dark) */
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 46 65% 52%;
-    --sidebar-primary-foreground: 224 71% 4%;
-    --sidebar-accent: 222 47% 11%;
-    --sidebar-accent-foreground: 46 65% 52%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 46 65% 52%;
-    --sidebar-width: 16rem;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 45 20% 96%;
+    --sidebar-primary: 46 85% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 46 85% 55%;
+    --sidebar-border: 46 20% 15%;
+    --sidebar-ring: 46 85% 55%;
+    --sidebar-width: 17rem;
     --sidebar-width-mobile: 18rem;
     --sidebar-width-icon: 3rem;
-
-    /* Brand Palette (Legacy/Ref) */
-    --lemon-yellow: #FFF700;
-    --navy-blue: #000080;
-    --sky-blue: #03A9F4;
-    --red-color: #FF1744;
-    --dark-red: #B71C1C;
-    --green-color: #8BC34A;
-    --med-blue: #0277BD;
   }
 
   /* .dark class is redundant but kept for compatibility */
+  /* .dark class overrides */
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 224 71% 4%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 46 65% 52%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 47% 11%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 222 47% 11%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    --background: 0 0% 4%;
+    --foreground: 45 20% 96%;
+    --card: 0 0% 6%;
+    --card-foreground: 45 20% 96%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 45 20% 96%;
+    --primary: 46 85% 55%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 45 20% 96%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 125 100% 54%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 46 65% 52%;
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 46 65% 52%;
-    --sidebar-primary-foreground: 224 71% 4%;
-    --sidebar-accent: 222 47% 11%;
-    --sidebar-accent-foreground: 46 65% 52%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 46 65% 52%;
-    --gold-500: 46 65% 52%;
+    --border: 46 30% 15%;
+    --input: 0 0% 12%;
+    --ring: 46 85% 55%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 45 20% 96%;
+    --sidebar-primary: 46 85% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 46 85% 55%;
+    --sidebar-border: 46 20% 15%;
+    --sidebar-ring: 46 85% 55%;
+    --gold-500: 46 85% 55%;
   }
 
   /* Theme Overrides */

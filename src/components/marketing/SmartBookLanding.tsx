@@ -147,7 +147,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     const handlePayment = () => {
         if (window.SpaceRemit) {
             window.SpaceRemit.Pay({
-                publicKey: 'pk_test_POTENTIAL_CLIENT', // Replace with config if available
+                publicKey: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'pk_test_DEFAULT', // Use env variable
                 amount: BASE_PRICE_USD * loc.rate,
                 currency: loc.currency,
                 productName: 'Mr. X-Steroid Complete Guide',
@@ -195,15 +195,15 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gold-500/10 border-2 border-gold-500/20 text-gold-500 text-lg font-black shadow-[0_0_20px_rgba(234,179,8,0.2)] animate-glow"
                         >
                             <Globe className="w-5 h-5 animate-spin-slow" />
-                            {loc.isRTL ? `متاح الآن في ${loc.countryCode}` : `Now Available in ${loc.countryCode}`}
+                            {content.landingAvailableIn} {loc.countryCode}
                         </motion.div>
 
                         <motion.h1
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500 animate-text-flash tracking-tighter"
+                            className="text-6xl md:text-8xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500 animate-text-flash tracking-tighter text-balance"
                         >
-                            <StyledBrandName text={loc.isRTL ? 'دليلك السري لتحول جذري' : 'The Secret Protocol for Maximum Results'} />
+                            <StyledBrandName text={content.landingSubtitle} />
                         </motion.h1>
 
                         <motion.p
@@ -212,9 +212,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             transition={{ delay: 0.3 }}
                             className="text-2xl text-zinc-400 leading-relaxed max-w-2xl font-medium italic"
                         >
-                            <StyledBrandName text={loc.isRTL
-                                ? 'انضم إلى آلاف المحترفين الذين كسروا حواجزهم الجينية باستخدام أكثر التقنيات تقدماً وبحثاً.'
-                                : 'Join thousands of professionals who broke their genetic limits using the most advanced and researched techniques.'} />
+                            <StyledBrandName text={content.landingDescription} />
                         </motion.p>
 
                         {/* Updated Flashy Price Card */}
@@ -223,7 +221,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             className="p-10 rounded-[3rem] bg-background/50 border-4 border-gold-500/30 backdrop-blur-3xl relative group shadow-[0_0_50px_rgba(234,179,8,0.1)] card-shine animate-glow"
                         >
                             <div className="absolute -top-6 -right-6 bg-gold-500 text-black px-6 py-2 rounded-full font-black text-lg shadow-[0_0_30px_rgba(234,179,8,0.5)] animate-bounce">
-                                {loc.isRTL ? 'خصم مذهل' : 'FLASH SALE'}
+                                {content.landingFlashSale}
                             </div>
 
                             <div className="flex items-center gap-6 flex-wrap">
@@ -238,14 +236,14 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                     <span className="text-zinc-500 line-through text-3xl font-black">
                                         {new Intl.NumberFormat(loc.locale, { style: 'currency', currency: loc.currency }).format(BASE_PRICE_USD * 2.5 * loc.rate)}
                                     </span>
-                                    <span className="text-gold-500 text-base font-black uppercase tracking-widest mt-1">SAVE 60% TODAY</span>
+                                    <span className="text-gold-500 text-base font-black uppercase tracking-widest mt-1">{content.landingSavePercentage}</span>
                                 </div>
                             </div>
 
                             <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
                                 <p className="text-lg text-zinc-400 flex items-center gap-3 font-bold">
                                     <ShieldCheck className="w-6 h-6 text-green-500 animate-pulse" />
-                                    {loc.isRTL ? 'دفع آمن بنسبة 100%' : '100% SECURE & ENCRYPTED'}
+                                    {content.landingSecurePayment}
                                 </p>
                                 <Zap className="w-8 h-8 text-gold-500 animate-pulse fill-gold-500" />
                             </div>
@@ -258,7 +256,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             className="w-full sm:w-auto px-16 py-6 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] flex items-center justify-center gap-4 transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
                         >
                             <span className="relative z-10">
-                                {loc.isRTL ? 'احصل على نسختك الآن' : 'CLAIM YOUR DOWNLOAD'}
+                                {content.landingClaimDownload}
                             </span>
                             <ArrowRight className={`w-8 h-8 relative z-10 ${loc.isRTL ? 'rotate-180' : ''} group-hover:translate-x-2 transition-transform`} />
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
@@ -282,8 +280,8 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                         <TrendingUp className="w-8 h-8" />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-2xl tracking-tight">{loc.isRTL ? 'تريندات البحث الحالية' : 'LIVE SEARCH TRENDS'}</h4>
-                                        <p className="text-base text-zinc-500 font-black tracking-widest uppercase">{loc.isRTL ? `الأسبوع رقم ${weekNumber}` : `WEEK #${weekNumber} INDEX`}</p>
+                                        <h4 className="font-black text-2xl tracking-tight">{content.landingLiveTrends}</h4>
+                                        <p className="text-base text-zinc-500 font-black tracking-widest uppercase">{content.landingWeekIndex?.replace('#{week}', weekNumber.toString())}</p>
                                     </div>
                                 </div>
 
@@ -302,9 +300,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                 <div className="mt-10 pt-10 border-t border-white/5 flex items-start gap-6">
                                     <Info className="w-8 h-8 text-zinc-600 mt-1" />
                                     <p className="text-base text-zinc-500 leading-relaxed italic font-medium">
-                                        <StyledBrandName text={loc.isRTL
-                                            ? 'تم اشتقاق هذه الكلمات بناءً على أعلى تريندات البحث في Google لهذا الأسبوع لضمان وصول المحتوى للجمهور المستهدف بدقة.'
-                                            : 'These keywords are derived based on the highest Google Search trends for this week to ensure content reaches the targeted audience accurately.'} />
+                                        <StyledBrandName text={content.landingTrendsDisclaimer} />
                                     </p>
                                 </div>
                             </div>
@@ -318,7 +314,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             >
                                 <BookOpen className="w-10 h-10 text-gold-500 mb-6 animate-pulse" />
                                 <h5 className="font-black text-2xl mb-2">{loc.isRTL ? '+300 صفحة' : '300+ PAGES'}</h5>
-                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{loc.isRTL ? 'أسرار حصرية' : 'EXCLUSIVE SECRETS'}</p>
+                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{content.landingExclusiveSecrets}</p>
                             </motion.div>
                             <motion.div
                                 whileHover={{ y: -10 }}
@@ -326,7 +322,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             >
                                 <DollarSign className="w-10 h-10 text-emerald-500 mb-6 animate-pulse" />
                                 <h5 className="font-black text-2xl mb-2">{loc.isRTL ? 'ضمان استرداد' : 'MONEY BACK'}</h5>
-                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{loc.isRTL ? 'لمدة 30 يوماً' : '30-DAY GUARANTEE'}</p>
+                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{content.landingMoneyBackGuarantee}</p>
                             </motion.div>
                         </div>
                     </div>

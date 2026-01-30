@@ -1,14 +1,14 @@
+
 import { createClient } from '@supabase/supabase-js';
+import { env } from '../config/env';
 
-// Use VITE_ prefix for client-side environment variables in Vite
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase URL or Anon Key is missing. Access valid credentials in ENV_SETUP_GUIDE.md');
-}
-
+/**
+ * Enterprise-Grade Supabase Client Instance (Singleton)
+ * 
+ * Uses strict Zod validation from src/config/env.ts to guarantee 
+ * that the client is initialized with valid credentials.
+ */
 export const supabase = createClient(
-    supabaseUrl || '',
-    supabaseAnonKey || ''
+    env.VITE_SUPABASE_URL,
+    env.VITE_SUPABASE_ANON_KEY
 );
