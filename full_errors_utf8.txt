@@ -1,0 +1,11 @@
+﻿src/components/auth/AuthGuard.tsx(46,42): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/checkout/CheckoutForm.tsx(253,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated"; }): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "orders", never, "POST">', gave the following error.
+    Argument of type '{ email: string; fullName: string; tier: ProductVariant; language: "en" | "ar"; amount: number; country: string; address: string; city: string; zip_code: string; shipping_provider: string; body_stats: { ...; }; }[]' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated"; defaultToNull?: boolean; }): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "orders", never, "POST">', gave the following error.
+    Type '{ email: string; fullName: string; tier: ProductVariant; language: "en" | "ar"; amount: number; country: string; address: string; city: string; zip_code: string; shipping_provider: string; body_stats: { ...; }; }' is not assignable to type 'never'.
+src/components/marketing/ContactSection.tsx(114,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated"; }): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "contact_messages", never, "POST">', gave the following error.
+    Argument of type '{ name: string; email: string; subject: string; topic: "order" | "general" | "technical" | "wholesale" | "consultation"; message: string; order_id: string; user_agent: string; }[]' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated"; defaultToNull?: boolean; }): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "contact_messages", never, "POST">', gave the following error.
+    Type '{ name: string; email: string; subject: string; topic: "order" | "general" | "technical" | "wholesale" | "consultation"; message: string; order_id: string; user_agent: string; }' is not assignable to type 'never'.

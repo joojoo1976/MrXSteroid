@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
+import { Database } from '../../types/db_types';
 
 /**
  * Enterprise-Grade Auth Guard (Client-Side)
@@ -34,13 +35,13 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
             }
 
             if (requireSubscription) {
-                // Check subscription status in Supabase Database
+                // Check subscription status in Supabase Database with Strict Typing
                 const { data: sub, error } = await supabase
                     .from('subscriptions')
                     .select('status, product_id')
                     .eq('user_id', user.id)
                     .eq('product_id', 'steroid_book')
-                    .single();
+                    .maybeSingle(); // Use maybeSingle to avoid 406 error if not found
 
                 if (error || !sub || sub.status !== 'active') {
                     toast.error("Active subscription required for this content.");

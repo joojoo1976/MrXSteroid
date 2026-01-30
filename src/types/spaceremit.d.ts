@@ -26,3 +26,23 @@ export type InitiatePaymentPayload = {
     callback_url: string;
     metadata?: Record<string, unknown>;
 };
+
+declare global {
+    interface Window {
+        SpaceRemit: {
+            Pay: (options: {
+                amount: number;
+                currency: string;
+                email?: string;
+                description?: string;
+                customer_email?: string;
+                customer_name?: string;
+                publicKey?: string;
+                productName?: string;
+                productDescription?: string;
+                referenceId?: string;
+                metadata?: Record<string, unknown>;
+            }) => void;
+        };
+    }
+}

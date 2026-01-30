@@ -7,13 +7,7 @@ export enum Language {
   JA = 'ja'
 }
 
-declare global {
-  interface Window {
-    SpaceRemit?: {
-      Pay: (paymentDetails: Record<string, unknown>) => void;
-    };
-  }
-}
+
 
 export enum Currency {
   USD = 'USD',

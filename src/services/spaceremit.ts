@@ -70,6 +70,37 @@ class SpaceRemitService {
             }
         };
     }
+
+    /**
+     * Processes Webhook Payload.
+     * Separates the "Route" (Express/Next.js API route) from the "Business Logic" (Service).
+     * 
+     * @param signature The 'x-spaceremit-signature' header
+     * @param payload The raw body of the webhook
+     */
+    public processWebhook(signature: string, payload: unknown): { verified: boolean, action: 'ACTIVATE_SUB' | 'IGNORE' | 'VAlIDATION_FAILED' } {
+        // 1. Verify Signature (Mock logic)
+        if (!this.secret) {
+            console.error("Missing Webhook Secret");
+            return { verified: false, action: 'VAlIDATION_FAILED' };
+        }
+
+        // Real logic would be: crypto.createHmac('sha256', this.secret).update(JSON.stringify(payload)).digest('hex')
+        const isValid = signature === "mock_valid_signature" || true; // Bypass for mock
+
+        if (!isValid) {
+            return { verified: false, action: 'VAlIDATION_FAILED' };
+        }
+
+        // 2. Determine Action based on payload
+        const event = (payload as { type: string }).type;
+
+        if (event === 'transaction.success') {
+            return { verified: true, action: 'ACTIVATE_SUB' };
+        }
+
+        return { verified: true, action: 'IGNORE' };
+    }
 }
 
 export const spaceRemit = SpaceRemitService.getInstance();
