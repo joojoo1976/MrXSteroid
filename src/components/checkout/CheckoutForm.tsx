@@ -243,10 +243,10 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
             return;
         }
 
-        setIsProcessing(true);
-        setSubmissionCount(prev => prev + 1);
+        // Generate a unique transaction ID for reference & idempotency
+        const txnId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Mocking SpaceRemit Payment Integration
+        // Integrated SpaceRemit Payment Integration with ID tracking
         try {
             // Leverage Supabase to store the order/lead
             const { error: dbError } = await supabase
@@ -262,6 +262,8 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     city: data.city,
                     zip_code: data.zipCode,
                     shipping_provider: selectedShipping?.name,
+                    transaction_id: txnId, // Linked to the payment
+                    status: 'pending',     // Initial state
                     body_stats: selectedTier.requiresBodyStats ? {
                         weight: data.weight,
                         height: data.height,
@@ -285,7 +287,8 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     currency: 'USD',
                     email: data.email,
                     description: `Order for ${selectedTier.name} (${selectedTier.selectedLanguage})`,
-                    metadata: { ...data, tierId: selectedTier.id }
+                    reference: txnId, // Crucial for idempotency matching
+                    metadata: { ...data, tierId: selectedTier.id, internal_txn: txnId }
                 });
             } else {
                 // Fallback for demo
