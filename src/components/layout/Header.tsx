@@ -221,7 +221,7 @@ const Header: React.FC<HeaderProps> = ({
                     <img src={getProfilePic(user) || ''} alt="Profile" className="w-full h-full object-cover" />
                   </div>
                   <span className="hidden lg:inline text-sm font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-gold-500 transition-colors">
-                    {user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    {user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                 </button>
                 <button
@@ -369,7 +369,7 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="w-8 h-8 rounded-full border border-gold-500/50 overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                       <img src={getProfilePic(user) || ''} alt="Profile" className="w-full h-full object-cover" />
                     </div>
-                    <span>{user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
+                    <span>{user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
                   </button>
                   <button onClick={() => { onLogout?.(); setIsMobileMenuOpen(false); }} className="w-full py-4 rounded-xl border border-zinc-200 dark:border-zinc-800 font-bold text-center text-red-500 flex items-center justify-center gap-2">
                     <LogOut className="w-4 h-4" /> {content.logout || "Logout"}

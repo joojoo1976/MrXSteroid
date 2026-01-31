@@ -34,7 +34,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     }
 
     const userData = user.user_metadata || {};
-    const displayName = userData.username || userData.full_name || user.email?.split('@')[0];
+    const displayName = userData.user_name || userData.username || userData.full_name || user.email?.split('@')[0];
     const emailHash = md5(user.email?.toLowerCase().trim() || '');
     const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=400`;
     const profilePic = userData.avatar_url || gravatarUrl;
@@ -151,7 +151,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                     </div>
                                     <div>
                                         <p className="text-xs text-zinc-500 font-bold uppercase">{content.usernameLabel}</p>
-                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.username || '-'}</p>
+                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.user_name || userData.username || '-'}</p>
                                     </div>
                                 </div>
 

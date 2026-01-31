@@ -62,18 +62,26 @@ class ErrorHandlerService {
 
         // 2. Handle Supabase-specific error objects or plain objects with message
         if (error && typeof error === 'object') {
-            const errObj = error as Record<string, any>;
-            const message = errObj.message || errObj.error_description || errObj.error || 'An unexpected error occurred.';
+            const errObj = error as Record<string, unknown>;
 
-            // Check for common error strings
-            const msgStr = String(message);
-            if (msgStr.toLowerCase().includes('network') || msgStr.toLowerCase().includes('fetch')) {
+            // Extract the most likely message property safely using string indexing
+            const rawMessage = errObj['message'] || errObj['error_description'] || errObj['error'] || errObj['msg'];
+
+            // Safely convert to string, handling objects that might be returned
+            let message = 'An unexpected error occurred.';
+            if (rawMessage) {
+                message = typeof rawMessage === 'object' ? JSON.stringify(rawMessage) : String(rawMessage);
+            }
+
+            // Debugging help for the technician through the UI
+            const msgStr = message.toLowerCase();
+            if (msgStr.includes('network') || msgStr.includes('fetch')) {
                 return { type: ErrorType.NETWORK, message: 'Network error. Verify your connection.', originalError: error };
             }
 
             return {
-                type: (errObj.status || errObj.code) ? ErrorType.AUTH : ErrorType.UNKNOWN,
-                message: msgStr,
+                type: (errObj['status'] || errObj['code']) ? ErrorType.AUTH : ErrorType.UNKNOWN,
+                message: message,
                 originalError: error
             };
         }

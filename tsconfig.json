@@ -9,6 +9,7 @@
       "DOM",
       "DOM.Iterable"
     ],
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "types": [
       "node"
@@ -24,6 +25,7 @@
       ]
     },
     "allowImportingTsExtensions": true,
+    "strict": true,
     "noEmit": true
   },
   "exclude": [
