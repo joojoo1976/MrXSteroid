@@ -2,37 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200..900&family=Inter:wght@100..900&display=swap');
+
 /* --- CSS VARIABLES & THEMES --- */
 @layer base {
   :root {
     /* Mr. X Elite Theme (Carbon & Gold) */
-    --background: 0 0% 4%; /* #0a0a0a Carbon Black */
-    --foreground: 45 20% 96%; /* Warm White */
+    --background: 0 0% 4%;
+    /* #0a0a0a Carbon Black */
+    --foreground: 45 20% 96%;
+    /* Warm White */
 
-    --card: 0 0% 6%; /* #0f0f0f */
+    --card: 0 0% 6%;
+    /* #0f0f0f */
     --card-foreground: 45 20% 96%;
 
     --popover: 0 0% 4%;
     --popover-foreground: 45 20% 96%;
 
-    --primary: 46 85% 55%; /* #f4c430 Vibrant Gold */
+    --primary: 46 85% 55%;
+    /* #f4c430 Vibrant Gold */
     --primary-foreground: 0 0% 5%;
 
-    --secondary: 0 0% 9%; /* Dark Carbon */
+    --secondary: 0 0% 9%;
+    /* Dark Carbon */
     --secondary-foreground: 45 20% 96%;
 
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 125 100% 54%; /* #39FF14 Fluorescent Green */
+    --accent: 125 100% 54%;
+    /* #39FF14 Fluorescent Green */
     --accent-foreground: 0 0% 5%;
 
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 46 30% 15%; /* Subtle Gold Border */
+    --border: 46 30% 15%;
+    /* Subtle Gold Border */
     --input: 0 0% 12%;
-    --ring: 46 85% 55%; /* Gold Ring */
+    --ring: 46 85% 55%;
+    /* Gold Ring */
 
     --radius: 0.75rem;
 
@@ -163,28 +173,17 @@
   h4,
   h5,
   h6 {
-    font-family: 'Calibri Light', 'Cairo', 'Assistant', 'Inter', sans-serif !important;
-  }
-
-  /* Multi-Language Font Support */
-  html[lang='ja'],
-  html[lang='ja'] * {
-    font-family: 'Noto Sans JP', 'Calibri Light', sans-serif !important;
-  }
-
-  html[lang='de'],
-  html[lang='de'] * {
-    font-family: 'Inter', 'Calibri Light', sans-serif !important;
+    font-family: 'Inter', 'Cairo', 'Assistant', sans-serif !important;
   }
 
   html[lang='ar'],
   html[lang='ar'] * {
-    font-family: 'Calibri Light', 'Cairo', sans-serif !important;
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
   }
 
   html[lang='en'],
   html[lang='en'] * {
-    font-family: 'Calibri Light', 'Inter', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
   }
 
   html {
@@ -232,73 +231,9 @@
   }
 
   /* RTL Specific Helpers */
-  .rtl\:pr-4 {
-    padding-right: 1rem;
-  }
-
-  .rtl\:pl-4 {
-    padding-left: 1rem;
-  }
-
-  .rtl\:mr-4 {
-    margin-right: 1rem;
-  }
-
-  .rtl\:ml-4 {
-    margin-left: 1rem;
-  }
-
-  .rtl\:flex-row-reverse {
-    flex-direction: row-reverse;
-  }
-
-  .rtl\:text-right {
-    text-align: right;
-  }
-
-  .rtl\:text-left {
-    text-align: left;
-  }
-
-  .rtl\:rotate-180 {
-    transform: rotate(180deg);
-  }
-
-  .rtl\:scale-x-\[-1\] {
-    transform: scaleX(-1);
-  }
-
-  .rtl\:right-0 {
-    right: 0;
-  }
-
-  .rtl\:left-0 {
-    left: 0;
-  }
-
-  .rtl\:right-auto {
-    right: auto;
-  }
-
-  .rtl\:left-auto {
-    left: auto;
-  }
-
-  .rtl-grid-reverse {
-    direction: rtl;
-  }
-
   .force-ltr {
     direction: ltr !important;
     unicode-bidi: isolate;
-  }
-
-  html[dir='rtl'] .text-left {
-    text-align: right !important;
-  }
-
-  html[dir='rtl'] .text-right {
-    text-align: left !important;
   }
 
   /* Selection Color */

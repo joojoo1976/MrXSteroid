@@ -9,7 +9,7 @@ interface GDPRPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const GDPRPage: React.FC<GDPRPageProps> = ({ content, navigateTo }) => {
+const GDPRPage: React.FC<GDPRPageProps> = ({ content, navigateTo: _navigateTo }) => {
     const { isRTL } = usePreferences();
     const rights = [
         { title: isRTL ? "الحق في الوصول" : "Right to Access", icon: UserCheck },
@@ -25,7 +25,7 @@ const GDPRPage: React.FC<GDPRPageProps> = ({ content, navigateTo }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center space-y-4"
             >
-                <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto text-blue-500 mb-6 shadow-2xl">
+                <div className="w-20 h-20 bg-gold-500/10 rounded-3xl flex items-center justify-center mx-auto text-gold-500 mb-6 shadow-2xl">
                     <Lock className="w-10 h-10" />
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
@@ -55,7 +55,7 @@ const GDPRPage: React.FC<GDPRPageProps> = ({ content, navigateTo }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {rights.map((right, idx) => (
                     <div key={idx} className="p-6 rounded-[2rem] bg-zinc-900/30 border border-zinc-800 text-center space-y-4 hover:border-blue-500/50 transition-colors">
-                        <right.icon className="w-8 h-8 mx-auto text-blue-500" />
+                        <right.icon className="w-8 h-8 mx-auto text-gold-500" />
                         <span className="block font-black uppercase text-xs tracking-widest leading-tight">{right.title}</span>
                     </div>
                 ))}

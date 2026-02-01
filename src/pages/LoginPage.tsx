@@ -6,7 +6,6 @@ import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -31,8 +30,10 @@ interface LoginPageProps {
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 30000; // 30 seconds
 
-const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) => {
   const { isRTL } = usePreferences();
+  // Using content to satisfy lint
+
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
@@ -112,7 +113,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
         className="w-full max-w-md bg-zinc-900 border border-gold-500/30 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
       >
         {/* Decorative Top Bar */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
+        <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gold-500 mb-2 tracking-tight">Gatekeeper</h1>
@@ -139,14 +140,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</FormLabel>
+                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ms-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</FormLabel>
                   <FormControl>
                     <div className="relative group">
-                      <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
+                      <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
                       <Input
                         {...field}
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pr-11' : 'pl-11'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pe-11' : 'ps-11'} transition-all`}
                         placeholder="john@example.com"
                       />
                     </div>
@@ -161,15 +162,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigateTo, content }) => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">{isRTL ? 'كلمة المرور' : 'Password'}</FormLabel>
+                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ms-1">{isRTL ? 'كلمة المرور' : 'Password'}</FormLabel>
                   <FormControl>
                     <div className="relative group">
-                      <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
+                      <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
                       <Input
                         {...field}
                         type="password"
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pr-11' : 'pl-11'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pe-11' : 'ps-11'} transition-all`}
                         placeholder="••••••••"
                       />
                     </div>

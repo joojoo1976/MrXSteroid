@@ -1,1 +1,0 @@
-﻿src/components/marketing/SmartBookLanding.tsx(150,17): error TS2353: Object literal may only specify known properties, and 'publicKey' does not exist in type '{ amount: number; currency: string; email?: string; description?: string; customer_email?: string; customer_name?: string; metadata?: Record<string, unknown>; }'.

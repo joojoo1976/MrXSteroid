@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { SecureStorage } from '../utils/secureStorage';
 import { Language, ContentStrings, Theme } from '../types';
-import { arContent, enContent, deContent, jaContent } from '../i18n';
+import { arContent, enContent } from '../i18n';
 import {
     UnitSystem,
     getSystemFromRegion,
@@ -20,8 +20,6 @@ const resolveContent = (lang: Language): ContentStrings => {
     const map: Record<Language, ContentStrings> = {
         [Language.AR]: arContent,
         [Language.EN]: enContent,
-        [Language.DE]: { ...enContent, ...deContent } as ContentStrings,
-        [Language.JA]: { ...enContent, ...jaContent } as ContentStrings,
     };
     return map[lang] || enContent;
 };
@@ -126,13 +124,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         document.documentElement.lang = language;
         document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 
-        if (isRTL) {
-            document.body.classList.add('font-arabic');
-            document.body.classList.remove('font-sans');
-        } else {
-            document.body.classList.add('font-sans');
-            document.body.classList.remove('font-arabic');
-        }
+        // Font and direction management is now centralized in App.tsx
     }, [language]);
 
     // Side Effects: Theme

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,6 @@ import {
     Youtube,
     Copy,
     CheckCircle2,
-    AlertCircle,
     Clock,
     Globe,
     MessageSquare,
@@ -141,8 +140,8 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
         <section id="contact" className={`py-20 bg-[#050505] relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
             {/* Mesh Gradient Background */}
             <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/20 blur-[120px] rounded-full animate-float-slow"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gold-600/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-5s]"></div>
+                <div className="absolute top-[-10%] start-[-10%] w-[40%] h-[40%] bg-gold-500/20 blur-[120px] rounded-full animate-float-slow"></div>
+                <div className="absolute bottom-[-10%] end-[-10%] w-[40%] h-[40%] bg-gold-600/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-5s]"></div>
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
@@ -150,7 +149,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
 
                     {/* Left Side: Intel & Direct Channels */}
                     <motion.div
-                        initial={{ opacity: 0, x: -30 }}
+                        initial={{ opacity: 0, x: isRTL ? 30 : -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         className="flex-1 space-y-12"
@@ -197,7 +196,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                             </motion.div>
 
                             {/* Author Info */}
-                            <div className="flex items-center gap-6 p-6 border-l-4 border-gold-500 bg-zinc-900/30 rounded-r-3xl">
+                            <div className="flex items-center gap-6 p-6 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-3xl">
                                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gold-500/30">
                                     <img src="/author-small.jpg" alt="George Mourice" className="w-full h-full object-cover" />
                                 </div>
@@ -234,7 +233,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
 
                     {/* Right Side: Transmission Form */}
                     <motion.div
-                        initial={{ opacity: 0, x: 30 }}
+                        initial={{ opacity: 0, x: isRTL ? -30 : 30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         className="flex-1"
@@ -416,7 +415,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                                 </span>
                                             ) : (
                                                 <>
-                                                    <Send className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
+                                                    <Send className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
                                                     {content.contactExecuteTransmissionBtn}
                                                 </>
                                             )}

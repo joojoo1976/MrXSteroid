@@ -1,7 +1,7 @@
 import { SpaceRemitResponse, InitiatePaymentPayload, SpaceRemitTransaction } from '../types/spaceremit';
 import { env } from '../config/env';
 import { errorHandler } from '../lib/error-handler';
-import { apiClient } from './core/api-client';
+// import { apiClient } from './core/api-client';
 
 /**
  * Enterprise Service for SpaceRemit Payment Gateway
@@ -36,7 +36,9 @@ class SpaceRemitService {
     public async initiatePayment(payload: InitiatePaymentPayload): Promise<SpaceRemitResponse<{ checkout_url: string, transaction_id: string }>> {
         // Mock Implementation integrated with ApiClient pattern
         try {
-            console.log("Initiating SpaceRemit Payment (via Service):", payload);
+            if (process.env.NODE_ENV === 'development') {
+                console.log("Initiating SpaceRemit Payment (via Service):", payload);
+            }
 
             // In a real production setup:
             // return await apiClient.post<{ checkout_url: string, transaction_id: string }>('/payments/initiate', payload, {

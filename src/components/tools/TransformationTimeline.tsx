@@ -4,7 +4,6 @@ import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLe
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
-import KineticCounter from '../shared/KineticCounter';
 import { usePreferences } from '../../context/PreferencesContext';
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
@@ -54,8 +53,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     return (
         <div className="max-w-7xl mx-auto px-4 relative">
             {/* Background Kinetic Orbs */}
-            <div className="absolute -top-24 -left-24 w-96 h-96 bg-gold-500/5 blur-[100px] rounded-full animate-float-slow -z-10"></div>
-            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-zinc-700/5 blur-[100px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
+            <div className="absolute -top-24 -inset-inline-start-24 w-96 h-96 bg-gold-500/5 blur-[100px] rounded-full animate-float-slow -z-10"></div>
+            <div className="absolute -bottom-24 -inset-inline-end-24 w-96 h-96 bg-zinc-700/5 blur-[100px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
 
             <div className="text-center mb-16 relative">
                 <motion.h2
@@ -74,8 +73,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 {/* Vertical Sidebar (Weeks Selection) */}
                 <div className="w-full lg:w-32 flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 hide-scrollbar lg:sticky lg:top-24 relative">
                     {/* Luminous Connector Strip */}
-                    <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent lg:w-1 lg:h-full lg:left-1/2 lg:top-0 lg:bg-gradient-to-b -z-10 blur-sm"></div>
-                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gold-500/30 lg:w-0.5 lg:h-full lg:left-1/2 lg:top-0 -z-10"></div>
+                    <div className="absolute top-1/2 inset-inline-start-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent lg:w-1 lg:h-full lg:inset-inline-start-1/2 lg:top-0 lg:bg-gradient-to-b -z-10 blur-sm"></div>
+                    <div className="absolute top-1/2 inset-inline-start-0 w-full h-0.5 bg-gold-500/30 lg:w-0.5 lg:h-full lg:inset-inline-start-1/2 lg:top-0 -z-10"></div>
 
                     {/* Pulsing Line Effect (Mobile Horizontal) */}
                     <motion.div
@@ -114,7 +113,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     </AnimatePresence>
                                 </div>
                                 <div className={`flex flex-col items-center leading-none transition-colors duration-300 ${isActive ? 'text-gold-600 dark:text-gold-500' : 'text-zinc-400 group-hover/phase:text-zinc-600 dark:group-hover/phase:text-zinc-300'}`}>
-                                    <span className="text-[10px] md:text-xs font-bold uppercase opacity-80 mb-0.5">{isRTL ? 'الأسبوع' : 'WEEK'}</span>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase opacity-80 mb-0.5">{content.timelineWeekLabel}</span>
                                     <span className="text-xl md:text-2xl font-black">{phase.week}</span>
                                 </div>
                             </motion.div>
@@ -130,7 +129,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         whileInView={{ opacity: 1, scale: 1 }}
                         className="bg-white/50 dark:bg-background/50 backdrop-blur-3xl rounded-[2.5rem] p-5 md:p-8 border-4 border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col h-full"
                     >
-                        <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
+                        <div className="absolute top-0 inset-inline-end-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
 
                         <div className="flex flex-col mb-6 gap-3">
                             <div>
@@ -223,7 +222,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     >
                         {/* Stats Header */}
                         <div className="w-full bg-zinc-50/50 dark:bg-background/40 p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col relative text-start">
-                            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-gold-600 to-gold-400"></div>
+                            <div className="absolute top-0 inset-inline-start-0 w-full h-1.5 bg-gradient-to-r from-gold-600 to-gold-400"></div>
 
                             <div className="flex items-center gap-3 mb-4">
                                 <motion.div

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ContentStrings, PricingTier } from '../../types';
-import BrandLogo from '../shared/BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from '../shared/StyledBrandName';
 
@@ -33,26 +32,26 @@ const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({
 
   return (
     <div className="relative w-72 md:w-[24rem] aspect-[2/3] mx-auto my-12 group cursor-pointer z-20 [perspective:1500px]" onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}>
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gold-500/20 blur-[60px] rounded-full opacity-60 transition-all duration-700 ${isFlipped ? 'opacity-30 scale-90' : 'group-hover:opacity-100'}`}></div>
+      <div className={`absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gold-500/20 blur-[60px] rounded-full opacity-60 transition-all duration-700 ${isFlipped ? 'opacity-30 scale-90' : 'group-hover:opacity-100'}`}></div>
       <div className={`relative w-full h-full transition-transform duration-700 ease-in-out [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(-180deg)]' : 'group-hover:[transform:rotateY(-10deg)_rotateX(5deg)]'}`}>
         {/* Front */}
         <div className="absolute inset-0 [backface-visibility:hidden] z-20">
-          <div className={`relative w-full h-full ${isRTL ? 'rounded-l-xl rounded-r-sm' : 'rounded-r-xl rounded-l-sm'} shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-background ${isRTL ? 'border-l' : 'border-r'} border-t border-b border-zinc-700 overflow-hidden`}>
-            <div className={`absolute top-[2px] bottom-[2px] ${isRTL ? 'right-0' : 'left-0'} w-4 bg-gradient-to-r ${isRTL ? 'from-zinc-600 to-zinc-800' : 'from-zinc-800 to-zinc-600'} ${isRTL ? 'rounded-r-sm' : 'rounded-l-sm'} z-10 ${isRTL ? 'border-r' : 'border-l'} border-zinc-600`}></div>
-            <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} bg-gold-500 text-black text-xs font-black px-2 py-1 rounded-sm z-30 shadow-md uppercase tracking-wider`}>
+          <div className={`relative w-full h-full ${isRTL ? 'rounded-s-xl rounded-e-sm' : 'rounded-e-xl rounded-s-sm'} shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-background ${isRTL ? 'border-e' : 'border-s'} border-t border-b border-zinc-700 overflow-hidden`}>
+            <div className={`absolute top-[2px] bottom-[2px] ${isRTL ? 'start-0' : 'end-0'} w-4 bg-gradient-to-r ${isRTL ? 'from-zinc-600 to-zinc-800' : 'from-zinc-800 to-zinc-600'} ${isRTL ? 'rounded-e-sm' : 'rounded-s-sm'} z-10 ${isRTL ? 'border-e' : 'border-s'} border-zinc-600`}></div>
+            <div className={`absolute top-4 ${isRTL ? 'start-4' : 'end-4'} bg-gold-500 text-black text-xs font-black px-2 py-1 rounded-sm z-30 shadow-md uppercase tracking-wider`}>
               {content.heroEditions[lang as keyof typeof content.heroEditions]}
             </div>
-            <div className={`absolute inset-0 ${isRTL ? 'mr-4' : 'ml-4'} bg-zinc-900 ${isRTL ? 'rounded-l-xl' : 'rounded-r-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-r' : 'border-l'} border-zinc-800 h-full p-1`}>
+            <div className={`absolute inset-0 ms-4 bg-zinc-900 ${isRTL ? 'rounded-s-xl' : 'rounded-e-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-e' : 'border-s'} border-zinc-800 h-full p-1`}>
               {/* High-priority LCP image (Eager loaded, fetchpriority hint for Chromium browsers) */}
-              <img loading="eager" fetchPriority="high" key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-l-lg' : 'rounded-r-lg'}`} onError={handleError} />
+              <img loading="eager" fetchPriority="high" key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
             </div>
-            <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-l-xl mr-4' : 'rounded-r-xl ml-4'} z-30`}></div>
+            <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-s-xl me-4' : 'rounded-e-xl ms-4'} z-30`}></div>
           </div>
         </div>
         {/* Back */}
         <div className="absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] z-10">
-          <div className={`w-full h-full ${isRTL ? 'rounded-r-xl rounded-l-sm' : 'rounded-l-xl rounded-r-sm'} bg-zinc-900 border border-zinc-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col p-1 relative overflow-hidden`}>
-            <div className={`flex-1 bg-background ${isRTL ? 'rounded-r-lg rounded-l-sm ml-4' : 'rounded-l-lg rounded-r-sm mr-4'} border border-zinc-800 relative overflow-hidden p-6 flex flex-col items-center justify-between`}>
+          <div className={`w-full h-full ${isRTL ? 'rounded-e-xl rounded-s-sm' : 'rounded-s-xl rounded-e-sm'} bg-zinc-900 border border-zinc-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col p-1 relative overflow-hidden`}>
+            <div className={`flex-1 bg-background ${isRTL ? 'rounded-e-lg rounded-s-sm ms-4' : 'rounded-s-lg rounded-e-sm me-4'} border border-zinc-800 relative overflow-hidden p-6 flex flex-col items-center justify-between`}>
               <div className="relative z-20 text-center"><div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700"><Lock className="w-6 h-6 text-gold-500" /></div><h3 className="text-xl font-black text-white mb-1">SECRET PROTOCOLS</h3></div>
               <div className="relative z-20 w-full pt-4"><button onClick={(e) => { e.stopPropagation(); onClick(); }} className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-black text-base uppercase tracking-wider rounded-lg shadow-lg shadow-gold-500/20 transition-all flex items-center justify-center gap-2">BUY NOW</button></div>
             </div>
@@ -70,7 +69,7 @@ const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying:
       <button aria-label={playerState.isPlaying ? "Pause Audio" : "Play Audio"} title={playerState.isPlaying ? "Pause Audio" : "Play Audio"} onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform shrink-0">
         {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
       </button>
-      <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+      <div className={`flex-1 text-start`}>
         <h4 className="font-bold text-base text-zinc-900 dark:text-white">{content.audioPlayer.title}</h4>
         <p className="text-sm text-zinc-500">{content.audioPlayer.subtitle}</p>
       </div>
@@ -80,14 +79,14 @@ const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying:
 };
 
 const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
-  const { language: lang, isRTL } = usePreferences();
+  const { isRTL } = usePreferences();
   return (
     <section className="pt-32 pb-20 px-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-white/5 [mask-image:linear-gradient(0deg,white,transparent)] pointer-events-none" />
 
       {/* Animated Background Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-2s]"></div>
+      <div className="absolute top-1/4 start-1/4 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
+      <div className="absolute bottom-1/4 end-1/4 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-2s]"></div>
 
       <div className="container mx-auto text-center relative z-10">
         <motion.div
@@ -155,7 +154,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             {playerState.isPlaying ? <Pause className="w-5 h-5 md:w-6 md:h-6" /> : <Volume2 className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />}
             {content.audioPreviewBtn}
             {playerState.isPlaying && (
-              <div className="absolute bottom-0 left-0 h-1 bg-black/20 animate-progress w-full"></div>
+              <div className="absolute bottom-0 start-0 h-1 bg-black/20 animate-progress w-full"></div>
             )}
           </motion.button>
         </div>

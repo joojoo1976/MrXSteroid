@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ContentStrings, Page } from '../../types';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Zap, ShieldCheck, Heart } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Zap, ShieldCheck } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
-import { StyledBrandName } from '../shared/StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
 
@@ -36,7 +35,7 @@ const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
   );
 };
 
-const Footer: React.FC<FooterProps> = ({ content, navigateTo, openLegal, pool }) => {
+const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
   const { isRTL } = usePreferences();
 
   return (

@@ -12,19 +12,16 @@ import {
 } from './i18n';
 import { getWeeklyKeywords } from './utils/keywordGenerator';
 
-// Advanced Localization
+// Localization Utils
 import { SupportedLanguage, LocalizationState } from './types/localization';
 import { initializeLocalization } from './utils/logic';
 
-// Utils
 // Major Components
 import Header from './components/layout/Header';
 import Hero from './components/layout/Hero';
 import Features from './components/marketing/Features';
 import Footer from './components/layout/Footer';
 import AdPlaceholder from './components/shared/AdPlaceholder';
-
-// Utils
 import RevealOnScroll from './components/shared/RevealOnScroll';
 
 // Refactored Components
@@ -206,9 +203,7 @@ function AppContent({
 
   const salesDataMap = {
     [Language.AR]: salesDataAr,
-    [Language.EN]: salesDataEn,
-    [Language.DE]: salesDataEn,
-    [Language.JA]: salesDataEn
+    [Language.EN]: salesDataEn
   };
   const salesData = salesDataMap[lang] || salesDataEn;
   const footerKeywords = useMemo(() => getWeeklyKeywords(lang), [lang]);
@@ -237,7 +232,7 @@ function AppContent({
             </div>
             <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin"></div></div>}>
               <RevealOnScroll><Features content={content} /></RevealOnScroll>
-              <RevealOnScroll><LiveSchedule /></RevealOnScroll>
+              <RevealOnScroll><LiveSchedule content={content} /></RevealOnScroll>
               <RevealOnScroll><TransformationTimeline content={content} /></RevealOnScroll>
               <RevealOnScroll><SteroidReadinessQuiz content={content} onComplete={() => navigateTo(Page.SIGNUP)} /></RevealOnScroll>
               <RevealOnScroll><BenefitsSection content={content} /></RevealOnScroll>
@@ -265,7 +260,7 @@ function AppContent({
               {currentPage === Page.MACRO && <MacroCalculator content={content} navigateTo={navigateTo} />}
               {currentPage === Page.BODYFAT && <BodyFatCalculator content={content} navigateTo={navigateTo} />}
               {currentPage === Page.INJECTION && <InjectionMap content={content} navigateTo={navigateTo} />}
-              {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} />}
               {currentPage === Page.LAB && <SmartLabReference content={content} navigateTo={navigateTo} />}
               {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} navigateTo={navigateTo} />}
               {currentPage === Page.CYCLE_ARCHITECT && <AuthGuard requireSubscription={true}><CycleCalendarExporter content={content} navigateTo={navigateTo} /></AuthGuard>}
@@ -328,7 +323,7 @@ function AppContent({
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
-      className={`min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : 'font-sans'} ${isRTL ? 'text-right' : 'text-left'}`}
+      className={`min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100 transition-colors duration-300 ${lang === Language.AR ? 'font-arabic' : 'font-sans'}`}
     >
       {sharedComponents}
     </div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Star, Zap, Shield, Trophy, BookOpen, User, ArrowRight, Info, AlertTriangle, Monitor, Package, Crown } from 'lucide-react';
+import { Check, Star, Zap, AlertTriangle, ArrowRight, Monitor, Package, Crown } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { ContentStrings, Currency, PricingTier, ProductVariant } from '../../types';
+import { ContentStrings, PricingTier, ProductVariant } from '../../types';
 
 interface PricingSectionProps {
     content: ContentStrings;
@@ -12,7 +12,6 @@ interface PricingSectionProps {
 const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }) => {
     const { formatPrice, t, isRTL } = usePreferences();
     const [isCoachingActive, setIsCoachingActive] = useState(false);
-    const [hoveredTier, setHoveredTier] = useState<number | null>(null);
 
     const plans = content.pricingPlans;
 
@@ -77,7 +76,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                    {plans.map((plan, index) => {
+                    {plans.map((plan) => {
                         const isCoachingTier = plan.id === 'coaching';
                         const isPopular = plan.id === 'bundle';
                         const basePrice = basePrices[plan.id] || 0;
@@ -92,15 +91,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                         return (
                             <motion.div
                                 key={plan.id}
-                                onHoverStart={() => setHoveredTier(index)}
-                                onHoverEnd={() => setHoveredTier(null)}
                                 className={`
                                     relative p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col group
                                     ${isPopular ? 'bg-zinc-900/80 border-gold-500 shadow-[0_0_40px_rgba(234,179,8,0.15)] scale-105 z-20' : 'bg-black/60 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/40'}
                                 `}
                             >
                                 {isPopular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 bg-gold-500 text-black font-black text-xs uppercase tracking-widest rounded-full shadow-lg flex items-center gap-2">
+                                    <div className="absolute -top-4 start-1/2 -translate-x-1/2 px-6 py-1.5 bg-gold-500 text-black font-black text-xs uppercase tracking-widest rounded-full shadow-lg flex items-center gap-2">
                                         <Star className="w-3 h-3 fill-black" /> {content.pricingBestValue}
                                     </div>
                                 )}
@@ -188,11 +185,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                             ? 'bg-gold-500 text-black hover:bg-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
                                             : isCoachingTier && isCoachingActive
                                                 ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
-                                                : 'bg-white text-black hover:bg-zinc-200'
-                                        }
+                                                : 'bg-white text-black hover:bg-zinc-200'}
                                     `}
                                 >
-                                    {plan.cta} <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                    {plan.cta} <ArrowRight className={`w-4 h-4 group-hover/btn:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
                                 </button>
                             </motion.div>
                         );

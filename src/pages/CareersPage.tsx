@@ -10,7 +10,7 @@ interface CareersPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const CareersPage: React.FC<CareersPageProps> = ({ content, navigateTo }) => {
+const CareersPage: React.FC<CareersPageProps> = ({ content, navigateTo: _navigateTo }) => {
     const { isRTL } = usePreferences();
     const jobs = [
         {
@@ -59,7 +59,7 @@ const CareersPage: React.FC<CareersPageProps> = ({ content, navigateTo }) => {
                     <div className="grid grid-cols-2 gap-4">
                         {[
                             { title: isRTL ? "ابتكار" : "innovation", color: "bg-gold-500/10 text-gold-500" },
-                            { title: isRTL ? "دقة" : "Precision", color: "bg-blue-500/10 text-blue-500" },
+                            { title: isRTL ? "دقة" : "Precision", color: "bg-gold-500/10 text-gold-500" },
                             { title: isRTL ? "سرية" : "Secrecy", color: "bg-zinc-800 text-white" },
                             { title: isRTL ? "تأثير" : "Impact", color: "bg-white/10 text-white" }
                         ].map((trait, idx) => (

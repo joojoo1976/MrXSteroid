@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BicepsFlexed, Utensils, Droplet, ChefHat, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Heart, Award, Scale, Ruler, User } from 'lucide-react';
+import { BicepsFlexed, Utensils, Droplet, ChefHat, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Scale, Ruler, User, UtensilsCrossed } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
 import KineticCounter from '../shared/KineticCounter';
-import { ContentStrings, Language, DailyMeal, Page } from '../../types';
+import { ContentStrings, DailyMeal, Page } from '../../types';
 import { toast } from 'sonner';
-import { convertValue, toMetric, formatUnit } from '../../utils/logic';
+import { convertValue, toMetric } from '../../utils/logic';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../shared/UnitToggle';
 
@@ -20,6 +20,7 @@ interface CalcResult {
   bmr: number;
   tdee: number;
   bmi: number;
+  bmiStatus: string;
   tef: number;
   growthPotential: number;
 }
@@ -45,7 +46,7 @@ interface SimulationPoint {
 
 
 const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }) => {
-  const { language: lang, setLanguage: changeLang, content: _, isRTL, unitSystem, setUnitSystem } = usePreferences();
+  const { language: lang, unitSystem } = usePreferences();
   const isAr = lang === 'ar';
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
@@ -60,8 +61,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
   const [chartData, setChartData] = useState<MacroDataPoint[] | null>(null);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [simulationData, setSimulationData] = useState<SimulationPoint[] | null>(null);
-  const [isSimulating, setIsSimulating] = useState(false);
   const [ecosystemSynced, setEcosystemSynced] = useState(false);
+  const [showMealPlan, setShowMealPlan] = useState(false);
 
   // --- UNIT CONVERSION LOGIC ---
   const [baseWeight, setBaseWeight] = useState<number>(0);
@@ -103,7 +104,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
   // --- FOOD DATABASE ---
   const foodDatabase = [
     { id: 'chicken', nameEn: 'Grilled Chicken Breast', nameAr: 'صدور دجاج مشوية', p: 31, c: 0, f: 3.6, type: 'protein' },
-    { id: 'beef', nameEn: 'Lean Ground Beef (95%)', nameAr: 'لحم بقري قليل الدسم', p: 26, c: 0, f: 6, type: 'protein' },
+    { id: 'beef', nameEn: 'Lean Ground Beef (95%)', nameAr: 'لحم بقري قليل الدهن', p: 26, c: 0, f: 6, type: 'protein' },
     { id: 'egg_whites', nameEn: 'Egg Whites', nameAr: 'بياض بيض', p: 11, c: 0.7, f: 0.2, type: 'protein' },
     { id: 'whey', nameEn: 'Whey Protein Scoop', nameAr: 'واي بروتين (سكوب)', p: 24, c: 3, f: 1, type: 'protein' },
     { id: 'fish', nameEn: 'White Fish (Tilapia)', nameAr: 'سمك أبيض (بلطي)', p: 26, c: 0, f: 2, type: 'protein' },
@@ -163,6 +164,12 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
       }
 
       const bmi = calcW / ((calcH / 100) * (calcH / 100));
+      let bmiStatus = '';
+      if (bmi < 18.5) bmiStatus = content.calcBmiStatuses.underweight;
+      else if (bmi < 25) bmiStatus = content.calcBmiStatuses.healthy;
+      else if (bmi < 30) bmiStatus = content.calcBmiStatuses.overweight;
+      else bmiStatus = content.calcBmiStatuses.obese;
+
       const potential = 50 + (goal === 'bulk' ? 30 : 0) + (activity.includes('Active') ? 15 : 0);
 
       setResult({
@@ -173,6 +180,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
         bmr: isNaN(bmr) ? 0 : Math.round(bmr),
         tdee: isNaN(tdee) ? 0 : Math.round(tdee),
         bmi: isNaN(bmi) ? 0 : parseFloat(bmi.toFixed(1)),
+        bmiStatus,
         tef: isNaN(targetCalories) ? 0 : Math.round(targetCalories * 0.1),
         growthPotential: isNaN(potential) ? 0 : Math.min(potential, 98)
       });
@@ -187,7 +195,6 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
   const generateSimulation = (calories: number, currentGoal: string) => {
     const data = [];
     let weightTrend = parseFloat(normalizeNum(weight));
-    const isImperial = unitSystem === 'imperial';
 
     for (let i = 0; i <= 12; i++) {
       const variation = Math.random() * 0.5 - 0.25;
@@ -216,7 +223,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
     const targetC = result.carbs / 4;
     const targetF = result.fats / 4;
 
-    content.calcMealNames.forEach((name, idx) => {
+    content.calcMealNames.forEach((name) => {
       const pSource = foodDatabase.filter(f => f.type === 'protein')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'protein').length)];
       const cSource = foodDatabase.filter(f => f.type === 'carb')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'carb').length)];
       const fSource = foodDatabase.filter(f => f.type === 'fat')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'fat').length)];
@@ -224,20 +231,12 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
       const unit = isImperial ? "oz" : "g";
       const factor = isImperial ? 0.0352 : 1;
 
-      const stepsEN = [
-        `Preheat pan/oven to medium heat.`,
-        `Season ${pSource.nameEn} with your favorite herbs and spices.`,
-        `Cook ${pSource.nameEn} thoroughly until done.`,
-        `Prepare ${cSource.nameEn} as directed on packaging.`,
-        `Combine ingredients and drizzle with ${fSource.nameEn}.`
-      ];
-
-      const stepsAR = [
-        `سخن المقلاة/الفرن على درجة حرارة متوسطة.`,
-        `تبل ${pSource.nameAr} بالأعشاب والتوابل المفضلة لديك.`,
-        `اطبخ ${pSource.nameAr} جيداً حتى ينضج تماماً.`,
-        `جهز ${cSource.nameAr} كما هو موضح بالعبوة.`,
-        `اجمع المكونات وأضف فوقها ${fSource.nameAr}.`
+      const steps = [
+        content.calcMealSteps.preheat,
+        `${content.calcMealSteps.season} ${isAr ? pSource.nameAr : pSource.nameEn}`,
+        `${content.calcMealSteps.cook} ${isAr ? pSource.nameAr : pSource.nameEn}`,
+        `${content.calcMealSteps.prepare} ${isAr ? cSource.nameAr : cSource.nameEn}`,
+        `${content.calcMealSteps.combine} ${isAr ? fSource.nameAr : fSource.nameEn}`
       ];
 
       meals.push({
@@ -247,7 +246,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
           { item: isAr ? cSource.nameAr : cSource.nameEn, amount: `${Math.round((targetC / cSource.c) * 100 * factor)}${unit}` },
           { item: isAr ? fSource.nameAr : fSource.nameEn, amount: `${Math.round((targetF / fSource.f) * 100 * factor)}${unit}` },
         ],
-        steps: isAr ? stepsAR : stepsEN
+        steps
       });
     });
 
@@ -269,11 +268,11 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
   };
 
   return (
-    <div className={`max-w-7xl mx-auto px-4 py-16`} dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="max-w-7xl mx-auto px-4 py-16" dir={isAr ? 'rtl' : 'ltr'}>
 
       {/* Background kinetic effects */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-zinc-700/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
+      <div className="absolute top-0 start-0 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
+      <div className="absolute bottom-0 end-0 w-96 h-96 bg-zinc-700/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
 
       <motion.div
         initial={{ opacity: 0, y: -40 }}
@@ -333,7 +332,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
               <User className="w-5 h-5" /> {content.calcMale}
             </button>
             <button onClick={() => setGender('female')} className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-2xl text-gold-600' : 'text-zinc-400'}`}>
-              <User className="w-5 h-5" /> {content.calcFemale}
+              <User className="w-5 h-5 shadow-sm" /> {content.calcFemale}
             </button>
           </div>
 
@@ -407,7 +406,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
             whileTap={{ scale: 0.95 }}
             onClick={calculate}
             disabled={isCalculating}
-            className={`w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] shadow-[0_0_40px_rgba(234,179,8,0.3)] transition-all flex items-center justify-center gap-4 relative overflow-hidden group animate-glow`}
+            className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] shadow-[0_0_40px_rgba(234,179,8,0.3)] transition-all flex items-center justify-center gap-4 relative overflow-hidden group animate-glow"
           >
             {isCalculating ? <RefreshCw className="w-8 h-8 animate-spin" /> : <TrendingUp className="w-8 h-8 group-hover:translate-y-[-5px] transition-transform" />}
             {isCalculating ? content.calcAnalyzingLabel : content.calcCalculate}
@@ -431,7 +430,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                   animate={{ x: 0, opacity: 1 }}
                   className="p-8 bg-gradient-to-br from-gold-500 to-gold-700 rounded-[3rem] text-black shadow-2xl relative overflow-hidden group"
                 >
-                  <div className="absolute top-0 right-0 p-4 opacity-20">
+                  <div className="absolute top-0 end-0 p-4 opacity-20">
                     <Zap className="w-16 h-16 animate-pulse" />
                   </div>
                   <h4 className="text-sm font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
@@ -441,18 +440,18 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                     {aiInsight}
                   </p>
                   <div className="text-sm font-black uppercase opacity-60">
-                    {content.calcPredictiveAccuracy}
+                    {content.calcPredictiveAccuracy} <span className="ms-1">{content.calcPredictiveAccuracyVal}</span>
                   </div>
                   <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-tl-full blur-2xl"></div>
                 </motion.div>
 
                 {/* Main Stats Hub */}
 
-                <div className={`p-12 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950`}>
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] animate-float-slow"></div>
+                <div className="p-12 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950">
+                  <div className="absolute top-0 end-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] animate-float-slow"></div>
 
                   <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
-                    <div className="text-center md:text-left">
+                    <div className={isAr ? "text-center md:text-end" : "text-center md:text-start"}>
                       <h3 className="text-sm font-black text-gold-500 uppercase tracking-[0.4em] mb-6 flex items-center justify-center md:justify-start gap-3">
                         <Flame className="w-5 h-5 animate-pulse" /> {content.calcCalories}
                       </h3>
@@ -552,9 +551,9 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                 {/* Macro Detail Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {[
-                    { label: content.calcProtein, val: result.protein || 0, colorClass: "text-gold-500", icon: BicepsFlexed, desc: "Muscle Tissue Synthesis" },
-                    { label: content.calcCarbs, val: result.carbs || 0, colorClass: "text-zinc-400", icon: Utensils, desc: "Glycogen Super-compensation" },
-                    { label: content.calcFats, val: result.fats || 0, colorClass: "text-rose-500", icon: Droplet, desc: "Hormonal Optimization" }
+                    { label: content.calcProtein, val: result.protein || 0, colorClass: "text-gold-500", icon: BicepsFlexed, desc: content.calcProteinDesc },
+                    { label: content.calcCarbs, val: result.carbs || 0, colorClass: "text-zinc-400", icon: Utensils, desc: content.calcCarbsDesc },
+                    { label: content.calcFats, val: result.fats || 0, colorClass: "text-rose-500", icon: Droplet, desc: content.calcFatsDesc }
                   ].map((item, i) => (
                     <motion.div
                       whileHover={{ y: -10 }}
@@ -567,7 +566,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                       <h4 className={`text-sm font-black uppercase tracking-[0.2em] mb-4 ${item.colorClass}`}>{item.label}</h4>
                       <div className="text-6xl font-black tracking-tighter mb-2 font-mono">
                         <KineticCounter value={item.val} />
-                        <span className="text-xl text-zinc-400 ml-2">{isImperial ? 'OZ' : 'G'}</span>
+                        <span className="text-xl text-zinc-400 ms-2">{isImperial ? 'OZ' : 'G'}</span>
                       </div>
                       <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest">{item.desc}</p>
                     </motion.div>
@@ -575,16 +574,16 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                 </div>
 
                 {/* AI Plan Generation */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={generatePlan}
-                  className="w-full py-8 bg-zinc-900 text-white rounded-[2.5rem] font-black text-2xl uppercase tracking-widest shadow-3xl flex items-center justify-center gap-6 group relative overflow-hidden card-shine animate-glow"
+                <button
+                  onClick={() => {
+                    if (!mealPlan) generatePlan();
+                    setShowMealPlan(!showMealPlan);
+                  }}
+                  className="w-full py-5 bg-zinc-900 dark:bg-zinc-800 text-gold-500 font-black text-xl rounded-3xl transition-all shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-4 group border-2 border-gold-500 border-dashed"
                 >
-                  <ChefHat className="w-10 h-10 group-hover:rotate-12 transition-transform" />
-                  {mealPlan ? content.calcShuffleLabel : content.calcGenerateMealPlan}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                </motion.button>
+                  <UtensilsCrossed className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                  {mealPlan ? (showMealPlan ? content.calcHidePlan : content.calcShowPlan) : content.calcGenerateMealPlan}
+                </button>
               </motion.div>
             ) : (
               <motion.div
@@ -621,21 +620,35 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-12 p-8 md:p-12 rounded-[3.5rem] border-4 border-zinc-100 dark:border-zinc-800 bg-black text-white shadow-3xl card-shine backdrop-blur-3xl animate-glow overflow-hidden relative"
               >
-                <div className="absolute top-0 right-0 p-8 opacity-10">
-                  <TrendingUp className="w-32 h-32" />
-                </div>
                 <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-10">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-1 bg-zinc-900 dark:bg-zinc-950 p-6 rounded-3xl flex items-center gap-4 border border-zinc-800">
+                      <div className="w-12 h-12 bg-gold-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                        <Scale className="w-6 h-6 text-gold-500" />
+                      </div>
+                      <div className="text-inline-start">
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">{content.calcBmiStatusLabel}</p>
+                        <p className="text-white text-lg font-black">{result.bmi.toFixed(1)} <span className="text-zinc-500 text-sm font-bold">({result.bmiStatus})</span></p>
+                      </div>
+                    </div>
+                    <div className="flex-1 bg-zinc-900 dark:bg-zinc-950 p-6 rounded-3xl flex items-center gap-4 border border-zinc-800">
+                      <div className="w-12 h-12 bg-gold-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                        <TrendingUp className="w-6 h-6 text-gold-500" />
+                      </div>
+                      <div className={isAr ? "text-end" : "text-start"}>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">{content.calcPredictiveAccuracy}</p>
+                        <p className="text-white text-lg font-black">{content.calcPredictiveAccuracyVal}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-10 mb-10">
                     <div>
                       <h3 className="text-3xl font-black uppercase tracking-tighter flex items-center gap-4">
                         <Activity className="w-8 h-8 text-gold-500" />
                         {content.calcPredictionTitle}
                       </h3>
                       <p className="text-zinc-500 font-bold">{content.calcPatternAnalysisLabel}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-gold-500 font-black text-2xl font-mono">92.4%</div>
-                      <div className="text-xs font-black uppercase tracking-widest text-zinc-600">{content.calcPredictiveAccuracy}</div>
                     </div>
                   </div>
 

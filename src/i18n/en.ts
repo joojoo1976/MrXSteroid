@@ -1,5 +1,5 @@
-import { ContentStrings, LabTest, InjectionSite, Compound, TimelinePhase, IQQuestion, QuizContent, DailyIQContent, CycleArchitectContent } from '../types';
-import { seoKeywordsEnglish, footerKeywordsPoolEn, salesDataEn, fullEnglishDisclaimer, commonCompounds } from './data';
+import { ContentStrings, LabTest, InjectionSite } from '../types';
+import { seoKeywordsEnglish, fullEnglishDisclaimer, commonCompounds } from './data';
 
 export const labTestsEn: LabTest[] = [
     {
@@ -543,6 +543,15 @@ export const enContent: ContentStrings = {
         system: "System Mode",
     },
     backToHome: "Back to Home",
+    viewFullDatabase: "View Full Database",
+    eliteSchedulesTitle: "ELITE <span class='text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600'>SCHEDULES</span>",
+    eliteSchedulesSubtitle: "Access world-class protocols designed for champions.",
+    expertProtocol: "EXPERT PROTOCOL",
+    allTopics: "ALL TOPICS",
+    noFaqsFound: "No encrypted answers found matching your search.",
+    resetScan: "RESET SCAN",
+    liveData: "LIVE DATA",
+    noActiveSchedules: "No active schedules found.",
     seoTitle: "Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide",
     seoDescription: "Discover the world's most powerful guide for muscle building and hormonal cycles. Mr. X-Steroid by George Mourice offers clear protocols, safety guides, and supplement bibles.",
     seoKeywords: seoKeywordsEnglish,
@@ -691,6 +700,33 @@ export const enContent: ContentStrings = {
             category: "safety"
         }
     ],
+    scheduleData: [
+        { id: 1, phase: 'WEEKS 1-4', focus: 'MASS GAIN', protocol: 'Test E + Deca', status: 'ACTIVE', intensity: 'HIGH' },
+        { id: 2, phase: 'WEEKS 5-8', focus: 'HARDENING', protocol: 'Test P + Tren A', status: 'PENDING', intensity: 'EXTREME' },
+        { id: 3, phase: 'WEEKS 9-12', focus: 'PEAK WEEK', protocol: 'Masteron + Anavar', status: 'LOCKED', intensity: 'MAX' },
+    ],
+    scheduleTableTitle: "MR. OLYMPIA PREP",
+    scheduleTableDescription: "The exact protocol used by the top 1%.",
+    scheduleHeaders: {
+        phase: 'PHASE',
+        focus: 'FOCUS',
+        protocol: 'PROTOCOL',
+        status: 'STATUS'
+    },
+    hlTotal: "TOTAL",
+    hlStartsDay: "Starts Day",
+    hlRecoveryPower: "RECOVERY POWER",
+    hlDrug: "Drug",
+    hlFirst10Days: "First 10 Days",
+    hlWeeks2to4: "Weeks 2-4",
+    hlFreq: "Freq",
+    hlNaturalZone: "NATURAL ZONE",
+    hlBlastZone: "BLAST ZONE",
+    hlPctAdvice: "PCT Advice",
+    hlProtocolLevel: "Protocol Level",
+    hlUltraLevel: "ULTRA",
+    hlModerateLevel: "MODERATE",
+    hlLiteLevel: "LITE",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service & User Agreement",
     refundPolicy: "Refund Policy",
@@ -944,6 +980,8 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     calcWater: "Water Need",
     calcLiters: "L",
     calcRecalculate: "Recalculate",
+    calcHidePlan: "Hide Meal Plan",
+    calcShowPlan: "Show Meal Plan",
     calcGenerateMealPlan: "Generate AI Meal Plan",
     calcGenerating: "Generating...",
     calcMealPlanTitle: "Your Suggested Meal Plan",
@@ -952,10 +990,27 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     calcTdeeLabel: "Total Daily Energy Expenditure (TDEE)",
     calcBmrLabel: "Basal Metabolic Rate (BMR)",
     calcTefLabel: "Thermic Effect of Food (TEF)",
+    calcBmiStatuses: {
+        underweight: "Underweight",
+        healthy: "Healthy",
+        overweight: "Overweight",
+        obese: "Obese"
+    },
+    calcMealSteps: {
+        preheat: "Preheat",
+        season: "Season",
+        cook: "Cook",
+        prepare: "Prepare",
+        combine: "Combine"
+    },
     calcBeastTitle: "Dormant Beast Classification",
     calcAnalysisLabel: "SMART ENGINE ANALYSIS",
     calcBmiStatusLabel: "BMI Status",
     calcDistributionTitle: "Daily Macro Distribution",
+    calcProteinDesc: "Muscle Tissue Synthesis",
+    calcCarbsDesc: "Glycogen Super-compensation",
+    calcFatsDesc: "Hormonal Optimization",
+    calcPredictiveAccuracyVal: "92.4%",
 
     calcShuffleLabel: "Shuffle Meals",
     calcAwaitingInputLabel: "Awaiting Muscle Input",
@@ -1056,6 +1111,8 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         prolactinRisk: "Prolactin Alert",
         riskLevels: { low: "Optimal", med: "Caution", high: "Critical" },
         emptyStackMsg: "Add compounds to visualize the cycle",
+        emptyStackDesc: "Start adding compounds to simulate pharmacological serum concentration levels over time.",
+        hazardWarning: "CRITICAL HAZARD: High Dose",
         compounds: commonCompounds,
         frequencies: { ed: "Every Day (ED)", eod: "Every Other Day (EOD)", e3d: "Every 3 Days (E3D)", e7d: "Weekly (E7D)" },
         tooltipDay: "Day",
@@ -1082,7 +1139,21 @@ These Terms shall be governed and construed in accordance with the laws of <stro
                 first10Days: "First 10 Days",
                 weeks2to4: "Weeks 2-4",
                 frequency: "Frequency"
-            }
+            },
+            stabilityExcellent: "Excellent hormonal stability.",
+            stabilityFluctuation: "⚠️ High fluctuation! Increase injection frequency (e.g., from twice weekly to EOD) to minimize spikes.",
+            safetySafe: "Safety indicators within range.",
+            safety19nor: "⚠️ 19-nor detected (Tren/Deca): Use Cabergoline 0.25-0.5mg as needed to monitor Prolactin.",
+            safetyAromatization: "⚠️ High aromatization risk: Use Arimidex or Aromasin to control Estrogen.",
+            pctStartPrefix: "Start PCT after ",
+            pctStartSuffix: " days to ensure all compounds have cleared.",
+            pctHeavy: "🚨 Ultra Heavy Cycle: hCG is mandatory. Monitor LH/FSH levels closely after finishing PCT.",
+            pct19nor: "⚠️ 19-nor Alert: Recovery might be slower. Consider extending PCT to 6 weeks instead of 4.",
+            pctDaily: "Daily",
+            pctEod: "EOD",
+            pctNolvadex: "Nolvadex",
+            pctClomid: "Clomid",
+            pctHcg: "Epifasi (hCG)"
         }
     },
     timeUnits: {
@@ -1093,10 +1164,8 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     },
     offerExpired: "Offer Expired!",
     heroEditions: {
-        ar: "نسخة عربية",
-        en: "English Edition",
-        de: "Deutsche Ausgabe",
-        ja: "日本語版"
+        ar: "النسخة العربية (Arabic)",
+        en: "English Edition"
     },
     injectionMap: {
         labels: {
@@ -1163,6 +1232,52 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         { week: "11-12", title: "Peaking", shortDesc: "Final touches before exit", iconKey: "flag", stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 }, details: { biological: "Max muscle density. Preparing for withdrawal.", feeling: "Slight fatigue. Fully ready.", action: "Plan PCT. Slight calorie deficit." } }
     ],
     timelineLabels: { strength: "Strength", hypertrophy: "Size", water: "Water", fatLoss: "Fat Loss", mood: "Mood", biologicalTitle: "Biological Impact", feelingTitle: "How You Feel", actionTitle: "Action Plan", phaseLabel: "Phase", chartTitle: "Cumulative Evolution Plot", chartSubtitle: "AI-Driven Biometric & Performance Tracking" },
+    timelineWeekLabel: "WEEK",
+
+    bfTitle: "Body Fat Calculator",
+    bfSubtitle: "Advanced Multi-dimensional Analysis & Predictive Ecosystem",
+    bfGender: "Gender",
+    bfMale: "Male",
+    bfFemale: "Female",
+    bfAge: "Age",
+    bfWeight: "Weight",
+    bfHeight: "Height",
+    bfWaist: "Waist",
+    bfHip: "Hip",
+    bfNeck: "Neck",
+    bfCalculate: "Analyze Body Composition",
+    bfAnalyzing: "Analyzing Data...",
+    bfCategoryTitle: "Body Fat Category",
+    bfFormulaNote: "Using US Navy Formula & Anabolic Indexing",
+    bfPercentageLabel: "Body Fat Percentage",
+    bfMassLabel: "Fat Mass",
+    bfLeanMassLabel: "Lean Body Mass",
+    bfCalculateMacros: "Calculate Macros",
+    bfGeneticPotential: "Genetic Potential",
+    bfAwaitingData: "Awaiting Body Stats...",
+    bfCategories: {
+        essential: "Essential Fat",
+        athletes: "Athletes",
+        fitness: "Fitness",
+        average: "Average",
+        obese: "Obese"
+    },
+    bfCategoryDescriptions: {
+        male: {
+            essential: "Essential Fat (2-5%): Minimum fat required for physiological safety. Often reached only by professional bodybuilders on stage.",
+            athletes: "Athletes (6-13%): Extreme definition, vascularity, and high metabolic speed.",
+            average: "Average (18-24%): Healthy range for general population, but lacks peak athletic definition.",
+            obese: "Obese (25%+): High risk of metabolic syndrome and estrogen aromitazation."
+        },
+        female: {
+            essential: "Essential Fat (10-13%): Minimum for basic health. Lower than this may cause hormonal shutdown.",
+            athletes: "Athletes (14-20%): Significant muscle definition and athletic performance.",
+            average: "Average (25-31%): Normal healthy range for women.",
+            obese: "Obese (32%+): Increased health risks and reduced metabolic efficiency."
+        }
+    },
+    labRestartScan: "RE-START SCAN",
+    labClose: "CLOSE",
     salesToast: { purchased: "purchased Full Version", verified: "Verified", justNow: "Just Now", fromLabel: "from" },
     audioPlayer: { title: "Author's Intro", subtitle: "Listen to a special message from George", duration: "02:15" },
     aiChat: {
@@ -1519,5 +1634,27 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     contactTransmissionReceivedDesc: "The Command Center will process your transmission and respond within the next 24-hour cycle.",
     contactTransmissionInterrupted: "Transmission Interrupted. Please try again or email us directly.",
     contactDirectSecureLine: "Direct Secure Line",
-    contactSupportCommandCenter: "Support Command Center"
+    contactSupportCommandCenter: "Support Command Center",
+    contactLeadArchitectLabel: "Lead Protocol Architect",
+    contactRelayActiveLabel: "In Command / 24h Relay",
+    contactTransmissionProtocolLabel: "Transmission Protocol",
+    contactEncryptedLabel: "E2E Encrypted",
+    contactSelectTopicPlaceholder: "Select Topic",
+    contactTopicGeneral: "General Inquiry",
+    contactTopicOrder: "Order Issue/Status",
+    contactTopicTechnical: "Technical Assistance",
+    contactTopicWholesale: "Business/Partnership",
+    contactTopicConsultation: "Cycle Consultation",
+    contactMedicalDisclaimerTitle: "Consultations are for informational purposes only. I am not a medical professional. By proceeding, you acknowledge that you are responsible for your own health decisions and have read the Medical Disclaimer.",
+    contactMedicalDisclaimerCheckbox: "I accept the protocol risks & terms",
+    contactResponseTimeLabel: "Response: ~24hrs",
+    contactGlobalRelayLabel: "Global Relay Active",
+    contactSystemStatusLabel: "System Status: 100% Operational // Encryption: AES-256",
+    contactCopySuccess: "Email copied to clipboard",
+    contactErrorName: "Name must be at least 2 characters",
+    contactErrorEmail: "Invalid email address",
+    contactErrorSubject: "Subject must be at least 5 characters",
+    contactErrorMessage: "Message must be at least 10 characters",
+    contactErrorOrderId: "Order ID is required for order inquiries",
+    contactErrorDisclaimer: "You must accept the medical disclaimer for consultations",
 };

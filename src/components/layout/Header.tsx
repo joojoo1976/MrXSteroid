@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { TRANSITIONS } from '../../utils/logic';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, Palette, LogOut, User as UserIcon, Settings2, GripHorizontal, Layout, Move } from 'lucide-react';
+import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
-import { Language, ContentStrings, Page } from '../../types';
-import { USFlag, EGFlag } from '../../utils/icon-utils';
+import { ContentStrings, Page } from '../../types';
 import { md5 } from '../../utils/cryptoUtils';
-import BrandLogo from '../shared/BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
-import UnitToggle from '../shared/UnitToggle';
-
 import { usePreferences } from '../../context/PreferencesContext';
 
 type HeaderSection = 'logo' | 'lang-theme' | 'nav' | 'auth';
@@ -23,11 +19,11 @@ interface LayoutConfig {
 interface HeaderProps {
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  colorTheme: string;
+  changeColorTheme: (color: string) => void;
   content: ContentStrings;
   currentPage: Page;
   navigateTo: (page: Page) => void;
-  colorTheme: string;
-  changeColorTheme: (theme: string) => void;
   user?: User | null;
   onLogout?: () => void;
   onOpenPreferences: () => void;
@@ -44,7 +40,7 @@ const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
   if (theme === 'system') return (
     <div className="relative">
       <Sun className="w-4 h-4 opacity-50" />
-      <Moon className="w-3 h-3 absolute -top-1 -right-1" />
+      <Moon className="w-3 h-3 absolute -top-1 -end-1" />
     </div>
   );
   if (theme === 'dark') return <Moon className="w-4 h-4" />;
@@ -52,9 +48,9 @@ const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
 };
 
 const Header: React.FC<HeaderProps> = ({
-  theme, setTheme, content, currentPage, navigateTo, colorTheme, changeColorTheme, user, onLogout, onOpenPreferences
+  theme, setTheme, colorTheme: _colorTheme, changeColorTheme: _changeColorTheme, content, currentPage, navigateTo, user, onLogout, onOpenPreferences
 }) => {
-  const { language: lang, setLanguage: changeLang, unitSystem, setUnitSystem, isRTL } = usePreferences();
+  const { language: lang, isRTL } = usePreferences();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
@@ -105,15 +101,9 @@ const Header: React.FC<HeaderProps> = ({
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
-    setIsMobileMenuOpen(false);
   };
 
-  const languages = [
-    { code: Language.AR, label: 'العربية', flag: <EGFlag /> },
-    { code: Language.EN, label: 'English', flag: <USFlag /> },
-  ];
 
-  const currentLang = languages.find(l => l.code === lang) || languages[1];
 
   const renderSection = (id: HeaderSection) => {
     switch (id) {
@@ -136,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             {isThemeDropdownOpen && (
-              <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-1.5`}>
+              <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-1.5`}>
                 {(['light', 'dark', 'system'] as const).map((t) => (
                   <button
                     key={t}
@@ -178,7 +168,7 @@ const Header: React.FC<HeaderProps> = ({
               <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navAiTools} <ChevronDown className="w-3 h-3" />
               </button>
-              <div className={`absolute top-full ${isRTL ? 'left-0' : 'right-0'} pt-2 w-56 hidden group-hover:block animate-fade-in-up z-50`}>
+              <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-56 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
                   {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
                     <button
@@ -196,7 +186,7 @@ const Header: React.FC<HeaderProps> = ({
               <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navPremiumResources} <ChevronDown className="w-3 h-3" />
               </button>
-              <div className={`absolute top-full ${isRTL ? 'left-0' : 'right-0'} pt-2 w-64 hidden group-hover:block animate-fade-in-up z-50`}>
+              <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-64 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
                   <button onClick={() => navigateTo(Page.CYCLE_ARCHITECT)} className="block w-full text-start px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2">
                     <CalendarCheck className="w-4 h-4 text-gold-500" />{content.navToolNames.cycleArchitect}
@@ -234,7 +224,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3 ltr:border-l rtl:border-r border-zinc-200 dark:border-zinc-800 ltr:pl-4 rtl:pr-4">
+              <div className="flex items-center gap-3 border-inline border-zinc-200 dark:border-zinc-800 ps-4">
                 <button onClick={() => navigateTo(Page.LOGIN)} className={`text-sm font-bold transition-colors ${currentPage === Page.LOGIN ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                   {content.loginBtn}
                 </button>
@@ -254,7 +244,7 @@ const Header: React.FC<HeaderProps> = ({
       {/* Design Mode Toggle */}
       <button
         onClick={() => setIsDesignMode(!isDesignMode)}
-        className={`absolute top-full ltr:right-4 rtl:left-4 mt-2 flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg shadow-lg border transition-all z-50 ${isDesignMode ? 'bg-gold-500 text-black border-gold-600 animate-pulse' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 opacity-0 group-hover/nav:opacity-100'}`}
+        className={`absolute top-full end-4 mt-2 flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg shadow-lg border transition-all z-50 ${isDesignMode ? 'bg-gold-500 text-black border-gold-600 animate-pulse' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 opacity-0 group-hover/nav:opacity-100'}`}
         title="Toggle Visual Editor"
       >
         <Settings2 className="w-4 h-4" />
@@ -316,7 +306,7 @@ const Header: React.FC<HeaderProps> = ({
               className={`relative flex items-center transition-all ${isDesignMode ? 'cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-gold-500/50 rounded-lg p-1' : ''}`}
             >
               {isDesignMode && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold-500 text-[10px] px-1 rounded flex items-center gap-1 shadow-sm">
+                <div className="absolute -top-3 inset-inline-start-1/2 -translate-x-1/2 bg-gold-500 text-[10px] px-1 rounded flex items-center gap-1 shadow-sm">
                   <GripHorizontal className="w-2 h-2" /> {sectionId}
                 </div>
               )}
@@ -327,7 +317,7 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile menu toggle stays right-aligned regardless */}
         <button
-          className="md:hidden ml-auto flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 shadow-sm"
+          className="md:hidden ms-auto flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 shadow-sm"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           title={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
           aria-label={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
@@ -342,18 +332,18 @@ const Header: React.FC<HeaderProps> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 w-full glass-morphism-premium border-b border-zinc-200 dark:border-zinc-800/50 shadow-2xl py-4 px-4 flex flex-col gap-3 h-[calc(100vh-80px)] overflow-y-auto pb-24 z-[100]"
+            className="absolute top-full start-0 w-full glass-morphism-premium border-b border-zinc-200 dark:border-zinc-800/50 shadow-2xl py-4 px-4 flex flex-col gap-3 h-[calc(100vh-80px)] overflow-y-auto pb-24 z-[100]"
           >
             <button onClick={() => { navigateTo(Page.HOME); setIsMobileMenuOpen(false); }} className="text-lg font-bold text-start">{content.homeLink}</button>
             <button onClick={() => { handleNav('features'); setIsMobileMenuOpen(false); }} className="text-lg font-bold text-start">{content.navFeatures}</button>
             <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
             <p className="text-sm text-zinc-500 uppercase font-bold">{content.navAiTools}</p>
             {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map(tool => (
-              <button key={tool} onClick={() => { navigateTo(Page[tool.toUpperCase() as keyof typeof Page]); setIsMobileMenuOpen(false); }} className="text-sm text-start ltr:pl-4 rtl:pr-4">{content.navToolNames[tool]}</button>
+              <button key={tool} onClick={() => { navigateTo(Page[tool.toUpperCase() as keyof typeof Page]); setIsMobileMenuOpen(false); }} className="text-sm text-start ps-4">{content.navToolNames[tool]}</button>
             ))}
             <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
             <p className="text-sm text-zinc-500 uppercase font-bold">{content.navPremiumResources}</p>
-            <button onClick={() => { navigateTo(Page.CYCLE_ARCHITECT); setIsMobileMenuOpen(false); }} className="text-sm text-start ltr:pl-4 rtl:pr-4 flex items-center gap-2">
+            <button onClick={() => { navigateTo(Page.CYCLE_ARCHITECT); setIsMobileMenuOpen(false); }} className="text-sm text-start ps-4 flex items-center gap-2">
               <CalendarCheck className="w-4 h-4 text-gold-500" />{content.navToolNames.cycleArchitect}
             </button>
             <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>

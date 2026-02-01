@@ -12,13 +12,6 @@ import {
   Activity,
   AlertCircle,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Info,
-  Microscope,
-  ScanText,
-  BrainCircuit,
-  History,
   Zap
 } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
@@ -77,8 +70,8 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
     <div className={`max-w-6xl mx-auto px-4 ${isRTL ? 'font-cairo' : ''} relative`} dir={isRTL ? 'rtl' : 'ltr'}>
 
       {/* Background Kinetic Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
+      <div className="absolute top-0 inset-inline-end-0 w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
+      <div className="absolute bottom-0 inset-inline-start-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
 
       {/* Header */}
       <motion.div
@@ -120,7 +113,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
         <div className="relative group max-w-2xl mx-auto">
           <div className="absolute -inset-1.5 bg-gradient-to-r from-gold-500 via-blue-500 to-purple-600 rounded-3xl blur-lg opacity-20 group-hover:opacity-100 transition duration-700 animate-pulse"></div>
           <div className="relative bg-white dark:bg-background/90 rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 shadow-xl overflow-hidden flex items-center p-1.5 backdrop-blur-2xl">
-            <Search className={`absolute ${isRTL ? 'right-6' : 'left-6'} w-6 h-6 text-zinc-300 group-hover:text-gold-500 transition-colors`} />
+            <Search className={`absolute inset-inline-start-6 w-6 h-6 text-zinc-300 group-hover:text-gold-500 transition-colors`} />
             <input
               type="text"
               value={search}
@@ -133,7 +126,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
 
         {/* Dynamic Category Tabs */}
         <div className="flex flex-wrap justify-center gap-3 py-2 px-2">
-          {Object.entries(categories).map(([key, label], index) => {
+          {Object.entries(categories).map(([key, label], _index) => {
             const Icon = categoryIcons[key] || FlaskConical;
             const IsActive = activeCategory === key;
             return (
@@ -252,7 +245,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
                           </h4>
                           <button
                             type="button"
-                            aria-label={isRTL ? "إغلاق" : "Close"}
+                            aria-label={content.labClose}
                             onClick={() => setAnalyzingId(null)}
                             className="p-1 rounded-md bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 transition-colors"
                           >
@@ -319,7 +312,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
           <p className="text-zinc-500 font-black text-3xl uppercase tracking-tighter opacity-50">
             {content.labReference.noResults || "NO ENCRYPTED MATCHES FOUND"}
           </p>
-          <button onClick={() => { setSearch(''); setActiveCategory('all'); }} className="mt-8 text-gold-500 font-black text-lg underline underline-offset-8 decoration-4">RE-START SCAN</button>
+          <button onClick={() => { setSearch(''); setActiveCategory('all'); }} className="mt-8 text-gold-500 font-black text-lg underline underline-offset-8 decoration-4">{content.labRestartScan}</button>
         </motion.div>
       )}
     </div>

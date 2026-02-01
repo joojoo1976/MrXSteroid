@@ -83,14 +83,14 @@ const SitemapPage: React.FC<SitemapPageProps> = ({ content, navigateTo }) => {
                             <section.icon className="w-6 h-6" />
                             <h3 className="text-xl font-black uppercase tracking-tight">{section.title}</h3>
                         </div>
-                        <ul className="space-y-4 border-l-2 border-zinc-800 ml-3 pl-6 rtl:ml-0 rtl:pl-0 rtl:mr-3 rtl:pr-6">
+                        <ul className="space-y-4 border-s-2 border-zinc-800 ms-3 ps-6">
                             {section.links.map((link, lIdx) => (
                                 <li key={lIdx}>
                                     <button
                                         onClick={() => link.page ? navigateTo(link.page as Page) : null}
                                         className="text-zinc-400 hover:text-white transition-colors text-lg font-medium flex items-center group"
                                     >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 mr-3 group-hover:bg-gold-500 transition-colors rtl:mr-0 rtl:ml-3" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 me-3 group-hover:bg-gold-500 transition-colors" />
                                         {link.label}
                                     </button>
                                 </li>

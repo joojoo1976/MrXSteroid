@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, BookOpen, Star, Users, Target, Globe } from 'lucide-react';
+import { Shield, BookOpen, Star, Users, Target } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import BrandLogo from '../components/shared/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
@@ -10,13 +10,13 @@ interface AboutPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
+const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo: _navigateTo }) => {
     const { isRTL } = usePreferences();
     return (
         <div className="space-y-20 pb-20">
             {/* Hero Section */}
             <section className="relative py-20 overflow-hidden rounded-[3rem] bg-zinc-900 border border-zinc-800">
-                <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 via-transparent to-blue-500/5" />
+                <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 via-transparent to-gold-500/5" />
                 <div className="relative z-10 max-w-4xl mx-auto px-6 text-center space-y-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -54,7 +54,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
                     whileHover={{ y: -5 }}
                     className="p-10 rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800 space-y-6"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-500">
+                    <div className="w-16 h-16 rounded-2xl bg-gold-500/20 flex items-center justify-center text-gold-500">
                         <Target className="w-8 h-8" />
                     </div>
                     <h3 className="text-3xl font-black uppercase tracking-tight">
@@ -70,7 +70,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                     { icon: Shield, label: content.labReference.labels.low || (isRTL ? "الأمان" : "Safety"), color: "text-green-500" },
-                    { icon: BookOpen, label: isRTL ? "العلم" : "Science", color: "text-blue-500" },
+                    { icon: BookOpen, label: isRTL ? "العلم" : "Science", color: "text-gold-500" },
                     { icon: Star, label: isRTL ? "التميز" : "Excellence", color: "text-gold-500" },
                     { icon: Users, label: isRTL ? "المجتمع" : "Community", color: "text-purple-500" },
                 ].map((value, i) => (

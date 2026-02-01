@@ -11,7 +11,7 @@ const Index = () => {
           Start building your amazing project here!
         </p>
         <Link to="/book-landing">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3 rounded-md shadow-md transition-colors duration-300">
+          <Button className="bg-gold-500 hover:bg-gold-600 text-black font-bold text-lg px-6 py-3 rounded-md shadow-md transition-colors duration-300">
             Go to Book Landing Page
           </Button>
         </Link>

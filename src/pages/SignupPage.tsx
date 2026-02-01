@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
@@ -8,11 +8,6 @@ import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { createSignupSchema, SignupFormValues } from '../lib/schemas';
-import { cn } from "@/lib/utils";
-
-// Design System Components
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -53,7 +48,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
         setLoading(true);
 
         try {
-            const { error } = await supabase.auth.signUp({
+            // Using the precise keys for metadata to match the Database Trigger: full_name and user_name
+            const { data, error } = await supabase.auth.signUp({
                 email: values.email,
                 password: values.password,
                 options: {
@@ -65,13 +61,25 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                 },
             });
 
-            if (error) throw error;
+            if (error) {
+                // Production-ready error handling for SMTP/Brevo and Network failures
+                if (error.message.includes('fetch') || error.message.includes('network')) {
+                    toast.error(isRTL ? "خطأ في الاتصال: يرجى التحقق من الإنترنت." : "Network error: Please check your connection.");
+                } else if (error.status === 500) {
+                    toast.error(isRTL ? "عطل فني في خادم البريد (Brevo). يرجى المحاولة لاحقاً." : "Mail server error (Brevo). Please try again later.");
+                } else {
+                    toast.error(error.message);
+                }
+                throw error;
+            }
 
-            setSuccess(true);
-            toast.success(content.signupSuccess || "Account created! Check your email.");
+            if (data.user) {
+                setSuccess(true);
+                toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني." : "Account created! Check your email."));
 
-            // Auto-redirect to login after 5 seconds
-            setTimeout(() => navigateTo(Page.LOGIN), 5000);
+                // Auto-redirect to login after 5 seconds
+                setTimeout(() => navigateTo(Page.LOGIN), 5000);
+            }
         } catch (error) {
             errorHandler.handle(error, 'Signup');
         } finally {
@@ -88,7 +96,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                     className="w-full max-w-md"
                 >
                     <Card className="rounded-3xl border-zinc-200 dark:border-zinc-800 shadow-2xl p-10 text-center backdrop-blur-sm bg-zinc-900/80 dark:bg-black/80 overflow-hidden relative">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                        <div className="absolute top-0 start-0 w-full h-2 bg-green-500"></div>
                         <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
                             <CheckCircle className="w-12 h-12 text-green-500" />
                         </div>
@@ -151,16 +159,16 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     name="fullName"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ml-1">
+                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {content.nameLabel}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-12' : 'pl-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="John Doe"
                                                     />
                                                 </div>
@@ -175,16 +183,16 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     name="username"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ml-1">
+                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {content.usernameLabel}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-12' : 'pl-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="johndoe123"
                                                     />
                                                 </div>
@@ -199,17 +207,17 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ml-1">
+                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {content.emailLabel}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="email"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-12' : 'pl-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="name@example.com"
                                                     />
                                                 </div>
@@ -224,17 +232,17 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ml-1">
+                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {content.passwordLabel}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="password"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-12' : 'pl-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="••••••••"
                                                     />
                                                 </div>
@@ -249,17 +257,17 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     name="confirmPassword"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ml-1">
+                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {isRTL ? "تأكيد كلمة المرور" : "Confirm Password"}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="password"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-12' : 'pl-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="••••••••"
                                                     />
                                                 </div>

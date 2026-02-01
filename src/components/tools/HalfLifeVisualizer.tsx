@@ -1,23 +1,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Activity, Plus, Trash2, LineChart, Zap, TrendingUp,
-  ShieldAlert, Calendar, ChevronDown, CheckCircle,
-  AlertTriangle, Info, Gauge, FlaskConical, Droplet, RotateCcw
+  ShieldAlert, Calendar, ChevronDown,
+  Info, Gauge, FlaskConical, Droplet, RotateCcw,
+  Zap, Plus, Trash2, TrendingUp, LineChart, Activity
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, ReferenceArea, Label
 } from 'recharts';
-import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
 import KineticCounter from '../shared/KineticCounter';
+import { usePreferences } from '../../context/PreferencesContext';
 
 interface HalfLifeVisualizerProps {
   content: ContentStrings;
-  navigateTo: (page: Page) => void;
 }
 
 interface ChartPayloadEntry {
@@ -27,12 +26,11 @@ interface ChartPayloadEntry {
   payload: Record<string, number | string>;
 }
 
-const CustomTooltip = ({ active, payload, label, content, isRTL }: {
+const CustomTooltip = ({ active, payload, label, content }: {
   active?: boolean;
   payload?: ChartPayloadEntry[];
   label?: string;
   content: ContentStrings;
-  isRTL: boolean;
 }) => {
   if (active && payload && payload.length) {
     return (
@@ -50,7 +48,7 @@ const CustomTooltip = ({ active, payload, label, content, isRTL }: {
           ))}
         </div>
         <div className="mt-4 pt-4 border-t border-gold-500/20 flex justify-between items-center">
-          <span className="text-gold-500 font-black uppercase text-xs tracking-widest">{isRTL ? 'الإجمالي' : 'TOTAL'}</span>
+          <span className="text-gold-500 font-black uppercase text-xs tracking-widest">{content.hlTotal}</span>
           <span className="text-white font-black text-xl">{Math.round(payload.reduce((acc: number, curr) => acc + (curr.name === 'total' ? 0 : curr.value), 0))} {content.units.mg}</span>
         </div>
       </div>
@@ -59,13 +57,14 @@ const CustomTooltip = ({ active, payload, label, content, isRTL }: {
   return null;
 };
 
-const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, navigateTo }) => {
+const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
+  const { isRTL } = usePreferences();
   // --- 1. الذاكرة الذكية: استرجاع البيانات المحفوظة ---
   const loadSavedStack = () => {
     try {
       const saved = localStorage.getItem('mrx_steroid_stack');
       return saved ? JSON.parse(saved) : [];
-    } catch (e) { return []; }
+    } catch { return []; }
   };
 
   const [stack, setStack] = useState<Array<{ id: string, compoundId: string, dosage: number, frequency: string, duration: number, startWeek: number, colorClass: string, color: string, bgColorClass?: string }>>(loadSavedStack);
@@ -80,10 +79,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
   const [frequency, setFrequency] = useState('e3d');
   const [duration, setDuration] = useState(12);
   const [startWeek, setStartWeek] = useState(1);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [showDetails, setShowDetails] = useState(true);
 
-  const isRTL = content.halfLifeVisualizer.title.includes('محاكي');
 
   const selectedCompound = useMemo(() =>
     content.halfLifeVisualizer.compounds.find(c => c.id === compoundId),
@@ -92,25 +88,22 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
   const colors = ['#eab308', '#3b82f6', '#ef4444', '#10b981', '#8b5cf6'];
 
   const addToStack = () => {
-    setIsAnimating(true);
-    const idx = stack.length % colors.length;
-    const colorClasses = ['bg-yellow-500', 'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500'];
-    setStack([...stack, {
+    if (!selectedCompound) return;
+    const newItem = {
       id: Math.random().toString(36).substr(2, 9),
       compoundId,
       dosage,
       frequency,
       duration,
       startWeek,
-      colorClass: `bg-stack-${idx}`,
-      color: colors[idx],
-      bgColorClass: colorClasses[idx]
-    }]);
-    setTimeout(() => setIsAnimating(false), 500);
+      colorClass: `bg-gold-500`,
+      color: colors[stack.length % colors.length],
+      bgColorClass: `bg-gold-500`
+    };
+    setStack([...stack, newItem]);
   };
 
   const removeFromStack = (id: string) => { setStack(stack.filter(s => s.id !== id)); };
-  const resetStack = () => { if (window.confirm(isRTL ? 'هل أنت متأكد من مسح الخطة؟' : 'Clear entire stack?')) setStack([]); };
 
   const simulationData = useMemo(() => {
     if (stack.length === 0) return null;
@@ -118,7 +111,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
     const dataByDay: (Record<string, number> & { day: number, total: number })[] = Array.from({ length: daysToSimulate }, (_, i) => ({ day: i, total: 0 }));
     const compoundNames: string[] = [];
 
-    stack.forEach((item, stackIdx) => {
+    stack.forEach((item) => {
       const compound = content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId);
       if (!compound) return;
 
@@ -201,62 +194,62 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
 
       // Nolvadex
       pctProtocol.push({
-        drug: isRTL ? 'نولفادكس' : 'Nolvadex',
+        drug: content.halfLifeVisualizer.analysis?.pctNolvadex || 'Nolvadex',
         loading: isHeavy ? '40mg' : '20mg',
         maintenance: isHeavy ? '20mg' : '10mg',
-        note: isRTL ? 'يومياً' : 'Daily'
+        note: content.halfLifeVisualizer.analysis?.pctDaily || (isRTL ? 'يومياً' : 'Daily')
       });
 
       // Clomid
       pctProtocol.push({
-        drug: isRTL ? 'كلوميد' : 'Clomid',
+        drug: content.halfLifeVisualizer.analysis?.pctClomid || 'Clomid',
         loading: isHeavy ? '100mg' : '50mg',
         maintenance: isHeavy ? '50mg' : '25mg',
-        note: isRTL ? 'يومياً' : 'Daily'
+        note: content.halfLifeVisualizer.analysis?.pctDaily || (isRTL ? 'يومياً' : 'Daily')
       });
 
       // Epifasi (hCG)
       pctProtocol.push({
-        drug: isRTL ? 'ايبيفاس (hCG)' : 'Epifasi (hCG)',
+        drug: content.halfLifeVisualizer.analysis?.pctHcg || 'Epifasi (hCG)',
         loading: isHeavy ? '1000 IU' : '500 IU',
         maintenance: '-',
-        note: isRTL ? 'كل يومين' : 'EOD'
+        note: content.halfLifeVisualizer.analysis?.pctEod || (isRTL ? 'كل يومين' : 'EOD')
       });
     }
 
     // Stability Tips
-    let stabilityTips = isRTL ? 'استقرار هرموني ممتاز.' : 'Excellent hormonal stability.';
+    let stabilityTips = content.halfLifeVisualizer.analysis?.stabilityExcellent || (isRTL ? 'استقرار هرموني ممتاز.' : 'Excellent hormonal stability.');
     if (stabilityScore < 70) {
-      stabilityTips = isRTL
+      stabilityTips = content.halfLifeVisualizer.analysis?.stabilityFluctuation || (isRTL
         ? '⚠️ التذبذب عالٍ! يفضل زيادة تكرار الحقن (مثلاً من مرتين أسبوعياً إلى يوم وراء يوم) لتقليل التقلبات.'
-        : '⚠️ High fluctuation! Increase injection frequency (e.g., from twice weekly to EOD) to minimize spikes.';
+        : '⚠️ High fluctuation! Increase injection frequency (e.g., from twice weekly to EOD) to minimize spikes.');
     }
 
     // Safety Tips
-    let safetyTips = isRTL ? 'المؤشرات ضمن النطاق الآمن.' : 'Safety indicators within range.';
+    let safetyTips = content.halfLifeVisualizer.analysis?.safetySafe || (isRTL ? 'المؤشرات ضمن النطاق الآمن.' : 'Safety indicators within range.');
     if (has19Nor) {
-      safetyTips = isRTL
+      safetyTips = content.halfLifeVisualizer.analysis?.safety19nor || (isRTL
         ? '⚠️ دمج 19-nor (ترين/ديكا): استخدم كابيرجولين 0.25-0.5 ملجم عند الحاجة لمراقبة البرولاكتين.'
-        : '⚠️ 19-nor detected (Tren/Deca): Use Cabergoline 0.25-0.5mg as needed to monitor Prolactin.';
+        : '⚠️ 19-nor detected (Tren/Deca): Use Cabergoline 0.25-0.5mg as needed to monitor Prolactin.');
     } else if (aromatizationRisk > 2 && !hasAI) {
-      safetyTips = isRTL
+      safetyTips = content.halfLifeVisualizer.analysis?.safetyAromatization || (isRTL
         ? '⚠️ خطر أروماتة عالٍ: تأكد من استخدام أريميدكس أو أروماسين للسيطرة على الاستروجين.'
-        : '⚠️ High aromatization risk: Use Arimidex or Aromasin to control Estrogen.';
+        : '⚠️ High aromatization risk: Use Arimidex or Aromasin to control Estrogen.');
     }
 
     // PCT Tips
-    let pctTips = isRTL
-      ? `تحتاج لبدء التنظيف بعد ${Math.round(pctStartDay)} يوماً لضمان خروج جميع المواد من جسمك.`
-      : `Start PCT after ${Math.round(pctStartDay)} days to ensure all compounds have cleared.`;
+    let pctTips = (content.halfLifeVisualizer.analysis?.pctStartPrefix || (isRTL ? 'تحتاج لبدء التنظيف بعد ' : 'Start PCT after ')) +
+      Math.round(pctStartDay) +
+      (content.halfLifeVisualizer.analysis?.pctStartSuffix || (isRTL ? ' يوماً لضمان خروج جميع المواد من جسمك.' : ' days to ensure all compounds have cleared.'));
 
     if (pctIntensity > 3) {
-      pctTips = isRTL
+      pctTips = content.halfLifeVisualizer.analysis?.pctHeavy || (isRTL
         ? '🚨 كورس ثقيل جداً: لا غنى عن الـ hCG ومتابعة دقيقة لهرمونات LH/FSH بعد انتهاء التنظيف.'
-        : '🚨 Ultra Heavy Cycle: hCG is mandatory. Monitor LH/FSH levels closely after finishing PCT.';
+        : '🚨 Ultra Heavy Cycle: hCG is mandatory. Monitor LH/FSH levels closely after finishing PCT.');
     } else if (has19Nor) {
-      pctTips = isRTL
+      pctTips = content.halfLifeVisualizer.analysis?.pct19nor || (isRTL
         ? '⚠️ تنبيه 19-nor: الاستشفاء قد يكون أبطأ. ننصح بإطالة فترة التنظيف لـ 6 أسابيع بدل 4.'
-        : '⚠️ 19-nor Alert: Recovery might be slower. Consider extending PCT to 6 weeks instead of 4.';
+        : '⚠️ 19-nor Alert: Recovery might be slower. Consider extending PCT to 6 weeks instead of 4.');
     }
 
     return {
@@ -279,12 +272,11 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
 
 
   // --- Animation Variants ---
-  const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
   return (
     <div className="max-w-7xl mx-auto py-16 px-4">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
+      <div className="absolute top-0 end-0 w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
 
       <motion.div initial={{ opacity: 0, y: -40 }} whileInView={{ opacity: 1, y: 0 }} className="text-center mb-20 relative">
         <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 4 }} className="inline-flex items-center justify-center p-6 mb-8 rounded-[2.5rem] bg-gold-500/10 border-2 border-gold-500/20 backdrop-blur-3xl shadow-2xl animate-glow">
@@ -318,7 +310,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                     <option key={c.id} value={c.id}>{isRTL && c.nameAr ? c.nameAr : c.name}</option>
                   ))}
                 </select>
-                <ChevronDown className={`absolute top-1/2 ${isRTL ? 'left-6' : 'right-6'} -translate-y-1/2 text-gold-500 pointer-events-none`} />
+                <ChevronDown className={`absolute top-1/2 end-6 -translate-y-1/2 text-gold-500 pointer-events-none`} />
               </div>
             </div>
 
@@ -338,7 +330,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                 {dosage > 1000 && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black text-red-500 bg-red-500/10 p-2 rounded-xl border border-red-500/20 flex items-center gap-1 justify-center mt-1">
                     <ShieldAlert size={12} />
-                    {isRTL ? 'تحذير: جرعة عالية جداً' : 'CRITICAL HAZARD: High Dose'}
+                    {content.halfLifeVisualizer.hazardWarning}
                   </motion.div>
                 )}
               </div>
@@ -398,13 +390,13 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
               <div className="pt-8 border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 space-y-4">
                 <h4 className="text-sm font-black text-zinc-500 uppercase tracking-[0.5em]">{content.halfLifeVisualizer.activeStackTitle}</h4>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {stack.map((item, idx) => (
+                  {stack.map((item) => (
                     <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-background p-4 rounded-2xl border border-transparent hover:border-gold-500/20 transition-all">
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${item.bgColorClass}`}></div>
                         <div className="text-sm font-black truncate max-w-[120px]">{content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId)?.name}</div>
                       </div>
-                      <button onClick={() => removeFromStack(item.id)} className="text-zinc-400 hover:text-red-500 p-2" title={isRTL ? 'إزالة' : 'Remove'} aria-label={isRTL ? 'إزالة' : 'Remove'}><Trash2 size={16} /></button>
+                      <button onClick={() => removeFromStack(item.id)} className="text-zinc-400 hover:text-red-500 p-2" title={content.labClose} aria-label={content.labClose}><Trash2 size={16} /></button>
                     </div>
                   ))}
                 </div>
@@ -423,10 +415,10 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                 {[
                   { icon: Gauge, label: content.halfLifeVisualizer.stabilityTitle, val: `${simulationData.stabilityScore}%`, sub: content.halfLifeVisualizer.consistencyLabel, color: simulationData.stabilityScore > 80 ? 'text-green-500' : 'text-yellow-500' },
                   { icon: TrendingUp, label: content.halfLifeVisualizer.peakLabel, val: `${Math.round(simulationData.maxLevel)}`, sub: content.halfLifeVisualizer.mgSerumLabel, color: 'text-gold-500' },
-                  { icon: ShieldAlert, label: isRTL ? 'الخطر' : 'Risk', val: simulationData.pctIntensity > 2 ? (isRTL ? 'عالٍ' : 'HIGH') : (isRTL ? 'آمن' : 'SAFE'), sub: content.halfLifeVisualizer.loadLevelLabel, color: simulationData.pctIntensity > 2 ? 'text-red-500' : 'text-green-500' }
+                  { icon: ShieldAlert, label: content.halfLifeVisualizer.loadLevelLabel, val: simulationData.pctIntensity > 2 ? (content.halfLifeVisualizer.riskLevels.high) : (content.halfLifeVisualizer.riskLevels.low), sub: content.halfLifeVisualizer.loadLevelLabel, color: simulationData.pctIntensity > 2 ? 'text-red-500' : 'text-green-500' }
                 ].map((stat, i) => (
                   <motion.div variants={itemVariants} initial="hidden" animate="visible" key={i} className="bg-zinc-900/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 hover:border-gold-500/20 transition-all group overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl group-hover:bg-white/10 transition-all"></div>
+                    <div className="absolute top-0 end-0 w-24 h-24 bg-white/5 blur-3xl group-hover:bg-white/10 transition-all"></div>
                     <div className="flex justify-between items-start mb-6">
                       <div className={`p-4 rounded-2xl bg-white/5 group-hover:scale-110 transition-transform ${stat.color}`}>
                         <stat.icon size={24} />
@@ -466,13 +458,13 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                       ))}
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                    <XAxis dataKey="day" stroke="#52525b" fontSize={14} tickLine={false} axisLine={false} tickFormatter={(v) => v % 7 === 0 ? `${isRTL ? 'يوم' : 'D'}${v}` : ''} />
+                    <XAxis dataKey="day" stroke="#52525b" fontSize={14} tickLine={false} axisLine={false} tickFormatter={(v) => v % 7 === 0 ? `${content.halfLifeVisualizer.xAxis}${v}` : ''} />
                     <YAxis hide domain={[0, simulationData.maxLevel * 1.5]} />
-                    <Tooltip content={<CustomTooltip content={content} isRTL={isRTL} />} />
+                    <Tooltip content={<CustomTooltip content={content} />} />
 
                     {/* Reference Areas for Medical Context */}
-                    <ReferenceArea y1={0} y2={50} fill="rgba(34, 197, 94, 0.05)" label={{ value: isRTL ? 'النطاق الطبيعي' : 'NATURAL ZONE', position: 'insideBottomLeft', fill: '#22c55e', fontSize: 14, fontWeight: '900', opacity: 0.3 }} />
-                    <ReferenceArea y1={800} y2={simulationData.maxLevel * 1.5} fill="rgba(239, 68, 68, 0.02)" label={{ value: isRTL ? 'منطقة القمة هرمونية' : 'BLAST ZONE', position: 'insideTopLeft', fill: '#ef4444', fontSize: 14, fontWeight: '900', opacity: 0.3 }} />
+                    <ReferenceArea y1={0} y2={50} fill="rgba(34, 197, 94, 0.05)" label={{ value: content.hlNaturalZone, position: 'insideBottomLeft', fill: '#22c55e', fontSize: 14, fontWeight: '900', opacity: 0.3 }} />
+                    <ReferenceArea y1={800} y2={simulationData.maxLevel * 1.5} fill="rgba(239, 68, 68, 0.02)" label={{ value: content.hlBlastZone, position: 'insideTopLeft', fill: '#ef4444', fontSize: 14, fontWeight: '900', opacity: 0.3 }} />
 
                     {simulationData.compoundNames.map((name, i) => (
                       <Area key={name} type="monotone" dataKey={name} stroke={colors[i % colors.length]} fillOpacity={1} fill={`url(#grad_${i})`} strokeWidth={3} stackId="1" animationDuration={2000} />
@@ -489,7 +481,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Mr. X Analysis & Tips */}
                 <div className="bg-gold-500 p-10 rounded-[3rem] text-black shadow-2xl relative overflow-hidden flex flex-col">
-                  <div className="absolute top-0 right-0 p-8 opacity-10"><Activity size={120} /></div>
+                  <div className="absolute top-0 end-0 p-8 opacity-10"><Activity size={120} /></div>
                   <div className="space-y-8 relative z-10 h-full flex flex-col">
                     <div>
                       <h4 className="font-black text-lg uppercase tracking-widest mb-4 flex items-center gap-3">
@@ -520,7 +512,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                       <div className="p-6 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group overflow-hidden">
                         <div className="flex items-center gap-3 mb-3 shrink-0">
                           <RotateCcw size={20} className="text-black group-hover:scale-125 transition-transform" />
-                          <span className="text-base font-black uppercase tracking-[0.2em]">{isRTL ? 'نصائح الـ PCT' : 'PCT Advice'}</span>
+                          <span className="text-base font-black uppercase tracking-[0.2em]">{content.hlPctAdvice}</span>
                         </div>
                         <p className="text-lg font-black opacity-90 leading-relaxed break-words">{simulationData.pctTips}</p>
                       </div>
@@ -534,7 +526,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                   whileInView={{ opacity: 1, scale: 1 }}
                   className="bg-zinc-900/40 p-10 rounded-[4rem] border-2 border-white/5 backdrop-blur-3xl space-y-8 flex flex-col h-full shadow-[0_0_50px_-12px_rgba(234,179,8,0.15)] relative overflow-hidden group"
                 >
-                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold-500/10 blur-[100px] group-hover:bg-gold-500/20 transition-all duration-700 rounded-full"></div>
+                  <div className="absolute -top-24 -end-24 w-64 h-64 bg-gold-500/10 blur-[100px] group-hover:bg-gold-500/20 transition-all duration-700 rounded-full"></div>
 
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                     <div className="space-y-1">
@@ -546,7 +538,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                           simulationData.pctIntensity > 1 ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/20 shadow-yellow-500/10' :
                             'bg-green-500/20 text-green-500 border border-green-500/20 shadow-green-500/10'
                           }`}>
-                          {content.halfLifeVisualizer.analysis?.protocolLevelLabel || (isRTL ? 'مستوى البروتوكول' : 'Protocol Level')}: {simulationData.pctIntensity > 3 ? (isRTL ? 'أقصى' : 'ULTRA') : simulationData.pctIntensity > 1 ? (isRTL ? 'متوسط' : 'MODERATE') : (isRTL ? 'خفيف' : 'LITE')}
+                          {content.hlProtocolLevel}: {simulationData.pctIntensity > 3 ? content.hlUltraLevel : simulationData.pctIntensity > 1 ? content.hlModerateLevel : content.hlLiteLevel}
                         </span>
                       </div>
                     </div>
@@ -556,14 +548,14 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                       className="px-6 py-3 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-500 text-xl font-black flex items-center gap-3 backdrop-blur-lg"
                     >
                       <Zap className="w-4 h-4 fill-current" />
-                      {isRTL ? 'يبدأ اليوم' : 'Starts Day'} <KineticCounter value={Math.round(simulationData.pctStartDay)} className="ml-1" />
+                      {content.hlStartsDay} <KineticCounter value={Math.round(simulationData.pctStartDay)} className="ms-1" />
                     </motion.div>
                   </div>
 
                   {/* Recovery Power Bar */}
                   <div className="space-y-3 relative z-10">
                     <div className="flex justify-between text-sm font-black uppercase tracking-widest text-zinc-500">
-                      <span>{content.halfLifeVisualizer.analysis?.recoveryPowerLabel || (isRTL ? 'قوة الاستشفاء' : 'RECOVERY POWER')}</span>
+                      <span>{content.hlRecoveryPower}</span>
                       <KineticCounter value={simulationData.pctIntensity * 20} suffix="%" className="text-gold-500 text-base" />
                     </div>
                     <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
@@ -583,13 +575,13 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                   </div>
 
                   <div className="flex-grow overflow-hidden rounded-[2.5rem] border border-white/5 bg-black/40 shadow-inner relative z-10">
-                    <table className="w-full text-right table-auto border-collapse">
+                    <table className="w-full text-start table-auto border-collapse">
                       <thead className="bg-white/5 text-sm font-black uppercase tracking-widest text-zinc-500 border-b border-white/5">
                         <tr>
-                          <th className={`p-4 ${isRTL ? 'text-right' : 'text-left'}`}>{content.halfLifeVisualizer.analysis?.tableHeaders.compound || (isRTL ? 'المادة' : 'Drug')}</th>
-                          <th className="p-4 text-center">{content.halfLifeVisualizer.analysis?.tableHeaders.first10Days || (isRTL ? 'أول 10 أيام' : 'First 10 Days')}</th>
-                          <th className="p-4 text-center">{content.halfLifeVisualizer.analysis?.tableHeaders.weeks2to4 || (isRTL ? 'أسابيع 2-4' : 'Weeks 2-4')}</th>
-                          <th className="p-4 text-center">{content.halfLifeVisualizer.analysis?.tableHeaders.frequency || (isRTL ? 'التكرار' : 'Freq')}</th>
+                          <th className="p-4 text-start">{content.hlDrug}</th>
+                          <th className="p-4 text-center">{content.hlFirst10Days}</th>
+                          <th className="p-4 text-center">{content.hlWeeks2to4}</th>
+                          <th className="p-4 text-center">{content.hlFreq}</th>
                         </tr>
                       </thead>
                       <tbody className="text-base font-bold text-white divide-y divide-white/5">
@@ -602,7 +594,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                               transition={{ delay: 0.1 * idx }}
                               className="hover:bg-gold-500/5 transition-all duration-300 group/row"
                             >
-                              <td className={`p-4 font-black ${isRTL ? 'text-right' : 'text-left'}`}>
+                              <td className="p-4 font-black text-start">
                                 <div className="flex items-center gap-3">
                                   <div className="p-1.5 rounded-lg bg-gold-500/10 shrink-0 group-hover/row:scale-110 transition-transform">
                                     <Droplet className="w-3 h-3 text-gold-500" />
@@ -630,7 +622,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content, naviga
                     whileHover={{ y: -5 }}
                     className="p-8 bg-gradient-to-br from-gold-500/10 to-transparent rounded-[2.5rem] border border-gold-500/20 relative overflow-hidden z-10"
                   >
-                    <div className="absolute top-0 right-0 p-4 opacity-5"><Activity size={60} /></div>
+                    <div className="absolute top-0 end-0 p-4 opacity-5"><Activity size={60} /></div>
                     <div className="flex gap-5 items-start">
                       <div className="p-3 rounded-2xl bg-gold-500/20 shrink-0">
                         <Info className="text-gold-500 w-6 h-6 animate-pulse" />

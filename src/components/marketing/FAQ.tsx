@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ContentStrings, FaqItem } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
-import { Search, MessageSquare, ChevronDown, Zap, HelpCircle, ShieldAlert, Award } from 'lucide-react';
+import { Search, MessageSquare, ChevronDown, Zap, HelpCircle } from 'lucide-react';
+import { usePreferences } from '../../context/PreferencesContext';
 
-const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
+const FAQItemComponent: React.FC<{ item: FaqItem, content: ContentStrings }> = ({ item, content }) => {
   const [isOpen, setIsOpen] = useState(false);
   const id = React.useId();
   const ariaProps = {
@@ -34,14 +35,16 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
           <div className="flex-1 text-2xl font-bold">
             <StyledBrandName text={item.question} />
 
-            <span className="text-base text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">{item.category}</span>
+            <span className="text-base text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">
+              {content.faqCategories[item.category] || item.category}
+            </span>
           </div>
         </span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0, scale: isOpen ? 1.2 : 1 }}
           className={`p-2 rounded-full ${isOpen ? 'bg-gold-500/20 text-gold-500' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
         >
-          <ChevronDown className="w-6 h-6" />
+          <ChevronDown className={`w-6 h-6 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </motion.div>
       </button>
 
@@ -54,12 +57,12 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="px-5 pb-5 ltr:pl-20 rtl:pr-20 text-zinc-600 dark:text-zinc-300 leading-relaxed text-2xl font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-4">
+            <div className="px-5 pb-5 ps-20 text-zinc-600 dark:text-zinc-300 leading-relaxed text-2xl font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-4">
               <StyledBrandName text={item.answer} />
 
               <div className="mt-6 flex gap-2">
                 <Zap className="w-5 h-5 text-gold-500 animate-pulse" />
-                <span className="text-base font-black text-gold-500 uppercase tracking-tighter">EXPERT PROTOCOL</span>
+                <span className="text-base font-black text-gold-500 uppercase tracking-tighter">{content.expertProtocol || 'EXPERT PROTOCOL'}</span>
               </div>
             </div>
           </motion.div>
@@ -70,6 +73,7 @@ const FAQItemComponent: React.FC<{ item: FaqItem }> = ({ item }) => {
 };
 
 const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
+  const { isRTL } = usePreferences();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('all');
   const categories = Object.keys(content.faqCategories) as Array<keyof typeof content.faqCategories>;
@@ -84,9 +88,9 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
     <section id="faq" className="py-32 bg-white dark:bg-background border-t border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
 
       {/* Dynamic Background Glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-30 -z-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
+      <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-30 -z-10">
+        <div className="absolute top-0 start-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
+        <div className="absolute bottom-0 end-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
       </div>
 
       <div className="container mx-auto px-4 max-w-5xl relative z-10">
@@ -114,7 +118,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
           >
             <div className="absolute -inset-2 bg-gradient-to-r from-gold-500 via-emerald-500 to-gold-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-700 animate-pulse"></div>
             <div className="relative bg-white dark:bg-card rounded-[2rem] shadow-2xl border-2 border-zinc-100 dark:border-zinc-800 overflow-hidden flex items-center p-2">
-              <Search className="ml-6 w-8 h-8 text-zinc-300 group-focus-within:text-gold-500 transition-all group-hover:scale-110" />
+              <Search className="ms-6 w-8 h-8 text-zinc-300 group-focus-within:text-gold-500 transition-all group-hover:scale-110" />
               <input
                 type="text"
                 placeholder={content.faqSearchPlaceholder}
@@ -133,7 +137,7 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
               onClick={() => setFilter('all')}
               className={`px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-xl ${filter === 'all' ? 'bg-gold-500 text-black shadow-gold-500/40 ring-4 ring-gold-500/20 animate-glow' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 border-2 border-transparent hover:border-gold-500/30 hover:text-gold-500'}`}
             >
-              ALL TOPICS
+              {content.allTopics || 'ALL TOPICS'}
             </motion.button>
             {categories.map(cat => (
               <motion.button
@@ -157,12 +161,12 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
                 <motion.div
                   key={faq.question}
                   layout
-                  initial={{ opacity: 0, x: -50 }}
+                  initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <FAQItemComponent item={faq} />
+                  <FAQItemComponent item={faq} content={content} />
                 </motion.div>
               ))
             ) : (
@@ -172,8 +176,8 @@ const FAQ: React.FC<{ content: ContentStrings }> = ({ content }) => {
                 className="text-center py-32 bg-zinc-50 dark:bg-zinc-900 rounded-[3rem] border-4 border-dashed border-zinc-200 dark:border-zinc-800 animate-glow"
               >
                 <HelpCircle className="w-20 h-20 text-zinc-300 dark:text-zinc-700 mx-auto mb-6 animate-bounce" />
-                <p className="text-zinc-400 text-2xl font-black uppercase tracking-tighter">No encrypted answers found matching your search.</p>
-                <button onClick={() => { setSearch(''); setFilter('all'); }} className="mt-8 text-gold-500 font-black underline underline-offset-8">RESET SCAN</button>
+                <p className="text-zinc-400 text-2xl font-black uppercase tracking-tighter">{content.noFaqsFound || 'No encrypted answers found matching your search.'}</p>
+                <button onClick={() => { setSearch(''); setFilter('all'); }} className="mt-8 text-gold-500 font-black underline underline-offset-8">{content.resetScan || 'RESET SCAN'}</button>
               </motion.div>
             )}
           </AnimatePresence>

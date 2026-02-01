@@ -1,33 +1,5 @@
-import { ContentStrings, LabTest, InjectionSite, Compound, TimelinePhase, IQQuestion, QuizContent, DailyIQContent, CycleArchitectContent, TeaserTableData } from '../types';
-import { seoKeywordsArabic, footerKeywordsPoolAr, salesDataAr, fullArabicDisclaimer, commonCompounds } from './data';
-
-export const teaserTablesAR: TeaserTableData[] = [
-    {
-        title: "جدول تضخيم للمبتدئين (عيّنة)",
-        headers: ["الأسبوع", "المادة", "الجرعة"],
-        rows: [
-            { col1: "1-5", col2: "Testosterone Enanthate", col3: "500mg / أسبوع" },
-            { col1: "1-5", col2: "Dianabol (Kickstart)", col3: "30mg / يوم" },
-            { col1: "1-12", col2: "Arimidex", col3: "0.5mg / يوم بعد يوم" },
-            { col1: "6-12", col2: "Testosterone Enanthate", col3: "500mg / أسبوع" },
-            { col1: "13-15", col2: "فترة الانتظار (Clearance)", col3: "بدون مواد" },
-            { col1: "16-17", col2: "PCT: Nolvadex", col3: "40mg / يوم" },
-            { col1: "18-19", col2: "PCT: Clomid", col3: "50mg / يوم" }
-        ]
-    },
-    {
-        title: "جدول تنشيف متقدم (عيّنة)",
-        headers: ["الأسبوع", "المادة", "الجرعة"],
-        rows: [
-            { col1: "1-4", col2: "Testosterone Propionate", col3: "100mg / يوم بعد يوم" },
-            { col1: "1-4", col2: "Trenbolone Acetate", col3: "75mg / يوم بعد يوم" },
-            { col1: "1-8", col2: "Masteron Propionate", col3: "100mg / يوم بعد يوم" },
-            { col1: "5-10", col2: "Winstrol (Injectable)", col3: "50mg / يوم بعد يوم" },
-            { col1: "1-10", col2: "T3 (Cytomel)", col3: "25mcg (تدرج هرمي)" },
-            { col1: "11-14", col2: "PCT Protocol", col3: "HCG + SERMs" }
-        ]
-    }
-];
+import { ContentStrings, LabTest, InjectionSite } from '../types';
+import { seoKeywordsArabic, fullArabicDisclaimer, commonCompounds } from './data';
 
 export const labTestsAr: LabTest[] = [
     {
@@ -571,6 +543,15 @@ export const arContent: ContentStrings = {
         system: "وضع النظام",
     },
     backToHome: "العودة للرئيسية",
+    viewFullDatabase: "عرض قاعدة البيانات الكاملة",
+    eliteSchedulesTitle: "جدوال <span class='text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600'>النخبة</span>",
+    eliteSchedulesSubtitle: "احصل على بروتوكولات عالمية المستوى مصممة للأبطال.",
+    expertProtocol: "بروتوكول الخبراء",
+    allTopics: "كل المواضيع",
+    noFaqsFound: "لم يتم العثور على إجابات مشفرة تطابق بحثك.",
+    resetScan: "إعادة تعيين المسح",
+    liveData: "بيانات حية",
+    noActiveSchedules: "لم يتم العثور على جداول نشطة.",
     seoTitle: "مستر إكس ستيرويد | الدليل النهائي لكمال الأجسام والهرمونات",
     seoDescription: "اكتشف أقوى دليل علمي في العالم لبناء العضلات والدورات الهرمونية. مستر إكس ستيرويد بقلم جورج موريس يقدم بروتوكولات واضحة، أدلة سلامة، وببليوجرافيا المكملات.",
     seoKeywords: seoKeywordsArabic,
@@ -694,6 +675,33 @@ export const arContent: ContentStrings = {
             category: "safety"
         }
     ],
+    scheduleData: [
+        { id: 1, phase: 'الأسابيع 1-4', focus: 'زيادة الكتلة', protocol: 'Test E + Deca', status: 'ACTIVE', intensity: 'HIGH' },
+        { id: 2, phase: 'الأسابيع 5-8', focus: 'التنشيف والصلابة', protocol: 'Test P + Tren A', status: 'PENDING', intensity: 'EXTREME' },
+        { id: 3, phase: 'الأسابيع 9-12', focus: 'أسبوع القمة', protocol: 'Masteron + Anavar', status: 'LOCKED', intensity: 'MAX' },
+    ],
+    scheduleTableTitle: "تحضير مستر أولمبيا",
+    scheduleTableDescription: "البروتوكول الدقيق الذي يستخدمه أفضل 1%.",
+    scheduleHeaders: {
+        phase: 'المرحلة',
+        focus: 'التركيز',
+        protocol: 'البروتوكول',
+        status: 'الحالة'
+    },
+    hlTotal: "الإجمالي",
+    hlStartsDay: "يبدأ اليوم",
+    hlRecoveryPower: "قوة الاستشفاء",
+    hlDrug: "المادة",
+    hlFirst10Days: "أول 10 أيام",
+    hlWeeks2to4: "أسابيع 2-4",
+    hlFreq: "التكرار",
+    hlNaturalZone: "النطاق الطبيعي",
+    hlBlastZone: "منطقة القمة هرمونية",
+    hlPctAdvice: "نصائح الـ PCT",
+    hlProtocolLevel: "مستوى البروتوكول",
+    hlUltraLevel: "أقصى",
+    hlModerateLevel: "متوسط",
+    hlLiteLevel: "خفيف",
     privacyPolicy: "سياسة الخصوصية",
     termsOfService: "شروط الخدمة واتفاقية الاستخدام",
     refundPolicy: "سياسة الاسترجاع",
@@ -969,6 +977,8 @@ export const arContent: ContentStrings = {
     calcWater: "احتياج الماء",
     calcLiters: "لتر",
     calcRecalculate: "إعادة الحساب",
+    calcHidePlan: "إخفاء خطة الوجبات",
+    calcShowPlan: "إظهار خطة الوجبات",
     calcGenerateMealPlan: "توليد خطة وجبات AI",
     calcGenerating: "جاري التوليد...",
     calcMealPlanTitle: "خطة الوجبات المقترحة",
@@ -977,10 +987,27 @@ export const arContent: ContentStrings = {
     calcTdeeLabel: "إجمالي حرق الطاقة اليومي (TDEE)",
     calcBmrLabel: "معدل الأيض الأساسي (BMR)",
     calcTefLabel: "التأثير الحراري للطعام (TEF)",
+    calcBmiStatuses: {
+        underweight: "نقص وزن",
+        healthy: "وزن صحي",
+        overweight: "زيادة وزن",
+        obese: "سمنة"
+    },
+    calcMealSteps: {
+        preheat: "تسخين",
+        season: "تتبيل",
+        cook: "طهي",
+        prepare: "تحضير",
+        combine: "دمج"
+    },
     calcBeastTitle: "تصنيف الوحش الكامن",
     calcAnalysisLabel: "تحليل المحرك الذكي",
     calcBmiStatusLabel: "حالة كتلة الجسم (BMI)",
     calcDistributionTitle: "توزيع الماكروز اليومي",
+    calcProteinDesc: "تخليق الأنسجة العضلية",
+    calcCarbsDesc: "تعويض الجليكوجين الفائق",
+    calcFatsDesc: "تحسين التوازن الهرموني",
+    calcPredictiveAccuracyVal: "92.4%",
 
     calcShuffleLabel: "تبديل الوجبات",
     calcAwaitingInputLabel: "في انتظار مدخلات العضلات",
@@ -1081,6 +1108,8 @@ export const arContent: ContentStrings = {
         prolactinRisk: "خطر البرولاكتين",
         riskLevels: { low: "آمن", med: "حذر", high: "خطر" },
         emptyStackMsg: "أضف مواد لتشاهد منحنى التراكم",
+        emptyStackDesc: "أضف المواد للبدء في محاكاة مستويات الهرمون والتركيز في الدم بمرور الوقت.",
+        hazardWarning: "تحذير: جرعة عالية جداً",
         compounds: commonCompounds,
         frequencies: { ed: "يومياً (ED)", eod: "يوم بعد يوم (EOD)", e3d: "كل 3 أيام (E3D)", e7d: "أسبوعياً (E7D)" },
         tooltipDay: "اليوم",
@@ -1107,7 +1136,21 @@ export const arContent: ContentStrings = {
                 first10Days: "أول 10 أيام",
                 weeks2to4: "أسابيع 2-4",
                 frequency: "التكرار"
-            }
+            },
+            stabilityExcellent: "استقرار هرموني ممتاز.",
+            stabilityFluctuation: "⚠️ التذبذب عالٍ! يفضل زيادة تكرار الحقن (مثلاً من مرتين أسبوعياً إلى يوم وراء يوم) لتقليل التقلبات.",
+            safetySafe: "المؤشرات ضمن النطاق الآمن.",
+            safety19nor: "⚠️ دمج 19-nor (ترين/ديكا): استخدم كابيرجولين 0.25-0.5 ملجم عند الحاجة لمراقبة البرولاكتين.",
+            safetyAromatization: "⚠️ خطر أروماتة عالٍ: تأكد من استخدام أريميدكس أو أروماسين للسيطرة على الاستروجين.",
+            pctStartPrefix: "تحتاج لبدء التنظيف بعد ",
+            pctStartSuffix: " يوماً لضمان خروج جميع المواد من جسمك.",
+            pctHeavy: "🚨 كورس ثقيل جداً: لا غنى عن الـ hCG ومتابعة دقيقة لهرمونات LH/FSH بعد انتهاء التنظيف.",
+            pct19nor: "⚠️ تنبيه 19-nor: الاستشفاء قد يكون أبطأ. ننصح بإطالة فترة التنظيف لـ 6 أسابيع بدل 4.",
+            pctDaily: "يومياً",
+            pctEod: "كل يومين (EOD)",
+            pctNolvadex: "نولفاديكس",
+            pctClomid: "كلوميد",
+            pctHcg: "إبيفاسي (hCG)"
         }
     },
     injectionMap: {
@@ -1170,10 +1213,8 @@ export const arContent: ContentStrings = {
     },
     offerExpired: "انتهى العرض!",
     heroEditions: {
-        ar: "نسخة عربية",
-        en: "English Edition",
-        de: "Deutsche Ausgabe",
-        ja: "日本語版"
+        ar: "النسخة العربية (Arabic)",
+        en: "English Edition"
     },
     mealPlanTitle: "خطة الوجبات",
     mealPlanBtn: "توليد خطة",
@@ -1188,6 +1229,52 @@ export const arContent: ContentStrings = {
         { week: "11-12", title: "مرحلة الختام (Peaking)", shortDesc: "اللمسات الأخيرة قبل الخروج", iconKey: "flag", stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 }, details: { biological: "أقصى كثافة عضلية. الاستعداد لسحب الهرمونات.", feeling: "إرهاق بسيط. جاهزية تامة.", action: "خطط للـ PCT. ابدأ في تقليل السعرات قليلاً." } }
     ],
     timelineLabels: { strength: "القوة", hypertrophy: "الضخامة", water: "احتباس الماء", fatLoss: "حرق الدهون", mood: "المزاج", biologicalTitle: "ماذا يحدث بيولوجياً؟", feelingTitle: "كيف ستشعر؟", actionTitle: "ماذا يجب أن تفعل؟", phaseLabel: "المرحلة", chartTitle: "مخطط التطور التراكمي", chartSubtitle: "تتبع ذكي للمؤشرات البيولوجية والأداء" },
+    timelineWeekLabel: "أسبوع",
+
+    bfTitle: "حاسبة نسبة الدهون الجسمية",
+    bfSubtitle: "تحليل متعدد الأبعاد ونظام تنبؤ متقدم",
+    bfGender: "الجنس",
+    bfMale: "ذكر",
+    bfFemale: "أنثى",
+    bfAge: "العمر",
+    bfWeight: "الوزن",
+    bfHeight: "الطول",
+    bfWaist: "الخصر",
+    bfHip: "الحوض",
+    bfNeck: "الرقبة",
+    bfCalculate: "حلل تكوين الجسم",
+    bfAnalyzing: "جاري تحليل البيانات...",
+    bfCategoryTitle: "فئة نسبة الدهون",
+    bfFormulaNote: "باستخدام معادلة البحرية الأمريكية والمؤشر الأيوني",
+    bfPercentageLabel: "نسبة دهون الجسم",
+    bfMassLabel: "كتلة الدهون",
+    bfLeanMassLabel: "الكتلة اللادهنية",
+    bfCalculateMacros: "احسب الماكروز",
+    bfGeneticPotential: "الإمكانات الوراثية",
+    bfAwaitingData: "في انتظار بيانات الجسم...",
+    bfCategories: {
+        essential: "دهون أساسية",
+        athletes: "رياضيين",
+        fitness: "لياقة",
+        average: "متوسط",
+        obese: "سمنة"
+    },
+    bfCategoryDescriptions: {
+        male: {
+            essential: "الدهون الأساسية (2-5%): الحد الأدنى المطلوب للسلامة الفسيولوجية. يصل إليها فقط لاعبو كمال الأجسام المحترفون على المسرح.",
+            athletes: "الرياضيون (6-13%): تحديد عضلي شديد، عروق بارزة، وسرعة حرق عالية.",
+            average: "المتوسط (18-24%): مدى صحي لعامة الناس، لكنه يفتقد للتحديد الرياضي.",
+            obese: "السمنة (25%+): خطر عال من المتلازمة الأيضية وتحول التستوستيرون لاستروجين."
+        },
+        female: {
+            essential: "الدهون الأساسية (10-13%): الحد الأدنى للصحة العامة. أقل من ذلك قد يسبب توقف الهرمونات.",
+            athletes: "الرياضيات (14-20%): تحديد عضلي ملحوظ وأداء رياضي متفوق.",
+            average: "المتوسط (25-31%): مدى صحي طبيعي للنساء.",
+            obese: "السمنة (32%+): زيادة المخاطر الصحية وانخفاض كفاءة التمثيل الغذائي."
+        }
+    },
+    labRestartScan: "إعادة الفحص",
+    labClose: "إغلاق",
     salesToast: { purchased: "اشترى النسخة الكاملة", verified: "موثوق", justNow: "الآن", fromLabel: "من" },
     audioPlayer: { title: "مقدمة صوتية من المؤلف", subtitle: "استمع لرسالة خاصة من جورج موريس", duration: "02:15" },
     aiChat: {
@@ -1543,6 +1630,28 @@ export const arContent: ContentStrings = {
     contactTransmissionReceivedTitle: "تم استلام الرسالة بأمان",
     contactTransmissionReceivedDesc: "سيقوم مركز القيادة بمعالجة إرسالك والرد خلال 24 ساعة.",
     contactTransmissionInterrupted: "تم قطع الإرسال. يرجى المحاولة مرة أخرى أو مراسلتنا عبر البريد الإلكتروني مباشرة.",
-    contactDirectSecureLine: "خط آمن مباشر",
-    contactSupportCommandCenter: "مركز قيادة الدعم"
+    contactDirectSecureLine: "خط اتصال مباشر آمن",
+    contactSupportCommandCenter: "مركز قيادة الدعم",
+    contactLeadArchitectLabel: "معماري البروتوكول الرئيسي",
+    contactRelayActiveLabel: "في القيادة / تتابع 24 ساعة",
+    contactTransmissionProtocolLabel: "بروتوكول الإرسال",
+    contactEncryptedLabel: "مشفر بالكامل E2E",
+    contactSelectTopicPlaceholder: "اختر الموضوع",
+    contactTopicGeneral: "استفسار عام",
+    contactTopicOrder: "حالة/مشكلة في الطلب",
+    contactTopicTechnical: "مساعدة تقنية",
+    contactTopicWholesale: "شراكة / أعمال",
+    contactTopicConsultation: "استشارة الكورس",
+    contactMedicalDisclaimerTitle: "الاستشارات هي لأغراض إعلامية فقط. أنا لست محترفاً طبياً. بالمضي قدماً، فإنك تقر بأنك مسؤول عن قراراتك الصحية الخاصة وقد قرأت إخلاء المسؤولية الطبي.",
+    contactMedicalDisclaimerCheckbox: "أقبل مخاطر وشروط البروتوكول",
+    contactResponseTimeLabel: "الاستجابة: ~24 ساعة",
+    contactGlobalRelayLabel: "التتابع العالمي نشط",
+    contactSystemStatusLabel: "حالة النظام: 100% يعمل // التشفير: AES-256",
+    contactCopySuccess: "تم نسخ البريد الإلكتروني إلى الحافظة",
+    contactErrorName: "يجب أن يتكون الاسم من حرفين على الأقل",
+    contactErrorEmail: "عنوان بريد إلكتروني غير صالح",
+    contactErrorSubject: "يجب أن يتكون الموضوع من 5 أحرف على الأقل",
+    contactErrorMessage: "يجب أن تتكون الرسالة من 10 أحرف على الأقل",
+    contactErrorOrderId: "رقم الطلب مطلوب للاستفسارات المتعلقة بالطلبات",
+    contactErrorDisclaimer: "يجب عليك قبول إخلاء المسؤولية الطبي للاستشارات",
 };

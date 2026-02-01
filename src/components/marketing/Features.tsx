@@ -4,18 +4,20 @@ import { ContentStrings } from '../../types';
 import RevealOnScroll from '../shared/RevealOnScroll';
 import { IconRenderer } from '../../utils/icon-utils';
 import { StyledBrandName } from '../shared/StyledBrandName';
+import { usePreferences } from '../../context/PreferencesContext';
 
 interface FeaturesProps {
   content: ContentStrings;
 }
 
 const Features: React.FC<FeaturesProps> = ({ content }) => {
+  const { isRTL } = usePreferences();
   return (
     <section id="features" className="py-24 bg-zinc-50 dark:bg-background border-t border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[20%] right-[10%] w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
-        <div className="absolute bottom-[20%] left-[10%] w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-3s]"></div>
+      <div className="absolute top-0 start-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[20%] end-[10%] w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full animate-float-slow"></div>
+        <div className="absolute bottom-[20%] start-[10%] w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-3s]"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -44,12 +46,12 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
 
                 <div className="relative p-8 md:p-10 rounded-[2.2rem] bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all h-full glass-morphism-premium flex flex-col items-start gap-6 md:gap-8 shadow-xl hover:shadow-2xl overflow-hidden">
 
-                  <div className="absolute -top-6 -right-6 p-10 opacity-5 group-hover:opacity-10 transition-all transform group-hover:scale-110 group-hover:-rotate-12 duration-700">
+                  <div className={`absolute -top-6 end-[-1.5rem] p-10 opacity-5 group-hover:opacity-10 transition-all transform group-hover:scale-110 duration-700 ${isRTL ? 'group-hover:rotate-12' : 'group-hover:-rotate-12'}`}>
                     <IconRenderer iconKey={feature.iconKey} className="w-40 h-40" />
                   </div>
 
                   {/* Icon Box */}
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 border-2 border-gold-500/30 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 relative z-10">
+                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 border-2 border-gold-500/30 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 relative z-10 ${isRTL ? 'group-hover:-rotate-6' : 'group-hover:rotate-6'}`}>
                     <div className="text-gold-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]">
                       <IconRenderer iconKey={feature.iconKey} className="w-8 h-8 md:w-10 md:h-10" />
                     </div>
@@ -65,7 +67,7 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
                   </div>
 
                   {/* Bottom Animated Line */}
-                  <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                  <div className="absolute bottom-0 start-0 h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
                 </div>
               </motion.div>
             </RevealOnScroll>

@@ -1,24 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Scale,
     User,
     Activity,
     Info,
-    ChevronRight,
     Target,
     TrendingUp,
-    TrendingDown,
     RefreshCw
 } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
-import KineticCounter from '../shared/KineticCounter';
 import { ContentStrings, Page } from '../../types';
 import { toast } from 'sonner';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../shared/UnitToggle';
-import { convertValue, toMetric, formatUnit } from '../../utils/logic';
+import { convertValue, toMetric } from '../../utils/logic';
+import KineticCounter from '../shared/KineticCounter';
 
 interface BodyFatResult {
     bodyFatPercentage: number;
@@ -34,7 +32,7 @@ interface BodyFatCalculatorProps {
 }
 
 const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigateTo }) => {
-    const { language: lang, isRTL, unitSystem, setUnitSystem } = usePreferences();
+    const { language: lang, unitSystem } = usePreferences();
     const isAr = lang === 'ar';
     const [gender, setGender] = useState('male');
     const [age, setAge] = useState('');
@@ -163,17 +161,17 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
             // Determine category based on body fat percentage
             let category: string;
             if (gender === 'male') {
-                if (bodyFatPercentage < 6) category = isAr ? 'ضعيف جدًا' : 'Essential Fat';
-                else if (bodyFatPercentage < 13) category = isAr ? 'نظيف' : 'Athletes';
-                else if (bodyFatPercentage < 17) category = isAr ? 'متوسط' : 'Fitness';
-                else if (bodyFatPercentage < 25) category = isAr ? 'متوسط جداً' : 'Average';
-                else category = isAr ? 'مفرط الوزن' : 'Obese';
+                if (bodyFatPercentage < 6) category = content.bfCategories.essential;
+                else if (bodyFatPercentage < 13) category = content.bfCategories.athletes;
+                else if (bodyFatPercentage < 17) category = content.bfCategories.fitness;
+                else if (bodyFatPercentage < 25) category = content.bfCategories.average;
+                else category = content.bfCategories.obese;
             } else {
-                if (bodyFatPercentage < 16) category = isAr ? 'ضعيف جدًا' : 'Essential Fat';
-                else if (bodyFatPercentage < 23) category = isAr ? 'نظيف' : 'Athletes';
-                else if (bodyFatPercentage < 28) category = isAr ? 'متوسط' : 'Fitness';
-                else if (bodyFatPercentage < 35) category = isAr ? 'متوسط جداً' : 'Average';
-                else category = isAr ? 'مفرط الوزن' : 'Obese';
+                if (bodyFatPercentage < 16) category = content.bfCategories.essential;
+                else if (bodyFatPercentage < 23) category = content.bfCategories.athletes;
+                else if (bodyFatPercentage < 28) category = content.bfCategories.fitness;
+                else if (bodyFatPercentage < 35) category = content.bfCategories.average;
+                else category = content.bfCategories.obese;
             }
 
             setResult({
@@ -208,24 +206,24 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
     // Get category description
     const getCategoryDescription = () => {
         if (!result) return '';
+        const desc = gender === 'male' ? content.bfCategoryDescriptions.male : content.bfCategoryDescriptions.female;
+
         if (gender === 'male') {
-            if (result.bodyFatPercentage < 13) return isAr ? 'نصيب الدهون الأساسي للجسم. مستوى مثالي للنشاط الرياضي المكثف.' : 'Essential body fat level. Ideal for intense athletic performance.';
-            if (result.bodyFatPercentage < 17) return isAr ? 'مستوى دهون جيد للرياضيين. عضلات واضحة مع صحة جيدة.' : 'Athletic body fat level. Defined muscles with good health.';
-            if (result.bodyFatPercentage < 25) return isAr ? 'مستوى دهون متوسط. الأكثر شيوعاً بين البشر.' : 'Average body fat level. Most common among people.';
-            return isAr ? 'مستوى دهون مرتفع جدًا. يُرجى التحدث إلى طبيب.' : 'High body fat level. Please consult a doctor.';
+            if (result.bodyFatPercentage < 13) return desc.athletes;
+            if (result.bodyFatPercentage < 25) return desc.average;
+            return desc.obese;
         } else {
-            if (result.bodyFatPercentage < 23) return isAr ? 'نصيب الدهون الأساسي للنساء. مستوى مثالي للصحة.' : 'Essential body fat level for women. Ideal for health.';
-            if (result.bodyFatPercentage < 28) return isAr ? 'مستوى دهون رياضي للنساء. نماذج واضحة مع صحة جيدة.' : 'Athletic body fat level for women. Defined physique with good health.';
-            if (result.bodyFatPercentage < 35) return isAr ? 'مستوى دهون متوسط للنساء. الأكثر شيوعاً.' : 'Average body fat level for women. Most common.';
-            return isAr ? 'مستوى دهون مرتفع جدًا للنساء. يُرجى التحدث إلى طبيب.' : 'High body fat level for women. Please consult a doctor.';
+            if (result.bodyFatPercentage < 23) return desc.athletes;
+            if (result.bodyFatPercentage < 35) return desc.average;
+            return desc.obese;
         }
     };
 
     return (
         <div className={`max-w-7xl mx-auto px-4 py-16`} dir={isAr ? 'rtl' : 'ltr'}>
             {/* Background effects */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
+            <div className="absolute top-0 inset-inline-start-0 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
+            <div className="absolute bottom-0 inset-inline-end-0 w-96 h-96 bg-purple-500/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
 
             <motion.div
                 initial={{ opacity: 0, y: -40 }}
@@ -235,20 +233,20 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                    className="inline-flex items-center justify-center p-6 mb-8 rounded-[2.5rem] bg-blue-500/10 border-2 border-blue-500/20 backdrop-blur-3xl shadow-2xl animate-glow"
+                    className="inline-flex items-center justify-center p-6 mb-8 rounded-[2.5rem] bg-gold-500/10 border-2 border-gold-500/20 backdrop-blur-3xl shadow-2xl animate-glow"
                 >
-                    <Scale className="w-12 h-12 text-blue-500 animate-pulse" />
+                    <Scale className="w-12 h-12 text-gold-500 animate-pulse" />
                 </motion.div>
 
                 <div className="mb-4">
                     <BrandLogo className="text-3xl md:text-5xl" onClick={() => navigateTo(Page.HOME)} />
                 </div>
 
-                <h1 className="text-5xl md:text-8xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-blue-600 to-zinc-900 dark:from-white dark:via-blue-400 dark:to-white animate-text-flash tracking-tighter">
-                    {isAr ? 'حاسبة نسبة الدهون الجسمية' : 'Body Fat Calculator'}
+                <h1 className="text-5xl md:text-8xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter">
+                    {content.bfTitle}
                 </h1>
                 <p className="text-2xl md:text-3xl text-zinc-500 max-w-3xl mx-auto font-bold italic animate-glow">
-                    {isAr ? 'احسب نسبة الدهون في جسمك بدقة عالية باستخدام طريقة الجيش الأمريكي' : 'Calculate your body fat percentage with high precision using U.S. Navy method'}
+                    {content.bfSubtitle}
                 </p>
             </motion.div>
 
@@ -282,59 +280,59 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                     <div className="flex gap-4 p-2 bg-zinc-100 dark:bg-background rounded-[2rem] shadow-inner">
                         <button
                             onClick={() => setGender('male')}
-                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'male' ? 'bg-white dark:bg-card shadow-2xl text-blue-600' : 'text-zinc-400'}`}
+                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'male' ? 'bg-white dark:bg-card shadow-2xl text-gold-600' : 'text-zinc-400'}`}
                         >
-                            <User className="w-5 h-5" /> {isAr ? 'ذكر' : 'Male'}
+                            <User className="w-5 h-5" /> {content.bfMale}
                         </button>
                         <button
                             onClick={() => setGender('female')}
-                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-2xl text-blue-600' : 'text-zinc-400'}`}
+                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-2xl text-gold-600' : 'text-zinc-400'}`}
                         >
-                            <User className="w-5 h-5" /> {isAr ? 'أنثى' : 'Female'}
+                            <User className="w-5 h-5" /> {content.bfFemale}
                         </button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
                         <div className="space-y-4">
                             <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
-                                <Activity className="w-3 h-3" /> {isAr ? 'العمر' : 'Age'}
+                                <Activity className="w-3 h-3" /> {content.bfAge}
                             </label>
                             <input
                                 type="text"
                                 inputMode="numeric"
                                 value={age}
                                 onChange={e => setAge(e.target.value)}
-                                className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-blue-500 rounded-2xl p-6 text-2xl font-black text-center outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-6 text-2xl font-black text-center outline-none transition-all shadow-inner"
                                 placeholder="25"
                             />
                         </div>
 
                         <div className="space-y-4">
                             <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                                {isAr ? 'الوزن' : 'Weight'} ({isImperial ? 'lbs' : 'kg'})
-                                <Scale className="w-4 h-4 text-blue-500/50" />
+                                {content.bfWeight} ({isImperial ? 'lbs' : 'kg'})
+                                <Scale className="w-4 h-4 text-gold-500/50" />
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={weight}
                                 onChange={(e) => handleWeightChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
                                 placeholder={isImperial ? "176" : "80"}
                             />
                         </div>
 
                         <div className="space-y-3">
                             <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                                {isAr ? 'الطول' : 'Height'} ({isImperial ? 'in' : 'cm'})
-                                <Scale className="w-4 h-4 text-blue-500/50" />
+                                {content.bfHeight} ({isImperial ? 'in' : 'cm'})
+                                <Scale className="w-4 h-4 text-gold-500/50" />
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={height}
                                 onChange={(e) => handleHeightChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
                                 placeholder={isImperial ? "70" : "180"}
                             />
                         </div>
@@ -343,14 +341,14 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                     <div className="grid grid-cols-3 gap-6">
                         <div className="space-y-4">
                             <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                {isAr ? 'حجم الخصر' : 'Waist'} ({isImperial ? 'in' : 'cm'})
+                                {content.bfWaist} ({isImperial ? 'in' : 'cm'})
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={waist}
                                 onChange={(e) => handleWaistChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
                                 placeholder={isImperial ? "32" : "81"}
                             />
                         </div>
@@ -358,14 +356,14 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                         {gender === 'female' && (
                             <div className="space-y-4">
                                 <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                    {isAr ? 'حجمالورك' : 'Hip'} ({isImperial ? 'in' : 'cm'})
+                                    {content.bfHip} ({isImperial ? 'in' : 'cm'})
                                 </label>
                                 <input
                                     type="text"
                                     inputMode="decimal"
                                     value={hip}
                                     onChange={(e) => handleHipChange(e.target.value)}
-                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
                                     placeholder={isImperial ? "38" : "97"}
                                 />
                             </div>
@@ -373,14 +371,14 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
 
                         <div className="space-y-4">
                             <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                {isAr ? 'حجم العنق' : 'Neck'} ({isImperial ? 'in' : 'cm'})
+                                {content.bfNeck} ({isImperial ? 'in' : 'cm'})
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={neck}
                                 onChange={(e) => handleNeckChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
                                 placeholder={isImperial ? "16" : "41"}
                             />
                         </div>
@@ -391,10 +389,10 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                         whileTap={{ scale: 0.95 }}
                         onClick={calculateBodyFat}
                         disabled={isCalculating}
-                        className={`w-full py-8 bg-blue-500 hover:bg-blue-400 text-black font-black text-2xl rounded-[2rem] shadow-[0_0_40px_rgba(59,130,246,0.3)] transition-all flex items-center justify-center gap-4 relative overflow-hidden group animate-glow`}
+                        className={`w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] shadow-[0_0_40px_rgba(234,179,8,0.3)] transition-all flex items-center justify-center gap-4 relative overflow-hidden group animate-glow`}
                     >
                         {isCalculating ? <RefreshCw className="w-8 h-8 animate-spin" /> : <Target className="w-8 h-8 group-hover:scale-125 transition-transform" />}
-                        {isCalculating ? (isAr ? 'جاري التحليل...' : 'Analyzing...') : (isAr ? 'احسب نسبة الدهون' : 'Calculate Body Fat')}
+                        {isCalculating ? content.bfAnalyzing : content.bfCalculate}
                         <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full ${isCalculating ? 'animate-shimmer' : 'group-hover:animate-shimmer'}`}></div>
                     </motion.button>
                 </motion.div>
@@ -413,13 +411,13 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                 <motion.div
                                     initial={{ x: 200, opacity: 0 }}
                                     animate={{ x: 0, opacity: 1 }}
-                                    className="p-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-[3rem] text-black shadow-2xl relative overflow-hidden group"
+                                    className="p-8 bg-gradient-to-br from-gold-500 to-yellow-600 rounded-[3rem] text-black shadow-2xl relative overflow-hidden group"
                                 >
-                                    <div className="absolute top-0 right-0 p-4 opacity-20">
+                                    <div className="absolute top-0 inset-inline-end-0 p-4 opacity-20">
                                         <Target className="w-16 h-16 animate-pulse" />
                                     </div>
                                     <h4 className="text-sm font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                        <Info className="w-5 h-5" /> {isAr ? 'فئة جسمك' : 'Body Category'}
+                                        <Info className="w-5 h-5" /> {content.bfCategoryTitle}
                                     </h4>
                                     <p className={`text-3xl font-bold leading-relaxed mb-4 ${getCategoryColor()}`}>
                                         {result.category}
@@ -428,20 +426,20 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                         {getCategoryDescription()}
                                     </p>
                                     <div className="text-sm font-black uppercase opacity-60">
-                                        {isAr ? 'دقة حساب بناءً على قاعدة بيانات الجيش الأمريكي' : 'Based on U.S. Navy body fat formula'}
+                                        {content.bfFormulaNote}
                                     </div>
-                                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-tl-full blur-2xl"></div>
+                                    <div className="absolute bottom-0 inset-inline-end-0 w-32 h-32 bg-white/10 rounded-tl-full blur-2xl"></div>
                                 </motion.div>
 
                                 {/* Main Stats */}
                                 <div className={`p-12 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950`}>
-                                    <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] animate-float-slow"></div>
+                                    <div className="absolute top-0 inset-inline-end-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] animate-float-slow"></div>
 
                                     <div className="relative z-10 grid md:grid-cols-2 gap-12">
                                         {/* Body Fat Percentage */}
                                         <div className="text-center">
                                             <h3 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-6 flex items-center justify-center gap-3">
-                                                <Target className="w-5 h-5 animate-pulse" /> {isAr ? 'نسبة الدهون' : 'Body Fat %'}
+                                                <Target className="w-5 h-5 animate-pulse" /> {content.bfPercentageLabel}
                                             </h3>
                                             <div className={`text-8xl font-black tracking-tighter mb-4 animate-text-flash font-mono ${getCategoryColor()}`}>
                                                 <KineticCounter value={result.bodyFatPercentage || 0} decimals={1} />
@@ -463,18 +461,16 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                     {/* Detailed Stats */}
                                     <div className="grid md:grid-cols-2 gap-8 mt-12">
                                         <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
-                                            <h4 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-4">{isAr ? 'مادة الدهون' : 'Fat Mass'}</h4>
+                                            <h4 className="text-sm font-black text-gold-400 uppercase tracking-widest mb-4">{content.bfMassLabel}</h4>
                                             <div className="text-4xl font-black text-white">
-                                                <KineticCounter value={result.bodyFatMass || 0} decimals={1} />
-                                                <span className="text-xl text-zinc-500 ml-2">{isImperial ? 'lbs' : 'kg'}</span>
+                                                <span className="text-xl text-zinc-500 ms-2">{isImperial ? 'lbs' : 'kg'}</span>
                                             </div>
                                         </div>
 
                                         <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
-                                            <h4 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-4">{isAr ? 'مادة الجسم الرقيقة' : 'Lean Body Mass'}</h4>
+                                            <h4 className="text-sm font-black text-gold-400 uppercase tracking-widest mb-4">{content.bfLeanMassLabel}</h4>
                                             <div className="text-4xl font-black text-white">
-                                                <KineticCounter value={result.leanBodyMass || 0} decimals={1} />
-                                                <span className="text-xl text-zinc-500 ml-2">{isImperial ? 'lbs' : 'kg'}</span>
+                                                <span className="text-xl text-zinc-500 ms-2">{isImperial ? 'lbs' : 'kg'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -482,8 +478,8 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                     {/* Visual Progress Bar */}
                                     <div className="mt-10">
                                         <div className="flex justify-between mb-2">
-                                            <span className="text-sm font-black text-zinc-400">{isAr ? 'ضعيف جداً' : 'Essential Fat'}</span>
-                                            <span className="text-sm font-black text-zinc-400">{isAr ? 'مفرط الوزن' : 'Obese'}</span>
+                                            <span className="text-sm font-black text-zinc-400">{content.bfCategories.essential}</span>
+                                            <span className="text-sm font-black text-zinc-400">{content.bfCategories.obese}</span>
                                         </div>
                                         <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
                                             <motion.div
@@ -505,7 +501,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                         className="flex-1 py-6 bg-zinc-800 hover:bg-zinc-700 text-white font-black text-lg rounded-[2rem] transition-all flex items-center justify-center gap-4"
                                     >
                                         <TrendingUp className="w-6 h-6" />
-                                        {isAr ? 'احسب الماكروز المناسب' : 'Calculate Macros'}
+                                        {content.bfCalculateMacros}
                                     </motion.button>
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
@@ -514,7 +510,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                         className="flex-1 py-6 bg-zinc-800 hover:bg-zinc-700 text-white font-black text-lg rounded-[2rem] transition-all flex items-center justify-center gap-4"
                                     >
                                         <Activity className="w-6 h-6" />
-                                        {isAr ? 'احسب إمكاناتك الجينية' : 'Genetic Potential'}
+                                        {content.bfGeneticPotential}
                                     </motion.button>
                                 </div>
                             </motion.div>
@@ -527,7 +523,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                             >
                                 <Scale className="w-24 h-24 mb-8 opacity-20" />
                                 <p className="text-2xl font-black uppercase tracking-widest">
-                                    {isAr ? 'أدخل البيانات لبدء الحساب' : 'Enter data to start calculating'}
+                                    {content.bfAwaitingData}
                                 </p>
                             </motion.div>
                         )}

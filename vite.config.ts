@@ -18,6 +18,29 @@ export default defineConfig({
         drop: ['console', 'debugger'],
     },
     build: {
-        // build options
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    // Split vendor libraries into separate chunks
+                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+                    'vendor-ui': [
+                        '@radix-ui/react-dialog',
+                        '@radix-ui/react-dropdown-menu',
+                        '@radix-ui/react-tabs',
+                        '@radix-ui/react-accordion',
+                        '@radix-ui/react-toast',
+                        '@radix-ui/react-select',
+                        '@radix-ui/react-popover',
+                        '@radix-ui/react-tooltip',
+                    ],
+                    'vendor-stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+                    'vendor-supabase': ['@supabase/supabase-js'],
+                    'vendor-charts': ['recharts'],
+                    'vendor-motion': ['framer-motion'],
+                    'vendor-ai': ['openai', '@google/generative-ai'],
+                },
+            },
+        },
+        chunkSizeWarningLimit: 1000,
     },
 })

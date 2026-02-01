@@ -1,5 +1,5 @@
 import { TwilioResponse, TwilioMessage } from '../types/twilio';
-import { env } from '../config/env';
+// import { env } from '../config/env';
 import { errorHandler } from '../lib/error-handler';
 
 /**
@@ -27,7 +27,9 @@ class TwilioService {
             // Call Supabase Edge Function (hypothetical endpoint)
             // const { data, error } = await supabase.functions.invoke('send-whatsapp', { body: { to, body } });
 
-            console.log(`[Twilio Service] Sending WhatsApp to ${to}: ${body}`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`[Twilio Service] Sending WhatsApp to ${to}: ${body}`);
+            }
 
             return {
                 success: true,

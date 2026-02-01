@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ContentStrings } from '../../types';
+import { usePreferences } from '../../context/PreferencesContext';
 
 // Simple cn utility if not available, but assuming it is from existing codebase context
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
@@ -18,6 +19,7 @@ interface EliteTableProps<T> {
     className?: string;
     description?: string;
     onRowClick?: (item: T) => void;
+    content?: ContentStrings;
 }
 
 const EliteTable = <T extends Record<string, unknown>>({
@@ -26,8 +28,11 @@ const EliteTable = <T extends Record<string, unknown>>({
     title,
     description,
     className,
-    onRowClick
+    onRowClick,
+    content
 }: EliteTableProps<T>) => {
+    const { isRTL } = usePreferences();
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -37,8 +42,8 @@ const EliteTable = <T extends Record<string, unknown>>({
             className={cn("w-full overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl shadow-2xl relative group", className)}
         >
             {/* Decorative Glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/5 blur-[80px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 blur-[80px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 inset-inline-end-0 w-64 h-64 bg-gold-500/5 blur-[80px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 inset-inline-start-0 w-64 h-64 bg-accent/5 blur-[80px] rounded-full pointer-events-none" />
 
             {(title || description) && (
                 <div className="bg-zinc-900/60 px-6 py-5 border-b border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
@@ -53,7 +58,7 @@ const EliteTable = <T extends Record<string, unknown>>({
                         )}
                     </div>
                     <div className="flex gap-2 items-center">
-                        <span className="text-xs font-mono text-gold-500 animate-pulse">LIVE DATA</span>
+                        <span className="text-xs font-mono text-gold-500 animate-pulse">{content?.liveData || 'LIVE DATA'}</span>
                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                         <div className="w-2 h-2 rounded-full bg-gold-500 animate-pulse delay-75" />
                         <div className="w-2 h-2 rounded-full bg-accent animate-pulse delay-150" />
@@ -62,7 +67,7 @@ const EliteTable = <T extends Record<string, unknown>>({
             )}
 
             <div className="overflow-x-auto relative z-10 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-                <table className="w-full text-left border-collapse min-w-[600px]">
+                <table className="w-full text-start border-collapse min-w-[600px]">
                     <thead>
                         <tr className="border-b border-zinc-800 bg-zinc-900/80 text-xs font-black uppercase tracking-wider text-zinc-500">
                             {columns.map((col: EliteTableColumn<T>, idx: number) => (
@@ -76,7 +81,7 @@ const EliteTable = <T extends Record<string, unknown>>({
                         {data.map((item: T, rowIdx: number) => (
                             <motion.tr
                                 key={(item as { id?: string | number }).id || rowIdx}
-                                initial={{ opacity: 0, x: -20 }}
+                                initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{ delay: rowIdx * 0.1, duration: 0.4 }}
@@ -96,7 +101,7 @@ const EliteTable = <T extends Record<string, unknown>>({
                                 ))}
 
                                 {/* Row Hover Gradient */}
-                                <td className="absolute inset-0 bg-gradient-to-r from-gold-500/5 to-transparent opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 pointer-events-none border-l-2 border-gold-500" />
+                                <td className="absolute inset-0 bg-gradient-to-r from-gold-500/5 to-transparent opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 pointer-events-none border-inline-start-2 border-gold-500" />
                             </motion.tr>
                         ))}
                     </tbody>
@@ -108,7 +113,7 @@ const EliteTable = <T extends Record<string, unknown>>({
                     <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-600 mb-2">
                         <span className="text-2xl">?</span>
                     </div>
-                    No active schedules found.
+                    {content?.noActiveSchedules || 'No active schedules found.'}
                 </div>
             )}
         </motion.div>

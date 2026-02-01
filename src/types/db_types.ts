@@ -56,22 +56,25 @@ export type Database = {
                     id: string
                     email: string
                     full_name: string | null
-                    avatar_url: string | null
-                    updated_at: string | null
+                    user_name: string | null
+                    subscription_status: string // 'inactive' | 'active' etc.
+                    created_at: string
                 }
                 Insert: {
                     id: string
                     email: string
                     full_name?: string | null
-                    avatar_url?: string | null
-                    updated_at?: string | null
+                    user_name?: string | null
+                    subscription_status?: string
+                    created_at?: string
                 }
                 Update: {
                     id?: string
                     email?: string
                     full_name?: string | null
-                    avatar_url?: string | null
-                    updated_at?: string | null
+                    user_name?: string | null
+                    subscription_status?: string
+                    created_at?: string
                 }
                 Relationships: [
                     {

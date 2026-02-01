@@ -75,7 +75,6 @@ export const CURRENCY_RATES: Record<Currency, CurrencyRate> = {
     [Currency.USD]: { code: Currency.USD, symbol: '$', rate: 1.00, locale: 'en-US', name: 'US Dollar' },
     [Currency.SAR]: { code: Currency.SAR, symbol: 'ر.س', rate: 3.75, locale: 'ar-SA', name: 'Saudi Riyal' },
     [Currency.EGP]: { code: Currency.EGP, symbol: 'ج.م', rate: 50.00, locale: 'ar-EG', name: 'Egyptian Pound' },
-    [Currency.EUR]: { code: Currency.EUR, symbol: '€', rate: 0.92, locale: 'de-DE', name: 'Euro' },
 };
 
 export const convertCurrency = (amount: number, from: Currency, to: Currency): number => {
@@ -98,7 +97,8 @@ export const formatCurrency = (amount: number, currency: Currency, locale?: stri
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(amount);
-    } catch (error) {
+    } catch {
+        const currencyInfo = CURRENCY_RATES[currency as Currency] || CURRENCY_RATES[Currency.USD];
         return `${currencyInfo.symbol}${amount.toFixed(2)}`;
     }
 };
@@ -121,14 +121,14 @@ export const formatCurrencyWithLocale = (
             maximumFractionDigits: 2,
             ...options,
         }).format(amount);
-    } catch (error) {
+    } catch {
         const currencyInfo = CURRENCY_RATES[currency as Currency] || CURRENCY_RATES[Currency.USD];
         return `${currencyInfo.symbol}${amount.toFixed(2)}`;
     }
 };
 
 export const getCurrencyByLanguage = (lang: string): Currency => {
-    const currencyMap: Record<string, Currency> = { 'en': Currency.USD, 'ar': Currency.SAR, 'de': Currency.EUR, 'ja': Currency.USD };
+    const currencyMap: Record<string, Currency> = { 'en': Currency.USD, 'ar': Currency.SAR };
     return currencyMap[lang] || Currency.USD;
 };
 
@@ -391,8 +391,6 @@ export function detectCountryFromBrowser(): SupportedCountry {
     const browserLang = navigator.language.toLowerCase();
 
     if (browserLang.startsWith('ar')) return SupportedCountry.SA;
-    if (browserLang.startsWith('de')) return SupportedCountry.DE;
-    if (browserLang.startsWith('ja')) return SupportedCountry.JP;
     if (browserLang.startsWith('en-gb')) return SupportedCountry.GB;
 
     return SupportedCountry.US;
@@ -459,7 +457,11 @@ export function createLocalizationState(
  * Saves localization state to localStorage
  */
 export function saveLocalizationState(state: LocalizationState): void {
-    localStorage.setItem('advanced_localization_state', JSON.stringify(state));
+    try {
+        localStorage.setItem('advanced_localization_state', JSON.stringify(state));
+    } catch (error: unknown) { // Explicitly type error as unknown
+        console.warn('Failed to save localization state:', error);
+    }
 }
 
 /**
@@ -471,7 +473,7 @@ export function loadLocalizationState(): LocalizationState | null {
         if (saved) {
             return JSON.parse(saved);
         }
-    } catch (error) {
+    } catch (error: unknown) { // Explicitly type error as unknown
         console.warn('Failed to load localization state:', error);
     }
     return null;
@@ -510,8 +512,6 @@ export function getCountryName(country: SupportedCountry, language: SupportedLan
     switch (language) {
         case SupportedLanguage.AR: return config.nameAr;
         case SupportedLanguage.EN: return config.nameEn;
-        case SupportedLanguage.DE: return config.nameDe;
-        case SupportedLanguage.JA: return config.nameJa;
         default: return config.nameEn;
     }
 }

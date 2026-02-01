@@ -2,16 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Scale, AlertTriangle, CheckCircle2, UserCheck } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
-import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+// import { usePreferences } from '../context/PreferencesContext';
+// import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
 
 interface TermsPageProps {
     content: ContentStrings;
     navigateTo: (page: Page) => void;
 }
 
-const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo }) => {
-    const { isRTL } = usePreferences();
+const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo: _navigateTo }) => {
+    // const { isRTL } = usePreferences();
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-20">
             <motion.div
@@ -19,7 +19,7 @@ const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center space-y-4"
             >
-                <div className="w-20 h-20 bg-blue-500/10 rounded-[2rem] flex items-center justify-center mx-auto text-blue-500 mb-6 border border-blue-500/20">
+                <div className="w-20 h-20 bg-gold-500/10 rounded-[2rem] flex items-center justify-center mx-auto text-gold-500 mb-6 border border-gold-500/20">
                     <Scale className="w-10 h-10" />
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
@@ -61,7 +61,7 @@ const TermsPage: React.FC<TermsPageProps> = ({ content, navigateTo }) => {
 
             <div className="flex justify-center pt-8">
                 <button
-                    onClick={() => navigateTo(Page.HOME)}
+                    onClick={() => _navigateTo(Page.HOME)}
                     className="px-12 py-4 bg-zinc-900 border border-zinc-800 text-white font-black uppercase text-sm rounded-2xl hover:bg-zinc-800 transition-all flex items-center gap-3"
                 >
                     <CheckCircle2 className="w-5 h-5 text-gold-500" />

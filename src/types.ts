@@ -2,9 +2,7 @@
 
 export enum Language {
   AR = 'ar',
-  EN = 'en',
-  DE = 'de',
-  JA = 'ja'
+  EN = 'en'
 }
 
 
@@ -12,8 +10,7 @@ export enum Language {
 export enum Currency {
   USD = 'USD',
   EGP = 'EGP',
-  SAR = 'SAR',
-  EUR = 'EUR'
+  SAR = 'SAR'
 }
 
 export enum Theme {
@@ -344,6 +341,15 @@ export interface ContentStrings {
     system: string;
   };
   backToHome?: string;
+  viewFullDatabase?: string;
+  eliteSchedulesTitle?: string;
+  eliteSchedulesSubtitle?: string;
+  expertProtocol?: string;
+  allTopics?: string;
+  noFaqsFound?: string;
+  resetScan?: string;
+  liveData?: string;
+  noActiveSchedules?: string;
 
   // SEO Specific Fields
   seoTitle?: string;
@@ -590,6 +596,28 @@ export interface ContentStrings {
   contactTransmissionInterrupted?: string;
   contactDirectSecureLine?: string;
   contactSupportCommandCenter?: string;
+  contactLeadArchitectLabel?: string;
+  contactRelayActiveLabel?: string;
+  contactTransmissionProtocolLabel?: string;
+  contactEncryptedLabel?: string;
+  contactSelectTopicPlaceholder?: string;
+  contactTopicGeneral?: string;
+  contactTopicOrder?: string;
+  contactTopicTechnical?: string;
+  contactTopicWholesale?: string;
+  contactTopicConsultation?: string;
+  contactMedicalDisclaimerTitle?: string;
+  contactMedicalDisclaimerCheckbox?: string;
+  contactResponseTimeLabel?: string;
+  contactGlobalRelayLabel?: string;
+  contactSystemStatusLabel?: string;
+  contactCopySuccess?: string;
+  contactErrorName?: string;
+  contactErrorEmail?: string;
+  contactErrorSubject?: string;
+  contactErrorMessage?: string;
+  contactErrorOrderId?: string;
+  contactErrorDisclaimer?: string;
 
   // Support & FAQ Additional
   supportHeroDesc?: string;
@@ -606,6 +634,36 @@ export interface ContentStrings {
   faqExpertHelpText?: string;
   faqContactBtn?: string;
   faqSupportBtn?: string;
+  scheduleData?: {
+    id: number;
+    phase: string;
+    focus: string;
+    protocol: string;
+    status: string;
+    intensity: string;
+  }[];
+  scheduleTableTitle?: string;
+  scheduleTableDescription?: string;
+  scheduleHeaders?: {
+    phase: string;
+    focus: string;
+    protocol: string;
+    status: string;
+  };
+  hlTotal?: string;
+  hlStartsDay?: string;
+  hlRecoveryPower?: string;
+  hlDrug?: string;
+  hlFirst10Days?: string;
+  hlWeeks2to4?: string;
+  hlFreq?: string;
+  hlNaturalZone?: string;
+  hlBlastZone?: string;
+  hlPctAdvice?: string;
+  hlProtocolLevel?: string;
+  hlUltraLevel?: string;
+  hlModerateLevel?: string;
+  hlLiteLevel?: string;
 
   // Privacy & Terms
   privacyCollectionTitle?: string;
@@ -682,6 +740,8 @@ export interface ContentStrings {
   calcWater: string;
   calcLiters: string;
   calcRecalculate: string;
+  calcHidePlan: string;
+  calcShowPlan: string;
   calcGenerateMealPlan: string;
   calcGenerating: string;
   calcMealPlanTitle: string;
@@ -690,6 +750,20 @@ export interface ContentStrings {
   calcTdeeLabel: string;
   calcBmrLabel: string;
   calcTefLabel: string;
+  calcBmiStatuses: {
+    underweight: string;
+    healthy: string;
+    overweight: string;
+    obese: string;
+  };
+  calcMealSteps: {
+    preheat: string;
+    season: string;
+    cook: string;
+    prepare: string;
+    combine: string;
+  };
+
   calcBeastTitle: string;
   calcPredictionTitle: string;
   calcWindowBtn: string;
@@ -703,6 +777,10 @@ export interface ContentStrings {
   calcAnalysisLabel: string;
   calcBmiStatusLabel: string;
   calcDistributionTitle: string;
+  calcProteinDesc: string;
+  calcCarbsDesc: string;
+  calcFatsDesc: string;
+  calcPredictiveAccuracyVal: string;
 
   calcShuffleLabel: string;
   calcAwaitingInputLabel: string;
@@ -756,6 +834,56 @@ export interface ContentStrings {
     ingredientsLabel: string;
   };
 
+  // Body Fat Calculator
+  bfTitle: string;
+  bfSubtitle: string;
+  bfGender: string;
+  bfMale: string;
+  bfFemale: string;
+  bfAge: string;
+  bfWeight: string;
+  bfHeight: string;
+  bfWaist: string;
+  bfHip: string;
+  bfNeck: string;
+  bfCalculate: string;
+  bfAnalyzing: string;
+  bfCategoryTitle: string;
+  bfFormulaNote: string;
+  bfPercentageLabel: string;
+  bfMassLabel: string;
+  bfLeanMassLabel: string;
+  bfCalculateMacros: string;
+  bfGeneticPotential: string;
+  bfAwaitingData: string;
+  bfCategories: {
+    essential: string;
+    athletes: string;
+    fitness: string;
+    average: string;
+    obese: string;
+  };
+  bfCategoryDescriptions: {
+    male: {
+      essential: string;
+      athletes: string;
+      average: string;
+      obese: string;
+    };
+    female: {
+      essential: string;
+      athletes: string;
+      average: string;
+      obese: string;
+    };
+  };
+
+  // Timeline
+  timelineWeekLabel: string;
+
+  // Smart Lab Reference Extra
+  labRestartScan: string;
+  labClose: string;
 
   // Genetic Potential Calculator
   geneticCalculator: {
@@ -836,6 +964,8 @@ export interface ContentStrings {
       high: string;
     };
     emptyStackMsg: string;
+    emptyStackDesc: string;
+    hazardWarning: string;
     compounds: Compound[];
     frequencies: {
       ed: string;
@@ -868,6 +998,20 @@ export interface ContentStrings {
         weeks2to4: string;
         frequency: string;
       };
+      stabilityExcellent: string;
+      stabilityFluctuation: string;
+      safetySafe: string;
+      safety19nor: string;
+      safetyAromatization: string;
+      pctStartPrefix: string;
+      pctStartSuffix: string;
+      pctHeavy: string;
+      pct19nor: string;
+      pctDaily: string;
+      pctEod: string;
+      pctNolvadex: string;
+      pctClomid: string;
+      pctHcg: string;
     };
     consistencyLabel: string;
     mgSerumLabel: string;
