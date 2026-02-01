@@ -8,6 +8,7 @@ import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createSignupSchema, SignupFormValues } from "../lib/schemas";
 import { Button } from "@/components/ui/button";
 import {
     Form,
