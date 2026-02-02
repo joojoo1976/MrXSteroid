@@ -182,6 +182,16 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                 category
             });
 
+            // Dispatch event for AI Context Partitioning
+            window.dispatchEvent(new CustomEvent('bodyfat_calculated', {
+                detail: {
+                    bodyFatPercentage: parseFloat(bodyFatPercentage.toFixed(1)),
+                    leanBodyMass: parseFloat(leanBodyMass.toFixed(1)),
+                    bmi: parseFloat(bmi.toFixed(1)),
+                    category
+                }
+            }));
+
             setIsCalculating(false);
             setTimeout(() => setEcosystemSynced(true), 1000);
         }, 1500);

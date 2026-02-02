@@ -188,6 +188,20 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
       generateSimulation(targetCalories, goal);
       setIsCalculating(false);
       setMealPlan(null);
+
+      // Dispatch event for AI Context Partitioning
+      window.dispatchEvent(new CustomEvent('macro_calculated', {
+        detail: {
+          calories: isNaN(targetCalories) ? 0 : targetCalories,
+          protein: isNaN(protein) ? 0 : protein,
+          carbs: isNaN(carbs) ? 0 : carbs,
+          fats: isNaN(fat) ? 0 : fat,
+          bmi: isNaN(bmi) ? 0 : parseFloat(bmi.toFixed(1)),
+          bmiStatus,
+          growthPotential: isNaN(potential) ? 0 : Math.min(potential, 98)
+        }
+      }));
+
       setTimeout(() => setEcosystemSynced(true), 1000);
     }, 2000);
   };

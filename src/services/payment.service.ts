@@ -281,6 +281,16 @@ class PaymentService {
             if (status.success && status.data.status !== 'pending') {
                 this.stopTransactionPolling(transactionId);
 
+                // MCP Integration: Log successful payment
+                if (status.data.status === 'completed' && userId) {
+                    try {
+                        const { logPaymentSuccess } = await import('../lib/mcp/integration');
+                        logPaymentSuccess(userId, transactionId, status.data.amount, status.data.currency);
+                    } catch (err) {
+                        console.error('Failed to log payment to MCP', err);
+                    }
+                }
+
                 // Dispatch custom event for UI update
                 window.dispatchEvent(new CustomEvent('paymentStatusChanged', {
                     detail: { transactionId, status: status.data.status, userId }

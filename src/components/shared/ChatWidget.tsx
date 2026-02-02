@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { TRANSITIONS } from '../../utils/logic';
 import { Bot, X, Send, Sparkles } from 'lucide-react';
 import { streamResponse, ChatMessage } from '../../utils/geminiService';
+import { synthesizeMacroResult, synthesizeBodyFatResult } from '../../utils/toolSynthesizer';
 import { ContentStrings } from '../../types';
 import BrandLogo from './BrandLogo';
 import { StyledBrandName } from './StyledBrandName';
@@ -17,6 +18,31 @@ const ChatWidget: React.FC<{ content: ContentStrings }> = ({ content }) => {
 
     const scrollToBottom = () => {
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    };
+
+    // Listen for tool synthesis events (Context Partitioning Strategy)
+    React.useEffect(() => {
+        const handleMacroResult = (e: any) => {
+            const synthesis = synthesizeMacroResult(e.detail, isRTL);
+            injectSystemContext(synthesis);
+        };
+        const handleBFResult = (e: any) => {
+            const synthesis = synthesizeBodyFatResult(e.detail, isRTL);
+            injectSystemContext(synthesis);
+        };
+
+        window.addEventListener('macro_calculated', handleMacroResult);
+        window.addEventListener('bodyfat_calculated', handleBFResult);
+        return () => {
+            window.removeEventListener('macro_calculated', handleMacroResult);
+            window.removeEventListener('bodyfat_calculated', handleBFResult);
+        };
+    }, [isRTL]);
+
+    const injectSystemContext = (text: string) => {
+        const contextMsg: ChatMessage = { role: 'model', parts: `[System Sync]: ${text}`, id: Date.now() + Math.random() };
+        setMessages(prev => [...prev, contextMsg]);
+        scrollToBottom();
     };
 
     const sendMessage = async (textOverride?: string) => {
