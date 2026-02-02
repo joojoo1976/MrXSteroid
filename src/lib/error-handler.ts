@@ -48,9 +48,15 @@ class ErrorHandlerService {
     }
 
     private parseError(error: unknown): AppError {
-        // 1. Handle standard Error objects
+        // 1. Log the raw error for developer investigation
+        console.error("ErrorHandler caught raw error:", error);
+
+        // Standard message for generic failures
+        const DEFAULT_MSG = 'An unexpected error occurred.';
+
+        // 2. Handle standard Error objects (extracting non-enumerable props like message)
         if (error instanceof Error) {
-            const msg = error.message;
+            const msg = error.message || DEFAULT_MSG;
             if (msg.includes('fetch') || msg.includes('network')) {
                 return { type: ErrorType.NETWORK, message: 'Connection issue. Please check your internet.', originalError: error };
             }
@@ -60,51 +66,69 @@ class ErrorHandlerService {
             return { type: ErrorType.UNKNOWN, message: msg, originalError: error };
         }
 
-        // 2. Handle Supabase-specific error objects or plain objects with message
+        // 3. Handle typical Supabase / Plain Object errors
         if (error && typeof error === 'object') {
             const errObj = error as Record<string, unknown>;
 
-            // Extract message - handle various common error property names
-            const rawMessage = errObj['message'] || errObj['error_description'] || errObj['error'] || errObj['msg'] || errObj['details'];
+            // Try to find a message in common property names
+            let message = (
+                errObj['message'] ||
+                errObj['error_description'] ||
+                errObj['error'] ||
+                errObj['msg'] ||
+                errObj['details'] ||
+                errObj['code']
+            );
 
-            let message = 'An unexpected error occurred.';
+            // Special case: If error has a 'status' but no message (Supabase format sometimes)
+            if (!message && errObj['status']) {
+                message = `Status ${errObj['status']}: Error during background request.`;
+            }
 
-            if (rawMessage) {
-                if (typeof rawMessage === 'object') {
-                    // If it's an object, check for nested message or stringify fully
-                    const nestedMsg = (rawMessage as any).message || (rawMessage as any).msg || (rawMessage as any).error;
-                    message = nestedMsg ? String(nestedMsg) : JSON.stringify(rawMessage);
+            // Convert message to string safely
+            let messageStr = DEFAULT_MSG;
+            if (message) {
+                if (typeof message === 'object') {
+                    // Try to dig deeper one level if it's nested
+                    const nested = message as Record<string, any>;
+                    messageStr = nested.message || nested.msg || nested.error || JSON.stringify(message);
                 } else {
-                    message = String(rawMessage);
+                    messageStr = String(message);
+                }
+            } else {
+                // If we STILL have no message, stringify the whole object 
+                // but use a custom replacer to catch non-enumerable Error props just in case
+                try {
+                    messageStr = JSON.stringify(errObj, Object.getOwnPropertyNames(errObj));
+                } catch (e) {
+                    messageStr = DEFAULT_MSG;
                 }
             }
 
-            // If message is still just "{}" or empty, try the whole object
-            if (message === '{}' || !message) {
-                message = JSON.stringify(errObj);
-            }
+            // Avoid showing just "{}", it's useless to the user
+            if (messageStr === '{}' || !messageStr) messageStr = DEFAULT_MSG;
 
-            // Cleanup common Supabase error prefixes
-            message = message.replace(/^Database error: /i, '').replace(/^AuthApiError: /i, '');
+            // Cleanup Supabase prefixes for a cleaner UI
+            messageStr = messageStr.replace(/^Database error: /i, '').replace(/^AuthApiError: /i, '');
 
-            const msgStr = message.toLowerCase();
-            if (msgStr.includes('network') || msgStr.includes('fetch')) {
+            // Detect Network issues in strings
+            const lowerMsg = messageStr.toLowerCase();
+            if (lowerMsg.includes('network') || lowerMsg.includes('fetch') || lowerMsg.includes('failed to fetch')) {
                 return { type: ErrorType.NETWORK, message: 'Network error. Verify your connection.', originalError: error };
             }
 
-            return {
-                type: (errObj['status'] || errObj['code']) ? ErrorType.AUTH : ErrorType.UNKNOWN,
-                message: message,
-                originalError: error
-            };
+            // Decide on Error Type
+            const type = (errObj['status'] || errObj['code'] || lowerMsg.includes('auth')) ? ErrorType.AUTH : ErrorType.UNKNOWN;
+
+            return { type, message: messageStr, originalError: error };
         }
 
-        // 3. Handle string errors
+        // 4. Handle string errors
         if (typeof error === 'string') {
             return { type: ErrorType.UNKNOWN, message: error };
         }
 
-        return { type: ErrorType.UNKNOWN, message: 'An unexpected technical error occurred.', originalError: error };
+        return { type: ErrorType.UNKNOWN, message: DEFAULT_MSG, originalError: error };
     }
 }
 
