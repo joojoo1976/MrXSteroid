@@ -7,3 +7,7 @@ dist
 build
 
 DEPLOYMENT.md
+
+# Agent & IDE
+.agent
+.cursor
