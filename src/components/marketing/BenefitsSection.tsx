@@ -4,67 +4,65 @@ import { ContentStrings } from '../../types';
 import { IconRenderer } from '../../utils/icon-utils';
 import RevealOnScroll from '../shared/RevealOnScroll';
 import { StyledBrandName } from '../shared/StyledBrandName';
-import { usePreferences } from '../../context/PreferencesContext';
 
 const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => {
-    const { isRTL } = usePreferences();
     return (
-        <section className="py-24 bg-zinc-50 dark:bg-background relative overflow-hidden">
+        <section className="min-h-screen flex flex-col justify-center bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden py-4 md:py-0">
             {/* Decorative Background */}
-            <div className="absolute top-0 start-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[30%] start-[5%] w-96 h-96 bg-gold-500/10 blur-[130px] rounded-full animate-float-slow"></div>
-                <div className="absolute bottom-[10%] end-[5%] w-80 h-80 bg-emerald-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-4s]"></div>
+            <div className="absolute top-0 start-0 w-full h-full overflow-hidden pointer-events-none opacity-50">
+                <div className="absolute top-[10%] start-[5%] w-72 h-72 bg-gold-500/10 blur-[100px] rounded-full"></div>
+                <div className="absolute bottom-[10%] end-[5%] w-72 h-72 bg-emerald-500/10 blur-[100px] rounded-full"></div>
             </div>
 
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-24">
+            <div className="container max-w-screen-2xl mx-auto px-4 relative z-10">
+                {/* Header Area - Ultra Compact */}
+                <div className="text-center mb-8">
                     <motion.h2
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-6xl font-black mb-8 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash"
+                        className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white"
                     >
                         <StyledBrandName text={content.benefitsTitle} />
                     </motion.h2>
-                    <div className="w-32 h-2 bg-gradient-to-r from-gold-600 to-gold-400 mx-auto rounded-full shadow-[0_0_20px_rgba(255,255,160,0.4)] mb-8 animate-pulse"></div>
+                    <div className="w-24 h-1.5 bg-gradient-to-r from-gold-600 to-gold-400 mx-auto rounded-full mb-4"></div>
                     <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
-                        className="text-2xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto leading-relaxed font-bold italic animate-glow"
+                        className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-4xl mx-auto italic font-medium leading-tight"
                     >
                         {content.benefitsSubtitle}
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {/* Grid Area - 3 Columns on Desktop to spread width */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                     {content.benefits.map((benefit, idx) => (
-                        <RevealOnScroll key={idx} delay={idx * 150}>
+                        <RevealOnScroll key={idx} delay={idx * 50}>
                             <motion.div
-                                whileHover={{ scale: 1.1, rotate: (idx % 2 === 0 ? 2 : -2) * (isRTL ? -1 : 1), y: -20 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="group relative h-full"
+                                whileHover={{ scale: 1.02, y: -5 }}
+                                className="group relative h-full flex items-start"
                             >
-                                {/* Animated Background Glow */}
-                                <div className="absolute -inset-1 bg-gradient-to-r from-gold-600 via-emerald-500 to-gold-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-50 animate-pulse transition-opacity duration-500"></div>
-
-                                <div className="flex flex-col gap-4 p-8 bg-zinc-50 dark:bg-background rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-all">
-
-                                    <div className="w-24 h-24 bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 rounded-3xl flex items-center justify-center mb-10 text-gold-500 shadow-2xl group-hover:scale-125 group-hover:rotate-[12deg] rtl:group-hover:rotate-[-12deg] transition-all duration-700 border-2 border-gold-500/20 relative overflow-hidden animate-float-slow text-center px-4">
-                                        <div className="absolute inset-0 bg-gold-500/10 animate-pulse"></div>
-                                        <IconRenderer iconKey={benefit.iconKey} className="w-12 h-12 relative z-10 drop-shadow-[0_0_15px_rgba(255,255,160,0.4)]" />
+                                {/* Compact Card */}
+                                <div className="flex flex-row items-center gap-4 p-4 lg:p-5 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden transition-all duration-300 w-full min-h-[140px] lg:min-h-[160px]">
+                                    {/* Small Side Icon Container */}
+                                    <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-gold-500/10 to-transparent rounded-xl flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-white transition-all duration-500">
+                                        <IconRenderer iconKey={benefit.iconKey} className="w-8 h-8" />
                                     </div>
 
-                                    <h3 className="text-2xl font-black mb-6 text-zinc-900 dark:text-white group-hover:text-gold-500 transition-colors duration-300 uppercase tracking-tighter leading-none animate-text-flash">
-                                        {benefit.title}
-                                    </h3>
+                                    {/* Text Content */}
+                                    <div className="flex-1 space-y-1">
+                                        <h3 className="text-lg lg:text-xl font-black text-zinc-900 dark:text-white leading-tight group-hover:text-gold-500 transition-colors">
+                                            {benefit.title}
+                                        </h3>
+                                        <div className="text-sm lg:text-base text-zinc-600 dark:text-zinc-400 leading-snug font-bold">
+                                            <StyledBrandName text={benefit.description} />
+                                        </div>
+                                    </div>
 
-                                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-2xl font-bold">
-                                        <StyledBrandName text={benefit.description} />
-                                    </p>
-
-                                    {/* Interactive Accent Line */}
-                                    <div className="absolute bottom-8 start-1/2 -translate-x-1/2 w-0 group-hover:w-3/4 h-2 bg-gradient-to-r from-gold-600 to-yellow-300 rounded-full transition-all duration-700 opacity-0 group-hover:opacity-100 shadow-[0_0_25px_rgba(255,255,160,0.6)] animate-shimmer"></div>
+                                    {/* Subtle Accent Glow on Hover */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                                 </div>
                             </motion.div>
                         </RevealOnScroll>

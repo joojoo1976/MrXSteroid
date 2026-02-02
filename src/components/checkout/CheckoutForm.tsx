@@ -2,15 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { loadStripe, StripeElementLocale } from '@stripe/stripe-js';
-import {
-    Elements,
-    CardElement,
-    useStripe,
-    useElements,
-} from '@stripe/react-stripe-js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle, MapPin, Globe, Scale, Ruler, Calendar, Target, Truck, CheckCircle2 } from 'lucide-react';
+import { Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle, MapPin, Target, Truck, CheckCircle2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -19,14 +12,14 @@ import { Checkbox } from '../ui/checkbox';
 import { ContentStrings, Language, PricingTier, ProductVariant } from '../../types';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
-import { getShippingProviders, ShippingProvider, validatePromoCode, calculateShippingRates } from '../../utils/logic';
-import { supabase } from '../../lib/supabase';
+import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../utils/logic';
+
 import { usePreferences } from '../../context/PreferencesContext';
-import { errorHandler } from '../../lib/error-handler';
+
+import { paymentService } from '../../services/payment.service';
 
 // Initialize SpaceRemit (Environment Variable with fallback for localized testing)
-const SPACEREMIT_KEY = import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'sb_publishable_placeholder_key_demo_only';
-const stripePromise = loadStripe(SPACEREMIT_KEY);
+
 
 interface CheckoutFormData {
     fullName: string;
@@ -64,23 +57,20 @@ export interface CheckoutFormProps {
     openLegal?: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
 }
 
-const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
+export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     content,
     lang,
     selectedTier,
-    onSuccess,
     productVariant,
-    quantity,
     onLocationChange,
     onShippingChange,
     totalAmount,
     openLegal
 }) => {
-    const stripe = useStripe();
-    const elements = useElements();
+    // Hooks removed: useStripe, useElements
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
-    const { unitSystem, language: prefLang, locale: detectedLocale } = usePreferences();
+    const { unitSystem, language: prefLang } = usePreferences();
     const isAr = prefLang === 'ar';
     const isPhysical = productVariant !== 'digital';
     const isImperial = unitSystem === 'imperial';
@@ -166,7 +156,9 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
         }
     });
 
-    const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'crypto'>('card');
+
+
+    // Unified country watcher
     const selectedCountry = watch('country');
 
     useEffect(() => {
@@ -182,17 +174,15 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
     const [promoStatus, setPromoStatus] = useState<{ valid: boolean; message: string; discount: number } | null>(null);
     const [isPromoLoading, setIsPromoLoading] = useState(false);
 
-    const watchCountry = watch('country');
-
     useEffect(() => {
-        if (selectedTier.requiresShipping && watchCountry) {
+        if (selectedTier.requiresShipping && selectedCountry) {
             const fetchShipping = async () => {
                 setIsLoadingShipping(true);
                 try {
-                    const providers = await calculateShippingRates({ country: watchCountry });
+                    const providers = await calculateShippingRates({ country: selectedCountry });
                     setShippingProviders(providers);
-                    onLocationChange(watchCountry.toLowerCase() === 'egypt' || watchCountry === 'مصر');
-                } catch (error) {
+                    onLocationChange(selectedCountry.toLowerCase() === 'egypt' || selectedCountry === 'مصر');
+                } catch {
                     toast.error("Failed to load shipping rates");
                 } finally {
                     setIsLoadingShipping(false);
@@ -200,7 +190,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
             };
             fetchShipping();
         }
-    }, [watchCountry, selectedTier.requiresShipping, onLocationChange]);
+    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
 
     const selectedShippingId = watch('shippingProvider');
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
@@ -221,7 +211,7 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                 setPromoStatus({ valid: false, message: result.message, discount: 0 });
                 toast.error(result.message);
             }
-        } catch (e) {
+        } catch {
             toast.error("Error validating code");
         } finally {
             setIsPromoLoading(false);
@@ -237,72 +227,55 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
     const [submissionCount, setSubmissionCount] = useState(0);
 
     const onSubmit = async (data: CheckoutFormData) => {
-        // Mock Rate Limiting
         if (submissionCount >= 3) {
             setPaymentError(isAr ? "لقد تجاوزت عدد محاولات الدفع المسموح بها. يرجى المحاولة لاحقاً." : "Too many payment attempts. Please try again later.");
             return;
         }
 
-        // Generate a unique transaction ID for reference & idempotency
-        const txnId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        setIsProcessing(true);
+        setPaymentError(null);
 
-        // Integrated SpaceRemit Payment Integration with ID tracking
         try {
-            // Leverage Supabase to store the order/lead
-            const { error: dbError } = await supabase
-                .from('orders')
-                .insert([{
-                    email: data.email,
-                    fullName: data.fullName,
-                    tier: selectedTier.id,
-                    language: selectedTier.selectedLanguage,
-                    amount: finalTotal,
-                    country: data.country,
-                    address: data.address,
-                    city: data.city,
-                    zip_code: data.zipCode,
-                    shipping_provider: selectedShipping?.name,
-                    transaction_id: txnId, // Linked to the payment
-                    status: 'pending',     // Initial state
-                    body_stats: selectedTier.requiresBodyStats ? {
-                        weight: data.weight,
-                        height: data.height,
-                        age: data.age,
-                        goal: data.goal
-                    } : null
-                }]);
+            // Generate a temporary Order ID for tracking if needed before DB insertion
+            const tempOrderId = `ord_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-            if (dbError) {
-                errorHandler.handle(dbError, 'CheckoutOrderSave');
-                setPaymentError(isAr
-                    ? "حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى."
-                    : "Error saving order. Please try again.");
-                return;
+            // Initiate payment via PaymentService
+            const result = await paymentService.initiatePayment({
+                amount: finalTotal,
+                currency: 'USD',
+                email: data.email,
+                customerName: data.fullName,
+                orderId: tempOrderId,
+                productId: selectedTier.id as string,
+                productName: selectedTier.name as string,
+                userId: undefined,
+                quantity: 1,
+                locale: isAr ? 'ar' : 'en',
+                metadata: {
+                    ...data,
+                    tierId: selectedTier.id,
+                    tierName: selectedTier.name,
+                    isPhysical: isPhysical,
+                    lang: selectedTier.selectedLanguage,
+                    shippingCost: selectedShipping?.price || 0,
+                    shippingProvider: selectedShipping?.name,
+                    discount: discountAmount,
+                    promoCode: promoCode
+                } as unknown as Record<string, unknown>
+            });
+
+            if (result.success === false) {
+
+                const err = result.error;
+                throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
             }
 
+            setSubmissionCount(prev => prev + 1);
 
-
-            // Simulate Payment Gateway Delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            if (window.SpaceRemit) {
-                window.SpaceRemit.Pay({
-                    amount: finalTotal,
-                    currency: 'USD',
-                    email: data.email,
-                    description: `Order for ${selectedTier.name} (${selectedTier.selectedLanguage})`,
-                    referenceId: txnId, // Crucial for idempotency matching
-                    metadata: { ...data, tierId: selectedTier.id, internal_txn: txnId },
-                    success_url: `${window.location.origin}/success`,
-                    cancel_url: `${window.location.origin}/cancel`
-                });
-            } else {
-                // Fallback for demo
-                toast.success("Order processed successfully (SpaceRemit Mock)");
-                onSuccess();
-            }
         } catch (error) {
-            errorHandler.handle(error, 'CheckoutPayment');
+            console.error(error);
+            const msg = (error as Error).message;
+            setPaymentError(isAr ? (msg || "حدث خطأ أثناء بدء الدفع.") : (msg || "Error initiating payment."));
         } finally {
             setIsProcessing(false);
         }
@@ -562,71 +535,46 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     {isAr ? "طريقة الدفع" : "Payment Method"}
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                        { id: 'card', icon: CreditCard, label: isAr ? "بطاقة ائتمان" : "Credit Card", sub: "Stripe Secure" },
-                        { id: 'paypal', icon: Mail, label: "PayPal", sub: "Express Checkout", disabled: true },
-                        { id: 'crypto', icon: ShieldCheck, label: "Crypto", sub: "BTC / ETH / SOL", disabled: true }
-                    ].map((method) => (
-                        <div
-                            key={method.id}
-                            onClick={() => !method.disabled && setPaymentMethod(method.id as 'card' | 'paypal' | 'crypto')}
-                            className={cn(
-                                "relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden group",
-                                paymentMethod === method.id
-                                    ? "bg-gold-500/10 border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.1)]"
-                                    : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700",
-                                method.disabled && "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            <method.icon className={cn(
-                                "w-8 h-8 mb-4 transition-colors",
-                                paymentMethod === method.id ? "text-gold-500" : "text-zinc-500 group-hover:text-zinc-300"
-                            )} />
-                            <div className="font-black text-sm text-white mb-1">{method.label}</div>
-                            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{method.sub}</div>
-                            {method.disabled && (
-                                <div className="absolute top-2 right-2 bg-zinc-800 text-[8px] font-black px-1.5 py-0.5 rounded text-zinc-500 uppercase">
-                                    Soon
+                <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
+                    <CardContent className="p-6">
+                        <div className="flex flex-col gap-4">
+                            <div className="p-4 rounded-xl bg-black/40 border border-zinc-800 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gold-500/10 flex items-center justify-center">
+                                        <CreditCard className="w-5 h-5 text-gold-500" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-white text-sm">{isAr ? "دفع آمن عبر SpaceRemit" : "Secure Payment via SpaceRemit"}</p>
+                                        <p className="text-xs text-zinc-500">{isAr ? "بطاقات الائتمان، مدى، والمزيد" : "Credit Cards, Mada, and more"}</p>
+                                    </div>
                                 </div>
-                            )}
+                                <ShieldCheck className="w-5 h-5 text-green-500" />
+                            </div>
                         </div>
-                    ))}
-                </div>
+                    </CardContent>
 
-                <AnimatePresence mode="wait">
-                    {paymentMethod === 'card' && (
-                        <motion.div
-                            key="card-interface"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="p-8 bg-zinc-900/50 border-2 border-zinc-800 rounded-[2rem] backdrop-blur-xl"
+                    <CardFooter className="bg-black/20 p-8 flex flex-col gap-4">
+                        {paymentError && (
+                            <div className="w-full p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500 text-xs font-bold mb-2">
+                                <AlertCircle className="w-4 h-4" />
+                                {paymentError}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            disabled={isProcessing}
+                            className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all hover:scale-[1.02]"
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2">
-                                    <CreditCard className="w-5 h-5 text-gold-500" />
-                                    <span className="font-black text-xs uppercase tracking-widest text-zinc-400">Card Information</span>
-                                </div>
-                            </div>
-                            <div className="p-4 bg-black/60 rounded-xl border border-zinc-800 focus-within:border-gold-500 transition-all shadow-inner">
-                                <CardElement
-                                    options={{
-                                        style: {
-                                            base: {
-                                                fontSize: '16px',
-                                                color: '#fff',
-                                                fontFamily: 'Inter, sans-serif',
-                                                '::placeholder': { color: '#52525b' },
-                                            },
-                                            invalid: { color: '#ef4444' },
-                                        },
-                                    }}
-                                />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            {isProcessing ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
+                            {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} $${finalTotal.toFixed(2)}`}
+                        </Button>
+
+                        <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
+                            <div className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{content.secureCheckout}</div>
+                        </div>
+                    </CardFooter>
+                </Card>
             </div>
 
             <div className="space-y-4 p-6 bg-zinc-900/30 border border-zinc-800 rounded-2xl">
@@ -656,57 +604,19 @@ const CheckoutFormInner: React.FC<CheckoutFormProps> = ({
                     )}
                     <Button
                         type="submit"
-                        disabled={isProcessing || !stripe}
+                        disabled={isProcessing}
                         className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)]"
                     >
                         {isProcessing ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
                         {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} $${finalTotal.toFixed(2)}`}
                     </Button>
 
-                    {/* SpaceRemit Integration */}
-                    {window.SpaceRemit && (
-                        <>
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-zinc-700" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-zinc-900 px-2 text-zinc-500 font-bold">{isAr ? "أو" : "Or"}</span>
-                                </div>
-                            </div>
-                            <Button
-                                type="button"
-                                onClick={() => {
-                                    if (window.SpaceRemit) {
-                                        window.SpaceRemit.Pay({
-                                            amount: finalTotal,
-                                            currency: 'USD',
-                                            description: selectedTier.name,
-                                            customer_email: watch('email'),
-                                            customer_name: watch('fullName')
-                                        });
-                                    }
-                                }}
-                                className="w-full py-6 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-lg rounded-xl border border-zinc-700"
-                            >
-                                {isAr ? "الدفع عبر SpaceRemit" : "Pay with SpaceRemit"}
-                            </Button>
-                        </>
-                    )}
+
                     <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
                         <div className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{content.secureCheckout}</div>
                     </div>
                 </CardFooter>
             </Card>
         </form >
-    );
-};
-
-export const CheckoutForm: React.FC<CheckoutFormProps> = (props) => {
-    const { locale } = usePreferences();
-    return (
-        <Elements stripe={stripePromise} options={{ locale: locale as StripeElementLocale }}>
-            <CheckoutFormInner {...props} />
-        </Elements>
     );
 };
