@@ -64,16 +64,29 @@ class ErrorHandlerService {
         if (error && typeof error === 'object') {
             const errObj = error as Record<string, unknown>;
 
-            // Extract the most likely message property safely using string indexing
-            const rawMessage = errObj['message'] || errObj['error_description'] || errObj['error'] || errObj['msg'];
+            // Extract message - handle various common error property names
+            const rawMessage = errObj['message'] || errObj['error_description'] || errObj['error'] || errObj['msg'] || errObj['details'];
 
-            // Safely convert to string, handling objects that might be returned
             let message = 'An unexpected error occurred.';
+
             if (rawMessage) {
-                message = typeof rawMessage === 'object' ? JSON.stringify(rawMessage) : String(rawMessage);
+                if (typeof rawMessage === 'object') {
+                    // If it's an object, check for nested message or stringify fully
+                    const nestedMsg = (rawMessage as any).message || (rawMessage as any).msg || (rawMessage as any).error;
+                    message = nestedMsg ? String(nestedMsg) : JSON.stringify(rawMessage);
+                } else {
+                    message = String(rawMessage);
+                }
             }
 
-            // Debugging help for the technician through the UI
+            // If message is still just "{}" or empty, try the whole object
+            if (message === '{}' || !message) {
+                message = JSON.stringify(errObj);
+            }
+
+            // Cleanup common Supabase error prefixes
+            message = message.replace(/^Database error: /i, '').replace(/^AuthApiError: /i, '');
+
             const msgStr = message.toLowerCase();
             if (msgStr.includes('network') || msgStr.includes('fetch')) {
                 return { type: ErrorType.NETWORK, message: 'Network error. Verify your connection.', originalError: error };

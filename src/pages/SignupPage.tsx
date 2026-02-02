@@ -62,18 +62,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                 },
             });
 
-            if (error) {
-                console.error("Supabase SignUp Error Details:", error);
-                // Production-ready error handling for SMTP/Brevo and Network failures
-                if (error.message.includes('fetch') || error.message.includes('network')) {
-                    toast.error(isRTL ? "خطأ في الاتصال: يرجى التحقق من الإنترنت." : "Network error: Please check your connection.");
-                } else if (error.status === 500) {
-                    toast.error(isRTL ? "عطل فني في خادم البريد (Brevo). يرجى المحاولة لاحقاً." : "Mail server error (Brevo). Please try again later.");
-                } else {
-                    toast.error(error.message);
-                }
-                throw error;
-            }
+            if (error) throw error;
 
             if (data.user) {
                 setSuccess(true);
