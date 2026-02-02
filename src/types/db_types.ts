@@ -182,6 +182,81 @@ export type Database = {
                 }
                 Relationships: []
             }
+            payments: {
+                Row: {
+                    id: string
+                    transaction_id: string
+                    spaceremit_code: string | null
+                    order_id: string | null
+                    user_id: string | null
+                    amount: number
+                    currency: string
+                    status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded'
+                    product_id: string | null
+                    product_name: string | null
+                    customer_email: string
+                    customer_name: string | null
+                    metadata: Json
+                    error_message: string | null
+                    created_at: string
+                    updated_at: string
+                    paid_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    transaction_id: string
+                    spaceremit_code?: string | null
+                    order_id?: string | null
+                    user_id?: string | null
+                    amount: number
+                    currency: string
+                    status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded'
+                    product_id?: string | null
+                    product_name?: string | null
+                    customer_email: string
+                    customer_name?: string | null
+                    metadata?: Json
+                    error_message?: string | null
+                    created_at?: string
+                    updated_at?: string
+                    paid_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    transaction_id?: string
+                    spaceremit_code?: string | null
+                    order_id?: string | null
+                    user_id?: string | null
+                    amount?: number
+                    currency?: string
+                    status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded'
+                    product_id?: string | null
+                    product_name?: string | null
+                    customer_email?: string
+                    customer_name?: string | null
+                    metadata?: Json
+                    error_message?: string | null
+                    created_at?: string
+                    updated_at?: string
+                    paid_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "payments_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "payments_order_id_fkey"
+                        columns: ["order_id"]
+                        isOneToOne: false
+                        referencedRelation: "orders"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
         }
         Views: {
             [_ in never]: never

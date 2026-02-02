@@ -54,7 +54,8 @@ export enum Page {
   REFUND = 'refund',
   LEGAL_DISCLAIMER_PAGE = 'legal_disclaimer_page',
   PAYMENT_SUCCESS = 'payment_success',
-  PAYMENT_CANCEL = 'payment_cancel'
+  PAYMENT_CANCEL = 'payment_cancel',
+  PAYMENT_PENDING = 'payment_pending'
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus';

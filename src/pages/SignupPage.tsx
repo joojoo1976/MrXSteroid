@@ -63,6 +63,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
             });
 
             if (error) {
+                console.error("Supabase SignUp Error Details:", error);
                 // Production-ready error handling for SMTP/Brevo and Network failures
                 if (error.message.includes('fetch') || error.message.includes('network')) {
                     toast.error(isRTL ? "خطأ في الاتصال: يرجى التحقق من الإنترنت." : "Network error: Please check your connection.");

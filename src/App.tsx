@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useRef, Suspense, lazy, useMemo } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import {
-  ChevronRight, AlertTriangle, ArrowLeft, Zap, Lock, FileCheck, CheckCircle, Globe
+  ArrowLeft, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
 // Types & Data
-import { Page, Language, Currency, PricingTier, ContentStrings, SalesNotificationData } from './types';
+import { Page, Language, PricingTier } from './types';
 import {
   salesDataAr, salesDataEn
 } from './i18n';
 import { getWeeklyKeywords } from './utils/keywordGenerator';
 
-// Localization Utils
-import { SupportedLanguage, LocalizationState } from './types/localization';
 import { initializeLocalization } from './utils/logic';
 
 // Major Components
@@ -70,6 +68,7 @@ const LegalDisclaimerPage = React.lazy(() => import('./pages/LegalDisclaimerPage
 const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage'));
 const SuccessPage = React.lazy(() => import('./pages/SuccessPage'));
 const CancelPage = React.lazy(() => import('./pages/CancelPage'));
+const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage'));
 
 // End of imports cleanup
 
@@ -87,6 +86,10 @@ const LiveSchedule = React.lazy(() => import('./components/marketing/LiveSchedul
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
 import { PreferencesProvider } from './context/PreferencesProvider';
+import PreferencesModal from './components/modals/PreferencesModal';
+import AuthGuard from './components/auth/AuthGuard';
+
+// Lazy Loaded Components
 
 
 interface AppContentProps {
@@ -104,19 +107,17 @@ interface AppContentProps {
   legalState: { isOpen: boolean; title: string; content: string };
   setLegalState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; title: string; content: string }>>;
   setHasPurchased: (purchased: boolean) => void;
-  setCurrencyState: React.Dispatch<React.SetStateAction<{ code: string; symbol: string; rate: number; locale: string }>>;
 }
 
-import PreferencesModal from './components/modals/PreferencesModal';
-import AuthGuard from './components/auth/AuthGuard';
+
 
 function AppContent({
   theme, setTheme, colorTheme, changeColorTheme,
   currencyState, currentPage, navigateTo, isCheckoutOpen, setIsCheckoutOpen,
   selectedTier, setSelectedTier,
-  legalState, setLegalState, setHasPurchased, setCurrencyState
+  legalState, setLegalState, setHasPurchased
 }: AppContentProps) {
-  const { language: lang, setLanguage: changeLang, content, isRTL, unitSystem, setUnitSystem, isAutoDetected } = usePreferences();
+  const { language: lang, content, isRTL, isAutoDetected } = usePreferences();
   const { user, signOut } = useAuth();
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
@@ -297,6 +298,13 @@ function AppContent({
               )}
               {currentPage === Page.PAYMENT_SUCCESS && <SuccessPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.PAYMENT_CANCEL && <CancelPage content={content} navigateTo={navigateTo} />}
+              {currentPage === Page.PAYMENT_PENDING && (
+                <PaymentPendingPage
+                  transactionId={new URLSearchParams(window.location.search).get('txn') || ''}
+                  navigateTo={navigateTo}
+                  locale={lang}
+                />
+              )}
             </Suspense>
           </main>
         )}
@@ -336,7 +344,7 @@ export default function App() {
   const [currencyState, setCurrencyState] = useState<{ code: string; symbol: string; rate: number; locale: string }>({ code: 'USD', symbol: '$', rate: 1, locale: 'en-US' });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null);
-  const [hasPurchased, setHasPurchased] = useState(false);
+  const [, setHasPurchased] = useState(false);
   const [legalState, setLegalState] = useState<{ isOpen: boolean, title: string, content: string }>({ isOpen: false, title: '', content: '' });
   const [currentPage, setCurrentPage] = useState<Page>(Page.HOME);
 
@@ -398,6 +406,8 @@ export default function App() {
         setCurrentPage(Page.PAYMENT_SUCCESS);
       } else if (path === '/cancel') {
         setCurrentPage(Page.PAYMENT_CANCEL);
+      } else if (path === '/payment-pending') {
+        setCurrentPage(Page.PAYMENT_PENDING);
       }
 
       // Check for reset_password flow
@@ -463,7 +473,6 @@ export default function App() {
           isCheckoutOpen={isCheckoutOpen} setIsCheckoutOpen={setIsCheckoutOpen}
           selectedTier={selectedTier} setSelectedTier={setSelectedTier}
           legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
-          setCurrencyState={setCurrencyState}
         />
       </PreferencesProvider>
     </AuthProvider>
