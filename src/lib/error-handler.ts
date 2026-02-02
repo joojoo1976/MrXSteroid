@@ -90,8 +90,11 @@ class ErrorHandlerService {
             if (message) {
                 if (typeof message === 'object') {
                     // Try to dig deeper one level if it's nested
-                    const nested = message as Record<string, any>;
-                    messageStr = nested.message || nested.msg || nested.error || JSON.stringify(message);
+                    const nested = message as Record<string, unknown>;
+                    const extracted = (typeof nested.message === 'string' ? nested.message : '') ||
+                        (typeof nested.msg === 'string' ? nested.msg : '') ||
+                        (typeof nested.error === 'string' ? nested.error : '');
+                    messageStr = extracted || JSON.stringify(message);
                 } else {
                     messageStr = String(message);
                 }
@@ -100,7 +103,7 @@ class ErrorHandlerService {
                 // but use a custom replacer to catch non-enumerable Error props just in case
                 try {
                     messageStr = JSON.stringify(errObj, Object.getOwnPropertyNames(errObj));
-                } catch (e) {
+                } catch {
                     messageStr = DEFAULT_MSG;
                 }
             }
