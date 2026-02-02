@@ -50,16 +50,18 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
         try {
             // Using the precise keys for metadata to match the Database Trigger: full_name and user_name
+            const signupOptions = {
+                data: {
+                    full_name: values.fullName,
+                    user_name: values.username,
+                },
+                emailRedirectTo: window.location.origin + '/dashboard',
+            };
+
             const { data, error } = await supabase.auth.signUp({
                 email: values.email,
                 password: values.password,
-                options: {
-                    data: {
-                        full_name: values.fullName,
-                        user_name: values.username,
-                    },
-                    emailRedirectTo: 'https://mrxsteroid.vercel.app/dashboard',
-                },
+                options: signupOptions,
             });
 
             if (error) throw error;
