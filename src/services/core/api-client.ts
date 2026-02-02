@@ -1,5 +1,5 @@
-
 import { errorHandler } from '../../lib/error-handler';
+import { maskObservation } from '../../utils/contextOptimization';
 
 /**
  * Enterprise-Grade Generic API Client (Singleton)
@@ -48,6 +48,11 @@ class ApiClient {
             }
 
             const data = await response.json();
+
+            // Observation Masking for elite performance and security
+            const { masked } = maskObservation(data, endpoint);
+            console.log(`[ApiClient] Request ${endpoint} success:`, masked);
+
             return { data, error: null };
         } catch (error) {
             errorHandler.handle(error, 'ApiClient');
