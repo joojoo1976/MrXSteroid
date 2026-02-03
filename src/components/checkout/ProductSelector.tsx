@@ -1,7 +1,9 @@
 import React from 'react';
-import { Smartphone, Plus, Minus, Check, LucideIcon, Package, Crown } from 'lucide-react';
+import { Smartphone, Plus, Minus, Check, LucideIcon, Package, Crown, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { ProductVariant } from '../../types';
+import { usePreferences } from '../../context/PreferencesContext';
 
 interface ProductSelectorProps {
     selectedVariant: ProductVariant;
@@ -42,6 +44,14 @@ const VARIANTS: { id: ProductVariant; labelAr: string; labelEn: string; price: n
 ];
 
 export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVariant, onSelectVariant, quantity, setQuantity, isAr }) => {
+    const { formatPrice } = usePreferences();
+    const isCoachingOrPlus = selectedVariant === 'coaching' || selectedVariant === 'coaching_plus';
+    const coachingAddon = selectedVariant === 'coaching_plus';
+
+    const handleCoachingToggle = () => {
+        onSelectVariant(coachingAddon ? 'coaching' : 'coaching_plus');
+    };
+
     return (
         <div className="space-y-6">
             <h3 className="text-xl font-black text-white flex items-center gap-2">
@@ -52,7 +62,8 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
             <div className="grid md:grid-cols-3 gap-4">
                 {VARIANTS.map((variant) => {
                     const Icon = variant.icon;
-                    const isSelected = selectedVariant === variant.id;
+                    // Highlight the card if it matches the base variant (even if coaching_plus is selected)
+                    const isSelected = selectedVariant === variant.id || (variant.id === 'coaching' && selectedVariant === 'coaching_plus');
 
                     return (
                         <div
@@ -83,7 +94,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                                     {isAr ? variant.labelAr : variant.labelEn}
                                 </h4>
                                 <div className="text-2xl font-black text-gold-500 mb-4 tracking-tighter shadow-gold-500/10">
-                                    ${variant.price}
+                                    {formatPrice(variant.price)}
                                 </div>
                                 <ul className="space-y-2 mb-4">
                                     {(isAr ? variant.featuresAr : variant.featuresEn).map((feature, i) => (
@@ -98,6 +109,65 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                     );
                 })}
             </div>
+
+            {/* Coaching Add-on Section */}
+            <AnimatePresence>
+                {isCoachingOrPlus && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="bg-zinc-900/50 border border-gold-500/30 rounded-xl p-4 relative group hover:border-gold-500/60 transition-colors">
+                            <label className="flex items-center justify-between cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                    <div className={cn(
+                                        "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all",
+                                        coachingAddon ? "bg-gold-500 border-gold-500" : "border-zinc-500 group-hover:border-gold-500"
+                                    )}>
+                                        {coachingAddon && <Check className="w-4 h-4 text-black" />}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-white text-base uppercase tracking-wider flex items-center gap-2">
+                                            {isAr ? "شامل التدريب الشخصي" : "Include Personal Coaching"}
+                                            <span className="text-[10px] bg-gold-500/20 text-gold-500 px-2 py-0.5 rounded border border-gold-500/20">VIP</span>
+                                        </h4>
+                                        <p className="text-xs text-zinc-400 font-medium">
+                                            {isAr
+                                                ? "تحليل شامل لنتائجك + خطة مخصصة للدورة + متابعة ١-على-١"
+                                                : "Full analysis + Custom cycle plan + 1-on-1 follow up"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="block text-xl font-black text-gold-500 tracking-tighter">{formatPrice(200)}</span>
+                                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">{isAr ? "لكل دورة" : "/ Cycle"}</span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    className="hidden"
+                                    checked={coachingAddon}
+                                    onChange={handleCoachingToggle}
+                                />
+                            </label>
+
+                            {coachingAddon && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-3 pt-3 border-t border-zinc-800 flex items-center gap-2 text-xs text-amber-500 font-bold"
+                                >
+                                    <AlertTriangle className="w-4 h-4" />
+                                    {isAr
+                                        ? "تنبيه: سيتطلب تحميل نتائج التحاليل وصور الجسم الحالية بعد الدفع."
+                                        : "Note: You will be required to upload bloodwork and physique photos after payment."}
+                                </motion.div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Quantity Selector */}
             <div className="flex items-center justify-between bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl">
