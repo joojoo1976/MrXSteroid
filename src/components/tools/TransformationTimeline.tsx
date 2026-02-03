@@ -64,7 +64,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 >
                     {content.timelineTitle}
                 </motion.h2>
-                <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-bold italic animate-glow"><StyledBrandName text={content.timelineSubtitle} /></p>
+                <p className="text-sm md:text-lg text-zinc-500 max-w-5xl mx-auto font-bold italic animate-glow"><StyledBrandName text={content.timelineSubtitle} /></p>
             </div>
 
             {/* Dashboard Container */}

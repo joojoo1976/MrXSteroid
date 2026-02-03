@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-1" />
+            <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-0.5 scale-90 origin-start" />
           </div>
         );
       case 'lang-theme':
@@ -119,11 +119,13 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
               onBlur={() => setTimeout(() => setIsThemeDropdownOpen(false), 200)}
-              className="flex items-center justify-center gap-2 px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[40px]"
+              className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[44px] h-[36px]"
               title="Toggle Theme"
             >
               <ThemeIcon theme={theme} />
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isThemeDropdownOpen ? 'rotate-180' : ''}`} />
+              <div className="flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded px-0.5 ml-1">
+                <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isThemeDropdownOpen ? 'rotate-180 text-gold-500' : 'text-zinc-500'}`} />
+              </div>
             </button>
             {isThemeDropdownOpen && (
               <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-1.5`}>
@@ -147,11 +149,11 @@ const Header: React.FC<HeaderProps> = ({
             {/* Smart Globe Button - Opens Unified Settings */}
             <button
               onClick={onOpenPreferences}
-              className="flex items-center justify-center gap-2 px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[40px]"
+              className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[44px] h-[36px]"
               title="Preferences"
             >
               <Globe className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-              <span className="hidden sm:inline uppercase text-[10px] tracking-widest">{lang}</span>
+              <span className="hidden sm:inline uppercase text-[9px] tracking-widest bg-gold-500/10 text-gold-600 dark:text-gold-500 px-1.5 rounded">PREFERENCES</span>
             </button>
           </div>
         );
@@ -165,8 +167,11 @@ const Header: React.FC<HeaderProps> = ({
               {content.navFeatures}
             </button>
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
-                {content.navAiTools} <ChevronDown className="w-3 h-3" />
+              <button className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+                {content.navAiTools}
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-full p-0.5 group-hover:bg-gold-500/20 transition-colors">
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </div>
               </button>
               <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-56 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
@@ -183,8 +188,11 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-sm font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
-                {content.navPremiumResources} <ChevronDown className="w-3 h-3" />
+              <button className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+                {content.navPremiumResources}
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-full p-0.5 group-hover:bg-gold-500/20 transition-colors">
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </div>
               </button>
               <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-64 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
@@ -194,8 +202,8 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
             </div>
-            <button onClick={() => handleNav('pricing')} className="text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.pricingTitle}</button>
-            <button onClick={() => handleNav('contact')} className="text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.contact}</button>
+            <button onClick={() => handleNav('pricing')} className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.pricingTitle}</button>
+            <button onClick={() => handleNav('contact')} className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.contact}</button>
           </div>
         );
       case 'auth':
@@ -291,7 +299,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 ${isScrolled ? 'py-1' : 'py-2'}`}>
+      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 ${isScrolled ? 'py-0.5' : 'py-1'}`}>
         <Reorder.Group
           axis="x"
           values={layoutConfig.sections}

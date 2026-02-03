@@ -67,7 +67,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                     >
                         <Zap className="w-4 h-4 fill-current" /> {content.pricingInitialize}
                     </motion.div>
-                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
+                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
                         {t('pricingTitle')}
                     </h2>
                     <p className="text-zinc-400 max-w-2xl mx-auto font-medium text-lg">
