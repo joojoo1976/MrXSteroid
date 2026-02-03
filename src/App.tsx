@@ -34,7 +34,6 @@ import SmartBookLanding from './components/marketing/SmartBookLanding';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import { ConsentModal } from './components/compliance/ConsentModal';
 
 // Lazy Loaded Components
 const MacroCalculator = React.lazy(() => import('./components/tools/MacroCalculator'));
@@ -314,7 +313,6 @@ function AppContent({
       <WhatsAppButton />
       <FloatingSideIcon />
       {currentPage === Page.HOME && <SalesToast content={content} data={salesData} />}
-      <ConsentModal />
       <BlockingDisclaimerModal content={content} />
       <LegalModal isOpen={legalState.isOpen} onClose={() => setLegalState(prev => ({ ...prev, isOpen: false }))} title={legalState.title} content={legalState.content} />
       <CheckoutModal
