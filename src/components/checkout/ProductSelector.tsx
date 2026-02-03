@@ -1,9 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Book, Smartphone, Hexagon, Plus, Minus, Check, LucideIcon } from 'lucide-react';
-import { Card } from '../ui/card';
-import { cn } from '../../lib/utils'; // Assuming utils exists, or I will use simple classnames
-
+import { Smartphone, Plus, Minus, Check, LucideIcon, Package, Crown } from 'lucide-react';
+import { cn } from '../../lib/utils';
 import { ProductVariant } from '../../types';
 
 interface ProductSelectorProps {
@@ -17,30 +14,30 @@ interface ProductSelectorProps {
 const VARIANTS: { id: ProductVariant; labelAr: string; labelEn: string; price: number; icon: LucideIcon; featuresAr: string[]; featuresEn: string[] }[] = [
     {
         id: 'digital',
-        labelAr: 'النسخة الرقمية (PDF)',
-        labelEn: 'Digital Edition (PDF)',
-        price: 29.99,
+        labelAr: 'البروتوكول الرقمي (PDF)',
+        labelEn: 'Digital Protocol (PDF)',
+        price: 49.99,
         icon: Smartphone,
-        featuresAr: ['تسليم فوري عبر الإيميل', 'تحديثات مجانية مدى الحياة', 'بدون مصاريف شحن'],
-        featuresEn: ['Instant Email Delivery', 'Lifetime Free Updates', 'No Shipping Fees']
+        featuresAr: ['تسليم فوري (PDF/EPUB)', 'قوالب دورات أساسية', 'بدون مصاريف شحن'],
+        featuresEn: ['eBook (PDF/EPUB)', 'Instant Delivery', 'Basic Cycle Templates']
     },
     {
-        id: 'paperback',
-        labelAr: 'غلاف ورقي (Softcover)',
-        labelEn: 'Paperback (Softcover)',
-        price: 59.99,
-        icon: Book,
-        featuresAr: ['طباعة ملونة عالية الجودة', 'مثالية للقراءة اليومية', 'شحن دولي متاح'],
-        featuresEn: ['High-Quality Color Print', 'Perfect for Daily Reading', 'Global Shipping Available']
+        id: 'bundle',
+        labelAr: 'الحزمة التكتيكية',
+        labelEn: 'Tactical Bundle',
+        price: 72.00,
+        icon: Package,
+        featuresAr: ['نسخة ورقية + رقمية', 'كتاب صوتي (هدية)', 'شحن مجاني'],
+        featuresEn: ['Paperback + Digital', 'Audiobook Bonus', 'Free Shipping']
     },
     {
-        id: 'hardcover',
-        labelAr: 'غلاف مقوى (Hardcover)',
-        labelEn: 'Premium Hardcover',
-        price: 99.99,
-        icon: Hexagon,
-        featuresAr: ['غلاف فاخر للمقتنين', 'ورق مصقول وثقيل', 'هدية حصرية مرفقة'],
-        featuresEn: ['Luxury Collector\'s Edition', 'Heavy Glossy Paper', 'Exclusive Gift Included']
+        id: 'coaching',
+        labelAr: 'الاحتراف الذكي (VIP)',
+        labelEn: 'Smart Professional (VIP)',
+        price: 82.00,
+        icon: Crown,
+        featuresAr: ['نسخة غلاف مقوى', 'مجتمع VIP حصري', 'شحن ذو أولوية'],
+        featuresEn: ['Hardcover Premium', 'VIP Community Access', 'Priority Shipping']
     }
 ];
 
