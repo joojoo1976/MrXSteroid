@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Globe, Scale, Ruler, Palette, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { X, Globe, Scale, Ruler, Palette, RefreshCw } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { Language, Currency } from '../../types';
 import { USFlag, EGFlag } from '../../utils/icon-utils';
@@ -60,13 +60,21 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ isOpen, onClose, co
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
-                                    {isRTL ? 'إعدادات العرض' : 'Display Preferences'}
+                                    {isRTL ? 'إعدادات العرض الذكية' : 'Smart Preferences'}
                                 </h2>
-                                {isAutoDetected && (
-                                    <span className="text-[10px] font-bold text-gold-600 dark:text-gold-500 uppercase tracking-widest flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3" /> {isRTL ? 'تم التوطين تلقائياً' : 'Auto-Localized by Region'}
-                                    </span>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 px-2 py-0.5 bg-gold-500/10 rounded-full border border-gold-500/20">
+                                        <div className="w-1.5 h-1.5 bg-gold-500 rounded-full animate-pulse" />
+                                        <span className="text-[9px] font-black text-gold-600 dark:text-gold-500 uppercase tracking-widest">
+                                            {isRTL ? 'توطين ذكي نشط' : 'Smart Localization Active'}
+                                        </span>
+                                    </div>
+                                    {isAutoDetected && (
+                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                                            {isRTL ? 'تلقائي' : 'System Auto'}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <button
@@ -165,10 +173,10 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ isOpen, onClose, co
                             <button
                                 onClick={() => refreshDetection()}
                                 disabled={status === 'RESOLVING'}
-                                className="w-full py-3 flex items-center justify-center gap-2 text-zinc-500 hover:text-gold-500 transition-colors text-xs font-bold uppercase tracking-widest"
+                                className="w-full py-3 flex items-center justify-center gap-2 text-zinc-500 hover:text-gold-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${status === 'RESOLVING' ? 'animate-spin' : ''}`} />
-                                {isRTL ? 'إعادة اكتشاف الموقع التلقائي' : 'Recalculate Smart Localization'}
+                                {isRTL ? 'إستعادة الكشف التلقائي عن المنطقة' : 'Re-Sync Global Localization Engine'}
                             </button>
                         </div>
                     </div>

@@ -30,20 +30,32 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     // Initial Sync Detection for Zero-Latency First Interaction
     const [language, setLanguageState] = useState<Language>(() => {
-        const stored = SecureStorage.getItem('language');
-        if (stored) return stored as Language;
+        // Priority 1: Explicit user override
+        const explicit = localStorage.getItem('mrx_explicit_language');
+        if (explicit) return explicit as Language;
 
-        // Browser Sniffing
-        const browserLang = navigator.language.split('-')[0].toLowerCase();
-        const supported = Object.values(Language) as string[];
-        return supported.includes(browserLang) ? (browserLang as Language) : DEFAULT_LANG;
+        // Priority 2: Previously detected auto-language
+        const storedAuto = SecureStorage.getItem('language');
+        if (storedAuto) return storedAuto as Language;
+
+        // Priority 3: Browser Sniffing (Reliable Fallback)
+        const browserLangs = navigator.languages || [navigator.language];
+        for (const lang of browserLangs) {
+            const code = lang.split('-')[0].toLowerCase();
+            if (code === 'ar') return Language.AR;
+            if (code === 'en') return Language.EN;
+        }
+
+        return DEFAULT_LANG;
     });
 
     const [unitSystem, setUnitSystemState] = useState<UnitSystem>(() => {
-        const stored = localStorage.getItem('mrx_unit_system');
-        if (stored) return stored as UnitSystem;
+        const explicit = localStorage.getItem('mrx_explicit_units');
+        if (explicit) return explicit as UnitSystem;
 
-        // Logical Heuristic based on locale/timezone
+        const storedAuto = localStorage.getItem('mrx_unit_system');
+        if (storedAuto) return storedAuto as UnitSystem;
+
         const browserCountry = detectCountryFromBrowser();
         return getSystemFromRegion(browserCountry);
     });
@@ -58,12 +70,10 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [currency, setCurrency] = useState<string>('USD');
 
     const initPreferences = useCallback(async (force = false) => {
-        const storedLang = SecureStorage.getItem('language');
-        const storedUnit = localStorage.getItem('mrx_unit_system');
-        const storedLocale = localStorage.getItem('mrx_locale');
-        const storedCurrency = localStorage.getItem('mrx_currency');
+        const hasExplicitLang = !!localStorage.getItem('mrx_explicit_language');
+        const hasExplicitUnits = !!localStorage.getItem('mrx_explicit_units');
 
-        if (force || (!storedLang || !storedUnit)) {
+        if (force || !isAutoDetected) {
             setStatus('RESOLVING');
             try {
                 const geoState = await initializeLocalization();
@@ -72,25 +82,22 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 const detectedLocale = geoState.currency?.locale || (detectedLang === Language.AR ? 'ar-SA' : 'en-US');
                 const detectedCurrency = geoState.currency?.code || 'USD';
 
-                if (!storedLang || force) {
+                // Automatically apply if not explicitly overridden by user
+                if (!hasExplicitLang || force) {
                     setLanguageState(detectedLang);
-                    if (!storedLang) SecureStorage.setItem('language', detectedLang);
+                    SecureStorage.setItem('language', detectedLang);
                 }
 
-                if (!storedLocale || force) {
-                    setLocale(detectedLocale);
-                    localStorage.setItem('mrx_locale', detectedLocale);
-                }
+                setLocale(detectedLocale);
+                localStorage.setItem('mrx_locale', detectedLocale);
 
-                if (!storedCurrency || force) {
-                    setCurrency(detectedCurrency);
-                    localStorage.setItem('mrx_currency', detectedCurrency);
-                }
+                setCurrency(detectedCurrency);
+                localStorage.setItem('mrx_currency', detectedCurrency);
 
-                if (!storedUnit || force) {
+                if (!hasExplicitUnits || force) {
                     const detectedUnit = getSystemFromRegion(geoState.country);
                     setUnitSystemState(detectedUnit);
-                    if (!storedUnit) localStorage.setItem('mrx_unit_system', detectedUnit);
+                    localStorage.setItem('mrx_unit_system', detectedUnit);
                 }
 
                 setIsAutoDetected(true);
@@ -100,16 +107,12 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 setStatus('ERROR');
             }
         } else {
-            setLocale(storedLocale || 'en-US');
-            setCurrency(storedCurrency || 'USD');
             setStatus('IDLE');
         }
-    }, []);
+    }, [isAutoDetected]);
 
     // Asynchronous Deep Detection (IP Based)
     useEffect(() => {
-        // To avoid cascading render warning, we ensure the state update 
-        // happens in a different tick if it's synchronous logic inside initPreferences
         if (status === 'BOOT') {
             const timeoutId = setTimeout(() => {
                 initPreferences();
@@ -124,7 +127,9 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         document.documentElement.lang = language;
         document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 
-        // Font and direction management is now centralized in App.tsx
+        // Dynamic Meta and Body classes for seamless transition
+        document.body.classList.remove('font-inter', 'font-noto-sans-arabic');
+        document.body.classList.add(isRTL ? 'font-noto-sans-arabic' : 'font-inter');
     }, [language]);
 
     // Side Effects: Theme
@@ -135,14 +140,16 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const setLanguage = useCallback((newLang: Language) => {
         setLanguageState(newLang);
+        localStorage.setItem('mrx_explicit_language', newLang);
         SecureStorage.setItem('language', newLang);
-        setIsAutoDetected(false); // Manually overridden
+        setIsAutoDetected(false);
     }, []);
 
     const setUnitSystem = useCallback((system: UnitSystem) => {
         setUnitSystemState(system);
+        localStorage.setItem('mrx_explicit_units', system);
         localStorage.setItem('mrx_unit_system', system);
-        setIsAutoDetected(false); // Manually overridden
+        setIsAutoDetected(false);
         window.dispatchEvent(new CustomEvent('mrx_unit_change', { detail: system }));
     }, []);
 
