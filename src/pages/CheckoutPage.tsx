@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ShieldCheck, Lock, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { CheckoutForm, NewPricingTier } from '../components/checkout/CheckoutForm';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { ContentStrings, Language, Page, PricingTier, ProductVariant } from '../types';
+import { Card } from '../components/ui/card';
+import { ContentStrings, Page, PricingTier, ProductVariant } from '../types';
 import BrandLogo from '../components/shared/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 
 import { ProductSelector } from '../components/checkout/ProductSelector';
 import { OrderSummary } from '../components/checkout/OrderSummary';
-import { ShippingZone } from '../types';
 
 interface CheckoutPageProps {
     content: ContentStrings;
@@ -36,27 +35,25 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     // Initialize variant based on selectedTier or default to digital
     const [variant, setVariant] = useState<ProductVariant>(() => {
         if (!selectedTier) return 'digital';
-        const nameLower = selectedTier.name.toLowerCase();
-        if (nameLower.includes('hard')) return 'hardcover';
-        if (nameLower.includes('paper') || nameLower.includes('soft')) return 'paperback';
-        return 'digital';
+        return selectedTier.id as ProductVariant;
     });
 
     const [quantity, setQuantity] = useState(1);
-    const [isEgypt, setIsEgypt] = useState(false);
     const [shippingCost, setShippingCost] = useState(0);
 
     // Calculate Totals
     const totals = React.useMemo(() => {
-        const itemPrice = selectedTier?.price || VARIANT_PRICES[variant];
+        const itemPrice = VARIANT_PRICES[variant];
+
+        // Handle any logic adjustments if needed (coaching vs coaching_plus is already in VARIANT_PRICES)
         const subtotal = itemPrice * quantity;
         const grandTotal = subtotal + shippingCost;
         return { itemPrice, subtotal, shippingCost, grandTotal };
-    }, [variant, quantity, shippingCost, selectedTier]);
+    }, [variant, quantity, shippingCost]);
 
     // Update Shipping Zone callback (passed to Form)
     const handleLocationChange = (isEg: boolean) => {
-        setIsEgypt(isEg);
+        // We can use this for any UI changes later if needed
     };
 
     if (!selectedTier && !variant) {
@@ -150,11 +147,11 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                     features: [],
                                     buttonText: '',
                                     requiresShipping: variant !== 'digital',
-                                    requiresBodyStats: variant === 'hardcover',
+                                    requiresBodyStats: variant === 'coaching_plus',
                                     selectedLanguage: isAr ? 'ar' : 'en',
                                     includesEbook: true,
-                                    includesAudiobook: false,
-                                    includesCoaching: variant === 'hardcover'
+                                    includesAudiobook: variant === 'bundle' || variant === 'coaching' || variant === 'coaching_plus',
+                                    includesCoaching: variant === 'coaching_plus'
                                 } as NewPricingTier}
                                 onSuccess={onSuccess}
                                 productVariant={variant}
