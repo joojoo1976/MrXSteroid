@@ -47,7 +47,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                             </span>
                             {variant !== 'digital' && (
                                 <span className="text-[10px] font-bold px-2 py-0.5 bg-white/5 text-zinc-400 rounded-md border border-white/5 uppercase tracking-wider">
-                                    {isAr ? "الوزن: " : "Weight: "}{variant === 'hardcover' ? '1.2kg' : '0.8kg'}
+                                    {isAr ? "الوزن: " : "Weight: "}{variant === 'coaching' || variant === 'coaching_plus' ? '1.2kg' : '0.8kg'}
                                 </span>
                             )}
                         </div>
