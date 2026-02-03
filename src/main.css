@@ -186,6 +186,42 @@
     font-family: 'Inter', sans-serif !important;
   }
 
+  /* Global Justify */
+  * {
+    text-align: justify;
+  }
+
+  /* Resets for centered elements or elements that shouldn't be justified */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  .text-center,
+  .text-center *,
+  nav *,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    text-align: inherit;
+    /* Allow classes to override */
+  }
+
+  .text-center {
+    text-align: center !important;
+  }
+
+  .text-start {
+    text-align: start !important;
+  }
+
+  .text-end {
+    text-align: end !important;
+  }
+
   html {
     transition: direction 0.3s ease;
   }

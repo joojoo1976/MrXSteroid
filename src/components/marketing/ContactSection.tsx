@@ -162,7 +162,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                             >
                                 <Zap className="w-3 h-3 animate-pulse" /> {content.contactSupportCommandCenter || "Support Command Center"}
                             </motion.div>
-                            <h2 className="text-5xl md:text-7xl font-black mb-6 text-white tracking-tighter leading-none">
+                            <h2 className="text-4xl md:text-6xl font-black mb-6 text-white tracking-tighter leading-none">
                                 {isRTL ? <StyledBrandName text={"اتصالات الـ " + "Mr. X"} /> : <span className="flex items-center gap-3">Contact the <DynamicBrandLogo inline variant="short" /> Source</span>}
                             </h2>
                             <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg">

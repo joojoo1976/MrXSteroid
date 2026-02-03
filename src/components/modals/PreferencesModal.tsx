@@ -2,9 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Globe, Scale, Ruler, Palette, RefreshCw } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { Language, Currency } from '../../types';
+import { Language } from '../../types';
 import { USFlag, EGFlag } from '../../utils/icon-utils';
-import { Button } from '../ui/button';
 
 interface PreferencesModalProps {
     isOpen: boolean;
@@ -17,7 +16,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ isOpen, onClose, co
     const {
         language, setLanguage,
         unitSystem, setUnitSystem,
-        isRTL, content,
+        isRTL,
         isAutoDetected, refreshDetection, status
     } = usePreferences();
 
