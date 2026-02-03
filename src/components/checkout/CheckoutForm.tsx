@@ -70,7 +70,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     // Hooks removed: useStripe, useElements
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
-    const { unitSystem, language: prefLang } = usePreferences();
+    const { unitSystem, language: prefLang, formatPrice } = usePreferences();
     const isAr = prefLang === 'ar';
     const isPhysical = productVariant !== 'digital';
     const isImperial = unitSystem === 'imperial';
@@ -408,10 +408,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                                         />
                                                         <div>
                                                             <p className="text-xs font-black text-white">{provider.name}</p>
-                                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{provider.estimatedDays} days delivery</p>
+                                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{provider.estimatedDays} {isAr ? 'أيام للتوصيل' : 'days delivery'}</p>
                                                         </div>
                                                     </div>
-                                                    <span className="text-sm font-black text-gold-500">+${provider.price}</span>
+                                                    <span className="text-sm font-black text-gold-500">+{formatPrice(provider.price)}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -553,7 +553,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         </div>
                     </CardContent>
 
-                    <CardFooter className="bg-black/20 p-8 flex flex-col gap-4">
+                    <CardFooter className="bg-black/20 p-8 flex flex-col gap-6">
                         {paymentError && (
                             <div className="w-full p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500 text-xs font-bold mb-2">
                                 <AlertCircle className="w-4 h-4" />
@@ -561,13 +561,31 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         )}
 
+                        {/* Agreement Section - Moved Inside */}
+                        <div className="space-y-4 p-4 bg-zinc-900/40 border border-zinc-800 rounded-2xl w-full">
+                            <div className="flex items-start space-x-3 rtl:space-x-reverse">
+                                <Checkbox
+                                    id="agreeToTerms"
+                                    checked={watch("agreeToTerms")}
+                                    onCheckedChange={(checked) => setValue('agreeToTerms', checked as boolean)}
+                                    className="mt-1 border-zinc-700 data-[state=checked]:bg-gold-500 data-[state=checked]:text-black"
+                                />
+                                <div className="space-y-1">
+                                    <label htmlFor="agreeToTerms" className="text-xs font-bold text-zinc-400 cursor-pointer leading-relaxed">
+                                        {renderAgreeText(content.checkoutAgree)}
+                                    </label>
+                                    {errors.agreeToTerms && <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">{errors.agreeToTerms.message}</p>}
+                                </div>
+                            </div>
+                        </div>
+
                         <Button
                             type="submit"
                             disabled={isProcessing}
                             className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all hover:scale-[1.02]"
                         >
                             {isProcessing ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-                            {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} $${finalTotal.toFixed(2)}`}
+                            {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} ${formatPrice(finalTotal)}`}
                         </Button>
 
                         <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
@@ -576,47 +594,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                     </CardFooter>
                 </Card>
             </div>
-
-            <div className="space-y-4 p-6 bg-zinc-900/30 border border-zinc-800 rounded-2xl">
-                <div className="flex items-start space-x-3 rtl:space-x-reverse">
-                    <Checkbox
-                        id="agreeToTerms"
-                        checked={watch("agreeToTerms")}
-                        onCheckedChange={(checked) => setValue('agreeToTerms', checked as boolean)}
-                        className="mt-1 border-zinc-700 data-[state=checked]:bg-gold-500 data-[state=checked]:text-black"
-                    />
-                    <div className="space-y-1">
-                        <label htmlFor="agreeToTerms" className="text-xs font-bold text-zinc-400 cursor-pointer leading-relaxed">
-                            {renderAgreeText(content.checkoutAgree)}
-                        </label>
-                        {errors.agreeToTerms && <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">{errors.agreeToTerms.message}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
-                <CardFooter className="bg-black/20 p-8 flex flex-col gap-4">
-                    {paymentError && (
-                        <div className="w-full p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500 text-xs font-bold mb-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {paymentError}
-                        </div>
-                    )}
-                    <Button
-                        type="submit"
-                        disabled={isProcessing}
-                        className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)]"
-                    >
-                        {isProcessing ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-                        {isProcessing ? (isAr ? "جاري المعالجة..." : "Processing...") : `${content.payNow} $${finalTotal.toFixed(2)}`}
-                    </Button>
-
-
-                    <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
-                        <div className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{content.secureCheckout}</div>
-                    </div>
-                </CardFooter>
-            </Card>
         </form >
     );
 };
