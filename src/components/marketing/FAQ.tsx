@@ -28,9 +28,9 @@ const FAQItemComponent: React.FC<{ item: FaqItem, content: ContentStrings }> = (
         <span className="flex items-center gap-4">
           <motion.div
             animate={{ rotate: isOpen ? 360 : 0, scale: isOpen ? 1.2 : 1 }}
-            className={`p-3 rounded-2xl shadow-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}
+            className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}
           >
-            <MessageSquare className="w-6 h-6" />
+            <MessageSquare className="w-5 h-5" />
           </motion.div>
           <div className="flex-1 text-2xl font-bold">
             <StyledBrandName text={item.question} />

@@ -174,23 +174,23 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                             {/* Direct Email Card */}
                             <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className="p-6 bg-zinc-900/50 border border-zinc-800 rounded-3xl backdrop-blur-xl relative overflow-hidden group"
+                                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl backdrop-blur-xl relative overflow-hidden group"
                             >
                                 <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-gold-500/10 rounded-2xl flex items-center justify-center text-gold-500 border border-gold-500/20">
-                                            <Mail className="w-6 h-6" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-gold-500/10 rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20">
+                                            <Mail className="w-5 h-5" />
                                         </div>
                                         <div>
                                             <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
-                                            <p className="text-xl font-bold text-white tracking-tight">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
+                                            <p className="text-lg font-bold text-white tracking-tight">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => copyToClipboard(content.contactInfoEmail || 'support@mrxsteroid.com')}
-                                        className="p-3 bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors"
+                                        className="p-2.5 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
                                     >
-                                        {copiedEmail ? <CheckCircle2 className="w-5 h-5 text-gold-500" /> : <Copy className="w-5 h-5" />}
+                                        {copiedEmail ? <CheckCircle2 className="w-4 h-4 text-gold-500" /> : <Copy className="w-4 h-4" />}
                                     </button>
                                 </div>
                             </motion.div>
@@ -221,10 +221,10 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         key={i}
                                         href="#"
                                         whileHover={{ y: -5, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
-                                        className="flex flex-row items-center justify-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-3xl transition-all"
+                                        className="flex flex-row items-center justify-center gap-2 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl transition-all"
                                     >
-                                        <social.icon className={`w-5 h-5 text-zinc-400 ${social.color} transition-colors`} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{social.label}</span>
+                                        <social.icon className={`w-4 h-4 text-zinc-400 ${social.color} transition-colors`} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">{social.label}</span>
                                     </motion.a>
                                 ))}
                             </div>
