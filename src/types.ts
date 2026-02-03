@@ -1163,6 +1163,15 @@ export interface ContentStrings {
   // Cycle Architect (NEW)
   cycleArchitect: CycleArchitectContent;
   checkoutAgree: string;
+  disclaimerStep1Title?: string;
+  disclaimerStep2Title?: string;
+  disclaimerStep3Title?: string;
+  nextStepLabel?: string;
+  ageVerificationRequired?: string;
+  ageVerificationDesc?: string;
+  medicalDisclaimerPoint1?: string;
+  medicalDisclaimerPoint2?: string;
+  medicalDisclaimerPoint3?: string;
 }
 
 export interface TableRow {
