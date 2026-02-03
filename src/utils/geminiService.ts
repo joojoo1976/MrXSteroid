@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, Part } from '@google/generative-ai';
 import { getSelectedModel } from '../config/aiModel';
 import { generateOpenAIResponse, streamOpenAIResponse } from './openaiService';
 import { compactHistory } from './contextOptimization';
@@ -174,7 +174,7 @@ export const generateResponse = async (
                         }
 
                         // Send tool outputs back to model
-                        result = await chat.sendMessage(functionResponses as any);
+                        result = await chat.sendMessage(functionResponses as Part[]);
                         response = result.response;
                         functionCalls = response.functionCalls();
                     }
@@ -304,7 +304,7 @@ export const streamResponse = async (
                     let loopCount = 0;
 
                     while (keepGoing && loopCount < 5) {
-                        let hasText = false;
+
 
                         // Iterate through the current stream
                         for await (const chunk of result.stream) {
@@ -336,7 +336,7 @@ export const streamResponse = async (
                                 }
 
                                 // Send results back and get new stream
-                                result = await chat.sendMessageStream(functionResponses as any);
+                                result = await chat.sendMessageStream(functionResponses as Part[]);
                             } else {
                                 // No more tools, we are done
                                 keepGoing = false;
@@ -344,92 +344,94 @@ export const streamResponse = async (
                         }
 
                         return; // Success!
-                    } catch (err: unknown) {
-                        const error = err as Error;
-                        console.warn(`Streaming Model ${modelId} attempt ${attempt + 1} failed:`, error);
-                        if (error.message?.includes('404')) {
-                            lastError = err;
-                            break; // move to next model
-                        }
-                        if (error.message?.includes('429')) {
-                            // Quota exceeded, retry after backoff
-                            attempt++;
-                            if (attempt < RETRY_ATTEMPTS) {
-                                const backoff = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
-                                await delay(backoff);
-                                continue;
-                            }
-                            // Exhausted retries for this model due to quota, fallback to OpenAI
-                            lastError = err;
-                            console.info('Switching to OpenAI (Streaming) due to Gemini quota exhaustion...');
-                            await streamOpenAIResponse(userMessage, options, onChunk);
-                            return;
-                        }
-                        // Other errors
-                        lastError = err;
-                        throw err;
                     }
+                } catch (err: unknown) {
+                    const error = err as Error;
+                    console.warn(`Streaming Model ${modelId} attempt ${attempt + 1} failed:`, error);
+                    if (error.message?.includes('404')) {
+                        lastError = err;
+                        break; // move to next model
+                    }
+                    if (error.message?.includes('429')) {
+                        // Quota exceeded, retry after backoff
+                        attempt++;
+                        if (attempt < RETRY_ATTEMPTS) {
+                            const backoff = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+                            await delay(backoff);
+                            continue;
+                        }
+                        // Exhausted retries for this model due to quota, fallback to OpenAI
+                        lastError = err;
+                        console.info('Switching to OpenAI (Streaming) due to Gemini quota exhaustion...');
+                        await streamOpenAIResponse(userMessage, options, onChunk);
+                        return;
+                    }
+                    // Other errors
+                    lastError = err;
+                    throw err;
                 }
+            }
             // Continue to next model if we hit 404
             if ((lastError as Error)?.message?.includes('404')) continue;
-            }
-            // If all Gemini models failed, try OpenAI as final fallback
+        }
+
+        // If all Gemini models failed, try OpenAI as final fallback
+        await streamOpenAIResponse(userMessage, options, onChunk);
+        return;
+    } catch (err: unknown) {
+        const error = err as Error;
+        console.error('Gemini AI Streaming Error:', error);
+        let errorMsg = options.language === 'ar' ? ' [حدث خطأ تقني]' : ' [Technical error occurred]';
+
+        if (error.message?.includes('finishReason: SAFETY')) {
+            errorMsg = options.language === 'ar'
+                ? ' [تم حجب الرد لأسباب تتعلق بالسلامة - يرجى تغيير صياغة السؤال]'
+                : ' [Response blocked by safety filters - please rephrase]';
+        } else if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
+            errorMsg = options.language === 'ar'
+                ? ' [مفتاح API الخاص بـ Gemini غير صحيح أو منتهي الصلاحية]'
+                : ' [Gemini API Key is invalid or expired]';
+        } else if (error.message?.includes('429')) {
+            // Inform user and then switch
+            onChunk(options.language === 'ar'
+                ? ' [تم تجاوز حصة Gemini - جاري التبديل التلقائي للمحرك البديل...]'
+                : ' [Gemini quota exceeded - switching to fallback engine...]');
+
             await streamOpenAIResponse(userMessage, options, onChunk);
             return;
-        } catch (err: unknown) {
-            const error = err as Error;
-            console.error('Gemini AI Streaming Error:', error);
-            let errorMsg = options.language === 'ar' ? ' [حدث خطأ تقني]' : ' [Technical error occurred]';
-
-            if (error.message?.includes('finishReason: SAFETY')) {
-                errorMsg = options.language === 'ar'
-                    ? ' [تم حجب الرد لأسباب تتعلق بالسلامة - يرجى تغيير صياغة السؤال]'
-                    : ' [Response blocked by safety filters - please rephrase]';
-            } else if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
-                errorMsg = options.language === 'ar'
-                    ? ' [مفتاح API الخاص بـ Gemini غير صحيح أو منتهي الصلاحية]'
-                    : ' [Gemini API Key is invalid or expired]';
-            } else if (error.message?.includes('429')) {
-                // Inform user and then switch
-                onChunk(options.language === 'ar'
-                    ? ' [تم تجاوز حصة Gemini - جاري التبديل التلقائي للمحرك البديل...]'
-                    : ' [Gemini quota exceeded - switching to fallback engine...]');
-
-                await streamOpenAIResponse(userMessage, options, onChunk);
-                return;
-            }
-            else if (error.message) {
-                // Append the raw error for deeper debugging if it's not a known one
-                errorMsg += ` (${error.message.substring(0, 200)}...)`;
-            }
-
-            onChunk(errorMsg);
         }
-    };
-
-    // Summarize history helper
-    const summarizeHistory = async (history: ChatMessage[], language: 'ar' | 'en'): Promise<string> => {
-        try {
-            const ai = initializeGemini();
-            if (!ai) return language === 'ar' ? "المحادثة السابقة أصبحت طويلة جداً." : "Previous conversation grew quite extensive.";
-
-            // Use a lightweight model for summarization
-            const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-
-            const prompt = language === 'ar'
-                ? 'قم بتلخيص هذه المحادثة لمساعد "Mr. X-Steroid" القادم. حافظ على الحقائق، الأهداف الجسدية، والنتائج المخبرية المذكورة. كن موجزاً ونخبوياً:'
-                : 'Summarize this trajectory for the next Mr. X-Steroid instance. Retain facts, physical goals, and lab results. Be clinical and elite:';
-
-            const historyText = history.map(m => `${m.role}: ${m.parts}`).join('\n');
-            const result = await summaryModel.generateContent(`${prompt}\n\n${historyText}`);
-            return result.response.text();
-        } catch (e) {
-            console.warn("Summarization failed:", e);
-            return language === 'ar' ? "تم ضغط المحادثة السابقة للحفاظ على الأداء." : "Historical data compressed for peak performance.";
+        else if (error.message) {
+            // Append the raw error for deeper debugging if it's not a known one
+            errorMsg += ` (${error.message.substring(0, 200)}...)`;
         }
-    };
 
-    // Check if API is configured
-    export const isGeminiConfigured = (): boolean => {
-        return !!API_KEY && API_KEY.length > 0;
-    };
+        onChunk(errorMsg);
+    }
+};
+
+// Summarize history helper
+const summarizeHistory = async (history: ChatMessage[], language: 'ar' | 'en'): Promise<string> => {
+    try {
+        const ai = initializeGemini();
+        if (!ai) return language === 'ar' ? "المحادثة السابقة أصبحت طويلة جداً." : "Previous conversation grew quite extensive.";
+
+        // Use a lightweight model for summarization
+        const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+
+        const prompt = language === 'ar'
+            ? 'قم بتلخيص هذه المحادثة لمساعد "Mr. X-Steroid" القادم. حافظ على الحقائق، الأهداف الجسدية، والنتائج المخبرية المذكورة. كن موجزاً ونخبوياً:'
+            : 'Summarize this trajectory for the next Mr. X-Steroid instance. Retain facts, physical goals, and lab results. Be clinical and elite:';
+
+        const historyText = history.map(m => `${m.role}: ${m.parts}`).join('\n');
+        const result = await summaryModel.generateContent(`${prompt}\n\n${historyText}`);
+        return result.response.text();
+    } catch (e) {
+        console.warn("Summarization failed:", e);
+        return language === 'ar' ? "تم ضغط المحادثة السابقة للحفاظ على الأداء." : "Historical data compressed for peak performance.";
+    }
+};
+
+// Check if API is configured
+export const isGeminiConfigured = (): boolean => {
+    return !!API_KEY && API_KEY.length > 0;
+};
