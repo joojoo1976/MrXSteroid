@@ -133,10 +133,10 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                                             {isAr ? "شامل التدريب الشخصي" : "Include Personal Coaching"}
                                             <span className="text-[10px] bg-gold-500/20 text-gold-500 px-2 py-0.5 rounded border border-gold-500/20">VIP</span>
                                         </h4>
-                                        <p className="text-xs text-zinc-400 font-medium">
+                                        <p className="text-xs text-zinc-400 font-medium leading-relaxed">
                                             {isAr
-                                                ? "تحليل شامل لنتائجك + خطة مخصصة للدورة + متابعة ١-على-١"
-                                                : "Full analysis + Custom cycle plan + 1-on-1 follow up"}
+                                                ? "تدريب أونلاين (Online) لمدة دورة هرمونية واحدة فقط. يشمل تحليل النتائج وخطة مخصصة ومتابعة ١-على-١."
+                                                : "Online Coaching (Online Only) - Valid for one hormonal cycle. Includes full analysis, custom plan, and 1-on-1 follow-up."}
                                         </p>
                                     </div>
                                 </div>
