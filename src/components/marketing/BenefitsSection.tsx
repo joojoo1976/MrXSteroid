@@ -47,8 +47,8 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
                                 {/* Compact Card */}
                                 <div className="flex flex-row items-center gap-4 p-4 lg:p-5 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden transition-all duration-300 w-full min-h-[140px] lg:min-h-[160px]">
                                     {/* Small Side Icon Container */}
-                                    <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-gold-500/10 to-transparent rounded-xl flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-white transition-all duration-500">
-                                        <IconRenderer iconKey={benefit.iconKey} className="w-8 h-8" />
+                                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-gold-500/10 to-transparent rounded-xl flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-white transition-all duration-500">
+                                        <IconRenderer iconKey={benefit.iconKey} className="w-6 h-6" />
                                     </div>
 
                                     {/* Text Content */}

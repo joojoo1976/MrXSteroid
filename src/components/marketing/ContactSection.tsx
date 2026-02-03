@@ -221,9 +221,9 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         key={i}
                                         href="#"
                                         whileHover={{ y: -5, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
-                                        className="flex flex-col items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-3xl transition-all"
+                                        className="flex flex-row items-center justify-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-3xl transition-all"
                                     >
-                                        <social.icon className={`w-6 h-6 text-zinc-400 ${social.color} transition-colors`} />
+                                        <social.icon className={`w-5 h-5 text-zinc-400 ${social.color} transition-colors`} />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{social.label}</span>
                                     </motion.a>
                                 ))}

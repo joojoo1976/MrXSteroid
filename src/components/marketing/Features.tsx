@@ -44,24 +44,20 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
                 {/* Card Glow Effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 rounded-[2.5rem] blur opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
 
-                <div className="relative p-8 md:p-10 rounded-[2.2rem] bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all h-full glass-morphism-premium flex flex-col items-start gap-6 md:gap-8 shadow-xl hover:shadow-2xl overflow-hidden">
-
-                  <div className={`absolute -top-6 end-[-1.5rem] p-10 opacity-5 group-hover:opacity-10 transition-all transform group-hover:scale-110 duration-700 ${isRTL ? 'group-hover:rotate-12' : 'group-hover:-rotate-12'}`}>
-                    <IconRenderer iconKey={feature.iconKey} className="w-40 h-40" />
-                  </div>
+                <div className="relative p-6 rounded-[2rem] bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all h-full glass-morphism-premium flex flex-row items-start gap-4 shadow-xl hover:shadow-2xl overflow-hidden">
 
                   {/* Icon Box */}
-                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 border-2 border-gold-500/30 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 relative z-10 ${isRTL ? 'group-hover:-rotate-6' : 'group-hover:rotate-6'}`}>
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 border border-gold-500/30 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 relative z-10 ${isRTL ? 'group-hover:-rotate-6' : 'group-hover:rotate-6'}`}>
                     <div className="text-gold-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]">
-                      <IconRenderer iconKey={feature.iconKey} className="w-8 h-8 md:w-10 md:h-10" />
+                      <IconRenderer iconKey={feature.iconKey} className="w-6 h-6" />
                     </div>
                   </div>
 
-                  <div className="relative z-10">
-                    <h3 className="text-2xl md:text-3xl font-black mb-3 text-zinc-900 dark:text-white group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors tracking-tight">
+                  <div className="relative z-10 flex-1">
+                    <h3 className="text-xl md:text-2xl font-black mb-2 text-zinc-900 dark:text-white group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors tracking-tight">
                       <StyledBrandName text={feature.title} />
                     </h3>
-                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-2xl font-medium">
+                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-lg font-medium">
                       <StyledBrandName text={feature.description} />
                     </p>
                   </div>

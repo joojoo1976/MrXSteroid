@@ -92,7 +92,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                             <motion.div
                                 key={plan.id}
                                 className={`
-                                    relative p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col group
+                                    relative p-6 rounded-[2rem] border-2 transition-all duration-300 flex flex-col group
                                     ${isPopular ? 'bg-zinc-900/80 border-gold-500 shadow-[0_0_40px_rgba(234,179,8,0.15)] scale-105 z-20' : 'bg-black/60 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/40'}
                                 `}
                             >
@@ -102,12 +102,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     </div>
                                 )}
 
-                                <div className="mb-8">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-2xl bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'emerald' ? 'from-emerald-500 to-green-600' : 'from-zinc-700 to-zinc-900'}`}>
-                                        <config.icon className="w-7 h-7" />
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-white text-xl flex-shrink-0 bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'emerald' ? 'from-emerald-500 to-green-600' : 'from-zinc-700 to-zinc-900'}`}>
+                                            <config.icon className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
                                     </div>
-                                    <h3 className="text-xl font-black text-white uppercase tracking-wider mb-2">{plan.name}</h3>
-                                    <p className="text-zinc-400 text-sm font-medium">{plan.description}</p>
+                                    <p className="text-zinc-400 text-sm font-medium leading-normal pl-1">{plan.description}</p>
                                 </div>
 
                                 <div className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5">
