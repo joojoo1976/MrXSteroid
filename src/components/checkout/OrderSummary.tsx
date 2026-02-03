@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShoppingBag, Lock, CheckCircle2 } from 'lucide-react';
+import { usePreferences } from '../../context/PreferencesContext';
 import { Card, CardContent } from '../ui/card';
 import { ContentStrings } from '../../types';
 import DynamicBrandLogo from '../layout/DynamicBrandLogo';
@@ -17,6 +18,8 @@ interface OrderSummaryProps {
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, quantity, totals, isAr }) => {
+    const { formatPrice } = usePreferences();
+
     return (
         <Card className="bg-zinc-900 border-zinc-800 shadow-3xl overflow-hidden border-2 rounded-[2.5rem] sticky top-32">
             <div className="p-8 border-b border-zinc-800 bg-black/40">
@@ -58,12 +61,12 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                 <div className="space-y-4 pt-4 border-t border-zinc-800/50">
                     <div className="flex justify-between text-zinc-400 font-bold text-sm">
                         <span>{content.subtotal}</span>
-                        <span className="font-mono text-white">${totals.subtotal.toFixed(2)}</span>
+                        <span className="font-mono text-white">{formatPrice(totals.subtotal)}</span>
                     </div>
                     {totals.shippingCost > 0 ? (
                         <div className="flex justify-between text-zinc-400 font-bold text-sm">
                             <span>{content.shipping}</span>
-                            <span className="font-mono text-gold-500">+${totals.shippingCost.toFixed(2)}</span>
+                            <span className="font-mono text-gold-500">+{formatPrice(totals.shippingCost)}</span>
                         </div>
                     ) : (
                         <div className="flex justify-between text-zinc-400 font-bold text-sm">
@@ -85,7 +88,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                         </p>
                     </div>
                     <div className="text-4xl md:text-5xl font-black tracking-tighter text-gold-500 font-mono">
-                        ${totals.grandTotal.toFixed(2)}
+                        {formatPrice(totals.grandTotal)}
                     </div>
                 </div>
             </CardContent>
