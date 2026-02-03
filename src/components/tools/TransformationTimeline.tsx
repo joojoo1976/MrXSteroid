@@ -228,7 +228,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
-                                    className="p-3 bg-gold-500/10 text-gold-600 dark:text-gold-500 rounded-xl shadow-lg ring-2 ring-gold-500/20"
+                                    className="w-10 h-10 flex items-center justify-center bg-gold-500/10 text-gold-600 dark:text-gold-500 rounded-lg shadow-lg ring-1 ring-gold-500/20"
                                 >
                                     {getPhaseIcon(activeData.iconKey)}
                                 </motion.div>
