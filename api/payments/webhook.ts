@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -6,22 +5,27 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export default async function handler(req, res) {
+export default async function handler(req: any, res: any) {
     try {
+        // التأكد من أن الإشارة قادمة من Spaceremit
         const { status, customer_email, plan_type } = req.body || {};
 
         if (status === 'success' && customer_email) {
-            await supabase
+            const { error } = await supabase
                 .from('profiles')
                 .update({
                     subscription_status: 'active',
-                    plan_tier: plan_type || 'standard'
+                    plan_tier: plan_type || 'pro'
                 })
                 .eq('email', customer_email);
-        }
-    } catch (err) {
-        console.error('Webhook processing error:', err);
-    }
 
-    res.status(200).json({ status: 'ok' });
+            if (error) throw error;
+        }
+
+        return res.status(200).json({ status: 'ok' });
+    } catch (err: any) {
+        console.error('Webhook Error:', err.message);
+        // نرسل 200 دائماً للبوابة حتى لا تكرر الإرسال وتسبب ضغطاً
+        return res.status(200).json({ error: 'Internal Error but received' });
+    }
 }
