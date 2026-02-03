@@ -5,7 +5,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Initialize Supabase (Ensure keys are in Vercel env vars)
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! // Used Service Role to bypass RLS
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
