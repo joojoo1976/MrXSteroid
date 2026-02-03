@@ -23,9 +23,9 @@ const FAQItemComponent: React.FC<{ item: FaqItem, content: ContentStrings }> = (
         onClick={() => setIsOpen(!isOpen)}
         {...ariaProps}
         id={`faq-btn-${id}`}
-        className="w-full flex justify-between items-center p-5 cursor-pointer text-start select-none relative"
+        className="w-full flex justify-between items-center p-4 cursor-pointer text-start select-none relative"
       >
-        <span className="flex items-center gap-6">
+        <span className="flex items-center gap-4">
           <motion.div
             animate={{ rotate: isOpen ? 360 : 0, scale: isOpen ? 1.2 : 1 }}
             className={`p-3 rounded-2xl shadow-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}

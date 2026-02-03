@@ -310,22 +310,30 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                         </motion.div>
 
                         {/* Mini Features Cards */}
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <motion.div
-                                whileHover={{ y: -10 }}
-                                className="p-8 bg-background/80 border-2 border-zinc-800 rounded-[2.5rem] shadow-xl animate-glow"
+                                whileHover={{ y: -5 }}
+                                className="p-6 bg-background/80 border border-zinc-800 rounded-[2rem] shadow-xl animate-glow flex flex-row items-center gap-4"
                             >
-                                <BookOpen className="w-10 h-10 text-gold-500 mb-6 animate-pulse" />
-                                <h5 className="font-black text-2xl mb-2">{loc.isRTL || isRTL ? '+300 صفحة' : '300+ PAGES'}</h5>
-                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{content.landingExclusiveSecrets}</p>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center">
+                                    <BookOpen className="w-6 h-6 text-gold-500 animate-pulse" />
+                                </div>
+                                <div>
+                                    <h5 className="font-black text-xl mb-0.5 leading-none">{loc.isRTL || isRTL ? '+300 صفحة' : '300+ PAGES'}</h5>
+                                    <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest leading-none">{content.landingExclusiveSecrets}</p>
+                                </div>
                             </motion.div>
                             <motion.div
-                                whileHover={{ y: -10 }}
-                                className="p-8 bg-zinc-900/80 border-2 border-zinc-800 rounded-[2.5rem] shadow-xl animate-glow"
+                                whileHover={{ y: -5 }}
+                                className="p-6 bg-zinc-900/80 border border-zinc-800 rounded-[2rem] shadow-xl animate-glow flex flex-row items-center gap-4"
                             >
-                                <DollarSign className="w-10 h-10 text-emerald-500 mb-6 animate-pulse" />
-                                <h5 className="font-black text-2xl mb-2">{loc.isRTL || isRTL ? 'ضمان استرداد' : 'MONEY BACK'}</h5>
-                                <p className="text-base text-zinc-500 font-bold uppercase tracking-widest">{content.landingMoneyBackGuarantee}</p>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                    <DollarSign className="w-6 h-6 text-emerald-500 animate-pulse" />
+                                </div>
+                                <div>
+                                    <h5 className="font-black text-xl mb-0.5 leading-none">{loc.isRTL || isRTL ? 'ضمان استرداد' : 'MONEY BACK'}</h5>
+                                    <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest leading-none">{content.landingMoneyBackGuarantee}</p>
+                                </div>
                             </motion.div>
                         </div>
                     </div>
