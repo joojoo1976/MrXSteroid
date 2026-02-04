@@ -1,6 +1,7 @@
 
 import { KnowledgeGraphManager } from './knowledge-graph';
 import { GraphNode } from './schema';
+import { loggers } from '../../utils/logger';
 
 export interface MCPServerConfig {
     projectId: string;
@@ -22,16 +23,16 @@ export class MachineMemoryServer {
      * Loads the user's graph into memory from Supabase.
      */
     async initializeSession(userId: string) {
-        console.log(`[MCP] Initializing session for user: ${userId}`);
+        loggers.mcp.debug(`Initializing session for user: ${userId}`);
         await this.graphManager.hydration(userId);
-        console.log(`[MCP] Graph hydrated. Current nodes:`, this.graphManager.generateGraphMap());
+        loggers.mcp.debug('Graph hydrated', this.graphManager.generateGraphMap());
     }
 
     /**
      * Semantic Search: Finds relevant memory nodes based on user query.
      */
     async search(userId: string, query: string): Promise<GraphNode[]> {
-        console.log(`[MCP] Searching memory for query: "${query}"`);
+        loggers.mcp.debug(`Searching memory for query: "${query}"`);
         return await this.graphManager.getContext(userId, query);
     }
 
@@ -50,7 +51,7 @@ export class MachineMemoryServer {
                 updated_at: new Date().toISOString(),
             };
             this.graphManager.logObservation(observation);
-            console.log(`[MCP] Wrote observation: "${content}"`);
+            loggers.mcp.debug(`Wrote observation: "${content}"`);
         }
     }
 

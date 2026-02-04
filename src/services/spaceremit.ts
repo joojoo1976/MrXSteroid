@@ -1,6 +1,7 @@
 import { SpaceRemitResponse, InitiatePaymentPayload, SpaceRemitTransaction } from '../types/spaceremit';
 import { env } from '../config/env';
 import { errorHandler } from '../lib/error-handler';
+import { loggers } from '../utils/logger';
 // import { apiClient } from './core/api-client';
 
 /**
@@ -17,7 +18,7 @@ class SpaceRemitService {
         this.secret = env.VITE_SPACEREMIT_Secret;
 
         if (!this.apiKey) {
-            console.warn("SpaceRemit API Key is missing. Payments may fail.");
+            loggers.payment.warn('SpaceRemit API Key is missing. Payments may fail.');
         }
     }
 
@@ -37,7 +38,7 @@ class SpaceRemitService {
         // Mock Implementation integrated with ApiClient pattern
         try {
             if (process.env.NODE_ENV === 'development') {
-                console.log("Initiating SpaceRemit Payment (via Service):", payload);
+                loggers.payment.debug('Initiating SpaceRemit Payment', payload);
             }
 
             // In a real production setup:
@@ -89,7 +90,7 @@ class SpaceRemitService {
     public processWebhook(signature: string, payload: unknown): { verified: boolean, action: 'ACTIVATE_SUB' | 'IGNORE' | 'VAlIDATION_FAILED' } {
         // 1. Verify Signature (Mock logic)
         if (!this.secret) {
-            console.error("Missing Webhook Secret");
+            loggers.payment.error('Missing Webhook Secret');
             return { verified: false, action: 'VAlIDATION_FAILED' };
         }
 

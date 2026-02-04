@@ -1,5 +1,6 @@
 
 import { ChatMessage } from './geminiService';
+import { loggers } from './logger';
 
 /**
  * Mr. X Context Engineering Utilities
@@ -38,7 +39,7 @@ export const compactHistory = async (
         return history;
     }
 
-    console.log(`[Context Optimization] Compacting history (Utilization: ~${Math.round((totalChars / charThreshold) * 80)}%)`);
+    loggers.context.debug(`Compacting history (Utilization: ~${Math.round((totalChars / charThreshold) * 80)}%)`);
 
     // Elite Strategy: Protect Security and SpaceRemit logic from being summarized away
     const protectedKeywords = ['supabase', 'spaceremit', 'auth', 'payment', 'session', 'handshake'];
@@ -68,7 +69,7 @@ export const compactHistory = async (
 
         return [summaryMessage, ...protectedOldHistory, ...recentHistory];
     } catch (error) {
-        console.error("Compaction failed:", error);
+        loggers.context.error('Compaction failed', error);
         return history; // Fallback to original history on error
     }
 };

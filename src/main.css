@@ -223,6 +223,7 @@
   }
 
   html {
+    zoom: 0.9;
     transition: direction 0.3s ease;
   }
 
@@ -276,6 +277,62 @@
   ::selection {
     background-color: var(--lemon-yellow);
     color: black;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+                        MR. X CARD SYSTEM (Horizontal Layout)
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* Horizontal Card Layout */
+  .mrx-card {
+    @apply flex flex-row items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 relative overflow-hidden;
+  }
+
+  .mrx-card:hover {
+    @apply scale-105 shadow-lg;
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+  }
+
+  /* Card Icon Container (Compact) */
+  .mrx-card-icon {
+    @apply flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-gold-500/10 to-transparent border border-gold-500/20 flex items-center justify-center text-gold-500 transition-all duration-300;
+  }
+
+  .mrx-card:hover .mrx-card-icon {
+    @apply scale-110 bg-gold-500 text-white;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+  }
+
+  /* RTL Icon Rotation Support */
+  [dir="rtl"] .mrx-card:hover .mrx-card-icon {
+    transform: scale(1.1) rotate(-6deg);
+  }
+
+  [dir="ltr"] .mrx-card:hover .mrx-card-icon {
+    transform: scale(1.1) rotate(6deg);
+  }
+
+  /* Neon Glow Effects */
+  .neon-glow-gold {
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.2),
+      0 0 20px rgba(234, 179, 8, 0.1),
+      0 0 30px rgba(234, 179, 8, 0.05);
+  }
+
+  .neon-glow-gold:hover {
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.3),
+      0 0 30px rgba(234, 179, 8, 0.2),
+      0 0 45px rgba(234, 179, 8, 0.1);
+  }
+
+  /* Compact Feature Card */
+  .feature-card-compact {
+    @apply flex flex-row items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all shadow-lg hover:shadow-xl;
+  }
+
+  .feature-card-compact:hover {
+    @apply scale-[1.02];
+    box-shadow: 0 0 25px rgba(234, 179, 8, 0.12);
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, ShieldCheck, ChevronRight, Zap, Target, Activity } from 'lucide-react';
+import { Trophy, ShieldCheck, ChevronRight, Zap, Activity, Dumbbell } from 'lucide-react';
 import { ContentStrings } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
 
@@ -21,7 +21,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
     const result = score >= 3 ? content.quiz.results.enhanced : content.quiz.results.natural;
 
     return (
-        <section id="readiness-quiz" className="py-12 lg:py-16 bg-background text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
+        <section id="readiness-quiz" className="py-8 lg:py-10 bg-background text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
 
             {/* Background Kinetic Effects */}
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
@@ -34,10 +34,10 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                     {/* Main Quiz Card */}
                     <motion.div
                         layout
-                        className="relative bg-background/40 backdrop-blur-3xl rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-4 border-zinc-800/50 overflow-hidden card-shine animate-glow"
+                        className="relative bg-background/40 backdrop-blur-3xl rounded-xl md:rounded-2xl p-4 md:p-6 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-2 border-zinc-800/50 overflow-hidden card-shine animate-glow"
                     >
                         {/* Dynamic Top Stripe */}
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-gold-600 via-white to-gold-400"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-600 via-white to-gold-400"></div>
 
                         <AnimatePresence mode="wait">
                             {!finished ? (
@@ -48,33 +48,32 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                     exit={{ opacity: 0, x: -50 }}
                                     className="relative z-10"
                                 >
-                                    <div className="text-center mb-6">
-                                        <motion.div
-                                            animate={{ scale: [1, 1.1, 1] }}
-                                            transition={{ repeat: Infinity, duration: 2 }}
-                                            className="inline-flex items-center justify-center p-4 bg-gold-500/10 rounded-3xl mb-6 border border-gold-500/20"
-                                        >
-                                            <Target className="w-10 h-10 text-gold-500" />
-                                        </motion.div>
-                                        <h2 className="text-3xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-400 to-white animate-text-flash tracking-tight">
-                                            {content.quiz.title}
-                                        </h2>
-                                        <p className="text-xl text-zinc-300 font-bold italic animate-glow">
+                                    <div className="text-center mb-4">
+                                        <div className="inline-flex items-center gap-3 mb-2">
+                                            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gold-500/10 to-transparent rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner">
+                                                <Dumbbell className="w-5 h-5" />
+                                            </div>
+                                            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white tracking-tight">
+                                                {content.quiz.title}
+                                            </h2>
+                                        </div>
+                                        <div className="w-24 h-1.5 bg-gradient-to-r from-gold-600 to-gold-400 mx-auto rounded-full mb-3"></div>
+                                        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 font-medium italic">
                                             {content.quiz.subtitle}
                                         </p>
                                     </div>
 
                                     {/* Progress Visualizer */}
-                                    <div className="mb-6">
+                                    <div className="mb-4">
                                         <div className="flex justify-between items-end mb-4">
-                                            <span className="text-base font-black text-gold-500 uppercase tracking-[0.3em]">
+                                            <span className="text-sm font-black text-gold-500 uppercase tracking-widest">
                                                 {content.quiz.questionLabel} {currentQ + 1}
                                             </span>
-                                            <span className="text-base font-black text-zinc-300 uppercase tracking-widest">
+                                            <span className="text-sm font-black text-zinc-300 uppercase tracking-wider">
                                                 {content.quiz.questions.length} {content.quiz.totalLabel}
                                             </span>
                                         </div>
-                                        <div className="h-4 bg-black/40 rounded-full overflow-hidden p-1 shadow-inner border border-white/5">
+                                        <div className="h-3 bg-black/40 rounded-full overflow-hidden p-0.5 shadow-inner border border-white/5">
                                             <motion.div
                                                 className="h-full bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.4)] relative overflow-hidden"
                                                 initial={{ width: 0 }}
@@ -91,28 +90,28 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         key={currentQ}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className="space-y-6"
+                                        className="space-y-4"
                                     >
-                                        <h3 className="text-xl md:text-2xl font-black leading-tight text-center mb-6">
+                                        <h3 className="text-lg md:text-xl font-black leading-tight text-center mb-4">
                                             {content.quiz.questions[currentQ].question}
                                         </h3>
-                                        <div className="grid gap-4">
+                                        <div className="grid gap-3">
                                             {content.quiz.questions[currentQ].options.map((opt, idx) => (
                                                 <motion.button
                                                     key={idx}
                                                     whileHover={{ scale: 1.05, x: 10, borderColor: "rgba(234, 179, 8, 0.5)" }}
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={() => handleAnswer(opt.score)}
-                                                    className="w-full p-3 md:p-4 rounded-[1.2rem] bg-background/50 hover:bg-zinc-900 border-4 border-zinc-800 text-left transition-all flex justify-between items-center group shadow-xl relative overflow-hidden"
+                                                    className="w-full p-2.5 md:p-3 rounded-xl bg-background/50 hover:bg-zinc-900 border-2 border-zinc-800 text-left transition-all flex justify-between items-center group shadow-lg relative overflow-hidden"
                                                 >
-                                                    <div className="relative z-10 flex items-center gap-6">
-                                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-black text-gold-500 group-hover:bg-gold-500 group-hover:text-black transition-colors">
+                                                    <div className="relative z-10 flex items-center gap-4">
+                                                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-black text-gold-500 group-hover:bg-gold-500 group-hover:text-black transition-colors text-sm">
                                                             {idx + 1}
                                                         </div>
-                                                        <span className="font-black text-xl md:text-2xl group-hover:text-gold-500 transition-colors">{opt.text}</span>
+                                                        <span className="font-black text-base md:text-lg group-hover:text-gold-500 transition-colors">{opt.text}</span>
                                                     </div>
-                                                    <div className="relative z-10 w-12 h-12 rounded-2xl bg-zinc-800 group-hover:bg-gold-500 flex items-center justify-center transition-all shadow-xl group-hover:rotate-12">
-                                                        <ChevronRight className="w-6 h-6 text-zinc-500 group-hover:text-black" />
+                                                    <div className="relative z-10 w-8 h-8 rounded-lg bg-zinc-800 group-hover:bg-gold-500 flex items-center justify-center transition-all shadow-lg group-hover:rotate-12">
+                                                        <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-black" />
                                                     </div>
                                                     {/* Internal Hover Glow */}
                                                     <div className="absolute inset-0 bg-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -175,7 +174,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                     </motion.div>
 
                     {/* Footer Info */}
-                    <div className="mt-12 flex justify-center items-center gap-8 opacity-40">
+                    <div className="mt-6 flex justify-center items-center gap-6 opacity-40">
                         <div className="flex items-center gap-2">
                             <ShieldCheck className="w-5 h-5" />
                             <span className="text-sm font-black uppercase tracking-widest">Secure Protocol</span>

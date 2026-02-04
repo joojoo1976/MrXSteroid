@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, Part } from '@goo
 import { getSelectedModel } from '../config/aiModel';
 import { generateOpenAIResponse, streamOpenAIResponse } from './openaiService';
 import { compactHistory } from './contextOptimization';
+import { loggers } from './logger';
 
 // Initialize Gemini AI
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -11,7 +12,7 @@ let genAI: GoogleGenerativeAI | null = null;
 // Initialize the AI client
 export const initializeGemini = () => {
     if (!API_KEY) {
-        console.warn('Gemini API key not found. AI features will be disabled.');
+        loggers.ai.warn('Gemini API key not found. AI features will be disabled.');
         return null;
     }
 
@@ -159,7 +160,7 @@ export const generateResponse = async (
                         const functionResponses = [];
 
                         // Notify user (conceptually) or just log
-                        console.log("Executing tools:", functionCalls.map(c => c.name).join(", "));
+                        loggers.ai.debug('Executing tools', functionCalls.map(c => c.name));
 
                         for (const call of functionCalls) {
                             // Automatically inject userId if the tool requires it and the LLM didn't provide it (safety net)
@@ -182,7 +183,7 @@ export const generateResponse = async (
                     return response.text();
                 } catch (err: unknown) {
                     const error = err as Error;
-                    console.warn(`Model ${modelId} attempt ${attempt + 1} failed:`, error);
+                    loggers.ai.warn(`Model ${modelId} attempt ${attempt + 1} failed`, error);
                     if (error.message?.includes('404')) {
                         // Model not found, move to next model
                         lastError = err;
@@ -198,7 +199,7 @@ export const generateResponse = async (
                         }
                         // Exhausted retries for this model due to quota, fallback to OpenAI
                         lastError = err;
-                        console.info('Switching to OpenAI due to Gemini quota exhaustion...');
+                        loggers.ai.info('Switching to OpenAI due to Gemini quota exhaustion...');
                         return await generateOpenAIResponse(userMessage, options);
                     }
                     // Other errors
@@ -213,7 +214,7 @@ export const generateResponse = async (
         return await generateOpenAIResponse(userMessage, options);
     } catch (err: unknown) {
         const error = err as Error;
-        console.error('Gemini AI Error:', error);
+        loggers.ai.error('Gemini AI Error', error);
         if (error.message?.includes('finishReason: SAFETY')) {
             return options.language === 'ar'
                 ? 'عذراً، تم حجب الرد بسبب قيود السلامة. يرجى إعادة صياغة السؤال بشكل علمي أو تعليمي.'
@@ -225,7 +226,7 @@ export const generateResponse = async (
                 : 'Sorry, Gemini API Key is invalid. Please check your .env file.';
         }
         if (error.message?.includes('429')) {
-            console.info('Caught 429 in outer generateResponse, invoking manual fallback...');
+            loggers.ai.info('Caught 429 in outer generateResponse, invoking manual fallback...');
             return await generateOpenAIResponse(userMessage, options);
         }
         return options.language === 'ar'
@@ -347,7 +348,7 @@ export const streamResponse = async (
                     }
                 } catch (err: unknown) {
                     const error = err as Error;
-                    console.warn(`Streaming Model ${modelId} attempt ${attempt + 1} failed:`, error);
+                    loggers.ai.warn(`Streaming Model ${modelId} attempt ${attempt + 1} failed`, error);
                     if (error.message?.includes('404')) {
                         lastError = err;
                         break; // move to next model
@@ -362,7 +363,7 @@ export const streamResponse = async (
                         }
                         // Exhausted retries for this model due to quota, fallback to OpenAI
                         lastError = err;
-                        console.info('Switching to OpenAI (Streaming) due to Gemini quota exhaustion...');
+                        loggers.ai.info('Switching to OpenAI (Streaming) due to Gemini quota exhaustion...');
                         await streamOpenAIResponse(userMessage, options, onChunk);
                         return;
                     }
@@ -380,7 +381,7 @@ export const streamResponse = async (
         return;
     } catch (err: unknown) {
         const error = err as Error;
-        console.error('Gemini AI Streaming Error:', error);
+        loggers.ai.error('Gemini AI Streaming Error', error);
         let errorMsg = options.language === 'ar' ? ' [حدث خطأ تقني]' : ' [Technical error occurred]';
 
         if (error.message?.includes('finishReason: SAFETY')) {
@@ -426,7 +427,7 @@ const summarizeHistory = async (history: ChatMessage[], language: 'ar' | 'en'): 
         const result = await summaryModel.generateContent(`${prompt}\n\n${historyText}`);
         return result.response.text();
     } catch (e) {
-        console.warn("Summarization failed:", e);
+        loggers.ai.warn('Summarization failed', e);
         return language === 'ar' ? "تم ضغط المحادثة السابقة للحفاظ على الأداء." : "Historical data compressed for peak performance.";
     }
 };
