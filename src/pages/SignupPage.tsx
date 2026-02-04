@@ -121,32 +121,36 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] py-12 px-4 bg-black dark:bg-black">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] py-8 px-4 bg-black dark:bg-black">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <Card className="rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden backdrop-blur-sm bg-zinc-900/80 dark:bg-black/80">
-                    <CardHeader className="text-center pb-2">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                            className="w-16 h-16 bg-gold-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gold-500/20"
-                        >
-                            <UserPlus className="w-8 h-8 text-gold-500" />
-                        </motion.div>
-                        <CardTitle className="text-3xl font-black mb-2">{content.signupTitle}</CardTitle>
-                        <CardDescription className="text-zinc-500 font-medium">
+                <Card className="rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm bg-zinc-900/90 dark:bg-black/90">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600"></div>
+
+                    <CardHeader className="text-center pb-0 pt-6 px-6">
+                        <div className="flex flex-row items-center justify-center gap-3 mb-2">
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
+                                className="w-10 h-10 bg-gold-500/10 rounded-lg flex items-center justify-center border border-gold-500/20"
+                            >
+                                <UserPlus className="w-5 h-5 text-gold-500" />
+                            </motion.div>
+                            <CardTitle className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">{content.signupTitle}</CardTitle>
+                        </div>
+                        <CardDescription className="text-zinc-500 font-medium text-xs">
                             {content.navAiTools}
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="p-8">
+                    <CardContent className="p-6 pt-4">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                                 <FormField
                                     control={form.control}
                                     name="fullName"
@@ -157,11 +161,11 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="John Doe"
                                                     />
                                                 </div>
@@ -181,11 +185,11 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="johndoe123"
                                                     />
                                                 </div>
@@ -205,12 +209,12 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="email"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="name@example.com"
                                                     />
                                                 </div>
@@ -230,12 +234,12 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="password"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="••••••••"
                                                     />
                                                 </div>
@@ -255,12 +259,12 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-5 h-5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="password"
                                                         disabled={loading}
-                                                        className={`h-12 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pe-12' : 'ps-12'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder="••••••••"
                                                     />
                                                 </div>
@@ -273,13 +277,13 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full h-14 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-3 mt-4 group"
+                                    className="w-full h-12 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 mt-2 group"
                                 >
                                     {loading ? (
-                                        <Loader2 className="w-6 h-6 animate-spin" />
+                                        <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
                                         <>
-                                            <UserPlus className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                            <UserPlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                             {content.signupBtn}
                                         </>
                                     )}
@@ -287,8 +291,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             </form>
                         </Form>
 
-                        <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 text-center">
-                            <p className="text-zinc-500 font-medium mb-4">{content.haveAccount}</p>
+                        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-center">
+                            <p className="text-zinc-500 font-medium mb-2 text-xs">{content.haveAccount}</p>
                             <button
                                 onClick={() => navigateTo(Page.LOGIN)}
                                 className="text-gold-500 font-black hover:text-gold-400 transition-colors underline underline-offset-4"

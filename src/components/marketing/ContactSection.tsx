@@ -173,39 +173,40 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                         <div className="space-y-6">
                             {/* Direct Email Card */}
                             <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl backdrop-blur-xl relative overflow-hidden group"
+                                whileHover={{ scale: 1.05 }}
+                                className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl backdrop-blur-xl relative overflow-hidden group hover:border-gold-500/30 hover:shadow-[0_0_15px_rgba(234,179,8,0.1)] transition-all"
                             >
-                                <div className="flex items-start justify-between">
+                                <div className="absolute inset-0 bg-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div className="flex items-start justify-between relative z-10">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gold-500/10 rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20">
-                                            <Mail className="w-5 h-5" />
+                                        <div className="w-8 h-8 bg-gold-500/10 rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20 group-hover:bg-gold-500 group-hover:text-black transition-colors">
+                                            <Mail className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
-                                            <p className="text-lg font-bold text-white tracking-tight">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
+                                            <p className="text-base font-bold text-white tracking-tight leading-none">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => copyToClipboard(content.contactInfoEmail || 'support@mrxsteroid.com')}
-                                        className="p-2.5 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                                        className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors hover:bg-gold-500 hover:text-black"
                                     >
-                                        {copiedEmail ? <CheckCircle2 className="w-4 h-4 text-gold-500" /> : <Copy className="w-4 h-4" />}
+                                        {copiedEmail ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                                     </button>
                                 </div>
                             </motion.div>
 
                             {/* Author Info */}
-                            <div className="flex items-center gap-6 p-6 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-3xl">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gold-500/30">
+                            <div className="flex items-center gap-4 p-4 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-2xl">
+                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold-500/30">
                                     <img src="/author-small.jpg" alt="George Mourice" className="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <p className="text-white font-black text-lg">{content.authorName || 'George Mourice'}</p>
-                                    <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">{isRTL ? 'معماري البروتوكول الرئيسي' : 'Lead Protocol Architect'}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                        <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">In Command / 24h Relay</span>
+                                    <p className="text-white font-black text-base leading-tight">{content.authorName || 'George Mourice'}</p>
+                                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-tight">{isRTL ? 'معماري البروتوكول الرئيسي' : 'Lead Protocol Architect'}</p>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                        <span className="text-[9px] text-green-500 font-black uppercase tracking-widest">In Command / 24h Relay</span>
                                     </div>
                                 </div>
                             </div>
@@ -220,11 +221,11 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                     <motion.a
                                         key={i}
                                         href="#"
-                                        whileHover={{ y: -5, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
-                                        className="flex flex-row items-center justify-center gap-2 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl transition-all"
+                                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
+                                        className="flex flex-row items-center justify-center gap-2 p-2 bg-zinc-900/50 border border-zinc-800 rounded-lg transition-all hover:border-gold-500/30 hover:shadow-[0_0_10px_rgba(234,179,8,0.1)] group"
                                     >
-                                        <social.icon className={`w-4 h-4 text-zinc-400 ${social.color} transition-colors`} />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">{social.label}</span>
+                                        <social.icon className={`w-3.5 h-3.5 text-zinc-400 ${social.color} transition-colors group-hover:text-gold-500`} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{social.label}</span>
                                     </motion.a>
                                 ))}
                             </div>

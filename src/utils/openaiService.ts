@@ -72,15 +72,18 @@ export async function generateOpenAIResponse(
             }
 
             // Handle tool calls
-            messages.push(message); // Add assistant's tool_call message to history
+            const assistantMessage = { ...message, role: 'assistant' };
+            messages.push(assistantMessage as any);
 
             for (const toolCall of message.tool_calls) {
-                const args = JSON.parse(toolCall.function.arguments);
-                const result = await executeToolCall(toolCall.function.name, args);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const tc = toolCall as any;
+                const args = JSON.parse(tc.function.arguments);
+                const result = await executeToolCall(tc.function.name, args);
 
                 messages.push({
                     role: 'tool',
-                    tool_call_id: toolCall.id,
+                    tool_call_id: tc.id,
                     content: JSON.stringify(result)
                 });
             }
@@ -138,6 +141,7 @@ export async function streamOpenAIResponse(
                 tool_choice: 'auto'
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const toolCalls: any[] = [];
             let currentContent = '';
 
@@ -168,13 +172,14 @@ export async function streamOpenAIResponse(
             if (toolCalls.length > 0) {
                 // Determine if we need to append the assistant message first
                 // If content was streamed, we normally append it. But if tool calls happen, content might be null or explanation.
-                const assistantMsg: OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam = {
+                const assistantMsg = {
                     role: 'assistant',
                     content: currentContent || null,
-                    tool_calls: toolCalls as any
+                    tool_calls: toolCalls
                 };
 
-                currentMessages.push(assistantMsg);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                currentMessages.push(assistantMsg as any);
 
                 for (const tc of toolCalls) {
                     try {

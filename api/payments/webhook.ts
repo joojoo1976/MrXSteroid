@@ -15,7 +15,8 @@ export default async function handler(req: any, res: any) {
                 .from('profiles')
                 .update({
                     subscription_status: 'active',
-                    plan_tier: plan_type || 'pro'
+                    plan_tier: plan_type || 'pro',
+                    updated_at: new Date().toISOString()
                 })
                 .eq('email', customer_email);
 

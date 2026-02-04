@@ -41,31 +41,29 @@ const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => 
                     {content.benefits.map((benefit, idx) => (
                         <RevealOnScroll key={idx} delay={idx * 50}>
                             <motion.div
-                                whileHover={{ scale: 1.02, y: -5 }}
+                                whileHover={{ scale: 1.05 }}
                                 className="group relative h-full flex items-start"
                             >
                                 {/* Compact Card */}
-                                <div className="flex flex-col items-start gap-3 p-4 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden transition-all duration-300 w-full h-full">
-                                    {/* Header: Icon + Title */}
-                                    <div className="flex flex-row items-center gap-3 w-full">
-                                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gold-500/10 to-transparent rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-white transition-all duration-500">
-                                            <IconRenderer iconKey={benefit.iconKey} className="w-5 h-5" />
-                                        </div>
+                                <div className="flex flex-row items-center gap-4 p-3 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden transition-all duration-300 w-full h-full hover:shadow-[0_0_20px_rgba(234,179,8,0.2)]">
 
-                                        <h3 className="text-lg font-black text-zinc-900 dark:text-white leading-tight group-hover:text-gold-500 transition-colors flex-1">
-                                            {benefit.title}
-                                        </h3>
+                                    {/* Icon Container */}
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-gold-500/10 to-transparent rounded-lg flex items-center justify-center text-gold-500 border border-gold-500/20 shadow-inner group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-white transition-all duration-500">
+                                        <IconRenderer iconKey={benefit.iconKey} className="w-4 h-4" />
                                     </div>
 
                                     {/* Text Content */}
-                                    <div className="w-full">
-                                        <div className="text-sm text-zinc-600 dark:text-zinc-400 leading-snug font-bold">
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-base font-black text-zinc-900 dark:text-white leading-tight group-hover:text-gold-500 transition-colors mb-1 truncate">
+                                            {benefit.title}
+                                        </h3>
+                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-snug font-bold line-clamp-2">
                                             <StyledBrandName text={benefit.description} />
                                         </div>
                                     </div>
 
                                     {/* Subtle Accent Glow on Hover */}
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/5 to-transparent opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none"></div>
                                 </div>
                             </motion.div>
                         </RevealOnScroll>

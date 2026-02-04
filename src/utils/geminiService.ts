@@ -93,6 +93,28 @@ const RETRY_BASE_DELAY_MS = 1000; // 1 second base delay
 // Simple delay helper
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper function declared before usage to satisfy TS strictness (though function hoisting works)
+const summarizeHistory = async (history: ChatMessage[], language: 'ar' | 'en'): Promise<string> => {
+    try {
+        const ai = initializeGemini();
+        if (!ai) return language === 'ar' ? "المحادثة السابقة أصبحت طويلة جداً." : "Previous conversation grew quite extensive.";
+
+        // Use a lightweight model for summarization
+        const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+
+        const prompt = language === 'ar'
+            ? 'قم بتلخيص هذه المحادثة لمساعد "Mr. X-Steroid" القادم. حافظ على الحقائق، الأهداف الجسدية، والنتائج المخبرية المذكورة. كن موجزاً ونخبوياً:'
+            : 'Summarize this trajectory for the next Mr. X-Steroid instance. Retain facts, physical goals, and lab results. Be clinical and elite:';
+
+        const historyText = history.map(m => `${m.role}: ${m.parts}`).join('\n');
+        const result = await summaryModel.generateContent(`${prompt}\n\n${historyText}`);
+        return result.response.text();
+    } catch (e) {
+        loggers.ai.warn('Summarization failed', e);
+        return language === 'ar' ? "تم ضغط المحادثة السابقة للحفاظ على الأداء." : "Historical data compressed for peak performance.";
+    }
+};
+
 // Generate AI response
 export const generateResponse = async (
     userMessage: string,
@@ -163,8 +185,6 @@ export const generateResponse = async (
                         loggers.ai.debug('Executing tools', functionCalls.map(c => c.name));
 
                         for (const call of functionCalls) {
-                            // Automatically inject userId if the tool requires it and the LLM didn't provide it (safety net)
-                            // But usually relying on system prompt is better.
                             const apiResult = await executeToolCall(call.name, call.args);
                             functionResponses.push({
                                 functionResponse: {
@@ -298,57 +318,52 @@ export const streamResponse = async (
                     let result = await chat.sendMessageStream(userMessage);
 
                     // We need to handle the stream loop potentially multiple times if tools are called repeatedly
-                    // Logic: Stream chunks. If strictly text, onChunk it.
-                    // If function call, we might not get text chunks.
-
                     let keepGoing = true;
                     let loopCount = 0;
+                    const MAX_LOOPS = 5;
 
-                    while (keepGoing && loopCount < 5) {
-
-
-                        // Iterate through the current stream
+                    while (keepGoing && loopCount < MAX_LOOPS) {
+                        // 1. Iterate through the current stream to update UI
                         for await (const chunk of result.stream) {
                             const chunkText = chunk.text();
                             if (chunkText) {
-                                if (chunkText) {
-                                    onChunk(chunkText);
-                                }
-                            }
-
-                            // Check if the turn resulted in function calls
-                            const response = await result.response;
-                            const functionCalls = response.functionCalls();
-
-                            if (functionCalls && functionCalls.length > 0) {
-                                loopCount++;
-                                // Execute tools (don't stream this part to user, maybe show "Thinking...")
-                                // onChunk(" [Accessing Mr. X Database...] "); // Optional UI feedback
-
-                                const functionResponses = [];
-                                for (const call of functionCalls) {
-                                    const apiResult = await executeToolCall(call.name, call.args);
-                                    functionResponses.push({
-                                        functionResponse: {
-                                            name: call.name,
-                                            response: apiResult
-                                        }
-                                    });
-                                }
-
-                                // Send results back and get new stream
-                                result = await chat.sendMessageStream(functionResponses as Part[]);
-                            } else {
-                                // No more tools, we are done
-                                keepGoing = false;
+                                onChunk(chunkText);
                             }
                         }
 
-                        return; // Success!
+                        // 2. After stream finishes, check for function calls
+                        const response = await result.response;
+                        const functionCalls = response.functionCalls();
+
+                        if (functionCalls && functionCalls.length > 0) {
+                            loopCount++;
+                            // Execute tools
+                            const functionResponses = [];
+                            for (const call of functionCalls) {
+                                const apiResult = await executeToolCall(call.name, call.args);
+                                functionResponses.push({
+                                    functionResponse: {
+                                        name: call.name,
+                                        response: apiResult
+                                    }
+                                });
+                            }
+
+                            // Send results back to model and get new stream
+                            result = await chat.sendMessageStream(functionResponses as Part[]);
+                            // Loop continues to process the newly generated stream
+                        } else {
+                            // No more tools, we are done
+                            keepGoing = false;
+                        }
                     }
+
+                    return; // Success!
+
                 } catch (err: unknown) {
                     const error = err as Error;
                     loggers.ai.warn(`Streaming Model ${modelId} attempt ${attempt + 1} failed`, error);
+
                     if (error.message?.includes('404')) {
                         lastError = err;
                         break; // move to next model
@@ -379,6 +394,7 @@ export const streamResponse = async (
         // If all Gemini models failed, try OpenAI as final fallback
         await streamOpenAIResponse(userMessage, options, onChunk);
         return;
+
     } catch (err: unknown) {
         const error = err as Error;
         loggers.ai.error('Gemini AI Streaming Error', error);
@@ -407,28 +423,6 @@ export const streamResponse = async (
         }
 
         onChunk(errorMsg);
-    }
-};
-
-// Summarize history helper
-const summarizeHistory = async (history: ChatMessage[], language: 'ar' | 'en'): Promise<string> => {
-    try {
-        const ai = initializeGemini();
-        if (!ai) return language === 'ar' ? "المحادثة السابقة أصبحت طويلة جداً." : "Previous conversation grew quite extensive.";
-
-        // Use a lightweight model for summarization
-        const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-
-        const prompt = language === 'ar'
-            ? 'قم بتلخيص هذه المحادثة لمساعد "Mr. X-Steroid" القادم. حافظ على الحقائق، الأهداف الجسدية، والنتائج المخبرية المذكورة. كن موجزاً ونخبوياً:'
-            : 'Summarize this trajectory for the next Mr. X-Steroid instance. Retain facts, physical goals, and lab results. Be clinical and elite:';
-
-        const historyText = history.map(m => `${m.role}: ${m.parts}`).join('\n');
-        const result = await summaryModel.generateContent(`${prompt}\n\n${historyText}`);
-        return result.response.text();
-    } catch (e) {
-        loggers.ai.warn('Summarization failed', e);
-        return language === 'ar' ? "تم ضغط المحادثة السابقة للحفاظ على الأداء." : "Historical data compressed for peak performance.";
     }
 };
 

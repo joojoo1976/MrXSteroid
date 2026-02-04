@@ -271,40 +271,40 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                 <motion.div
                     initial={{ x: -50, opacity: 0 }}
                     whileInView={{ x: 0, opacity: 1 }}
-                    className="lg:col-span-5 bg-white dark:bg-background/40 p-10 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl space-y-10 lg:sticky lg:top-32 card-shine backdrop-blur-3xl animate-glow"
+                    className="lg:col-span-5 bg-white dark:bg-zinc-950/50 p-6 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 lg:sticky lg:top-24 backdrop-blur-xl"
                 >
-                    {/* Ecosystem Status */}
+                    {/* Ecosystem Status (Compact) */}
                     <AnimatePresence>
                         {ecosystemSynced && content.macroEcosystem && (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="flex items-center gap-3 px-6 py-3 bg-green-500/10 border border-green-500/20 rounded-2xl mb-6"
+                                className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl mb-4"
                             >
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-sm font-black text-green-500 uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    <div className="flex gap-4 p-2 bg-zinc-100 dark:bg-background rounded-[2rem] shadow-inner">
+                    <div className="flex gap-3 p-1.5 bg-zinc-100 dark:bg-black/40 rounded-2xl">
                         <button
                             onClick={() => setGender('male')}
-                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'male' ? 'bg-white dark:bg-card shadow-2xl text-gold-600' : 'text-zinc-400'}`}
+                            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}
                         >
-                            <User className="w-5 h-5" /> {content.bfMale}
+                            <User className="w-4 h-4" /> {content.bfMale}
                         </button>
                         <button
                             onClick={() => setGender('female')}
-                            className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-2xl text-gold-600' : 'text-zinc-400'}`}
+                            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}
                         >
-                            <User className="w-5 h-5" /> {content.bfFemale}
+                            <User className="w-4 h-4" /> {content.bfFemale}
                         </button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
-                        <div className="space-y-4">
-                            <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1">
                                 <Activity className="w-3 h-3" /> {content.bfAge}
                             </label>
                             <input
@@ -312,98 +312,96 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                 inputMode="numeric"
                                 value={age}
                                 onChange={e => setAge(e.target.value)}
-                                className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-6 text-2xl font-black text-center outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-lg font-black text-center outline-none transition-all shadow-inner h-12"
                                 placeholder="25"
                             />
                         </div>
 
-                        <div className="space-y-4">
-                            <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                                {content.bfWeight} ({isImperial ? 'lbs' : 'kg'})
-                                <Scale className="w-4 h-4 text-gold-500/50" />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                                {content.bfWeight} <span className="opacity-50 text-[9px]">{isImperial ? 'lbs' : 'kg'}</span>
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={weight}
                                 onChange={(e) => handleWeightChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                                 placeholder={isImperial ? "176" : "80"}
                             />
                         </div>
 
-                        <div className="space-y-3">
-                            <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                                {content.bfHeight} ({isImperial ? 'in' : 'cm'})
-                                <Scale className="w-4 h-4 text-gold-500/50" />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                                {content.bfHeight} <span className="opacity-50 text-[9px]">{isImperial ? 'in' : 'cm'}</span>
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={height}
                                 onChange={(e) => handleHeightChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                                 placeholder={isImperial ? "70" : "180"}
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
-                        <div className="space-y-4">
-                            <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                {content.bfWaist} ({isImperial ? 'in' : 'cm'})
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                                {content.bfWaist} <span className="opacity-50 text-[9px]">{isImperial ? 'in' : 'cm'}</span>
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={waist}
                                 onChange={(e) => handleWaistChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                                 placeholder={isImperial ? "32" : "81"}
                             />
                         </div>
 
                         {gender === 'female' && (
-                            <div className="space-y-4">
-                                <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                    {content.bfHip} ({isImperial ? 'in' : 'cm'})
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                                    {content.bfHip} <span className="opacity-50 text-[9px]">{isImperial ? 'in' : 'cm'}</span>
                                 </label>
                                 <input
                                     type="text"
                                     inputMode="decimal"
                                     value={hip}
                                     onChange={(e) => handleHipChange(e.target.value)}
-                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                    className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                                     placeholder={isImperial ? "38" : "97"}
                                 />
                             </div>
                         )}
 
-                        <div className="space-y-4">
-                            <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">
-                                {content.bfNeck} ({isImperial ? 'in' : 'cm'})
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                                {content.bfNeck} <span className="opacity-50 text-[9px]">{isImperial ? 'in' : 'cm'}</span>
                             </label>
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 value={neck}
                                 onChange={(e) => handleNeckChange(e.target.value)}
-                                className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                                className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                                 placeholder={isImperial ? "16" : "41"}
                             />
                         </div>
                     </div>
 
                     <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={calculateBodyFat}
                         disabled={isCalculating}
-                        className={`w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2rem] shadow-[0_0_40px_rgba(234,179,8,0.3)] transition-all flex items-center justify-center gap-4 relative overflow-hidden group animate-glow`}
+                        className={`w-full py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 relative overflow-hidden group animate-glow`}
                     >
-                        {isCalculating ? <RefreshCw className="w-8 h-8 animate-spin" /> : <Target className="w-8 h-8 group-hover:scale-125 transition-transform" />}
+                        {isCalculating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Target className="w-5 h-5 group-hover:scale-110 transition-transform" />}
                         {isCalculating ? content.bfAnalyzing : content.bfCalculate}
-                        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full ${isCalculating ? 'animate-shimmer' : 'group-hover:animate-shimmer'}`}></div>
+                        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full ${isCalculating ? 'animate-shimmer' : 'group-hover:animate-shimmer'}`}></div>
                     </motion.button>
                 </motion.div>
 
@@ -441,60 +439,62 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                     <div className="absolute bottom-0 inset-inline-end-0 w-32 h-32 bg-white/10 rounded-tl-full blur-2xl"></div>
                                 </motion.div>
 
-                                {/* Main Stats */}
-                                <div className={`p-12 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950`}>
+                                {/* Main Stats - Compact Horizontal */}
+                                <div className={`p-8 rounded-[3rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950`}>
                                     <div className="absolute top-0 inset-inline-end-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] animate-float-slow"></div>
 
-                                    <div className="relative z-10 grid md:grid-cols-2 gap-12">
+                                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-around gap-8">
                                         {/* Body Fat Percentage */}
                                         <div className="text-center">
-                                            <h3 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-6 flex items-center justify-center gap-3">
-                                                <Target className="w-5 h-5 animate-pulse" /> {content.bfPercentageLabel}
+                                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] mb-2 flex items-center justify-center gap-2">
+                                                <Target className="w-4 h-4 text-gold-500" /> {content.bfPercentageLabel}
                                             </h3>
-                                            <div className={`text-8xl font-black tracking-tighter mb-4 animate-text-flash font-mono ${getCategoryColor()}`}>
+                                            <div className={`text-6xl font-black tracking-tighter animate-text-flash font-mono ${getCategoryColor()}`}>
                                                 <KineticCounter value={result.bodyFatPercentage || 0} decimals={1} />
-                                                <span className="text-4xl">%</span>
+                                                <span className="text-3xl">%</span>
                                             </div>
                                         </div>
 
+                                        <div className="w-full md:w-px h-px md:h-24 bg-zinc-800"></div>
+
                                         {/* BMI */}
                                         <div className="text-center">
-                                            <h3 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-6 flex items-center justify-center gap-3">
-                                                <Scale className="w-5 h-5 animate-pulse" /> BMI
+                                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] mb-2 flex items-center justify-center gap-2">
+                                                <Scale className="w-4 h-4 text-white" /> BMI
                                             </h3>
-                                            <div className="text-8xl font-black tracking-tighter mb-4 animate-text-flash font-mono">
+                                            <div className="text-6xl font-black tracking-tighter animate-text-flash font-mono text-white">
                                                 <KineticCounter value={result.bmi || 0} decimals={1} />
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Detailed Stats */}
-                                    <div className="grid md:grid-cols-2 gap-8 mt-12">
-                                        <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
-                                            <h4 className="text-sm font-black text-gold-400 uppercase tracking-widest mb-4">{content.bfMassLabel}</h4>
-                                            <div className="text-4xl font-black text-white">
-                                                <span className="text-xl text-zinc-500 ms-2">{isImperial ? 'lbs' : 'kg'}</span>
+                                    {/* Detailed Stats - Grid */}
+                                    <div className="grid grid-cols-2 gap-4 mt-8">
+                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                            <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-1">{content.bfMassLabel}</h4>
+                                            <div className="text-2xl font-black text-white">
+                                                {result.bodyFatMass} <span className="text-sm text-zinc-500">{isImperial ? 'lbs' : 'kg'}</span>
                                             </div>
                                         </div>
 
-                                        <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
-                                            <h4 className="text-sm font-black text-gold-400 uppercase tracking-widest mb-4">{content.bfLeanMassLabel}</h4>
-                                            <div className="text-4xl font-black text-white">
-                                                <span className="text-xl text-zinc-500 ms-2">{isImperial ? 'lbs' : 'kg'}</span>
+                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                            <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-1">{content.bfLeanMassLabel}</h4>
+                                            <div className="text-2xl font-black text-white">
+                                                {result.leanBodyMass} <span className="text-sm text-zinc-500">{isImperial ? 'lbs' : 'kg'}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Visual Progress Bar */}
-                                    <div className="mt-10">
-                                        <div className="flex justify-between mb-2">
-                                            <span className="text-sm font-black text-zinc-400">{content.bfCategories.essential}</span>
-                                            <span className="text-sm font-black text-zinc-400">{content.bfCategories.obese}</span>
+                                    <div className="mt-8">
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-[10px] font-black text-zinc-500">{content.bfCategories.essential}</span>
+                                            <span className="text-[10px] font-black text-zinc-500">{content.bfCategories.obese}</span>
                                         </div>
-                                        <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+                                        <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
-                                                animate={{ width: `${result.bodyFatPercentage}%` }}
+                                                animate={{ width: `${Math.min(result.bodyFatPercentage * 2, 100)}%` }} // Scaled for visual
                                                 transition={{ duration: 1.5, ease: "easeOut" }}
                                                 className={`h-full transition-colors duration-300 ${getCategoryColor().replace('text-', 'bg-')}`}
                                             ></motion.div>

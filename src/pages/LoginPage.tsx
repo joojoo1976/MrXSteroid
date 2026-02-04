@@ -106,48 +106,53 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-[60vh] flex items-center justify-center bg-black p-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-zinc-900 border border-gold-500/30 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-md bg-zinc-900/90 backdrop-blur-md border border-gold-500/20 rounded-2xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] relative overflow-hidden"
       >
         {/* Decorative Top Bar */}
-        <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
+        <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-70"></div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gold-500 mb-2 tracking-tight">Gatekeeper</h1>
-          <p className="text-zinc-400 text-sm">Create your legacy or identify yourself.</p>
+        <div className="flex flex-row items-center justify-center gap-3 mb-6 mt-2">
+          <div className="w-8 h-8 rounded-lg bg-gold-500/10 flex items-center justify-center border border-gold-500/20">
+            <Lock className="w-4 h-4 text-gold-500" />
+          </div>
+          <div>
+            <h1 className="text-xl font-black text-white tracking-tight leading-none mb-0.5">Gatekeeper</h1>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-none">Access Terminal</p>
+          </div>
         </div>
 
         {/* Locked State Warning */}
         {isLocked && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-sm font-medium">
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <p className="text-xs font-bold">
               {isRTL
                 ? `تم قفل الحساب مؤقتاً. حاول بعد ${lockoutTimer} ثانية.`
-                : `Account temporarily locked. Try again in ${lockoutTimer}s.`}
+                : `Account locked. Retry in ${lockoutTimer}s.`}
             </p>
           </div>
         )}
 
         {/* Email Login Form (Zod) */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-4 mb-4">
+          <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-3 mb-2">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ms-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</FormLabel>
                   <FormControl>
                     <div className="relative group">
                       <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
                       <Input
                         {...field}
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pe-11' : 'ps-11'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-10 text-sm ${isRTL ? 'pe-10' : 'ps-10'} transition-all`}
                         placeholder="john@example.com"
                       />
                     </div>
@@ -162,7 +167,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider ms-1">{isRTL ? 'كلمة المرور' : 'Password'}</FormLabel>
+                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">{isRTL ? 'كلمة المرور' : 'Password'}</FormLabel>
                   <FormControl>
                     <div className="relative group">
                       <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
@@ -170,7 +175,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
                         {...field}
                         type="password"
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-800 focus-visible:ring-gold-500 h-12 ${isRTL ? 'pe-11' : 'ps-11'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-10 text-sm ${isRTL ? 'pe-10' : 'ps-10'} transition-all`}
                         placeholder="••••••••"
                       />
                     </div>
@@ -183,12 +188,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
             <Button
               type="submit"
               disabled={loading || isLocked}
-              className="w-full h-12 bg-gold-500 hover:bg-gold-400 text-black font-bold rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 group"
+              className="w-full h-11 bg-gold-500 hover:bg-gold-400 text-black font-black text-sm rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 group mt-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
                   {isRTL ? 'الدخول للنظام' : 'Access Terminal'}
-                  <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
+                  <ArrowRight className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
                 </>
               )}
             </Button>

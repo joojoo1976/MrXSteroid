@@ -324,7 +324,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
         <motion.div
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
-          className="lg:col-span-5 bg-white dark:bg-background/40 p-10 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl space-y-10 lg:sticky lg:top-32 card-shine backdrop-blur-3xl animate-glow"
+          className="lg:col-span-5 bg-white dark:bg-zinc-950/50 p-6 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 lg:sticky lg:top-24 backdrop-blur-xl"
         >
           {/* Ecosystem Status */}
           <AnimatePresence>
@@ -332,33 +332,31 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-3 px-6 py-3 bg-green-500/10 border border-green-500/20 rounded-2xl mb-6"
+                className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl mb-4"
               >
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-black text-green-500 uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="flex gap-4 p-2 bg-zinc-100 dark:bg-background rounded-[2rem] shadow-inner">
-
-            <button onClick={() => setGender('male')} className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'male' ? 'bg-white dark:bg-card shadow-2xl text-gold-600' : 'text-zinc-400'}`}>
-              <User className="w-5 h-5" /> {content.calcMale}
+          <div className="flex gap-3 p-1.5 bg-zinc-100 dark:bg-black/40 rounded-2xl">
+            <button onClick={() => setGender('male')} className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}>
+              <User className="w-4 h-4" /> {content.calcMale}
             </button>
-            <button onClick={() => setGender('female')} className={`flex-1 py-5 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-3 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-2xl text-gold-600' : 'text-zinc-400'}`}>
-              <User className="w-5 h-5 shadow-sm" /> {content.calcFemale}
+            <button onClick={() => setGender('female')} className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}>
+              <User className="w-4 h-4 shadow-sm" /> {content.calcFemale}
             </button>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <label className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2"><Clock className="w-3 h-3" /> {content.calcAge}</label>
-              <input type="text" inputMode="numeric" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-2xl p-6 text-2xl font-black text-center outline-none transition-all shadow-inner" placeholder="25" />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {content.calcAge}</label>
+              <input type="text" inputMode="numeric" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-lg font-black text-center outline-none transition-all shadow-inner h-12" placeholder="25" />
             </div>
-            <div className="space-y-4">
-              <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                {content.calcWeight} ({isImperial ? 'lbs' : 'kg'})
-                <Scale className="w-4 h-4 text-gold-500/50" />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                {content.calcWeight} <span className="opacity-50 text-[9px]">{isImperial ? 'lbs' : 'kg'}</span>
               </label>
               <motion.div className="relative">
                 <input
@@ -366,16 +364,15 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                   inputMode="decimal"
                   value={weight}
                   onChange={(e) => handleWeightChange(e.target.value)}
-                  className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                   placeholder={isImperial ? "176" : "80"}
                 />
               </motion.div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                {content.calcHeight} ({isImperial ? 'in' : 'cm'})
-                <Ruler className="w-4 h-4 text-gold-500/50" />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                {content.calcHeight} <span className="opacity-50 text-[9px]">{isImperial ? 'in' : 'cm'}</span>
               </label>
               <motion.div className="relative">
                 <input
@@ -383,7 +380,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                   inputMode="decimal"
                   value={height}
                   onChange={(e) => handleHeightChange(e.target.value)}
-                  className="w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-transparent focus:border-gold-500/50 rounded-2xl p-5 text-center font-mono font-black text-2xl outline-none transition-all shadow-inner"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl p-3 text-center font-mono font-black text-lg outline-none transition-all shadow-inner h-12"
                   placeholder={isImperial ? "70" : "180"}
                 />
               </motion.div>
@@ -391,23 +388,23 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
           </div>
 
           <div className="grid grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <label htmlFor="activity-select" className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">{content.calcActivity}</label>
-              <select id="activity-select" title={content.calcActivity} value={activity} onChange={e => setActivity(e.target.value)} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-[1.5rem] p-6 text-xl font-bold outline-none cursor-pointer appearance-none shadow-inner">
+            <div className="space-y-2">
+              <label htmlFor="activity-select" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{content.calcActivity}</label>
+              <select id="activity-select" title={content.calcActivity} value={activity} onChange={e => setActivity(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl px-3 py-3 text-sm font-bold outline-none cursor-pointer appearance-none shadow-inner h-12">
                 {content.calcActivityLevels && Object.entries(content.calcActivityLevels).map(([k, v]) => <option key={k} value={k}>{v as string}</option>)}
               </select>
             </div>
 
-            <div className="space-y-4">
-              <label htmlFor="goal-select" className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">{content.calcGoal}</label>
-              <select id="goal-select" title={content.calcGoal} value={goal} onChange={e => setGoal(e.target.value)} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-[1.5rem] p-6 text-xl font-bold outline-none cursor-pointer appearance-none shadow-inner">
+            <div className="space-y-2">
+              <label htmlFor="goal-select" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{content.calcGoal}</label>
+              <select id="goal-select" title={content.calcGoal} value={goal} onChange={e => setGoal(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl px-3 py-3 text-sm font-bold outline-none cursor-pointer appearance-none shadow-inner h-12">
                 {content.calcSelectGoal && Object.entries(content.calcSelectGoal).map(([k, v]) => <option key={k} value={k}>{v as string}</option>)}
               </select>
             </div>
 
-            <div className="space-y-4">
-              <label htmlFor="training-time-select" className="text-sm font-black uppercase tracking-[0.2em] text-zinc-400">{content.calcTrainingTime}</label>
-              <select id="training-time-select" title={content.calcTrainingTime} value={trainingTime} onChange={e => setTrainingTime(e.target.value)} className="w-full bg-zinc-50 dark:bg-background border-2 border-transparent focus:border-gold-500 rounded-[1.5rem] p-6 text-xl font-bold outline-none cursor-pointer appearance-none shadow-inner">
+            <div className="space-y-2">
+              <label htmlFor="training-time-select" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{content.calcTrainingTime}</label>
+              <select id="training-time-select" title={content.calcTrainingTime} value={trainingTime} onChange={e => setTrainingTime(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus:border-gold-500 rounded-xl px-3 py-3 text-sm font-bold outline-none cursor-pointer appearance-none shadow-inner h-12">
                 {content.calcTrainingWindows && Object.entries(content.calcTrainingWindows).filter(([k]) => k !== 'advice').map(([k, v]) => (
                   <option key={k} value={k}>{v as string}</option>
                 ))}
@@ -439,46 +436,46 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                 className="space-y-10"
               >
                 {/* AI Assistant Insight Floating Sidebar */}
+                {/* AI Assistant Insight (Compact) */}
                 <motion.div
                   initial={{ x: 200, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className="p-8 bg-gradient-to-br from-gold-500 to-gold-700 rounded-[3rem] text-black shadow-2xl relative overflow-hidden group"
+                  className="p-6 bg-gradient-to-br from-gold-500 to-gold-700 rounded-[2.5rem] text-black shadow-2xl relative overflow-hidden group"
                 >
                   <div className="absolute top-0 end-0 p-4 opacity-20">
                     <Zap className="w-16 h-16 animate-pulse" />
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                    <Info className="w-5 h-5" /> {content.calcAiInsightTitle}
+                  <h4 className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Info className="w-4 h-4" /> {content.calcAiInsightTitle}
                   </h4>
-                  <p className="text-xl font-bold leading-relaxed mb-4">
+                  <p className="text-sm font-bold leading-relaxed mb-4">
                     {aiInsight}
                   </p>
-                  <div className="text-sm font-black uppercase opacity-60">
+                  <div className="text-[9px] font-black uppercase opacity-60">
                     {content.calcPredictiveAccuracy} <span className="ms-1">{content.calcPredictiveAccuracyVal}</span>
                   </div>
-                  <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-tl-full blur-2xl"></div>
                 </motion.div>
 
-                {/* Main Stats Hub */}
+                {/* Main Stats Hub (Horizontal) */}
 
-                <div className="p-12 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950">
+                <div className="p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden card-shine animate-glow group bg-zinc-900 text-white dark:bg-zinc-950">
                   <div className="absolute top-0 end-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] animate-float-slow"></div>
 
-                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
+                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className={isAr ? "text-center md:text-end" : "text-center md:text-start"}>
-                      <h3 className="text-sm font-black text-gold-500 uppercase tracking-[0.4em] mb-6 flex items-center justify-center md:justify-start gap-3">
-                        <Flame className="w-5 h-5 animate-pulse" /> {content.calcCalories}
+                      <h3 className="text-xs font-black text-gold-500 uppercase tracking-widest mb-2 flex items-center justify-center md:justify-start gap-2">
+                        <Flame className="w-4 h-4 animate-pulse" /> {content.calcCalories}
                       </h3>
-                      <div className="text-8xl font-black tracking-tighter mb-4 animate-text-flash font-mono">
+                      <div className="text-6xl font-black tracking-tighter mb-2 animate-text-flash font-mono">
                         <KineticCounter value={result.calories || 0} />
                       </div>
-                      <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/5 rounded-full border border-white/10">
-                        <Activity className="w-4 h-4 text-green-500 animate-ping" />
-                        <span className="text-sm font-black uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/10">
+                        <Activity className="w-3 h-3 text-green-500 animate-ping" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{content.macroEcosystem.syncStatus}</span>
                       </div>
                     </div>
 
-                    <div className="w-64 h-64 relative group/chart">
+                    <div className="w-48 h-48 relative group/chart">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -487,8 +484,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                               { name: 'C', value: (result.carbs || 0) * 4, fill: '#3b82f6' },
                               { name: 'F', value: (result.fats || 0) * 9, fill: '#ef4444' },
                             ]}
-                            innerRadius={70}
-                            outerRadius={100}
+                            innerRadius={50}
+                            outerRadius={80}
                             paddingAngle={8}
                             dataKey="value"
                             stroke="none"
@@ -500,8 +497,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <Zap className="w-10 h-10 text-gold-500 animate-pulse" />
-                        <span className="text-xs font-black uppercase text-zinc-500 mt-2">Bio-Fuel</span>
+                        <Zap className="w-6 h-6 text-gold-500 animate-pulse" />
                       </div>
                     </div>
                   </div>

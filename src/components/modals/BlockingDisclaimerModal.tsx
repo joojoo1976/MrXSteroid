@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ContentStrings } from '../../types';
 import { getCookie, setCookie } from '../../utils/logic';
 import { StyledBrandName } from '../shared/StyledBrandName';
+import { usePreferences } from '../../context/PreferencesContext';
 
 const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ content }) => {
+    const { isRTL } = usePreferences();
     const [show, setShow] = useState(() => !getCookie('disclaimer-agreed'));
     const [step, setStep] = useState(1);
 
@@ -143,7 +145,7 @@ const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ conten
                                 className="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <ChevronLeft className="w-5 h-5" />
-                                {content.isRTL ? "السابق" : "Previous"}
+                                {isRTL ? "السابق" : "Previous"}
                             </button>
                         )}
 
