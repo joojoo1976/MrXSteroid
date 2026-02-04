@@ -8,6 +8,7 @@
 
 import { supabase } from '../lib/supabase';
 import { errorHandler } from '../lib/error-handler';
+import { loggers } from '../utils/logger';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              TYPE DEFINITIONS
@@ -74,7 +75,7 @@ class PaymentService {
         this.publicKey = CONFIG.PUBLIC_KEY || '';
 
         if (!this.publicKey) {
-            console.warn('⚠️ [PaymentService] SpaceRemit Public Key not configured');
+            loggers.payment.warn('SpaceRemit Public Key not configured');
         }
     }
 
@@ -109,12 +110,12 @@ class PaymentService {
 
             script.onload = () => {
                 this.isInitialized = true;
-                console.log('✅ [PaymentService] SpaceRemit SDK Loaded');
+                loggers.payment.info('SpaceRemit SDK Loaded');
                 resolve(true);
             };
 
             script.onerror = () => {
-                console.error('❌ [PaymentService] Failed to load SpaceRemit SDK');
+                loggers.payment.error('Failed to load SpaceRemit SDK');
                 resolve(false);
             };
 
@@ -287,7 +288,7 @@ class PaymentService {
                         const { logPaymentSuccess } = await import('../lib/mcp/integration');
                         logPaymentSuccess(userId, transactionId, status.data.amount, status.data.currency);
                     } catch (err) {
-                        console.error('Failed to log payment to MCP', err);
+                        loggers.payment.error('Failed to log payment to MCP', err);
                     }
                 }
 
@@ -392,7 +393,7 @@ class PaymentService {
      */
     public handleSuccessCallback(spaceremitCode: string): void {
         // This is called automatically by SpaceRemit via SP_SUCCESSFUL_PAYMENT
-        console.log('✅ [PaymentService] Payment Success Callback:', spaceremitCode);
+        loggers.payment.info('Payment Success Callback', spaceremitCode);
 
         // The actual verification happens server-side via the API callback
         // Here we just trigger UI updates

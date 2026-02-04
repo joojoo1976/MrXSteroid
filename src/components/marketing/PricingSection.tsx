@@ -54,12 +54,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
     };
 
     return (
-        <section className="py-24 relative overflow-hidden bg-black" id="pricing">
+        <section className="py-12 relative overflow-hidden bg-black" id="pricing">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-fixed opacity-10"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-16 space-y-4">
+                <div className="text-center mb-8 space-y-2">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -67,15 +67,15 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                     >
                         <Zap className="w-4 h-4 fill-current" /> {content.pricingInitialize}
                     </motion.div>
-                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
+                    <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
                         {t('pricingTitle')}
                     </h2>
-                    <p className="text-zinc-400 max-w-2xl mx-auto font-medium text-lg">
+                    <p className="text-zinc-400 max-w-2xl mx-auto font-medium text-base">
                         {t('pricingSubtitle')}
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto">
                     {plans.map((plan) => {
                         const isCoachingTier = plan.id === 'coaching';
                         const isPopular = plan.id === 'bundle';
@@ -92,7 +92,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                             <motion.div
                                 key={plan.id}
                                 className={`
-                                    relative p-5 rounded-[1.5rem] border-2 transition-all duration-300 flex flex-col group
+                                    relative p-4 rounded-xl border-2 transition-all duration-300 flex flex-col group
                                     ${isPopular ? 'bg-zinc-900/80 border-gold-500 shadow-[0_0_40px_rgba(234,179,8,0.15)] scale-105 z-20' : 'bg-black/60 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/40'}
                                 `}
                             >
@@ -102,19 +102,19 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     </div>
                                 )}
 
-                                <div className="mb-6">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-white text-xl flex-shrink-0 bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'emerald' ? 'from-emerald-500 to-green-600' : 'from-zinc-700 to-zinc-900'}`}>
+                                <div className="mb-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-lg flex-shrink-0 bg-gradient-to-br ${config.color === 'gold' ? 'from-gold-400 to-amber-600' : config.color === 'emerald' ? 'from-emerald-500 to-green-600' : 'from-zinc-700 to-zinc-900'}`}>
                                             <config.icon className="w-5 h-5" />
                                         </div>
-                                        <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
+                                        <h3 className="text-lg font-black text-white uppercase tracking-wider">{plan.name}</h3>
                                     </div>
                                     <p className="text-zinc-400 text-sm font-medium leading-normal pl-1">{plan.description}</p>
                                 </div>
 
-                                <div className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="mb-4 p-3 bg-white/5 rounded-xl border border-white/5">
                                     <div className="flex items-baseline gap-2">
-                                        <span className={`text-3xl font-black tracking-tighter ${config.color === 'gold' ? 'text-gold-500' : 'text-white'}`}>
+                                        <span className={`text-2xl font-black tracking-tighter ${config.color === 'gold' ? 'text-gold-500' : 'text-white'}`}>
                                             {formatPrice(grandTotal)}
                                         </span>
                                         <span className="text-zinc-500 line-through font-bold text-xs opacity-50">
@@ -125,7 +125,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                 </div>
 
                                 {isCoachingTier && (
-                                    <div className="mb-6 p-1 bg-zinc-800 rounded-xl relative group-hover:scale-[1.02] transition-transform">
+                                    <div className="mb-4 p-1 bg-zinc-800 rounded-lg relative group-hover:scale-[1.02] transition-transform">
                                         <label className="flex items-center justify-between p-3 cursor-pointer group/label">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isCoachingActive ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>
@@ -159,9 +159,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     </div>
                                 )}
 
-                                <div className="space-y-4 mb-8 flex-1">
+                                <div className="space-y-2 mb-4 flex-1">
                                     {plan.features.map((feature, i) => (
-                                        <div key={i} className="flex items-start gap-3">
+                                        <div key={i} className="flex items-start gap-2">
                                             <Check className={`w-4 h-4 mt-0.5 ${config.color === 'gold' ? 'text-gold-500' : 'text-zinc-500'}`} />
                                             <span className="text-sm text-zinc-300 font-medium">{feature}</span>
                                         </div>
@@ -171,7 +171,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             key={`upsell-${i}`}
-                                            className="flex items-start gap-3"
+                                            className="flex items-start gap-2"
                                         >
                                             <Zap className="w-4 h-4 mt-0.5 text-emerald-500 fill-emerald-500/20" />
                                             <span className="text-sm text-white font-bold">{feature}</span>
@@ -182,7 +182,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                 <button
                                     onClick={() => handleCheckout(plan.id)}
                                     className={`
-                                        w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2 group/btn
+                                        w-full py-3 rounded-lg font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2 group/btn
                                         ${isPopular
                                             ? 'bg-gold-500 text-black hover:bg-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
                                             : isCoachingTier && isCoachingActive
