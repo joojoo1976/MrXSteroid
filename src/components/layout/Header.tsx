@@ -159,18 +159,18 @@ const Header: React.FC<HeaderProps> = ({
         );
       case 'nav':
         return (
-          <div key="nav" className="hidden md:flex items-center gap-6">
-            <button onClick={() => navigateTo(Page.HOME)} className={`text-sm font-bold transition-colors ${currentPage === Page.HOME ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+          <div key="nav" className="hidden md:flex items-center gap-4">
+            <button onClick={() => navigateTo(Page.HOME)} className={`text-xs font-bold uppercase tracking-wide transition-colors ${currentPage === Page.HOME ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
               {content.homeLink}
             </button>
-            <button onClick={() => handleNav('features')} className="text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">
+            <button onClick={() => handleNav('features')} className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">
               {content.navFeatures}
             </button>
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+              <button className={`flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold transition-colors ${(currentPage !== Page.HOME && currentPage !== Page.CYCLE_ARCHITECT) ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navAiTools}
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-full p-0.5 group-hover:bg-gold-500/20 transition-colors">
-                  <ChevronDown className="w-2.5 h-2.5" />
+                  <ChevronDown className="w-2 h-2" />
                 </div>
               </button>
               <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-56 hidden group-hover:block animate-fade-in-up z-50`}>
@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
                     <button
                       key={tool}
                       onClick={() => navigateTo(Page[tool.toUpperCase() as keyof typeof Page])}
-                      className={`block w-full text-start px-3 py-2 text-sm transition-colors ${currentPage === Page[tool.toUpperCase() as keyof typeof Page] ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                      className={`block w-full text-start px-3 py-2 text-xs transition-colors ${currentPage === Page[tool.toUpperCase() as keyof typeof Page] ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-bold' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
                     >
                       {content.navToolNames[tool]}
                     </button>
@@ -188,55 +188,55 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
             <div className="relative group">
-              <button className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+              <button className={`flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold transition-colors ${currentPage === Page.CYCLE_ARCHITECT ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                 {content.navPremiumResources}
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-full p-0.5 group-hover:bg-gold-500/20 transition-colors">
-                  <ChevronDown className="w-2.5 h-2.5" />
+                  <ChevronDown className="w-2 h-2" />
                 </div>
               </button>
               <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} pt-2 w-64 hidden group-hover:block animate-fade-in-up z-50`}>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
-                  <button onClick={() => navigateTo(Page.CYCLE_ARCHITECT)} className="block w-full text-start px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2">
-                    <CalendarCheck className="w-4 h-4 text-gold-500" />{content.navToolNames.cycleArchitect}
+                  <button onClick={() => navigateTo(Page.CYCLE_ARCHITECT)} className="block w-full text-start px-3 py-2 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2">
+                    <CalendarCheck className="w-3.5 h-3.5 text-gold-500" />{content.navToolNames.cycleArchitect}
                   </button>
                 </div>
               </div>
             </div>
-            <button onClick={() => handleNav('pricing')} className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.pricingTitle}</button>
-            <button onClick={() => handleNav('contact')} className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.contact}</button>
+            <button onClick={() => handleNav('pricing')} className="text-[10px] font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.pricingTitle}</button>
+            <button onClick={() => handleNav('contact')} className="text-[10px] font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">{content.contact}</button>
           </div>
         );
       case 'auth':
         return (
-          <div key="auth" className="hidden md:flex items-center gap-4">
+          <div key="auth" className="hidden md:flex items-center gap-3">
             {user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigateTo(Page.PROFILE)}
                   className="flex items-center gap-2 group transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-gold-500/50 group-hover:border-gold-500 overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full border-2 border-gold-500/50 group-hover:border-gold-500 overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                     <img src={getProfilePic(user) || ''} alt="Profile" className="w-full h-full object-cover" />
                   </div>
-                  <span className="hidden lg:inline text-sm font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-gold-500 transition-colors">
+                  <span className="hidden lg:inline text-xs font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-gold-500 transition-colors">
                     {user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                 </button>
                 <button
                   onClick={onLogout}
-                  className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-900/10 text-zinc-500 hover:text-red-600 transition-all text-xs font-bold shadow-sm group min-w-[32px]"
+                  className="flex items-center justify-center gap-2 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-900/10 text-zinc-500 hover:text-red-600 transition-all text-[10px] font-bold shadow-sm group min-w-[28px]"
                   title={content.logout || "Logout"}
                   aria-label={content.logout || "Logout"}
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3 border-inline border-zinc-200 dark:border-zinc-800 ps-4">
-                <button onClick={() => navigateTo(Page.LOGIN)} className={`text-sm font-bold transition-colors ${currentPage === Page.LOGIN ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+              <div className="flex items-center gap-2 border-inline border-zinc-200 dark:border-zinc-800 ps-3">
+                <button onClick={() => navigateTo(Page.LOGIN)} className={`text-xs font-bold transition-colors ${currentPage === Page.LOGIN ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
                   {content.loginBtn}
                 </button>
-                <button onClick={() => navigateTo(Page.SIGNUP)} className="px-5 py-2.5 text-sm font-bold bg-zinc-900 dark:bg-gold-500 text-white dark:text-black rounded-xl hover:scale-105 transition-all shadow-lg active:scale-95">
+                <button onClick={() => navigateTo(Page.SIGNUP)} className="px-3.5 py-1.5 text-xs font-bold bg-zinc-900 dark:bg-gold-500 text-white dark:text-black rounded-lg hover:scale-105 transition-all shadow-md active:scale-95">
                   {content.signupBtn}
                 </button>
               </div>
@@ -299,7 +299,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 ${isScrolled ? 'py-0.5' : 'py-1'}`}>
+      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 py-1`}>
         <Reorder.Group
           axis="x"
           values={layoutConfig.sections}

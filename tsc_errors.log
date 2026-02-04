@@ -1,0 +1,5 @@
+src/components/modals/BlockingDisclaimerModal.tsx(146,42): error TS2339: Property 'isRTL' does not exist on type 'ContentStrings'.
+src/utils/openaiService.ts(78,50): error TS2339: Property 'function' does not exist on type 'ChatCompletionMessageToolCall'.
+  Property 'function' does not exist on type 'ChatCompletionMessageCustomToolCall'.
+src/utils/openaiService.ts(79,63): error TS2339: Property 'function' does not exist on type 'ChatCompletionMessageToolCall'.
+  Property 'function' does not exist on type 'ChatCompletionMessageCustomToolCall'.
