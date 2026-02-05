@@ -37,36 +37,27 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
           {content.features.map((feature, idx) => (
             <RevealOnScroll key={idx} delay={idx * 150}>
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative h-full"
+                className="group relative"
               >
-                {/* Card Glow Effect - Neon */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 rounded-[2rem] blur opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+                <div className="flex items-center gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-green-500 transition-all duration-300 w-full group">
 
-                <div className="relative p-3.5 rounded-[1.25rem] bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all h-full glass-morphism-premium flex flex-row items-center gap-4 shadow-xl hover:shadow-[0_0_20px_rgba(234,179,8,0.2)] overflow-hidden">
-
-                  {/* Icon Container */}
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-gold-50 to-white dark:from-gold-950/20 dark:to-zinc-900 border border-gold-500/30 flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-500 relative z-10 ${isRTL ? 'group-hover:-rotate-6' : 'group-hover:rotate-6'}`}>
-                    <div className="text-gold-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]">
-                      <IconRenderer iconKey={feature.iconKey} className="w-4 h-4" />
-                    </div>
+                  {/* حاوية الأيقونة: حجم صغير وثابت */}
+                  <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-500/10 rounded-md text-green-500 group-hover:scale-110 transition-transform">
+                    <IconRenderer iconKey={feature.iconKey} className="w-5 h-5" />
                   </div>
 
-                  {/* Content Container */}
-                  <div className="flex-1 min-w-0">
-                    <div className="mb-1">
-                      <h3 className="text-lg font-black text-zinc-900 dark:text-white group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors tracking-tight truncate">
-                        <StyledBrandName text={feature.title} />
-                      </h3>
-                    </div>
-                    <p className="text-zinc-600 dark:text-zinc-400 leading-snug text-xs md:text-sm font-medium line-clamp-2">
+                  {/* حاوية النصوص: العنوان بجانب الأيقونة مباشرة */}
+                  <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                    <h3 className="text-sm font-bold text-white leading-tight truncate">
+                      <StyledBrandName text={feature.title} />
+                    </h3>
+                    {/* وصف اختياري صغير جداً إذا أردت */}
+                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">
                       <StyledBrandName text={feature.description} />
                     </p>
                   </div>
-
-                  {/* Bottom Animated Line */}
-                  <div className="absolute bottom-0 start-0 h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
                 </div>
               </motion.div>
             </RevealOnScroll>

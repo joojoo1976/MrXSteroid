@@ -7,20 +7,22 @@ import { StyledBrandName } from '../shared/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
-    <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30">
-        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tight text-zinc-500">
-            <div className="flex items-center gap-1">
-                <span className="opacity-70">{icon}</span>
-                {label}
-            </div>
-            <span className="text-zinc-900 dark:text-zinc-100">{value}%</span>
+    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50">
+        <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-500/10 rounded-lg text-zinc-500 group-hover/metric:scale-110 transition-all`}>
+            {icon}
         </div>
-        <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-            <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${value}%` }}
-                className={`h-full ${colorClass} rounded-full`}
-            />
+        <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-black uppercase tracking-tight text-zinc-500 truncate">{label}</span>
+                <span className="text-[10px] font-black text-zinc-900 dark:text-zinc-100">{value}%</span>
+            </div>
+            <div className="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${value}%` }}
+                    className={`h-full ${colorClass} rounded-full`}
+                />
+            </div>
         </div>
     </div>
 );

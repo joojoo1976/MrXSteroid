@@ -309,30 +309,42 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             </div>
                         </motion.div>
 
-                        {/* Mini Features Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <motion.div
-                                whileHover={{ y: -5 }}
-                                className="p-4 bg-background/80 border border-zinc-800 rounded-2xl shadow-xl animate-glow flex flex-row items-center gap-3"
+                                whileHover={{ scale: 1.02 }}
+                                className="group relative w-full"
                             >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center">
-                                    <BookOpen className="w-5 h-5 text-gold-500 animate-pulse" />
-                                </div>
-                                <div>
-                                    <h5 className="font-black text-lg mb-0.5 leading-none">{loc.isRTL || isRTL ? '+300 صفحة' : '300+ PAGES'}</h5>
-                                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest leading-none">{content.landingExclusiveSecrets}</p>
+                                <div className="flex items-center gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-green-500 transition-all duration-300 w-full group">
+                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-500/10 rounded-md text-green-500 group-hover:scale-110 transition-transform">
+                                        <BookOpen className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                                        <h3 className="text-sm font-bold text-white leading-tight truncate">
+                                            {loc.isRTL || isRTL ? '+300 صفحة' : '300+ PAGES'}
+                                        </h3>
+                                        <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">
+                                            {content.landingExclusiveSecrets}
+                                        </p>
+                                    </div>
                                 </div>
                             </motion.div>
+
                             <motion.div
-                                whileHover={{ y: -5 }}
-                                className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-xl animate-glow flex flex-row items-center gap-3"
+                                whileHover={{ scale: 1.02 }}
+                                className="group relative w-full"
                             >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                    <DollarSign className="w-5 h-5 text-emerald-500 animate-pulse" />
-                                </div>
-                                <div>
-                                    <h5 className="font-black text-lg mb-0.5 leading-none">{loc.isRTL || isRTL ? 'ضمان استرداد' : 'MONEY BACK'}</h5>
-                                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest leading-none">{content.landingMoneyBackGuarantee}</p>
+                                <div className="flex items-center gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-green-500 transition-all duration-300 w-full group">
+                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-500/10 rounded-md text-green-500 group-hover:scale-110 transition-transform">
+                                        <DollarSign className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                                        <h3 className="text-sm font-bold text-white leading-tight truncate">
+                                            {loc.isRTL || isRTL ? 'ضمان استرداد' : 'MONEY BACK'}
+                                        </h3>
+                                        <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">
+                                            {content.landingMoneyBackGuarantee}
+                                        </p>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>
