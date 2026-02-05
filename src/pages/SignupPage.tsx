@@ -74,7 +74,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                 setTimeout(() => navigateTo(Page.LOGIN), 5000);
             }
         } catch (error) {
-            errorHandler.handle(error, 'Signup');
+            await errorHandler.handle(error, 'Signup');
         } finally {
             setLoading(false);
         }

@@ -98,7 +98,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
       toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
       navigateTo(Page.DASHBOARD);
     } catch (error) {
-      errorHandler.handle(error, 'Login');
+      await errorHandler.handle(error, 'Login');
     } finally {
       setLoading(false);
     }
