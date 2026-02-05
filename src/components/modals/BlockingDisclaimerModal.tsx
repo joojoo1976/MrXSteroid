@@ -137,35 +137,40 @@ const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ conten
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-card flex flex-col items-center gap-4">
-                    <div className="w-full max-w-md flex gap-4">
-                        {step > 1 && (
+                <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-card flex flex-col items-center">
+                    <div className="w-full max-w-2xl flex flex-col md:flex-row gap-4">
+                        {step > 1 ? (
                             <button
                                 onClick={() => setStep(step - 1)}
-                                className="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 order-2 md:order-1"
                             >
-                                <ChevronLeft className="w-5 h-5" />
-                                {isRTL ? "السابق" : "Previous"}
-                            </button>
-                        )}
-
-                        {step < 3 ? (
-                            <button
-                                onClick={() => setStep(step + 1)}
-                                className="flex-[2] py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-lg shadow-gold-500/20 flex items-center justify-center gap-2 group transition-all"
-                            >
-                                {content.nextStepLabel}
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <ChevronLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
+                                <span>{isRTL ? "السابق" : "Previous"}</span>
                             </button>
                         ) : (
-                            <button
-                                onClick={handleAgree}
-                                className="flex-[2] py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-lg shadow-gold-500/20 active:scale-95 flex items-center justify-center gap-2 transition-all animate-shimmer bg-[linear-gradient(110deg,#eab308,45%,#fde047,55%,#eab308)] bg-[length:200%_100%]"
-                            >
-                                <ShieldCheck className="w-6 h-6" />
-                                {content.agreeButton}
-                            </button>
+                            // Placeholder to keep "Next" button on the same side or centered
+                            <div className="flex-1 hidden md:block order-2 md:order-1" />
                         )}
+
+                        <div className="flex-[2] order-1 md:order-2">
+                            {step < 3 ? (
+                                <button
+                                    onClick={() => setStep(step + 1)}
+                                    className="w-full py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-lg shadow-gold-500/20 flex items-center justify-center gap-2 group transition-all"
+                                >
+                                    <span className="whitespace-nowrap">{content.nextStepLabel}</span>
+                                    <ChevronRight className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleAgree}
+                                    className="w-full py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-lg shadow-gold-500/20 active:scale-95 flex items-center justify-center gap-2 transition-all animate-shimmer bg-[linear-gradient(110deg,#eab308,45%,#fde047,55%,#eab308)] bg-[length:200%_100%]"
+                                >
+                                    <ShieldCheck className="w-6 h-6 shrink-0" />
+                                    <span className="whitespace-nowrap">{content.agreeButton}</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </motion.div>
