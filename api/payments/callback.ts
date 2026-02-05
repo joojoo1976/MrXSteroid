@@ -140,17 +140,23 @@ async function verifyPaymentWithSpaceRemit(transactionCode: string): Promise<Spa
  * Activate user subscription after successful payment
  * تفعيل اشتراك المستخدم بعد الدفع الناجح
  */
-async function activateSubscription(userId: string, transactionId: string): Promise<boolean> {
+async function activateSubscription(userId: string, transactionId: string, planTier?: string): Promise<boolean> {
     const supabase = getSupabaseAdmin();
 
     try {
-        // Update profiles table - set subscription_status to 'active'
+        // Update profiles table
+        const updatePayload: { subscription_status: string; updated_at: string; plan_tier?: string } = {
+            subscription_status: 'active',
+            updated_at: new Date().toISOString()
+        };
+
+        if (planTier) {
+            updatePayload.plan_tier = planTier;
+        }
+
         const { error: profileError } = await supabase
             .from('profiles')
-            .update({
-                subscription_status: 'active',
-                updated_at: new Date().toISOString()
-            })
+            .update(updatePayload)
             .eq('id', userId);
 
         if (profileError) {
@@ -164,10 +170,10 @@ async function activateSubscription(userId: string, transactionId: string): Prom
             .upsert({
                 user_id: userId,
                 status: 'active',
-                product_id: 'premium',
+                product_id: planTier || 'premium',
                 current_period_start: new Date().toISOString(),
                 current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
-                metadata: { transaction_id: transactionId }
+                metadata: { transaction_id: transactionId, plan_tier: planTier }
             }, {
                 onConflict: 'user_id'
             });
@@ -197,7 +203,7 @@ async function updatePaymentRecord(
     transactionId: string,
     status: 'completed' | 'failed' | 'cancelled',
     details?: { spaceremitCode?: string; paidAt?: string; errorMessage?: string }
-): Promise<{ userId?: string; orderId?: string }> {
+): Promise<{ userId?: string; orderId?: string; metadata?: Record<string, unknown> | null }> {
     const supabase = getSupabaseAdmin();
 
     try {
@@ -220,7 +226,7 @@ async function updatePaymentRecord(
             .from('payments')
             .update(updateData)
             .eq('transaction_id', transactionId)
-            .select('user_id, order_id')
+            .select('user_id, order_id, metadata')
             .single();
 
         if (error) {
@@ -233,13 +239,13 @@ async function updatePaymentRecord(
             await supabase
                 .from('orders')
                 .update({
-                    status: status === 'completed' ? 'paid' : status,
+                    status: status === 'completed',
                     transaction_id: transactionId
                 })
                 .eq('id', data.order_id);
         }
 
-        return { userId: data?.user_id, orderId: data?.order_id };
+        return { userId: data?.user_id, orderId: data?.order_id, metadata: data?.metadata };
     } catch (error) {
         console.error('❌ Payment update failed:', error);
         return {};
@@ -278,21 +284,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const referenceId = reference_id as string || verification.data.reference;
 
                 // Update payment and get user info
-                const { userId } = await updatePaymentRecord(referenceId, 'completed', {
+                const { userId, metadata } = await updatePaymentRecord(referenceId, 'completed', {
                     spaceremitCode: SP_payment_code,
                     paidAt: verification.data.paid_at || new Date().toISOString()
                 });
 
                 // Activate subscription if user exists
                 if (userId) {
-                    await activateSubscription(userId, referenceId);
+                    const meta = metadata as Record<string, unknown>;
+                    const planTier = (meta?.tierId as string) || (meta?.plan_tier as string);
+                    await activateSubscription(userId, referenceId, planTier);
                 }
 
                 // Redirect to success page
-                return res.redirect(302, `https://mrxsteroid.vercel.app/payment-success?txn=${referenceId}`);
+                return res.redirect(302, `https://mrxsteroid.vercel.app/success?txn=${referenceId}`);
             } else {
                 // Payment verification failed
-                return res.redirect(302, `https://mrxsteroid.vercel.app/payment-cancel?error=verification_failed`);
+                return res.redirect(302, `https://mrxsteroid.vercel.app/cancel?error=verification_failed`);
             }
         }
 
@@ -338,7 +346,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 // Activate subscription
                 if (userId) {
-                    const activated = await activateSubscription(userId, transactionId);
+                    const planTier = data.metadata?.tierId as string || data.metadata?.plan_tier as string;
+                    const activated = await activateSubscription(userId, transactionId, planTier);
 
                     if (!activated) {
                         console.error('⚠️ Failed to activate subscription for user:', userId);

@@ -411,9 +411,9 @@ export default function App() {
         setCurrentPage(Page.REFUND);
       } else if (path === '/disclaimer') {
         setCurrentPage(Page.LEGAL_DISCLAIMER_PAGE);
-      } else if (path === '/success') {
+      } else if (path === '/success' || path === '/payment-success') {
         setCurrentPage(Page.PAYMENT_SUCCESS);
-      } else if (path === '/cancel') {
+      } else if (path === '/cancel' || path === '/payment-cancel') {
         setCurrentPage(Page.PAYMENT_CANCEL);
       } else if (path === '/payment-pending') {
         setCurrentPage(Page.PAYMENT_PENDING);
