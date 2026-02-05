@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { motion } from 'framer-motion';
 import { Activity, ShieldCheck, ShieldAlert, Cpu, Globe, Terminal, Copy, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { LinkageInspector, InspectionResult } from '../lib/linkage-inspector';
 
 const DiagnosticPage: React.FC = () => {
     const [status, setStatus] = useState<{
@@ -14,6 +13,7 @@ const DiagnosticPage: React.FC = () => {
         connection: 'testing' | 'success' | 'failed';
         error: string | null;
         rawError: unknown;
+        diagnosticDetails?: InspectionResult['checks'];
     }>({
         url: import.meta.env.VITE_SUPABASE_URL || 'MISSING',
         keyExists: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -32,30 +32,47 @@ const DiagnosticPage: React.FC = () => {
     const runTests = React.useCallback(async () => {
         setStatus(prev => ({ ...prev, connection: 'testing', error: null, rawError: null }));
         setLogs([]);
-        addLog('Starting diagnostic tests...');
-        addLog(`Supabase URL: ${status.url}`);
-        addLog(`Anon Key Present: ${status.keyExists}`);
-        addLog(`Anon Key Format (JWT): ${status.keyFormat}`);
+        addLog('Starting comprehensive Linkage Inspector diagnostics...');
 
         try {
-            addLog('Attempting to fetch session from Supabase...');
-            const { error } = await supabase.auth.getSession();
+            const result = await LinkageInspector.inspect('full');
 
-            if (error) {
-                addLog(`Supabase Error: ${error.message}`);
+            addLog(`Supabase URL Trace: ${result.checks.url_reachable ? 'REACHABLE' : 'UNREACHABLE'}`);
+            addLog(`API Key Trace: ${result.checks.api_key_valid ? 'VALID_FORMAT' : 'INVALID_FORMAT'}`);
+
+            if (result.checks.auth_endpoint) {
+                addLog(`Auth API: ${result.checks.auth_endpoint.status.toUpperCase()} (${result.checks.auth_endpoint.latency_ms}ms)`);
+            }
+
+            if (result.checks.database_connection) {
+                addLog(`Database: ${result.checks.database_connection.status.toUpperCase()} (${result.checks.database_connection.latency_ms}ms)`);
+            }
+
+            if (result.checks.webhook_delivery) {
+                addLog(`Webhook Simulation: ${result.checks.webhook_delivery.status.toUpperCase()} (HTTP ${result.checks.webhook_delivery.http_status_code})`);
+            }
+
+            if (!result.success) {
+                addLog(`FAILURE DETECTED: [${result.error?.code}] ${result.error?.message}`);
+                addLog(`SUGGESTION: ${result.error?.suggestion}`);
                 setStatus(prev => ({
                     ...prev,
                     connection: 'failed',
-                    error: error.message,
-                    rawError: error
+                    error: result.error?.message || 'Diagnostic failure',
+                    diagnosticDetails: result.checks,
+                    rawError: result.error
                 }));
             } else {
-                addLog('Successfully connected to Supabase Auth API.');
-                setStatus(prev => ({ ...prev, connection: 'success' }));
+                addLog('Mr. X System Linkage: OPTIMAL.');
+                setStatus(prev => ({
+                    ...prev,
+                    connection: 'success',
+                    diagnosticDetails: result.checks
+                }));
             }
         } catch (e: unknown) {
             const err = e as Error;
-            addLog(`Network/Unhandled Error: ${err.message}`);
+            addLog(`CRITICAL SYSTEM ERROR: ${err.message}`);
             setStatus(prev => ({
                 ...prev,
                 connection: 'failed',

@@ -19,6 +19,8 @@ interface AppError {
     originalError?: unknown;
 }
 
+import { LinkageInspector } from './linkage-inspector';
+
 /**
  * Global Error Handler Service
  * Provides consistent error logging and user notification.
@@ -40,16 +42,23 @@ class ErrorHandlerService {
         this.content = content;
     }
 
-    public handle(error: unknown, context: string = 'Application'): void {
+    public async handle(error: unknown, context: string = 'Application'): Promise<void> {
         const parsed = this.parseError(error);
 
         // Log to console (or external service like Sentry)
         console.error(`[${context}] ${parsed.type}:`, parsed.message, parsed.originalError);
 
+        // Proactive Diagnosis: If Auth or Network error, run inspector
+        let diagnosticSuggestion = '';
+        if (parsed.type === ErrorType.AUTH || parsed.type === ErrorType.NETWORK) {
+            const check = await LinkageInspector.quickCheckAuth();
+            if (check) diagnosticSuggestion = `\n\n[Diagnostic]: ${check}`;
+        }
+
         // Notify User
         toast.error(parsed.message, {
-            description: `Error Code: ${parsed.type}`,
-            duration: 5000,
+            description: `Error Code: ${parsed.type}${diagnosticSuggestion}`,
+            duration: diagnosticSuggestion ? 10000 : 5000,
         });
     }
 
