@@ -830,12 +830,25 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                     </div>
                     <h4 className="font-black text-3xl tracking-tight leading-none uppercase">{meal.mealName}</h4>
                   </div>
-                  <ul className="space-y-6">
+                  <ul className="space-y-4">
                     {meal.foods.map((f, fIdx) => (
-                      <li key={fIdx} className="flex flex-col gap-2 border-b-2 border-zinc-50 dark:border-zinc-800/50 pb-6 last:border-0">
-                        <span className="text-zinc-500 text-sm font-black uppercase tracking-widest opacity-60">Source #{fIdx + 1}</span>
-                        <span className="text-2xl font-black text-zinc-900 dark:text-white group-hover:text-gold-500 transition-colors tracking-tight">{f.item}</span>
-                        <span className="inline-flex w-fit px-4 py-1.5 bg-gold-500 text-black rounded-xl font-black text-sm uppercase shadow-lg">{f.amount}</span>
+                      <li key={fIdx} className="group/item">
+                        <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-gold-500/50 transition-all duration-300 w-full group">
+                          {/* Icon Container */}
+                          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-gold-500/10 rounded-md text-gold-500 group-hover:scale-110 transition-transform">
+                            <Utensils className="w-5 h-5" />
+                          </div>
+                          {/* Text Container */}
+                          <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest opacity-60 mb-0.5">Source #{fIdx + 1}</span>
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate">
+                              {f.item}
+                            </h3>
+                            <p className="text-[10px] text-gold-500 font-black mt-0.5 uppercase">
+                              {f.amount}
+                            </p>
+                          </div>
+                        </div>
                       </li>
                     ))}
                   </ul>

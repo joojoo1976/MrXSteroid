@@ -493,28 +493,34 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                     </div>
 
                     <div className="space-y-4 pt-8 border-t border-black/10 mt-auto">
-                      <div className="p-6 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group overflow-hidden">
-                        <div className="flex items-center gap-3 mb-3 shrink-0">
-                          <TrendingUp size={20} className="text-black group-hover:scale-125 transition-transform" />
-                          <span className="text-sm font-black uppercase tracking-[0.2em]">{content.halfLifeVisualizer.analysis.stabilityAdviceTitle}</span>
+                      <div className="flex items-center gap-4 p-4 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group/advice relative overflow-hidden">
+                        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-black/10 rounded-xl text-black group-hover/advice:scale-110 transition-transform">
+                          <TrendingUp size={20} />
                         </div>
-                        <p className="text-lg font-black opacity-90 leading-relaxed break-words">{simulationData.stabilityTips}</p>
+                        <div className="flex flex-col text-start rtl:text-right ltr:text-left">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60 mb-1 leading-none">{content.halfLifeVisualizer.analysis.stabilityAdviceTitle}</span>
+                          <p className="text-sm font-black text-black leading-tight break-words">{simulationData.stabilityTips}</p>
+                        </div>
                       </div>
 
-                      <div className="p-6 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group overflow-hidden">
-                        <div className="flex items-center gap-3 mb-3 shrink-0">
-                          <ShieldAlert size={20} className="text-black group-hover:scale-125 transition-transform" />
-                          <span className="text-base font-black uppercase tracking-[0.2em]">{content.halfLifeVisualizer.analysis.safetyAdviceTitle}</span>
+                      <div className="flex items-center gap-4 p-4 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group/advice relative overflow-hidden">
+                        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-black/10 rounded-xl text-black group-hover/advice:scale-110 transition-transform">
+                          <ShieldAlert size={20} />
                         </div>
-                        <p className="text-lg font-black opacity-90 leading-relaxed break-words">{simulationData.safetyTips}</p>
+                        <div className="flex flex-col text-start rtl:text-right ltr:text-left">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60 mb-1 leading-none">{content.halfLifeVisualizer.analysis.safetyAdviceTitle}</span>
+                          <p className="text-sm font-black text-black leading-tight break-words">{simulationData.safetyTips}</p>
+                        </div>
                       </div>
 
-                      <div className="p-6 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group overflow-hidden">
-                        <div className="flex items-center gap-3 mb-3 shrink-0">
-                          <RotateCcw size={20} className="text-black group-hover:scale-125 transition-transform" />
-                          <span className="text-base font-black uppercase tracking-[0.2em]">{content.hlPctAdvice}</span>
+                      <div className="flex items-center gap-4 p-4 bg-black/5 rounded-[2rem] border border-black/5 hover:bg-black/10 transition-colors group/advice relative overflow-hidden">
+                        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-black/10 rounded-xl text-black group-hover/advice:scale-110 transition-transform">
+                          <RotateCcw size={20} />
                         </div>
-                        <p className="text-lg font-black opacity-90 leading-relaxed break-words">{simulationData.pctTips}</p>
+                        <div className="flex flex-col text-start rtl:text-right ltr:text-left">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60 mb-1 leading-none">{content.hlPctAdvice}</span>
+                          <p className="text-sm font-black text-black leading-tight break-words">{simulationData.pctTips}</p>
+                        </div>
                       </div>
                     </div>
                   </div>

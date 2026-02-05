@@ -202,19 +202,27 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
 
                   {/* High/Low Explanations */}
                   <div className="flex flex-col gap-2 mb-4">
-                    <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10">
-                      <div className="flex items-center gap-1.5 mb-1 text-red-500">
-                        <AlertCircle className="w-3 h-3" />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{content.labReference.labels.high}</span>
+                    <div className="flex items-center gap-2 p-2 bg-red-500/5 border border-red-500/10 rounded-xl group/info transition-all hover:border-red-500/30">
+                      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-red-500/10 rounded-md text-red-500 group-hover/info:scale-110 transition-transform">
+                        <AlertCircle className="w-3.5 h-3.5" />
                       </div>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight"><StyledBrandName text={test.elevationMeaning} /></p>
+                      <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-red-500 leading-none mb-0.5">{content.labReference.labels.high}</span>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold leading-tight line-clamp-1">
+                          <StyledBrandName text={test.elevationMeaning} />
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
-                      <div className="flex items-center gap-1.5 mb-1 text-blue-500">
-                        <AlertCircle className="w-3 h-3" />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{content.labReference.labels.low}</span>
+                    <div className="flex items-center gap-2 p-2 bg-blue-500/5 border border-blue-500/10 rounded-xl group/info transition-all hover:border-blue-500/30">
+                      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-blue-500/10 rounded-md text-blue-500 group-hover/info:scale-110 transition-transform">
+                        <AlertCircle className="w-3.5 h-3.5" />
                       </div>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-bold leading-tight"><StyledBrandName text={test.lowMeaning} /></p>
+                      <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 leading-none mb-0.5">{content.labReference.labels.low}</span>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold leading-tight line-clamp-1">
+                          <StyledBrandName text={test.lowMeaning} />
+                        </p>
+                      </div>
                     </div>
                   </div>
 

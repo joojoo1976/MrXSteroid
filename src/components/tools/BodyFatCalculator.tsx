@@ -469,18 +469,28 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                                     </div>
 
                                     {/* Detailed Stats - Grid */}
-                                    <div className="grid grid-cols-2 gap-4 mt-8">
-                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                            <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-1">{content.bfMassLabel}</h4>
-                                            <div className="text-2xl font-black text-white">
-                                                {result.bodyFatMass} <span className="text-sm text-zinc-500">{isImperial ? 'lbs' : 'kg'}</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                                        <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 group/stat hover:border-gold-500/30 transition-all">
+                                            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gold-500/10 rounded-xl text-gold-500 group-hover/stat:scale-110 transition-transform">
+                                                <Target className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col text-start rtl:text-right ltr:text-left">
+                                                <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-0.5">{content.bfMassLabel}</h4>
+                                                <div className="text-xl font-black text-white leading-none">
+                                                    {result.bodyFatMass} <span className="text-[10px] text-zinc-500 uppercase">{isImperial ? 'lbs' : 'kg'}</span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                            <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-1">{content.bfLeanMassLabel}</h4>
-                                            <div className="text-2xl font-black text-white">
-                                                {result.leanBodyMass} <span className="text-sm text-zinc-500">{isImperial ? 'lbs' : 'kg'}</span>
+                                        <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 group/stat hover:border-gold-500/30 transition-all">
+                                            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gold-500/10 rounded-xl text-gold-500 group-hover/stat:scale-110 transition-transform">
+                                                <Activity className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col text-start rtl:text-right ltr:text-left">
+                                                <h4 className="text-[10px] font-black text-gold-400 uppercase tracking-widest mb-0.5">{content.bfLeanMassLabel}</h4>
+                                                <div className="text-xl font-black text-white leading-none">
+                                                    {result.leanBodyMass} <span className="text-[10px] text-zinc-500 uppercase">{isImperial ? 'lbs' : 'kg'}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
