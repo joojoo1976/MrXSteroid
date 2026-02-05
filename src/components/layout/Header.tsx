@@ -299,12 +299,12 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 py-1`}>
+      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 py-0.5`}>
         <Reorder.Group
           axis="x"
           values={layoutConfig.sections}
           onReorder={(newOrder) => saveLayout({ ...layoutConfig, sections: newOrder })}
-          className={`flex items-center w-full ${layoutConfig.alignment} gap-2 lg:gap-4`}
+          className={`flex items-center w-full ${layoutConfig.alignment} gap-1 lg:gap-3`}
         >
           {layoutConfig.sections.map((sectionId) => (
             <Reorder.Item

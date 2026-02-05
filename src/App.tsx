@@ -81,6 +81,7 @@ const PricingSection = React.lazy(() => import('./components/marketing/PricingSe
 const FAQ = React.lazy(() => import('./components/marketing/FAQ'));
 const ContactSection = React.lazy(() => import('./components/marketing/ContactSection'));
 const LiveSchedule = React.lazy(() => import('./components/marketing/LiveSchedule'));
+const ArabicVideoSection = React.lazy(() => import('./components/marketing/ArabicVideoSection'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
@@ -120,6 +121,15 @@ function AppContent({
   const { user, signOut } = useAuth();
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
+  // Sync ErrorHandler with localized content
+  useEffect(() => {
+    if (content) {
+      import('./lib/error-handler').then(({ errorHandler }) => {
+        errorHandler.setContent(content);
+      });
+    }
+  }, [content]);
+
   // Audio Player State (Moved here to access lang)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -131,19 +141,19 @@ function AppContent({
         ? JSON.parse(localStorage.getItem('advanced_localization_state')!).country
         : 'US';
 
-      toast(isRTL ? 'إعدادات مخصصة' : 'Smart Localization', {
-        description: isRTL
-          ? `تم ضبط اللغة والوحدات بناءً على موقعك (${countryCode})`
-          : `Language and units optimized for your region (${countryCode}).`,
+      toast(content.toastLocalizationTitle || (isRTL ? 'تخصيص ذكي' : 'Smart Localization'), {
+        description: (content.toastLocalizationDesc || (isRTL
+          ? `تم ضبط اللغة والوحدات بناءً على موقعك ({country})`
+          : `Language and units optimized for your region ({country}).`)).replace('{country}', countryCode),
         action: {
-          label: isRTL ? 'تغيير' : 'Change',
+          label: content.changeButton || (isRTL ? 'تغيير' : 'Change'),
           onClick: () => setIsPreferencesOpen(true),
         },
         duration: 5000,
         icon: <Globe className="w-4 h-4 text-gold-500" />,
       });
     }
-  }, [isAutoDetected, isRTL]);
+  }, [isAutoDetected, isRTL, content]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -231,6 +241,7 @@ function AppContent({
               <AdPlaceholder slotId="home_hero_bottom" content={content} />
             </div>
             <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin"></div></div>}>
+              {lang === Language.AR && <RevealOnScroll><ArabicVideoSection /></RevealOnScroll>}
               <RevealOnScroll><Features content={content} /></RevealOnScroll>
               <RevealOnScroll><LiveSchedule content={content} /></RevealOnScroll>
               <RevealOnScroll><TransformationTimeline content={content} /></RevealOnScroll>

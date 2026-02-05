@@ -15,62 +15,70 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
     const [openIndex, setOpenIndex] = React.useState<number | null>(0);
     const [searchTerm, setSearchTerm] = React.useState("");
 
-    const faqs = [
-        {
-            qText: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
-            q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
-            aText: isRTL
-                ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
-                : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
-            a: isRTL
-                ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
-                : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
-            category: "Safety",
-            icon: ShieldCheck
-        },
-        {
-            qText: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
-            q: isRTL
-                ? <span className="flex items-center gap-1">كيف أبدأ مع <DynamicBrandLogo inline variant="full" />؟</span>
-                : <span className="flex items-center gap-1">How do I start with <DynamicBrandLogo inline variant="full" />?</span>,
-            aText: isRTL
-                ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
-                : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
-            a: isRTL
-                ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
-                : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
-            category: "General",
-            icon: Zap
-        },
-        {
-            qText: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
-            q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
-            aText: isRTL
-                ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
-                : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
-            a: isRTL
-                ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
-                : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
-            category: "Science",
-            icon: Dna
-        },
-        {
-            qText: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
-            q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
-            aText: isRTL
-                ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
-                : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
-            a: isRTL
-                ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
-                : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
-            category: "Legal",
-            icon: FlaskConical
-        }
-    ];
+    const faqs = React.useMemo(() => {
+        const rawFaqs = content.faqsData || [
+            {
+                q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
+                a: isRTL
+                    ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
+                    : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
+                category: "Safety"
+            },
+            {
+                q: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
+                a: isRTL
+                    ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
+                    : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
+                category: "General"
+            },
+            {
+                q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
+                a: isRTL
+                    ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
+                    : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
+                category: "Science"
+            },
+            {
+                q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
+                a: isRTL
+                    ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
+                    : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
+                category: "Legal"
+            }
+        ];
+
+        return rawFaqs.map(faq => {
+            // Map categories to icons
+            let icon = HelpCircle;
+            const cat = faq.category.toLowerCase();
+            if (cat.includes('safety') || cat.includes('أمان')) icon = ShieldCheck;
+            if (cat.includes('general') || cat.includes('عام')) icon = Zap;
+            if (cat.includes('science') || cat.includes('علم')) icon = Dna;
+            if (cat.includes('legal') || cat.includes('قانون')) icon = FlaskConical;
+
+            // Handle DynamicBrandLogo injection if name is mentioned
+            const processText = (text: string) => {
+                const parts = text.split(/(Mr\. X-Steroid|مستر إكس-ستيرويد)/g);
+                return parts.map((part, i) => {
+                    if (part === "Mr. X-Steroid" || part === "مستر إكس-ستيرويد") {
+                        return <DynamicBrandLogo key={i} inline variant="full" />;
+                    }
+                    return part;
+                });
+            };
+
+            return {
+                ...faq,
+                icon,
+                qElement: processText(faq.q),
+                aElement: processText(faq.a)
+            };
+        });
+    }, [content.faqsData, isRTL]);
 
     const filteredFaqs = faqs.filter(faq =>
-        faq.qText.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        faq.aText.toLowerCase().includes(searchTerm.toLowerCase())
+        faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.a.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -105,7 +113,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                                 <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-gold-500">
                                     <faq.icon className="w-4 h-4" />
                                 </div>
-                                <h3 className="font-black text-lg uppercase tracking-tight text-white/90">{faq.q}</h3>
+                                <h3 className="font-black text-lg uppercase tracking-tight text-white/90">{faq.qElement || faq.q}</h3>
                             </div>
                             {openIndex === idx ? <Minus className="w-5 h-5 text-gold-500" /> : <Plus className="w-5 h-5 text-zinc-600" />}
                         </button>
@@ -118,7 +126,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                                     className="px-6 pb-6 pt-2"
                                 >
                                     <p className="text-zinc-500 text-lg leading-relaxed ps-12">
-                                        {faq.a}
+                                        {faq.aElement || faq.a}
                                     </p>
                                 </motion.div>
                             )}
