@@ -525,6 +525,9 @@ export const injectionSitesAr: InjectionSite[] = [
 ];
 
 export const arContent: ContentStrings = {
+    gatekeeperTitle: "بوابة الدخول",
+    gatekeeperSubtitle: "اصنع إرثك أو أثبت هويتك",
+    gatekeeperBtn: "الدخول للنظام",
     navAiTools: "أدوات مستر إكس الذكية",
     navPremiumResources: "الموارد الحصرية",
     navFeatures: "المميزات",
@@ -879,6 +882,12 @@ export const arContent: ContentStrings = {
     loginSuccess: "تم تسجيل الدخول بنجاح!",
     signupSuccess: "تم إنشاء الحساب بنجاح!",
     invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    confirmPasswordLabel: "تأكيد كلمة المرور",
+    loginLockoutMessage: "تم قفل الحساب مؤقتاً. حاول بعد {seconds} ثانية.",
+    emailPlaceholder: "mrx@example.com",
+    passwordPlaceholder: "••••••••",
+    usernamePlaceholder: "mrx123",
+    fullNamePlaceholder: "جورج موريس",
     usernameLabel: "اسم المستخدم",
     profileTitle: "ملفي الشخصي",
     benefitsTitle: "لماذا 'مستر إكس ستيرويد' هو أفضل استثمار لك؟",
@@ -945,18 +954,7 @@ export const arContent: ContentStrings = {
     aboutPageStory: "بدأت رحلتنا من ملاحظة فجوة هائلة في المحتوى العربي الرياضي، حيث كان المبتدئون يتلقون نصائحهم من مصادر غير موثوقة تؤدي في النهاية إلى أضرار صحية جسيمة. قرر جورج موريس، من خلال شخصية 'مستر إكس'، كسر هذا الصمت وتقديم أول دليل علمي شامل يجمع بين صراحة الواقع ودقة المختبر.",
     aboutPageMissionTitle: "مهمتنا: بناء جيل رياضي مثقف",
     aboutPageMission: "مهمتنا تتجاوز مجرد بيع الكتب. نحن نسعى لبناء مجتمع رياضي يدرك أن القوة الحقيقية تبدأ من المعرفة. هدفنا هو تقليل الأضرار الناتجة عن سوء استخدام الهرمونات، وتوفير الأدوات الذكية التي تساعد كل بطل على فهم جسده وإدارته كالمحترفين.",
-    contactPageTitle: "اتصل بنا",
-    contactPageSubtitle: "نحن هنا لمساعدتك والإجابة على استفساراتك",
-    contactFormNamePlaceholder: "اسمك",
-    contactFormEmailPlaceholder: "بريدك الإلكتروني",
-    contactFormMessagePlaceholder: "كيف يمكننا مساعدتك؟",
-    contactFormSubjectPlaceholder: "الموضوع",
-    contactFormSubmit: "إرسال الرسالة",
-    contactFormSuccessMessage: "تم الإرسال بنجاح! سنرد عليك قريباً.",
-    contactInfoAddress: "الإسكندرية، جمهورية مصر العربية",
-    contactInfoEmail: "support@mrxsteroid.com",
-    contactInfoPhone: "+201012345678",
-    contactInfoHours: "دعم 24/7 عبر واتساب",
+
     homeLink: "الرئيسية",
     viewOnMap: "الموقع",
     cookieTitle: "ملفات تعريف الارتباط",
@@ -1626,8 +1624,12 @@ export const arContent: ContentStrings = {
         }
     },
     // Contact Page (Branded)
-    // contactPageTitle: "الإرسال", // Duplicate removed
-    // contactPageSubtitle: "ترحيل مباشر لتحسين الدورة، الدعم الفني، والتحقق من البروتوكول. آمن، مشفر، وموثوق.", // Duplicate removed
+    contactPageTitle: "تواصل مع المصدر",
+    contactPageSubtitle: "ترحيل مباشر لتحسين الدورة، الدعم الفني، والتحقق من البروتوكول. آمن، مشفر، وموثوق.",
+    contactFormNamePlaceholder: "الاسم الرمزي",
+    contactFormEmailPlaceholder: "البريد الإلكتروني المشفر",
+    contactFormSubjectPlaceholder: "الغرض من الإشارة...",
+    contactFormMessagePlaceholder: "بيانات الإرسال المفصلة...",
     contactOperatorIdentityLabel: "هوية المشغل",
     contactSignalHashLabel: "إشارة التشفير (البريد الإلكتروني)",
     contactMissionTypeLabel: "نوع المهمة",
@@ -1639,6 +1641,9 @@ export const arContent: ContentStrings = {
     contactTransmissionReceivedTitle: "تم استلام الرسالة بأمان",
     contactTransmissionReceivedDesc: "سيقوم مركز القيادة بمعالجة إرسالك والرد خلال 24 ساعة.",
     contactTransmissionInterrupted: "تم قطع الإرسال. يرجى المحاولة مرة أخرى أو مراسلتنا عبر البريد الإلكتروني مباشرة.",
+    contactSocialInstagram: "إنستغرام",
+    contactSocialTwitter: "إكس (تويتر)",
+    contactSocialYoutube: "يوتيوب",
     contactDirectSecureLine: "خط اتصال مباشر آمن",
     contactSupportCommandCenter: "مركز قيادة الدعم",
     contactLeadArchitectLabel: "معماري البروتوكول الرئيسي",

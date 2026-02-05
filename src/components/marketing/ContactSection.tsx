@@ -40,35 +40,19 @@ import {
     SelectValue
 } from '../ui/select';
 
-// --- Zod Schema ---
-const contactSchema = z.object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
+// --- Base Schema for Types ---
+const _baseSchema = z.object({
+    name: z.string(),
+    email: z.string().email(),
     topic: z.enum(['general', 'order', 'technical', 'wholesale', 'consultation']),
-    subject: z.string().min(5, { message: "Subject must be at least 5 characters" }),
-    message: z.string().min(10, { message: "Message must be at least 10 characters" }),
+    subject: z.string(),
+    message: z.string(),
     orderId: z.string().optional(),
-    honeypot: z.string().optional(), // Bot protection
+    honeypot: z.string().optional(),
     disclaimerAccepted: z.boolean().optional(),
-}).refine((data) => {
-    if (data.topic === 'order' && !data.orderId) {
-        return false;
-    }
-    return true;
-}, {
-    message: "Order ID is required for order inquiries",
-    path: ["orderId"],
-}).refine((data) => {
-    if (data.topic === 'consultation' && !data.disclaimerAccepted) {
-        return false;
-    }
-    return true;
-}, {
-    message: "You must accept the medical disclaimer for consultations",
-    path: ["disclaimerAccepted"],
 });
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type ContactFormData = z.infer<typeof _baseSchema>;
 
 interface ContactSectionProps {
     content: ContentStrings;
@@ -80,6 +64,33 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [copiedEmail, setCopiedEmail] = useState(false);
 
+    const localizedSchema = React.useMemo(() => z.object({
+        name: z.string().min(2, { message: content.contactErrorName || "Name must be at least 2 characters" }),
+        email: z.string().email({ message: content.contactErrorEmail || "Invalid email address" }),
+        topic: z.enum(['general', 'order', 'technical', 'wholesale', 'consultation']),
+        subject: z.string().min(5, { message: content.contactErrorSubject || "Subject must be at least 5 characters" }),
+        message: z.string().min(10, { message: content.contactErrorMessage || "Message must be at least 10 characters" }),
+        orderId: z.string().optional(),
+        honeypot: z.string().optional(),
+        disclaimerAccepted: z.boolean().optional(),
+    }).refine((data) => {
+        if (data.topic === 'order' && !data.orderId) {
+            return false;
+        }
+        return true;
+    }, {
+        message: content.contactErrorOrderId || "Order ID is required for order inquiries",
+        path: ["orderId"],
+    }).refine((data) => {
+        if (data.topic === 'consultation' && !data.disclaimerAccepted) {
+            return false;
+        }
+        return true;
+    }, {
+        message: content.contactErrorDisclaimer || "You must accept the medical disclaimer for consultations",
+        path: ["disclaimerAccepted"],
+    }), [content]);
+
     const {
         register,
         handleSubmit,
@@ -88,7 +99,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
         reset,
         formState: { errors }
     } = useForm<ContactFormData>({
-        resolver: zodResolver(contactSchema),
+        resolver: zodResolver(localizedSchema),
         defaultValues: {
             topic: 'general',
             disclaimerAccepted: false,
@@ -137,7 +148,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
     };
 
     return (
-        <section id="contact" className={`py-20 bg-[#050505] relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <section id="contact" className={`py-10 bg-[#050505] relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
             {/* Mesh Gradient Background */}
             <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-[-10%] start-[-10%] w-[40%] h-[40%] bg-gold-500/20 blur-[120px] rounded-full animate-float-slow"></div>
@@ -145,35 +156,45 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16">
+                <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6">
 
                     {/* Left Side: Intel & Direct Channels */}
                     <motion.div
                         initial={{ opacity: 0, x: isRTL ? 30 : -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="flex-1 space-y-12"
+                        className="flex-1 space-y-4"
                     >
                         <div>
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                className="inline-flex items-center gap-2 px-3 py-1 bg-gold-500/10 text-gold-500 rounded-full text-xs font-black uppercase tracking-[0.3em] mb-6 border border-gold-500/20"
+                                className="inline-flex items-center gap-2 px-3 py-1 bg-gold-500/10 text-gold-500 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-4 border border-gold-500/20"
                             >
                                 <Zap className="w-3 h-3 animate-pulse" /> {content.contactSupportCommandCenter || "Support Command Center"}
                             </motion.div>
-                            <h2 className="text-4xl md:text-6xl font-black mb-6 text-white tracking-tighter leading-none">
-                                {isRTL ? <StyledBrandName text={"اتصالات الـ " + "Mr. X"} /> : <span className="flex items-center gap-3">Contact the <DynamicBrandLogo inline variant="short" /> Source</span>}
+                            <h2 className="text-xl md:text-2xl font-black mb-4 text-white tracking-tighter leading-tight flex items-center flex-wrap gap-2">
+                                {isRTL ? (
+                                    <>
+                                        <StyledBrandName text={content.contactPageTitle || "تواصل مع المصدر"} />
+                                        <span className="text-zinc-500 mx-1">/</span>
+                                        <DynamicBrandLogo inline variant="short" />
+                                    </>
+                                ) : (
+                                    <>
+                                        {content.contactPageTitle || "Contact the"} <DynamicBrandLogo inline variant="short" /> Source
+                                    </>
+                                )}
                             </h2>
-                            <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg">
+                            <p className="text-lg text-zinc-400 font-medium leading-relaxed max-w-lg">
                                 {content.contactPageSubtitle || "Direct relay for cycle optimization, technical support, and protocol verification. Secure, encrypted, and authoritative."}
                             </p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {/* Direct Email Card */}
                             <motion.div
-                                whileHover={{ scale: 1.05 }}
+                                whileHover={{ scale: 1.02 }}
                                 className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl backdrop-blur-xl relative overflow-hidden group hover:border-gold-500/30 hover:shadow-[0_0_15px_rgba(234,179,8,0.1)] transition-all"
                             >
                                 <div className="absolute inset-0 bg-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -184,48 +205,48 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
-                                            <p className="text-base font-bold text-white tracking-tight leading-none">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
+                                            <p className="text-sm font-bold text-white tracking-tight leading-none">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => copyToClipboard(content.contactInfoEmail || 'support@mrxsteroid.com')}
                                         className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors hover:bg-gold-500 hover:text-black"
                                     >
-                                        {copiedEmail ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                        {copiedEmail ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                                     </button>
                                 </div>
                             </motion.div>
 
                             {/* Author Info */}
-                            <div className="flex items-center gap-4 p-4 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-2xl">
-                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold-500/30">
+                            <div className="flex items-center gap-4 p-3 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-2xl">
+                                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gold-500/30">
                                     <img src="/author-small.jpg" alt="George Mourice" className="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <p className="text-white font-black text-base leading-tight">{content.authorName || 'George Mourice'}</p>
-                                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-tight">{isRTL ? 'معماري البروتوكول الرئيسي' : 'Lead Protocol Architect'}</p>
+                                    <p className="text-white font-black text-sm leading-tight">{content.authorName || 'George Mourice'}</p>
+                                    <p className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest leading-tight">{content.contactLeadArchitectLabel || (isRTL ? 'معماري البروتوكول الرئيسي' : 'Lead Protocol Architect')}</p>
                                     <div className="flex items-center gap-1.5 mt-1">
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                        <span className="text-[9px] text-green-500 font-black uppercase tracking-widest">In Command / 24h Relay</span>
+                                        <span className="text-[8px] text-green-500 font-black uppercase tracking-widest">{content.contactRelayActiveLabel || (isRTL ? 'في القيادة / تتابع 24 ساعة' : 'In Command / 24h Relay')}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Social Grid */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-3 gap-3">
                                 {[
-                                    { icon: Instagram, label: 'Instagram', color: 'hover:text-pink-500' },
-                                    { icon: Twitter, label: 'X (Twitter)', color: 'hover:text-blue-400' },
-                                    { icon: Youtube, label: 'YouTube', color: 'hover:text-red-500' }
+                                    { icon: Instagram, label: content.contactSocialInstagram || 'Instagram', color: 'hover:text-pink-500' },
+                                    { icon: Twitter, label: content.contactSocialTwitter || 'X (Twitter)', color: 'hover:text-blue-400' },
+                                    { icon: Youtube, label: content.contactSocialYoutube || 'YouTube', color: 'hover:text-red-500' }
                                 ].map((social, i) => (
                                     <motion.a
                                         key={i}
                                         href="#"
                                         whileHover={{ scale: 1.05, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
-                                        className="flex flex-row items-center justify-center gap-2 p-2 bg-zinc-900/50 border border-zinc-800 rounded-lg transition-all hover:border-gold-500/30 hover:shadow-[0_0_10px_rgba(234,179,8,0.1)] group"
+                                        className="flex flex-row items-center justify-center gap-2 p-1.5 bg-zinc-900/50 border border-zinc-800 rounded-lg transition-all hover:border-gold-500/30 hover:shadow-[0_0_10px_rgba(234,179,8,0.1)] group"
                                     >
-                                        <social.icon className={`w-3.5 h-3.5 text-zinc-400 ${social.color} transition-colors group-hover:text-gold-500`} />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{social.label}</span>
+                                        <social.icon className={`w-3 h-3 text-zinc-400 ${social.color} transition-colors group-hover:text-gold-500`} />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{social.label}</span>
                                     </motion.a>
                                 ))}
                             </div>
@@ -239,15 +260,15 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                         viewport={{ once: true }}
                         className="flex-1"
                     >
-                        <div className="bg-zinc-900/50 border-2 border-zinc-800 p-8 md:p-10 rounded-[2.5rem] backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                        <div className="bg-zinc-900/50 border-2 border-zinc-800 p-4 md:p-5 rounded-[1.25rem] backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden">
                             {/* Form Status Header */}
-                            <div className="flex items-center justify-between mb-8 pb-8 border-b border-zinc-800">
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-zinc-800">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-3 h-3 rounded-full bg-gold-500 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
-                                    <h3 className="text-white font-black uppercase tracking-[0.2em] text-sm">Transmission Protocol</h3>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gold-500 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
+                                    <h3 className="text-white font-black uppercase tracking-[0.2em] text-xs">Transmission Protocol</h3>
                                 </div>
-                                <div className="flex items-center gap-2 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                                    <ShieldCheck className="w-4 h-4 text-gold-500/50" />
+                                <div className="flex items-center gap-2 text-zinc-500 text-[9px] font-black uppercase tracking-widest">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-gold-500/50" />
                                     E2E Encrypted
                                 </div>
                             </div>
@@ -258,73 +279,73 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
-                                        className="py-12 flex flex-col items-center text-center space-y-6"
+                                        className="py-10 flex flex-col items-center text-center space-y-6"
                                     >
-                                        <div className="w-24 h-24 bg-gold-500/10 rounded-full flex items-center justify-center border-4 border-gold-500/20">
-                                            <CheckCircle2 className="w-12 h-12 text-gold-500" />
+                                        <div className="w-20 h-20 bg-gold-500/10 rounded-full flex items-center justify-center border-4 border-gold-500/20">
+                                            <CheckCircle2 className="w-10 h-10 text-gold-500" />
                                         </div>
                                         <div>
-                                            <h4 className="text-3xl font-black text-white mb-2">{content.contactTransmissionReceivedTitle || "Message Securely Received"}</h4>
-                                            <p className="text-zinc-400 font-medium">{content.contactTransmissionReceivedDesc || "The Command Center will process your transmission and respond within the next 24-hour cycle."}</p>
+                                            <h4 className="text-2xl font-black text-white mb-2">{content.contactTransmissionReceivedTitle || "Message Securely Received"}</h4>
+                                            <p className="text-zinc-400 text-sm font-medium">{content.contactTransmissionReceivedDesc || "The Command Center will process your transmission and respond within the next 24-hour cycle."}</p>
                                         </div>
                                         <Button
                                             variant="outline"
-                                            className="border-zinc-800 text-zinc-400 hover:text-white"
+                                            className="border-zinc-800 text-zinc-400 hover:text-white h-10 px-6 rounded-xl"
                                             onClick={() => setIsSubmitted(false)}
                                         >
                                             {content.contactExecuteTransmissionBtn || "New Transmission"}
                                         </Button>
                                     </motion.div>
                                 ) : (
-                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                         {/* Honey Pot (Invisible) */}
                                         <input type="text" {...register('honeypot')} className="hidden" />
 
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactOperatorIdentityLabel}</label>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactOperatorIdentityLabel}</label>
                                                 <Input
                                                     placeholder={content.contactFormNamePlaceholder || "Your Name"}
-                                                    className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.name ? 'border-red-500/50' : ''}`}
+                                                    className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl h-11 text-sm ${errors.name ? 'border-red-500/50' : ''}`}
                                                     {...register('name')}
                                                 />
-                                                {errors.name && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.name.message}</p>}
+                                                {errors.name && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 px-1">{errors.name.message}</p>}
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactSignalHashLabel}</label>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactSignalHashLabel}</label>
                                                 <Input
-                                                    placeholder="example@secure.com"
-                                                    className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.email ? 'border-red-500/50' : ''}`}
+                                                    placeholder={content.contactFormEmailPlaceholder || "example@secure.com"}
+                                                    className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl h-11 text-sm ${errors.email ? 'border-red-500/50' : ''}`}
                                                     {...register('email')}
                                                 />
-                                                {errors.email && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.email.message}</p>}
+                                                {errors.email && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 px-1">{errors.email.message}</p>}
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionTypeLabel}</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionTypeLabel}</label>
                                             <Select
                                                 onValueChange={(value) => setValue('topic', value as ContactFormData['topic'])}
                                                 defaultValue="general"
                                             >
-                                                <SelectTrigger className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-gold-500 transition-all rounded-2xl h-14 px-4">
-                                                    <SelectValue placeholder="Select Topic" />
+                                                <SelectTrigger className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-gold-500 transition-all rounded-xl h-11 px-4 text-sm">
+                                                    <SelectValue placeholder={content.contactSelectTopicPlaceholder || "Select Topic"} />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white rounded-2xl">
-                                                    <SelectItem value="general" className="rounded-xl flex items-center gap-2">
-                                                        <MessageSquare className="w-4 h-4 inline me-2" /> General Inquiry
+                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white rounded-xl">
+                                                    <SelectItem value="general" className="rounded-lg flex items-center gap-2 text-sm">
+                                                        <MessageSquare className="w-3.5 h-3.5 inline me-2" /> {content.contactTopicGeneral || "General Inquiry"}
                                                     </SelectItem>
-                                                    <SelectItem value="order" className="rounded-xl flex items-center gap-2">
-                                                        <Package className="w-4 h-4 inline me-2" /> Order Issue/Status
+                                                    <SelectItem value="order" className="rounded-lg flex items-center gap-2 text-sm">
+                                                        <Package className="w-3.5 h-3.5 inline me-2" /> {content.contactTopicOrder || "Order Issue/Status"}
                                                     </SelectItem>
-                                                    <SelectItem value="technical" className="rounded-xl flex items-center gap-2">
-                                                        <Wrench className="w-4 h-4 inline me-2" /> Technical Assistance
+                                                    <SelectItem value="technical" className="rounded-lg flex items-center gap-2 text-sm">
+                                                        <Wrench className="w-3.5 h-3.5 inline me-2" /> {content.contactTopicTechnical || "Technical Assistance"}
                                                     </SelectItem>
-                                                    <SelectItem value="wholesale" className="rounded-xl flex items-center gap-2">
-                                                        <Building2 className="w-4 h-4 inline me-2" /> Business/Partnership
+                                                    <SelectItem value="wholesale" className="rounded-lg flex items-center gap-2 text-sm">
+                                                        <Building2 className="w-3.5 h-3.5 inline me-2" /> {content.contactTopicWholesale || "Business/Partnership"}
                                                     </SelectItem>
-                                                    <SelectItem value="consultation" className="rounded-xl flex items-center gap-2">
-                                                        <Stethoscope className="w-4 h-4 inline me-2" /> Cycle Consultation
+                                                    <SelectItem value="consultation" className="rounded-lg flex items-center gap-2 text-sm">
+                                                        <Stethoscope className="w-3.5 h-3.5 inline me-2" /> {content.contactTopicConsultation || "Cycle Consultation"}
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -337,38 +358,38 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                                     initial={{ opacity: 0, height: 0 }}
                                                     animate={{ opacity: 1, height: 'auto' }}
                                                     exit={{ opacity: 0, height: 0 }}
-                                                    className="space-y-2"
+                                                    className="space-y-1.5"
                                                 >
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionReferenceLabel}</label>
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionReferenceLabel}</label>
                                                     <Input
                                                         placeholder="#MRX-XXXXXX"
-                                                        className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.orderId ? 'border-red-500/50' : ''}`}
+                                                        className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl h-11 text-sm ${errors.orderId ? 'border-red-500/50' : ''}`}
                                                         {...register('orderId')}
                                                     />
-                                                    {errors.orderId && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.orderId.message}</p>}
+                                                    {errors.orderId && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 px-1">{errors.orderId.message}</p>}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
 
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionHeaderLabel}</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionHeaderLabel}</label>
                                             <Input
                                                 placeholder="Purpose of signal..."
-                                                className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl h-14 ${errors.subject ? 'border-red-500/50' : ''}`}
+                                                className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl h-11 text-sm ${errors.subject ? 'border-red-500/50' : ''}`}
                                                 {...register('subject')}
                                             />
-                                            {errors.subject && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.subject.message}</p>}
+                                            {errors.subject && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 px-1">{errors.subject.message}</p>}
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionPayloadLabel}</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactMissionPayloadLabel}</label>
                                             <Textarea
-                                                placeholder="Detailed transmission data..."
-                                                rows={5}
-                                                className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-2xl p-4 resize-none ${errors.message ? 'border-red-500/50' : ''}`}
+                                                placeholder={content.contactFormMessagePlaceholder || "Detailed transmission data..."}
+                                                rows={3}
+                                                className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl p-3 resize-none text-sm min-h-[80px] ${errors.message ? 'border-red-500/50' : ''}`}
                                                 {...register('message')}
                                             />
-                                            {errors.message && <p className="text-[10px] text-red-500 font-bold uppercase mt-1 px-1">{errors.message.message}</p>}
+                                            {errors.message && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 px-1">{errors.message.message}</p>}
                                         </div>
 
                                         {/* Conditional Field: Medical Disclaimer */}
@@ -378,26 +399,26 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     exit={{ opacity: 0, y: 10 }}
-                                                    className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl space-y-3"
+                                                    className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-2"
                                                 >
-                                                    <div className="flex items-start gap-3">
-                                                        <Info className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                                                        <div className="text-[11px] text-zinc-400 font-medium leading-relaxed">
-                                                            Consultations are for informational purposes only. I am not a medical professional. By proceeding, you acknowledge that you are responsible for your own health decisions and have read the <span className="text-orange-500 font-bold underline cursor-pointer">Medical Disclaimer</span>.
+                                                    <div className="flex items-start gap-2">
+                                                        <Info className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                                        <div className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                                                            {content.contactMedicalDisclaimerTitle || "Consultations are for informational purposes only. I am not a medical professional. By proceeding, you acknowledge that you are responsible for your own health decisions and have read the Medical Disclaimer."}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 px-1">
                                                         <input
                                                             type="checkbox"
                                                             id="disclaimer"
-                                                            className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-gold-500 focus:ring-gold-500"
+                                                            className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-800 text-gold-500 focus:ring-gold-500"
                                                             onChange={(e) => setValue('disclaimerAccepted', e.target.checked)}
                                                         />
-                                                        <label htmlFor="disclaimer" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer">
-                                                            I accept the protocol risks & terms
+                                                        <label htmlFor="disclaimer" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer">
+                                                            {content.contactMedicalDisclaimerCheckbox || "I accept the protocol risks & terms"}
                                                         </label>
                                                     </div>
-                                                    {errors.disclaimerAccepted && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.disclaimerAccepted.message}</p>}
+                                                    {errors.disclaimerAccepted && <p className="text-[9px] text-red-500 font-bold uppercase px-1">{errors.disclaimerAccepted.message}</p>}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
@@ -407,16 +428,16 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                             disabled={isSubmitting}
                                             whileHover={{ scale: 1.01 }}
                                             whileTap={{ scale: 0.98 }}
-                                            className="w-full h-16 bg-gold-500 text-black font-black text-lg rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.3)] hover:shadow-[0_15px_40px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
+                                            className="w-full h-12 bg-gold-500 text-black font-black text-base rounded-xl shadow-[0_5px_15px_rgba(212,175,55,0.2)] hover:shadow-[0_10px_25px_rgba(212,175,55,0.3)] transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
                                         >
                                             {isSubmitting ? (
                                                 <span className="flex items-center gap-2">
-                                                    <Zap className="w-5 h-5 animate-spin" />
+                                                    <Zap className="w-4 h-4 animate-spin" />
                                                     {content.contactSynchronizingBtn}
                                                 </span>
                                             ) : (
                                                 <>
-                                                    <Send className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+                                                    <Send className={`w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
                                                     {content.contactExecuteTransmissionBtn}
                                                 </>
                                             )}
@@ -432,20 +453,20 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                 </div>
 
                 {/* Technical Footer */}
-                <div className="mt-16 flex flex-col md:flex-row justify-between items-center gap-6 opacity-30 border-t border-zinc-800 pt-8">
+                <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6 opacity-30 border-t border-zinc-800 pt-6">
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Response: ~24hrs</span>
+                            <Clock className="w-3.5 h-3.5" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">{content.contactResponseTimeLabel || "Response: ~24hrs"}</span>
                         </div>
                         <div className="w-1 h-1 bg-zinc-700 rounded-full"></div>
                         <div className="flex items-center gap-2">
-                            <Globe className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Relay Active</span>
+                            <Globe className="w-3.5 h-3.5" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">{content.contactGlobalRelayLabel || "Global Relay Active"}</span>
                         </div>
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                        System Status: 100% Operational // Encryption: AES-256
+                    <div className="text-[10px] font-mono text-zinc-500 text-center md:text-right">
+                        {content.contactSystemStatusLabel || "System Status: 100% Operational // Encryption: AES-256"}
                     </div>
                 </div>
             </div>
