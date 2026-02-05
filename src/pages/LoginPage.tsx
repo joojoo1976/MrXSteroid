@@ -30,9 +30,8 @@ interface LoginPageProps {
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 30000; // 30 seconds
 
-const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
   const { isRTL } = usePreferences();
-  // Using content to satisfy lint
 
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -120,8 +119,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
             <Lock className="w-4 h-4 text-gold-500" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight leading-none mb-0.5">Gatekeeper</h1>
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-none">Access Terminal</p>
+            <h1 className="text-xl font-black text-white tracking-tight leading-none mb-0.5">{content.gatekeeperTitle || 'Gatekeeper'}</h1>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-none">{content.gatekeeperSubtitle || 'Create your legacy or identify yourself.'}</p>
           </div>
         </div>
 
@@ -130,9 +129,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-xs font-bold">
-              {isRTL
-                ? `تم قفل الحساب مؤقتاً. حاول بعد ${lockoutTimer} ثانية.`
-                : `Account locked. Retry in ${lockoutTimer}s.`}
+              {content.loginLockoutMessage
+                ? content.loginLockoutMessage.replace('{seconds}', lockoutTimer.toString())
+                : (isRTL
+                  ? `تم قفل الحساب مؤقتاً. حاول بعد ${lockoutTimer} ثانية.`
+                  : `Account locked. Retry in ${lockoutTimer}s.`)}
             </p>
           </div>
         )}
@@ -145,7 +146,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
               name="email"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</FormLabel>
+                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">
+                    {content.emailLabel || (isRTL ? 'البريد الإلكتروني' : 'Email Address')}
+                  </FormLabel>
                   <FormControl>
                     <div className="relative group">
                       <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
@@ -153,7 +156,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
                         {...field}
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-10 text-sm ${isRTL ? 'pe-10' : 'ps-10'} transition-all`}
-                        placeholder="john@example.com"
+                        placeholder={content.emailPlaceholder || "john@example.com"}
                       />
                     </div>
                   </FormControl>
@@ -167,7 +170,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">{isRTL ? 'كلمة المرور' : 'Password'}</FormLabel>
+                  <FormLabel className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ms-1">
+                    {content.passwordLabel || (isRTL ? 'كلمة المرور' : 'Password')}
+                  </FormLabel>
                   <FormControl>
                     <div className="relative group">
                       <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-4 h-4 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
@@ -176,7 +181,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
                         type="password"
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-10 text-sm ${isRTL ? 'pe-10' : 'ps-10'} transition-all`}
-                        placeholder="••••••••"
+                        placeholder={content.passwordPlaceholder || "••••••••"}
                       />
                     </div>
                   </FormControl>
@@ -192,7 +197,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content: _content, navigateTo }) 
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
-                  {isRTL ? 'الدخول للنظام' : 'Access Terminal'}
+                  {content.gatekeeperBtn || (isRTL ? 'الدخول للنظام' : 'Access Terminal')}
                   <ArrowRight className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
                 </>
               )}

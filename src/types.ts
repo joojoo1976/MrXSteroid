@@ -306,9 +306,18 @@ export interface CycleArchitectContent {
 
 export interface ContentStrings {
   // Auth
+  gatekeeperTitle?: string;
+  gatekeeperSubtitle?: string;
+  gatekeeperBtn?: string;
   loginSuccess?: string;
   signupSuccess?: string;
   invalidCredentials?: string;
+  confirmPasswordLabel?: string;
+  loginLockoutMessage?: string;
+  emailPlaceholder?: string;
+  passwordPlaceholder?: string;
+  usernamePlaceholder?: string;
+  fullNamePlaceholder?: string;
   logout?: string; // Add logout here
   welcomeUser?: string; // Optional: for 'Welcome, User'
   forgotPassword?: string;
@@ -595,6 +604,9 @@ export interface ContentStrings {
   contactTransmissionReceivedTitle?: string;
   contactTransmissionReceivedDesc?: string;
   contactTransmissionInterrupted?: string;
+  contactSocialInstagram?: string;
+  contactSocialTwitter?: string;
+  contactSocialYoutube?: string;
   contactDirectSecureLine?: string;
   contactSupportCommandCenter?: string;
   contactLeadArchitectLabel?: string;

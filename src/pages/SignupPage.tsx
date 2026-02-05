@@ -144,7 +144,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             <CardTitle className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">{content.signupTitle}</CardTitle>
                         </div>
                         <CardDescription className="text-zinc-500 font-medium text-xs">
-                            {content.navAiTools}
+                            {content.gatekeeperSubtitle || (isRTL ? "اصنع إرثك أو أثبت هويتك" : "Create your legacy or identify yourself.")}
                         </CardDescription>
                     </CardHeader>
 
@@ -157,7 +157,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.nameLabel}
+                                                {content.nameLabel || (isRTL ? "الاسم الكامل" : "Full Name")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -166,7 +166,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         {...field}
                                                         disabled={loading}
                                                         className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder="John Doe"
+                                                        placeholder={content.fullNamePlaceholder || "John Doe"}
                                                     />
                                                 </div>
                                             </FormControl>
@@ -181,7 +181,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.usernameLabel}
+                                                {content.usernameLabel || (isRTL ? "اسم المستخدم" : "Username")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -190,7 +190,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         {...field}
                                                         disabled={loading}
                                                         className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder="johndoe123"
+                                                        placeholder={content.usernamePlaceholder || "johndoe123"}
                                                     />
                                                 </div>
                                             </FormControl>
@@ -205,7 +205,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.emailLabel}
+                                                {content.emailLabel || (isRTL ? "البريد الإلكتروني" : "Email Address")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -215,7 +215,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         type="email"
                                                         disabled={loading}
                                                         className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder="name@example.com"
+                                                        placeholder={content.emailPlaceholder || "name@example.com"}
                                                     />
                                                 </div>
                                             </FormControl>
@@ -230,7 +230,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.passwordLabel}
+                                                {content.passwordLabel || (isRTL ? "كلمة المرور" : "Password")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -240,7 +240,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         type="password"
                                                         disabled={loading}
                                                         className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder="••••••••"
+                                                        placeholder={content.passwordPlaceholder || "••••••••"}
                                                     />
                                                 </div>
                                             </FormControl>
@@ -255,7 +255,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {isRTL ? "تأكيد كلمة المرور" : "Confirm Password"}
+                                                {content.confirmPasswordLabel || (isRTL ? "تأكيد كلمة المرور" : "Confirm Password")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -265,7 +265,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         type="password"
                                                         disabled={loading}
                                                         className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder="••••••••"
+                                                        placeholder={content.passwordPlaceholder || "••••••••"}
                                                     />
                                                 </div>
                                             </FormControl>
