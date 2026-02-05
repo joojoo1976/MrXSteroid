@@ -1,5 +1,6 @@
 
 import { toast } from 'sonner';
+import { ContentStrings } from '../types';
 
 /**
  * Enterprise Error Classification
@@ -24,6 +25,7 @@ interface AppError {
  */
 class ErrorHandlerService {
     private static instance: ErrorHandlerService;
+    private content: ContentStrings | null = null;
 
     private constructor() { }
 
@@ -32,6 +34,10 @@ class ErrorHandlerService {
             ErrorHandlerService.instance = new ErrorHandlerService();
         }
         return ErrorHandlerService.instance;
+    }
+
+    public setContent(content: ContentStrings): void {
+        this.content = content;
     }
 
     public handle(error: unknown, context: string = 'Application'): void {
@@ -52,16 +58,16 @@ class ErrorHandlerService {
         console.error("ErrorHandler caught raw error:", error);
 
         // Standard message for generic failures
-        const DEFAULT_MSG = 'An unexpected error occurred.';
+        const DEFAULT_MSG = this.content?.errorUnknown || 'An unexpected error occurred.';
 
         // 2. Handle standard Error objects (extracting non-enumerable props like message)
         if (error instanceof Error) {
             const msg = error.message || DEFAULT_MSG;
             if (msg.includes('fetch') || msg.includes('network')) {
-                return { type: ErrorType.NETWORK, message: 'Connection issue. Please check your internet.', originalError: error };
+                return { type: ErrorType.NETWORK, message: this.content?.errorNetwork || 'Connection issue. Please check your internet.', originalError: error };
             }
             if (msg.includes('payment') || msg.includes('decline')) {
-                return { type: ErrorType.PAYMENT, message: 'Payment failed. Please check your card details.', originalError: error };
+                return { type: ErrorType.PAYMENT, message: this.content?.errorPayment || 'Payment failed. Please check your card details.', originalError: error };
             }
             return { type: ErrorType.UNKNOWN, message: msg, originalError: error };
         }
@@ -117,11 +123,16 @@ class ErrorHandlerService {
             // Detect Network issues in strings
             const lowerMsg = messageStr.toLowerCase();
             if (lowerMsg.includes('network') || lowerMsg.includes('fetch') || lowerMsg.includes('failed to fetch')) {
-                return { type: ErrorType.NETWORK, message: 'Network error. Verify your connection.', originalError: error };
+                return { type: ErrorType.NETWORK, message: this.content?.errorNetwork || 'Network error. Verify your connection.', originalError: error };
             }
 
             // Decide on Error Type
             const type = (errObj['status'] || errObj['code'] || lowerMsg.includes('auth')) ? ErrorType.AUTH : ErrorType.UNKNOWN;
+
+            // Localize generic auth error if message is not helpful
+            if (type === ErrorType.AUTH && messageStr === DEFAULT_MSG) {
+                messageStr = this.content?.errorAuth || 'Authentication failed. Access denied.';
+            }
 
             return { type, message: messageStr, originalError: error };
         }

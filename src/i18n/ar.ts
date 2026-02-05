@@ -598,6 +598,9 @@ export const arContent: ContentStrings = {
     ],
     testimonialsTitle: "ماذا يقول القراء",
     faqTitle: "الأسئلة الشائعة",
+    toastLocalizationTitle: "تخصيص ذكي",
+    toastLocalizationDesc: "تم ضبط اللغة والوحدات بناءً على موقعك ({country})",
+    changeButton: "تغيير",
     faqSubtitle: "إجابات مباشرة على أكثر الاستفسارات شيوعاً",
     faqSearchPlaceholder: "ابحث عن سؤال...",
     faqCategories: { all: "الكل", safety: "السلامة", general: "عام", legal: "قانوني", women: "السيدات", strategy: "استراتيجية" },
@@ -1635,6 +1638,12 @@ export const arContent: ContentStrings = {
     contactMissionTypeLabel: "نوع المهمة",
     contactTransmissionReferenceLabel: "مرجع الإرسال (رقم الطلب)",
     contactTransmissionHeaderLabel: "عنوان الإرسال",
+    toastLocalizationTitle: "تخصيص ذكي",
+    toastLocalizationDesc: "تم ضبط اللغة والوحدات بناءً على موقعك ({country}).",
+    errorNetwork: "مشكلة في الاتصال. يرجى التحقق من الإنترنت.",
+    errorPayment: "فشل الدفع. يرجى التحقق من تفاصيل البطاقة.",
+    errorAuth: "فشل المصادقة. تم رفض الوصول.",
+    errorUnknown: "حدث خطأ غير متوقع.",
     contactMissionPayloadLabel: "حمولة المهمة (الرسالة)",
     contactExecuteTransmissionBtn: "تنفيذ الإرسال",
     contactSynchronizingBtn: "جاري المزامنة...",
@@ -1668,4 +1677,40 @@ export const arContent: ContentStrings = {
     contactErrorMessage: "يجب أن تتكون الرسالة من 10 أحرف على الأقل",
     contactErrorOrderId: "رقم الطلب مطلوب للاستفسارات المتعلقة بالطلبات",
     contactErrorDisclaimer: "يجب عليك قبول إخلاء المسؤولية الطبي للاستشارات",
+    aboutValueSafety: "الأمان",
+    aboutValueScience: "العلم",
+    aboutValueExcellence: "التميز",
+    aboutValueCommunity: "المجتمع",
+    faqsData: [
+        {
+            q: "هل استخدام الهرمونات آمن بنسبة 100%؟",
+            a: "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية.",
+            category: "الأمان"
+        },
+        {
+            q: "كيف أبدأ مع مستر إكس-ستيرويد؟",
+            a: "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول.",
+            category: "عام"
+        },
+        {
+            q: "ما هو الجهد الجيني؟",
+            a: "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد.",
+            category: "العلم"
+        },
+        {
+            q: "ما هي سياسة الخصوصية للمشتركين؟",
+            a: "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف.",
+            category: "قانوني"
+        }
+    ],
+    returnPolicyExchangeAllowed: "مسموح بالاستبدال",
+    returnPolicyExchangeReason1: "إذا وصل المنتج تالفاً أو ناقصاً.",
+    returnPolicyExchangeReason2: "إذا كان هناك خطأ في نوع المنتج المرسل.",
+    returnPolicyExchangeReason3: "خلال 7 أيام من تاريخ الاستلام.",
+    returnPolicyNonReturnable: "غير قابل للإرجاع",
+    returnPolicyNonReturnableReason1: "المنتجات الرقمية (كتب إلكترونية وجداول).",
+    returnPolicyNonReturnableReason2: "المنتجات التي تم فتح غلافها الأصلي.",
+    returnPolicyNonReturnableReason3: "طلبات الكوتشينج التي تم البدء فيها.",
+    returnPolicyHowToStepsTitle: "خطوات تقديم الطلب",
+    returnPolicyHowToStepsText: "يرجى مراسلتنا عبر البريد الإلكتروني المخصص للدعم الفني مع تزويدنا برقم الطلب وصور توضيحية للمشكلة إن وجدت. سيتم الرد على طلبك خلال 24 ساعة عمل.",
 };

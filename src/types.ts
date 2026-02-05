@@ -598,6 +598,13 @@ export interface ContentStrings {
   contactMissionTypeLabel?: string;
   contactTransmissionReferenceLabel?: string;
   contactTransmissionHeaderLabel?: string;
+  toastLocalizationTitle?: string;
+  toastLocalizationDesc?: string;
+  changeButton?: string;
+  errorNetwork?: string;
+  errorPayment?: string;
+  errorAuth?: string;
+  errorUnknown?: string;
   contactMissionPayloadLabel?: string;
   contactExecuteTransmissionBtn?: string;
   contactSynchronizingBtn?: string;
@@ -647,6 +654,21 @@ export interface ContentStrings {
   faqExpertHelpText?: string;
   faqContactBtn?: string;
   faqSupportBtn?: string;
+  aboutValueSafety?: string;
+  aboutValueScience?: string;
+  aboutValueExcellence?: string;
+  aboutValueCommunity?: string;
+  faqsData?: Array<{ q: string; a: string; category: string }>;
+  returnPolicyExchangeAllowed?: string;
+  returnPolicyExchangeReason1?: string;
+  returnPolicyExchangeReason2?: string;
+  returnPolicyExchangeReason3?: string;
+  returnPolicyNonReturnable?: string;
+  returnPolicyNonReturnableReason1?: string;
+  returnPolicyNonReturnableReason2?: string;
+  returnPolicyNonReturnableReason3?: string;
+  returnPolicyHowToStepsTitle?: string;
+  returnPolicyHowToStepsText?: string;
   scheduleData?: {
     id: number;
     phase: string;

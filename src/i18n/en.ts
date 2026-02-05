@@ -1638,6 +1638,13 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     contactMissionTypeLabel: "Mission Type",
     contactTransmissionReferenceLabel: "Transmission Reference (Order ID)",
     contactTransmissionHeaderLabel: "Transmission Header",
+    toastLocalizationTitle: "Smart Localization",
+    toastLocalizationDesc: "Language and units optimized for your region ({country}).",
+    changeButton: "Change",
+    errorNetwork: "Connection issue. Please check your internet.",
+    errorPayment: "Payment failed. Please check your card details.",
+    errorAuth: "Authentication failed. Access denied.",
+    errorUnknown: "An unexpected error occurred.",
     contactFormSubjectPlaceholder: "Purpose of signal...",
     contactMissionPayloadLabel: "Mission Payload (Message)",
     contactExecuteTransmissionBtn: "EXECUTE TRANSMISSION",
@@ -1672,4 +1679,40 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     contactErrorMessage: "Message must be at least 10 characters",
     contactErrorOrderId: "Order ID is required for order inquiries",
     contactErrorDisclaimer: "You must accept the medical disclaimer for consultations",
+    aboutValueSafety: "Safety",
+    aboutValueScience: "Science",
+    aboutValueExcellence: "Excellence",
+    aboutValueCommunity: "Community",
+    faqsData: [
+        {
+            q: "Is hormone use 100% safe?",
+            a: "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
+            category: "Safety"
+        },
+        {
+            q: "How do I start with Mr. X-Steroid?",
+            a: "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
+            category: "General"
+        },
+        {
+            q: "What is genetic potential?",
+            a: "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
+            category: "Science"
+        },
+        {
+            q: "What is the privacy policy for subscribers?",
+            a: "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
+            category: "Legal"
+        }
+    ],
+    returnPolicyExchangeAllowed: "Exchange Allowed",
+    returnPolicyExchangeReason1: "If the product arrives damaged or incomplete.",
+    returnPolicyExchangeReason2: "If there is an error in the type of product sent.",
+    returnPolicyExchangeReason3: "Within 7 days of the date of receipt.",
+    returnPolicyNonReturnable: "Non-Returnable",
+    returnPolicyNonReturnableReason1: "Digital products (e-books and spreadsheets).",
+    returnPolicyNonReturnableReason2: "Products whose original packaging has been opened.",
+    returnPolicyNonReturnableReason3: "Coaching requests that have been started.",
+    returnPolicyHowToStepsTitle: "How to Request?",
+    returnPolicyHowToStepsText: "Please contact us via the dedicated support email with your order number and explanatory photos of the problem, if any. Your request will be answered within 24 business hours.",
 };

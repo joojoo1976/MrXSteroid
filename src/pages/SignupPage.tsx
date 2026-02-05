@@ -128,162 +128,166 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <Card className="rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm bg-zinc-900/90 dark:bg-black/90">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600"></div>
+                <Card className="rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm bg-zinc-900/90 dark:bg-black/90 px-1">
+                    <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 opacity-70"></div>
 
-                    <CardHeader className="text-center pb-0 pt-6 px-6">
-                        <div className="flex flex-row items-center justify-center gap-3 mb-2">
+                    <CardHeader className="text-center pb-0 pt-4 px-4">
+                        <div className="flex flex-row items-center justify-center gap-2 mb-1">
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                                className="w-10 h-10 bg-gold-500/10 rounded-lg flex items-center justify-center border border-gold-500/20"
+                                className="w-8 h-8 bg-gold-500/10 rounded-lg flex items-center justify-center border border-gold-500/20"
                             >
-                                <UserPlus className="w-5 h-5 text-gold-500" />
+                                <UserPlus className="w-4 h-4 text-gold-500" />
                             </motion.div>
-                            <CardTitle className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">{content.signupTitle}</CardTitle>
+                            <CardTitle className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 leading-none">{content.signupTitle}</CardTitle>
                         </div>
-                        <CardDescription className="text-zinc-500 font-medium text-xs">
+                        <CardDescription className="text-zinc-500 font-medium text-[10px] leading-none">
                             {content.gatekeeperSubtitle || (isRTL ? "اصنع إرثك أو أثبت هويتك" : "Create your legacy or identify yourself.")}
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="p-6 pt-4">
+                    <CardContent className="p-4 pt-3">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-                                <FormField
-                                    control={form.control}
-                                    name="fullName"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.nameLabel || (isRTL ? "الاسم الكامل" : "Full Name")}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
-                                                    <Input
-                                                        {...field}
-                                                        disabled={loading}
-                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder={content.fullNamePlaceholder || "John Doe"}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="font-bold text-[10px]" />
-                                        </FormItem>
-                                    )}
-                                />
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="fullName"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-0.5">
+                                                <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                    {content.nameLabel || (isRTL ? "الاسم الكامل" : "Full Name")}
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                        <Input
+                                                            {...field}
+                                                            disabled={loading}
+                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                            placeholder={content.fullNamePlaceholder || "John Doe"}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="font-bold text-[9px]" />
+                                            </FormItem>
+                                        )}
+                                    />
 
-                                <FormField
-                                    control={form.control}
-                                    name="username"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.usernameLabel || (isRTL ? "اسم المستخدم" : "Username")}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
-                                                    <Input
-                                                        {...field}
-                                                        disabled={loading}
-                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder={content.usernamePlaceholder || "johndoe123"}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="font-bold text-[10px]" />
-                                        </FormItem>
-                                    )}
-                                />
+                                    <FormField
+                                        control={form.control}
+                                        name="username"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-0.5">
+                                                <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                    {content.usernameLabel || (isRTL ? "اسم المستخدم" : "Username")}
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                        <Input
+                                                            {...field}
+                                                            disabled={loading}
+                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                            placeholder={content.usernamePlaceholder || "johndoe123"}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="font-bold text-[9px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
                                 <FormField
                                     control={form.control}
                                     name="email"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                        <FormItem className="space-y-0.5">
+                                            <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
                                                 {content.emailLabel || (isRTL ? "البريد الإلكتروني" : "Email Address")}
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                    <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                     <Input
                                                         {...field}
                                                         type="email"
                                                         disabled={loading}
-                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                        className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
                                                         placeholder={content.emailPlaceholder || "name@example.com"}
                                                     />
                                                 </div>
                                             </FormControl>
-                                            <FormMessage className="font-bold text-[10px]" />
+                                            <FormMessage className="font-bold text-[9px]" />
                                         </FormItem>
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.passwordLabel || (isRTL ? "كلمة المرور" : "Password")}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
-                                                    <Input
-                                                        {...field}
-                                                        type="password"
-                                                        disabled={loading}
-                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder={content.passwordPlaceholder || "••••••••"}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="font-bold text-[10px]" />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-0.5">
+                                                <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                    {content.passwordLabel || (isRTL ? "كلمة المرور" : "Password")}
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                        <Input
+                                                            {...field}
+                                                            type="password"
+                                                            disabled={loading}
+                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                            placeholder={content.passwordPlaceholder || "••••••••"}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="font-bold text-[9px]" />
+                                            </FormItem>
+                                        )}
+                                    />
 
-                                <FormField
-                                    control={form.control}
-                                    name="confirmPassword"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                {content.confirmPasswordLabel || (isRTL ? "تأكيد كلمة المرور" : "Confirm Password")}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-4 h-4 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
-                                                    <Input
-                                                        {...field}
-                                                        type="password"
-                                                        disabled={loading}
-                                                        className={`h-10 text-sm bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-10' : 'ps-10'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                        placeholder={content.passwordPlaceholder || "••••••••"}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="font-bold text-[10px]" />
-                                        </FormItem>
-                                    )}
-                                />
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-0.5">
+                                                <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                    {content.confirmPasswordLabel || (isRTL ? "تأكيد كلمة المرور" : "Confirm Password")}
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                        <Input
+                                                            {...field}
+                                                            type="password"
+                                                            disabled={loading}
+                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                            placeholder={content.passwordPlaceholder || "••••••••"}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="font-bold text-[9px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full h-12 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 mt-2 group"
+                                    className="w-full h-10 bg-gold-500 hover:bg-gold-400 text-black font-black text-sm rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 mt-2 group"
                                 >
                                     {loading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
-                                            <UserPlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                            <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                                             {content.signupBtn}
                                         </>
                                     )}
@@ -291,11 +295,11 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             </form>
                         </Form>
 
-                        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-center">
-                            <p className="text-zinc-500 font-medium mb-2 text-xs">{content.haveAccount}</p>
+                        <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center">
+                            <p className="text-zinc-500 font-medium mb-1 text-[10px]">{content.haveAccount}</p>
                             <button
                                 onClick={() => navigateTo(Page.LOGIN)}
-                                className="text-gold-500 font-black hover:text-gold-400 transition-colors underline underline-offset-4"
+                                className="text-gold-500 font-black text-xs hover:text-gold-400 transition-colors underline underline-offset-4"
                             >
                                 {content.loginBtn}
                             </button>

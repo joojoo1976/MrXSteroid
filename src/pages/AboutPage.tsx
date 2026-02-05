@@ -69,10 +69,10 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo: _navigateTo 
             {/* Values */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                    { icon: Shield, label: content.labReference.labels.low || (isRTL ? "الأمان" : "Safety"), color: "text-green-500" },
-                    { icon: BookOpen, label: isRTL ? "العلم" : "Science", color: "text-gold-500" },
-                    { icon: Star, label: isRTL ? "التميز" : "Excellence", color: "text-gold-500" },
-                    { icon: Users, label: isRTL ? "المجتمع" : "Community", color: "text-purple-500" },
+                    { icon: Shield, label: content.aboutValueSafety || (isRTL ? "الأمان" : "Safety"), color: "text-green-500" },
+                    { icon: BookOpen, label: content.aboutValueScience || (isRTL ? "العلم" : "Science"), color: "text-gold-500" },
+                    { icon: Star, label: content.aboutValueExcellence || (isRTL ? "التميز" : "Excellence"), color: "text-gold-500" },
+                    { icon: Users, label: content.aboutValueCommunity || (isRTL ? "المجتمع" : "Community"), color: "text-purple-500" },
                 ].map((value, i) => (
                     <div key={i} className="p-8 rounded-[2rem] bg-zinc-900/30 border border-zinc-800 text-center space-y-4">
                         <value.icon className={`w-10 h-10 mx-auto ${value.color}`} />
