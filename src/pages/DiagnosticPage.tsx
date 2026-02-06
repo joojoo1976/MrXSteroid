@@ -52,6 +52,13 @@ const DiagnosticPage: React.FC = () => {
                 addLog(`Webhook Simulation: ${result.checks.webhook_delivery.status.toUpperCase()} (HTTP ${result.checks.webhook_delivery.http_status_code})`);
             }
 
+            if (result.checks.spaceremit_sdk) {
+                addLog(`SpaceRemit SDK: ${result.checks.spaceremit_sdk.loaded ? 'LOADED' : 'NOT_LOADED'}`);
+                addLog(`Pay Key Format: ${result.checks.spaceremit_sdk.key_format_valid ? 'VALID' : 'INVALID/SHORT'}`);
+            } else {
+                addLog(`SpaceRemit SDK: CHECK_NOT_RUN (Check code logic)`);
+            }
+
             if (!result.success) {
                 addLog(`FAILURE DETECTED: [${result.error?.code}] ${result.error?.message}`);
                 addLog(`SUGGESTION: ${result.error?.suggestion}`);
@@ -138,6 +145,10 @@ const DiagnosticPage: React.FC = () => {
                             <div className="flex justify-between items-center p-3 bg-black/40 rounded-xl border border-zinc-800">
                                 <span className="text-xs font-bold text-zinc-500">Key Format (JWT)</span>
                                 {status.keyFormat ? <ShieldCheck className="w-4 h-4 text-green-500" /> : <ShieldAlert className="w-4 h-4 text-red-500" />}
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-black/40 rounded-xl border border-zinc-800">
+                                <span className="text-xs font-bold text-zinc-500">SpaceRemit Key</span>
+                                {status.diagnosticDetails?.spaceremit_sdk?.status === 'ok' ? <ShieldCheck className="w-4 h-4 text-green-500" /> : <ShieldAlert className="w-4 h-4 text-red-500" />}
                             </div>
                         </CardContent>
                     </Card>

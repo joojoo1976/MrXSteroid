@@ -66,6 +66,11 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
             if (error) throw error;
 
+            if (!data.user) {
+                // Handle cases where sign up returns success but no user (e.g. user already exists but we have 'Disable sign up' or other restrictions)
+                throw new Error(isRTL ? "فشل إنشاء المستخدم. قد يكون البريد الإلكتروني مستخدماً بالفعل." : "User creation failed. Email might already be in use.");
+            }
+
             if (data.user) {
                 setSuccess(true);
                 toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني." : "Account created! Check your email."));
@@ -268,7 +273,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             type="password"
                                                             disabled={loading}
                                                             className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
-                                                            placeholder={content.passwordPlaceholder || "••••••••"}
+                                                            placeholder={content.passwordPlaceholder || (isRTL ? "••••••••" : "••••••••")}
                                                         />
                                                     </div>
                                                 </FormControl>
