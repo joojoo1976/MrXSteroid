@@ -53,24 +53,25 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const activeData = content.timelinePhases[activePhase];
 
     return (
-        <div className="max-w-7xl mx-auto px-4 relative">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-6 relative py-12 md:py-20">
             {/* Background Kinetic Orbs */}
-            <div className="absolute -top-24 -inset-inline-start-24 w-96 h-96 bg-gold-500/5 blur-[100px] rounded-full animate-float-slow -z-10"></div>
-            <div className="absolute -bottom-24 -inset-inline-end-24 w-96 h-96 bg-zinc-700/5 blur-[100px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
+            <div className="absolute -top-12 -inset-inline-start-24 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
+            <div className="absolute -bottom-12 -inset-inline-end-24 w-96 h-96 bg-zinc-700/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
 
-            <div className="text-center mb-16 relative">
+            <div className="text-center mb-12 md:mb-16 relative">
                 <motion.h2
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tight"
                 >
                     {content.timelineTitle}
                 </motion.h2>
-                <p className="text-sm md:text-lg text-zinc-500 max-w-5xl mx-auto font-bold italic animate-glow"><StyledBrandName text={content.timelineSubtitle} /></p>
+                <div className="h-1 w-24 bg-gold-500 mx-auto mb-6 rounded-full"></div>
+                <p className="text-sm md:text-xl text-zinc-500 max-w-6xl mx-auto font-bold italic tracking-tight"><StyledBrandName text={content.timelineSubtitle} /></p>
             </div>
 
             {/* Dashboard Container */}
-            <div className={`flex flex-col lg:flex-row gap-8 items-start relative z-20 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+            <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
 
                 {/* Vertical Sidebar (Weeks Selection) */}
                 <div className="w-full lg:w-32 flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 hide-scrollbar lg:sticky lg:top-24 relative">
@@ -124,12 +125,14 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 </div>
 
                 {/* Main Dashboard Grid */}
-                <div className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch w-full min-h-[600px]">
+                <div className="flex-grow grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8 items-stretch w-full bg-black/5 dark:bg-white/5 p-4 md:p-8 rounded-[2.5rem] md:rounded-[4rem] border-2 border-zinc-200/30 dark:border-zinc-800/30 backdrop-blur-md relative overflow-hidden shadow-[0_0_50px_-12px_rgba(234,179,8,0.15)]">
+                    <div className="absolute top-0 inset-0 bg-gold-500/5 -z-10 opacity-30"></div>
+
                     {/* Evolution Chart */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        className="bg-white/50 dark:bg-background/50 backdrop-blur-3xl rounded-[2.5rem] p-5 md:p-8 border-4 border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col h-full"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        className="bg-white/90 dark:bg-background/90 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col min-h-[400px]"
                     >
                         <div className="absolute top-0 inset-inline-end-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
 
@@ -217,10 +220,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     {/* Content Card */}
                     <motion.div
                         key={activePhase}
-                        initial={{ opacity: 0, x: isRTL ? -50 : 50 }}
+                        initial={{ opacity: 0, x: isRTL ? -30 : 30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 120 }}
-                        className="bg-white/90 dark:bg-background/80 backdrop-blur-3xl rounded-[2.5rem] border-4 border-zinc-200 dark:border-zinc-800/50 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group"
+                        className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[500px]"
                     >
                         {/* Stats Header */}
                         <div className="w-full bg-zinc-50/50 dark:bg-background/40 p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col relative text-start">
@@ -250,35 +253,35 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
 
                         {/* Narrative Section */}
-                        <div className="w-full p-5 lg:p-6 space-y-4 flex-grow flex flex-col justify-center text-start overflow-y-auto max-h-[350px] hide-scrollbar">
+                        <div className="w-full p-6 md:p-10 space-y-6 flex-grow flex flex-col justify-center text-start overflow-y-auto max-h-[450px] hide-scrollbar">
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative group/item">
-                                <div className="absolute inline-start-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
-                                <div className="ps-4 group-hover/item:ps-5 transition-all">
-                                    <h4 className="text-sm font-black text-blue-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                        <Activity className="w-4 h-4" />
+                                <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
+                                <div className="ps-6 group-hover/item:ps-8 transition-all">
+                                    <h4 className="text-sm md:text-base font-black text-blue-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                        <Activity className="w-5 h-5" />
                                         {content.timelineLabels.biologicalTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium"><StyledBrandName text={activeData.details.biological} /></p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base md:text-lg font-bold"><StyledBrandName text={activeData.details.biological} /></p>
                                 </div>
                             </motion.div>
 
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="relative group/item">
-                                <div className="absolute inline-start-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
-                                <div className="ps-4 group-hover/item:ps-5 transition-all">
-                                    <h4 className="text-sm font-black text-purple-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                        <Brain className="w-4 h-4" />
+                                <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
+                                <div className="ps-6 group-hover/item:ps-8 transition-all">
+                                    <h4 className="text-sm md:text-base font-black text-purple-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                        <Brain className="w-5 h-5" />
                                         {content.timelineLabels.feelingTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium"><StyledBrandName text={activeData.details.feeling} /></p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base md:text-lg font-bold"><StyledBrandName text={activeData.details.feeling} /></p>
                                 </div>
                             </motion.div>
 
-                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-background dark:bg-white text-white dark:text-black p-4 rounded-3xl shadow-xl relative overflow-hidden group/action">
-                                <h4 className="text-sm font-black text-gold-500 dark:text-gold-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                    <Zap className="w-4 h-4 fill-gold-500" />
+                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-zinc-900 dark:bg-white text-white dark:text-black p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group/action ring-2 ring-gold-500/20">
+                                <h4 className="text-sm md:text-base font-black text-gold-500 dark:text-gold-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                    <Zap className="w-5 h-5 fill-gold-500" />
                                     {content.timelineLabels.actionTitle}
                                 </h4>
-                                <p className="text-base font-black leading-tight relative italic text-white dark:text-black"><StyledBrandName text={activeData.details.action} /></p>
+                                <p className="text-lg md:text-xl font-black leading-tight relative italic text-white dark:text-black"><StyledBrandName text={activeData.details.action} /></p>
                             </motion.div>
                         </div>
 
