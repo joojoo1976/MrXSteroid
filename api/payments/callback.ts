@@ -192,6 +192,64 @@ async function activateSubscription(userId: string, transactionId: string, planT
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+//                       GUEST TO USER CONVERSION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Find an existing user or create a new one for a guest checkout
+ * البحث عن مستخدم موجود أو إنشاء مستخدم جديد لعملية الدفع كزائر
+ */
+async function getOrCreateUser(email: string, fullName?: string): Promise<string | null> {
+    const supabase = getSupabaseAdmin();
+
+    try {
+        console.log(`🔍 Checking if user exists for email: ${email}`);
+
+        // 1. Try to find user in auth metadata (admin list is the only way for backend)
+        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+        if (listError) throw listError;
+
+        const existingUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+        if (existingUser) {
+            console.log(`✅ Found existing user: ${existingUser.id}`);
+            return existingUser.id;
+        }
+
+        // 2. Not found? Create a new user account
+        console.log(`➕ Creating new user account for: ${email}`);
+
+        // Generate a random temporary password or let them use 'Forgot Password'
+        const tempPassword = crypto.randomBytes(16).toString('hex');
+
+        const { data: { user }, error: createError } = await supabase.auth.admin.createUser({
+            email,
+            password: tempPassword,
+            email_confirm: true, // Mark as confirmed so they can log in
+            user_metadata: {
+                full_name: fullName || email.split('@')[0],
+                user_name: email.split('@')[0] + Math.floor(Math.random() * 1000),
+                is_guest_checkout: true
+            }
+        });
+
+        if (createError) {
+            // Check if user was created just now by a race condition
+            if (createError.message.includes('already registered')) {
+                const { data: { users: retryUsers } } = await supabase.auth.admin.listUsers();
+                return retryUsers.find(u => u.email?.toLowerCase() === email.toLowerCase())?.id || null;
+            }
+            throw createError;
+        }
+
+        return user?.id || null;
+    } catch (error) {
+        console.error('❌ User creation/search failed:', error);
+        return null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //                          UPDATE PAYMENT RECORD
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -226,12 +284,29 @@ async function updatePaymentRecord(
             .from('payments')
             .update(updateData)
             .eq('transaction_id', transactionId)
-            .select('user_id, order_id, metadata')
+            .select('user_id, order_id, metadata, customer_email, customer_name')
             .single();
 
         if (error) {
             console.error('❌ Failed to update payment record:', error);
             return {};
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // GUEST CONVERSION LOGIC
+        // ─────────────────────────────────────────────────────────────────
+        let userId = data?.user_id;
+
+        if (!userId && data?.customer_email && status === 'completed') {
+            userId = await getOrCreateUser(data.customer_email, data.customer_name);
+
+            if (userId) {
+                // Link the payment to the new/found user
+                await supabase
+                    .from('payments')
+                    .update({ user_id: userId })
+                    .eq('transaction_id', transactionId);
+            }
         }
 
         // Also update the order status
@@ -245,7 +320,7 @@ async function updatePaymentRecord(
                 .eq('id', data.order_id);
         }
 
-        return { userId: data?.user_id, orderId: data?.order_id, metadata: data?.metadata };
+        return { userId, orderId: data?.order_id, metadata: data?.metadata };
     } catch (error) {
         console.error('❌ Payment update failed:', error);
         return {};
