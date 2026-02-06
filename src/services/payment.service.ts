@@ -143,17 +143,24 @@ class PaymentService {
 
             script.onload = () => {
                 clearTimeout(timeoutId);
-                // Give SDK time to initialize
-                setTimeout(() => {
+
+                // Poll for SpaceRemit object availability (up to 2 seconds)
+                let attempts = 0;
+                const maxChecks = 20; // 20 * 100ms = 2000ms
+
+                const checkSdk = setInterval(() => {
+                    attempts++;
                     if (window.SpaceRemit) {
+                        clearInterval(checkSdk);
                         this.isInitialized = true;
                         loggers.payment.info('SpaceRemit SDK Loaded Successfully');
                         resolve(true);
-                    } else {
-                        loggers.payment.error('SpaceRemit SDK loaded but not initialized');
+                    } else if (attempts >= maxChecks) {
+                        clearInterval(checkSdk);
+                        loggers.payment.error('SpaceRemit SDK loaded but not initialized (timeout)');
                         resolve(false);
                     }
-                }, 500);
+                }, 100);
             };
 
             script.onerror = (error) => {
