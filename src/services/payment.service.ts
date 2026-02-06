@@ -139,23 +139,41 @@ class PaymentService {
      */
     private async createPaymentRecord(payload: PaymentInitPayload, transactionId: string): Promise<PaymentResult<{ paymentId: string }>> {
         try {
-            const { data, error } = await supabase
+            // First attempt with all fields
+            const insertPayload: any = {
+                transaction_id: transactionId,
+                user_id: payload.userId || null,
+                order_id: payload.orderId,
+                amount: payload.amount,
+                currency: payload.currency,
+                status: 'pending' as const,
+                product_id: payload.productId,
+                product_name: payload.productName,
+                customer_email: payload.email,
+                customer_name: payload.customerName,
+                metadata: JSON.parse(JSON.stringify(payload.metadata || {}))
+            };
+
+            let { data, error } = await supabase
                 .from('payments')
-                .insert({
-                    transaction_id: transactionId,
-                    user_id: payload.userId || null,
-                    order_id: payload.orderId,
-                    amount: payload.amount,
-                    currency: payload.currency,
-                    status: 'pending' as const,
-                    product_id: payload.productId,
-                    product_name: payload.productName,
-                    customer_email: payload.email,
-                    customer_name: payload.customerName,
-                    metadata: JSON.parse(JSON.stringify(payload.metadata || {}))
-                })
+                .insert(insertPayload)
                 .select('id')
                 .single();
+
+            // If it fails specifically because restricted column 'currency' is missing
+            if (error && (error.message.includes('currency') || error.code === '42703')) {
+                loggers.payment.warn('Currency column missing in payments table, falling back...');
+                delete insertPayload.currency;
+
+                const retry = await supabase
+                    .from('payments')
+                    .insert(insertPayload)
+                    .select('id')
+                    .single();
+
+                data = retry.data;
+                error = retry.error;
+            }
 
             if (error) throw error;
 
