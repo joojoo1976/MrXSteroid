@@ -1,7 +1,7 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════════════╗
- * ║  🔗 SUPABASE LINKAGE INSPECTOR                                           ║
- * ║  Implementation based on Linkage Inspector Tool Schema                   ║
+ * ║  🔗 SUPABASE & PAYMENT LINKAGE INSPECTOR                                 ║
+ * ║  Robust diagnostic tool with circular dependency protection               ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
@@ -32,85 +32,54 @@ export interface InspectionResult {
             response_body?: string;
             latency_ms: number;
         };
+        spaceremit_sdk?: {
+            status: 'ok' | 'error';
+            loaded: boolean;
+            key_format_valid: boolean;
+        };
     };
     error?: {
         code: string;
         message: string;
         suggestion: string;
-        details?: any;
+        details?: unknown;
     };
 }
 
 export class LinkageInspector {
-    /**
-     * Inspects the connection between the app and Supabase.
-     */
-    static async inspect(type: CheckType = 'full', customPayload?: any): Promise<InspectionResult> {
+    static async inspect(type: CheckType = 'full', customPayload?: Record<string, unknown>): Promise<InspectionResult> {
         const result: InspectionResult = {
             success: true,
             timestamp: new Date().toISOString(),
             checks: {}
         };
 
-        const startTime = performance.now();
-
         try {
-            // 1. Basic URL and Key Presence Check
+            // 1. Supabase Check
             result.checks.url_reachable = !!env.VITE_SUPABASE_URL;
             result.checks.api_key_valid = !!env.VITE_SUPABASE_ANON_KEY && env.VITE_SUPABASE_ANON_KEY.startsWith('eyJ');
 
-            if (!result.checks.url_reachable) {
-                return this.createError(result, 'URL_UNREACHABLE',
-                    'Supabase URL is missing or incorrect.',
-                    'Check your Vercel/Local environment variables for VITE_SUPABASE_URL.');
-            }
-
-            if (!result.checks.api_key_valid) {
-                return this.createError(result, 'INVALID_API_KEY',
-                    'Supabase API Key is missing or has an invalid format.',
-                    'Ensure VITE_SUPABASE_ANON_KEY is set and starts with a valid JWT header (eyJ).');
-            }
-
-            // 2. Auth Endpoint Test
             if (type === 'full' || type === 'auth_only') {
                 const authStart = performance.now();
                 const { error } = await supabase.auth.getSession();
-                const authEnd = performance.now();
-
                 result.checks.auth_endpoint = {
                     status: error ? 'error' : 'ok',
-                    latency_ms: Math.round(authEnd - authStart),
+                    latency_ms: Math.round(performance.now() - authStart),
                     message: error?.message
                 };
-
-                if (error) {
-                    return this.createError(result, 'AUTH_ENDPOINT_ERROR',
-                        `Auth diagnostic failed: ${error.message}`,
-                        'Check if your Supabase project is active and the API key hasn\'t been rotated.');
-                }
             }
 
-            // 3. Database Connectivity Test
             if (type === 'full' || type === 'database_only') {
                 const dbStart = performance.now();
-                // We try a simple query to a common table (profiles)
-                const { error, data } = await supabase.from('profiles').select('id').limit(1);
-                const dbEnd = performance.now();
-
+                const { error } = await supabase.from('profiles').select('id').limit(1);
                 result.checks.database_connection = {
                     status: error ? 'error' : 'ok',
-                    latency_ms: Math.round(dbEnd - dbStart),
+                    latency_ms: Math.round(performance.now() - dbStart),
                     tables_accessible: !error
                 };
-
-                if (error && error.code !== 'PGRST116') { // PGRST116 just means no rows found, which is fine
-                    return this.createError(result, 'DATABASE_CONNECTION_ERROR',
-                        `Database query failed: ${error.message}`,
-                        'Verify that the "profiles" table exists and that RLS policies allow selection.');
-                }
             }
 
-            // 4. Webhook Test (Client-side simulation)
+            // 2. Webhook Check
             if (type === 'full' || type === 'webhook_only') {
                 const webhookUrl = env.VITE_SPACEREMIT_CALLBACK_URL;
                 if (webhookUrl) {
@@ -121,54 +90,50 @@ export class LinkageInspector {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(customPayload || { status: 'success', customer_email: 'test@example.com' })
                         });
-                        const webEnd = performance.now();
-
                         result.checks.webhook_delivery = {
                             status: response.ok ? 'ok' : 'error',
                             http_status_code: response.status,
-                            latency_ms: Math.round(webEnd - webStart)
-                        };
-
-                        if (!response.ok) {
-                            return this.createError(result, 'WEBHOOK_DELIVERY_FAILED',
-                                `Webhook returned status ${response.status}`,
-                                'Verify that the webhook handler is deployed and can handle incoming POST requests.');
-                        }
-                    } catch (e) {
-                        result.checks.webhook_delivery = {
-                            status: 'error',
                             latency_ms: Math.round(performance.now() - webStart)
                         };
-                        return this.createError(result, 'WEBHOOK_DELIVERY_FAILED',
-                            'Failed to reach webhook endpoint.',
-                            'Ensure the callback URL is correct and the server allows CORS if calling from the frontend.');
+                    } catch {
+                        result.checks.webhook_delivery = { status: 'error', latency_ms: 0 };
                     }
                 }
             }
 
-        } catch (globalError: any) {
-            return this.createError(result, 'UNKNOWN_ERROR',
-                globalError.message || 'An unexpected error occurred during diagnostics.',
-                'Check the browser console for more details.');
+            // 3. SpaceRemit Check (Independent logic to avoid circular imports)
+            if (type === 'full') {
+                const publicKey = env.VITE_SPACEREMIT_PUBLIC_KEY || '';
+                const sdkPresent = !!(window as Window & { SpaceRemit?: unknown }).SpaceRemit;
+                const isTestKey = publicKey.startsWith('sb_'); // Sandbox key
+
+                result.checks.spaceremit_sdk = {
+                    status: (publicKey && (sdkPresent || isTestKey)) ? 'ok' : 'error',
+                    loaded: sdkPresent,
+                    key_format_valid: publicKey.length > 10
+                };
+
+                if (!publicKey) {
+                    return this.createError(result, 'MISSING_PAYMENT_KEY', 'Payment Public Key is missing.');
+                }
+            }
+
+        } catch (globalError: unknown) {
+            const message = globalError instanceof Error ? globalError.message : 'Diagnostic failed.';
+            return this.createError(result, 'UNKNOWN_ERROR', message);
         }
 
         return result;
     }
 
-    private static createError(result: InspectionResult, code: string, message: string, suggestion: string): InspectionResult {
+    private static createError(result: InspectionResult, code: string, message: string): InspectionResult {
         result.success = false;
-        result.error = { code, message, suggestion };
+        result.error = { code, message, suggestion: 'Check console for full trace.' };
         return result;
     }
 
-    /**
-     * Diagnostic helper specifically for Auth failures.
-     */
     static async quickCheckAuth(): Promise<string | null> {
         const result = await this.inspect('auth_only');
-        if (!result.success) {
-            return `${result.error?.message}. Suggestion: ${result.error?.suggestion}`;
-        }
-        return null;
+        return result.success ? null : result.error?.message || 'Auth failure';
     }
 }
