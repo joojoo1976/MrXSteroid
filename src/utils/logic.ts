@@ -379,7 +379,7 @@ export async function detectCountryFromIP(): Promise<SupportedCountry> {
 
         return detectCountryFromBrowser();
     } catch (error) {
-        errorHandler.handle(error, 'GeoDetection');
+        console.warn('Geo-Detection suppressed or blocked:', error);
         return detectCountryFromBrowser();
     }
 }
