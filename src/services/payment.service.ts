@@ -328,8 +328,8 @@ class PaymentService {
                 success: false,
                 error: {
                     code: 'PAYMENT_INIT_FAILED',
-                    message: 'Failed to initialize payment. Please try again.',
-                    messageAr: 'فشل في بدء عملية الدفع. يرجى المحاولة مرة أخرى.'
+                    message: 'Payment system unavailable. If you are using an AdBlocker, please disable it and try again.',
+                    messageAr: 'نظام الدفع غير متاح. إذا كنت تستخدم مانع إعلانات، يرجى تعطيله والمحاولة مرة أخرى.'
                 }
             };
         }
