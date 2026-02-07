@@ -96,80 +96,84 @@ class PaymentService {
     public async initialize(): Promise<boolean> {
         if (this.isInitialized && window.SpaceRemit) return true;
 
-        // Reset flag in case of previous failed attempt
+        // Reset flag
         this.isInitialized = false;
 
         return new Promise((resolve) => {
-            // Check if script already loaded
+            // 1. Check if global object is already available
             if (window.SpaceRemit) {
                 this.isInitialized = true;
                 resolve(true);
                 return;
             }
 
-            // Check if script tag already exists (loading in progress)
+            // Function to load fresh script
+            const loadFreshScript = () => {
+                const script = document.createElement('script');
+                script.src = 'https://spaceremit.com/api/v2/js_script/spaceremit.js';
+                // Use synchronous loading if possible or async
+                script.async = true;
+                script.crossOrigin = 'anonymous';
+
+                const timeoutId = setTimeout(() => {
+                    if (!this.isInitialized) {
+                        loggers.payment.error('SpaceRemit SDK network request timeout (20s)');
+                        resolve(false);
+                    }
+                }, 20000);
+
+                script.onload = () => {
+                    clearTimeout(timeoutId);
+
+                    // Poll for SpaceRemit object availability (up to 5 seconds)
+                    let attempts = 0;
+                    const maxChecks = 50; // 50 * 100ms = 5000ms
+
+                    const checkSdk = setInterval(() => {
+                        attempts++;
+                        if (window.SpaceRemit) {
+                            clearInterval(checkSdk);
+                            this.isInitialized = true;
+                            loggers.payment.info('SpaceRemit SDK Loaded Successfully');
+                            resolve(true);
+                        } else if (attempts >= maxChecks) {
+                            clearInterval(checkSdk);
+                            loggers.payment.error('SpaceRemit SDK script loaded but window.SpaceRemit undefined (timeout)');
+                            resolve(false);
+                        }
+                    }, 100);
+                };
+
+                script.onerror = (error) => {
+                    clearTimeout(timeoutId);
+                    loggers.payment.error('Failed to load SpaceRemit SDK script', error);
+                    resolve(false);
+                };
+
+                document.head.appendChild(script);
+            };
+
+            // 2. Check if script tag already exists (stuck loading?)
             const existingScript = document.querySelector('script[src*="spaceremit.js"]');
             if (existingScript) {
-                // Wait for existing script to load
+                // Poll existing script for 3 seconds
+                let attempts = 0;
                 const checkInterval = setInterval(() => {
                     if (window.SpaceRemit) {
                         clearInterval(checkInterval);
                         this.isInitialized = true;
                         resolve(true);
+                    } else if (attempts++ > 30) { // 3 seconds
+                        clearInterval(checkInterval);
+                        loggers.payment.warn('Existing SpaceRemit script stuck. Removing and reloading...');
+                        existingScript.remove();
+                        loadFreshScript();
                     }
                 }, 100);
-
-                // Timeout after 10 seconds
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    if (!window.SpaceRemit) {
-                        loggers.payment.error('SpaceRemit SDK load timeout');
-                        resolve(false);
-                    }
-                }, 10000);
-                return;
+            } else {
+                // 3. Load fresh
+                loadFreshScript();
             }
-
-            const script = document.createElement('script');
-            script.src = 'https://spaceremit.com/api/v2/js_script/spaceremit.js';
-            script.async = true;
-            script.crossOrigin = 'anonymous';
-
-            // Timeout handler
-            const timeoutId = setTimeout(() => {
-                loggers.payment.error('SpaceRemit SDK load timeout (15s)');
-                resolve(false);
-            }, 15000);
-
-            script.onload = () => {
-                clearTimeout(timeoutId);
-
-                // Poll for SpaceRemit object availability (up to 2 seconds)
-                let attempts = 0;
-                const maxChecks = 20; // 20 * 100ms = 2000ms
-
-                const checkSdk = setInterval(() => {
-                    attempts++;
-                    if (window.SpaceRemit) {
-                        clearInterval(checkSdk);
-                        this.isInitialized = true;
-                        loggers.payment.info('SpaceRemit SDK Loaded Successfully');
-                        resolve(true);
-                    } else if (attempts >= maxChecks) {
-                        clearInterval(checkSdk);
-                        loggers.payment.error('SpaceRemit SDK loaded but not initialized (timeout)');
-                        resolve(false);
-                    }
-                }, 100);
-            };
-
-            script.onerror = (error) => {
-                clearTimeout(timeoutId);
-                loggers.payment.error('Failed to load SpaceRemit SDK', error);
-                resolve(false);
-            };
-
-            document.head.appendChild(script);
         });
     }
 
