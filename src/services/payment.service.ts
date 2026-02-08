@@ -278,15 +278,23 @@ class PaymentService {
 
             // Build SpaceRemit checkout URL with parameters
             // SpaceRemit uses form-based checkout, so we redirect to their hosted page
+            // Build SpaceRemit checkout URL with parameters
+            // SpaceRemit uses form-based checkout, so we redirect to their hosted page
             const checkoutParams = new URLSearchParams({
                 k: this.publicKey,
                 amount: payload.amount.toString(),
                 currency: payload.currency,
+                // SpaceRemit standard parameters
+                way: 'card', // Required parameter based on SDK analysis
+                notes: `Order #${payload.orderId}`,
+                // Customer details
                 email: payload.email,
+                customer_email: payload.email, // Send both to be safe
                 customer_name: payload.customerName,
+                // Order metadata
                 reference_id: transactionId,
                 product_name: payload.productName,
-                notes: `Order #${payload.orderId}`,
+                // Callbacks
                 success_url: `${CONFIG.CALLBACK_URL}?txn=${transactionId}`,
                 cancel_url: `${CONFIG.CANCEL_URL}?txn=${transactionId}`,
             });
