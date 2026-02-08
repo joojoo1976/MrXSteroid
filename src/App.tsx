@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
+import { Analytics } from '@vercel/analytics/react';
 
 // Types & Data
 import { Page, Language, PricingTier } from './types';
@@ -483,6 +484,7 @@ export default function App() {
           selectedTier={selectedTier} setSelectedTier={setSelectedTier}
           legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
         />
+        <Analytics />
       </PreferencesProvider>
     </AuthProvider>
   );
