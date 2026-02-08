@@ -250,15 +250,14 @@ class PaymentService {
      * بدء عملية الدفع
      */
     public async initiatePayment(payload: PaymentInitPayload): Promise<PaymentResult<PaymentSession>> {
-        // Ensure SDK is loaded
-        const sdkLoaded = await this.initialize();
-        if (!sdkLoaded) {
+        // Validate public key is configured
+        if (!this.publicKey) {
             return {
                 success: false,
                 error: {
-                    code: 'SDK_LOAD_FAILED',
-                    message: 'Payment gateway unavailable. Please try again.',
-                    messageAr: 'بوابة الدفع غير متاحة. يرجى المحاولة مرة أخرى.'
+                    code: 'CONFIG_ERROR',
+                    message: 'Payment gateway not configured. Please contact support.',
+                    messageAr: 'بوابة الدفع غير مُعدّة. يرجى التواصل مع الدعم.'
                 }
             };
         }
@@ -275,45 +274,42 @@ class PaymentService {
             // Store session for polling
             this.startTransactionPolling(transactionId, payload.userId);
 
-            // Invoke SpaceRemit Payment Widget
-            if (window.SpaceRemit) {
-                window.SpaceRemit.Pay({
-                    amount: payload.amount,
-                    currency: payload.currency,
-                    email: payload.email,
-                    customer_email: payload.email,
-                    customer_name: payload.customerName,
-                    publicKey: this.publicKey,
-                    productName: payload.productName,
-                    productDescription: `Order #${payload.orderId}`,
-                    referenceId: transactionId,
-                    metadata: {
-                        ...payload.metadata,
-                        orderId: payload.orderId,
-                        userId: payload.userId,
-                        locale: payload.locale
-                    },
-                    success_url: `${CONFIG.SUCCESS_URL}?txn=${transactionId}`,
-                    cancel_url: `${CONFIG.CANCEL_URL}?txn=${transactionId}`
-                });
+            // Build SpaceRemit checkout URL with parameters
+            // SpaceRemit uses form-based checkout, so we redirect to their hosted page
+            const checkoutParams = new URLSearchParams({
+                k: this.publicKey,
+                amount: payload.amount.toString(),
+                currency: payload.currency,
+                email: payload.email,
+                customer_name: payload.customerName,
+                reference_id: transactionId,
+                product_name: payload.productName,
+                notes: `Order #${payload.orderId}`,
+                success_url: `${CONFIG.CALLBACK_URL}?txn=${transactionId}`,
+                cancel_url: `${CONFIG.CANCEL_URL}?txn=${transactionId}`,
+            });
 
-                return {
-                    success: true,
-                    data: {
-                        sessionId: transactionId,
-                        checkoutUrl: '', // SpaceRemit handles redirect
-                        transactionId: transactionId,
-                        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 min expiry
-                    }
-                };
-            } else {
-                // SpaceRemit still not available after SDK loaded
-                loggers.payment.error('SpaceRemit.Pay not available after initialization', {
-                    publicKeyExists: !!this.publicKey,
-                    windowSpaceRemit: typeof window.SpaceRemit
-                });
-                throw new Error('SpaceRemit payment widget not available. Please refresh the page and try again.');
-            }
+            // SpaceRemit hosted checkout page
+            const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
+
+            loggers.payment.info('Redirecting to SpaceRemit checkout', {
+                transactionId,
+                amount: payload.amount,
+                currency: payload.currency
+            });
+
+            // Redirect to SpaceRemit checkout
+            window.location.href = checkoutUrl;
+
+            return {
+                success: true,
+                data: {
+                    sessionId: transactionId,
+                    checkoutUrl: checkoutUrl,
+                    transactionId: transactionId,
+                    expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 min expiry
+                }
+            };
         } catch (error) {
             errorHandler.handle(error, 'PaymentService.initiatePayment');
 

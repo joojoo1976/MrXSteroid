@@ -347,16 +347,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Handle GET request (SpaceRemit redirect callback with query params)
     // ─────────────────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
-        const { SP_payment_code, reference_id, status } = req.query;
+        const { SP_payment_code, reference_id, status, txn } = req.query;
 
-        console.log('📥 GET Callback received:', { SP_payment_code, reference_id, status });
+        console.log('📥 GET Callback received:', { SP_payment_code, reference_id, status, txn });
+
+        // Get transaction ID from various possible sources
+        const transactionId = (txn as string) || (reference_id as string);
 
         if (SP_payment_code && typeof SP_payment_code === 'string') {
             // Verify with SpaceRemit API
             const verification = await verifyPaymentWithSpaceRemit(SP_payment_code);
 
+            console.log('🔍 Verification result:', verification);
+
             if (verification.success && verification.data?.status === 'completed') {
-                const referenceId = reference_id as string || verification.data.reference;
+                const referenceId = transactionId || verification.data.reference;
 
                 // Update payment and get user info
                 const { userId, metadata } = await updatePaymentRecord(referenceId, 'completed', {
@@ -375,11 +380,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.redirect(302, `https://mrxsteroid.vercel.app/success?txn=${referenceId}`);
             } else {
                 // Payment verification failed
+                console.error('❌ Payment verification failed:', verification.error);
                 return res.redirect(302, `https://mrxsteroid.vercel.app/cancel?error=verification_failed`);
             }
         }
 
-        // No payment code - show status page
+        // No payment code but we have a transaction ID - check its status in DB
+        if (transactionId) {
+            console.log('⚠️ No SP_payment_code, checking DB for transaction:', transactionId);
+            // Redirect to pending/status page
+            return res.redirect(302, `https://mrxsteroid.vercel.app/payment-status?txn=${transactionId}`);
+        }
+
+        // No payment code at all - redirect home
         return res.redirect(302, 'https://mrxsteroid.vercel.app/');
     }
 
