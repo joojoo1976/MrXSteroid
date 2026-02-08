@@ -293,10 +293,15 @@ class PaymentService {
             // SpaceRemit hosted checkout page
             const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
 
+            // DEBUG: Log key and URL for troubleshooting
+            console.log('🔑 SpaceRemit Public Key:', this.publicKey);
+            console.log('🔗 SpaceRemit Checkout URL:', checkoutUrl);
+
             loggers.payment.info('Redirecting to SpaceRemit checkout', {
                 transactionId,
                 amount: payload.amount,
-                currency: payload.currency
+                currency: payload.currency,
+                publicKeyPrefix: this.publicKey?.substring(0, 10) + '...'
             });
 
             // Redirect to SpaceRemit checkout
