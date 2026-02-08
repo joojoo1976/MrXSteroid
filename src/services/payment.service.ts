@@ -194,6 +194,7 @@ class PaymentService {
     private async createPaymentRecord(payload: PaymentInitPayload, transactionId: string): Promise<PaymentResult<{ paymentId: string }>> {
         try {
             // First attempt with all fields
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const insertPayload: any = {
                 transaction_id: transactionId,
                 user_id: payload.userId || null,
@@ -411,7 +412,7 @@ class PaymentService {
                     failureReason: data.error_message
                 }
             };
-        } catch (_error) {
+        } catch {
             return {
                 success: false,
                 error: {
@@ -448,7 +449,7 @@ class PaymentService {
                     paidAt: p.paid_at ?? undefined
                 }))
             };
-        } catch (_error) {
+        } catch {
             return {
                 success: false,
                 error: {
