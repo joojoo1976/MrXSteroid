@@ -57,7 +57,8 @@ const CONFIG = {
     CALLBACK_URL: import.meta.env.VITE_SPACEREMIT_CALLBACK_URL || 'https://mrxsteroid.vercel.app/api/payments/callback',
     SUCCESS_URL: import.meta.env.VITE_PAYMENT_SUCCESS_URL || `${window.location.origin}/payment-success`,
     CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL || `${window.location.origin}/payment-cancel`,
-    PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY,
+    // Fallback to hardcoded key if env var is missing
+    PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'pkO6RUYNRPVWTC7VDPNOFLMAUTJ0GNN42YEALB26SSOQR46EX20A',
     IS_TEST: import.meta.env.MODE === 'development',
 } as const;
 
