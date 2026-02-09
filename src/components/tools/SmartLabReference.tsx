@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -10,32 +10,37 @@ import {
   Droplets,
   Thermometer,
   Activity,
-  AlertCircle,
-  CheckCircle2,
   Zap
 } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
-import { ContentStrings, LabTest, Page } from '../../types';
+import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../shared/StyledBrandName';
 import { formatLabRange } from '../../utils/logic';
+import { useSmartLabReference } from '../../features/calculators/hooks/useSmartLabReference';
 
 interface SmartLabReferenceProps {
   content: ContentStrings;
   navigateTo: (page: Page) => void;
 }
 
-
-
-
 const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigateTo }) => {
   const { unitSystem, isRTL } = usePreferences();
 
-  const [search, setSearch] = useState('');
-  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
-  const [value, setValue] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
+  const {
+    search,
+    setSearch,
+    analyzingId,
+    setAnalyzingId,
+    closeAnalysis,
+    value,
+    setValue,
+    activeCategory,
+    setActiveCategory,
+    filteredTests,
+    getAnalysis
+  } = useSmartLabReference({ content });
 
   const categories = content.labReference.categories;
 
@@ -49,27 +54,10 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
     thyroid: Activity,
   };
 
-  const filteredTests = useMemo(() => {
-    return content.labReference.tests.filter(test => {
-      const matchesSearch = test.name.toLowerCase().includes(search.toLowerCase()) ||
-        test.id.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = activeCategory === 'all' || test.category === activeCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [content.labReference.tests, search, activeCategory]);
-
-  const getAnalysis = (test: LabTest) => {
-    const val = parseFloat(value);
-    if (isNaN(val)) return null;
-    if (val < test.min) return { text: content.labReference.status.low, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/30', shadow: 'shadow-blue-500/20', icon: AlertCircle };
-    if (val > test.max) return { text: content.labReference.status.high, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30', shadow: 'shadow-red-500/20', icon: AlertCircle };
-    return { text: content.labReference.status.normal, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30', shadow: 'shadow-green-500/20', icon: CheckCircle2 };
-  };
-
   return (
     <div className={`max-w-6xl mx-auto px-4 ${isRTL ? 'font-cairo' : ''} relative`} dir={isRTL ? 'rtl' : 'ltr'}>
 
-      {/* Background Kinetic Elements */}
+      {/* Background Kinetic Effects */}
       <div className="absolute top-0 inset-inline-end-0 w-[500px] h-[500px] bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
       <div className="absolute bottom-0 inset-inline-start-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-4s]"></div>
 
@@ -117,7 +105,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
             <input
               type="text"
               value={search}
-              onChange={e => { setSearch(e.target.value); setAnalyzingId(null); }}
+              onChange={e => setSearch(e.target.value)}
               placeholder={content.labReference.searchPlaceholder}
               className={`w-full bg-transparent py-4 ps-16 pe-6 outline-none text-xl font-black tracking-tight placeholder-zinc-400`}
             />
@@ -126,7 +114,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
 
         {/* Dynamic Category Tabs */}
         <div className="flex flex-wrap justify-center gap-3 py-2 px-2">
-          {Object.entries(categories).map(([key, label], _index) => {
+          {Object.entries(categories).map(([key, label]) => {
             const Icon = categoryIcons[key] || FlaskConical;
             const IsActive = activeCategory === key;
             return (
@@ -134,7 +122,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
                 key={key}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setActiveCategory(key); setAnalyzingId(null); }}
+                onClick={() => setActiveCategory(key)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl border-2 transition-all duration-500 shadow-lg ${IsActive
                   ? 'bg-gold-500 border-gold-500 text-black font-black shadow-gold-500/30'
                   : 'bg-zinc-100/50 dark:bg-background/50 border-transparent text-zinc-500 dark:text-zinc-400 hover:border-gold-500/40 hover:text-gold-500 backdrop-blur-xl'
@@ -154,152 +142,139 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
       </div>
 
       {/* Lab Tests Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <AnimatePresence mode="popLayout">
           {filteredTests.map((test, idx) => {
             const isAnalyzing = analyzingId === test.id;
-
-            // Get Converted Range and Units
-            const { range, unit: displayUnit, min: convMin, max: convMax } = formatLabRange(test.min, test.max, test.unit, unitSystem);
-
-            // Modified test object for analysis (using converted thresholds)
+            const { range, unit: displayUnit, min: convMin, max: convMax } = formatLabRange(test.min, test.max, test.unit, unitSystem || 'metric');
             const activeTest = { ...test, min: convMin, max: convMax };
             const analysis = isAnalyzing ? getAnalysis(activeTest) : null;
+            const CategoryIcon = categoryIcons[test.category as keyof typeof categoryIcons] || FlaskConical;
 
             return (
               <motion.div
                 layout
                 key={test.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ delay: idx * 0.03 }}
-                className="group relative bg-white/80 dark:bg-card/80 p-5 rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 hover:border-gold-500/50 transition-all duration-300 shadow-lg overflow-hidden card-shine backdrop-blur-2xl"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: idx * 0.02 }}
+                className="group relative bg-white dark:bg-zinc-900/60 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-gold-500/50 transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden backdrop-blur-xl"
               >
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="px-2 py-0.5 rounded-md bg-gold-500/10 text-[9px] font-black text-gold-600 dark:text-gold-500 uppercase tracking-widest border border-gold-500/20">
-                        {categories[test.category as keyof typeof categories] || test.category}
+                <div className="flex items-center gap-4">
+                  {/* Icon Column */}
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-gold-500/10 rounded-xl text-gold-500 group-hover:scale-110 transition-transform">
+                    <CategoryIcon className="w-6 h-6" />
+                  </div>
+
+                  {/* Info Column */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <h3 className="text-sm font-black tracking-tight text-zinc-900 dark:text-white truncate">{test.name}</h3>
+                      <span className="text-[8px] font-black text-gold-600 dark:text-gold-500 uppercase tracking-widest bg-gold-500/5 px-1.5 py-0.5 rounded border border-gold-500/10 shrink-0">
+                        {range} {displayUnit}
                       </span>
-                      <span className="text-[9px] text-zinc-400 font-bold font-mono tracking-widest uppercase opacity-40">{test.id}</span>
                     </div>
-                    <h3 className="text-lg font-black tracking-tight text-zinc-900 dark:text-white mb-1 line-clamp-1">{test.name}</h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-tight italic line-clamp-2 mb-3">
-                      <StyledBrandName text={test.description} />
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold leading-tight line-clamp-1 mb-2">
+                      {test.description}
                     </p>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900 text-white border border-white/5 mb-4">
-                      <div className="text-xl font-black text-gold-500 font-mono tracking-tighter">
-                        {range}
-                      </div>
-                      <div className="text-[9px] text-zinc-500 font-black uppercase tracking-widest flex items-center gap-1">
-                        <Activity className="w-2.5 h-2.5 text-gold-500" />
-                        {displayUnit}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* High/Low Explanations */}
-                  <div className="flex flex-col gap-2 mb-4">
-                    <div className="flex items-center gap-2 p-2 bg-red-500/5 border border-red-500/10 rounded-xl group/info transition-all hover:border-red-500/30">
-                      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-red-500/10 rounded-md text-red-500 group-hover/info:scale-110 transition-transform">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-red-500 leading-none mb-0.5">{content.labReference.labels.high}</span>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold leading-tight line-clamp-1">
-                          <StyledBrandName text={test.elevationMeaning} />
+                    <div className="flex gap-2">
+                      {/* High Meaning */}
+                      <div className="flex-1 flex items-center gap-2 p-1.5 bg-red-500/5 rounded-lg border border-red-500/10">
+                        <Thermometer className="w-2.5 h-2.5 text-red-500 shrink-0" />
+                        <span className="text-[8px] text-red-500/80 font-black uppercase tracking-widest shrink-0">{content.labReference.labels.high}</span>
+                        <p className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold truncate">
+                          {test.elevationMeaning}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-blue-500/5 border border-blue-500/10 rounded-xl group/info transition-all hover:border-blue-500/30">
-                      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-blue-500/10 rounded-md text-blue-500 group-hover/info:scale-110 transition-transform">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex flex-col overflow-hidden text-start rtl:text-right ltr:text-left">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 leading-none mb-0.5">{content.labReference.labels.low}</span>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold leading-tight line-clamp-1">
-                          <StyledBrandName text={test.lowMeaning} />
+                      {/* Low Meaning */}
+                      <div className="flex-1 flex items-center gap-2 p-1.5 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                        <Droplets className="w-2.5 h-2.5 text-blue-500 shrink-0" />
+                        <span className="text-[8px] text-blue-500/80 font-black uppercase tracking-widest shrink-0">{content.labReference.labels.low}</span>
+                        <p className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold truncate">
+                          {test.lowMeaning}
                         </p>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="mt-auto">
-                    {!isAnalyzing ? (
-                      <motion.button
-                        key="analyze-btn"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => { setAnalyzingId(test.id); setValue(''); }}
-                        className="w-full py-3 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-[0.2em] shadow-md transition-all flex items-center justify-center gap-2 relative overflow-hidden group"
-                      >
-                        <FlaskConical className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-                        {content.labReference.analyzeBtn}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                      </motion.button>
-                    ) : (
-                      <motion.div
-                        key="analyze-interface"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-4 rounded-xl bg-zinc-50 dark:bg-background/40 border border-zinc-200 dark:border-zinc-800 relative"
-                      >
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-black text-[8px] uppercase tracking-widest text-gold-500 flex items-center gap-1.5">
-                            <Zap className="w-3 h-3 fill-gold-500" />
-                            {content.labReference.analyzeTitle}
-                          </h4>
-                          <button
-                            type="button"
-                            aria-label={content.labClose}
-                            onClick={() => setAnalyzingId(null)}
-                            className="p-1 rounded-md bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 transition-colors"
-                          >
-                            <div className="w-2.5 h-0.5 bg-current rotate-45 translate-y-px"></div>
-                            <div className="w-2.5 h-0.5 bg-current -rotate-45 -translate-y-px"></div>
-                          </button>
-                        </div>
-
-                        <div className="relative mb-3">
-                          <input
-                            type="number"
-                            value={value}
-                            onChange={(e) => setValue(e.target.value)}
-                            placeholder={content.labReference.enterValue}
-                            autoFocus
-                            className="w-full bg-white dark:bg-background border border-zinc-100 dark:border-zinc-800 rounded-lg px-3 py-2 text-xl font-black outline-none focus:border-gold-500 shadow-inner"
-                          />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest text-[9px] pointer-events-none">
-                            {displayUnit}
+                <div className="mt-auto pt-3">
+                  {!isAnalyzing ? (
+                    <motion.button
+                      key="analyze-btn"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setAnalyzingId(test.id)}
+                      className="w-full py-2.5 rounded-xl bg-zinc-900 dark:bg-zinc-800 text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all flex items-center justify-center gap-2 relative overflow-hidden group/btn border border-white/5 active:scale-95"
+                    >
+                      <FlaskConical className="w-3.5 h-3.5 group-hover/btn:rotate-12 transition-transform" />
+                      {content.labReference.analyzeBtn}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="analyze-interface"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 rounded-xl bg-zinc-50 dark:bg-background/40 border border-zinc-200 dark:border-zinc-800 relative"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-black text-[8px] uppercase tracking-widest text-gold-500 flex items-center gap-1.5">
+                          <Zap className="w-2.5 h-2.5 fill-gold-500" />
+                          {content.labReference.analyzeTitle}
+                        </h4>
+                        <button
+                          type="button"
+                          aria-label={content.labClose}
+                          onClick={closeAnalysis}
+                          className="p-1 rounded-md bg-zinc-200 dark:bg-zinc-800 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 transition-colors"
+                        >
+                          <div className="w-2 h-2 relative">
+                            <div className="absolute inset-0 m-auto w-full h-0.5 bg-current rotate-45"></div>
+                            <div className="absolute inset-0 m-auto w-full h-0.5 bg-current -rotate-45"></div>
                           </div>
-                        </div>
+                        </button>
+                      </div>
 
-                        <AnimatePresence>
-                          {analysis && (
-                            <motion.div
-                              initial={{ scale: 0.95, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className={`p-3 rounded-lg ${analysis.bg} ${analysis.border} border ${analysis.color} flex flex-col items-center justify-center text-center`}
-                            >
-                              <div className="mb-1.5">
-                                <analysis.icon className="w-6 h-6" />
-                              </div>
-                              <span className="text-xl font-black uppercase tracking-tighter mb-0.5">
-                                <StyledBrandName text={analysis.text} />
+                      <div className="relative mb-2">
+                        <input
+                          type="number"
+                          value={value}
+                          onChange={(e) => setValue(e.target.value)}
+                          placeholder={content.labReference.enterValue}
+                          autoFocus
+                          className="w-full bg-white dark:bg-background border border-zinc-100 dark:border-zinc-800 rounded-lg px-2 py-1.5 text-lg font-black outline-none focus:border-gold-500 shadow-inner"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest text-[8px] pointer-events-none">
+                          {displayUnit}
+                        </div>
+                      </div>
+
+                      <AnimatePresence>
+                        {analysis && (
+                          <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className={`p-2.5 rounded-lg ${analysis.bg} ${analysis.border} border ${analysis.color} flex flex-col items-center justify-center text-center`}
+                          >
+                            <div className="mb-1">
+                              <analysis.icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-base font-black uppercase tracking-tighter mb-0.5">
+                              <StyledBrandName text={analysis.text} />
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[7px] font-black opacity-60 uppercase tracking-widest">
+                                {content.labReference.resultLabel}
                               </span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-[7px] font-black opacity-60 uppercase tracking-widest">
-                                  {content.labReference.resultLabel}
-                                </span>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    )}
-                  </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             );
@@ -320,7 +295,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
           <p className="text-zinc-500 font-black text-3xl uppercase tracking-tighter opacity-50">
             {content.labReference.noResults || "NO ENCRYPTED MATCHES FOUND"}
           </p>
-          <button onClick={() => { setSearch(''); setActiveCategory('all'); }} className="mt-8 text-gold-500 font-black text-lg underline underline-offset-8 decoration-4">{content.labRestartScan}</button>
+          <button onClick={() => setSearch('')} className="mt-8 text-gold-500 font-black text-lg underline underline-offset-8 decoration-4">{content.labRestartScan}</button>
         </motion.div>
       )}
     </div>

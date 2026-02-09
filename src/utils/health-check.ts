@@ -5,23 +5,13 @@
  * Logs warnings in Dev mode and critical reports in Production.
  */
 
+import { env } from '../config/env';
+
 export const performHealthCheck = () => {
-    const isDev = import.meta.env.DEV;
-    const requiredVars = [
-        { key: 'VITE_SUPABASE_URL', name: 'Supabase URL' },
-        { key: 'VITE_SUPABASE_ANON_KEY', name: 'Supabase Anon Key' }
-    ];
+    const isDev = env.MODE === 'development';
 
-    const missing = requiredVars.filter(v => !import.meta.env[v.key]);
-
-    if (missing.length > 0) {
-        if (isDev) {
-            console.warn("⚠️ [Health Check] Missing Environment Variables:", missing.map(m => m.name).join(', '));
-        } else {
-            // In production, we might want to log this to an external service
-            console.error("🚨 [CRITICAL] System Configuration Incomplete");
-        }
-    }
+    // The env object is already validated. If we reached here, 
+    // basic variables like SUPABASE_URL and SUPABASE_ANON_KEY are present.
 
     // Verify SpaceRemit availability (global)
     if (typeof window !== 'undefined' && !window.SpaceRemit) {
@@ -30,5 +20,5 @@ export const performHealthCheck = () => {
         }
     }
 
-    return missing.length === 0;
+    return true; // env.ts would have thrown if critical vars were missing
 };

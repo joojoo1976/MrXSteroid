@@ -15,18 +15,20 @@ interface LogEntry {
     data?: unknown;
 }
 
+import { env } from '../config/env';
+
 /**
  * Check if we're in development mode
  */
 const isDevelopment = (): boolean => {
-    return import.meta.env.MODE === 'development' || import.meta.env.DEV;
+    return env.MODE === 'development';
 };
 
 /**
  * Check if we're in production mode
  */
 const isProduction = (): boolean => {
-    return import.meta.env.MODE === 'production' || import.meta.env.PROD;
+    return env.MODE === 'production';
 };
 
 /**

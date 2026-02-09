@@ -10,44 +10,12 @@ import { supabase } from '../lib/supabase';
 import { errorHandler } from '../lib/error-handler';
 import { loggers } from '../utils/logger';
 import { env } from '../config/env';
-
-// ═══════════════════════════════════════════════════════════════════════════
-//                              TYPE DEFINITIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-export interface PaymentInitPayload {
-    amount: number;
-    currency: 'USD' | 'EGP' | 'SAR';
-    email: string;
-    customerName: string;
-    productId: string;
-    productName: string;
-    quantity: number;
-    userId?: string;
-    orderId: string;
-    locale: 'ar' | 'en';
-    metadata?: Record<string, unknown>;
-}
-
-export interface PaymentSession {
-    sessionId: string;
-    checkoutUrl: string;
-    transactionId: string;
-    expiresAt: string;
-}
-
-export interface PaymentStatus {
-    transactionId: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
-    amount: number;
-    currency: string;
-    paidAt?: string;
-    failureReason?: string;
-}
-
-export type PaymentResult<T> =
-    | { success: true; data: T }
-    | { success: false; error: { code: string; message: string; messageAr?: string } };
+import {
+    PaymentInitPayload,
+    PaymentSession,
+    PaymentStatus,
+    PaymentResult
+} from '../types/payment';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          PAYMENT SERVICE CLASS
@@ -87,8 +55,7 @@ class PaymentService {
      */
     private async createPaymentRecord(payload: PaymentInitPayload, transactionId: string): Promise<PaymentResult<{ paymentId: string }>> {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const insertPayload: any = {
+            const insertPayload = {
                 transaction_id: transactionId,
                 user_id: payload.userId || null,
                 order_id: payload.orderId,

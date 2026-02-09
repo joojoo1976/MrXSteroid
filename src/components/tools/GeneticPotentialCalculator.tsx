@@ -1,23 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
-import { Scale, Ruler, Activity, Info, RefreshCcw, User, ScanLine, Target, Brain, Trophy, Zap, Share2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, RefreshCcw, ScanLine, Brain, Trophy, Zap } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
 import KineticCounter from '../shared/KineticCounter';
 import { ContentStrings, Page } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
-import { convertValue, toMetric } from '../../utils/logic';
 import { usePreferences } from '../../context/PreferencesContext';
-
+import { useGeneticPotential } from '../../features/calculators/hooks/useGeneticPotential';
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;
   navigateTo: (page: Page) => void;
 }
-
-
-
 
 // Radar Chart Component
 const RadarChart = ({ data, color = "#EAB308" }: { data: { label: string; value: number; fullMark: number }[]; color?: string }) => {
@@ -92,149 +87,14 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
   const { unitSystem, isRTL } = usePreferences();
   const isImperial = unitSystem === 'imperial';
 
-  const [formData, setFormData] = useState({
-    height: '',
-    wrist: '',
-    ankle: '',
-    bodyFat: '12',
-    shoulders: '',
-    chest: '',
-    waist: '',
-    thigh: '',
-    calf: ''
-  });
-
-  const [baseMeasurements, setBaseMeasurements] = useState<Record<string, number>>({});
-
-  // Track unit system to only trigger updates when it changes
-  const prevUnitSystem = React.useRef(unitSystem);
-
-  useEffect(() => {
-    if (prevUnitSystem.current !== unitSystem) {
-      // eslint-disable-next-line
-      setFormData(prevFormData => {
-        const updatedForm = { ...prevFormData };
-        // Determine whether we are converting to metric or imperial for display
-        // Note: baseMeasurements are always in Metric (cm)
-        Object.keys(baseMeasurements).forEach(key => {
-          // All inputs in this form (height, wrist, ankle, etc) are lengths
-          // We re-calculate the display string from the base metric value
-          const baseValue = baseMeasurements[key];
-          if (baseValue) {
-            updatedForm[key as keyof typeof formData] = convertValue(baseValue, 'height', unitSystem).toFixed(1);
-          }
-        });
-        return updatedForm;
-      });
-      prevUnitSystem.current = unitSystem;
-    }
-  }, [unitSystem, baseMeasurements]);
-
-  const handleInputChange = (key: keyof typeof formData, val: string) => {
-    const newForm = { ...formData, [key]: val };
-    setFormData(newForm);
-
-    if (key !== 'bodyFat') {
-      const num = parseFloat(normalizeNum(val));
-      if (!isNaN(num)) {
-        setBaseMeasurements(prev => ({
-          ...prev,
-          [key]: unitSystem === 'imperial' ? toMetric(num, 'height') : num
-        }));
-      }
-    }
-  };
-
-  const [result, setResult] = useState<{
-    natural: number;
-    enhanced: number;
-    type: string;
-    ffmi: number;
-    normalizedFfmi: number;
-    goldenRatio: number;
-    physiqueScore: number;
-    potentials: { name: string; current: number; potential: number; unit: string }[];
-  } | null>(null);
-
-  const normalizeNum = (val: string) => {
-    return val.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
-  };
-
-  const calculatePotential = () => {
-    const h = baseMeasurements.height || 0;
-    const w = baseMeasurements.wrist || 0;
-    const a = baseMeasurements.ankle || 0;
-    const curChest = baseMeasurements.chest || 0;
-    const curShoulders = baseMeasurements.shoulders || 0;
-    const curWaist = baseMeasurements.waist || 0;
-
-    const bf = parseFloat(formData.bodyFat) || 12;
-    const isAr = isRTL ?? false; // Simple check for Arabic
-
-    if (!h || !w || !a) {
-      toast.error(isAr ? "يرجى إدخال الطول ومعصم اليد والكاحل للمتابعة" : "Please enter Height, Wrist, and Ankle to proceed");
-      return;
-    }
-
-    const hIn = h / 2.54;
-    const wIn = w / 2.54;
-    const aIn = a / 2.54;
-    const hM = h / 100;
-
-    const maxWeightPounds = Math.pow(hIn, 1.5) * (
-      (Math.sqrt(wIn) / 21.0) +
-      (Math.sqrt(aIn) / 15.0)
-    ) * (1 + (bf - 8) / 100);
-
-    const naturalWeight = isImperial ? maxWeightPounds : maxWeightPounds * 0.453592;
-    const enhancedWeight = naturalWeight * 1.35;
-
-    const naturalPotentials = {
-      chest: (hIn * 0.62) * (isImperial ? 1 : 2.54),
-      shoulders: (hIn * 0.75) * (isImperial ? 1 : 2.54),
-      waist: (hIn * 0.42) * (isImperial ? 1 : 2.54),
-      thigh: (aIn * 2.85) * (isImperial ? 1 : 2.54),
-      calf: (aIn * 1.95) * (isImperial ? 1 : 2.54),
-      arm: (wIn * 2.5) * (isImperial ? 1 : 2.54)
-    };
-
-    const potentialLeanMassKg = (isImperial ? maxWeightPounds / 2.20462 : naturalWeight) * (1 - bf / 100);
-    const ffmi = potentialLeanMassKg / (hM * hM);
-    const normalizedFfmi = ffmi + 6.1 * (1.8 - hM);
-
-    const potentialShoulderWaist = naturalPotentials.shoulders / naturalPotentials.waist;
-
-    const ffmiScore = Math.min((normalizedFfmi / 25) * 100, 100);
-    const structureScore = 100 - (Math.abs(1.618 - potentialShoulderWaist) * 100);
-    const physiqueScore = (ffmiScore * 0.6) + (structureScore * 0.4);
-
-    let type = content.geneticCalculator.bodyTypes.meso;
-    const radio = wIn / hIn;
-    if (radio < 0.10) type = content.geneticCalculator.bodyTypes.ecto;
-    else if (radio > 0.115) type = content.geneticCalculator.bodyTypes.endo;
-
-    setResult({
-      natural: Math.round(naturalWeight),
-      enhanced: Math.round(enhancedWeight),
-      type,
-      ffmi: normalizedFfmi,
-      normalizedFfmi: normalizedFfmi,
-      goldenRatio: potentialShoulderWaist,
-      physiqueScore: Math.round(physiqueScore),
-      potentials: [
-        { name: content.geneticCalculator.labels.chest, current: curChest, potential: naturalPotentials.chest, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.shoulders, current: curShoulders, potential: naturalPotentials.shoulders, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.waist, current: curWaist, potential: naturalPotentials.waist, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.thigh, current: parseFloat(normalizeNum(formData.thigh)) || 0, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
-        { name: content.geneticCalculator.labels.calf, current: parseFloat(normalizeNum(formData.calf)) || 0, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
-      ]
-    });
-  };
-
-  const reset = () => {
-    setFormData({ height: '', wrist: '', ankle: '', bodyFat: '12', shoulders: '', chest: '', waist: '', thigh: '', calf: '' });
-    setResult(null);
-  };
+  const {
+    formData,
+    setFormData,
+    handleInputChange,
+    result,
+    calculate,
+    reset
+  } = useGeneticPotential({ content, unitSystem, isRTL: isRTL || false });
 
   return (
     <div className={`max-w-7xl mx-auto px-4 py-12 ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
@@ -352,7 +212,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
               <motion.button
                 whileHover={{ scale: 1.05, rotate: [-1, 1, -1, 0] }}
                 whileTap={{ scale: 0.95 }}
-                onClick={calculatePotential}
+                onClick={calculate}
                 className="w-full py-6 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg uppercase tracking-widest rounded-3xl shadow-[0_0_30px_rgba(234,179,8,0.4)] hover:shadow-[0_0_50px_rgba(234,179,8,0.6)] transition-all flex items-center justify-center gap-4 group mt-10 relative overflow-hidden animate-glow"
               >
                 <Zap className="w-6 h-6 animate-pulse group-hover:scale-150 transition-transform" />
@@ -466,25 +326,24 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
                       </motion.span>
                     </div>
 
-                    <div className="space-y-8">
+                    <div className="grid grid-cols-2 gap-3">
                       {result.potentials.slice(0, 4).map((m, i) => (
-                        <div key={i} className="space-y-3">
-                          <div className="flex justify-between text-base font-black text-zinc-300">
-                            <span className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 bg-gold-500 rounded-full"></div>
-                              {m.name}
-                            </span>
-                            <span className="font-mono text-gold-500">{m.potential.toFixed(1)} {m.unit}</span>
+                        <motion.div
+                          key={i}
+                          whileHover={{ scale: 1.02 }}
+                          className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-2xl group/item transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gold-500/10 text-gold-500 group-hover/item:bg-gold-500 group-hover/item:text-black transition-colors">
+                            <Activity className="w-4 h-4" />
                           </div>
-                          <div className="h-3 bg-zinc-800 rounded-full overflow-hidden border border-white/5 p-0.5">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: "100%" }}
-                              transition={{ delay: 0.5 + (i * 0.2), duration: 1.5, type: "spring" }}
-                              className="h-full bg-gradient-to-r from-zinc-700 via-zinc-500 to-zinc-700 rounded-full"
-                            />
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-[8px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-gold-500 transition-colors">{m.name}</h5>
+                            <div className="text-sm font-black text-white font-mono flex items-baseline gap-1">
+                              {m.potential.toFixed(1)}
+                              <span className="text-[8px] text-zinc-500 lowercase">{m.unit}</span>
+                            </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
 

@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle, MapPin, Target, Truck, CheckCircle2 } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -10,32 +7,9 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Checkbox } from '../ui/checkbox';
 import { ContentStrings, Language, PricingTier, ProductVariant } from '../../types';
-import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
-import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../utils/logic';
-
 import { usePreferences } from '../../context/PreferencesContext';
-
-import { paymentService } from '../../services/payment.service';
-
-// Initialize SpaceRemit (Environment Variable with fallback for localized testing)
-
-
-interface CheckoutFormData {
-    fullName: string;
-    email: string;
-    country: string;
-    address?: string;
-    city?: string;
-    zipCode?: string;
-    shippingProvider?: string;
-    weight?: string;
-    height?: string;
-    age?: string;
-    goal?: string;
-    createAccount: boolean;
-    agreeToTerms: boolean;
-}
+import { useCheckout } from '../../features/checkout/hooks/useCheckout';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -67,55 +41,40 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     totalAmount,
     openLegal
 }) => {
-    // Hooks removed: useStripe, useElements
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [paymentError, setPaymentError] = useState<string | null>(null);
     const { unitSystem, language: prefLang, formatPrice } = usePreferences();
     const isAr = prefLang === 'ar';
-    const isPhysical = productVariant !== 'digital';
     const isImperial = unitSystem === 'imperial';
 
-    // Dynamic Localization-ready Schema
-    const schema = z.object({
-        fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
-        email: z.string().email({ message: content.checkout.validation.emailInvalid }),
-        country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
-        address: z.string().optional(),
-        city: z.string().optional(),
-        zipCode: z.string().optional(),
-        shippingProvider: z.string().optional(),
-        weight: z.string().optional(),
-        height: z.string().optional(),
-        age: z.string().optional(),
-        goal: z.string().optional(),
-        createAccount: z.boolean(),
-        agreeToTerms: z.boolean().refine(val => val === true, {
-            message: content.checkout.validation.termsRequired
-        }),
-    }).superRefine((data, ctx) => {
-        if (selectedTier.requiresShipping) {
-            if (!data.address || data.address.length < 5) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.addressRequired, path: ["address"] });
-            }
-            if (!data.city) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.cityRequired, path: ["city"] });
-            }
-            if (!data.zipCode) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.zipRequired, path: ["zipCode"] });
-            }
-            if (!data.shippingProvider) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.shippingRequired, path: ["shippingProvider"] });
-            }
-        }
-        if (selectedTier.requiresBodyStats) {
-            if (!data.weight) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.weightRequired, path: ["weight"] });
-            }
-            if (!data.height) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.heightRequired, path: ["height"] });
-            }
-        }
+    // Using the new specialized hook for logic
+    const {
+        form: { register, watch, setValue, formState: { errors } },
+        isProcessing,
+        paymentError,
+        shippingProviders,
+        isLoadingShipping,
+        promoCode,
+        setPromoCode,
+        promoStatus,
+        isPromoLoading,
+        finalTotal,
+        selectedShipping,
+        handleApplyPromo,
+        onSubmit
+    } = useCheckout({
+        content,
+        lang,
+        selectedTier,
+        totalAmount,
+        productVariant,
+        onLocationChange
     });
+
+    // Notify parent about shipping cost changes
+    useEffect(() => {
+        if (onShippingChange) {
+            onShippingChange(selectedShipping?.price || 0);
+        }
+    }, [selectedShipping, onShippingChange]);
 
     const renderAgreeText = (text: string) => {
         if (!text) return null;
@@ -146,143 +105,8 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         });
     };
 
-
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CheckoutFormData>({
-        resolver: zodResolver(schema),
-        defaultValues: {
-            country: 'USA',
-            createAccount: true,
-            agreeToTerms: false
-        }
-    });
-
-
-
-    // Unified country watcher
-    const selectedCountry = watch('country');
-
-    useEffect(() => {
-        const isEg = (selectedCountry || '').toLowerCase() === 'egypt' || selectedCountry === 'مصر';
-        onLocationChange(isEg);
-    }, [selectedCountry, onLocationChange]);
-
-    const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
-    const [isLoadingShipping, setIsLoadingShipping] = useState(false);
-
-    // Promo Code State
-    const [promoCode, setPromoCode] = useState('');
-    const [promoStatus, setPromoStatus] = useState<{ valid: boolean; message: string; discount: number } | null>(null);
-    const [isPromoLoading, setIsPromoLoading] = useState(false);
-
-    useEffect(() => {
-        if (selectedTier.requiresShipping && selectedCountry) {
-            const fetchShipping = async () => {
-                setIsLoadingShipping(true);
-                try {
-                    const providers = await calculateShippingRates({ country: selectedCountry });
-                    setShippingProviders(providers);
-                    onLocationChange(selectedCountry.toLowerCase() === 'egypt' || selectedCountry === 'مصر');
-                } catch {
-                    toast.error("Failed to load shipping rates");
-                } finally {
-                    setIsLoadingShipping(false);
-                }
-            };
-            fetchShipping();
-        }
-    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
-
-    const selectedShippingId = watch('shippingProvider');
-    const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
-
-    // Calculate Final Total
-    const discountAmount = promoStatus?.valid ? promoStatus.discount : 0;
-    const finalTotal = Math.max(0, (totalAmount + (selectedShipping?.price || 0)) - discountAmount);
-
-    const handleApplyPromo = async () => {
-        if (!promoCode) return;
-        setIsPromoLoading(true);
-        try {
-            const result = await validatePromoCode(promoCode);
-            if (result.valid) {
-                setPromoStatus({ valid: true, message: result.message, discount: result.discount || 0 });
-                toast.success(result.message);
-            } else {
-                setPromoStatus({ valid: false, message: result.message, discount: 0 });
-                toast.error(result.message);
-            }
-        } catch {
-            toast.error("Error validating code");
-        } finally {
-            setIsPromoLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (onShippingChange) {
-            onShippingChange(selectedShipping?.price || 0);
-        }
-    }, [selectedShipping, onShippingChange]);
-
-    const [submissionCount, setSubmissionCount] = useState(0);
-
-    const onSubmit = async (data: CheckoutFormData) => {
-        if (submissionCount >= 3) {
-            setPaymentError(isAr ? "لقد تجاوزت عدد محاولات الدفع المسموح بها. يرجى المحاولة لاحقاً." : "Too many payment attempts. Please try again later.");
-            return;
-        }
-
-        setIsProcessing(true);
-        setPaymentError(null);
-
-        try {
-            // Generate a temporary Order ID for tracking if needed before DB insertion
-            const tempOrderId = `ord_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-            // Initiate payment via PaymentService
-            const result = await paymentService.initiatePayment({
-                amount: finalTotal,
-                currency: 'USD',
-                email: data.email,
-                customerName: data.fullName,
-                orderId: tempOrderId,
-                productId: selectedTier.id as string,
-                productName: selectedTier.name as string,
-                userId: undefined,
-                quantity: 1,
-                locale: isAr ? 'ar' : 'en',
-                metadata: {
-                    ...data,
-                    tierId: selectedTier.id,
-                    tierName: selectedTier.name,
-                    isPhysical: isPhysical,
-                    lang: selectedTier.selectedLanguage,
-                    shippingCost: selectedShipping?.price || 0,
-                    shippingProvider: selectedShipping?.name,
-                    discount: discountAmount,
-                    promoCode: promoCode
-                } as unknown as Record<string, unknown>
-            });
-
-            if (result.success === false) {
-
-                const err = result.error;
-                throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
-            }
-
-            setSubmissionCount(prev => prev + 1);
-
-        } catch (error) {
-            console.error(error);
-            const msg = (error as Error).message;
-            setPaymentError(isAr ? (msg || "حدث خطأ أثناء بدء الدفع.") : (msg || "Error initiating payment."));
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8">
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">
@@ -380,7 +204,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     </div>
                                 </div>
 
-                                {/* Shipping Provider Selection */}
                                 <div className="space-y-3">
                                     <Label className="text-zinc-300">{isAr ? 'شركة الشحن' : 'Shipping Provider'}</Label>
                                     {isLoadingShipping ? (
@@ -422,34 +245,33 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         )}
                     </AnimatePresence>
 
-                    {/* Body Stats Fields (Tier 3) */}
                     {selectedTier.requiresBodyStats && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800"
+                            className="space-y-4 pt-4 border-t border-zinc-800"
                         >
                             <h4 className="text-sm font-black uppercase tracking-widest text-gold-500">
-                                {lang === 'ar' ? 'بيانات التجهيز و المتابعة' : 'Preparation & Coaching Data'}
+                                {isAr ? 'بيانات التجهيز و المتابعة' : 'Preparation & Coaching Data'}
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? `الوزن (${isImperial ? 'رطل' : 'كجم'})` : `Weight (${isImperial ? 'lbs' : 'kg'})`}
+                                        {isAr ? `الوزن (${isImperial ? 'رطل' : 'كجم'})` : `Weight (${isImperial ? 'lbs' : 'kg'})`}
                                     </label>
                                     <input
                                         {...register('weight')}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
+                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
                                         placeholder={isImperial ? "180" : "85"}
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? `الطول (${isImperial ? 'بوصة' : 'سم'})` : `Height (${isImperial ? 'in' : 'cm'})`}
+                                        {isAr ? `الطول (${isImperial ? 'بوصة' : 'سم'})` : `Height (${isImperial ? 'in' : 'cm'})`}
                                     </label>
                                     <input
                                         {...register('height')}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
+                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
                                         placeholder={isImperial ? "70" : "180"}
                                     />
                                 </div>
@@ -457,20 +279,20 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? 'العمر' : 'Age'}
+                                        {isAr ? 'العمر' : 'Age'}
                                     </label>
                                     <input
                                         {...register('age')}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
+                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {lang === 'ar' ? 'الهدف الأساسي' : 'Primary Goal'}
+                                        {isAr ? 'الهدف الأساسي' : 'Primary Goal'}
                                     </label>
                                     <select
                                         {...register('goal')}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
+                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
                                     >
                                         <option value="bulking">Bulking / ضخامة</option>
                                         <option value="cutting">Cutting / تنشيف</option>
@@ -489,9 +311,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 </CardContent>
             </Card>
 
-
-
-            {/* Promo Code Section */}
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">
@@ -561,7 +380,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         )}
 
-                        {/* Agreement Section - Moved Inside */}
                         <div className="space-y-4 p-4 bg-zinc-900/40 border border-zinc-800 rounded-2xl w-full">
                             <div className="flex items-start space-x-3 rtl:space-x-reverse">
                                 <Checkbox
@@ -594,6 +412,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                     </CardFooter>
                 </Card>
             </div>
-        </form >
+        </form>
     );
 };

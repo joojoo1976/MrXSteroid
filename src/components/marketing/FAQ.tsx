@@ -16,35 +16,36 @@ const FAQItemComponent: React.FC<{ item: FaqItem, content: ContentStrings }> = (
   return (
     <motion.div
       initial={false}
-      className={`group rounded-[2rem] border-2 transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white dark:bg-zinc-800/80 shadow-[0_0_50px_rgba(234,179,8,0.1)] border-gold-500/50' : 'bg-zinc-50 dark:bg-card border-zinc-100 dark:border-zinc-800 hover:border-gold-500/30'}`}
+      className={`group rounded-2xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white dark:bg-zinc-800/80 shadow-2xl border-gold-500/50' : 'bg-zinc-50 dark:bg-card border-zinc-100 dark:border-zinc-800 hover:border-gold-500/30'}`}
     >
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         {...ariaProps}
         id={`faq-btn-${id}`}
-        className="w-full flex justify-between items-center p-4 cursor-pointer text-start select-none relative"
+        className="w-full flex justify-between items-center p-3 cursor-pointer text-start select-none relative"
       >
-        <span className="flex items-center gap-4">
+        <span className="flex items-center gap-3">
           <motion.div
-            animate={{ rotate: isOpen ? 360 : 0, scale: isOpen ? 1.2 : 1 }}
-            className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}
+            animate={{ rotate: isOpen ? 360 : 0, scale: isOpen ? 1.1 : 1 }}
+            className={`w-9 h-9 flex items-center justify-center rounded-lg shadow-lg transition-colors ${isOpen ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-gold-500'}`}
           >
-            <MessageSquare className="w-5 h-5" />
+            <MessageSquare className="w-4 h-4" />
           </motion.div>
-          <div className="flex-1 text-2xl font-bold">
-            <StyledBrandName text={item.question} />
-
-            <span className="text-base text-zinc-400 font-bold uppercase tracking-widest mt-1 block opacity-60">
+          <div className="flex-1">
+            <h3 className="text-lg font-black tracking-tight">
+              <StyledBrandName text={item.question} />
+            </h3>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5 block opacity-60">
               {content.faqCategories[item.category] || item.category}
             </span>
           </div>
         </span>
         <motion.div
-          animate={{ rotate: isOpen ? 180 : 0, scale: isOpen ? 1.2 : 1 }}
-          className={`p-2 rounded-full ${isOpen ? 'bg-gold-500/20 text-gold-500' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          className={`p-1.5 rounded-lg ${isOpen ? 'bg-gold-500/10 text-gold-500' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
         >
-          <ChevronDown className={`w-6 h-6 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </motion.div>
       </button>
 
@@ -57,12 +58,12 @@ const FAQItemComponent: React.FC<{ item: FaqItem, content: ContentStrings }> = (
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="px-5 pb-5 ps-20 text-zinc-600 dark:text-zinc-300 leading-relaxed text-2xl font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-4">
+            <div className="px-5 pb-5 ps-16 text-zinc-600 dark:text-zinc-300 leading-relaxed text-base font-medium border-t border-zinc-100 dark:border-zinc-700/50 pt-3">
               <StyledBrandName text={item.answer} />
 
-              <div className="mt-6 flex gap-2">
-                <Zap className="w-5 h-5 text-gold-500 animate-pulse" />
-                <span className="text-base font-black text-gold-500 uppercase tracking-tighter">{content.expertProtocol || 'EXPERT PROTOCOL'}</span>
+              <div className="mt-4 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-gold-500 animate-pulse" />
+                <span className="text-[10px] font-black text-gold-500 uppercase tracking-widest">{content.expertProtocol || 'EXPERT PROTOCOL'}</span>
               </div>
             </div>
           </motion.div>

@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'logo':
         return (
           <div key="logo" className="flex items-center gap-3">
-            <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-0.5 scale-90 origin-start" />
+            <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-0.5 scale-75 md:scale-80 origin-start" />
           </div>
         );
       case 'lang-theme':
@@ -160,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({
       case 'nav':
         return (
           <div key="nav" className="hidden md:flex items-center gap-4">
-            <button onClick={() => navigateTo(Page.HOME)} className={`text-xs font-bold uppercase tracking-wide transition-colors ${currentPage === Page.HOME ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
+            <button onClick={() => navigateTo(Page.HOME)} className={`text-[10px] font-black uppercase tracking-widest transition-colors ${currentPage === Page.HOME ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-400 hover:text-gold-500'}`}>
               {content.homeLink}
             </button>
             <button onClick={() => handleNav('features')} className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400 hover:text-gold-500 transition-colors">
@@ -386,25 +386,25 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Secondary Horizontal Nav for Tools - Desktop Only */}
       <motion.div
-        className="hidden md:flex border-t border-zinc-200 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-background/50 backdrop-blur-md overflow-hidden"
+        className="hidden md:flex border-t border-zinc-200 dark:border-zinc-800/50 bg-white/80 dark:bg-background/80 backdrop-blur-md overflow-hidden shadow-sm"
         animate={{ height: isScrolled ? 0 : 'auto', opacity: isScrolled ? 0 : 1 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center gap-2 py-2">
+          <div className="flex items-center justify-center gap-1.5 py-1.5">
             {(['macro', 'bodyfat', 'injection', 'halflife', 'lab', 'genetic'] as const).map((tool) => (
               <button
                 key={tool}
                 onClick={() => navigateTo(Page[tool.toUpperCase() as keyof typeof Page])}
-                className="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 hover:text-gold-600 dark:hover:text-gold-500 hover:shadow-sm transition-all border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700"
+                className="whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-gold-500 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700"
               >
                 {content.navToolNames[tool]}
               </button>
             ))}
-            <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-2"></div>
+            <div className="w-px h-3 bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
             <button
               onClick={() => navigateTo(Page.CYCLE_ARCHITECT)}
-              className="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-gold-600 dark:text-gold-500 bg-gold-500/10 hover:bg-gold-500 hover:text-white dark:hover:text-black hover:shadow-md transition-all border border-gold-500/20"
+              className="whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-gold-500 bg-gold-500/5 hover:bg-gold-500 hover:text-black transition-all border border-gold-500/10 shadow-sm"
             >
               {content.navToolNames.cycleArchitect}
             </button>
