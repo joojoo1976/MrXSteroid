@@ -232,7 +232,7 @@ export type Database = {
                     status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded'
                     product_id?: string | null
                     product_name?: string | null
-                    customer_email?: string
+                    customer_email: string
                     customer_name?: string | null
                     metadata?: Json
                     error_message?: string | null
@@ -253,6 +253,53 @@ export type Database = {
                         columns: ["order_id"]
                         isOneToOne: false
                         referencedRelation: "orders"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            user_history: {
+                Row: {
+                    id: string
+                    user_id: string
+                    tool_type: string
+                    inputs: Json
+                    results: Json
+                    goal: string | null
+                    intensity_factor: number | null
+                    currency: string | null
+                    language: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    tool_type: string
+                    inputs: Json
+                    results: Json
+                    goal?: string | null
+                    intensity_factor?: number | null
+                    currency?: string | null
+                    language?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    tool_type?: string
+                    inputs?: Json
+                    results?: Json
+                    goal?: string | null
+                    intensity_factor?: number | null
+                    currency?: string | null
+                    language?: string | null
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_history_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
                         referencedColumns: ["id"]
                     }
                 ]

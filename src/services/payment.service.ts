@@ -116,8 +116,24 @@ class PaymentService {
             return recordResult as PaymentResult<PaymentSession>;
         }
 
+        // 2. Validate Public Key Format before redirect
+        const publicKey = env.SPACEREMIT_PUBLIC_KEY;
+        const isSandbox = publicKey.startsWith('sb_');
+        const isStandard = publicKey.length > 20 && !publicKey.startsWith('pk_');
+
+        if (!publicKey || (!isSandbox && !isStandard)) {
+            return {
+                success: false,
+                error: {
+                    code: 'INVALID_PUBLIC_KEY',
+                    message: 'Invalid Payment Gateway Configuration.',
+                    messageAr: 'إعدادات بوابة الدفع غير صالحة.'
+                }
+            };
+        }
+
         try {
-            // 2. Build Redirect URL
+            // 3. Build Redirect URL
             const checkoutParams = new URLSearchParams({
                 k: env.SPACEREMIT_PUBLIC_KEY,
                 amount: payload.amount.toString(),
