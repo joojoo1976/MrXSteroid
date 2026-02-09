@@ -1,14 +1,15 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════════════╗
  * ║  🚀 MR. X STEROID - ENTERPRISE PAYMENT SERVICE                           ║
- * ║  SpaceRemit Gateway Integration                                          ║
- * ║  يدعم العربية والإنجليزية                                                 ║
+ * ║  SpaceRemit Gateway Integration (Redirect Flow)                          ║
+ * ║  Refactored for Stability and Configuration Safety                       ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
 import { supabase } from '../lib/supabase';
 import { errorHandler } from '../lib/error-handler';
 import { loggers } from '../utils/logger';
+import { env } from '../config/env';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              TYPE DEFINITIONS
@@ -49,33 +50,15 @@ export type PaymentResult<T> =
     | { success: false; error: { code: string; message: string; messageAr?: string } };
 
 // ═══════════════════════════════════════════════════════════════════════════
-//                         SPACEREMIT CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════
-
-const CONFIG = {
-    SPACEREMIT_API_URL: 'https://spaceremit.com/api/v2',
-    CALLBACK_URL: import.meta.env.VITE_SPACEREMIT_CALLBACK_URL || 'https://mrxsteroid.vercel.app/api/payments/callback',
-    SUCCESS_URL: import.meta.env.VITE_PAYMENT_SUCCESS_URL || `${window.location.origin}/payment-success`,
-    CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL || `${window.location.origin}/payment-cancel`,
-    // Fallback to hardcoded key if env var is missing
-    PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || '***SPACEREMIT_PUBLIC_KEY_REDACTED***',
-    IS_TEST: import.meta.env.MODE === 'development',
-} as const;
-
-// ═══════════════════════════════════════════════════════════════════════════
 //                          PAYMENT SERVICE CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 
 class PaymentService {
     private static instance: PaymentService;
-    private publicKey: string;
-    private isInitialized: boolean = false;
     private pendingTransactions: Map<string, NodeJS.Timeout> = new Map();
 
     private constructor() {
-        this.publicKey = CONFIG.PUBLIC_KEY || '';
-
-        if (!this.publicKey) {
+        if (!env.SPACEREMIT_PUBLIC_KEY) {
             loggers.payment.warn('SpaceRemit Public Key not configured');
         }
     }
@@ -91,96 +74,7 @@ class PaymentService {
     }
 
     /**
-     * Initialize SpaceRemit SDK Script
-     * تهيئة سكريبت SpaceRemit
-     */
-    public async initialize(): Promise<boolean> {
-        if (this.isInitialized && window.SpaceRemit) return true;
-
-        // Reset flag
-        this.isInitialized = false;
-
-        return new Promise((resolve) => {
-            // 1. Check if global object is already available
-            if (window.SpaceRemit) {
-                this.isInitialized = true;
-                resolve(true);
-                return;
-            }
-
-            // Function to load fresh script
-            const loadFreshScript = () => {
-                const script = document.createElement('script');
-                script.src = 'https://spaceremit.com/api/v2/js_script/spaceremit.js';
-                // Use synchronous loading if possible or async
-                script.async = true;
-                script.crossOrigin = 'anonymous';
-
-                const timeoutId = setTimeout(() => {
-                    if (!this.isInitialized) {
-                        loggers.payment.error('SpaceRemit SDK network request timeout (20s)');
-                        resolve(false);
-                    }
-                }, 20000);
-
-                script.onload = () => {
-                    clearTimeout(timeoutId);
-
-                    // Poll for SpaceRemit object availability (up to 5 seconds)
-                    let attempts = 0;
-                    const maxChecks = 50; // 50 * 100ms = 5000ms
-
-                    const checkSdk = setInterval(() => {
-                        attempts++;
-                        if (window.SpaceRemit) {
-                            clearInterval(checkSdk);
-                            this.isInitialized = true;
-                            loggers.payment.info('SpaceRemit SDK Loaded Successfully');
-                            resolve(true);
-                        } else if (attempts >= maxChecks) {
-                            clearInterval(checkSdk);
-                            loggers.payment.error('SpaceRemit SDK script loaded but window.SpaceRemit undefined (timeout)');
-                            resolve(false);
-                        }
-                    }, 100);
-                };
-
-                script.onerror = (error) => {
-                    clearTimeout(timeoutId);
-                    loggers.payment.error('Failed to load SpaceRemit SDK script', error);
-                    resolve(false);
-                };
-
-                document.head.appendChild(script);
-            };
-
-            // 2. Check if script tag already exists (stuck loading?)
-            const existingScript = document.querySelector('script[src*="spaceremit.js"]');
-            if (existingScript) {
-                // Poll existing script for 3 seconds
-                let attempts = 0;
-                const checkInterval = setInterval(() => {
-                    if (window.SpaceRemit) {
-                        clearInterval(checkInterval);
-                        this.isInitialized = true;
-                        resolve(true);
-                    } else if (attempts++ > 30) { // 3 seconds
-                        clearInterval(checkInterval);
-                        loggers.payment.warn('Existing SpaceRemit script stuck. Removing and reloading...');
-                        existingScript.remove();
-                        loadFreshScript();
-                    }
-                }, 100);
-            } else {
-                // 3. Load fresh
-                loadFreshScript();
-            }
-        });
-    }
-
-    /**
      * Generate Unique Transaction Reference
-     * إنشاء معرف فريد للمعاملة
      */
     private generateTransactionId(): string {
         const timestamp = Date.now().toString(36);
@@ -190,11 +84,9 @@ class PaymentService {
 
     /**
      * Create Payment Record in Database
-     * إنشاء سجل الدفع في قاعدة البيانات
      */
     private async createPaymentRecord(payload: PaymentInitPayload, transactionId: string): Promise<PaymentResult<{ paymentId: string }>> {
         try {
-            // First attempt with all fields
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const insertPayload: any = {
                 transaction_id: transactionId,
@@ -216,17 +108,15 @@ class PaymentService {
                 .select('id')
                 .single();
 
-            // If it fails specifically because restricted column 'currency' is missing
+            // Retry logic for currency column
             if (error && (error.message.includes('currency') || error.code === '42703')) {
-                loggers.payment.warn('Currency column missing in payments table, falling back...');
+                loggers.payment.warn('Currency column missing, retrying without currency...');
                 delete insertPayload.currency;
-
                 const retry = await supabase
                     .from('payments')
                     .insert(insertPayload)
                     .select('id')
                     .single();
-
                 data = retry.data;
                 error = retry.error;
             }
@@ -248,72 +138,46 @@ class PaymentService {
     }
 
     /**
-     * Initiate Payment Transaction
-     * بدء عملية الدفع
+     * Initiate Payment Transaction (Redirect Flow)
      */
     public async initiatePayment(payload: PaymentInitPayload): Promise<PaymentResult<PaymentSession>> {
-        // Validate public key is configured
-        if (!this.publicKey) {
-            return {
-                success: false,
-                error: {
-                    code: 'CONFIG_ERROR',
-                    message: 'Payment gateway not configured. Please contact support.',
-                    messageAr: 'بوابة الدفع غير مُعدّة. يرجى التواصل مع الدعم.'
-                }
-            };
-        }
-
+        // 1. Create payment record in database
         const transactionId = this.generateTransactionId();
-
-        // Create payment record in database first
         const recordResult = await this.createPaymentRecord(payload, transactionId);
+
         if (!recordResult.success) {
             return recordResult as PaymentResult<PaymentSession>;
         }
 
         try {
-            // Store session for polling
-            this.startTransactionPolling(transactionId, payload.userId);
-
-            // Build SpaceRemit checkout URL with parameters
-            // SpaceRemit uses form-based checkout, so we redirect to their hosted page
-            // Build SpaceRemit checkout URL with parameters
-            // SpaceRemit uses form-based checkout, so we redirect to their hosted page
+            // 2. Build Redirect URL
             const checkoutParams = new URLSearchParams({
-                k: this.publicKey,
+                k: env.SPACEREMIT_PUBLIC_KEY,
                 amount: payload.amount.toString(),
                 currency: payload.currency,
-                // SpaceRemit standard parameters
-                way: 'card', // Required parameter based on SDK analysis
+                way: 'card', // Required by SpaceRemit
                 notes: `Order #${payload.orderId}`,
-                // Customer details
                 email: payload.email,
-                customer_email: payload.email, // Send both to be safe
+                customer_email: payload.email,
                 customer_name: payload.customerName,
-                // Order metadata
                 reference_id: transactionId,
                 product_name: payload.productName,
-                // Callbacks
-                success_url: `${CONFIG.CALLBACK_URL}?txn=${transactionId}`,
-                cancel_url: `${CONFIG.CANCEL_URL}?txn=${transactionId}`,
+                success_url: `${env.SPACEREMIT_CALLBACK_URL}?txn=${transactionId}`,
+                cancel_url: `${env.PAYMENT_CANCEL_URL}?txn=${transactionId}`,
             });
 
-            // SpaceRemit hosted checkout page
-            const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
+            const checkoutUrl = `${env.SPACEREMIT_API_URL.replace('/api/v2', '')}/apipay-v2/?${checkoutParams.toString()}`;
 
-            // DEBUG: Log key and URL for troubleshooting
-            console.log('🔑 SpaceRemit Public Key:', this.publicKey);
-            console.log('🔗 SpaceRemit Checkout URL:', checkoutUrl);
-
-            loggers.payment.info('Redirecting to SpaceRemit checkout', {
+            loggers.payment.info('Redirecting to SpaceRemit', {
                 transactionId,
                 amount: payload.amount,
-                currency: payload.currency,
-                publicKeyPrefix: this.publicKey?.substring(0, 10) + '...'
+                checkoutUrl
             });
 
-            // Redirect to SpaceRemit checkout
+            // 3. Start Polling (in case user comes back to this tab or opens new one)
+            this.startTransactionPolling(transactionId, payload.userId);
+
+            // 4. Redirect
             window.location.href = checkoutUrl;
 
             return {
@@ -322,25 +186,17 @@ class PaymentService {
                     sessionId: transactionId,
                     checkoutUrl: checkoutUrl,
                     transactionId: transactionId,
-                    expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 min expiry
+                    expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
                 }
             };
         } catch (error) {
             errorHandler.handle(error, 'PaymentService.initiatePayment');
-
-            // Update payment record to failed
-            // @ts-expect-error - Supabase query builder deep type instantiation
-            await (supabase
-                .from('payments')
-                .update({ status: 'failed', error_message: (error as Error).message })
-                .eq('transaction_id', transactionId) as Promise<unknown>);
-
             return {
                 success: false,
                 error: {
                     code: 'PAYMENT_INIT_FAILED',
-                    message: 'Payment system unavailable. If you are using an AdBlocker, please disable it and try again.',
-                    messageAr: 'نظام الدفع غير متاح. إذا كنت تستخدم مانع إعلانات، يرجى تعطيله والمحاولة مرة أخرى.'
+                    message: 'Payment gateway error',
+                    messageAr: 'خطأ في بوابة الدفع'
                 }
             };
         }
@@ -348,39 +204,24 @@ class PaymentService {
 
     /**
      * Start polling for transaction status
-     * بدء الاستقصاء عن حالة المعاملة
      */
     private startTransactionPolling(transactionId: string, userId?: string) {
-        // Clear any existing polling for this transaction
         this.stopTransactionPolling(transactionId);
-
         let attempts = 0;
-        const maxAttempts = 60; // 5 minutes with 5s intervals
+        const maxAttempts = 60;
 
         const interval = setInterval(async () => {
             attempts++;
-
             if (attempts >= maxAttempts) {
                 this.stopTransactionPolling(transactionId);
                 return;
             }
 
             const status = await this.checkTransactionStatus(transactionId);
-
             if (status.success && status.data.status !== 'pending') {
                 this.stopTransactionPolling(transactionId);
 
-                // MCP Integration: Log successful payment
-                if (status.data.status === 'completed' && userId) {
-                    try {
-                        const { logPaymentSuccess } = await import('../lib/mcp/integration');
-                        logPaymentSuccess(userId, transactionId, status.data.amount, status.data.currency);
-                    } catch (err) {
-                        loggers.payment.error('Failed to log payment to MCP', err);
-                    }
-                }
-
-                // Dispatch custom event for UI update
+                // Dispatch event
                 window.dispatchEvent(new CustomEvent('paymentStatusChanged', {
                     detail: { transactionId, status: status.data.status, userId }
                 }));
@@ -390,9 +231,6 @@ class PaymentService {
         this.pendingTransactions.set(transactionId, interval);
     }
 
-    /**
-     * Stop transaction polling
-     */
     private stopTransactionPolling(transactionId: string) {
         const interval = this.pendingTransactions.get(transactionId);
         if (interval) {
@@ -402,8 +240,7 @@ class PaymentService {
     }
 
     /**
-     * Check Transaction Status from Database
-     * التحقق من حالة المعاملة من قاعدة البيانات
+     * Check Transaction Status
      */
     public async checkTransactionStatus(transactionId: string): Promise<PaymentResult<PaymentStatus>> {
         try {
@@ -431,102 +268,13 @@ class PaymentService {
                 success: false,
                 error: {
                     code: 'STATUS_CHECK_FAILED',
-                    message: 'Failed to check payment status',
-                    messageAr: 'فشل في التحقق من حالة الدفع'
+                    message: 'Status check failed',
+                    messageAr: 'فشل التحقق من الحالة'
                 }
             };
         }
     }
-
-    /**
-     * Get User's Payment History
-     * الحصول على سجل مدفوعات المستخدم
-     */
-    public async getUserPayments(userId: string): Promise<PaymentResult<PaymentStatus[]>> {
-        try {
-            // @ts-expect-error - Supabase query builder deep type instantiation
-            const { data, error } = await (supabase
-                .from('payments')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false }) as Promise<{ data: Array<{ transaction_id: string; status: string; amount: number; currency: string; paid_at: string | null }>; error: Error | null }>);
-
-            if (error) throw error;
-
-            return {
-                success: true,
-                data: data.map(p => ({
-                    transactionId: p.transaction_id,
-                    status: p.status as PaymentStatus['status'],
-                    amount: p.amount,
-                    currency: p.currency,
-                    paidAt: p.paid_at ?? undefined
-                }))
-            };
-        } catch {
-            return {
-                success: false,
-                error: {
-                    code: 'HISTORY_FETCH_FAILED',
-                    message: 'Failed to fetch payment history',
-                    messageAr: 'فشل في جلب سجل المدفوعات'
-                }
-            };
-        }
-    }
-
-    /**
-     * Handle SpaceRemit Successful Payment Callback (Client-side)
-     * معالجة رد الاستدعاء الناجح من SpaceRemit (جانب العميل)
-     */
-    public handleSuccessCallback(spaceremitCode: string): void {
-        // This is called automatically by SpaceRemit via SP_SUCCESSFUL_PAYMENT
-        loggers.payment.info('Payment Success Callback', spaceremitCode);
-
-        // The actual verification happens server-side via the API callback
-        // Here we just trigger UI updates
-        window.dispatchEvent(new CustomEvent('paymentSuccess', {
-            detail: { code: spaceremitCode }
-        }));
-    }
-
-    /**
-     * Cancel/Cleanup pending transaction
-     * إلغاء/تنظيف معاملة معلقة
-     */
-    public async cancelTransaction(transactionId: string): Promise<void> {
-        this.stopTransactionPolling(transactionId);
-
-        // @ts-expect-error - Supabase query builder deep type instantiation
-        await (supabase
-            .from('payments')
-            .update({ status: 'cancelled' })
-            .eq('transaction_id', transactionId)
-            .eq('status', 'pending') as Promise<unknown>);
-    }
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-//                       GLOBAL SPACEREMIT CALLBACK HANDLER
-// ═══════════════════════════════════════════════════════════════════════════
-
-// SpaceRemit automatically calls this function on successful payment
-declare global {
-    interface Window {
-        SP_SUCCESSFUL_PAYMENT?: (spaceremitCode: string) => void;
-    }
-}
-
-// Register global callback handler
-if (typeof window !== 'undefined') {
-    window.SP_SUCCESSFUL_PAYMENT = (spaceremitCode: string) => {
-        PaymentService.getInstance().handleSuccessCallback(spaceremitCode);
-    };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//                              EXPORT SERVICE
-// ═══════════════════════════════════════════════════════════════════════════
 
 export const paymentService = PaymentService.getInstance();
 export default PaymentService;
