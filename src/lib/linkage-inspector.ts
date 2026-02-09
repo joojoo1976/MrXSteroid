@@ -56,8 +56,8 @@ export class LinkageInspector {
 
         try {
             // 1. Supabase Check
-            result.checks.url_reachable = !!env.VITE_SUPABASE_URL;
-            result.checks.api_key_valid = !!env.VITE_SUPABASE_ANON_KEY && env.VITE_SUPABASE_ANON_KEY.startsWith('eyJ');
+            result.checks.url_reachable = !!env.SUPABASE_URL;
+            result.checks.api_key_valid = !!env.SUPABASE_ANON_KEY && env.SUPABASE_ANON_KEY.startsWith('eyJ');
 
             if (type === 'full' || type === 'auth_only') {
                 const authStart = performance.now();
@@ -81,7 +81,7 @@ export class LinkageInspector {
 
             // 2. Webhook Check
             if (type === 'full' || type === 'webhook_only') {
-                const webhookUrl = env.VITE_SPACEREMIT_CALLBACK_URL;
+                const webhookUrl = env.SPACEREMIT_CALLBACK_URL;
                 if (webhookUrl) {
                     const webStart = performance.now();
                     try {
@@ -103,19 +103,22 @@ export class LinkageInspector {
 
             // 3. SpaceRemit Check (Independent logic to avoid circular imports)
             if (type === 'full') {
-                const publicKey = env.VITE_SPACEREMIT_PUBLIC_KEY || '';
+                const publicKey = env.SPACEREMIT_PUBLIC_KEY || '';
                 const sdkPresent = !!(window as Window & { SpaceRemit?: unknown }).SpaceRemit;
-                const isTestKey = publicKey.startsWith('sb_'); // Sandbox key
+                const isSandbox = publicKey.startsWith('sb_');
+                const isStripeFormat = publicKey.startsWith('pk_');
+                const isStandardFormat = publicKey.length > 20 && !isStripeFormat;
 
                 result.checks.spaceremit_sdk = {
-                    status: (publicKey && (sdkPresent || isTestKey)) ? 'ok' : 'error',
+                    status: (publicKey && (sdkPresent || isSandbox || isStandardFormat)) ? 'ok' : 'error',
                     loaded: sdkPresent,
-                    key_format_valid: publicKey.length > 10
+                    key_format_valid: isSandbox || isStandardFormat
                 };
 
                 if (!publicKey) {
                     return this.createError(result, 'MISSING_PAYMENT_KEY', 'Payment Public Key is missing.');
                 }
+
             }
 
         } catch (globalError: unknown) {
@@ -126,9 +129,9 @@ export class LinkageInspector {
         return result;
     }
 
-    private static createError(result: InspectionResult, code: string, message: string): InspectionResult {
+    private static createError(result: InspectionResult, code: string, message: string, suggestion: string = 'Check console for full trace.'): InspectionResult {
         result.success = false;
-        result.error = { code, message, suggestion: 'Check console for full trace.' };
+        result.error = { code, message, suggestion };
         return result;
     }
 

@@ -27,6 +27,7 @@ export enum Page {
   LAB = 'lab',
   GENETIC = 'genetic',
   CYCLE_ARCHITECT = 'cycle',
+  MASTER_CALCULATOR = 'master-calculator',
   SMART_LANDING = 'smart-landing',
   LOGIN = 'login',
   SIGNUP = 'signup',
@@ -1206,6 +1207,33 @@ export interface ContentStrings {
   medicalDisclaimerPoint1?: string;
   medicalDisclaimerPoint2?: string;
   medicalDisclaimerPoint3?: string;
+
+  masterCalc?: {
+    title: string;
+    subtitle: string;
+    configTitle: string;
+    step1: string;
+    step2: string;
+    step3: string;
+    step4: string;
+    saveBtn: string;
+    vaultMsg: string;
+    resultDosage: string;
+    unitWeek: string;
+    intensityLabel: string;
+    safetyLabel: string;
+    riskLabel: string;
+    optimal: string;
+    reduced: string;
+    high: string;
+    low: string;
+    adviceTitle: string;
+    logicAccuracy: string;
+    unitSystem: string;
+    metabolicSaturation: string;
+    stabilityIndex: string;
+    loadingVault: string;
+  };
 }
 
 export interface TableRow {

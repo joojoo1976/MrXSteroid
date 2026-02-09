@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { paymentService } from '../../../services/payment.service';
 import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../../utils/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '../../../types';
+import { usePreferences } from '../../../context/PreferencesContext';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -34,6 +35,7 @@ export interface useCheckoutOptions {
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange } = options;
+    const { currency: prefCurrency } = usePreferences();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [submissionCount, setSubmissionCount] = useState(0);
@@ -160,7 +162,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
             const result = await paymentService.initiatePayment({
                 amount: finalTotal,
-                currency: 'USD',
+                currency: prefCurrency || 'USD',
                 email: data.email,
                 customerName: data.fullName,
                 orderId: tempOrderId,
