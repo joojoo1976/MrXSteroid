@@ -26,6 +26,11 @@ const envSchema = z.object({
     // App Config
     MODE: z.enum(['development', 'production', 'test']).default('development'),
     SITE_URL: z.string().url().optional().default('https://mrxsteroid.vercel.app'),
+    ENCRYPTION_KEY: z.string().min(1).default('mZq4t7w9z$C&F)J@NcRfUjWnZr4u7x!A'),
+
+    // AI Configuration
+    OPENAI_API_KEY: z.string().optional(),
+    GEMINI_API_KEY: z.string().optional(),
 });
 
 // Helper to parse environment variables
@@ -41,6 +46,9 @@ const parseEnv = () => {
         PAYMENT_CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL,
         MODE: import.meta.env.MODE,
         SITE_URL: import.meta.env.VITE_SITE_URL || import.meta.env.NEXT_PUBLIC_SITE_URL,
+        ENCRYPTION_KEY: import.meta.env.VITE_ENCRYPTION_KEY,
+        OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY,
+        GEMINI_API_KEY: import.meta.env.VITE_GEMINI_API_KEY,
     };
 
     // Parse and validate
