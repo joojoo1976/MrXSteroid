@@ -6,8 +6,10 @@ import { ChatOptions, ChatMessage } from './geminiService'; // reuse ChatOptions
 import { compactHistory } from './contextOptimization';
 import { initializeGemini } from './geminiService';
 
+import { env } from '../config/env';
+
 // The OpenAI API key is expected in the environment variable VITE_OPENAI_API_KEY
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+const OPENAI_API_KEY = env.OPENAI_API_KEY || '';
 
 if (!OPENAI_API_KEY) {
     console.warn('OpenAI API key not found. OpenAI features will be disabled.');

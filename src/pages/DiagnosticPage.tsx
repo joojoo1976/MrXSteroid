@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LinkageInspector, InspectionResult } from '../lib/linkage-inspector';
 
+import { env } from '../config/env';
+
 const DiagnosticPage: React.FC = () => {
     const [status, setStatus] = useState<{
         url: string;
@@ -15,9 +17,9 @@ const DiagnosticPage: React.FC = () => {
         rawError: unknown;
         diagnosticDetails?: InspectionResult['checks'];
     }>({
-        url: import.meta.env.VITE_SUPABASE_URL || 'MISSING',
-        keyExists: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-        keyFormat: (import.meta.env.VITE_SUPABASE_ANON_KEY || '').startsWith('eyJ'),
+        url: env.SUPABASE_URL || 'MISSING',
+        keyExists: !!env.SUPABASE_ANON_KEY,
+        keyFormat: (env.SUPABASE_ANON_KEY || '').startsWith('eyJ'),
         connection: 'testing',
         error: null,
         rawError: null

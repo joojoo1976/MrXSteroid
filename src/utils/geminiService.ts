@@ -4,8 +4,10 @@ import { generateOpenAIResponse, streamOpenAIResponse } from './openaiService';
 import { compactHistory } from './contextOptimization';
 import { loggers } from './logger';
 
+import { env } from '../config/env';
+
 // Initialize Gemini AI
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const API_KEY = env.GEMINI_API_KEY || '';
 
 let genAI: GoogleGenerativeAI | null = null;
 

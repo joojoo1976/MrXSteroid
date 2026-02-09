@@ -11,6 +11,6 @@ import { Database } from '../types/db_types';
  * that the client is initialized with valid credentials.
  */
 export const supabase = createClient<Database>(
-    env.VITE_SUPABASE_URL,
-    env.VITE_SUPABASE_ANON_KEY
+    env.SUPABASE_URL,
+    env.SUPABASE_ANON_KEY
 );
