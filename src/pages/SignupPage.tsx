@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { toast } from 'sonner';
-import { errorHandler } from '../lib/error-handler';
 import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createSignupSchema, SignupFormValues } from "../lib/schemas";
+import { useSignup } from '../features/auth/hooks/useSignup';
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -28,62 +23,12 @@ interface SignupPageProps {
 
 export default function SignupPage({ content, navigateTo }: SignupPageProps) {
     const { isRTL } = usePreferences();
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
 
-    // Registration Schema with complexity and matching password
-    const signupSchema = createSignupSchema(isRTL);
-
-    const form = useForm<SignupFormValues>({
-        resolver: zodResolver(signupSchema),
-        defaultValues: {
-            fullName: "",
-            username: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-        },
+    const { form, loading, success, onSubmit } = useSignup({
+        content,
+        isRTL,
+        navigateTo
     });
-
-    const onSubmit = async (values: SignupFormValues) => {
-        setLoading(true);
-
-        try {
-            // Using the precise keys for metadata to match the Database Trigger: full_name and user_name
-            const signupOptions = {
-                data: {
-                    full_name: values.fullName,
-                    user_name: values.username,
-                },
-                emailRedirectTo: window.location.origin + '/dashboard',
-            };
-
-            const { data, error } = await supabase.auth.signUp({
-                email: values.email,
-                password: values.password,
-                options: signupOptions,
-            });
-
-            if (error) throw error;
-
-            if (!data.user) {
-                // Handle cases where sign up returns success but no user (e.g. user already exists but we have 'Disable sign up' or other restrictions)
-                throw new Error(isRTL ? "فشل إنشاء المستخدم. قد يكون البريد الإلكتروني مستخدماً بالفعل." : "User creation failed. Email might already be in use.");
-            }
-
-            if (data.user) {
-                setSuccess(true);
-                toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني." : "Account created! Check your email."));
-
-                // Auto-redirect to login after 5 seconds
-                setTimeout(() => navigateTo(Page.LOGIN), 5000);
-            }
-        } catch (error) {
-            await errorHandler.handle(error, 'Signup');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (success) {
         return (
@@ -155,7 +100,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
                     <CardContent className="p-4 pt-3">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+                            <form onSubmit={onSubmit} className="space-y-2">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <FormField
                                         control={form.control}

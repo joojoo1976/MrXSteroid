@@ -16,6 +16,8 @@ export interface AuthResponse {
     error: AuthError | string | null;
 }
 
+import { env } from '../config/env';
+
 /**
  * Enterprise Auth Service for Mr. X Steroid
  * Handles User Registration with Metadata and Error Safety
@@ -34,7 +36,7 @@ export const authService = {
                         full_name,
                         user_name,
                     },
-                    emailRedirectTo: 'https://mrxsteroid.vercel.app/dashboard',
+                    emailRedirectTo: `${env.SITE_URL}/dashboard`,
                 },
             });
 
@@ -54,14 +56,18 @@ export const authService = {
 
             return { user: data.user, session: data.session, error: null };
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Use the centralized error handler but allow UI to receive the formatted message
             errorHandler.handle(error, 'AuthService.signUp');
+
+            const errorMessage = error instanceof Error
+                ? error.message
+                : 'An unexpected error occurred during sign up.';
 
             return {
                 user: null,
                 session: null,
-                error: error.message || 'An unexpected error occurred during sign up.'
+                error: errorMessage
             };
         }
     },

@@ -10,6 +10,7 @@ import {
 import { ContentStrings } from '../../types';
 import AdPlaceholder from '../shared/AdPlaceholder';
 import { StyledBrandName } from '../shared/StyledBrandName';
+import { env } from '../../config/env';
 
 /**
  * INTERFACES
@@ -74,8 +75,6 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     const contentMap: Record<string, ContentStrings> = {
         ar: arContent, en: enContent
     };
-
-    // Sync with external state if provided
 
     /**
      * 1. AUTO-LOCALIZATION & CURRENCY ENGINE
@@ -144,13 +143,10 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         currency: loc.currency
     }).format(BASE_PRICE_USD * loc.rate);
 
-    // SpaceRemit Integration
-    // SpaceRemit Integration (Script loaded in index.html)
-
     const handlePayment = () => {
         if (window.SpaceRemit) {
             window.SpaceRemit.Pay({
-                publicKey: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY || 'pk_test_DEFAULT', // Use env variable
+                publicKey: env.SPACEREMIT_PUBLIC_KEY,
                 amount: BASE_PRICE_USD * loc.rate,
                 currency: loc.currency,
                 productName: 'Mr. X-Steroid Complete Guide',
@@ -162,8 +158,6 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
             toast.error(isRTL ? 'نظام الدفع قيد التحميل... يرجى المحاولة مرة أخرى لاحقاً.' : 'Payment system loading... please try again in a moment.');
         }
     };
-
-
 
     const content = contentMap[currentLang] || enContent;
 
@@ -218,7 +212,6 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             <StyledBrandName text={content.landingDescription} />
                         </motion.p>
 
-                        {/* Updated Flashy Price Card */}
                         <motion.div
                             whileHover={{ scale: 1.02, rotate: [-0.5, 0.5, 0] }}
                             className="p-10 rounded-[3rem] bg-background/50 border-4 border-gold-500/30 backdrop-blur-3xl relative group shadow-[0_0_50px_rgba(234,179,8,0.1)] card-shine animate-glow"

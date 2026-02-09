@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock } from 'lucide-react';
 import BrandLogo from '../shared/BrandLogo';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
+import { useCycleCalendarExporter } from '../../features/calculators/hooks/useCycleCalendarExporter';
 
 
 interface CycleCalendarExporterProps {
@@ -13,166 +14,25 @@ interface CycleCalendarExporterProps {
 const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
 
+    const {
+        isUnlocked,
+        handleVerify,
+        startDate,
+        setStartDate,
+        stealthMode,
+        setStealthMode,
+        autoRotate,
+        setAutoRotate,
+        autoPCT,
+        setAutoPCT,
+        compounds,
+        addCompound,
+        removeCompound,
+        updateCompound,
+        loadPreset,
+        generateICS
+    } = useCycleCalendarExporter({ content });
 
-    const [isUnlocked, setIsUnlocked] = useState(false);
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-    const [stealthMode, setStealthMode] = useState(false);
-    const [autoRotate, setAutoRotate] = useState(true);
-    const [autoPCT, setAutoPCT] = useState(true);
-
-    const [compounds, setCompounds] = useState<Array<{ id: string, name: string, dosage: string, freq: string, duration: string, halfLife: number }>>([
-        { id: '1', name: 'Testosterone Enanthate', dosage: '250', freq: 'twiceWeekly', duration: '12', halfLife: 4.5 }
-    ]);
-
-    // Mock unlock for demo
-    const handleVerify = () => {
-        setTimeout(() => setIsUnlocked(true), 1000);
-    };
-
-    const addCompound = () => {
-        setCompounds([...compounds, { id: Math.random().toString(), name: 'Deca Durabolin', dosage: '200', freq: 'weekly', duration: '10', halfLife: 6 }]);
-    };
-
-    const removeCompound = (id: string) => {
-        setCompounds(compounds.filter(c => c.id !== id));
-    };
-
-    const updateCompound = (id: string, field: string, value: string | number) => {
-        setCompounds(compounds.map(c => c.id === id ? { ...c, [field]: value } : c));
-    };
-
-    const loadPreset = (type: 'beginnerBulk' | 'cutting' | 'trt') => {
-        if (type === 'beginnerBulk') {
-            setCompounds([
-                { id: '1', name: 'Testosterone Enanthate', dosage: '500', freq: 'twiceWeekly', duration: '12', halfLife: 4.5 },
-                { id: '2', name: 'Dianabol', dosage: '30', freq: 'daily', duration: '4', halfLife: 0.2 } // Oral
-            ]);
-        } else if (type === 'cutting') {
-            setCompounds([
-                { id: '1', name: 'Testosterone Propionate', dosage: '100', freq: 'eod', duration: '8', halfLife: 0.8 },
-                { id: '2', name: 'Trenbolone Acetate', dosage: '75', freq: 'eod', duration: '8', halfLife: 1 },
-                { id: '3', name: 'Winstrol', dosage: '50', freq: 'daily', duration: '6', halfLife: 0.4 }
-            ]);
-        } else {
-            setCompounds([
-                { id: '1', name: 'Testosterone Cypionate', dosage: '150', freq: 'weekly', duration: '20', halfLife: 5 }
-            ]);
-        }
-    };
-
-    const generateICS = () => {
-        interface ICSEvent {
-            start: string;
-            end: string;
-            summary: string;
-            description: string;
-        }
-        const events: ICSEvent[] = [];
-        const start = new Date(startDate);
-        let maxCycleEndDate = new Date(start);
-        let maxHalfLife = 0;
-
-        const rotationSites = content.cycleArchitect.rotationSites;
-        let rotationIndex = 0;
-
-        const stealthAliases = content.cycleArchitect.stealthAliases;
-
-        compounds.forEach(comp => {
-            const durationWeeks = parseInt(comp.duration) || 1;
-            const freqType = comp.freq;
-            let daysInterval = 7;
-            if (freqType === 'daily') daysInterval = 1;
-            if (freqType === 'eod') daysInterval = 2;
-            if (freqType === 'twiceWeekly') daysInterval = 3.5; // Logic handled in loop
-
-            const totalDays = durationWeeks * 7;
-            const endDate = new Date(start);
-            endDate.setDate(start.getDate() + totalDays);
-            if (endDate > maxCycleEndDate) maxCycleEndDate = endDate;
-            if (comp.halfLife > maxHalfLife) maxHalfLife = comp.halfLife;
-
-            const currentDate = new Date(start);
-            let count = 0;
-
-            while (currentDate < endDate) {
-                // Handle Twice Weekly specially (Mon/Thu logic approximation)
-                if (freqType === 'twiceWeekly') {
-                    // If it's the first injection of the week (e.g., Mon), next is +3 days (Thu), then +4 days (Mon)
-                    // Simplified: just alternating 3 and 4 days
-                    const jump = count % 2 === 0 ? 3 : 4;
-                    currentDate.setDate(currentDate.getDate() + jump);
-                } else {
-                    currentDate.setDate(currentDate.getDate() + daysInterval);
-                }
-
-                if (currentDate >= endDate) break;
-
-                const dateString = currentDate.toISOString().replace(/-|:|\.\d+/g, ""); // Format: YYYYMMDDTHHmmSSZ
-
-                let summary = `${comp.name} (${comp.dosage}mg)`;
-                if (stealthMode) {
-                    summary = stealthAliases[Math.floor(Math.random() * stealthAliases.length)];
-                }
-
-                let description = `${content.cycleArchitect.form.compoundLabel}: ${comp.name} ${comp.dosage}${content.units.mg}.`.replace(/[,;]/g, '\\$&');
-                if (autoRotate && comp.halfLife > 1) {
-                    description += ` Site: ${rotationSites[rotationIndex % rotationSites.length]}`;
-                    rotationIndex++;
-                }
-
-                const eventEndDate = new Date(currentDate);
-                eventEndDate.setDate(currentDate.getDate() + 1);
-                const endDateString = eventEndDate.toISOString().replace(/-|:|\.\d+/g, "");
-
-                events.push({
-                    start: dateString.substring(0, 8),
-                    end: endDateString.substring(0, 8),
-                    summary: summary.replace(/[,;]/g, '\\$&'),
-                    description: description
-                });
-                count++;
-            }
-        });
-
-        // Add PCT
-        if (autoPCT) {
-            const pctStartDate = new Date(maxCycleEndDate);
-            pctStartDate.setDate(pctStartDate.getDate() + Math.round(5 * maxHalfLife));
-            const startString = pctStartDate.toISOString().replace(/-|:|\.\d+/g, "").substring(0, 8);
-
-            const pctEndDate = new Date(pctStartDate);
-            pctEndDate.setDate(pctStartDate.getDate() + 1);
-            const endString = pctEndDate.toISOString().replace(/-|:|\.\d+/g, "").substring(0, 8);
-
-            events.push({
-                start: startString,
-                end: endString,
-                summary: stealthMode ? content.cycleArchitect.stealthPctAlias : content.cycleArchitect.pctEventSummary,
-                description: content.cycleArchitect.pctEventDescription
-            });
-        }
-
-        // Build ICS File Content
-        let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nPRODID:-//MrXSteroid//CycleArchitect//EN\n";
-        events.forEach(e => {
-            icsContent += "BEGIN:VEVENT\n";
-            icsContent += `DTSTART;VALUE=DATE:${e.start}\n`;
-            icsContent += `DTEND;VALUE=DATE:${e.end}\n`;
-            icsContent += `SUMMARY:${e.summary}\n`;
-            icsContent += `DESCRIPTION:${e.description}\n`;
-            icsContent += "END:VEVENT\n";
-        });
-        icsContent += "END:VCALENDAR";
-
-        // Download
-        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.setAttribute('download', 'My_Cycle_Plan.ics');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
     if (!isUnlocked) {
         return (
@@ -259,7 +119,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                         </div>
 
                         <div className="space-y-4">
-                            {compounds.map((comp, idx) => (
+                            {compounds.map((comp) => (
                                 <div key={comp.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-background border border-zinc-200 dark:border-zinc-800 relative group">
                                     <button aria-label="Remove Compound" onClick={() => removeCompound(comp.id)} className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">

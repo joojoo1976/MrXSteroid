@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
+import { useTransformationTimeline } from '../../features/calculators/hooks/useTransformationTimeline';
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
     <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50">
@@ -29,16 +30,16 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
 
 const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content }) => {
     const { isRTL } = usePreferences();
-    const [activePhase, setActivePhase] = useState(0);
 
-    const chartData = content.timelinePhases.map(phase => ({
-        week: phase.week,
-        strength: phase.stats.strength,
-        hypertrophy: phase.stats.hypertrophy,
-        waterRetention: phase.stats.waterRetention,
-        fatLoss: phase.stats.fatLoss,
-        mood: phase.stats.mood,
-    }));
+    const {
+        activePhase,
+        activeData,
+        chartData,
+        nextPhase,
+        prevPhase,
+        setPhase,
+        totalPhases
+    } = useTransformationTimeline({ content });
 
     const getPhaseIcon = (key: string) => {
         switch (key) {
@@ -49,8 +50,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             default: return <Star className="w-6 h-6" />;
         }
     };
-
-    const activeData = content.timelinePhases[activePhase];
 
     return (
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 relative py-12 md:py-20">
@@ -100,7 +99,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             <motion.div
                                 key={idx}
                                 className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group/phase"
-                                onClick={() => setActivePhase(idx)}
+                                onClick={() => setPhase(idx)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
@@ -152,8 +151,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: content.timelineLabels.fatLoss, color: 'orange-500' },
                                     { label: content.timelineLabels.mood, color: 'green-500' }
                                 ].map((item, i) => (
-                                    <div key={i} className={`flex items-center gap-1 px-2.5 py-1 bg-${item.color}/10 rounded-full border border-${item.color}/20 text-[10px] font-black uppercase text-${item.color}`}>
-                                        <div className={`w-1 h-1 rounded-full bg-${item.color}`}></div>
+                                    <div key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase`}>
+                                        <div className={`w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
                                         {item.label}
                                     </div>
                                 ))}
@@ -243,7 +242,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
                                 <MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
                                 <MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
                                 <MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
@@ -286,20 +285,20 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
 
                         <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between mt-auto">
-                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{content.timelineLabels.phaseLabel} {activePhase + 1} / {content.timelinePhases.length}</span>
+                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{content.timelineLabels.phaseLabel} {activePhase + 1} / {totalPhases}</span>
                             <div className="flex gap-2">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
                                     disabled={activePhase === 0}
-                                    onClick={() => setActivePhase(p => p - 1)}
+                                    onClick={prevPhase}
                                     className="p-2.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 disabled:opacity-20 transition-all shadow-md"
                                 >
                                     <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                                 </motion.button>
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
-                                    disabled={activePhase === content.timelinePhases.length - 1}
-                                    onClick={() => setActivePhase(p => p + 1)}
+                                    disabled={activePhase === totalPhases - 1}
+                                    onClick={nextPhase}
                                     className="p-2.5 rounded-xl bg-gold-500 text-black disabled:opacity-20 transition-all shadow-md"
                                 >
                                     <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
@@ -309,8 +308,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </motion.div>
                 </div>
             </div>
-
-
         </div>
     );
 };

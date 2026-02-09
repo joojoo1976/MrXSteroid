@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Scale,
@@ -12,19 +12,10 @@ import {
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';
 import { ContentStrings, Page } from '../../types';
-import { toast } from 'sonner';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../shared/UnitToggle';
-import { convertValue, toMetric } from '../../utils/logic';
 import KineticCounter from '../shared/KineticCounter';
-
-interface BodyFatResult {
-    bodyFatPercentage: number;
-    bodyFatMass: number;
-    leanBodyMass: number;
-    bmi: number;
-    category: string;
-}
+import { useBodyFatCalculator } from '../../features/calculators/hooks/useBodyFatCalculator';
 
 interface BodyFatCalculatorProps {
     content: ContentStrings;
@@ -34,200 +25,30 @@ interface BodyFatCalculatorProps {
 const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigateTo }) => {
     const { language: lang, unitSystem } = usePreferences();
     const isAr = lang === 'ar';
-    const [gender, setGender] = useState('male');
-    const [age, setAge] = useState('');
-    const [weight, setWeight] = useState('');
-    const [height, setHeight] = useState('');
-    const [waist, setWaist] = useState('');
-    const [hip, setHip] = useState('');
-    const [neck, setNeck] = useState('');
-    const [result, setResult] = useState<BodyFatResult | null>(null);
-    const [isCalculating, setIsCalculating] = useState(false);
-    const [ecosystemSynced, setEcosystemSynced] = useState(false);
-
-    // Unit conversion logic
     const isImperial = unitSystem === 'imperial';
 
-    const [baseWeight, setBaseWeight] = useState<number>(0);
-    const [baseHeight, setBaseHeight] = useState<number>(0);
-    const [baseWaist, setBaseWaist] = useState<number>(0);
-    const [baseHip, setBaseHip] = useState<number>(0);
-    const [baseNeck, setBaseNeck] = useState<number>(0);
-
-    const [lastUnitSystem, setLastUnitSystem] = useState(unitSystem);
-
-    if (lastUnitSystem !== unitSystem) {
-        setLastUnitSystem(unitSystem);
-        if (baseWeight > 0) {
-            const displayVal = convertValue(baseWeight, 'weight', unitSystem);
-            setWeight(displayVal.toFixed(1));
-        }
-        if (baseHeight > 0) {
-            const displayVal = convertValue(baseHeight, 'height', unitSystem);
-            setHeight(displayVal.toFixed(1));
-        }
-        if (baseWaist > 0) {
-            const displayVal = convertValue(baseWaist, 'length', unitSystem);
-            setWaist(displayVal.toFixed(1));
-        }
-        if (baseHip > 0) {
-            const displayVal = convertValue(baseHip, 'length', unitSystem);
-            setHip(displayVal.toFixed(1));
-        }
-        if (baseNeck > 0) {
-            const displayVal = convertValue(baseNeck, 'length', unitSystem);
-            setNeck(displayVal.toFixed(1));
-        }
-    }
-
-    const handleWeightChange = (val: string) => {
-        setWeight(val);
-        const num = parseFloat(normalizeNum(val));
-        if (!isNaN(num)) {
-            setBaseWeight(isImperial ? toMetric(num, 'weight') : num);
-        }
-    };
-
-    const handleHeightChange = (val: string) => {
-        setHeight(val);
-        const num = parseFloat(normalizeNum(val));
-        if (!isNaN(num)) {
-            setBaseHeight(isImperial ? toMetric(num, 'height') : num);
-        }
-    };
-
-    const handleWaistChange = (val: string) => {
-        setWaist(val);
-        const num = parseFloat(normalizeNum(val));
-        if (!isNaN(num)) {
-            setBaseWaist(isImperial ? toMetric(num, 'length') : num);
-        }
-    };
-
-    const handleHipChange = (val: string) => {
-        setHip(val);
-        const num = parseFloat(normalizeNum(val));
-        if (!isNaN(num)) {
-            setBaseHip(isImperial ? toMetric(num, 'length') : num);
-        }
-    };
-
-    const handleNeckChange = (val: string) => {
-        setNeck(val);
-        const num = parseFloat(normalizeNum(val));
-        if (!isNaN(num)) {
-            setBaseNeck(isImperial ? toMetric(num, 'length') : num);
-        }
-    };
-
-    // Helper to normalize Arabic/Persian digits to English
-    const normalizeNum = (str: string) => {
-        return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)])
-            .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
-    };
-
-    const calculateBodyFat = () => {
-        const a = parseFloat(normalizeNum(age));
-        const w = baseWeight;
-        const h = baseHeight;
-        const wi = baseWaist;
-        const hi = baseHip;
-        const n = baseNeck;
-
-        if (!a || !w || !h || !wi || !n || (gender === 'female' && !hi)) {
-            toast.error(isAr ? "يرجى إدخال جميع القيم المطلوبة" : "Please enter all required values");
-            return;
-        }
-
-        setIsCalculating(true);
-        setResult(null);
-
-        setTimeout(() => {
-            let bodyFatPercentage: number;
-
-            // Using US Navy Body Fat Formula
-            if (gender === 'male') {
-                bodyFatPercentage = 495 / (1.20 * (wi / 100) + 0.23 * a - 0.10 * (n / 100) - 5.4) - 450;
-            } else {
-                bodyFatPercentage = 495 / (1.20 * (wi / 100) + 0.23 * a - 0.10 * (n / 100) - 0.20 * (hi / 100) - 5.4) - 450;
-            }
-
-            bodyFatPercentage = Math.max(0, Math.min(100, bodyFatPercentage));
-
-            const bodyFatMass = (w * bodyFatPercentage) / 100;
-            const leanBodyMass = w - bodyFatMass;
-            const bmi = w / ((h / 100) * (h / 100));
-
-            // Determine category based on body fat percentage
-            let category: string;
-            if (gender === 'male') {
-                if (bodyFatPercentage < 6) category = content.bfCategories.essential;
-                else if (bodyFatPercentage < 13) category = content.bfCategories.athletes;
-                else if (bodyFatPercentage < 17) category = content.bfCategories.fitness;
-                else if (bodyFatPercentage < 25) category = content.bfCategories.average;
-                else category = content.bfCategories.obese;
-            } else {
-                if (bodyFatPercentage < 16) category = content.bfCategories.essential;
-                else if (bodyFatPercentage < 23) category = content.bfCategories.athletes;
-                else if (bodyFatPercentage < 28) category = content.bfCategories.fitness;
-                else if (bodyFatPercentage < 35) category = content.bfCategories.average;
-                else category = content.bfCategories.obese;
-            }
-
-            setResult({
-                bodyFatPercentage: parseFloat(bodyFatPercentage.toFixed(1)),
-                bodyFatMass: parseFloat(bodyFatMass.toFixed(1)),
-                leanBodyMass: parseFloat(leanBodyMass.toFixed(1)),
-                bmi: parseFloat(bmi.toFixed(1)),
-                category
-            });
-
-            // Dispatch event for AI Context Partitioning
-            window.dispatchEvent(new CustomEvent('bodyfat_calculated', {
-                detail: {
-                    bodyFatPercentage: parseFloat(bodyFatPercentage.toFixed(1)),
-                    leanBodyMass: parseFloat(leanBodyMass.toFixed(1)),
-                    bmi: parseFloat(bmi.toFixed(1)),
-                    category
-                }
-            }));
-
-            setIsCalculating(false);
-            setTimeout(() => setEcosystemSynced(true), 1000);
-        }, 1500);
-    };
-
-    // Get category color based on percentage
-    const getCategoryColor = () => {
-        if (!result) return 'text-gold-500';
-        if (gender === 'male') {
-            if (result.bodyFatPercentage < 13) return 'text-green-500';
-            if (result.bodyFatPercentage < 17) return 'text-yellow-500';
-            if (result.bodyFatPercentage < 25) return 'text-orange-500';
-            return 'text-red-500';
-        } else {
-            if (result.bodyFatPercentage < 23) return 'text-green-500';
-            if (result.bodyFatPercentage < 28) return 'text-yellow-500';
-            if (result.bodyFatPercentage < 35) return 'text-orange-500';
-            return 'text-red-500';
-        }
-    };
-
-    // Get category description
-    const getCategoryDescription = () => {
-        if (!result) return '';
-        const desc = gender === 'male' ? content.bfCategoryDescriptions.male : content.bfCategoryDescriptions.female;
-
-        if (gender === 'male') {
-            if (result.bodyFatPercentage < 13) return desc.athletes;
-            if (result.bodyFatPercentage < 25) return desc.average;
-            return desc.obese;
-        } else {
-            if (result.bodyFatPercentage < 23) return desc.athletes;
-            if (result.bodyFatPercentage < 35) return desc.average;
-            return desc.obese;
-        }
-    };
+    const {
+        gender,
+        setGender,
+        age,
+        setAge,
+        weight,
+        handleWeightChange,
+        height,
+        handleHeightChange,
+        waist,
+        handleWaistChange,
+        hip,
+        handleHipChange,
+        neck,
+        handleNeckChange,
+        result,
+        isCalculating,
+        ecosystemSynced,
+        calculate,
+        getCategoryColor,
+        getCategoryDescription
+    } = useBodyFatCalculator({ content, unitSystem });
 
     return (
         <div className={`max-w-7xl mx-auto px-4 py-16`} dir={isAr ? 'rtl' : 'ltr'}>
@@ -287,19 +108,25 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                         )}
                     </AnimatePresence>
 
-                    <div className="flex gap-3 p-1.5 bg-zinc-100 dark:bg-black/40 rounded-2xl">
-                        <button
-                            onClick={() => setGender('male')}
-                            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'male' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}
-                        >
-                            <User className="w-4 h-4" /> {content.bfMale}
-                        </button>
-                        <button
-                            onClick={() => setGender('female')}
-                            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 ${gender === 'female' ? 'bg-white dark:bg-zinc-800 shadow-lg text-gold-600' : 'text-zinc-400 hover:text-zinc-300'}`}
-                        >
-                            <User className="w-4 h-4" /> {content.bfFemale}
-                        </button>
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { id: 'male', label: content.bfMale, icon: User },
+                            { id: 'female', label: content.bfFemale, icon: User }
+                        ].map((g) => (
+                            <button
+                                key={g.id}
+                                onClick={() => setGender(g.id as 'male' | 'female')}
+                                className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-start ${gender === g.id ? 'bg-gold-500/10 border-gold-500 text-gold-500 shadow-lg shadow-gold-500/10' : 'bg-zinc-50 dark:bg-zinc-900/50 border-transparent text-zinc-500 hover:border-zinc-200 dark:hover:border-zinc-800'}`}
+                            >
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${gender === g.id ? 'bg-gold-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
+                                    <g.icon className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 opacity-60">GENDER</span>
+                                    <span className="text-sm font-black truncate">{g.label}</span>
+                                </div>
+                            </button>
+                        ))}
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
@@ -395,7 +222,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={calculateBodyFat}
+                        onClick={calculate}
                         disabled={isCalculating}
                         className={`w-full py-4 bg-gold-500 hover:bg-gold-400 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 relative overflow-hidden group animate-glow`}
                     >

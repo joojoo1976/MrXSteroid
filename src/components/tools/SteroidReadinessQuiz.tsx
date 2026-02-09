@@ -1,24 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight, Zap, Activity, Dumbbell } from 'lucide-react';
 import { ContentStrings } from '../../types';
 import { StyledBrandName } from '../shared/StyledBrandName';
+import { useReadinessQuiz } from '../../features/calculators/hooks/useReadinessQuiz';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () => void }> = ({ content, onComplete }) => {
-    const [currentQ, setCurrentQ] = useState(0);
-    const [score, setScore] = useState(0);
-    const [finished, setFinished] = useState(false);
-
-    const handleAnswer = (points: number) => {
-        setScore(s => s + points);
-        if (currentQ < content.quiz.questions.length - 1) {
-            setCurrentQ(q => q + 1);
-        } else {
-            setFinished(true);
-        }
-    };
-
-    const result = score >= 3 ? content.quiz.results.enhanced : content.quiz.results.natural;
+    const {
+        currentQ,
+        finished,
+        handleAnswer,
+        result
+    } = useReadinessQuiz({ content, onComplete });
 
     return (
         <section id="readiness-quiz" className="py-8 lg:py-10 bg-background text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
@@ -138,36 +131,40 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                             transition={{ duration: 1 }}
                                             className="w-40 h-40 bg-gradient-to-br from-gold-400 via-yellow-200 to-gold-600 rounded-[3rem] flex items-center justify-center relative shadow-3xl ring-8 ring-white/10"
                                         >
-                                            {score >= 3 ? <Trophy className="w-20 h-20 text-black animate-bounce" /> : <ShieldCheck className="w-20 h-20 text-black animate-pulse" />}
+                                            {result && result.title.includes('Enhanced') ? <Trophy className="w-20 h-20 text-black animate-bounce" /> : <ShieldCheck className="w-20 h-20 text-black animate-pulse" />}
                                         </motion.div>
                                     </div>
 
-                                    <h3 className="text-5xl md:text-7xl font-black mb-10 bg-clip-text text-transparent bg-gradient-to-r from-white via-gold-400 to-white animate-text-flash tracking-tight">
-                                        {result.title}
-                                    </h3>
+                                    {result && (
+                                        <>
+                                            <h3 className="text-5xl md:text-7xl font-black mb-10 bg-clip-text text-transparent bg-gradient-to-r from-white via-gold-400 to-white animate-text-flash tracking-tight">
+                                                {result.title}
+                                            </h3>
 
-                                    <motion.div
-                                        initial={{ y: 20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{ delay: 0.4 }}
-                                        className="bg-background/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
-                                    >
-                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
-                                        <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"<StyledBrandName text={result.desc} />"</p>
-                                        <Activity className="absolute bottom-6 right-10 w-16 h-16 text-white/5 group-hover:text-gold-500/10 transition-colors" />
-                                    </motion.div>
+                                            <motion.div
+                                                initial={{ y: 20, opacity: 0 }}
+                                                animate={{ y: 0, opacity: 1 }}
+                                                transition={{ delay: 0.4 }}
+                                                className="bg-background/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
+                                            >
+                                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
+                                                <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"<StyledBrandName text={result.desc} />"</p>
+                                                <Activity className="absolute bottom-6 right-10 w-16 h-16 text-white/5 group-hover:text-gold-500/10 transition-colors" />
+                                            </motion.div>
 
-                                    <motion.button
-                                        whileHover={{ scale: 1.1, boxShadow: "0 0 50px rgba(234, 179, 8, 0.4)" }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={onComplete}
-                                        className="w-full md:w-auto px-20 py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 mx-auto relative overflow-hidden group"
-                                    >
-                                        <span className="relative z-10">{result.cta}</span>
-                                        <ChevronRight className="w-8 h-8 relative z-10 group-hover:translate-x-3 transition-transform" />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                                        <Zap className="absolute top-2 left-4 w-6 h-6 text-white/30 animate-pulse" />
-                                    </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.1, boxShadow: "0 0 50px rgba(234, 179, 8, 0.4)" }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={onComplete}
+                                                className="w-full md:w-auto px-20 py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 mx-auto relative overflow-hidden group"
+                                            >
+                                                <span className="relative z-10">{result.cta}</span>
+                                                <ChevronRight className="w-8 h-8 relative z-10 group-hover:translate-x-3 transition-transform" />
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                                                <Zap className="absolute top-2 left-4 w-6 h-6 text-white/30 animate-pulse" />
+                                            </motion.button>
+                                        </>
+                                    )}
                                 </motion.div>
                             )}
                         </AnimatePresence>

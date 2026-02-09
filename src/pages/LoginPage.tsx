@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { toast } from 'sonner';
-import { errorHandler } from '../lib/error-handler';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useLogin } from '../features/auth/hooks/useLogin';
 
 // Design System
 import { Button } from "@/components/ui/button";
@@ -20,89 +16,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { createLoginSchema, LoginFormValues } from '../lib/schemas';
 
 interface LoginPageProps {
   content: ContentStrings;
   navigateTo: (page: Page) => void;
 }
 
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_TIME = 30000; // 30 seconds
-
 const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
   const { isRTL } = usePreferences();
 
-  const [loading, setLoading] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
-  const [lockoutTimer, setLockoutTimer] = useState(0);
-
-  // Check for verified parameter
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('verified') === 'true') {
-      toast.success(isRTL ? "تم تفعيل حسابك بنجاح! يمكنك الآن تسجيل الدخول." : "Account verified successfully! You can now log in.");
-    }
-  }, [isRTL]);
-
-  // Rate Limiting Logic
-  useEffect(() => {
-    if (attempts >= MAX_ATTEMPTS) {
-      setIsLocked(true);
-      setLockoutTimer(LOCKOUT_TIME / 1000);
-      const interval = setInterval(() => {
-        setLockoutTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setIsLocked(false);
-            setAttempts(0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [attempts]);
-
-  // Zod Schema
-  const loginSchema = createLoginSchema(isRTL);
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const { form, loading, isLocked, lockoutTimer, onSubmit } = useLogin({
+    isRTL,
+    navigateTo
   });
-
-  const handleEmailLogin = async (values: LoginFormValues) => {
-    if (isLocked) {
-      toast.error(isRTL ? `حاول مرة أخرى بعد ${lockoutTimer} ثانية` : `Too many attempts. Try again in ${lockoutTimer}s`);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        setAttempts((prev) => prev + 1);
-        throw error;
-      }
-
-      toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
-      navigateTo(Page.DASHBOARD);
-    } catch (error) {
-      await errorHandler.handle(error, 'Login');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center bg-black p-4" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -140,7 +66,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
 
         {/* Email Login Form (Zod) */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-2 mb-1">
+          <form onSubmit={onSubmit} className="space-y-2 mb-1">
             <FormField
               control={form.control}
               name="email"
