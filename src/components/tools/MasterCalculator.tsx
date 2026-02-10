@@ -162,7 +162,7 @@ const MasterCalculator: React.FC<MasterCalculatorProps> = ({ navigateTo }) => {
                                     onClick={() => setState(prev => ({ ...prev, experience: exp }))}
                                     className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${state.experience === exp ? 'bg-zinc-900 border-gold-500 text-gold-500 shadow-lg' : 'bg-zinc-50 dark:bg-zinc-900 border-transparent text-zinc-500'}`}
                                 >
-                                    {exp === 'beginner' ? (content.labTestsEn?.[0]?.name ? (isRTL ? 'مبتدئ' : 'Beginner') : 'Beginner') : // Fallback if no specific translation for exp
+                                    {exp === 'beginner' ? (isRTL ? 'مبتدئ' : 'Beginner') : // Fallback if no specific translation for exp
                                         exp === 'intermediate' ? (isRTL ? 'متوسط' : 'Intermediate') :
                                             (isRTL ? 'محترف' : 'Pro')}
                                 </button>

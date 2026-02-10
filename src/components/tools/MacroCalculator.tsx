@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BicepsFlexed, Utensils, Droplet, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Scale, User, UtensilsCrossed } from 'lucide-react';
+import { BicepsFlexed, Utensils, Droplet, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Scale, User, UtensilsCrossed, Target, Trophy, ChefHat } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BrandLogo from '../shared/BrandLogo';
 import AdPlaceholder from '../shared/AdPlaceholder';

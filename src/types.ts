@@ -1237,6 +1237,13 @@ export interface ContentStrings {
     stabilityIndex: string;
     loadingVault: string;
   };
+  // Macro Calculator Additional Labels
+  calcPreparationStepsLabel?: string;
+  calcExpertAdviceLabel?: string;
+  calcMealAdvice?: string;
+  calcOptimizedForStack?: string;
+  // Master Calculator Additional Labels
+  labTestsEn?: string;
 }
 
 export interface TableRow {
