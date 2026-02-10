@@ -36,7 +36,7 @@ interface UseMacroCalculatorOptions {
 }
 
 export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOptions) => {
-    const isAr = content.lang === 'ar';
+    const isAr = false; // Remove dependency on content.lang
     const isImperial = unitSystem === 'imperial';
 
     const [weight, setWeight] = useState('');

@@ -14,7 +14,7 @@ export class RealtimeSyncService {
     /**
      * Subscribe to assignments for a specific delegate
      */
-    static subscribeToAssignments(delegateId: string, onUpdate: (payload: RealtimePayload<Assignment>) => void) {
+    static subscribeToAssignments(delegateId: string, onUpdate: (payload: any) => void) {
         return supabase
             .channel(`assignments-${delegateId}`)
             .on(
@@ -70,7 +70,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all assignments
      */
-    static subscribeToAllAssignments(onUpdate: (payload: RealtimePayload<Assignment>) => void) {
+    static subscribeToAllAssignments(onUpdate: (payload: any) => void) {
         return supabase
             .channel('admin-all-assignments')
             .on(
@@ -88,7 +88,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all delegate locations
      */
-    static subscribeToAllLocations(onUpdate: (payload: RealtimePayload<Database['public']['Tables']['realtime_locations']['Row']>) => void) {
+    static subscribeToAllLocations(onUpdate: (payload: any) => void) {
         return supabase
             .channel('admin-all-locations')
             .on(

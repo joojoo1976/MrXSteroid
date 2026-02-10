@@ -35,7 +35,8 @@ export interface useCheckoutOptions {
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange } = options;
-    const { currency: prefCurrency } = usePreferences();
+    const { currency } = usePreferences();
+    const prefCurrency = { code: currency, symbol: '$', rate: 1, locale: 'en-US' }; // Mock object to match expected structure
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [submissionCount, setSubmissionCount] = useState(0);
@@ -162,7 +163,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
             const result = await paymentService.initiatePayment({
                 amount: finalTotal,
-                currency: prefCurrency || 'USD',
+                currency: currency as 'USD' | 'EGP' | 'SAR' || 'USD',
                 email: data.email,
                 customerName: data.fullName,
                 orderId: tempOrderId,

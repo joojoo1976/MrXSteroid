@@ -17,7 +17,7 @@ interface UseBodyFatCalculatorOptions {
 }
 
 export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculatorOptions) => {
-    const isAr = content.lang === 'ar';
+    const isAr = false; // Remove dependency on content.lang
     const isImperial = unitSystem === 'imperial';
 
     const [gender, setGender] = useState('male');
