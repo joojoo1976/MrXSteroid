@@ -44,25 +44,27 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             <CheckCircle className="w-12 h-12 text-green-500" />
                         </div>
                         <CardTitle className="text-3xl font-black mb-4">{content.signupTitle}</CardTitle>
-                        <CardDescription className="text-zinc-500 mb-8 leading-relaxed text-lg font-medium">
+                        <CardDescription className="text-zinc-400 mb-8 leading-relaxed text-lg font-medium">
                             {content.signupSuccess || (isRTL
-                                ? "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب."
-                                : "Account created successfully! Please check your email to verify your account.")}
-                            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold flex items-center justify-center gap-2">
-                                <AlertTriangle className="w-4 h-4" />
-                                {isRTL
-                                    ? "هام: يرجى فحص صندوق البريد المزعج (Junk / Spam) إذا لم تجد الرسالة."
-                                    : "Important: Please check your Junk / Spam folder if you don't see the email."}
+                                ? "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتنشيط حسابك قبل تسجيل الدخول."
+                                : "Account created successfully! Please check your email and click the confirmation link before logging in.")}
+                            <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-500 text-sm font-bold flex items-center justify-center gap-2">
+                                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                                <span className="text-start">
+                                    {isRTL
+                                        ? "تنبيه: إذا لم تجد الرسالة، افحص صندوق البريد المزعج (Junk / Spam)."
+                                        : "Note: If you don't see the email, please check your Junk / Spam folder."}
+                                </span>
                             </div>
                         </CardDescription>
                         <Button
                             onClick={() => navigateTo(Page.LOGIN)}
-                            className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-xl rounded-xl shadow-xl transition-all hover:scale-[1.02]"
+                            className="w-full h-14 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-xl shadow-xl transition-all hover:scale-[1.02]"
                         >
                             {content.loginBtn}
                         </Button>
-                        <p className="mt-6 text-sm text-zinc-400 font-bold animate-pulse">
-                            {isRTL ? "سيتم توجيهك تلقائياً خلال ثوانٍ..." : "Redirecting automatically in a few seconds..."}
+                        <p className="mt-6 text-sm text-zinc-500 font-bold">
+                            {isRTL ? "ستقوم بتسجيل الدخول بعد التفعيل." : "You will be able to log in after verification."}
                         </p>
                     </Card>
                 </motion.div>

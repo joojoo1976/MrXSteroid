@@ -138,6 +138,41 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem('mrx_theme', theme);
     }, [theme]);
 
+    // Side Effects: User Profile Currency Sync
+    useEffect(() => {
+        const syncProfile = async (userId: string) => {
+            try {
+                const response = await import('../lib/supabase').then(m => m.supabase
+                    .from('profiles')
+                    .select('currency')
+                    .eq('id', userId)
+                    .single());
+
+                const data = response.data as { currency: string } | null;
+
+                if (data?.currency) {
+                    setCurrency(data.currency);
+                    localStorage.setItem('mrx_currency', data.currency);
+                }
+            } catch (err) {
+                console.warn('Profile sync failed:', err);
+            }
+        };
+
+        const { data: { subscription } } = import('../lib/supabase').then(async m => {
+            const { data } = await m.supabase.auth.getSession();
+            if (data.session?.user) syncProfile(data.session.user.id);
+
+            return m.supabase.auth.onAuthStateChange((_event, session) => {
+                if (session?.user) syncProfile(session.user.id);
+            });
+        }) as any;
+
+        return () => {
+            if (subscription) subscription.unsubscribe();
+        };
+    }, []);
+
     const setLanguage = useCallback((newLang: Language) => {
         setLanguageState(newLang);
         localStorage.setItem('mrx_explicit_language', newLang);

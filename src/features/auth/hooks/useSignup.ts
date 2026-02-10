@@ -41,6 +41,8 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                     data: {
                         full_name: values.fullName,
                         user_name: values.username,
+                        currency: 'USD',
+                        role: 'user'
                     },
                     emailRedirectTo: `${window.location.origin}/auth/callback`,
                 },
@@ -49,28 +51,28 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             if (error) throw error;
 
             if (data.user?.identities && data.user.identities.length === 0) {
-                // User already exists
-                throw new Error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
+                toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
+                return;
             }
 
             setSuccess(true);
             toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
 
-            // Auto-redirect to login after 5 seconds
             setTimeout(() => navigateTo(Page.LOGIN), 5000);
 
         } catch (error: any) {
             console.error('Signup error:', error);
-            
-            // Provide more specific error messages
-            let errorMessage = error.message || (isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.");
-            
-            if (error.message?.includes('User already registered')) {
+
+            let errorMessage = isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.";
+
+            if (error.message?.includes('User already registered') || error.status === 400) {
                 errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
             } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
-                errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your internet connection.";
+                errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your connection.";
+            } else if (error.status === 429) {
+                errorMessage = isRTL ? "لقد حاولت عدة مرات. يرجى الانتظار قليلاً." : "Too many requests. Please wait a moment.";
             }
-            
+
             toast.error(errorMessage);
             await errorHandler.handle(error, 'Signup');
         } finally {

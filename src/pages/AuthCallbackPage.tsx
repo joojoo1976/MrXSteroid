@@ -2,12 +2,14 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { useAuth } from '../context/AuthContext';
 import { Page } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
 
 const AuthCallbackPage: React.FC = () => {
     const navigate = useNavigate();
-    const { setUser } = useAuth();
+    const { setUser } = useAuth() as any;
+    const { isRTL } = usePreferences();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
@@ -15,7 +17,7 @@ const AuthCallbackPage: React.FC = () => {
                 // Get the current URL and extract hash fragment
                 const hashFragment = window.location.hash.substring(1); // Remove the '#'
                 const params = new URLSearchParams(hashFragment);
-                
+
                 // Check for error in URL
                 const errorDescription = params.get('error_description');
                 if (errorDescription) {
@@ -27,54 +29,50 @@ const AuthCallbackPage: React.FC = () => {
                 // Check for access token and refresh token
                 const accessToken = params.get('access_token');
                 const refreshToken = params.get('refresh_token');
-                
+
                 if (accessToken && refreshToken) {
-                    // Use Supabase to set session
                     const { data, error } = await supabase.auth.setSession({
                         access_token: accessToken,
                         refresh_token: refreshToken
                     });
 
-                    if (error) {
-                        console.error('Error setting session:', error);
-                        toast.error('Failed to complete authentication. Please try logging in again.');
-                        navigate(Page.LOGIN);
-                    } else {
-                        // Successfully authenticated
-                        setUser(data.user);
-                        toast.success('Authentication successful!');
-                        
-                        // Redirect to dashboard or home
-                        navigate(Page.DASHBOARD);
-                    }
+                    if (error) throw error;
+
+                    setUser(data.user);
+                    toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
+                    navigate(Page.DASHBOARD);
                 } else {
-                    // Fallback: try to get session from Supabase
-                    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-                    
-                    if (sessionError || !sessionData.session) {
-                        console.error('No session found:', sessionError);
-                        toast.error('Authentication failed. Please try again.');
-                        navigate(Page.LOGIN);
-                    } else {
-                        setUser(sessionData.user);
-                        toast.success('Authentication successful!');
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError) throw sessionError;
+
+                    if (session) {
+                        setUser(session.user);
+                        toast.success(isRTL ? 'مرحباً بك مجدداً!' : 'Welcome back!');
                         navigate(Page.DASHBOARD);
+                    } else {
+                        // If no session, it might be an email confirmation link that didn't provide tokens in fragment
+                        // but Supabase might have handled it via cookies if same origin.
+                        // Or it's an invalid access.
+                        console.warn('No session found in callback');
+                        toast.info(isRTL ? 'يرجى تسجيل الدخول.' : 'Please log in to continue.');
+                        navigate(Page.LOGIN);
                     }
                 }
             } catch (error: any) {
-                console.error('Unexpected error during auth callback:', error);
-                toast.error('An unexpected error occurred. Please try again.');
+                console.error('Auth callback error:', error);
+                toast.error(isRTL ? 'فشل التحقق. يرجى المحاولة مرة أخرى.' : 'Verification failed. Please try again.');
                 navigate(Page.LOGIN);
             }
         };
 
         handleAuthCallback();
-        
+
         // Clean up URL hash after processing
         if (window.location.hash) {
             history.replaceState(null, '', window.location.pathname);
         }
-    }, [navigate, setUser]);
+    }, [navigate, setUser, isRTL]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">

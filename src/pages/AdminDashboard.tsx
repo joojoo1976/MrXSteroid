@@ -40,11 +40,18 @@ const AdminDashboard: React.FC = () => {
                 .select('*')
                 .order('timestamp', { ascending: false });
 
-            // Map locations to delegates (simplistic for demo)
-            const delegatesWithLoc = (delegatesData || []).map(d => ({
-                ...d,
-                latest_location: locations?.find(l => l.delegate_id === d.id)
-            })) as ExtendedDelegate[];
+            // Map locations to delegates (using the latest location for each)
+            const delegatesWithLoc = (delegatesData || []).map(d => {
+                const latestLoc = locations?.find(l => l.delegate_id === d.id);
+                return {
+                    ...d,
+                    latest_location: latestLoc ? {
+                        latitude: latestLoc.latitude,
+                        longitude: latestLoc.longitude,
+                        timestamp: latestLoc.timestamp
+                    } : undefined
+                };
+            }) as ExtendedDelegate[];
 
             setDelegates(delegatesWithLoc);
 
@@ -70,7 +77,14 @@ const AdminDashboard: React.FC = () => {
 
         // Real-time Subscriptions
         const locSub = RealtimeSyncService.subscribeToAllLocations((payload) => {
-            setDelegates(prev => prev.map(d => d.id === payload.new.delegate_id ? { ...d, latest_location: payload.new } : d));
+            setDelegates(prev => prev.map(d => d.id === payload.new.delegate_id ? {
+                ...d,
+                latest_location: {
+                    latitude: payload.new.latitude,
+                    longitude: payload.new.longitude,
+                    timestamp: payload.new.timestamp
+                }
+            } : d));
         });
 
         const assignSub = RealtimeSyncService.subscribeToAllAssignments((payload) => {
@@ -159,7 +173,12 @@ const AdminDashboard: React.FC = () => {
 
                                     {delegate.latest_location ? (
                                         <div className="space-y-1">
-                                            <p className="text-[10px] text-zinc-500 font-bold uppercase">Last Seen</p>
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-[10px] text-zinc-500 font-bold uppercase">Last Seen</p>
+                                                <p className="text-[10px] text-zinc-600 font-mono">
+                                                    {new Date(delegate.latest_location.timestamp).toLocaleTimeString()}
+                                                </p>
+                                            </div>
                                             <p className="text-xs text-zinc-400 font-mono">LAT: {delegate.latest_location.latitude.toFixed(4)} LNG: {delegate.latest_location.longitude.toFixed(4)}</p>
                                         </div>
                                     ) : (
@@ -203,6 +222,7 @@ const AdminDashboard: React.FC = () => {
                                         <div className="flex gap-2">
                                             <select
                                                 id={`assign-${order.id}`}
+                                                title="Assign to Delegate"
                                                 className="bg-black border border-zinc-800 rounded text-xs text-white p-1 flex-1"
                                             >
                                                 <option value="">Select Agent...</option>
