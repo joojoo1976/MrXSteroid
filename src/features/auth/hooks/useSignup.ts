@@ -34,33 +34,44 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         setLoading(true);
 
         try {
-            const signupOptions = {
-                data: {
-                    full_name: values.fullName,
-                    user_name: values.username,
-                },
-                emailRedirectTo: window.location.origin + '/dashboard',
-            };
-
             const { data, error } = await supabase.auth.signUp({
                 email: values.email,
                 password: values.password,
-                options: signupOptions,
+                options: {
+                    data: {
+                        full_name: values.fullName,
+                        user_name: values.username,
+                    },
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                },
             });
 
             if (error) throw error;
 
-            if (!data.user) {
-                throw new Error(isRTL ? "فشل إنشاء المستخدم. قد يكون البريد الإلكتروني مستخدماً بالفعل." : "User creation failed. Email might already be in use.");
+            if (data.user?.identities && data.user.identities.length === 0) {
+                // User already exists
+                throw new Error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
             }
 
             setSuccess(true);
-            toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني." : "Account created! Check your email."));
+            toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
 
             // Auto-redirect to login after 5 seconds
             setTimeout(() => navigateTo(Page.LOGIN), 5000);
 
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Signup error:', error);
+            
+            // Provide more specific error messages
+            let errorMessage = error.message || (isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.");
+            
+            if (error.message?.includes('User already registered')) {
+                errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
+            } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
+                errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your internet connection.";
+            }
+            
+            toast.error(errorMessage);
             await errorHandler.handle(error, 'Signup');
         } finally {
             setLoading(false);

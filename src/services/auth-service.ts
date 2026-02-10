@@ -36,7 +36,7 @@ export const authService = {
                         full_name,
                         user_name,
                     },
-                    emailRedirectTo: `${env.SITE_URL}/dashboard`,
+                    emailRedirectTo: `${env.SITE_URL}/auth/callback`,
                 },
             });
 
@@ -54,7 +54,13 @@ export const authService = {
                 throw error;
             }
 
-            return { user: data.user, session: data.session, error: null };
+            // Check if user was created successfully
+            if (data.user) {
+                return { user: data.user, session: data.session, error: null };
+            } else {
+                // If no error but no user, it might be that user already exists
+                throw new Error('User registration failed. The email might already be registered.');
+            }
 
         } catch (error: unknown) {
             // Use the centralized error handler but allow UI to receive the formatted message

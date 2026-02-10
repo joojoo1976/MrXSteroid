@@ -58,7 +58,8 @@ export enum Page {
   PAYMENT_CANCEL = 'payment_cancel',
   PAYMENT_PENDING = 'payment_pending',
   REPRESENTATIVE = 'representative',
-  ADMIN_DASHBOARD = 'admin_dashboard'
+  ADMIN_DASHBOARD = 'admin_dashboard',
+  AUTH_CALLBACK = 'auth_callback'
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus';
