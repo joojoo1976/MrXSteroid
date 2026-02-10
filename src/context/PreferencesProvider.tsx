@@ -148,7 +148,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
                     .eq('id', userId)
                     .single());
 
-                const data = response.data as { currency: string } | null;
+                const data = response.data as unknown as { currency: string } | null;
 
                 if (data?.currency) {
                     setCurrency(data.currency);
