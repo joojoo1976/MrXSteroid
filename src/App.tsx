@@ -71,6 +71,7 @@ const CancelPage = React.lazy(() => import('./pages/CancelPage'));
 const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage'));
 const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
 
 // End of imports cleanup
 
@@ -321,6 +322,7 @@ function AppContent({
               )}
               {currentPage === Page.REPRESENTATIVE && <AuthGuard><RepresentativePage /></AuthGuard>}
               {currentPage === Page.ADMIN_DASHBOARD && <AuthGuard><AdminDashboard /></AuthGuard>}
+              {currentPage === Page.AUTH_CALLBACK && <AuthCallbackPage />}
             </Suspense>
           </main>
         )}
@@ -427,6 +429,8 @@ export default function App() {
         setCurrentPage(Page.REPRESENTATIVE);
       } else if (path === '/admin') {
         setCurrentPage(Page.ADMIN_DASHBOARD);
+      } else if (path === '/auth/callback' || path === '/callback') {
+        setCurrentPage(Page.AUTH_CALLBACK);
       }
 
       // Check for reset_password flow
