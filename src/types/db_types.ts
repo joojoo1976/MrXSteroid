@@ -59,6 +59,7 @@ export type Database = {
                     user_name: string | null
                     subscription_status: string // 'inactive' | 'active' etc.
                     created_at: string
+                    role: 'user' | 'delegate' | 'admin'
                 }
                 Insert: {
                     id: string
@@ -67,6 +68,7 @@ export type Database = {
                     user_name?: string | null
                     subscription_status?: string
                     created_at?: string
+                    role?: 'user' | 'delegate' | 'admin'
                 }
                 Update: {
                     id?: string
@@ -75,6 +77,7 @@ export type Database = {
                     user_name?: string | null
                     subscription_status?: string
                     created_at?: string
+                    role?: 'user' | 'delegate' | 'admin'
                 }
                 Relationships: [
                     {
@@ -82,6 +85,118 @@ export type Database = {
                         columns: ["id"]
                         isOneToOne: true
                         referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            delegates: {
+                Row: {
+                    id: string
+                    status: 'active' | 'inactive' | 'busy'
+                    vehicle_type: string | null
+                    updated_at: string
+                }
+                Insert: {
+                    id: string
+                    status?: 'active' | 'inactive' | 'busy'
+                    vehicle_type?: string | null
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    status?: 'active' | 'inactive' | 'busy'
+                    vehicle_type?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "delegates_id_fkey"
+                        columns: ["id"]
+                        isOneToOne: true
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            realtime_locations: {
+                Row: {
+                    id: string
+                    delegate_id: string
+                    latitude: number
+                    longitude: number
+                    speed: number | null
+                    heading: number | null
+                    timestamp: string
+                }
+                Insert: {
+                    id?: string
+                    delegate_id: string
+                    latitude: number
+                    longitude: number
+                    speed?: number | null
+                    heading?: number | null
+                    timestamp?: string
+                }
+                Update: {
+                    id?: string
+                    delegate_id?: string
+                    latitude?: number
+                    longitude?: number
+                    speed?: number | null
+                    heading?: number | null
+                    timestamp?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "realtime_locations_delegate_id_fkey"
+                        columns: ["delegate_id"]
+                        isOneToOne: false
+                        referencedRelation: "delegates"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            delivery_assignments: {
+                Row: {
+                    id: string
+                    order_id: string
+                    delegate_id: string | null
+                    status: 'assigned' | 'picked_up' | 'on_the_way' | 'delivered' | 'failed'
+                    assigned_at: string
+                    completed_at: string | null
+                    notes: string | null
+                }
+                Insert: {
+                    id?: string
+                    order_id: string
+                    delegate_id?: string | null
+                    status?: 'assigned' | 'picked_up' | 'on_the_way' | 'delivered' | 'failed'
+                    assigned_at?: string
+                    completed_at?: string | null
+                    notes?: string | null
+                }
+                Update: {
+                    id?: string
+                    order_id?: string
+                    delegate_id?: string | null
+                    status?: 'assigned' | 'picked_up' | 'on_the_way' | 'delivered' | 'failed'
+                    assigned_at?: string
+                    completed_at?: string | null
+                    notes?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "delivery_assignments_order_id_fkey"
+                        columns: ["order_id"]
+                        isOneToOne: false
+                        referencedRelation: "orders"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "delivery_assignments_delegate_id_fkey"
+                        columns: ["delegate_id"]
+                        isOneToOne: false
+                        referencedRelation: "delegates"
                         referencedColumns: ["id"]
                     }
                 ]

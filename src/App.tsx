@@ -69,6 +69,8 @@ const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage'));
 const SuccessPage = React.lazy(() => import('./pages/SuccessPage'));
 const CancelPage = React.lazy(() => import('./pages/CancelPage'));
 const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage'));
+const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 
 // End of imports cleanup
 
@@ -317,6 +319,8 @@ function AppContent({
                   locale={lang}
                 />
               )}
+              {currentPage === Page.REPRESENTATIVE && <AuthGuard><RepresentativePage /></AuthGuard>}
+              {currentPage === Page.ADMIN_DASHBOARD && <AuthGuard><AdminDashboard /></AuthGuard>}
             </Suspense>
           </main>
         )}
@@ -419,6 +423,10 @@ export default function App() {
         setCurrentPage(Page.PAYMENT_CANCEL);
       } else if (path === '/payment-pending') {
         setCurrentPage(Page.PAYMENT_PENDING);
+      } else if (path === '/representative') {
+        setCurrentPage(Page.REPRESENTATIVE);
+      } else if (path === '/admin') {
+        setCurrentPage(Page.ADMIN_DASHBOARD);
       }
 
       // Check for reset_password flow
