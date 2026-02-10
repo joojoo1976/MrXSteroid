@@ -159,17 +159,20 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
             }
         };
 
-        const { data: { subscription } } = import('../lib/supabase').then(async m => {
+        let authSubscription: { unsubscribe: () => void } | null = null;
+
+        import('../lib/supabase').then(async m => {
             const { data } = await m.supabase.auth.getSession();
             if (data.session?.user) syncProfile(data.session.user.id);
 
-            return m.supabase.auth.onAuthStateChange((_event, session) => {
+            const { data: { subscription } } = m.supabase.auth.onAuthStateChange((_event, session) => {
                 if (session?.user) syncProfile(session.user.id);
             });
-        }) as any;
+            authSubscription = subscription;
+        });
 
         return () => {
-            if (subscription) subscription.unsubscribe();
+            if (authSubscription) authSubscription.unsubscribe();
         };
     }, []);
 
