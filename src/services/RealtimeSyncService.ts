@@ -4,11 +4,17 @@ import { Database } from '../types/db_types';
 type Delegate = Database['public']['Tables']['delegates']['Row'];
 type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];
 
+interface RealtimePayload<T> {
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+    new: T;
+    old: Partial<T>;
+}
+
 export class RealtimeSyncService {
     /**
      * Subscribe to assignments for a specific delegate
      */
-    static subscribeToAssignments(delegateId: string, onUpdate: (payload: { eventType: string, new: Assignment, old: Partial<Assignment> }) => void) {
+    static subscribeToAssignments(delegateId: string, onUpdate: (payload: RealtimePayload<Assignment>) => void) {
         return supabase
             .channel(`assignments-${delegateId}`)
             .on(
@@ -28,19 +34,24 @@ export class RealtimeSyncService {
      * Update delegate location
      */
     static async updateLocation(delegateId: string, lat: number, lng: number, extra?: { speed?: number, heading?: number }) {
-        const { error } = await supabase
-            .from('realtime_locations')
-            .insert({
-                delegate_id: delegateId,
-                latitude: lat,
-                longitude: lng,
-                speed: extra?.speed || null,
-                heading: extra?.heading || null,
-                timestamp: new Date().toISOString()
-            });
+        try {
+            const { error } = await supabase
+                .from('realtime_locations')
+                .insert({
+                    delegate_id: delegateId,
+                    latitude: lat,
+                    longitude: lng,
+                    speed: extra?.speed || null,
+                    heading: extra?.heading || null,
+                    timestamp: new Date().toISOString()
+                });
 
-        if (error) console.error('Error updating location:', error);
-        return !error;
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error('Error updating location:', error);
+            return false;
+        }
     }
 
     /**
@@ -59,7 +70,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all assignments
      */
-    static subscribeToAllAssignments(onUpdate: (payload: { eventType: string, new: Assignment, old: Partial<Assignment> }) => void) {
+    static subscribeToAllAssignments(onUpdate: (payload: RealtimePayload<Assignment>) => void) {
         return supabase
             .channel('admin-all-assignments')
             .on(
@@ -77,7 +88,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all delegate locations
      */
-    static subscribeToAllLocations(onUpdate: (payload: { eventType: 'INSERT', new: Database['public']['Tables']['realtime_locations']['Row'] }) => void) {
+    static subscribeToAllLocations(onUpdate: (payload: RealtimePayload<Database['public']['Tables']['realtime_locations']['Row']>) => void) {
         return supabase
             .channel('admin-all-locations')
             .on(

@@ -35,45 +35,50 @@ export const authService = {
                     data: {
                         full_name,
                         user_name,
+                        currency: 'USD',
+                        role: 'user'
                     },
                     emailRedirectTo: `${env.SITE_URL}/auth/callback`,
                 },
             });
 
             if (error) {
-                // Check for common network/SMTP errors often masked as generic fetch failures
+                // Map cryptic Supabase errors to user-friendly messages
                 if (error.message.includes('fetch') || error.message.includes('network')) {
-                    throw new Error('Network error: Unable to reach authentication server. Please check your connection.');
+                    throw new Error('NETWORK_UNREACHABLE');
                 }
 
-                // Specific Brevo/SMTP related hints (Supabase sometimes returns cryptic 500s for SMTP failures)
-                if (error.status === 500) {
-                    console.warn('Potential SMTP Handshake Failure. Check Brevo settings.');
+                if (error.status === 429) {
+                    throw new Error('RATE_LIMIT_EXCEEDED');
+                }
+
+                if (error.message.includes('User already registered') || error.status === 400) {
+                    throw new Error('EMAIL_EXISTS');
                 }
 
                 throw error;
             }
 
-            // Check if user was created successfully
             if (data.user) {
                 return { user: data.user, session: data.session, error: null };
             } else {
-                // If no error but no user, it might be that user already exists
-                throw new Error('User registration failed. The email might already be registered.');
+                throw new Error('REGISTRATION_FAILED');
             }
 
-        } catch (error: unknown) {
-            // Use the centralized error handler but allow UI to receive the formatted message
+        } catch (error: any) {
             errorHandler.handle(error, 'AuthService.signUp');
 
-            const errorMessage = error instanceof Error
-                ? error.message
-                : 'An unexpected error occurred during sign up.';
+            let message = 'UNKNOWN_ERROR';
+            if (error.message === 'NETWORK_UNREACHABLE') message = 'NETWORK_ERROR';
+            else if (error.message === 'RATE_LIMIT_EXCEEDED') message = 'TOO_MANY_REQUESTS';
+            else if (error.message === 'EMAIL_EXISTS') message = 'USER_ALREADY_EXISTS';
+            else if (error.message === 'REGISTRATION_FAILED') message = 'FAILED_TO_CREATE_ACCOUNT';
+            else message = error.message || 'SIGNUP_ERROR';
 
             return {
                 user: null,
                 session: null,
-                error: errorMessage
+                error: message
             };
         }
     },

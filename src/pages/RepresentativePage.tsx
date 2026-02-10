@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { RealtimeSyncService } from '../services/RealtimeSyncService';
 import { Database } from '../types/db_types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -20,7 +21,7 @@ const RepresentativePage: React.FC = () => {
 
         // 1. Initial Load: Get status and assignments
         const loadInitData = async () => {
-            const { data: delegate } = await RealtimeSyncService['supabase']
+            const { data: delegate } = await supabase
                 .from('delegates')
                 .select('*')
                 .eq('id', user.id)
@@ -28,7 +29,7 @@ const RepresentativePage: React.FC = () => {
 
             if (delegate) setStatus(delegate.status);
 
-            const { data: activeAssignments } = await RealtimeSyncService['supabase']
+            const { data: activeAssignments } = await supabase
                 .from('delivery_assignments')
                 .select('*')
                 .eq('delegate_id', user.id)
@@ -51,21 +52,24 @@ const RepresentativePage: React.FC = () => {
             }
         });
 
-        // 3. Location Tracking (Simple intervals for demo, usually use navigator.geolocation.watchPosition)
-        const locationInterval = setInterval(() => {
-            if (status === 'active' || status === 'busy') {
-                navigator.geolocation.getCurrentPosition((pos) => {
+        // 3. Location Tracking (Using watchPosition for real-time efficiency)
+        let watchId: number | null = null;
+        if (status === 'active' || status === 'busy') {
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
                     RealtimeSyncService.updateLocation(user.id, pos.coords.latitude, pos.coords.longitude, {
                         speed: pos.coords.speed || undefined,
                         heading: pos.coords.heading || undefined
                     });
-                });
-            }
-        }, 30000); // Every 30 seconds
+                },
+                (err) => console.error('Geolocation error:', err),
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
 
         return () => {
             subscription.unsubscribe();
-            clearInterval(locationInterval);
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
         };
     }, [user, status]);
 
@@ -105,6 +109,12 @@ const RepresentativePage: React.FC = () => {
                         {status.toUpperCase()}
                     </Button>
                 </CardHeader>
+                {status === 'active' && (
+                    <div className="px-6 pb-4 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Live Sync Active</span>
+                    </div>
+                )}
             </Card>
 
             {/* Assignments List */}
