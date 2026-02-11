@@ -2,5 +2,10 @@
     "html.validate.scripts": false,
     "javascript.validate.enable": false,
     "css.validate": false,
-    "webhint.enable": false
+    "webhint.enable": false,
+    "cloudcode.active-kubeconfig": "eb2ffd72546f43569d20047291d0893d",
+    "cloudcode.apigee.emulators": [
+        "1.9.2",
+        "eb2ffd72546f43569d20047291d0893d"
+    ]
 }

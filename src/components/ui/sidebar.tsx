@@ -42,7 +42,7 @@ const SidebarProvider = React.forwardRef<
       open: openProp,
       onOpenChange: setOpenProp,
       className,
-      style,
+      style, // Used for custom styling of the sidebar provider
       children,
       ...props
     },

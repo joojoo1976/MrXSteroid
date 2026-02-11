@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
-import { Database } from '../../types/db_types';
 
 /**
  * Enterprise-Grade Auth Guard (Client-Side)

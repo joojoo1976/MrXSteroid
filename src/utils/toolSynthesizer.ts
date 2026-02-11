@@ -44,7 +44,14 @@ export const synthesizeBodyFatResult = (result: BodyFatResult, isRTL: boolean = 
     return synthesizeToolResult('BodyFatCalculator', data, isRTL);
 };
 
-export const synthesizeGeneticPotential = (result: any, isRTL: boolean = false): string => {
+interface GeneticPotentialResult {
+    maxLeanMass?: number;
+    currentPotential?: number;
+    limitStatus?: string;
+    [key: string]: unknown;
+}
+
+export const synthesizeGeneticPotential = (result: GeneticPotentialResult, isRTL: boolean = false): string => {
     // Assuming genetic potential structure
     const data = {
         max_lean_mass: result.maxLeanMass,

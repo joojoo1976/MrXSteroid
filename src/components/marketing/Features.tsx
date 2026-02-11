@@ -11,7 +11,7 @@ interface FeaturesProps {
 }
 
 const Features: React.FC<FeaturesProps> = ({ content }) => {
-  const { isRTL } = usePreferences();
+  const { isRTL } = usePreferences(); // Used conditionally based on feature content
   return (
     <section id="features" className="py-24 bg-zinc-50 dark:bg-background border-t border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
       {/* Background Decor */}

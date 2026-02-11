@@ -5,7 +5,6 @@ import {
     ShieldCheck,
     TrendingUp,
     Info,
-    Activity,
     Scale,
     User,
     FlaskConical,

@@ -75,11 +75,10 @@ export async function generateOpenAIResponse(
 
             // Handle tool calls
             const assistantMessage = { ...message, role: 'assistant' };
-            messages.push(assistantMessage as any);
+            messages.push(assistantMessage as OpenAI.Chat.Completions.ChatCompletionMessageParam);
 
-            for (const toolCall of message.tool_calls) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const tc = toolCall as any;
+            for (const toolCall of message.tool_calls || []) {
+                const tc = toolCall as OpenAI.Chat.Completions.ChatCompletionMessageToolCall;
                 const args = JSON.parse(tc.function.arguments);
                 const result = await executeToolCall(tc.function.name, args);
 
@@ -143,8 +142,7 @@ export async function streamOpenAIResponse(
                 tool_choice: 'auto'
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const toolCalls: any[] = [];
+            const toolCalls: OpenAI.Chat.Completions.ChatCompletionMessageToolCall[] = [];
             let currentContent = '';
 
             for await (const chunk of stream) {
@@ -180,8 +178,7 @@ export async function streamOpenAIResponse(
                     tool_calls: toolCalls
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                currentMessages.push(assistantMsg as any);
+                currentMessages.push(assistantMsg as OpenAI.Chat.Completions.ChatCompletionMessageParam);
 
                 for (const tc of toolCalls) {
                     try {

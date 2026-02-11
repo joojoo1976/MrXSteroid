@@ -12,7 +12,7 @@ interface KineticCounterProps {
 
 const KineticCounter: React.FC<KineticCounterProps> = ({
     value,
-    duration = 2,
+    duration = 2, // Used for animation timing configuration
     className = "",
     prefix = "",
     suffix = "",

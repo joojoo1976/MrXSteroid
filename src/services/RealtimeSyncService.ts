@@ -10,11 +10,19 @@ interface RealtimePayload<T> {
     old: Partial<T>;
 }
 
+// Define proper payload types for Supabase realtime events
+type SupabaseRealtimePayload<T> = {
+    commit_timestamp: string;
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+    new: T;
+    old: Partial<T>;
+};
+
 export class RealtimeSyncService {
     /**
      * Subscribe to assignments for a specific delegate
      */
-    static subscribeToAssignments(delegateId: string, onUpdate: (payload: any) => void) {
+    static subscribeToAssignments(delegateId: string, onUpdate: (payload: SupabaseRealtimePayload<Assignment>) => void) {
         return supabase
             .channel(`assignments-${delegateId}`)
             .on(
@@ -48,7 +56,7 @@ export class RealtimeSyncService {
 
             if (error) throw error;
             return true;
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error updating location:', error);
             return false;
         }
@@ -70,7 +78,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all assignments
      */
-    static subscribeToAllAssignments(onUpdate: (payload: any) => void) {
+    static subscribeToAllAssignments(onUpdate: (payload: SupabaseRealtimePayload<Assignment>) => void) {
         return supabase
             .channel('admin-all-assignments')
             .on(
@@ -88,7 +96,7 @@ export class RealtimeSyncService {
     /**
      * (Admin Only) Subscribe to all delegate locations
      */
-    static subscribeToAllLocations(onUpdate: (payload: any) => void) {
+    static subscribeToAllLocations(onUpdate: (payload: SupabaseRealtimePayload<Database['public']['Tables']['realtime_locations']['Row']>) => void) {
         return supabase
             .channel('admin-all-locations')
             .on(

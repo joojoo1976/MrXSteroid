@@ -14,7 +14,11 @@ export interface StackItem {
 }
 
 export interface SimulationResult {
-    chartData: any[];
+    chartData: {
+        [key: string]: number;
+        day: number;
+        total: number;
+    }[];
     compoundNames: string[];
     maxLevel: number;
     stabilityScore: number;
@@ -27,7 +31,12 @@ export interface SimulationResult {
     };
     pctStartDay: number;
     daysToSimulate: number;
-    pctProtocol: any[];
+    pctProtocol: {
+        drug: string;
+        loading: string;
+        maintenance: string;
+        note: string;
+    }[];
     pctIntensity: number;
     aromatizationRisk: number;
     stabilityTips: string;
@@ -41,7 +50,7 @@ interface UseHalfLifeVisualizerOptions {
 }
 
 export const useHalfLifeVisualizer = ({ content, isRTL }: UseHalfLifeVisualizerOptions) => {
-    const loadSavedStack = () => {
+    const loadSavedStack = (): StackItem[] => {
         try {
             const saved = localStorage.getItem('mrx_steroid_stack');
             return saved ? JSON.parse(saved) : [];

@@ -67,6 +67,11 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
     useEffect(() => {
         if (lastUnitSystem !== unitSystem) {
             setLastUnitSystem(unitSystem);
+        }
+    }, [unitSystem, lastUnitSystem]);
+
+    useEffect(() => {
+        if (lastUnitSystem !== unitSystem) {
             if (baseWeight > 0) {
                 const displayVal = convertValue(baseWeight, 'weight', unitSystem);
                 setWeight(displayVal.toFixed(1));

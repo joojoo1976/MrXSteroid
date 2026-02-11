@@ -8,7 +8,7 @@ interface UnitToggleProps {
 }
 
 export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '' }) => {
-    const { unitSystem, setUnitSystem, language, isRTL } = usePreferences();
+    const { unitSystem, setUnitSystem, language, isRTL } = usePreferences(); // language could be used for localization
     const [isOpen, setIsOpen] = useState(false);
     const isMetric = unitSystem === 'metric';
 
