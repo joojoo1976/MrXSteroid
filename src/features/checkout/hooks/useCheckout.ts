@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { paymentService } from '../../../services/payment.service';
+import { paymentService } from '../../../shared/lib/payment.service';
 import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../../utils/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '../../../types';
 import { usePreferences } from '../../../context/PreferencesContext';
