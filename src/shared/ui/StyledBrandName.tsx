@@ -20,12 +20,13 @@ export const StyledBrandName: React.FC<StyledBrandNameProps> = ({ text, logoClas
         <>
             {parts.map((part, index) => {
                 if (part === brandFull || part === brandArFull) {
-                    return <BrandLogo key={index} isLink={true} className={logoClassName || "text-inherit"} />;
+                    return <BrandLogo key={index} isLink={false} className={logoClassName || "text-inherit"} />;
                 }
                 if (part === brandShort || part === brandArShort) {
-                    return <BrandLogo key={index} variant="short" isLink={true} className={logoClassName || "text-inherit"} />;
+                    return <BrandLogo key={index} variant="short" isLink={false} className={logoClassName || "text-inherit"} />;
                 }
-                return part;
+                // تأكد من أن النص آمن من XSS
+                return <React.Fragment key={index}>{part}</React.Fragment>;
             })}
         </>
     );
