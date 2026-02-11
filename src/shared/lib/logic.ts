@@ -55,8 +55,10 @@ export const replaceBrandWithHtml = (text: string): string => {
     const brandArFull = "مستر إكس-ستيرويد";
     const brandArShort = "مستر إكس";
     const regex = new RegExp(`(${brandFull}|${brandArFull}|${brandShort}|${brandArShort})`, 'g');
+    
+    // استخدام replace بشكل آمن دون تنفيذ JavaScript
     return text.replace(regex, (match) => {
-        return `<span class="font-chiller text-gold-500 font-bold cursor-pointer hover:underline" onclick="window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }))">${match}</span>`;
+        return `<span class="font-chiller text-gold-500 font-bold" data-brand="${match}">${match}</span>`;
     });
 };
 

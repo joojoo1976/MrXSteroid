@@ -15,8 +15,8 @@ const envSchema = z.object({
     // SpaceRemit Configuration
     SPACEREMIT_API_URL: z.string().url().default('https://spaceremit.com/api/v2'),
 
-    // Public Key (includes hardcoded fallback for stability)
-    SPACEREMIT_PUBLIC_KEY: z.string().min(1).default('***SPACEREMIT_PUBLIC_KEY_REDACTED***'),
+    // Public Key (no default to enforce configuration)
+    SPACEREMIT_PUBLIC_KEY: z.string().min(1, 'SpaceRemit Public Key is required'),
 
     // Callback URLs
     SPACEREMIT_CALLBACK_URL: z.string().url().default('https://mrxsteroid.vercel.app/api/payments/callback'),
@@ -26,7 +26,7 @@ const envSchema = z.object({
     // App Config
     MODE: z.enum(['development', 'production', 'test']).default('development'),
     SITE_URL: z.string().url().optional().default('https://mrxsteroid.vercel.app'),
-    ENCRYPTION_KEY: z.string().min(1).default('mZq4t7w9z$C&F)J@NcRfUjWnZr4u7x!A'),
+    ENCRYPTION_KEY: z.string().min(1, 'Encryption key is required'),
 
     // AI Configuration
     OPENAI_API_KEY: z.string().optional(),

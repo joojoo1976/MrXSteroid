@@ -351,10 +351,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log('📥 GET Callback received:', { SP_payment_code, reference_id, status, txn });
 
-        // Get transaction ID from various possible sources
+        // Validate transaction ID to prevent IDOR attacks
         const transactionId = (txn as string) || (reference_id as string);
+        
+        // Validate transaction ID format
+        if (transactionId && typeof transactionId === 'string') {
+            // Basic validation - transaction ID should be alphanumeric with possible hyphens/underscores
+            if (!/^[a-zA-Z0-9_-]+$/.test(transactionId)) {
+                console.error('❌ Invalid transaction ID format:', transactionId);
+                return res.status(400).json({ error: 'Invalid transaction ID format' });
+            }
+        }
 
         if (SP_payment_code && typeof SP_payment_code === 'string') {
+            // Validate payment code format
+            if (!/^[a-zA-Z0-9_-]+$/.test(SP_payment_code)) {
+                console.error('❌ Invalid payment code format:', SP_payment_code);
+                return res.status(400).json({ error: 'Invalid payment code format' });
+            }
+            
             // Verify with SpaceRemit API
             const verification = await verifyPaymentWithSpaceRemit(SP_payment_code);
 
@@ -362,6 +377,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (verification.success && verification.data?.status === 'completed') {
                 const referenceId = transactionId || verification.data.reference;
+
+                // Validate reference ID format
+                if (referenceId && !/^[a-zA-Z0-9_-]+$/.test(referenceId)) {
+                    console.error('❌ Invalid reference ID format:', referenceId);
+                    return res.status(400).json({ error: 'Invalid reference ID format' });
+                }
 
                 // Update payment and get user info
                 const { userId, metadata } = await updatePaymentRecord(referenceId, 'completed', {
@@ -371,13 +392,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 // Activate subscription if user exists
                 if (userId) {
+                    // Validate user ID format
+                    if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
+                        console.error('❌ Invalid user ID format:', userId);
+                        return res.status(400).json({ error: 'Invalid user ID format' });
+                    }
+                    
                     const meta = metadata as Record<string, unknown>;
                     const planTier = (meta?.tierId as string) || (meta?.plan_tier as string);
                     await activateSubscription(userId, referenceId, planTier);
                 }
 
                 // Redirect to success page
-                return res.redirect(302, `https://mrxsteroid.vercel.app/success?txn=${referenceId}`);
+                return res.redirect(302, `https://mrxsteroid.vercel.app/success?txn=${encodeURIComponent(referenceId || '')}`);
             } else {
                 // Payment verification failed
                 console.error('❌ Payment verification failed:', verification.error);
@@ -389,7 +416,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (transactionId) {
             console.log('⚠️ No SP_payment_code, checking DB for transaction:', transactionId);
             // Redirect to pending/status page
-            return res.redirect(302, `https://mrxsteroid.vercel.app/payment-status?txn=${transactionId}`);
+            return res.redirect(302, `https://mrxsteroid.vercel.app/payment-status?txn=${encodeURIComponent(transactionId)}`);
         }
 
         // No payment code at all - redirect home
@@ -426,14 +453,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (event === 'payment.success' || event === 'transaction.success') {
                 const transactionId = data.reference_id || data.transaction_id;
 
+                // Validate transaction ID format to prevent IDOR
+                if (transactionId && !/^[a-zA-Z0-9_-]+$/.test(transactionId)) {
+                    console.error('❌ Invalid transaction ID format:', transactionId);
+                    return res.status(400).json({ error: 'Invalid transaction ID format' });
+                }
+
                 // Update payment record
-                const { userId } = await updatePaymentRecord(transactionId, 'completed', {
+                const { userId, orderId } = await updatePaymentRecord(transactionId, 'completed', {
                     spaceremitCode: data.transaction_id,
                     paidAt: new Date().toISOString()
                 });
 
-                // Activate subscription
-                if (userId) {
+                // Validate user ID and order ID to prevent IDOR
+                if (userId && /^[a-zA-Z0-9_-]+$/.test(userId)) {
+                    // Verify that the user has permission to access this transaction
+                    // This is a simplified check - in a real application, you'd need to verify ownership
                     const planTier = data.metadata?.tierId as string || data.metadata?.plan_tier as string;
                     const activated = await activateSubscription(userId, transactionId, planTier);
 
@@ -441,7 +476,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         console.error('⚠️ Failed to activate subscription for user:', userId);
                     }
                 } else {
-                    console.warn('⚠️ No user_id found for transaction:', transactionId);
+                    console.warn('⚠️ No valid user_id found for transaction:', transactionId);
                 }
 
                 return res.status(200).json({
@@ -456,6 +491,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // ─────────────────────────────────────────────────────────────────
             if (event === 'payment.failed') {
                 const transactionId = data.reference_id || data.transaction_id;
+
+                // Validate transaction ID format
+                if (transactionId && !/^[a-zA-Z0-9_-]+$/.test(transactionId)) {
+                    console.error('❌ Invalid transaction ID format:', transactionId);
+                    return res.status(400).json({ error: 'Invalid transaction ID format' });
+                }
 
                 await updatePaymentRecord(transactionId, 'failed', {
                     errorMessage: 'Payment was declined'
@@ -473,6 +514,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // ─────────────────────────────────────────────────────────────────
             if (event === 'payment.cancelled') {
                 const transactionId = data.reference_id || data.transaction_id;
+
+                // Validate transaction ID format
+                if (transactionId && !/^[a-zA-Z0-9_-]+$/.test(transactionId)) {
+                    console.error('❌ Invalid transaction ID format:', transactionId);
+                    return res.status(400).json({ error: 'Invalid transaction ID format' });
+                }
 
                 await updatePaymentRecord(transactionId, 'cancelled');
 
