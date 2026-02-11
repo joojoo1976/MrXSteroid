@@ -77,8 +77,9 @@ export const bodyFatCalculatorTool = {
                 return { error: "Hip measurement is required for females.", field: "hipCm" };
             }
             return calculateBodyFat(args, args.weightKg);
-        } catch (e: any) {
-            return { error: e.message || "Calculation failed" };
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : "Calculation failed";
+            return { error: errorMessage };
         }
     }
 };

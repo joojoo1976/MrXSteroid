@@ -9,7 +9,19 @@ import { eliteTools, EliteToolName } from '../lib/mcp/tools';
  */
 
 // Common definitions for tool parameters
-const toolDefinitions: Record<EliteToolName, any> = {
+interface PropertyDefinition {
+    type: string;
+    description?: string;
+    enum?: string[];
+}
+
+interface ToolDefinition {
+    type: string;
+    properties: Record<string, PropertyDefinition>;
+    required?: string[];
+}
+
+const toolDefinitions: Record<EliteToolName, ToolDefinition> = {
     calculate_macros: {
         type: "object",
         properties: {
@@ -80,7 +92,7 @@ export const getGeminiTools = () => {
             name: tool.name,
             description: tool.description,
             parameters: {
-                type: "OBJECT" as any, // Cast to any to avoid strict SchemaType enum dependency
+                type: "OBJECT" as const, // Using const assertion to avoid strict SchemaType enum dependency
                 properties: toolDefinitions[tool.name as EliteToolName].properties,
                 required: toolDefinitions[tool.name as EliteToolName].required
             }
@@ -88,7 +100,11 @@ export const getGeminiTools = () => {
     };
 };
 
-export const executeToolCall = async (toolName: string, args: any) => {
+interface ToolArguments {
+    [key: string]: unknown;
+}
+
+export const executeToolCall = async (toolName: string, args: ToolArguments) => {
     const tool = eliteTools.find(t => t.name === toolName);
     if (!tool) {
         return { error: `Tool ${toolName} not found.` };
@@ -97,8 +113,10 @@ export const executeToolCall = async (toolName: string, args: any) => {
     try {
         // Zod validation (Strict Typing layer)
         const validatedArgs = tool.schema.parse(args);
-        return await tool.execute(validatedArgs as any);
-    } catch (e: any) {
-        return { error: `Validation Error: ${e.message}`, details: e.errors };
+        return await tool.execute(validatedArgs);
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : "Unknown error";
+        const errorDetails = e instanceof Error && 'errors' ? (e as { errors?: unknown }).errors : undefined;
+        return { error: `Validation Error: ${errorMessage}`, details: errorDetails };
     }
 };

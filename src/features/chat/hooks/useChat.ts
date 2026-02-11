@@ -29,11 +29,11 @@ export const useChat = ({ isRTL }: UseChatOptions) => {
 
     // Listen for tool synthesis events
     useEffect(() => {
-        const handleMacroResult = (e: any) => {
+        const handleMacroResult = (e: CustomEvent) => {
             const synthesis = synthesizeMacroResult(e.detail, isRTL);
             injectSystemContext(synthesis);
         };
-        const handleBFResult = (e: any) => {
+        const handleBFResult = (e: CustomEvent) => {
             const synthesis = synthesizeBodyFatResult(e.detail, isRTL);
             injectSystemContext(synthesis);
         };

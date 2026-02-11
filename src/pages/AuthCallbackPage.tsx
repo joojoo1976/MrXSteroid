@@ -8,7 +8,7 @@ import { usePreferences } from '../context/PreferencesContext';
 
 const AuthCallbackPage: React.FC = () => {
     const navigate = useNavigate();
-    const { setUser } = useAuth() as any;
+    const { setUser } = useAuth();
     const { isRTL } = usePreferences();
 
     useEffect(() => {
@@ -59,7 +59,7 @@ const AuthCallbackPage: React.FC = () => {
                         navigate(Page.LOGIN);
                     }
                 }
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Auth callback error:', error);
                 toast.error(isRTL ? 'فشل التحقق. يرجى المحاولة مرة أخرى.' : 'Verification failed. Please try again.');
                 navigate(Page.LOGIN);

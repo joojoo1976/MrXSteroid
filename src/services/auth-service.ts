@@ -65,7 +65,7 @@ export const authService = {
                 throw new Error('REGISTRATION_FAILED');
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             errorHandler.handle(error, 'AuthService.signUp');
 
             let message = 'UNKNOWN_ERROR';

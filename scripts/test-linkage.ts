@@ -48,8 +48,9 @@ async function runDiagnostic() {
         } else {
             console.error(`❌ Webhook Simulation Failed (Status ${response.status})`);
         }
-    } catch (e: any) {
-        console.error('❌ Webhook Network Error:', e.message);
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+        console.error('❌ Webhook Network Error:', errorMessage);
     }
 
     console.log('\n--- Diagnostic Complete ---');

@@ -46,6 +46,12 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
 
     useEffect(() => {
         if (prevUnitSystem.current !== unitSystem) {
+            prevUnitSystem.current = unitSystem;
+        }
+    }, [unitSystem]);
+
+    useEffect(() => {
+        if (prevUnitSystem.current !== unitSystem) {
             setFormData(prevFormData => {
                 const updatedForm = { ...prevFormData };
                 Object.keys(baseMeasurements).forEach(key => {
@@ -56,7 +62,6 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
                 });
                 return updatedForm;
             });
-            prevUnitSystem.current = unitSystem;
         }
     }, [unitSystem, baseMeasurements]);
 

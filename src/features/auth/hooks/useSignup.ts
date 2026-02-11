@@ -60,7 +60,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
             setTimeout(() => navigateTo(Page.LOGIN), 5000);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Signup error:', error);
 
             let errorMessage = isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.";
