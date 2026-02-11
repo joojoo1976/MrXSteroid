@@ -2,6 +2,7 @@
 import { supabase } from '../lib/supabase';
 import { errorHandler } from '../lib/error-handler';
 import { User, Session, AuthError } from '@supabase/supabase-js';
+import { securityManager } from '../security/security-enhancements';
 
 export interface SignUpOptions {
     email: string;
@@ -28,36 +29,13 @@ export const authService = {
      */
     async signUp({ email, password, full_name, user_name }: SignUpOptions): Promise<AuthResponse> {
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name,
-                        user_name,
-                        currency: 'USD',
-                        role: 'user'
-                    },
-                    emailRedirectTo: `${env.SITE_URL}/auth/callback`,
-                },
+            // Use enhanced security manager for registration
+            const data = await securityManager.secureRegister(email, password, {
+                full_name,
+                user_name,
+                currency: 'USD',
+                role: 'user'
             });
-
-            if (error) {
-                // Map cryptic Supabase errors to user-friendly messages
-                if (error.message.includes('fetch') || error.message.includes('network')) {
-                    throw new Error('NETWORK_UNREACHABLE');
-                }
-
-                if (error.status === 429) {
-                    throw new Error('RATE_LIMIT_EXCEEDED');
-                }
-
-                if (error.message.includes('User already registered') || error.status === 400) {
-                    throw new Error('EMAIL_EXISTS');
-                }
-
-                throw error;
-            }
 
             if (data.user) {
                 return { user: data.user, session: data.session, error: null };
@@ -69,11 +47,39 @@ export const authService = {
             errorHandler.handle(error, 'AuthService.signUp');
 
             let message = 'UNKNOWN_ERROR';
-            if (error.message === 'NETWORK_UNREACHABLE') message = 'NETWORK_ERROR';
-            else if (error.message === 'RATE_LIMIT_EXCEEDED') message = 'TOO_MANY_REQUESTS';
-            else if (error.message === 'EMAIL_EXISTS') message = 'USER_ALREADY_EXISTS';
-            else if (error.message === 'REGISTRATION_FAILED') message = 'FAILED_TO_CREATE_ACCOUNT';
-            else message = error.message || 'SIGNUP_ERROR';
+            if (error instanceof Error) {
+                if (error.message.includes('NETWORK_UNREACHABLE')) message = 'NETWORK_ERROR';
+                else if (error.message.includes('RATE_LIMIT_EXCEEDED')) message = 'TOO_MANY_REQUESTS';
+                else if (error.message.includes('EMAIL_EXISTS')) message = 'USER_ALREADY_EXISTS';
+                else if (error.message.includes('REGISTRATION_FAILED')) message = 'FAILED_TO_CREATE_ACCOUNT';
+                else message = error.message;
+            } else {
+                message = 'SIGNUP_ERROR';
+            }
+
+            return {
+                user: null,
+                session: null,
+                error: message
+            };
+        }
+    },
+
+    /**
+     * Signs in a user with enhanced security.
+     */
+    async signIn(email: string, password: string): Promise<AuthResponse> {
+        try {
+            const data = await securityManager.secureLogin(email, password);
+
+            return { user: data.user, session: data.session, error: null };
+        } catch (error: unknown) {
+            errorHandler.handle(error, 'AuthService.signIn');
+
+            let message = 'UNKNOWN_ERROR';
+            if (error instanceof Error) {
+                message = error.message;
+            }
 
             return {
                 user: null,
