@@ -1,218 +1,256 @@
-# Mr. X Steroid Application
+# Mr. X Steroid - Application Documentation
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Technology Stack](#technology-stack)
+4. [Installation](#installation)
+5. [Configuration](#configuration)
+6. [Security Features](#security-features)
+7. [API Endpoints](#api-endpoints)
+8. [Environment Variables](#environment-variables)
+9. [Troubleshooting](#troubleshooting)
+10. [Contributing](#contributing)
+11. [License](#license)
 
 ## Overview
-The Mr. X Steroid application is a comprehensive fitness and wellness platform designed to help users track their fitness journey, calculate macros, body fat percentage, and genetic potential. The application features advanced security, performance optimizations, and a rich user experience.
+
+Mr. X Steroid is an enterprise-grade fitness and wellness application that provides users with tools for calculating macros, body fat percentage, genetic potential, and other health metrics. The application integrates with Supabase for authentication and database management, and SpaceRemit for payment processing.
 
 ## Features
-- **Fitness Calculators**: Macro calculator, body fat calculator, genetic potential calculator
-- **AI Integration**: Advanced AI chat for fitness guidance
-- **User Authentication**: Secure login and registration system
-- **Progress Tracking**: Comprehensive progress monitoring
-- **Social Features**: Challenges, leaderboards, and community features
-- **Payment Integration**: Secure payment processing
-- **Multilingual Support**: Arabic and English interfaces
 
-## Tech Stack
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Auth, Realtime)
-- **UI Components**: Radix UI, Framer Motion
+- **Macro Calculator**: Calculate daily nutritional requirements based on body metrics and goals
+- **Body Fat Calculator**: Estimate body fat percentage using scientifically validated formulas
+- **Genetic Potential Calculator**: Estimate natural muscular potential based on skeletal measurements
+- **Half-Life Visualizer**: Visual representation of steroid half-lives and optimal dosing schedules
+- **Injection Map**: Interactive map for proper injection sites and techniques
+- **Cycle Calendar Exporter**: Export steroid cycle schedules to calendar applications
+- **Smart Lab Reference**: Comprehensive reference for interpreting lab results
+- **Steroid Readiness Quiz**: Assessment to determine readiness for steroid use
+- **AI-Powered Assistance**: Integration with Gemini and OpenAI for personalized recommendations
+- **Multi-Language Support**: Full Arabic and English localization
+- **Responsive Design**: Mobile-first responsive interface
+- **Secure Authentication**: Supabase-based authentication with role management
+- **Payment Integration**: Secure payment processing via SpaceRemit
+
+## Technology Stack
+
+### Frontend
+- **Framework**: React 19 with TypeScript
+- **Styling**: Tailwind CSS with custom themes
+- **UI Components**: Radix UI primitives with custom styling
+- **Animations**: Framer Motion
+- **Forms**: React Hook Form with Zod validation
+- **State Management**: React Context API
+- **Routing**: React Router DOM
+
+### Backend & Services
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Real-time**: Supabase Realtime
+- **Payment Gateway**: SpaceRemit
 - **AI Integration**: Google Gemini, OpenAI
-- **Build Tool**: Vite
+- **Hosting**: Vercel
 
-## Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn package manager
-- Supabase account for backend services
+### Development Tools
+- **Build Tool**: Vite
+- **Testing**: Vitest, React Testing Library
+- **Linting**: ESLint with TypeScript
+- **Formatting**: Prettier
+- **Type Checking**: TypeScript
 
 ## Installation
 
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn package manager
+
+### Steps
 1. Clone the repository:
-```bash
-git clone <repository-url>
-cd MrXSteroid
-```
+   ```bash
+   git clone https://github.com/your-username/mrxsteroid.git
+   cd mrxsteroid
+   ```
 
 2. Install dependencies:
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 3. Create a `.env` file based on `.env.example`:
-```bash
-cp .env.example .env
-```
+   ```bash
+   cp .env.example .env
+   ```
 
-4. Update the `.env` file with your Supabase credentials and other API keys.
+4. Update the `.env` file with your Supabase and SpaceRemit credentials
 
 5. Start the development server:
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
-## Environment Variables
+## Configuration
+
+### Environment Variables
 
 The application requires the following environment variables:
 
-```bash
+#### Supabase Configuration
+- `VITE_SUPABASE_URL`: Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+
+#### SpaceRemit Configuration
+- `VITE_SPACEREMIT_PUBLIC_KEY`: SpaceRemit public key (for client-side)
+- `VITE_SPACEREMIT_CALLBACK_URL`: Payment callback URL
+- `VITE_PAYMENT_SUCCESS_URL`: Success redirect URL
+- `VITE_PAYMENT_CANCEL_URL`: Cancel redirect URL
+
+#### Server-Side Only (Vercel Environment Variables)
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key (for server-side operations)
+- `SPACEREMIT_SECRET_KEY`: SpaceRemit secret key (for server-side operations)
+- `SPACEREMIT_WEBHOOK_SECRET`: Webhook verification secret
+
+#### Optional AI Configuration
+- `VITE_GEMINI_API_KEY`: Google Gemini API key
+- `VITE_OPENAI_API_KEY`: OpenAI API key
+
+### Database Setup
+
+The application uses Supabase for database management. You'll need to set up the following tables:
+
+1. `profiles` - User profile information
+2. `subscriptions` - User subscription status
+3. `payments` - Payment transaction records
+4. `user_history` - User calculation history
+5. `contact_messages` - Contact form submissions
+
+## Security Features
+
+### Data Protection
+- All sensitive API keys are stored in environment variables and never committed to the repository
+- Input validation is performed on all user inputs
+- XSS protection is implemented in all HTML rendering functions
+- IDOR (Insecure Direct Object Reference) protection is implemented in payment callbacks
+
+### Authentication & Authorization
+- Supabase-based authentication with secure session management
+- Role-based access control (user, delegate, admin)
+- Secure password requirements (minimum 8 characters, uppercase, lowercase, number, special character)
+- Rate limiting for authentication attempts
+
+### Payment Security
+- Secure payment processing via SpaceRemit
+- Webhook signature verification
+- Transaction ID validation
+- Proper authorization checks in payment callbacks
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signout` - User logout
+
+### Payments
+- `POST /api/payments/create` - Create payment session
+- `POST /api/payments/callback` - Payment callback handler
+- `GET /api/payments/status/:id` - Get payment status
+
+### Calculators
+- `POST /api/calculators/macro` - Calculate macros
+- `POST /api/calculators/body-fat` - Calculate body fat
+- `POST /api/calculators/genetic-potential` - Calculate genetic potential
+
+### User Data
+- `GET /api/user/profile` - Get user profile
+- `PUT /api/user/profile` - Update user profile
+- `GET /api/user/history` - Get calculation history
+
+## Environment Variables
+
+### Required Variables
+The following variables are required for the application to function:
+
+```env
 # Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Payment Gateway (SpaceRemit)
-VITE_SPACEREMIT_PUBLIC_KEY=your_public_key
-VITE_SPACEREMIT_CALLBACK_URL=your_callback_url
-
-# AI Services (Optional)
-VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_OPENAI_API_KEY=your_openai_api_key
+# SpaceRemit Configuration
+VITE_SPACEREMIT_PUBLIC_KEY=your_spaceremit_public_key
+VITE_SPACEREMIT_CALLBACK_URL=https://yourdomain.com/api/payments/callback
+VITE_PAYMENT_SUCCESS_URL=https://yourdomain.com/success
+VITE_PAYMENT_CANCEL_URL=https://yourdomain.com/cancel
 ```
 
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `npm run test` - Run tests (when implemented)
-
-## Project Structure
-
+### Server-Side Only Variables (Set in Vercel/Hosting Platform)
+```env
+# Server-side only (never expose to client)
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SPACEREMIT_SECRET_KEY=your_spaceremit_secret_key
+SPACEREMIT_WEBHOOK_SECRET=your_webhook_verification_secret
 ```
-src/
-├── components/          # Reusable UI components
-├── features/            # Feature-specific modules
-│   ├── auth/           # Authentication components
-│   ├── calculators/    # Fitness calculators
-│   └── chat/          # AI chat functionality
-├── services/           # Business logic services
-├── utils/             # Utility functions
-├── lib/               # Third-party integrations
-├── types/             # Type definitions
-├── context/           # React context providers
-├── security/          # Security enhancements
-├── testing/           # Testing framework
-└── features/
-    └── rewards-social/ # Rewards and social features
-```
-
-## Key Enhancements Added
-
-### 1. Security Enhancements
-- Enhanced authentication with rate limiting
-- Input validation and sanitization
-- Session management improvements
-- Security event logging
-
-### 2. Performance Optimizations
-- Debounce and throttle utilities
-- Memoization for expensive calculations
-- Lazy loading for images
-- Virtual scrolling for large lists
-- Performance monitoring tools
-
-### 3. User Experience Improvements
-- Rich notification system
-- Progress tracking with visualization
-- Personalization settings
-- Achievement and rewards system
-- Reminder scheduling
-
-### 4. Database & Infrastructure
-- Query optimization with caching
-- Batch operations for efficiency
-- Real-time synchronization
-- Automated backup system
-- Data cleanup utilities
-
-### 5. Testing Framework
-- Unit testing capabilities
-- Integration testing
-- Performance testing
-- Mock utilities
-- Custom assertion library
-
-### 6. New Features
-- Challenge system for community engagement
-- Social posting and interaction
-- Leaderboards and rankings
-- Gamification elements
-
-## API Integration
-
-### Supabase Setup
-The application uses Supabase for authentication, database, and real-time features. Make sure to set up your Supabase project and configure the environment variables accordingly.
-
-### AI Integration
-The application supports both Google Gemini and OpenAI for AI-powered features. Configure the appropriate API keys in your environment variables.
-
-## Development Guidelines
-
-### Code Style
-- Follow TypeScript best practices
-- Use meaningful variable and function names
-- Write clear, concise comments
-- Maintain consistent formatting
-
-### Security
-- Validate all user inputs
-- Use parameterized queries
-- Implement proper authentication
-- Encrypt sensitive data
-
-### Performance
-- Implement caching strategies
-- Optimize database queries
-- Use lazy loading where appropriate
-- Monitor performance metrics
-
-### Testing
-- Write unit tests for critical functions
-- Test edge cases and error conditions
-- Verify performance under load
-- Ensure cross-browser compatibility
-
-## Deployment
-
-### Building for Production
-```bash
-npm run build
-```
-
-### Deployment Options
-- Vercel (recommended)
-- Netlify
-- Any static hosting service
-- Self-hosted Node.js server
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Environment Variables**: Ensure all required environment variables are set
-2. **Supabase Connection**: Verify your Supabase credentials and project settings
-3. **CORS Errors**: Check your Supabase project's CORS settings
-4. **API Limits**: Be aware of API rate limits for AI services
 
-### Getting Help
-- Check the documentation in `DOCUMENTATION.md`
-- Review the source code and inline comments
-- Contact the development team for support
+#### 1. Environment Variables Not Loading
+- Make sure your `.env` file is in the root directory
+- Verify that environment variable names match exactly (case-sensitive)
+- Restart the development server after adding new environment variables
+
+#### 2. Supabase Connection Issues
+- Verify that your Supabase URL and keys are correct
+- Check that your Supabase project is active
+- Ensure that Row Level Security (RLS) policies are properly configured
+
+#### 3. Payment Processing Issues
+- Verify that SpaceRemit keys are correctly configured
+- Check that callback URLs are properly set
+- Ensure that webhook secrets are configured for verification
+
+#### 4. Build Issues
+- Run `npm run build` to check for build errors
+- Verify that all dependencies are properly installed
+- Check that TypeScript compilation passes
+
+### Debugging Tips
+
+1. Enable debug logging by adding `?debug=true` to the URL
+2. Check browser console for JavaScript errors
+3. Monitor network requests for API failures
+4. Use the diagnostic page at `/diagnostic` to check system status
 
 ## Contributing
 
+We welcome contributions to the Mr. X Steroid project! To contribute:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass (`npm run test`)
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Code Standards
+
+- Use TypeScript for all new code
+- Follow the existing code style and formatting
+- Write clear, descriptive comments
+- Add tests for new functionality
+- Ensure all tests pass before submitting a PR
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-For support, please contact the development team or create an issue in the repository.
+For support, please open an issue in the GitHub repository or contact the development team.
 
 ---
 
-For more detailed technical information, see the `DOCUMENTATION.md` file.
+**Note**: This application is intended for educational purposes only. Consult with a healthcare professional before making any decisions related to fitness or health.

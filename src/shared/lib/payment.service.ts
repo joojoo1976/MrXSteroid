@@ -6,16 +6,16 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import { supabase } from '../lib/supabase';
-import { errorHandler } from '../lib/error-handler';
-import { loggers } from '../utils/logger';
-import { env } from '../config/env';
+import { supabase } from './supabase';
+import { errorHandler } from './error-handler';
+import { loggers } from './logger';
+import { env } from '../../config/env';
 import {
     PaymentInitPayload,
     PaymentSession,
     PaymentStatus,
     PaymentResult
-} from '../types/payment';
+} from '../../types/payment';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          PAYMENT SERVICE CLASS
@@ -108,28 +108,43 @@ class PaymentService {
      * Initiate Payment Transaction (Redirect Flow)
      */
     public async initiatePayment(payload: PaymentInitPayload): Promise<PaymentResult<PaymentSession>> {
-        // 1. Create payment record in database
+        // 1. Validate Public Key Format FIRST
+        const publicKey = env.SPACEREMIT_PUBLIC_KEY;
+        
+        if (!publicKey) {
+            loggers.payment.error('SpaceRemit Public Key is not configured');
+            return {
+                success: false,
+                error: {
+                    code: 'MISSING_PUBLIC_KEY',
+                    message: 'Payment gateway is not configured. Please contact support.',
+                    messageAr: 'بوابة الدفع غير مُكوَّنة. يرجى الاتصال بالدعم.'
+                }
+            };
+        }
+
+        // Validate key format (must start with pk_ for live or sb_ for sandbox)
+        const isValidFormat = publicKey.startsWith('pk_') || publicKey.startsWith('sb_');
+        if (!isValidFormat) {
+            loggers.payment.error('Invalid SpaceRemit Public Key format', { 
+                keyPrefix: publicKey.substring(0, 4) 
+            });
+            return {
+                success: false,
+                error: {
+                    code: 'INVALID_PUBLIC_KEY_FORMAT',
+                    message: 'Invalid payment gateway configuration. Key must start with pk_ or sb_',
+                    messageAr: 'تكوين بوابة الدفع غير صالح. يجب أن يبدأ المفتاح بـ pk_ أو sb_'
+                }
+            };
+        }
+
+        // 2. Create payment record in database
         const transactionId = this.generateTransactionId();
         const recordResult = await this.createPaymentRecord(payload, transactionId);
 
         if (!recordResult.success) {
             return recordResult as PaymentResult<PaymentSession>;
-        }
-
-        // 2. Validate Public Key Format before redirect
-        const publicKey = env.SPACEREMIT_PUBLIC_KEY;
-        const isSandbox = publicKey.startsWith('sb_');
-        const isStandard = publicKey.length > 20 && !publicKey.startsWith('pk_');
-
-        if (!publicKey || (!isSandbox && !isStandard)) {
-            return {
-                success: false,
-                error: {
-                    code: 'INVALID_PUBLIC_KEY',
-                    message: 'Invalid Payment Gateway Configuration.',
-                    messageAr: 'إعدادات بوابة الدفع غير صالحة.'
-                }
-            };
         }
 
         try {
@@ -173,13 +188,26 @@ class PaymentService {
                 }
             };
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             errorHandler.handle(error, 'PaymentService.initiatePayment');
+            
+            loggers.payment.error('Payment initiation failed', {
+                error: errorMessage,
+                transactionId,
+                payload: {
+                    amount: payload.amount,
+                    currency: payload.currency,
+                    email: payload.email,
+                    productId: payload.productId
+                }
+            });
+            
             return {
                 success: false,
                 error: {
                     code: 'PAYMENT_INIT_FAILED',
-                    message: 'Payment gateway error',
-                    messageAr: 'خطأ في بوابة الدفع'
+                    message: `Payment gateway error: ${errorMessage}`,
+                    messageAr: `خطأ في بوابة الدفع: ${errorMessage}`
                 }
             };
         }
