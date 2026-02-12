@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { errorHandler } from '../../../lib/error-handler';
 import { createLoginSchema, LoginFormValues } from '../../../lib/schemas';
 import { Page } from '../../../types';
+import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 
 interface UseLoginOptions {
     isRTL: boolean;
@@ -67,14 +68,31 @@ export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
 
         try {
             setLoading(true);
-            const { error } = await supabase.auth.signInWithPassword({
-                email: values.email,
-                password: values.password,
-            });
+            
+            // Check if Supabase is properly configured
+            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+            
+            let result;
+            
+            if (isSupabaseConfigured) {
+                // Use Supabase for login
+                result = await supabase.auth.signInWithPassword({
+                    email: values.email,
+                    password: values.password,
+                });
 
-            if (error) {
-                setAttempts((prev) => prev + 1);
-                throw error;
+                if (result.error) {
+                    setAttempts((prev) => prev + 1);
+                    throw result.error;
+                }
+            } else {
+                // Use mock auth service when Supabase is not configured
+                result = await mockAuthService.signIn(values.email, values.password);
+                
+                if (result.error) {
+                    setAttempts((prev) => prev + 1);
+                    throw new Error(result.error);
+                }
             }
 
             toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
