@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { errorHandler } from '../../../lib/error-handler';
 import { createSignupSchema, SignupFormValues } from '../../../lib/schemas';
 import { ContentStrings, Page } from '../../../types';
+import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 
 interface UseSignupOptions {
     content: ContentStrings;
@@ -34,23 +35,42 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         setLoading(true);
 
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email: values.email,
-                password: values.password,
-                options: {
-                    data: {
-                        full_name: values.fullName,
-                        user_name: values.username,
-                        currency: 'USD',
-                        role: 'user'
+            // Check if Supabase is properly configured
+            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+            
+            let result;
+            
+            if (isSupabaseConfigured) {
+                // Use Supabase for signup
+                result = await supabase.auth.signUp({
+                    email: values.email,
+                    password: values.password,
+                    options: {
+                        data: {
+                            full_name: values.fullName,
+                            user_name: values.username,
+                            currency: 'USD',
+                            role: 'user'
+                        },
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
                     },
-                    emailRedirectTo: `${window.location.origin}/auth/callback`,
-                },
-            });
+                });
+                
+                if (result.error) throw result.error;
+            } else {
+                // Use mock auth service when Supabase is not configured
+                result = await mockAuthService.signUp(
+                    values.email,
+                    values.password,
+                    values.fullName,
+                    values.username
+                );
+                
+                if (result.error) throw new Error(result.error);
+            }
 
-            if (error) throw error;
-
-            if (data.user?.identities && data.user.identities.length === 0) {
+            // Check for duplicate identity (for Supabase)
+            if (isSupabaseConfigured && result.data?.user?.identities && result.data.user.identities.length === 0) {
                 toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
                 return;
             }
@@ -65,12 +85,20 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
             let errorMessage = isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.";
 
-            if (error.message?.includes('User already registered') || error.status === 400) {
-                errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
-            } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
-                errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your connection.";
-            } else if (error.status === 429) {
-                errorMessage = isRTL ? "لقد حاولت عدة مرات. يرجى الانتظار قليلاً." : "Too many requests. Please wait a moment.";
+            if (error instanceof Error) {
+                if (error.message.includes('User already registered') || error.message.includes('Email already exists')) {
+                    errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
+                } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
+                    errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your connection.";
+                } else if (error.message?.includes('RATE_LIMIT_EXCEEDED') || error.message?.includes('Too many requests')) {
+                    errorMessage = isRTL ? "لقد حاولت عدة مرات. يرجى الانتظار قليلاً." : "Too many requests. Please wait a moment.";
+                } else if (error.message?.includes('INVALID_EMAIL_FORMAT')) {
+                    errorMessage = isRTL ? "تنسيق البريد الإلكتروني غير صحيح." : "Invalid email format.";
+                } else if (error.message?.includes('WEAK_PASSWORD_REQUIREMENTS')) {
+                    errorMessage = isRTL ? "كلمة المرور لا تفي بشروط الأمان." : "Password does not meet security requirements.";
+                } else {
+                    errorMessage = error.message;
+                }
             }
 
             toast.error(errorMessage);
