@@ -16,7 +16,9 @@ export const createSignupSchema = (isRTL: boolean) => z.object({
     password: z.string()
         .min(8, { message: getMessage(isRTL, "كلمة المرور يجب أن تكون 8 أحرف على الأقل", "Password must be at least 8 characters") })
         .regex(/[A-Z]/, { message: getMessage(isRTL, "يجب أن تحتوي على حرف كبير واحد على الأقل", "Must contain at least one uppercase letter") })
-        .regex(/[0-9]/, { message: getMessage(isRTL, "يجب أن تحتوي على رقم واحد على الأقل", "Must contain at least one number") }),
+        .regex(/[a-z]/, { message: getMessage(isRTL, "يجب أن تحتوي على حرف صغير واحد على الأقل", "Must contain at least one lowercase letter") })
+        .regex(/[0-9]/, { message: getMessage(isRTL, "يجب أن تحتوي على رقم واحد على الأقل", "Must contain at least one number") })
+        .regex(/[!@#$%^&*(),.?":{}|<>]/, { message: getMessage(isRTL, "يجب أن تحتوي على رمز خاص واحد على الأقل", "Must contain at least one special character") }),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: getMessage(isRTL, "كلمتا المرور غير متطابقتين", "Passwords do not match"),
