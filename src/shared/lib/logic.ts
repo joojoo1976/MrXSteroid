@@ -48,18 +48,79 @@ export const TRANSITIONS = {
  */
 
 
-export const replaceBrandWithHtml = (text: string): string => {
+/**
+ * Safely replaces brand mentions with styled elements without creating XSS vulnerabilities
+ * This function returns plain text instead of HTML to prevent XSS
+ */
+export const replaceBrandWithPlainText = (text: string): string => {
     if (!text) return text;
     const brandFull = "Mr. X-Steroid";
     const brandShort = "Mr. X";
     const brandArFull = "مستر إكس-ستيرويد";
     const brandArShort = "مستر إكس";
-    const regex = new RegExp(`(${brandFull}|${brandArFull}|${brandShort}|${brandArShort})`, 'g');
     
-    // استخدام replace بشكل آمن دون تنفيذ JavaScript
+    // Using a placeholder approach that will be handled safely by React components
+    const regex = new RegExp(`(${brandFull}|${brandArFull}|${brandShort}|${brandArShort})`, 'g');
     return text.replace(regex, (match) => {
-        return `<span class="font-chiller text-gold-500 font-bold" data-brand="${match}">${match}</span>`;
+        // Return the matched text without any HTML markup to prevent XSS
+        return match;
     });
+};
+
+/**
+ * Alternative approach: Return structured data that can be safely rendered by React components
+ */
+export interface BrandReplacementResult {
+    parts: Array<{ text: string; isBrand?: boolean; brandType?: 'full' | 'short' | 'ar-full' | 'ar-short' }>;
+}
+
+export const replaceBrandWithStructuredData = (text: string): BrandReplacementResult => {
+    if (!text) return { parts: [{ text }] };
+    
+    const brandPatterns = [
+        { pattern: "Mr. X-Steroid", type: 'full' },
+        { pattern: "Mr. X", type: 'short' },
+        { pattern: "مستر إكس-ستيرويد", type: 'ar-full' },
+        { pattern: "مستر إكس", type: 'ar-short' }
+    ];
+    
+    // Find all brand occurrences
+    const parts = [];
+    let lastIndex = 0;
+    
+    // Create a combined regex for all brands
+    const combinedPattern = new RegExp(brandPatterns.map(bp => bp.pattern).join('|'), 'g');
+    
+    let match;
+    while ((match = combinedPattern.exec(text)) !== null) {
+        // Add text before match
+        if (match.index > lastIndex) {
+            parts.push({ text: text.substring(lastIndex, match.index) });
+        }
+        
+        // Add brand match
+        const matchedPattern = brandPatterns.find(bp => bp.pattern === match[0]);
+        parts.push({ 
+            text: match[0], 
+            isBrand: true, 
+            brandType: matchedPattern?.type as 'full' | 'short' | 'ar-full' | 'ar-short' 
+        });
+        
+        lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text after last match
+    if (lastIndex < text.length) {
+        parts.push({ text: text.substring(lastIndex) });
+    }
+    
+    return { parts };
+};
+
+// Legacy function name kept for compatibility but using safe implementation
+export const replaceBrandWithHtml = (text: string): string => {
+    // Using the safe plain text implementation to prevent XSS
+    return replaceBrandWithPlainText(text);
 };
 
 /**

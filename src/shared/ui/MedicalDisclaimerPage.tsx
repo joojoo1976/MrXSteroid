@@ -4,7 +4,7 @@ import { AlertTriangle, FileCheck } from 'lucide-react';
 import { ContentStrings, Page } from '../types';
 import BrandLogo from './shared/BrandLogo';
 import DynamicBrandLogo from './layout/DynamicBrandLogo';
-import { replaceBrandWithHtml } from '../utils/logic';
+import { StyledBrandName } from './StyledBrandName';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface MedicalDisclaimerPageProps {
@@ -52,10 +52,9 @@ const MedicalDisclaimerPage: React.FC<MedicalDisclaimerPageProps> = ({ content, 
                             </div>
 
                             <div className={`text-zinc-300 leading-relaxed text-lg ${isRTL ? 'border-r-2 pr-8' : 'border-l-2 pl-8'} border-white/5 relative z-10`}>
-                                <div
-                                    className="prose dark:prose-invert max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: replaceBrandWithHtml(section.content) }}
-                                />
+                                <div className="prose dark:prose-invert max-w-none">
+                                    <StyledBrandName text={section.content} />
+                                </div>
                             </div>
 
                             {/* Decorative background element */}

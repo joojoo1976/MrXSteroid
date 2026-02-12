@@ -74,28 +74,51 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+  const colorCssVars = Object.entries(THEMES).map(
+    ([theme, prefix]) => `
+${prefix} [data-chart="${id}"] {
 ${colorConfig
-                .map(([key, itemConfig]) => {
-                  const color =
-                    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-                    itemConfig.color;
-                  return color ? `  --color-${key}: ${color};` : null;
-                })
-                .join("\n")}
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color;
+          // Sanitize color value to prevent CSS injection
+          const sanitizedColor = color ? color.replace(/[^a-zA-Z0-9#%\-\.\(\)\s,]/g, '') : null;
+          return sanitizedColor ? `  --color-${key}: ${sanitizedColor};` : null;
+        })
+        .filter(Boolean)
+        .join("\n")}
 }
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+`
+  ).join("");
+
+  // Use a safer approach to inject CSS without dangerouslySetInnerHTML
+  const styleId = `chart-style-${id}`;
+  
+  React.useEffect(() => {
+    // Check if style element already exists
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleElement) {
+      // Create new style element
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    
+    // Set the sanitized CSS content
+    styleElement.textContent = colorCssVars;
+    
+    // Cleanup function
+    return () => {
+      if (styleElement && document.head.contains(styleElement)) {
+        document.head.removeChild(styleElement);
+      }
+    };
+  }, [id, colorCssVars]);
+
+  // Return null since we're injecting styles via useEffect
+  return null;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

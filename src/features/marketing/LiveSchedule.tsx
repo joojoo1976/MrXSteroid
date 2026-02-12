@@ -68,7 +68,7 @@ const LiveSchedule: React.FC<LiveScheduleProps> = ({ content }) => {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         className="text-4xl md:text-5xl font-black text-white mb-4 uppercase italic tracking-tighter"
-                        dangerouslySetInnerHTML={{ __html: content.eliteSchedulesTitle || 'ELITE SCHEDULES' }}
+                        children={content.eliteSchedulesTitle || 'ELITE SCHEDULES'}
                     />
                     <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
                         {content.eliteSchedulesSubtitle}
