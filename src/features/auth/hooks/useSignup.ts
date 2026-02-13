@@ -55,7 +55,13 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                         emailRedirectTo: `${window.location.origin}/auth/callback`,
                     },
                 });
-                
+
+                // Check for duplicate identity (for Supabase)
+                if (result.error && (result.error.message?.includes('User already registered') || result.error.message?.includes('Email already exists'))) {
+                    toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
+                    return;
+                }
+
                 if (result.error) throw result.error;
             } else {
                 // Use mock auth service when Supabase is not configured
@@ -65,14 +71,8 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                     values.fullName,
                     values.username
                 );
-                
-                if (result.error) throw new Error(result.error);
-            }
 
-            // Check for duplicate identity (for Supabase)
-            if (isSupabaseConfigured && result.data?.user?.identities && result.data.user.identities.length === 0) {
-                toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
-                return;
+                if (result.error) throw new Error(result.error);
             }
 
             setSuccess(true);

@@ -1,5 +1,7 @@
 {
     "recommendations": [
-        "moonshot-ai.kimi-code"
+        "moonshot-ai.kimi-code",
+        "cweijan.vscode-mysql-client2",
+        "supabase.vscode-supabase-extension"
     ]
 }

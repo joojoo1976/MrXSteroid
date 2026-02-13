@@ -81,6 +81,9 @@ export class SecurityManager {
             process.env.VITE_SUPABASE_ANON_KEY!
         );
 
+        // Safely get the origin, with fallback for server-side rendering
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -90,13 +93,13 @@ export class SecurityManager {
                     // Encrypt sensitive data before storing
                     encrypted_data: this.encryptData(JSON.stringify({
                         registration_ip: await this.getClientIP(),
-                        user_agent: navigator.userAgent,
+                        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
                         registration_time: new Date().toISOString()
                     })),
                     currency: 'USD',
                     role: 'user'
                 },
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
+                emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
             },
         });
 
