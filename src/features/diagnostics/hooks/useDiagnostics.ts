@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { LinkageInspector, InspectionResult } from '../../../lib/linkage-inspector';
+import { LinkageInspector, InspectionResult } from '../../../shared/lib/linkage-inspector';
 import { env } from '../../../config/env';
 
 export interface DiagnosticStatus {

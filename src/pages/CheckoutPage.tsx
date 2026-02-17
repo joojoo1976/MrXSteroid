@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShieldCheck, ShoppingBag } from 'lucide-react';
-import { CheckoutForm, NewPricingTier } from '../components/checkout/CheckoutForm';
-import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
+import { CheckoutForm, NewPricingTier } from '../features/checkout/CheckoutForm';
+import { Button } from '../shared/ui/button';
+import { Card } from '../shared/ui/card';
 import { ContentStrings, Page, PricingTier, ProductVariant } from '../types';
-import BrandLogo from '../components/shared/BrandLogo';
+import BrandLogo from '../shared/ui/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 
-import { ProductSelector } from '../components/checkout/ProductSelector';
-import { OrderSummary } from '../components/checkout/OrderSummary';
+import { ProductSelector } from '../features/checkout/ProductSelector';
+import { OrderSummary } from '../features/checkout/OrderSummary';
 
 interface CheckoutPageProps {
     content: ContentStrings;

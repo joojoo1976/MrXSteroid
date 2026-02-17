@@ -12,13 +12,13 @@ import {
   Activity,
   Zap
 } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
-import AdPlaceholder from '../shared/AdPlaceholder';
+import BrandLogo from '../../shared/ui/BrandLogo';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import { formatLabRange } from '../../utils/logic';
-import { useSmartLabReference } from '../../features/calculators/hooks/useSmartLabReference';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import { formatLabRange } from '../../shared/lib/logic';
+import { useSmartLabReference } from './hooks/useSmartLabReference';
 
 interface SmartLabReferenceProps {
   content: ContentStrings;

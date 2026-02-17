@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { Globe, TrendingUp, Info, DollarSign, ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { toast } from 'sonner';
-import { DisclaimerModal } from '../modals/DisclaimerModal';
+import { DisclaimerModal } from '../modal/DisclaimerModal';
 import {
     arContent, enContent
 } from '../../i18n';
 import { ContentStrings } from '../../types';
-import AdPlaceholder from '../shared/AdPlaceholder';
-import { StyledBrandName } from '../shared/StyledBrandName';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { env } from '../../config/env';
 
 /**

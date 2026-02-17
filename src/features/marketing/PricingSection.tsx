@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, Zap, AlertTriangle, ArrowRight, Monitor, Package, Crown } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { ContentStrings, PricingTier } from '../../types';
-import { usePricing } from '../../features/calculators/hooks/usePricing';
+import { usePricing } from '../calculator/hooks/usePricing';
 
 interface PricingSectionProps {
     content: ContentStrings;

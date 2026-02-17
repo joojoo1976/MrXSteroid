@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { Language, ContentStrings, Theme } from '../types';
-import { UnitSystem } from '../utils/logic';
+import { UnitSystem } from '../shared/lib/logic';
 
 export type PreferenceStatus = 'BOOT' | 'DECRYPTING' | 'RESOLVING' | 'IDLE' | 'ERROR';
 

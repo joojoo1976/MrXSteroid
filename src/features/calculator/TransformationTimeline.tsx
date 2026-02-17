@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '../../types';
-import { StyledBrandName } from '../shared/StyledBrandName';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useTransformationTimeline } from '../../features/calculators/hooks/useTransformationTimeline';
+import { useTransformationTimeline } from './hooks/useTransformationTimeline';
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
     <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50">

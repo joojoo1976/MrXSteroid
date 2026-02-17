@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ShieldCheck, Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
-import { errorHandler } from '../lib/error-handler';
+import { errorHandler } from '../shared/lib/error-handler';
 import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-// Design System Components
-import { Button } from "@/components/ui/button";
+// Design System
+import { Button } from '../shared/ui/button';
 import {
     Form,
     FormControl,
@@ -19,9 +19,9 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+} from '../shared/ui/form';
+import { Input } from '../shared/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../shared/ui/card';
 
 interface ResetPasswordProps {
     content: ContentStrings;

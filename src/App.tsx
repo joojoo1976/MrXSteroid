@@ -3,48 +3,47 @@ import {
   ArrowLeft, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Toaster } from './components/ui/sonner';
+import { Toaster } from './shared/ui/sonner';
 
 // Types & Data
-import { Page, Language, PricingTier } from './types';
+import { Page, Language, PricingTier } from './shared/types/types';
 import {
   salesDataAr, salesDataEn
 } from './i18n';
-import { getWeeklyKeywords } from './utils/keywordGenerator';
+import { getWeeklyKeywords } from './shared/lib/keywordGenerator';
 
-import { initializeLocalization } from './utils/logic';
+import { initializeLocalization } from './shared/lib/logic';
 
-// Major Components
-import Header from './components/layout/Header';
-import Hero from './components/layout/Hero';
-import Features from './components/marketing/Features';
-import Footer from './components/layout/Footer';
-import AdPlaceholder from './components/shared/AdPlaceholder';
-import RevealOnScroll from './components/shared/RevealOnScroll';
+// Major Components - Fixed paths (actual location: src/shared/ui/)
+import Header from './shared/ui/Header';
+import Hero from './shared/ui/Hero';
+import Features from './features/marketing/Features';
+import Footer from './shared/ui/Footer';
+import AdPlaceholder from './shared/ui/AdPlaceholder';
+import RevealOnScroll from './shared/ui/RevealOnScroll';
 
-// Refactored Components
-import BlockingDisclaimerModal from './components/modals/BlockingDisclaimerModal';
-import LegalModal from './components/modals/LegalModal';
-import CheckoutModal from './components/modals/CheckoutModal';
-import SalesToast from './components/shared/SalesToast';
-import WhatsAppButton from './components/shared/WhatsAppButton';
-import FloatingSideIcon from './components/layout/FloatingSideIcon';
-import ChatWidget from './components/shared/ChatWidget';
-import SmartBookLanding from './components/marketing/SmartBookLanding';
+// Refactored Components - Fixed paths (actual location: src/features/modal/)
+import BlockingDisclaimerModal from './features/modal/BlockingDisclaimerModal';
+import LegalModal from './features/modal/LegalModal';
+import CheckoutModal from './features/modal/CheckoutModal';
+import SalesToast from './shared/ui/SalesToast';
+import WhatsAppButton from './shared/ui/WhatsAppButton';
+import FloatingSideIcon from './shared/ui/FloatingSideIcon';
+import SmartBookLanding from './features/marketing/SmartBookLanding';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
-// Lazy Loaded Components
-const MacroCalculator = React.lazy(() => import('./components/tools/MacroCalculator'));
-const BodyFatCalculator = React.lazy(() => import('./components/tools/BodyFatCalculator'));
-const InjectionMap = React.lazy(() => import('./components/tools/InjectionMap'));
-const HalfLifeVisualizer = React.lazy(() => import('./components/tools/HalfLifeVisualizer'));
-const SmartLabReference = React.lazy(() => import('./components/tools/SmartLabReference'));
-const GeneticPotentialCalculator = React.lazy(() => import('./components/tools/GeneticPotentialCalculator'));
-const CycleCalendarExporter = React.lazy(() => import('./components/tools/CycleCalendarExporter'));
-const MasterCalculator = React.lazy(() => import('./components/tools/MasterCalculator'));
-const MedicalDisclaimerPage = React.lazy(() => import('./components/MedicalDisclaimerPage'));
+// Lazy Loaded Components - Fixed paths (actual location: src/features/calculator/)
+const MacroCalculator = React.lazy(() => import('./features/calculator/MacroCalculator'));
+const BodyFatCalculator = React.lazy(() => import('./features/calculator/BodyFatCalculator'));
+const InjectionMap = React.lazy(() => import('./features/calculator/InjectionMap'));
+const HalfLifeVisualizer = React.lazy(() => import('./features/calculator/HalfLifeVisualizer'));
+const SmartLabReference = React.lazy(() => import('./features/calculator/SmartLabReference'));
+const GeneticPotentialCalculator = React.lazy(() => import('./features/calculator/GeneticPotentialCalculator'));
+const CycleCalendarExporter = React.lazy(() => import('./features/calculator/CycleCalendarExporter'));
+const MasterCalculator = React.lazy(() => import('./features/calculator/MasterCalculator'));
+const MedicalDisclaimerPage = React.lazy(() => import('./shared/ui/MedicalDisclaimerPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
@@ -75,23 +74,23 @@ const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
 
 // End of imports cleanup
 
-// Lazy Loaded Below-the-fold Components
-const TransformationTimeline = React.lazy(() => import('./components/tools/TransformationTimeline'));
-const SteroidReadinessQuiz = React.lazy(() => import('./components/tools/SteroidReadinessQuiz'));
-const BenefitsSection = React.lazy(() => import('./components/marketing/BenefitsSection'));
-const DailyIQChallenge = React.lazy(() => import('./components/tools/DailyIQChallenge'));
-const AuthorSection = React.lazy(() => import('./components/marketing/AuthorSection'));
-const PricingSection = React.lazy(() => import('./components/marketing/PricingSection'));
-const FAQ = React.lazy(() => import('./components/marketing/FAQ'));
-const ContactSection = React.lazy(() => import('./components/marketing/ContactSection'));
-const LiveSchedule = React.lazy(() => import('./components/marketing/LiveSchedule'));
-const ArabicVideoSection = React.lazy(() => import('./components/marketing/ArabicVideoSection'));
+// Lazy Loaded Below-the-fold Components - Fixed paths (actual location: src/features/)
+const TransformationTimeline = React.lazy(() => import('./features/calculator/TransformationTimeline'));
+const SteroidReadinessQuiz = React.lazy(() => import('./features/calculator/SteroidReadinessQuiz'));
+const BenefitsSection = React.lazy(() => import('./features/marketing/BenefitsSection'));
+const DailyIQChallenge = React.lazy(() => import('./features/calculator/DailyIQChallenge'));
+const AuthorSection = React.lazy(() => import('./features/marketing/AuthorSection'));
+const PricingSection = React.lazy(() => import('./features/marketing/PricingSection'));
+const FAQ = React.lazy(() => import('./features/marketing/FAQ'));
+const ContactSection = React.lazy(() => import('./features/marketing/ContactSection'));
+const LiveSchedule = React.lazy(() => import('./features/marketing/LiveSchedule'));
+const ArabicVideoSection = React.lazy(() => import('./features/marketing/ArabicVideoSection'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
 import { PreferencesProvider } from './context/PreferencesProvider';
-import PreferencesModal from './components/modals/PreferencesModal';
-import AuthGuard from './components/auth/AuthGuard';
+import PreferencesModal from './features/modal/PreferencesModal';
+import AuthGuard from './features/auth/AuthGuard';
 
 // Lazy Loaded Components
 
@@ -128,7 +127,7 @@ function AppContent({
   // Sync ErrorHandler with localized content
   useEffect(() => {
     if (content) {
-      import('./lib/error-handler').then(({ errorHandler }) => {
+      import('./shared/lib/error-handler').then(({ errorHandler }) => {
         errorHandler.setContent(content);
       });
     }
@@ -328,7 +327,6 @@ function AppContent({
         )}
       </div>
       <Footer content={content} navigateTo={navigateTo} openLegal={openLegal} pool={footerKeywords} />
-      <ChatWidget content={content} />
       <WhatsAppButton />
       <FloatingSideIcon />
       {currentPage === Page.HOME && <SalesToast content={content} data={salesData} />}

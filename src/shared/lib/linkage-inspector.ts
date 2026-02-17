@@ -6,7 +6,7 @@
  */
 
 import { supabase } from './supabase';
-import { env } from '../config/env';
+import { env } from '../../config/env';
 
 export type CheckType = 'full' | 'auth_only' | 'database_only' | 'webhook_only';
 

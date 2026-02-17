@@ -15,7 +15,7 @@ interface LogEntry {
     data?: unknown;
 }
 
-import { env } from '../config/env';
+import { env } from '../../config/env';
 
 /**
  * Check if we're in development mode

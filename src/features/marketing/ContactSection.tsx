@@ -23,22 +23,22 @@ import {
     Info
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../../lib/supabase';
-import { errorHandler } from '../../lib/error-handler';
+import { supabase } from '../../shared/lib/supabase';
+import { errorHandler } from '../../shared/lib/error-handler';
 import { usePreferences } from '../../context/PreferencesContext';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import DynamicBrandLogo from '../layout/DynamicBrandLogo';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import DynamicBrandLogo from '../../shared/ui/DynamicBrandLogo';
 import { ContentStrings } from '../../types';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Button } from '../ui/button';
+import { Input } from '../../shared/ui/input';
+import { Textarea } from '../../shared/ui/textarea';
+import { Button } from '../../shared/ui/button';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue
-} from '../ui/select';
+} from '../../shared/ui/select';
 
 // --- Base Schema for Types ---
 const _baseSchema = z.object({

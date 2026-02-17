@@ -9,9 +9,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, CheckCircle2, XCircle, Clock, ShieldCheck } from 'lucide-react';
-import { paymentService } from '../services/payment.service';
-import { Button } from '../components/ui/button';
-import BrandLogo from '../components/shared/BrandLogo';
+import { paymentService } from '../shared/lib/payment.service';
+import { Button } from '../shared/ui/button';
+import BrandLogo from '../shared/ui/BrandLogo';
 import { Page } from '../types';
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -6,10 +6,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
-import { Badge } from '../components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../shared/ui/card';
+import { Button } from '../shared/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '../shared/ui/alert';
+import { Badge } from '../shared/ui/badge';
 import { 
     runPaymentDiagnostic, 
     logDiagnosticReport, 

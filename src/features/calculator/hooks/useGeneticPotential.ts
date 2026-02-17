@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings } from '../../../types';
-import { convertValue, toMetric } from '../../../utils/logic';
+import { convertValue, toMetric } from '../../../shared/lib/logic';
 
 export interface GeneticResult {
     natural: number;

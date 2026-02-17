@@ -9,13 +9,13 @@ import {
     TrendingUp,
     RefreshCw
 } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
-import AdPlaceholder from '../shared/AdPlaceholder';
+import BrandLogo from '../../shared/ui/BrandLogo';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { UnitToggle } from '../shared/UnitToggle';
-import KineticCounter from '../shared/KineticCounter';
-import { useBodyFatCalculator } from '../../features/calculators/hooks/useBodyFatCalculator';
+import { UnitToggle } from '../../shared/ui/UnitToggle';
+import KineticCounter from '../../shared/ui/KineticCounter';
+import { useBodyFatCalculator } from './hooks/useBodyFatCalculator';
 
 interface BodyFatCalculatorProps {
     content: ContentStrings;

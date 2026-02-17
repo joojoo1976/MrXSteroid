@@ -2,11 +2,19 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { supabase } from '../../../lib/supabase';
-import { errorHandler } from '../../../lib/error-handler';
-import { createLoginSchema, LoginFormValues } from '../../../lib/schemas';
+import * as z from 'zod';
+import { supabase } from '../../../shared/lib/supabase';
+import { errorHandler } from '../../../shared/lib/error-handler';
 import { Page } from '../../../types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
+
+// Inline login schema
+const createLoginSchema = (isRTL: boolean) => z.object({
+    email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
+    password: z.string().min(6, isRTL ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters'),
+});
+
+type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
 
 interface UseLoginOptions {
     isRTL: boolean;

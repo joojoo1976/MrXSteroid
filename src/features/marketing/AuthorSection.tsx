@@ -3,7 +3,7 @@ import { Quote } from 'lucide-react';
 import { ContentStrings } from '../../types';
 import AuthorImage from './AuthorImage';
 
-import { StyledBrandName } from '../shared/StyledBrandName';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 
 const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => {

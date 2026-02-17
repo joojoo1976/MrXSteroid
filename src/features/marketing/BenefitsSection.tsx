@@ -2,8 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ContentStrings } from '../../types';
 import { IconRenderer } from '../../utils/icon-utils';
-import RevealOnScroll from '../shared/RevealOnScroll';
-import { StyledBrandName } from '../shared/StyledBrandName';
+import RevealOnScroll from '../../shared/ui/RevealOnScroll';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 
 const BenefitsSection: React.FC<{ content: ContentStrings }> = ({ content }) => {
     return (

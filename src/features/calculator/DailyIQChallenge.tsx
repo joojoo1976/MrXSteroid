@@ -1,8 +1,8 @@
 import React from 'react';
 import { CheckCircle, Copy, X } from 'lucide-react';
 import { ContentStrings } from '../../types';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import { useDailyIQChallenge } from '../../features/calculators/hooks/useDailyIQChallenge';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import { useDailyIQChallenge } from './hooks/useDailyIQChallenge';
 
 const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }> = ({ content, onWin }) => {
     const {

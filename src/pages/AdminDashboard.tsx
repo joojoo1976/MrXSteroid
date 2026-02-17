@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { RealtimeSyncService } from '../services/RealtimeSyncService';
-import { supabase } from '../lib/supabase';
+import { RealtimeSyncService } from '../shared/lib/RealtimeSyncService';
+import { supabase } from '../shared/lib/supabase';
 import { Database } from '../types/db_types';
-import { Card, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../shared/ui/card';
+import { Button } from '../shared/ui/button';
 import { Users, Package, Map, Bell, Search, Filter, PlayCircle } from 'lucide-react';
 import { toast } from 'sonner';
 

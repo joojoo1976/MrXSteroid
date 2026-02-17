@@ -1,0 +1,108 @@
+import React, { lazy, Suspense, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import "./main.css";
+import "./styles/chiller-font.css";
+import { performHealthCheck } from "./utils/health-check";
+
+// Run production pre-flight audit
+performHealthCheck();
+
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+    throw new Error("Could not find root element to mount to");
+}
+
+// Lazy load SpeedInsights to reduce initial bundle
+const SpeedInsights = lazy(() => import("@vercel/speed-insights/react").then(module => ({ default: module.SpeedInsights })));
+
+// Simple Error Boundary implementation
+class ErrorBoundary extends React.Component<
+    { children: React.ReactNode }, 
+    { hasError: boolean; error: Error | null }
+> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        // Only log in development
+        if (import.meta.env.DEV) {
+            console.error("Uncaught error:", error, errorInfo);
+        }
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-red-950 text-white p-6 font-sans">
+                    <h1 className="text-3xl font-bold mb-4">Something went wrong.</h1>
+                    <div className="w-full max-w-3xl bg-black/50 rounded-lg p-4 overflow-auto border border-red-800/50">
+                        <pre className="text-sm font-mono text-red-100 whitespace-pre-wrap">
+                            {this.state.error?.toString()}
+                        </pre>
+                    </div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-6 px-6 py-3 bg-white text-red-950 font-bold rounded-xl hover:bg-red-50 transition-colors shadow-lg"
+                    >
+                        Reload Page
+                    </button>
+                    <button
+                        onClick={() => { localStorage.clear(); window.location.reload(); }}
+                        className="mt-3 px-6 py-3 bg-transparent border border-red-800 text-red-400 font-medium rounded-xl hover:bg-red-900/50 transition-colors"
+                    >
+                        Clear Cache & Reload
+                    </button>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+// Loading fallback component
+const LoadingFallback = () => (
+    <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin" />
+    </div>
+);
+
+const root = createRoot(rootElement);
+root.render(
+    <React.StrictMode>
+        <ErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+                <AppWrapper />
+            </Suspense>
+        </ErrorBoundary>
+    </React.StrictMode>
+);
+
+// Wrapper component to handle lazy SpeedInsights
+function AppWrapper() {
+    const [App, setApp] = useState<React.ComponentType | null>(null);
+
+    useEffect(() => {
+        // Lazy load App component
+        import("./App").then(module => {
+            setApp(() => module.default);
+        });
+    }, []);
+
+    if (!App) return <LoadingFallback />;
+
+    return (
+        <>
+            <App />
+            <Suspense fallback={null}>
+                <SpeedInsights />
+            </Suspense>
+        </>
+    );
+}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
+import BrandLogo from '../../shared/ui/BrandLogo';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useCycleCalendarExporter } from '../../features/calculators/hooks/useCycleCalendarExporter';
+import { useCycleCalendarExporter } from './hooks/useCycleCalendarExporter';
 
 
 interface CycleCalendarExporterProps {

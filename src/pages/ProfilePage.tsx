@@ -2,10 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
-import { StyledBrandName } from '../components/shared/StyledBrandName';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
-import { md5 } from '../utils/cryptoUtils';
-import { supabase } from '../lib/supabase';
+import { StyledBrandName } from '../shared/ui/StyledBrandName';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
+import { md5 } from '../shared/lib/cryptoUtils';
+import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, User, Mail, Shield, ArrowLeft, Camera } from 'lucide-react';
 

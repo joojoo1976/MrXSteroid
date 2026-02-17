@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import EliteTable, { EliteTableColumn } from '../shared/EliteTable';
+import EliteTable, { EliteTableColumn } from '../../shared/ui/EliteTable';
 import { Activity, Zap } from 'lucide-react';
 import { ContentStrings } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';

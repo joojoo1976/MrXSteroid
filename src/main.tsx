@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./main.css";
 import "./styles/chiller-font.css";
-import { performHealthCheck } from "./utils/health-check";
+import { performHealthCheck } from "./shared/lib/health-check";
 
 // Run production pre-flight audit
 performHealthCheck();

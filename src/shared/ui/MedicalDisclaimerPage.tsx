@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, FileCheck } from 'lucide-react';
-import { ContentStrings, Page } from '../types';
-import BrandLogo from './shared/BrandLogo';
-import DynamicBrandLogo from './layout/DynamicBrandLogo';
+import { ContentStrings, Page } from '../types/types';
+import BrandLogo from './BrandLogo';
+import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from './StyledBrandName';
-import { usePreferences } from '../context/PreferencesContext';
+import { usePreferences } from '../../context/PreferencesContext';
 
 interface MedicalDisclaimerPageProps {
     content: ContentStrings;

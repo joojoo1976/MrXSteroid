@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings, Page } from '../../../types';
-import { convertValue, toMetric } from '../../../utils/logic';
+import { convertValue, toMetric } from '../../../shared/lib/logic';
 
 export interface BodyFatResult {
     bodyFatPercentage: number;

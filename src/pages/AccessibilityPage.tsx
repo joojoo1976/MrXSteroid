@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Accessibility, Eye, Ear, Keyboard, MousePointer2 } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 
 interface AccessibilityPageProps {
     content: ContentStrings;

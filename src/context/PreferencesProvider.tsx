@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { SecureStorage } from '../utils/secureStorage';
+import { SecureStorage } from '../shared/lib/secureStorage';
 import { Language, ContentStrings, Theme } from '../types';
 import { arContent, enContent } from '../i18n';
 import {
@@ -9,7 +9,7 @@ import {
     detectCountryFromBrowser,
     CURRENCY_RATES,
     formatCurrencyWithLocale
-} from '../utils/logic';
+} from '../shared/lib/logic';
 import { Currency } from '../types';
 import { PreferencesContext, PreferenceStatus } from './PreferencesContext';
 
@@ -142,7 +142,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     useEffect(() => {
         const syncProfile = async (userId: string) => {
             try {
-                const response = await import('../lib/supabase').then(m => m.supabase
+                const response = await import('../shared/lib/supabase').then(m => m.supabase
                     .from('profiles')
                     .select('currency')
                     .eq('id', userId)
@@ -161,7 +161,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
         let authSubscription: { unsubscribe: () => void } | null = null;
 
-        import('../lib/supabase').then(async m => {
+        import('../shared/lib/supabase').then(async m => {
             const { data } = await m.supabase.auth.getSession();
             if (data.session?.user) syncProfile(data.session.user.id);
 
