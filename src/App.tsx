@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import {
   ArrowLeft, Globe
 } from 'lucide-react';
+import { LazyMotion, domAnimation } from "framer-motion";
 import { toast } from 'sonner';
 import { Toaster } from './shared/ui/sonner';
 
@@ -29,10 +30,8 @@ import CheckoutModal from './features/modal/CheckoutModal';
 import SalesToast from './shared/ui/SalesToast';
 import WhatsAppButton from './shared/ui/WhatsAppButton';
 import FloatingSideIcon from './shared/ui/FloatingSideIcon';
-import SmartBookLanding from './features/marketing/SmartBookLanding';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+
+// Note: SmartBookLanding, LoginPage, SignupPage, ResetPasswordPage moved to Lazy Loaded section below
 
 // Lazy Loaded Components - Fixed paths (actual location: src/features/calculator/)
 const MacroCalculator = React.lazy(() => import('./features/calculator/MacroCalculator'));
@@ -71,6 +70,12 @@ const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage')
 const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
+
+// Lazy Loaded Auth & Landing Pages (Optimization)
+const SmartBookLanding = React.lazy(() => import('./features/marketing/SmartBookLanding'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const SignupPage = React.lazy(() => import('./pages/SignupPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 
 // End of imports cleanup
 
@@ -486,15 +491,17 @@ export default function App() {
     <AuthProvider>
       <PreferencesProvider>
         <div id="scroll-progress" />
-        <AppContent
-          theme={theme} setTheme={setTheme}
-          colorTheme={colorTheme} changeColorTheme={changeColorTheme}
-          currencyState={currencyState}
-          currentPage={currentPage} navigateTo={navigateTo}
-          isCheckoutOpen={isCheckoutOpen} setIsCheckoutOpen={setIsCheckoutOpen}
-          selectedTier={selectedTier} setSelectedTier={setSelectedTier}
-          legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
-        />
+        <LazyMotion features={domAnimation}>
+          <AppContent
+            theme={theme} setTheme={setTheme}
+            colorTheme={colorTheme} changeColorTheme={changeColorTheme}
+            currencyState={currencyState}
+            currentPage={currentPage} navigateTo={navigateTo}
+            isCheckoutOpen={isCheckoutOpen} setIsCheckoutOpen={setIsCheckoutOpen}
+            selectedTier={selectedTier} setSelectedTier={setSelectedTier}
+            legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
+          />
+        </LazyMotion>
       </PreferencesProvider>
     </AuthProvider>
   );

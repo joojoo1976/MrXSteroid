@@ -46,7 +46,7 @@ export default defineConfig({
       },
     },
     // Chunk size optimization
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000,
     // Disable source maps for production (smaller bundle)
     sourcemap: false,
     // Target modern browsers
