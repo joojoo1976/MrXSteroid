@@ -70,54 +70,59 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     ([_, config]) => config.theme || config.color,
   );
 
-  if (!colorConfig.length) {
-    return null;
-  }
+  const colorCssVars = React.useMemo(() => {
+    if (!colorConfig.length) return "";
 
-  const colorCssVars = Object.entries(THEMES).map(
-    ([theme, prefix]) => `
+    return Object.entries(THEMES).map(
+      ([theme, prefix]) => `
 ${prefix} [data-chart="${id}"] {
 ${colorConfig
-        .map(([key, itemConfig]) => {
-          const color =
-            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-            itemConfig.color;
-          // Sanitize color value to prevent CSS injection
-          const sanitizedColor = color ? color.replace(/[^a-zA-Z0-9#%\-\.\(\)\s,]/g, '') : null;
-          return sanitizedColor ? `  --color-${key}: ${sanitizedColor};` : null;
-        })
-        .filter(Boolean)
-        .join("\n")}
+          .map(([key, itemConfig]) => {
+            const color =
+              itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+              itemConfig.color;
+            // Sanitize color value to prevent CSS injection
+            const sanitizedColor = color ? color.replace(/[^a-zA-Z0-9#%\-.()\s,]/g, '') : null;
+            return sanitizedColor ? `  --color-${key}: ${sanitizedColor};` : null;
+          })
+          .filter(Boolean)
+          .join("\n")}
 }
 `
-  ).join("");
+    ).join("");
+  }, [colorConfig, id]);
 
-  // Use a safer approach to inject CSS without dangerouslySetInnerHTML
   const styleId = `chart-style-${id}`;
-  
+
   React.useEffect(() => {
     // Check if style element already exists
     let styleElement = document.getElementById(styleId) as HTMLStyleElement;
-    
+
+    // Only process if we have content
+    if (!colorCssVars && styleElement && document.head.contains(styleElement)) {
+      document.head.removeChild(styleElement);
+      return;
+    }
+    if (!colorCssVars) return;
+
     if (!styleElement) {
       // Create new style element
       styleElement = document.createElement('style');
       styleElement.id = styleId;
       document.head.appendChild(styleElement);
     }
-    
+
     // Set the sanitized CSS content
     styleElement.textContent = colorCssVars;
-    
+
     // Cleanup function
     return () => {
       if (styleElement && document.head.contains(styleElement)) {
         document.head.removeChild(styleElement);
       }
     };
-  }, [id, colorCssVars]);
+  }, [id, styleId, colorCssVars]);
 
-  // Return null since we're injecting styles via useEffect
   return null;
 };
 

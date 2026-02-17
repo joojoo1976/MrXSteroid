@@ -20,14 +20,22 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | MockUser | null>(null);
-    const [session, setSession] = useState<Session | MockSession | null>(null);
-    const [loading, setLoading] = useState(true);
+    // Check configuration once
+    const isSupabaseConfigured = Boolean(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY);
+
+    const [user, setUser] = useState<User | MockUser | null>(() => {
+        if (!isSupabaseConfigured) return mockAuthService.getCurrentUser();
+        return null;
+    });
+
+    const [session, setSession] = useState<Session | MockSession | null>(() => {
+        if (!isSupabaseConfigured) return mockAuthService.getCurrentSession();
+        return null;
+    });
+
+    const [loading, setLoading] = useState(() => isSupabaseConfigured); // If mock, not loading
 
     useEffect(() => {
-        // Check if Supabase is properly configured
-        const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-        
         if (isSupabaseConfigured) {
             // Use Supabase for authentication
             supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,39 +53,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             return () => subscription.unsubscribe();
         } else {
-            // Use mock auth service when Supabase is not configured
-            const mockUser = mockAuthService.getCurrentUser();
-            const mockSession = mockAuthService.getCurrentSession();
-            
-            setUser(mockUser);
-            setSession(mockSession);
-            setLoading(false);
-            
-            // Listen for mock auth changes
-            const handleAuthChange = () => {
-                const mockUser = mockAuthService.getCurrentUser();
-                const mockSession = mockAuthService.getCurrentSession();
-                
-                setUser(mockUser);
-                setSession(mockSession);
-            };
-            
-            // In a real implementation, we would set up event listeners
-            // For now, we'll just update the state when the component mounts
+            // Mock auth service listeners if any (currently none required as per original code)
+            // Initial state is already set via lazy init.
         }
-    }, []);
+    }, [isSupabaseConfigured]);
 
     const signOut = async () => {
         // Check if Supabase is configured
         const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-        
+
         if (isSupabaseConfigured) {
             await supabase.auth.signOut();
         } else {
             // Use mock auth service
             await mockAuthService.signOut();
         }
-        
+
         setUser(null);
         setSession(null);
     };

@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ContentStrings, Page } from '../../../types';
+import { ContentStrings } from '../../../types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
 
 export interface BodyFatResult {
@@ -44,36 +44,31 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
             .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
     };
 
-    useEffect(() => {
-        if (lastUnitSystem !== unitSystem) {
-            setLastUnitSystem(unitSystem);
-        }
-    }, [unitSystem, lastUnitSystem]);
+    // Derived state pattern: update state during render when prop changes
+    if (lastUnitSystem !== unitSystem) {
+        setLastUnitSystem(unitSystem);
 
-    useEffect(() => {
-        if (lastUnitSystem !== unitSystem) {
-            if (baseWeight > 0) {
-                const displayVal = convertValue(baseWeight, 'weight', unitSystem);
-                setWeight(displayVal.toFixed(1));
-            }
-            if (baseHeight > 0) {
-                const displayVal = convertValue(baseHeight, 'height', unitSystem);
-                setHeight(displayVal.toFixed(1));
-            }
-            if (baseWaist > 0) {
-                const displayVal = convertValue(baseWaist, 'length', unitSystem);
-                setWaist(displayVal.toFixed(1));
-            }
-            if (baseHip > 0) {
-                const displayVal = convertValue(baseHip, 'length', unitSystem);
-                setHip(displayVal.toFixed(1));
-            }
-            if (baseNeck > 0) {
-                const displayVal = convertValue(baseNeck, 'length', unitSystem);
-                setNeck(displayVal.toFixed(1));
-            }
+        if (baseWeight > 0) {
+            const displayVal = convertValue(baseWeight, 'weight', unitSystem);
+            setWeight(displayVal.toFixed(1));
         }
-    }, [unitSystem, lastUnitSystem, baseWeight, baseHeight, baseWaist, baseHip, baseNeck]);
+        if (baseHeight > 0) {
+            const displayVal = convertValue(baseHeight, 'height', unitSystem);
+            setHeight(displayVal.toFixed(1));
+        }
+        if (baseWaist > 0) {
+            const displayVal = convertValue(baseWaist, 'length', unitSystem);
+            setWaist(displayVal.toFixed(1));
+        }
+        if (baseHip > 0) {
+            const displayVal = convertValue(baseHip, 'length', unitSystem);
+            setHip(displayVal.toFixed(1));
+        }
+        if (baseNeck > 0) {
+            const displayVal = convertValue(baseNeck, 'length', unitSystem);
+            setNeck(displayVal.toFixed(1));
+        }
+    }
 
     const handleWeightChange = (val: string) => {
         setWeight(val);

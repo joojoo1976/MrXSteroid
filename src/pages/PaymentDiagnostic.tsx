@@ -10,11 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../sh
 import { Button } from '../shared/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../shared/ui/alert';
 import { Badge } from '../shared/ui/badge';
-import { 
-    runPaymentDiagnostic, 
-    logDiagnosticReport, 
+import {
+    runPaymentDiagnostic,
+    logDiagnosticReport,
     getDiagnosticSummary,
-    type PaymentDiagnosticReport 
+    type PaymentDiagnosticReport
 } from '../utils/payment-diagnostic';
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw } from 'lucide-react';
 
@@ -33,7 +33,11 @@ export default function PaymentDiagnostic() {
     };
 
     useEffect(() => {
-        runDiagnostic();
+        // Run diagnostic on mount (wrapped to avoid sync state update warning)
+        const timer = setTimeout(() => {
+            runDiagnostic();
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     if (!report) {
@@ -99,8 +103,8 @@ export default function PaymentDiagnostic() {
                     <h1 className="text-3xl font-bold">Payment Service Diagnostic</h1>
                     <p className="text-muted-foreground mt-1">تشخيص خدمة الدفع</p>
                 </div>
-                <Button 
-                    onClick={runDiagnostic} 
+                <Button
+                    onClick={runDiagnostic}
                     disabled={isRunning}
                     variant="outline"
                 >
@@ -114,7 +118,7 @@ export default function PaymentDiagnostic() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-2xl">Overall Status</CardTitle>
-                        <Badge 
+                        <Badge
                             variant={summary.status === 'healthy' ? 'default' : summary.status === 'warning' ? 'secondary' : 'destructive'}
                             className="text-lg px-4 py-1"
                         >

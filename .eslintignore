@@ -1,0 +1,12 @@
+dist
+node_modules
+.agent
+.cursor
+.roo
+.venv
+public
+scripts
+*.config.js
+*.setup.ts
+coverage
+*.d.ts

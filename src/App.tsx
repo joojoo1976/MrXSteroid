@@ -31,6 +31,12 @@ import SalesToast from './shared/ui/SalesToast';
 import WhatsAppButton from './shared/ui/WhatsAppButton';
 import FloatingSideIcon from './shared/ui/FloatingSideIcon';
 
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { usePreferences } from './context/PreferencesContext';
+import { PreferencesProvider } from './context/PreferencesProvider';
+import PreferencesModal from './features/modal/PreferencesModal';
+import AuthGuard from './features/auth/AuthGuard';
+
 // Note: SmartBookLanding, LoginPage, SignupPage, ResetPasswordPage moved to Lazy Loaded section below
 
 // Lazy Loaded Components - Fixed paths (actual location: src/features/calculator/)
@@ -91,11 +97,7 @@ const ContactSection = React.lazy(() => import('./features/marketing/ContactSect
 const LiveSchedule = React.lazy(() => import('./features/marketing/LiveSchedule'));
 const ArabicVideoSection = React.lazy(() => import('./features/marketing/ArabicVideoSection'));
 
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { usePreferences } from './context/PreferencesContext';
-import { PreferencesProvider } from './context/PreferencesProvider';
-import PreferencesModal from './features/modal/PreferencesModal';
-import AuthGuard from './features/auth/AuthGuard';
+// Lazy Loaded Components
 
 // Lazy Loaded Components
 
