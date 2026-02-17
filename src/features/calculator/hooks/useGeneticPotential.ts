@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings } from '../../../types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
@@ -38,32 +38,31 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
     const [baseMeasurements, setBaseMeasurements] = useState<Record<string, number>>({});
     const [result, setResult] = useState<GeneticResult | null>(null);
 
-    const prevUnitSystem = useRef(unitSystem);
+    const [prevSyncUnitSystem, setPrevSyncUnitSystem] = useState(unitSystem);
 
     const normalizeNum = (val: string) => {
         return val.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
     };
 
-    useEffect(() => {
-        if (prevUnitSystem.current !== unitSystem) {
-            prevUnitSystem.current = unitSystem;
-        }
-    }, [unitSystem]);
+    // Derived state pattern
+    if (prevSyncUnitSystem !== unitSystem) {
+        setPrevSyncUnitSystem(unitSystem);
 
-    useEffect(() => {
-        if (prevUnitSystem.current !== unitSystem) {
-            setFormData(prevFormData => {
-                const updatedForm = { ...prevFormData };
-                Object.keys(baseMeasurements).forEach(key => {
-                    const baseValue = baseMeasurements[key];
-                    if (baseValue) {
-                        updatedForm[key as keyof typeof formData] = convertValue(baseValue, 'height', unitSystem).toFixed(1);
-                    }
-                });
-                return updatedForm;
-            });
+        const updatedForm = { ...formData };
+        let hasUpdates = false;
+
+        Object.keys(baseMeasurements).forEach(key => {
+            const baseValue = baseMeasurements[key];
+            if (baseValue) {
+                updatedForm[key as keyof typeof formData] = convertValue(baseValue, 'height', unitSystem).toFixed(1);
+                hasUpdates = true;
+            }
+        });
+
+        if (hasUpdates) {
+            setFormData(updatedForm);
         }
-    }, [unitSystem, baseMeasurements]);
+    }
 
     const handleInputChange = (key: keyof typeof formData, val: string) => {
         const newForm = { ...formData, [key]: val };

@@ -1,8 +1,8 @@
 
-import { supabase } from '../shared/lib/supabase';
-import { errorHandler } from '../shared/lib/error-handler';
+import { supabase } from './supabase';
+import { errorHandler } from './error-handler';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { securityManager } from '../security/security-enhancements';
+import { securityManager } from './security-enhancements';
 
 export interface SignUpOptions {
     email: string;
@@ -17,7 +17,7 @@ export interface AuthResponse {
     error: AuthError | string | null;
 }
 
-import { env } from '../config/env';
+
 
 /**
  * Enterprise Auth Service for Mr. X Steroid
@@ -33,15 +33,15 @@ export const authService = {
             if (!this.isValidEmail(email)) {
                 throw new Error('INVALID_EMAIL_FORMAT');
             }
-            
+
             if (!this.isSecurePassword(password)) {
                 throw new Error('WEAK_PASSWORD_REQUIREMENTS');
             }
-            
+
             if (!full_name || full_name.trim().length < 2) {
                 throw new Error('FULL_NAME_TOO_SHORT');
             }
-            
+
             if (!user_name || user_name.trim().length < 3) {
                 throw new Error('USERNAME_TOO_SHORT');
             }
@@ -95,7 +95,7 @@ export const authService = {
             if (!this.isValidEmail(email)) {
                 throw new Error('INVALID_EMAIL_FORMAT');
             }
-            
+
             if (password.length < 1) {
                 throw new Error('PASSWORD_REQUIRED');
             }
@@ -132,7 +132,7 @@ export const authService = {
     /**
      * Validates email format
      */
-    private isValidEmail(email: string): boolean {
+    isValidEmail(email: string): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     },
@@ -140,7 +140,7 @@ export const authService = {
     /**
      * Validates password strength
      */
-    private isSecurePassword(password: string): boolean {
+    isSecurePassword(password: string): boolean {
         // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
         const minLength = /.{8,}/;
         const hasUpper = /[A-Z]/;

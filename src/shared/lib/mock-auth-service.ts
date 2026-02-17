@@ -118,7 +118,7 @@ class MockAuthService {
 
         this.users.push(newUser);
         this.currentUser = newUser;
-        
+
         // Create mock session
         this.currentSession = {
             access_token: `mock_token_${Date.now()}`,
@@ -157,7 +157,7 @@ class MockAuthService {
         // In a real implementation, we would verify the password
         // For mock implementation, we'll assume password is valid if user exists
         this.currentUser = user;
-        
+
         // Create mock session
         this.currentSession = {
             access_token: `mock_token_${Date.now()}`,
@@ -181,7 +181,7 @@ class MockAuthService {
         this.currentUser = null;
         this.currentSession = null;
         this.storeAuth();
-        
+
         // Show success message
         toast.success('Logged out successfully!');
     }
@@ -245,7 +245,7 @@ class MockAuthService {
 
         // Update user data
         this.currentUser = { ...this.currentUser, ...updates };
-        
+
         // Update session user data
         if (this.currentSession) {
             this.currentSession.user = this.currentUser;
@@ -263,12 +263,9 @@ export const mockAuthService = new MockAuthService();
 // React hook for authentication
 export const useMockAuth = () => {
     const [user, setUser] = useState<MockUser | null>(mockAuthService.getCurrentUser());
-    const [loading, setLoading] = useState(true);
+    const [loading] = useState(false); // Mock auth is synchronous
 
     useEffect(() => {
-        // Check auth status on component mount
-        setLoading(false);
-        
         // Update user state when auth changes
         const updateUser = () => {
             setUser(mockAuthService.getCurrentUser());
