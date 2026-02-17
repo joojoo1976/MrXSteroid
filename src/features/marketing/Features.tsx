@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ContentStrings } from '../../types';
-import RevealOnScroll from '../shared/RevealOnScroll';
+import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 import { IconRenderer } from '../../utils/icon-utils';
-import { StyledBrandName } from '../shared/StyledBrandName';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 
 interface FeaturesProps {

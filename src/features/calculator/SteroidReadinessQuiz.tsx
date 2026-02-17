@@ -2,8 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight, Zap, Activity, Dumbbell } from 'lucide-react';
 import { ContentStrings } from '../../types';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import { useReadinessQuiz } from '../../features/calculators/hooks/useReadinessQuiz';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import { useReadinessQuiz } from './hooks/useReadinessQuiz';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () => void }> = ({ content, onComplete }) => {
     const {

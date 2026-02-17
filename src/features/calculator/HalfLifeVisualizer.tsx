@@ -9,12 +9,12 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, ReferenceArea, Label
 } from 'recharts';
-import AdPlaceholder from '../shared/AdPlaceholder';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings } from '../../types';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import KineticCounter from '../shared/KineticCounter';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import KineticCounter from '../../shared/ui/KineticCounter';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useHalfLifeVisualizer } from '../../features/calculators/hooks/useHalfLifeVisualizer';
+import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
 
 interface HalfLifeVisualizerProps {
   content: ContentStrings;

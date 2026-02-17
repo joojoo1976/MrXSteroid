@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js';
-import { env } from '../config/env';
+import { env } from '../../config/env';
 
 const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
 const PREFIX = 'mrx_enc_';

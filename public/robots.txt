@@ -1,6 +1,15 @@
 User-agent: *
 Allow: /
+
+# Admin and authenticated user pages (not indexed)
 Disallow: /admin
 Disallow: /dashboard
+Disallow: /profile
+Disallow: /checkout
+Disallow: /payment-success
+Disallow: /payment-cancel
+Disallow: /payment-pending
+Disallow: /representative
+Disallow: /auth/callback
 
 Sitemap: https://mrxsteroid.vercel.app/sitemap.xml

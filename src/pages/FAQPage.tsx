@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Plus, Minus, Search, ShieldCheck, Zap, FlaskConical, Dna } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 
 interface FAQPageProps {
     content: ContentStrings;

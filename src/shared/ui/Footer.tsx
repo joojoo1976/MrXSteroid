@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '../../shared/types/types';
 import { Facebook, Twitter, Instagram, Youtube, Zap, ShieldCheck } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
+import BrandLogo from './BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
 
 import { usePreferences } from '../../context/PreferencesContext';

@@ -15,11 +15,11 @@ import {
     Wallet,
     Globe
 } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
+import BrandLogo from '../../shared/ui/BrandLogo';
 import { Page } from '../../types';
-import { useMasterCalculator, CalculationGoal, ExperienceLevel, BudgetLevel, UnitSystem } from '../../features/calculators/hooks/useMasterCalculator';
+import { useMasterCalculator, CalculationGoal, ExperienceLevel, BudgetLevel, UnitSystem } from './hooks/useMasterCalculator';
 import { usePreferences } from '../../context/PreferencesContext';
-import KineticCounter from '../shared/KineticCounter';
+import KineticCounter from '../../shared/ui/KineticCounter';
 
 interface MasterCalculatorProps {
     navigateTo: (page: Page) => void;

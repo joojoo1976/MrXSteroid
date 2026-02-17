@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Briefcase, Rocket, Users, Target, Code, Brain } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 
 interface CareersPageProps {
     content: ContentStrings;

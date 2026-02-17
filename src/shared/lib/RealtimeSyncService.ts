@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from './supabase';
 import { Database } from '../types/db_types';
 
 type Delegate = Database['public']['Tables']['delegates']['Row'];

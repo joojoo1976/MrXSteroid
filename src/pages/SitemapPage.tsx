@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Map, Zap, Settings, ShieldAlert, ShoppingCart, Home, User, Info } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 
 interface SitemapPageProps {
     content: ContentStrings;

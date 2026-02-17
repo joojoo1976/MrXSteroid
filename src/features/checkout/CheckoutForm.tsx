@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle, MapPin, Target, Truck, CheckCircle2 } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
-import { Checkbox } from '../ui/checkbox';
+import { Button } from '../../shared/ui/button';
+import { Input } from '../../shared/ui/input';
+import { Label } from '../../shared/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../shared/ui/card';
+import { Checkbox } from '../../shared/ui/checkbox';
 import { ContentStrings, Language, PricingTier, ProductVariant } from '../../types';
-import { cn } from '../../lib/utils';
+import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
 

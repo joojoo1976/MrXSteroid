@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, ShieldCheck, ShieldAlert, Cpu, Globe, Terminal, Copy, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../shared/ui/card';
+import { Button } from '../shared/ui/button';
 import { useDiagnostics } from '../features/diagnostics/hooks/useDiagnostics';
 
 const DiagnosticPage: React.FC = () => {

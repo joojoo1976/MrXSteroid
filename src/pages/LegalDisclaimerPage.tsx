@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Gavel, ShieldCheck, HeartPulse, Scale } from 'lucide-react';
 import { Page, ContentStrings } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
-import DynamicBrandLogo from '../components/layout/DynamicBrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 
 interface LegalDisclaimerPageProps {
     content: ContentStrings;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Activity, AlertTriangle } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
-import { StyledBrandName } from '../shared/StyledBrandName';
-import AdPlaceholder from '../shared/AdPlaceholder';
-import { convertValue } from '../../utils/logic';
+import BrandLogo from '../../shared/ui/BrandLogo';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import { convertValue } from '../../shared/lib/logic';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useInjectionMap } from '../../features/calculators/hooks/useInjectionMap';
+import { useInjectionMap } from './hooks/useInjectionMap';
 
 
 interface InjectionMapProps {

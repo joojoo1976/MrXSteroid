@@ -1,6 +1,6 @@
 
-import { supabase } from '../lib/supabase';
-import { errorHandler } from '../lib/error-handler';
+import { supabase } from '../shared/lib/supabase';
+import { errorHandler } from '../shared/lib/error-handler';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { securityManager } from '../security/security-enhancements';
 

@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, RefreshCcw, ScanLine, Brain, Trophy, Zap } from 'lucide-react';
-import BrandLogo from '../shared/BrandLogo';
-import AdPlaceholder from '../shared/AdPlaceholder';
-import KineticCounter from '../shared/KineticCounter';
+import BrandLogo from '../../shared/ui/BrandLogo';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import KineticCounter from '../../shared/ui/KineticCounter';
 import { ContentStrings, Page } from '../../types';
-import { StyledBrandName } from '../shared/StyledBrandName';
+import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useGeneticPotential } from '../../features/calculators/hooks/useGeneticPotential';
+import { useGeneticPotential } from './hooks/useGeneticPotential';
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;

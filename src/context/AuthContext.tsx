@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../shared/lib/supabase';
 import { mockAuthService, MockUser, MockSession } from '../shared/lib/mock-auth-service';
 
 interface AuthContextType {

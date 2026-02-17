@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings, DailyMeal } from '../../../types';
-import { convertValue, toMetric } from '../../../utils/logic';
+import { convertValue, toMetric } from '../../../shared/lib/logic';
 import { foodDatabase } from '../constants/foodDatabase';
 
 export interface CalcResult {

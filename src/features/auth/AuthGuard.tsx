@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../shared/lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 

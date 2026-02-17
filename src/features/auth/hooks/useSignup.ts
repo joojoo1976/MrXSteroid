@@ -2,11 +2,25 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { supabase } from '../../../lib/supabase';
-import { errorHandler } from '../../../lib/error-handler';
-import { createSignupSchema, SignupFormValues } from '../../../lib/schemas';
+import * as z from 'zod';
+import { supabase } from '../../../shared/lib/supabase';
+import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings, Page } from '../../../types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
+
+// Inline signup schema
+const createSignupSchema = (isRTL: boolean) => z.object({
+    fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب' : 'Full name is required'),
+    username: z.string().min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters'),
+    email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
+    password: z.string().min(6, isRTL ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match',
+    path: ['confirmPassword'],
+});
+
+type SignupFormValues = z.infer<ReturnType<typeof createSignupSchema>>;
 
 interface UseSignupOptions {
     content: ContentStrings;

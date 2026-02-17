@@ -2,13 +2,13 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BicepsFlexed, Utensils, Droplet, RefreshCw, Calculator, Flame, Activity, Zap, TrendingUp, Info, Clock, Scale, User, UtensilsCrossed, Target, Trophy, ChefHat } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import BrandLogo from '../shared/BrandLogo';
-import AdPlaceholder from '../shared/AdPlaceholder';
-import KineticCounter from '../shared/KineticCounter';
+import BrandLogo from '../../shared/ui/BrandLogo';
+import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import KineticCounter from '../../shared/ui/KineticCounter';
 import { ContentStrings, Page } from '../../types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { UnitToggle } from '../shared/UnitToggle';
-import { useMacroCalculator } from '../../features/calculators/hooks/useMacroCalculator';
+import { UnitToggle } from '../../shared/ui/UnitToggle';
+import { useMacroCalculator } from './hooks/useMacroCalculator';
 
 interface MacroCalculatorProps {
   content: ContentStrings;

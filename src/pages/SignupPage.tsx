@@ -4,7 +4,7 @@ import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, 
 import { ContentStrings, Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
-import { Button } from "@/components/ui/button";
+import { Button } from '../shared/ui/button';
 import {
     Form,
     FormControl,
@@ -12,9 +12,9 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+} from '../shared/ui/form';
+import { Input } from '../shared/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../shared/ui/card';
 
 interface SignupPageProps {
     content: ContentStrings;

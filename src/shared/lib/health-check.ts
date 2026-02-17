@@ -1,11 +1,11 @@
 /**
  * Mr. X - Production Health Check & Pre-flight
- * 
+ *
  * Verifies that the production environment has all necessary configurations.
  * Logs warnings in Dev mode and critical reports in Production.
  */
 
-import { env } from '../config/env';
+import { env } from '../../config/env';
 
 export const performHealthCheck = () => {
     const isDev = env.MODE === 'development';
