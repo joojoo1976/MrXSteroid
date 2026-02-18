@@ -1,0 +1,344 @@
+{
+    "name": "supabase_linkage_inspector",
+    "version": "1.0.0",
+    "description": "Use this tool to diagnose and verify the connection between the MrXSteroid web application and Supabase backend services. This tool performs a comprehensive health check on the API connection, validates the API Key (anon/service_role), tests authentication endpoints, and verifies webhook delivery. WHEN TO USE: Call this tool when (1) users report authentication failures, (2) webhook notifications are not being received, (3) you need to verify environment configuration, or (4) after any Supabase configuration change. The tool returns structured diagnostics that pinpoint the exact failure point.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "supabase_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "The Supabase project URL (e.g., https://xxxx.supabase.co). Required for all checks.",
+                "pattern": "^https:\\/\\/[a-z0-9-]+\\.supabase\\.co$",
+                "examples": [
+                    "https://myproject.supabase.co"
+                ]
+            },
+            "api_key": {
+                "type": "string",
+                "description": "The Supabase API Key (anon or service_role). This is used to authenticate the connection test.",
+                "minLength": 32,
+                "examples": [
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                ]
+            },
+            "check_type": {
+                "type": "string",
+                "enum": [
+                    "full",
+                    "auth_only",
+                    "database_only",
+                    "webhook_only"
+                ],
+                "default": "full",
+                "description": "The type of check to perform. 'full' runs all diagnostics. 'auth_only' tests authentication endpoints. 'database_only' tests database connectivity. 'webhook_only' tests webhook delivery to the specified endpoint."
+            },
+            "webhook_endpoint": {
+                "type": "string",
+                "format": "uri",
+                "description": "The webhook URL to test (e.g., /api/payments/webhook). Required only if check_type is 'webhook_only' or 'full'.",
+                "examples": [
+                    "https://mrxsteroid.vercel.app/api/payments/webhook"
+                ]
+            },
+            "test_payload": {
+                "type": "object",
+                "description": "Optional test payload to send to the webhook. If not provided, a default test payload will be used.",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "failed",
+                            "pending"
+                        ],
+                        "description": "Simulated payment status for webhook testing."
+                    },
+                    "customer_email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Customer email address. Must be a valid email format.",
+                        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                        "examples": [
+                            "test@example.com"
+                        ]
+                    },
+                    "plan_type": {
+                        "type": "string",
+                        "enum": [
+                            "digital",
+                            "bundle",
+                            "coaching"
+                        ],
+                        "description": "The subscription plan type."
+                    }
+                },
+                "required": [
+                    "status",
+                    "customer_email"
+                ]
+            },
+            "timeout_ms": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 30000,
+                "default": 5000,
+                "description": "Connection timeout in milliseconds. Increase for slow networks."
+            }
+        },
+        "required": [
+            "supabase_url",
+            "api_key"
+        ],
+        "additionalProperties": false
+    },
+    "outputSchema": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "True if all requested checks passed."
+            },
+            "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "ISO 8601 timestamp of when the check was performed."
+            },
+            "checks": {
+                "type": "object",
+                "properties": {
+                    "api_key_valid": {
+                        "type": "boolean",
+                        "description": "True if the API key is valid and not expired."
+                    },
+                    "url_reachable": {
+                        "type": "boolean",
+                        "description": "True if the Supabase URL responded to a ping."
+                    },
+                    "auth_endpoint": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ok",
+                                    "error"
+                                ]
+                            },
+                            "latency_ms": {
+                                "type": "integer"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "database_connection": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ok",
+                                    "error"
+                                ]
+                            },
+                            "latency_ms": {
+                                "type": "integer"
+                            },
+                            "tables_accessible": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "webhook_delivery": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ok",
+                                    "error"
+                                ]
+                            },
+                            "http_status_code": {
+                                "type": "integer"
+                            },
+                            "response_body": {
+                                "type": "string"
+                            },
+                            "latency_ms": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "error": {
+                "type": "object",
+                "description": "Present only if success is false. Contains detailed error information.",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "enum": [
+                            "INVALID_API_KEY",
+                            "EXPIRED_API_KEY",
+                            "URL_UNREACHABLE",
+                            "AUTH_ENDPOINT_ERROR",
+                            "DATABASE_CONNECTION_ERROR",
+                            "WEBHOOK_DELIVERY_FAILED",
+                            "WEBHOOK_TIMEOUT",
+                            "NETWORK_ERROR",
+                            "UNKNOWN_ERROR"
+                        ],
+                        "description": "Machine-readable error code for programmatic handling."
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable error message explaining what went wrong."
+                    },
+                    "suggestion": {
+                        "type": "string",
+                        "description": "Actionable suggestion on how to fix the error."
+                    },
+                    "details": {
+                        "type": "object",
+                        "description": "Additional context about the error (e.g., HTTP status, response body)."
+                    }
+                },
+                "required": [
+                    "code",
+                    "message",
+                    "suggestion"
+                ]
+            }
+        },
+        "required": [
+            "success",
+            "timestamp"
+        ]
+    },
+    "errorHandling": {
+        "strategies": [
+            {
+                "error_code": "INVALID_API_KEY",
+                "detection": "JWT decode fails or Supabase returns 401 with 'Invalid API key'",
+                "response": {
+                    "message": "The provided API key is invalid or malformed.",
+                    "suggestion": "Verify the API key in your Supabase dashboard under Settings > API. Ensure you're using the correct key type (anon for client, service_role for server)."
+                }
+            },
+            {
+                "error_code": "EXPIRED_API_KEY",
+                "detection": "JWT exp claim is in the past",
+                "response": {
+                    "message": "The API key has expired.",
+                    "suggestion": "Generate a new API key from the Supabase dashboard. Service role keys do not expire, but anon keys may if you've rotated them."
+                }
+            },
+            {
+                "error_code": "URL_UNREACHABLE",
+                "detection": "DNS resolution fails or connection refused",
+                "response": {
+                    "message": "Cannot reach the Supabase URL. The URL may be incorrect or the project may be paused.",
+                    "suggestion": "Check if the project URL is correct. If the project was paused due to inactivity, reactivate it from the Supabase dashboard."
+                }
+            },
+            {
+                "error_code": "WEBHOOK_DELIVERY_FAILED",
+                "detection": "Webhook returns non-2xx status or times out",
+                "response": {
+                    "message": "Webhook delivery failed. The endpoint did not respond with a success status.",
+                    "suggestion": "Check that the webhook endpoint is publicly accessible. Verify the URL is correct and the server is running. Check Vercel/Netlify logs for errors."
+                }
+            },
+            {
+                "error_code": "NETWORK_ERROR",
+                "detection": "Fetch throws TypeError or AbortError",
+                "response": {
+                    "message": "Network error occurred during the connection test.",
+                    "suggestion": "Check your internet connection. If running locally, ensure firewall rules allow outbound HTTPS connections."
+                }
+            }
+        ]
+    },
+    "examples": [
+        {
+            "name": "Full Health Check",
+            "input": {
+                "supabase_url": "https://myproject.supabase.co",
+                "api_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "check_type": "full",
+                "webhook_endpoint": "https://mrxsteroid.vercel.app/api/payments/webhook"
+            },
+            "output": {
+                "success": true,
+                "timestamp": "2026-02-05T21:54:00Z",
+                "checks": {
+                    "api_key_valid": true,
+                    "url_reachable": true,
+                    "auth_endpoint": {
+                        "status": "ok",
+                        "latency_ms": 120
+                    },
+                    "database_connection": {
+                        "status": "ok",
+                        "latency_ms": 45,
+                        "tables_accessible": true
+                    },
+                    "webhook_delivery": {
+                        "status": "ok",
+                        "http_status_code": 200,
+                        "latency_ms": 230
+                    }
+                }
+            }
+        },
+        {
+            "name": "API Key Validation Failure",
+            "input": {
+                "supabase_url": "https://myproject.supabase.co",
+                "api_key": "invalid_key_here",
+                "check_type": "auth_only"
+            },
+            "output": {
+                "success": false,
+                "timestamp": "2026-02-05T21:54:00Z",
+                "checks": {
+                    "api_key_valid": false,
+                    "url_reachable": true
+                },
+                "error": {
+                    "code": "INVALID_API_KEY",
+                    "message": "The provided API key is invalid or malformed.",
+                    "suggestion": "Verify the API key in your Supabase dashboard under Settings > API. Ensure you're using the correct key type (anon for client, service_role for server)."
+                }
+            }
+        },
+        {
+            "name": "Webhook Timeout",
+            "input": {
+                "supabase_url": "https://myproject.supabase.co",
+                "api_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "check_type": "webhook_only",
+                "webhook_endpoint": "https://mrxsteroid.vercel.app/api/payments/webhook",
+                "timeout_ms": 3000
+            },
+            "output": {
+                "success": false,
+                "timestamp": "2026-02-05T21:54:00Z",
+                "checks": {
+                    "webhook_delivery": {
+                        "status": "error",
+                        "latency_ms": 3000
+                    }
+                },
+                "error": {
+                    "code": "WEBHOOK_TIMEOUT",
+                    "message": "Webhook did not respond within 3000ms.",
+                    "suggestion": "Increase timeout_ms or check if the webhook endpoint is experiencing high latency. Consider optimizing the webhook handler."
+                }
+            }
+        }
+    ]
+}
