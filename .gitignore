@@ -27,6 +27,11 @@ build/
 .env.local
 *.env.*
 
+# AI Agents
+.agent/
+.cursor/
+.qwen/
+
 # Editors
 .vscode/
 .idea/
