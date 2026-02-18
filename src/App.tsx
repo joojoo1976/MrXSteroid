@@ -97,11 +97,6 @@ const ContactSection = React.lazy(() => import('./features/marketing/ContactSect
 const LiveSchedule = React.lazy(() => import('./features/marketing/LiveSchedule'));
 const ArabicVideoSection = React.lazy(() => import('./features/marketing/ArabicVideoSection'));
 
-// Lazy Loaded Components
-
-// Lazy Loaded Components
-
-
 interface AppContentProps {
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
