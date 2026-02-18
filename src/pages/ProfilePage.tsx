@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
@@ -21,6 +21,30 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) => {
     const { isRTL } = usePreferences();
     const { loading } = useAuth();
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [isResending, setIsResending] = useState(false);
+
+    useEffect(() => {
+        // Check if user has confirmed their email
+        const checkConfirmation = async () => {
+            if (user) {
+                const { data: { session } } = await supabase.auth.getSession();
+                setIsConfirmed(!!(session?.user.email_confirmed_at || session?.user.confirmed_at));
+            }
+        };
+        checkConfirmation();
+        
+        // Listen for auth state changes (e.g., email confirmation)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                setIsConfirmed(!!(session.user.email_confirmed_at || session.user.confirmed_at));
+            }
+        });
+        
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [user]);
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-background">
@@ -30,25 +54,37 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
 
     if (!user) {
         navigateTo(Page.LOGIN);
-        return null; // or empty fragment
+        return null;
     }
 
     const userData = user.user_metadata || {};
-    const displayName = userData.user_name || userData.username || userData.full_name || user.email?.split('@')[0];
+    // Fix: Use proper display name with fallback hierarchy
+    const displayName = userData.user_name || userData.username || userData.full_name || user.email?.split('@')[0] || 'User';
     const emailHash = md5(user.email?.toLowerCase().trim() || '');
-    const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=400`;
+    // Fix: Use Gravatar with mystery person default for automatic email-based avatar
+    const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=400`;
     const profilePic = userData.avatar_url || gravatarUrl;
-    const isEmailConfirmed = user.email_confirmed_at || user.confirmed_at;
+    const isEmailConfirmed = isConfirmed || user.email_confirmed_at || user.confirmed_at;
 
     const handleResendConfirmation = async () => {
-        const { error } = await supabase.auth.resend({
-            type: 'signup',
-            email: user.email,
-        });
-        if (error) {
-            toast.error(isRTL ? 'فشل إعادة إرسال البريد' : 'Failed to resend email');
-        } else {
-            toast.success(isRTL ? 'تم إعادة إرسال بريد التأكيد بنجاح' : 'Confirmation email resent successfully');
+        if (isEmailConfirmed) {
+            toast.info(isRTL ? 'تم تأكيد بريدك الإلكتروني بالفعل' : 'Your email is already confirmed');
+            return;
+        }
+        
+        setIsResending(true);
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: user.email,
+            });
+            if (error) {
+                toast.error(isRTL ? 'فشل إعادة إرسال البريد' : 'Failed to resend email');
+            } else {
+                toast.success(isRTL ? 'تم إعادة إرسال بريد التأكيد بنجاح' : 'Confirmation email resent successfully');
+            }
+        } finally {
+            setIsResending(false);
         }
     };
 
@@ -117,9 +153,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                         </p>
                                         <button
                                             onClick={handleResendConfirmation}
-                                            className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-colors"
+                                            disabled={isResending}
+                                            className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isRTL ? "إعادة إرسال رابط التأكيد" : "Resend Confirmation Link"}
+                                            {isResending 
+                                                ? (isRTL ? "جاري الإرسال..." : "Sending...")
+                                                : (isRTL ? "إعادة إرسال رابط التأكيد" : "Resend Confirmation Link")}
                                         </button>
                                     </div>
                                 </div>
@@ -141,7 +180,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                     </div>
                                     <div>
                                         <p className="text-xs text-zinc-500 font-bold uppercase">{content.fullName}</p>
-                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.full_name || '-'}</p>
+                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.full_name || displayName || '-'}</p>
                                     </div>
                                 </div>
 
