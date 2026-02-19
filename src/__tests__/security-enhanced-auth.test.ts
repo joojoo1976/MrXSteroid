@@ -1,8 +1,8 @@
 import { test, describe, expect, vi, beforeEach } from 'vitest';
-import { authService } from './src/shared/lib/auth-service';
+import { authService } from '@/shared/lib/auth-service';
 
 // Mock the supabase client and other dependencies
-vi.mock('./src/lib/supabase', () => ({
+vi.mock('@/shared/lib/supabase', () => ({
   supabase: {
     auth: {
       signUp: vi.fn(),
@@ -12,14 +12,14 @@ vi.mock('./src/lib/supabase', () => ({
   }
 }));
 
-vi.mock('./src/lib/security-manager', () => ({
+vi.mock('@/shared/lib/security-enhancements', () => ({
   securityManager: {
     secureRegister: vi.fn(),
     secureLogin: vi.fn()
   }
 }));
 
-vi.mock('./src/lib/error-handler', () => ({
+vi.mock('@/shared/lib/error-handler', () => ({
   errorHandler: {
     handle: vi.fn()
   }

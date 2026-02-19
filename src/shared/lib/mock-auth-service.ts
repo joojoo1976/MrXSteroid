@@ -236,6 +236,18 @@ class MockAuthService {
     }
 
     /**
+     * Validate username format
+     */
+    private isValidUsername(username: string): boolean {
+        if (!username || username.trim().length < 3) {
+            return false;
+        }
+        // Only allow alphanumeric characters and underscores
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        return usernameRegex.test(username);
+    }
+
+    /**
      * Update user profile
      */
     async updateUserProfile(updates: Partial<MockUser>): Promise<MockAuthResponse> {

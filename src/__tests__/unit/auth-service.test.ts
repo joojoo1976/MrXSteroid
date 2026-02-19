@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { authService } from '../../../shared/lib/auth-service';
-import { supabase } from '../../../shared/lib/supabase';
+import { authService } from '@/shared/lib/auth-service';
+import { supabase } from '@/shared/lib/supabase';
 
 // Mock the supabase client
-vi.mock('../../../shared/lib/supabase', () => ({
+vi.mock('@/shared/lib/supabase', () => ({
     supabase: {
         auth: {
             signUp: vi.fn(),
