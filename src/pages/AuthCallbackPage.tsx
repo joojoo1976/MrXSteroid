@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
 import { Page } from '../types';
-import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 
 const AuthCallbackPage: React.FC = () => {
     const navigate = useNavigate();
-    const { setUser } = useAuth();
     const { isRTL } = usePreferences();
 
     useEffect(() => {
@@ -26,7 +24,62 @@ const AuthCallbackPage: React.FC = () => {
                     return;
                 }
 
-                // Check for access token and refresh token
+                // Check for email confirmation type
+                const type = params.get('type');
+                
+                // Handle email confirmation (Supabase redirects here after clicking email link)
+                if (type === 'signup' || type === 'email') {
+                    // Supabase should have already confirmed the email via cookie/session
+                    // Just need to check if user is confirmed and redirect appropriately
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError) {
+                        console.warn('Session error after email confirmation:', sessionError);
+                        // Even without session, email might be confirmed
+                        toast.success(
+                            isRTL 
+                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.' 
+                                : 'Email confirmed! Please log in.'
+                        );
+                        navigate(Page.LOGIN);
+                        return;
+                    }
+
+                    if (session) {
+                        const isEmailConfirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
+                        
+                        if (isEmailConfirmed) {
+                            toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
+                            navigate(Page.DASHBOARD);
+                        } else {
+                            toast.warning(
+                                isRTL 
+                                    ? 'يرجى تأكيد بريدك الإلكتروني أولاً' 
+                                    : 'Please confirm your email first'
+                            );
+                            navigate(Page.PROFILE);
+                        }
+                    } else {
+                        // Email confirmed but no session - ask user to login
+                        toast.success(
+                            isRTL 
+                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.' 
+                                : 'Email confirmed! Please log in.'
+                        );
+                        navigate(Page.LOGIN);
+                    }
+                    return;
+                }
+
+                // Check for recovery type
+                if (type === 'recovery') {
+                    navigate(Page.RESET_PASSWORD, { 
+                        state: { recoveryToken: params.get('token') } 
+                    });
+                    return;
+                }
+
+                // Check for access token and refresh token (OAuth flow)
                 const accessToken = params.get('access_token');
                 const refreshToken = params.get('refresh_token');
 
@@ -38,7 +91,6 @@ const AuthCallbackPage: React.FC = () => {
 
                     if (error) throw error;
 
-                    setUser(data.user);
                     toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
                     navigate(Page.DASHBOARD);
                 } else {
@@ -47,7 +99,6 @@ const AuthCallbackPage: React.FC = () => {
                     if (sessionError) throw sessionError;
 
                     if (session) {
-                        setUser(session.user);
                         toast.success(isRTL ? 'مرحباً بك مجدداً!' : 'Welcome back!');
                         navigate(Page.DASHBOARD);
                     } else {
@@ -72,7 +123,7 @@ const AuthCallbackPage: React.FC = () => {
         if (window.location.hash) {
             history.replaceState(null, '', window.location.pathname);
         }
-    }, [navigate, setUser, isRTL]);
+    }, [navigate, isRTL]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
