@@ -71,18 +71,48 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
             toast.info(isRTL ? 'تم تأكيد بريدك الإلكتروني بالفعل' : 'Your email is already confirmed');
             return;
         }
-        
+
+        if (!user.email) {
+            toast.error(isRTL ? 'البريد الإلكتروني غير موجود' : 'Email not found');
+            return;
+        }
+
         setIsResending(true);
         try {
             const { error } = await supabase.auth.resend({
                 type: 'signup',
                 email: user.email,
             });
+            
             if (error) {
-                toast.error(isRTL ? 'فشل إعادة إرسال البريد' : 'Failed to resend email');
+                console.error('Resend confirmation error:', error);
+                
+                // Handle specific error cases
+                if (error.message.includes('rate limit')) {
+                    toast.error(
+                        isRTL 
+                            ? 'لقد حاولت كثيراً. يرجى الانتظار ساعة ثم المحاولة مرة أخرى.' 
+                            : 'Too many attempts. Please wait an hour and try again.'
+                    );
+                } else if (error.message.includes('User not found') || error.message.includes('not found')) {
+                    toast.error(
+                        isRTL 
+                            ? 'المستخدم غير موجود. يرجى تسجيل الدخول مرة أخرى.' 
+                            : 'User not found. Please log in again.'
+                    );
+                } else {
+                    toast.error(isRTL ? 'فشل إعادة إرسال البريد' : 'Failed to resend email');
+                }
             } else {
-                toast.success(isRTL ? 'تم إعادة إرسال بريد التأكيد بنجاح' : 'Confirmation email resent successfully');
+                toast.success(
+                    isRTL 
+                        ? '✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد ومجلد البريد المزعج.' 
+                        : '✅ Confirmation link sent to your email. Please check your inbox and spam folder.'
+                );
             }
+        } catch (err) {
+            console.error('Resend confirmation exception:', err);
+            toast.error(isRTL ? 'حدث خطأ غير متوقع' : 'An unexpected error occurred');
         } finally {
             setIsResending(false);
         }
