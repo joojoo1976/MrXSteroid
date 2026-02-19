@@ -11,7 +11,7 @@ import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 // Inline login schema
 const createLoginSchema = (isRTL: boolean) => z.object({
     email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
-    password: z.string().min(6, isRTL ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters'),
+    password: z.string().min(1, isRTL ? 'كلمة المرور مطلوبة' : 'Password is required'),
 });
 
 type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;

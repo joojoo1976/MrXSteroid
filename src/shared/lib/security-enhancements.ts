@@ -1,4 +1,4 @@
-import { supabase } from '../shared/lib/supabase';
+import { supabase } from './supabase';
 import { Database } from '../types/db_types';
 
 /**

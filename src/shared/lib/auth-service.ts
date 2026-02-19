@@ -25,12 +25,52 @@ export interface AuthResponse {
  */
 export const authService = {
     /**
+     * Validates email format
+     */
+    isValidEmail(email: string): boolean {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+
+    /**
+     * Validates password strength
+     */
+    isSecurePassword(password: string): boolean {
+        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+        const minLength = /.{8,}/;
+        const hasUpper = /[A-Z]/;
+        const hasLower = /[a-z]/;
+        const hasNumber = /[0-9]/;
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+
+        return (
+            minLength.test(password) &&
+            hasUpper.test(password) &&
+            hasLower.test(password) &&
+            hasNumber.test(password) &&
+            hasSpecial.test(password)
+        );
+    },
+
+    /**
+     * Validates username format
+     */
+    isValidUsername(username: string): boolean {
+        if (!username || username.trim().length < 3) {
+            return false;
+        }
+        // Only allow alphanumeric characters and underscores
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        return usernameRegex.test(username);
+    },
+
+    /**
      * Registers a new user with metadata and localized redirects.
      */
     async signUp({ email, password, full_name, user_name }: SignUpOptions): Promise<AuthResponse> {
         try {
             // Input validation
-            if (!this.isValidEmail(email)) {
+            if (!email || !this.isValidEmail(email)) {
                 throw new Error('INVALID_EMAIL_FORMAT');
             }
 
@@ -92,11 +132,11 @@ export const authService = {
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
             // Input validation
-            if (!this.isValidEmail(email)) {
+            if (!email || !this.isValidEmail(email)) {
                 throw new Error('INVALID_EMAIL_FORMAT');
             }
 
-            if (password.length < 1) {
+            if (!password || password.length < 1) {
                 throw new Error('PASSWORD_REQUIRED');
             }
 
@@ -128,32 +168,4 @@ export const authService = {
         const { error } = await supabase.auth.signOut();
         if (error) errorHandler.handle(error, 'AuthService.signOut');
     },
-
-    /**
-     * Validates email format
-     */
-    isValidEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    },
-
-    /**
-     * Validates password strength
-     */
-    isSecurePassword(password: string): boolean {
-        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
-        const minLength = /.{8,}/;
-        const hasUpper = /[A-Z]/;
-        const hasLower = /[a-z]/;
-        const hasNumber = /[0-9]/;
-        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/;
-
-        return (
-            minLength.test(password) &&
-            hasUpper.test(password) &&
-            hasLower.test(password) &&
-            hasNumber.test(password) &&
-            hasSpecial.test(password)
-        );
-    }
 };

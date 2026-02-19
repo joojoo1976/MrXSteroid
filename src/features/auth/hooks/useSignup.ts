@@ -8,12 +8,35 @@ import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings, Page } from '../../../types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 
+// Password validation helper - matches auth-service requirements
+const isSecurePassword = (password: string): boolean => {
+    const minLength = /.{8,}/;
+    const hasUpper = /[A-Z]/;
+    const hasLower = /[a-z]/;
+    const hasNumber = /[0-9]/;
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+    return (
+        minLength.test(password) &&
+        hasUpper.test(password) &&
+        hasLower.test(password) &&
+        hasNumber.test(password) &&
+        hasSpecial.test(password)
+    );
+};
+
 // Inline signup schema
 const createSignupSchema = (isRTL: boolean) => z.object({
     fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب' : 'Full name is required'),
     username: z.string().min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters'),
     email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
-    password: z.string().min(6, isRTL ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters'),
+    password: z.string()
+        .min(8, isRTL ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters')
+        .refine(
+            (pwd) => isSecurePassword(pwd),
+            isRTL
+                ? 'كلمة المرور يجب أن تحتوي على حرف كبير، حرف صغير، رقم ورمز خاص'
+                : 'Password must contain uppercase, lowercase, number and special character'
+        ),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match',

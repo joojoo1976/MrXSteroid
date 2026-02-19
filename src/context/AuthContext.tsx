@@ -8,6 +8,7 @@ interface AuthContextType {
     session: Session | MockSession | null;
     loading: boolean;
     signOut: () => Promise<void>;
+    isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
     session: null,
     loading: true,
     signOut: async () => { },
+    isAuthenticated: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -33,14 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
     });
 
-    const [loading, setLoading] = useState(() => isSupabaseConfigured); // If mock, not loading
+    const [loading, setLoading] = useState(() => !isSupabaseConfigured); // If mock, not loading
 
     useEffect(() => {
         if (isSupabaseConfigured) {
             // Use Supabase for authentication
-            supabase.auth.getSession().then(({ data: { session } }) => {
+            supabase.auth.getSession().then(({ data: { session }, error }) => {
+                if (error) {
+                    console.error('Error getting session:', error);
+                }
                 setSession(session);
                 setUser(session?.user ?? null);
+                setLoading(false);
+            }).catch((err) => {
+                console.error('Session initialization error:', err);
                 setLoading(false);
             });
 
@@ -53,28 +61,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             return () => subscription.unsubscribe();
         } else {
-            // Mock auth service listeners if any (currently none required as per original code)
-            // Initial state is already set via lazy init.
+            // Mock auth service - no listeners needed
+            setLoading(false);
         }
     }, [isSupabaseConfigured]);
 
     const signOut = async () => {
-        // Check if Supabase is configured
-        const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+        try {
+            // Check if Supabase is configured
+            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
 
-        if (isSupabaseConfigured) {
-            await supabase.auth.signOut();
-        } else {
-            // Use mock auth service
-            await mockAuthService.signOut();
+            if (isSupabaseConfigured) {
+                await supabase.auth.signOut();
+            } else {
+                // Use mock auth service
+                await mockAuthService.signOut();
+            }
+        } catch (error) {
+            console.error('Sign out error:', error);
+        } finally {
+            setUser(null);
+            setSession(null);
         }
+    };
 
-        setUser(null);
-        setSession(null);
+    const value = {
+        user,
+        session,
+        loading,
+        signOut,
+        isAuthenticated: user !== null && session !== null
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, loading, signOut }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
