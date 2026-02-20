@@ -57,10 +57,18 @@ const AuthCallbackPage: React.FC = () => {
                                     provider: session.user.app_metadata?.provider,
                                     providerAvatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
                                 });
-                                await supabase.from('profiles').update({
+                                
+                                // Update profile with avatar and sync metadata
+                                const { error: updateError } = await supabase.from('profiles').update({
                                     avatar_url: avatarUrl,
+                                    full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
+                                    user_name: session.user.user_metadata?.user_name || session.user.user_metadata?.username,
                                     updated_at: new Date().toISOString()
                                 }).eq('id', session.user.id);
+
+                                if (updateError) {
+                                    console.warn('Profile update error:', updateError);
+                                }
                             } catch (syncErr) {
                                 console.warn('Profile sync after verification:', syncErr);
                             }

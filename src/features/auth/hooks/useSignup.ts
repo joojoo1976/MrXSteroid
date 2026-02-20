@@ -113,23 +113,30 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                 if (result.error) throw new Error(result.error);
             }
 
-            setSuccess(true);
-
             // Store Gravatar URL as default avatar for email signups
-            // Wait briefly to ensure handle_new_user trigger completes first
+            // Commit profile data BEFORE showing success screen
             if (isSupabaseConfigured && 'data' in result && result.data?.user?.id) {
                 const userId = result.data.user.id;
-                setTimeout(async () => {
-                    try {
-                        const avatarUrl = getAvatarUrl({ email: values.email });
-                        await supabase.from('profiles').update({ avatar_url: avatarUrl })
-                            .eq('id', userId);
-                    } catch (avatarErr) {
-                        console.warn('Could not set default avatar:', avatarErr);
+                try {
+                    const avatarUrl = getAvatarUrl({ email: values.email });
+                    // Update profile with avatar and ensure full_name/user_name are committed
+                    const { error: profileError } = await supabase.from('profiles').update({
+                        avatar_url: avatarUrl,
+                        full_name: values.fullName,
+                        user_name: values.username,
+                        updated_at: new Date().toISOString()
+                    }).eq('id', userId);
+
+                    if (profileError) {
+                        console.warn('Profile update error:', profileError);
                     }
-                }, 2000);
+                } catch (avatarErr) {
+                    console.warn('Could not set default avatar:', avatarErr);
+                }
             }
 
+            // Only show success screen AFTER profile data is committed
+            setSuccess(true);
             toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
 
         } catch (error: unknown) {

@@ -9,6 +9,7 @@ export interface ProfileData {
     avatar_url?: string;
     subscription_status?: string;
     role?: string;
+    email?: string;
 }
 
 interface AuthContextType {
@@ -35,7 +36,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Check configuration once
-    const isSupabaseConfigured = Boolean(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY);
+    const isSupabaseConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 
     const [user, setUser] = useState<User | MockUser | null>(() => {
         if (!isSupabaseConfigured) return mockAuthService.getCurrentUser();
@@ -56,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, user_name, avatar_url, subscription_status, role')
+                .select('full_name, user_name, avatar_url, subscription_status, role, email')
                 .eq('id', userId)
                 .single();
 
@@ -66,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (data) {
-                setProfileData(data as ProfileData);
+                setProfileData(data as ProfileData & { email?: string });
             }
         } catch (err) {
             console.warn('Profile fetch error:', err);
@@ -132,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signOut = async () => {
         try {
             // Check if Supabase is configured
-            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             if (isSupabaseConfigured) {
                 await supabase.auth.signOut();
