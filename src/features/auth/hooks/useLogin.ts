@@ -76,12 +76,12 @@ export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
 
         try {
             setLoading(true);
-            
+
             // Check if Supabase is properly configured
-            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-            
+            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+
             let result;
-            
+
             if (isSupabaseConfigured) {
                 // Use Supabase for login
                 result = await supabase.auth.signInWithPassword({
@@ -96,7 +96,7 @@ export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
             } else {
                 // Use mock auth service when Supabase is not configured
                 result = await mockAuthService.signIn(values.email, values.password);
-                
+
                 if (result.error) {
                     setAttempts((prev) => prev + 1);
                     throw new Error(result.error);

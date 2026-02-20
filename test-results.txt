@@ -1,0 +1,100 @@
+[dotenv@17.2.4] injecting env (2) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+╔════════════════════════════════════════════════╗
+║  POST-REGISTRATION FLOW - VERIFICATION TESTS  ║
+╚════════════════════════════════════════════════╝
+
+🔌 TEST 5: Supabase Connection
+=============================
+Supabase URL: https://alghvtpkpspnqupbvodu.s...
+Supabase Key: eyJhbGciOiJIUzI1NiIs...
+✅ Connection successful
+
+
+📋 TEST 1: Profile Data Synchronization
+========================================
+ℹ️  No profiles found in database (clean installation)
+   This is normal - profiles will be created when users sign up
+
+
+📧 TEST 2: Email Confirmation Status
+====================================
+ℹ️  No authenticated user (this is normal if not logged in)
+   Email confirmation can only be checked for logged-in users
+
+
+🖼️  TEST 3: Avatar Service (Gravatar)
+=====================================
+Test Email: test@example.com
+Generated Avatar URL: https://www.gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?d=mp&s=400
+URL Format: ✅ Valid Gravatar URL
+
+Additional Tests:
+  Regular email: ✅ https://www.gravatar.com/avatar/b58996c504c5638798eb6b511e6f49af?d=mp&s=400
+  Uppercase email (should normalize): ✅ https://www.gravatar.com/avatar/b58996c504c5638798eb6b511e6f49af?d=mp&s=400
+  Email with dots: ✅ https://www.gravatar.com/avatar/7d6f9d40459b1813441f1c5a04b3fa60?d=mp&s=400
+
+
+⚙️  TEST 4: Database Schema Verification
+========================================
+✅ Profiles table exists and is accessible
+   Total profiles: 0
+❌ Error checking schema: column profiles.role does not exist
+   Some columns might be missing
+
+
+📧 TEST 6: Email Configuration Status
+======================================
+Email Confirmation Settings:
+  - Email confirmation is managed in Supabase Dashboard
+  - Navigate to: Authentication → Providers → Email
+  - Check "Confirm email" toggle status
+
+SMTP Configuration (Production):
+  - Navigate to: Project Settings → Auth → SMTP Settings
+  - Configure with SendGrid, Mailgun, or Resend
+  - Free tier: 2 emails/hour rate limit
+
+Email Templates:
+  - Navigate to: Authentication → Email Templates
+  - Verify "Confirm signup" template is configured
+
+Current Redirect URL:
+  - https://mrxsteroid.vercel.app/auth/callback
+
+
+╔════════════════════════════════════════════════╗
+║                TEST SUMMARY                    ║
+╚════════════════════════════════════════════════╝
+
+✅ Passed: 5/6
+❌ Failed: 1/6
+
+⚠️  Some tests failed. Review the output above for details.
+
+╔════════════════════════════════════════════════╗
+║              RECOMMENDED ACTIONS               ║
+╚════════════════════════════════════════════════╝
+
+1. Manual Testing:
+   - Open the app in browser
+   - Navigate to /signup
+   - Create a test account with real email
+   - Check email inbox for confirmation link
+   - Click confirmation link
+   - Verify redirect to dashboard
+   - Check /profile page shows correct data
+
+2. Supabase Dashboard Checks:
+   - Verify email confirmation is enabled
+   - Check email templates are configured
+   - Review authentication logs
+   - Set up custom SMTP for production
+
+3. Code Review:
+   - src/features/auth/hooks/useSignup.ts - Profile commit
+   - src/pages/ProfilePage.tsx - Verification UI
+   - src/pages/AuthCallbackPage.tsx - Avatar sync
+   - src/context/AuthContext.tsx - Profile fetch
+
+

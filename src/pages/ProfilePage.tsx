@@ -24,11 +24,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     const [isResending, setIsResending] = useState(false);
 
     useEffect(() => {
-        // Check if user has confirmed their email
+        // Check if user has confirmed their email on mount
         const checkConfirmation = async () => {
             if (user) {
                 const { data: { session } } = await supabase.auth.getSession();
-                setIsConfirmed(!!(session?.user.email_confirmed_at || session?.user.confirmed_at));
+                const confirmed = !!(session?.user.email_confirmed_at || session?.user.confirmed_at);
+                setIsConfirmed(confirmed);
             }
         };
         checkConfirmation();
@@ -43,6 +44,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                 if (confirmed && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
                     refreshUser();
                 }
+            } else {
+                // Reset confirmation state if no session
+                setIsConfirmed(false);
             }
         });
 
@@ -65,9 +69,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     const userData = user.user_metadata || {};
 
     // Fix: Use proper display name with DB priority
-    // Priority: DB profile → user_metadata → email fallback
+    // Priority: DB profile (full_name) → DB profile (user_name) → user_metadata → email fallback
     const displayName = profileData?.full_name
         || userData.full_name
+        || profileData?.user_name
         || userData.user_name
         || userData.username
         || user.email?.split('@')[0]
@@ -80,7 +85,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
 
     // Fix: Use centralized avatar service for auto-fetching
     const profilePic = getAvatarUrl({
-        email: user.email || undefined,
+        email: profileData?.email || user.email || undefined,
         provider: user.app_metadata?.provider,
         providerAvatarUrl: profileData?.avatar_url || userData.avatar_url || userData.picture,
     });
@@ -138,18 +143,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                 );
 
                 // Start polling to detect confirmation after resend
+                let pollCount = 0;
+                const maxPolls = 120; // 10 minutes max (120 * 5 seconds)
                 const pollInterval = setInterval(async () => {
+                    pollCount++;
                     const { data: { session } } = await supabase.auth.getSession();
                     if (session?.user.email_confirmed_at || session?.user.confirmed_at) {
                         setIsConfirmed(true);
                         clearInterval(pollInterval);
                         toast.success(isRTL ? 'تم تأكيد الحساب بنجاح! ✅' : 'Account verified successfully! ✅');
                         refreshUser();
+                    } else if (pollCount >= maxPolls) {
+                        clearInterval(pollInterval);
+                        console.log('Polling timeout reached');
                     }
                 }, 5000); // Check every 5 seconds
 
-                // Stop polling after 10 minutes
-                setTimeout(() => clearInterval(pollInterval), 600000);
+                // Store interval ID for cleanup
+                return () => clearInterval(pollInterval);
             }
         } catch (err) {
             console.error('Resend confirmation exception:', err);
@@ -217,8 +228,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                 <DynamicBrandLogo variant="full" inline />
                             </h1>
 
-                            {!isEmailConfirmed && (
-                                <div className="mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+                            {/* Verification Status Banner - Conditionally rendered based on email confirmation state */}
+                            {!isEmailConfirmed ? (
+                                <div key="unverified-banner" className="mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
                                     <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                                     <div className="flex-1">
                                         <p className="text-sm font-bold text-amber-700 dark:text-amber-500 mb-2">
@@ -226,7 +238,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                         </p>
                                         <button
                                             onClick={handleResendConfirmation}
-                                            disabled={isResending}
+                                            disabled={isResending || !user.email}
                                             className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isResending
@@ -235,10 +247,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                         </button>
                                     </div>
                                 </div>
-                            )}
-
-                            {isEmailConfirmed && (
-                                <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
+                            ) : (
+                                <div key="verified-banner" className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
                                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                                     <p className="text-sm font-bold text-emerald-700 dark:text-emerald-500">
                                         {isRTL ? "تم تأكيد الحساب بنجاح ✅" : "Account verified successfully ✅"}
