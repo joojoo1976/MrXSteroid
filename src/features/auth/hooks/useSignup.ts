@@ -7,6 +7,7 @@ import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings, Page } from '../../../types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
+import { getAvatarUrl } from '../../../shared/lib/avatar-service';
 
 // Password validation helper - matches auth-service requirements
 const isSecurePassword = (password: string): boolean => {
@@ -74,9 +75,9 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         try {
             // Check if Supabase is properly configured
             const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-            
+
             let result;
-            
+
             if (isSupabaseConfigured) {
                 // Use Supabase for signup
                 result = await supabase.auth.signUp({
@@ -113,6 +114,18 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             }
 
             setSuccess(true);
+
+            // Store Gravatar URL as default avatar for email signups
+            if (isSupabaseConfigured && 'data' in result && result.data?.user?.id) {
+                try {
+                    const avatarUrl = getAvatarUrl({ email: values.email });
+                    await supabase.from('profiles').update({ avatar_url: avatarUrl })
+                        .eq('id', result.data.user.id);
+                } catch (avatarErr) {
+                    console.warn('Could not set default avatar:', avatarErr);
+                }
+            }
+
             toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
 
             setTimeout(() => navigateTo(Page.LOGIN), 5000);

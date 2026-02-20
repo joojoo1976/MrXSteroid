@@ -1,7 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../shared/lib/supabase';
 import { mockAuthService, MockUser, MockSession } from '../shared/lib/mock-auth-service';
+
+export interface ProfileData {
+    full_name?: string;
+    user_name?: string;
+    avatar_url?: string;
+    subscription_status?: string;
+    role?: string;
+}
 
 interface AuthContextType {
     user: User | MockUser | null;
@@ -9,6 +17,8 @@ interface AuthContextType {
     loading: boolean;
     signOut: () => Promise<void>;
     isAuthenticated: boolean;
+    profileData: ProfileData | null;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +27,8 @@ const AuthContext = createContext<AuthContextType>({
     loading: true,
     signOut: async () => { },
     isAuthenticated: false,
+    profileData: null,
+    refreshUser: async () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -36,6 +48,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const [loading, setLoading] = useState(() => !isSupabaseConfigured); // If mock, not loading
+    const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+    // Fetch profile data from the profiles table
+    const fetchProfileData = useCallback(async (userId: string) => {
+        if (!isSupabaseConfigured) return;
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('full_name, user_name, avatar_url, subscription_status, role')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.warn('Could not fetch profile data:', error.message);
+                return;
+            }
+
+            if (data) {
+                setProfileData(data as ProfileData);
+            }
+        } catch (err) {
+            console.warn('Profile fetch error:', err);
+        }
+    }, [isSupabaseConfigured]);
+
+    // Refresh user session and profile data
+    const refreshUser = useCallback(async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+            const { data: { session: freshSession }, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Error refreshing session:', error);
+                return;
+            }
+            setSession(freshSession);
+            setUser(freshSession?.user ?? null);
+            if (freshSession?.user?.id) {
+                await fetchProfileData(freshSession.user.id);
+            }
+        } catch (err) {
+            console.error('Refresh user error:', err);
+        }
+    }, [isSupabaseConfigured, fetchProfileData]);
 
     useEffect(() => {
         if (isSupabaseConfigured) {
@@ -46,6 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
                 setSession(session);
                 setUser(session?.user ?? null);
+                if (session?.user?.id) {
+                    fetchProfileData(session.user.id);
+                }
                 setLoading(false);
             }).catch((err) => {
                 console.error('Session initialization error:', err);
@@ -56,6 +114,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
                 setSession(session);
                 setUser(session?.user ?? null);
+                if (session?.user?.id) {
+                    fetchProfileData(session.user.id);
+                } else {
+                    setProfileData(null);
+                }
                 setLoading(false);
             });
 
@@ -64,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Mock auth service - no listeners needed
             setLoading(false);
         }
-    }, [isSupabaseConfigured]);
+    }, [isSupabaseConfigured, fetchProfileData]);
 
     const signOut = async () => {
         try {
@@ -82,6 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
             setUser(null);
             setSession(null);
+            setProfileData(null);
         }
     };
 
@@ -90,7 +154,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading,
         signOut,
-        isAuthenticated: user !== null && session !== null
+        isAuthenticated: user !== null && session !== null,
+        profileData,
+        refreshUser,
     };
 
     return (
