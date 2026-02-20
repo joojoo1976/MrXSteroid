@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://spaceremit.com https://*.spaceremit.com https://*.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://*.supabase.co data: https://placehold.co https://*.stripe.com https://spaceremit.com https://*.spaceremit.com https://*.google-analytics.com https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://spaceremit.com https://*.spaceremit.com https://*.stripe.com https://ipapi.co https://open.er-api.com https://*.google-analytics.com https://www.google-analytics.com https://stats.g.doubleclick.net;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://spaceremit.com https://*.spaceremit.com https://*.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://*.supabase.co data: https://placehold.co https://*.stripe.com https://spaceremit.com https://*.spaceremit.com https://*.google-analytics.com https://www.google-analytics.com https://www.gravatar.com; connect-src 'self' https://*.supabase.co https://spaceremit.com https://*.spaceremit.com https://*.stripe.com https://ipapi.co https://open.er-api.com https://*.google-analytics.com https://www.google-analytics.com https://stats.g.doubleclick.net;"
         },
         {
           "key": "X-Content-Type-Options",

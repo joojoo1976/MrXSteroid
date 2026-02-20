@@ -116,19 +116,21 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             setSuccess(true);
 
             // Store Gravatar URL as default avatar for email signups
+            // Wait briefly to ensure handle_new_user trigger completes first
             if (isSupabaseConfigured && 'data' in result && result.data?.user?.id) {
-                try {
-                    const avatarUrl = getAvatarUrl({ email: values.email });
-                    await supabase.from('profiles').update({ avatar_url: avatarUrl })
-                        .eq('id', result.data.user.id);
-                } catch (avatarErr) {
-                    console.warn('Could not set default avatar:', avatarErr);
-                }
+                const userId = result.data.user.id;
+                setTimeout(async () => {
+                    try {
+                        const avatarUrl = getAvatarUrl({ email: values.email });
+                        await supabase.from('profiles').update({ avatar_url: avatarUrl })
+                            .eq('id', userId);
+                    } catch (avatarErr) {
+                        console.warn('Could not set default avatar:', avatarErr);
+                    }
+                }, 2000);
             }
 
             toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
-
-            setTimeout(() => navigateTo(Page.LOGIN), 5000);
 
         } catch (error: unknown) {
             console.error('Signup error:', error);
