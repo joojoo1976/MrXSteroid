@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { ContentStrings, Page } from '../types';
-import { StyledBrandName } from '../shared/ui/StyledBrandName';
-import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
-import { md5 } from '../shared/lib/cryptoUtils';
+import { DynamicBrandLogo } from '../shared/ui/DynamicBrandLogo';
+import { getAvatarUrl } from '../shared/lib/avatar-service';
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, User, Mail, Shield, ArrowLeft, Camera } from 'lucide-react';
@@ -20,7 +19,7 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) => {
     const { isRTL } = usePreferences();
-    const { loading } = useAuth();
+    const { loading, profileData, refreshUser } = useAuth();
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [isResending, setIsResending] = useState(false);
 
@@ -33,18 +32,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
             }
         };
         checkConfirmation();
-        
+
         // Listen for auth state changes (e.g., email confirmation)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session?.user) {
-                setIsConfirmed(!!(session.user.email_confirmed_at || session.user.confirmed_at));
+                const confirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
+                setIsConfirmed(confirmed);
+
+                // If just confirmed, refresh profile data
+                if (confirmed && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+                    refreshUser();
+                }
             }
         });
-        
+
         return () => {
             subscription.unsubscribe();
         };
-    }, [user]);
+    }, [user, refreshUser]);
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-background">
@@ -58,13 +63,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     }
 
     const userData = user.user_metadata || {};
-    // Fix: Use proper display name with fallback hierarchy
-    const displayName = userData.user_name || userData.username || userData.full_name || user.email?.split('@')[0] || 'User';
-    const emailHash = md5(user.email?.toLowerCase().trim() || '');
-    // Fix: Use Gravatar with mystery person default for automatic email-based avatar
-    const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=400`;
-    const profilePic = userData.avatar_url || gravatarUrl;
-    const isEmailConfirmed = isConfirmed || user.email_confirmed_at || user.confirmed_at;
+
+    // Fix: Use proper display name with DB priority
+    // Priority: DB profile → user_metadata → email fallback
+    const displayName = profileData?.full_name
+        || userData.full_name
+        || userData.user_name
+        || userData.username
+        || user.email?.split('@')[0]
+        || 'User';
+
+    const username = profileData?.user_name
+        || userData.user_name
+        || userData.username
+        || '-';
+
+    // Fix: Use centralized avatar service for auto-fetching
+    const profilePic = getAvatarUrl({
+        email: user.email || undefined,
+        provider: user.app_metadata?.provider,
+        providerAvatarUrl: profileData?.avatar_url || userData.avatar_url || userData.picture,
+    });
+
+    // Fix: Use only the real-time state for verification status
+    const isEmailConfirmed = isConfirmed;
+
+    // Calculate member since year
+    const memberSince = user.created_at
+        ? new Date(user.created_at).getFullYear()
+        : new Date().getFullYear();
 
     const handleResendConfirmation = async () => {
         if (isEmailConfirmed) {
@@ -83,21 +110,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                 type: 'signup',
                 email: user.email,
             });
-            
+
             if (error) {
                 console.error('Resend confirmation error:', error);
-                
+
                 // Handle specific error cases
                 if (error.message.includes('rate limit')) {
                     toast.error(
-                        isRTL 
-                            ? 'لقد حاولت كثيراً. يرجى الانتظار ساعة ثم المحاولة مرة أخرى.' 
+                        isRTL
+                            ? 'لقد حاولت كثيراً. يرجى الانتظار ساعة ثم المحاولة مرة أخرى.'
                             : 'Too many attempts. Please wait an hour and try again.'
                     );
                 } else if (error.message.includes('User not found') || error.message.includes('not found')) {
                     toast.error(
-                        isRTL 
-                            ? 'المستخدم غير موجود. يرجى تسجيل الدخول مرة أخرى.' 
+                        isRTL
+                            ? 'المستخدم غير موجود. يرجى تسجيل الدخول مرة أخرى.'
                             : 'User not found. Please log in again.'
                     );
                 } else {
@@ -105,10 +132,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                 }
             } else {
                 toast.success(
-                    isRTL 
-                        ? '✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد ومجلد البريد المزعج.' 
+                    isRTL
+                        ? '✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد ومجلد البريد المزعج.'
                         : '✅ Confirmation link sent to your email. Please check your inbox and spam folder.'
                 );
+
+                // Start polling to detect confirmation after resend
+                const pollInterval = setInterval(async () => {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user.email_confirmed_at || session?.user.confirmed_at) {
+                        setIsConfirmed(true);
+                        clearInterval(pollInterval);
+                        toast.success(isRTL ? 'تم تأكيد الحساب بنجاح! ✅' : 'Account verified successfully! ✅');
+                        refreshUser();
+                    }
+                }, 5000); // Check every 5 seconds
+
+                // Stop polling after 10 minutes
+                setTimeout(() => clearInterval(pollInterval), 600000);
             }
         } catch (err) {
             console.error('Resend confirmation exception:', err);
@@ -157,7 +198,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                 </button>
                             </div>
                             <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-1">{displayName}</h2>
-                            <p className="text-sm text-gold-600 dark:text-gold-500 font-bold uppercase tracking-wider">Member Since 2025</p>
+                            <p className="text-sm text-gold-600 dark:text-gold-500 font-bold uppercase tracking-wider">
+                                {isRTL ? `عضو منذ ${memberSince}` : `Member Since ${memberSince}`}
+                            </p>
                         </div>
                     </motion.div>
 
@@ -186,7 +229,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                             disabled={isResending}
                                             className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isResending 
+                                            {isResending
                                                 ? (isRTL ? "جاري الإرسال..." : "Sending...")
                                                 : (isRTL ? "إعادة إرسال رابط التأكيد" : "Resend Confirmation Link")}
                                         </button>
@@ -210,7 +253,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                     </div>
                                     <div>
                                         <p className="text-xs text-zinc-500 font-bold uppercase">{content.fullName}</p>
-                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.full_name || displayName || '-'}</p>
+                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                                            {profileData?.full_name || userData.full_name || displayName || '-'}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -220,7 +265,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                     </div>
                                     <div>
                                         <p className="text-xs text-zinc-500 font-bold uppercase">{content.usernameLabel}</p>
-                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{userData.user_name || userData.username || '-'}</p>
+                                        <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{username}</p>
                                     </div>
                                 </div>
 
@@ -242,8 +287,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                 <Shield className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="font-black text-gold-700 dark:text-gold-500">Elite Access Active</h3>
-                                <p className="text-sm text-gold-600/80 dark:text-gold-400/80">You have full access to all AI tools and premium guides.</p>
+                                <h3 className="font-black text-gold-700 dark:text-gold-500">
+                                    {isRTL ? 'الوصول المتميز نشط' : 'Elite Access Active'}
+                                </h3>
+                                <p className="text-sm text-gold-600/80 dark:text-gold-400/80">
+                                    {isRTL
+                                        ? 'لديك وصول كامل لجميع أدوات الذكاء الاصطناعي والأدلة المتميزة.'
+                                        : 'You have full access to all AI tools and premium guides.'}
+                                </p>
                             </div>
                         </div>
                     </motion.div>

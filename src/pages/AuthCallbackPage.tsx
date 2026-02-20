@@ -4,6 +4,7 @@ import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
 import { Page } from '../types';
 import { usePreferences } from '../context/PreferencesContext';
+import { getAvatarUrl } from '../shared/lib/avatar-service';
 
 const AuthCallbackPage: React.FC = () => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const AuthCallbackPage: React.FC = () => {
 
                 // Check for email confirmation type
                 const type = params.get('type');
-                
+
                 // Handle email confirmation (Supabase redirects here after clicking email link)
                 if (type === 'signup' || type === 'email') {
                     // Supabase should have already confirmed the email via cookie/session
@@ -37,8 +38,8 @@ const AuthCallbackPage: React.FC = () => {
                         console.warn('Session error after email confirmation:', sessionError);
                         // Even without session, email might be confirmed
                         toast.success(
-                            isRTL 
-                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.' 
+                            isRTL
+                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
                                 : 'Email confirmed! Please log in.'
                         );
                         navigate(Page.LOGIN);
@@ -47,14 +48,29 @@ const AuthCallbackPage: React.FC = () => {
 
                     if (session) {
                         const isEmailConfirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
-                        
+
                         if (isEmailConfirmed) {
+                            // Sync verification status and avatar with profiles table
+                            try {
+                                const avatarUrl = getAvatarUrl({
+                                    email: session.user.email || undefined,
+                                    provider: session.user.app_metadata?.provider,
+                                    providerAvatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+                                });
+                                await supabase.from('profiles').update({
+                                    avatar_url: avatarUrl,
+                                    updated_at: new Date().toISOString()
+                                }).eq('id', session.user.id);
+                            } catch (syncErr) {
+                                console.warn('Profile sync after verification:', syncErr);
+                            }
+
                             toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
                             navigate(Page.DASHBOARD);
                         } else {
                             toast.warning(
-                                isRTL 
-                                    ? 'يرجى تأكيد بريدك الإلكتروني أولاً' 
+                                isRTL
+                                    ? 'يرجى تأكيد بريدك الإلكتروني أولاً'
                                     : 'Please confirm your email first'
                             );
                             navigate(Page.PROFILE);
@@ -62,8 +78,8 @@ const AuthCallbackPage: React.FC = () => {
                     } else {
                         // Email confirmed but no session - ask user to login
                         toast.success(
-                            isRTL 
-                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.' 
+                            isRTL
+                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
                                 : 'Email confirmed! Please log in.'
                         );
                         navigate(Page.LOGIN);
@@ -73,8 +89,8 @@ const AuthCallbackPage: React.FC = () => {
 
                 // Check for recovery type
                 if (type === 'recovery') {
-                    navigate(Page.RESET_PASSWORD, { 
-                        state: { recoveryToken: params.get('token') } 
+                    navigate(Page.RESET_PASSWORD, {
+                        state: { recoveryToken: params.get('token') }
                     });
                     return;
                 }
@@ -90,6 +106,24 @@ const AuthCallbackPage: React.FC = () => {
                     });
 
                     if (error) throw error;
+
+                    // Sync OAuth avatar to profiles table
+                    if (data.user) {
+                        try {
+                            const avatarUrl = getAvatarUrl({
+                                email: data.user.email || undefined,
+                                provider: data.user.app_metadata?.provider,
+                                providerAvatarUrl: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture,
+                            });
+                            await supabase.from('profiles').update({
+                                avatar_url: avatarUrl,
+                                full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name,
+                                updated_at: new Date().toISOString()
+                            }).eq('id', data.user.id);
+                        } catch (syncErr) {
+                            console.warn('OAuth profile sync:', syncErr);
+                        }
+                    }
 
                     toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
                     navigate(Page.DASHBOARD);

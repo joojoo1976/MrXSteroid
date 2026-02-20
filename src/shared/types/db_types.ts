@@ -57,8 +57,11 @@ export type Database = {
                     email: string
                     full_name: string | null
                     user_name: string | null
+                    avatar_url: string | null
                     subscription_status: string // 'inactive' | 'active' etc.
+                    currency: string
                     created_at: string
+                    updated_at: string
                     role: 'user' | 'delegate' | 'admin'
                 }
                 Insert: {
@@ -66,8 +69,11 @@ export type Database = {
                     email: string
                     full_name?: string | null
                     user_name?: string | null
+                    avatar_url?: string | null
                     subscription_status?: string
+                    currency?: string
                     created_at?: string
+                    updated_at?: string
                     role?: 'user' | 'delegate' | 'admin'
                 }
                 Update: {
@@ -75,8 +81,11 @@ export type Database = {
                     email?: string
                     full_name?: string | null
                     user_name?: string | null
+                    avatar_url?: string | null
                     subscription_status?: string
+                    currency?: string
                     created_at?: string
+                    updated_at?: string
                     role?: 'user' | 'delegate' | 'admin'
                 }
                 Relationships: [

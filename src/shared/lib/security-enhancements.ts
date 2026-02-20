@@ -108,14 +108,14 @@ export class SecurityManager {
             if (error) {
                 // Increment failed login attempt
                 await this.incrementFailedLoginAttempt(email);
-                
+
                 await this.logSecurityEvent('login_failure', {
                     email,
                     error: error.message,
                     timestamp: new Date().toISOString(),
                     ip: await this.getClientIP()
                 });
-                
+
                 throw error;
             }
 
@@ -190,6 +190,13 @@ export class SecurityManager {
         // In a real implementation, this would come from a backend service
         // due to limitations of getting real IP from browser
         return '127.0.0.1'; // Placeholder
+    }
+
+    /**
+     * Get account lock status (public-facing method)
+     */
+    private async getAccountLockStatus(email: string): Promise<{ isLocked: boolean; unlockTime?: string }> {
+        return this.checkAccountLockStatus(email);
     }
 
     /**
