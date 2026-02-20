@@ -74,7 +74,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
         try {
             // Check if Supabase is properly configured
-            const isSupabaseConfigured = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             let result;
 
@@ -138,10 +138,10 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             let errorMessage = isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.";
 
             if (error instanceof Error) {
-                if (error.message.includes('User already registered') || error.message.includes('Email already exists')) {
+                if (error.message.includes('User already registered') || error.message.includes('Email already exists') || error.message.includes('already exists')) {
                     errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
-                } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
-                    errorMessage = isRTL ? "خطأ في الشبكة: يرجى التحقق من اتصالك بالإنترنت." : "Network error: Please check your connection.";
+                } else if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('503')) {
+                    errorMessage = isRTL ? "الخدمة غير متوفرة حالياً. حاول مرة أخرى." : "Service unavailable (503). Please try again later.";
                 } else if (error.message?.includes('RATE_LIMIT_EXCEEDED') || error.message?.includes('Too many requests')) {
                     errorMessage = isRTL ? "لقد حاولت عدة مرات. يرجى الانتظار قليلاً." : "Too many requests. Please wait a moment.";
                 } else if (error.message?.includes('INVALID_EMAIL_FORMAT')) {
@@ -151,10 +151,20 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                 } else {
                     errorMessage = error.message;
                 }
+            } else if (typeof error === 'object' && error !== null) {
+                const errObj = error as any;
+                if (errObj.status === 503) {
+                    errorMessage = isRTL ? "الخدمة غير متوفرة حالياً. حاول مرة أخرى." : "Service unavailable (503). Please try again later.";
+                } else if (errObj.message) {
+                    errorMessage = errObj.message;
+                }
             }
 
             toast.error(errorMessage);
-            await errorHandler.handle(error, 'Signup');
+            // Don't re-throw or call external error handler if it's just a 503 to avoid crash
+            if (!errorMessage.includes('503') && !errorMessage.includes('Service unavailable')) {
+                await errorHandler.handle(error, 'Signup');
+            }
         } finally {
             setLoading(false);
         }
