@@ -119,7 +119,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
                         <CardContent className="p-4 pt-3">
                             <Form {...form}>
-                                <form onSubmit={onSubmit} className="space-y-2">
+                                <form id="registration-form" onSubmit={onSubmit} className="space-y-2">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <FormField
                                             control={form.control}

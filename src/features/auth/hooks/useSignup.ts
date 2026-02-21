@@ -75,7 +75,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
         try {
             // Check if Supabase is properly configured
-            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = import.meta.env.NEXT_PUBLIC_SUPABASE_URL && import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
             let result;
             let usedMockAuth = false;
@@ -97,13 +97,19 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                         },
                     });
 
+                    // Log the response for debugging
+                    console.log("Supabase signUp response:", result);
+
                     // Check for duplicate identity (for Supabase)
                     if (result.error && (result.error.message?.includes('User already registered') || result.error.message?.includes('Email already exists'))) {
                         toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
                         return;
                     }
 
-                    if (result.error) throw result.error;
+                    if (result.error) {
+                        console.error("Supabase signUp error:", result.error);
+                        throw result.error;
+                    }
                 } catch (supabaseError: any) {
                     // If Supabase returns 503 or network error, fall back to mock auth
                     const isSupabaseUnavailable = 
