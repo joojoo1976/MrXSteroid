@@ -1,3 +1,6 @@
+---
+render_with_liquid: false
+---
 @echo off
 REM Mr. X Steroid - Performance Cleanup Script
 REM This script removes unused files and directories to improve bundle size
