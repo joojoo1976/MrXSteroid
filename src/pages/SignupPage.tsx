@@ -24,7 +24,7 @@ interface SignupPageProps {
 export default function SignupPage({ content, navigateTo }: SignupPageProps) {
     const { isRTL } = usePreferences();
 
-    const { form, loading, success, onSubmit } = useSignup({
+    const { form, loading, success, usedMockAuth, onSubmit } = useSignup({
         content,
         isRTL,
         navigateTo
@@ -47,15 +47,27 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             </div>
                             <CardTitle className="text-3xl font-black mb-4">{content.signupTitle}</CardTitle>
                             <CardDescription className="text-zinc-400 mb-8 leading-relaxed text-lg font-medium">
-                                {content.signupSuccess || (isRTL
-                                    ? "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتنشيط حسابك قبل تسجيل الدخول."
-                                    : "Account created successfully! Please check your email and click the confirmation link before logging in.")}
+                                {usedMockAuth ? (
+                                    isRTL
+                                        ? "✅ تم إنشاء الحساب بنجاح في وضع الاختبار! يمكنك تسجيل الدخول فوراً."
+                                        : "✅ Account created successfully in test mode! You can log in immediately."
+                                ) : (
+                                    isRTL
+                                        ? "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتنشيط حسابك قبل تسجيل الدخول."
+                                        : "Account created successfully! Please check your email and click the confirmation link before logging in."
+                                )}
                                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-500 text-sm font-bold flex items-center justify-center gap-2">
                                     <AlertTriangle className="w-5 h-5 flex-shrink-0" />
                                     <span className="text-start">
-                                        {isRTL
-                                            ? "تنبيه: إذا لم تجد الرسالة، افحص صندوق البريد المزعج (Junk / Spam)."
-                                            : "Note: If you don't see the email, please check your Junk / Spam folder."}
+                                        {usedMockAuth ? (
+                                            isRTL
+                                                ? "ملاحظة: هذا حساب تجريبي. البيانات قد تضيع عند إعادة تشغيل التطبيق."
+                                                : "Note: This is a test account. Data may be lost when the app restarts."
+                                        ) : (
+                                            isRTL
+                                                ? "تنبيه: إذا لم تجد الرسالة، افحص صندوق البريد المزعج (Junk / Spam)."
+                                                : "Note: If you don't see the email, please check your Junk / Spam folder."
+                                        )}
                                     </span>
                                 </div>
                             </CardDescription>

@@ -55,6 +55,7 @@ interface UseSignupOptions {
 export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [usedMockAuth, setUsedMockAuth] = useState(false);
 
     const signupSchema = createSignupSchema(isRTL);
 
@@ -77,30 +78,66 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             let result;
+            let usedMockAuth = false;
 
             if (isSupabaseConfigured) {
-                // Use Supabase for signup
-                result = await supabase.auth.signUp({
-                    email: values.email,
-                    password: values.password,
-                    options: {
-                        data: {
-                            full_name: values.fullName,
-                            user_name: values.username,
-                            currency: 'USD',
-                            role: 'user'
+                try {
+                    // Use Supabase for signup
+                    result = await supabase.auth.signUp({
+                        email: values.email,
+                        password: values.password,
+                        options: {
+                            data: {
+                                full_name: values.fullName,
+                                user_name: values.username,
+                                currency: 'USD',
+                                role: 'user'
+                            },
+                            emailRedirectTo: `${window.location.origin}/auth/callback`,
                         },
-                        emailRedirectTo: `${window.location.origin}/auth/callback`,
-                    },
-                });
+                    });
 
-                // Check for duplicate identity (for Supabase)
-                if (result.error && (result.error.message?.includes('User already registered') || result.error.message?.includes('Email already exists'))) {
-                    toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
-                    return;
+                    // Check for duplicate identity (for Supabase)
+                    if (result.error && (result.error.message?.includes('User already registered') || result.error.message?.includes('Email already exists'))) {
+                        toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
+                        return;
+                    }
+
+                    if (result.error) throw result.error;
+                } catch (supabaseError: any) {
+                    // If Supabase returns 503 or network error, fall back to mock auth
+                    const isSupabaseUnavailable = 
+                        supabaseError?.status === 503 ||
+                        supabaseError?.message?.includes('503') ||
+                        supabaseError?.message?.includes('fetch') ||
+                        supabaseError?.message?.includes('network') ||
+                        supabaseError?.message?.includes('Service unavailable');
+
+                    if (isSupabaseUnavailable) {
+                        console.warn('⚠️ Supabase unavailable (503), falling back to mock authentication...');
+                        setUsedMockAuth(true);
+                        
+                        // Fall back to mock auth service
+                        result = await mockAuthService.signUp(
+                            values.email,
+                            values.password,
+                            values.fullName,
+                            values.username
+                        );
+
+                        if (result.error) throw new Error(result.error);
+                        
+                        // Show warning toast about mock auth
+                        toast.warning(
+                            isRTL 
+                                ? "جاري استخدام وضع الاختبار مؤقتاً بسبب مشكلة في الخادم." 
+                                : "Using test mode temporarily due to server issue."
+                        );
+                    } else {
+                        // Re-throw if it's not a 503 error
+                        throw supabaseError;
+                    }
                 }
-
-                if (result.error) throw result.error;
             } else {
                 // Use mock auth service when Supabase is not configured
                 result = await mockAuthService.signUp(
@@ -111,11 +148,12 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                 );
 
                 if (result.error) throw new Error(result.error);
+                setUsedMockAuth(true);
             }
 
             // Store Gravatar URL as default avatar for email signups
             // Commit profile data BEFORE showing success screen
-            if (isSupabaseConfigured && 'data' in result && result.data?.user?.id) {
+            if (!usedMockAuth && 'data' in result && result.data?.user?.id) {
                 const userId = result.data.user.id;
                 try {
                     const avatarUrl = getAvatarUrl({ email: values.email });
@@ -137,7 +175,21 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
             // Only show success screen AFTER profile data is committed
             setSuccess(true);
-            toast.success(content.signupSuccess || (isRTL ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." : "Account created! Check your email to verify."));
+            
+            // Show appropriate success message based on auth method
+            if (usedMockAuth) {
+                toast.success(
+                    isRTL 
+                        ? "✅ تم إنشاء الحساب بنجاح! (وضع الاختبار)" 
+                        : "✅ Account created successfully! (Test Mode)"
+                );
+            } else {
+                toast.success(
+                    content.signupSuccess || (isRTL 
+                        ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." 
+                        : "Account created! Check your email to verify.")
+                );
+            }
 
         } catch (error: unknown) {
             console.error('Signup error:', error);
@@ -181,6 +233,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         form,
         loading,
         success,
+        usedMockAuth,
         onSubmit: form.handleSubmit(onSubmit)
     };
 };
