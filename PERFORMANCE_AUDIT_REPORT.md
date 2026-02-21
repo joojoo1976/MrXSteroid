@@ -1,3 +1,6 @@
+---
+render_with_liquid: false
+---
 # 🔍 Mr. X Steroid - Performance Audit Report
 
 **Date:** February 17, 2026  
@@ -247,19 +250,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   return (
     <img
       src={src}
-      alt={alt}
-      className={className}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
-      width={width}
-      height={height}
-      style={{
-        contentVisibility: 'auto',
-        containIntrinsicSize: height ? `${width || 0}px ${height}px` : 'auto',
-      }}
-    />
-  );
-};
+     
 ```
 
 #### B. Optimize App.tsx Audio Loading
