@@ -61,7 +61,13 @@ export class SecurityManager {
                 },
             });
 
-            if (error) throw error;
+            // Log the response for debugging
+            console.log("SecurityManager secureRegister response:", { data, error });
+
+            if (error) {
+                console.error("SecurityManager secureRegister error:", error);
+                throw error;
+            }
 
             // Log registration event for security monitoring
             await this.logSecurityEvent('registration_attempt', {

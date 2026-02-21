@@ -7,5 +7,14 @@
     "cloudcode.apigee.emulators": [
         "1.9.2",
         "eb2ffd72546f43569d20047291d0893d"
-    ]
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "db.alghvtpkpspnqupbvodu.supabase.co",
+            "database": "postgresql://postgres:[joojoo1976_1$Professional#]@db.alghvtpkpspnqupbvodu.supabase.co:5432/postgres"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
 }
