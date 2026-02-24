@@ -10,6 +10,8 @@ export interface ProfileData {
     subscription_status?: string;
     role?: string;
     email?: string;
+    has_paid?: boolean;
+    plan_tier?: string;
 }
 
 interface AuthContextType {
@@ -57,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, user_name, avatar_url, subscription_status, role, email')
+                .select('full_name, user_name, avatar_url, subscription_status, role, email, has_paid, plan_tier')
                 .eq('id', userId)
                 .single();
 
@@ -67,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (data) {
-                setProfileData(data as ProfileData & { email?: string });
+                setProfileData(data as ProfileData);
             }
         } catch (err) {
             console.warn('Profile fetch error:', err);

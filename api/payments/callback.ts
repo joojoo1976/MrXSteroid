@@ -144,9 +144,15 @@ async function activateSubscription(userId: string, transactionId: string, planT
     const supabase = getSupabaseAdmin();
 
     try {
-        // Update profiles table
-        const updatePayload: { subscription_status: string; updated_at: string; plan_tier?: string } = {
+        // Update profiles table - including has_paid = TRUE
+        const updatePayload: {
+            subscription_status: string;
+            has_paid: boolean;
+            updated_at: string;
+            plan_tier?: string
+        } = {
             subscription_status: 'active',
+            has_paid: true, // ✅ Set has_paid to TRUE on successful payment
             updated_at: new Date().toISOString()
         };
 
@@ -163,6 +169,8 @@ async function activateSubscription(userId: string, transactionId: string, planT
             console.error('❌ Failed to update profile:', profileError);
             return false;
         }
+
+        console.log(`✅ Profile updated with has_paid=TRUE for user: ${userId}`);
 
         // Create/Update subscription record
         const { error: subError } = await supabase
@@ -353,7 +361,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Validate transaction ID to prevent IDOR attacks
         const transactionId = (txn as string) || (reference_id as string);
-        
+
         // Validate transaction ID format
         if (transactionId && typeof transactionId === 'string') {
             // Basic validation - transaction ID should be alphanumeric with possible hyphens/underscores
@@ -369,7 +377,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error('❌ Invalid payment code format:', SP_payment_code);
                 return res.status(400).json({ error: 'Invalid payment code format' });
             }
-            
+
             // Verify with SpaceRemit API
             const verification = await verifyPaymentWithSpaceRemit(SP_payment_code);
 
@@ -397,7 +405,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         console.error('❌ Invalid user ID format:', userId);
                         return res.status(400).json({ error: 'Invalid user ID format' });
                     }
-                    
+
                     const meta = metadata as Record<string, unknown>;
                     const planTier = (meta?.tierId as string) || (meta?.plan_tier as string);
                     await activateSubscription(userId, referenceId, planTier);

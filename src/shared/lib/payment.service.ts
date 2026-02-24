@@ -123,18 +123,22 @@ class PaymentService {
             };
         }
 
-        // Validate key format (must start with pk_ for live or sb_ for sandbox)
-        const isValidFormat = publicKey.startsWith('pk_') || publicKey.startsWith('sb_');
+        // Validate key format - SpaceRemit keys can start with pk, pk_, sb, or sb_
+        // The key format is flexible to accommodate different SpaceRemit key formats
+        const isValidFormat = publicKey.length >= 20 && (
+            publicKey.startsWith('pk') || publicKey.startsWith('sb')
+        );
         if (!isValidFormat) {
             loggers.payment.error('Invalid SpaceRemit Public Key format', { 
+                keyLength: publicKey.length,
                 keyPrefix: publicKey.substring(0, 4) 
             });
             return {
                 success: false,
                 error: {
                     code: 'INVALID_PUBLIC_KEY_FORMAT',
-                    message: 'Invalid payment gateway configuration. Key must start with pk_ or sb_',
-                    messageAr: 'تكوين بوابة الدفع غير صالح. يجب أن يبدأ المفتاح بـ pk_ أو sb_'
+                    message: 'Invalid payment gateway configuration. Key format is invalid.',
+                    messageAr: 'تكوين بوابة الدفع غير صالح. تنسيق المفتاح غير صحيح.'
                 }
             };
         }
