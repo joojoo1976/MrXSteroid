@@ -110,7 +110,14 @@ class PaymentService {
     public async initiatePayment(payload: PaymentInitPayload): Promise<PaymentResult<PaymentSession>> {
         // 1. Validate Public Key Format FIRST
         const publicKey = env.SPACEREMIT_PUBLIC_KEY;
-        
+
+        // Debug logging (only in development via logger)
+        loggers.payment.debug('Initiating payment', {
+            hasPublicKey: !!publicKey,
+            keyLength: publicKey?.length,
+            keyPrefix: publicKey?.substring(0, 4)
+        });
+
         if (!publicKey) {
             loggers.payment.error('SpaceRemit Public Key is not configured');
             return {
@@ -125,13 +132,15 @@ class PaymentService {
 
         // Validate key format - SpaceRemit keys can start with pk, pk_, sb, or sb_
         // The key format is flexible to accommodate different SpaceRemit key formats
+        // Note: 'sk' prefix is for secret keys and should NOT be used client-side
         const isValidFormat = publicKey.length >= 20 && (
-            publicKey.startsWith('pk') || publicKey.startsWith('sb')
+            publicKey.startsWith('pk') ||
+            publicKey.startsWith('sb')
         );
         if (!isValidFormat) {
-            loggers.payment.error('Invalid SpaceRemit Public Key format', { 
+            loggers.payment.error('Invalid SpaceRemit Public Key format', {
                 keyLength: publicKey.length,
-                keyPrefix: publicKey.substring(0, 4) 
+                keyPrefix: publicKey.substring(0, 4)
             });
             return {
                 success: false,
@@ -143,13 +152,23 @@ class PaymentService {
             };
         }
 
+        loggers.payment.debug('Public key validation passed');
+
         // 2. Create payment record in database
         const transactionId = this.generateTransactionId();
+        loggers.payment.debug('Creating payment record', { transactionId });
+
         const recordResult = await this.createPaymentRecord(payload, transactionId);
 
         if (!recordResult.success) {
+            // When success is false, we know error exists
+            const failedResult = recordResult as { success: false; error: { code: string; message: string; messageAr?: string } };
+            const errorMsg = failedResult.error?.messageAr || failedResult.error?.message || 'Failed to create payment record';
+            loggers.payment.error('Failed to create payment record', { error: errorMsg });
             return recordResult as PaymentResult<PaymentSession>;
         }
+
+        loggers.payment.info('Payment record created', { transactionId });
 
         try {
             // 3. Build Redirect URL
@@ -194,7 +213,7 @@ class PaymentService {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             errorHandler.handle(error, 'PaymentService.initiatePayment');
-            
+
             loggers.payment.error('Payment initiation failed', {
                 error: errorMessage,
                 transactionId,
@@ -205,7 +224,7 @@ class PaymentService {
                     productId: payload.productId
                 }
             });
-            
+
             return {
                 success: false,
                 error: {
