@@ -35,10 +35,10 @@ const envSchema = z.object({
 
 // Helper to parse environment variables
 const parseEnv = () => {
-    // Collect variables
+    // Collect variables - Support both VITE_ and NEXT_PUBLIC_ prefixes for compatibility
     const processEnv = {
-        SUPABASE_URL: import.meta.env.NEXT_PUBLIC_SUPABASE_URL,
-        SUPABASE_ANON_KEY: import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         SPACEREMIT_API_URL: 'https://spaceremit.com/api/v2',
         SPACEREMIT_PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY,
         SPACEREMIT_CALLBACK_URL: import.meta.env.VITE_SPACEREMIT_CALLBACK_URL,
