@@ -195,11 +195,17 @@ class PaymentService {
                 checkoutUrl
             });
 
+            console.log('🔗 SpaceRemit Checkout URL:', checkoutUrl);
+            console.log('📦 Transaction ID:', transactionId);
+
             // 3. Start Polling (in case user comes back to this tab or opens new one)
             this.startTransactionPolling(transactionId, payload.userId);
 
-            // 4. Redirect
-            window.location.href = checkoutUrl;
+            // 4. Redirect with a small delay to allow state update
+            setTimeout(() => {
+                console.log('🚀 Redirecting to SpaceRemit...');
+                window.location.href = checkoutUrl;
+            }, 500);
 
             return {
                 success: true,

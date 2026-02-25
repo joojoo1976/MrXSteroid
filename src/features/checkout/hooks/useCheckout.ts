@@ -33,11 +33,24 @@ export interface useCheckoutOptions {
     onLocationChange: (isEg: boolean) => void;
 }
 
+export interface CheckoutState {
+    isProcessing: boolean;
+    isRedirecting: boolean;
+    paymentError: string | null;
+    redirectUrl: string | null;
+    // Embedded payment flow
+    isCardElementReady: boolean;
+    spaceremitCode: string | null;
+    paymentMethod: 'embedded' | 'redirect';
+}
+
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange } = options;
     const { currency } = usePreferences();
     const prefCurrency = { code: currency, symbol: '$', rate: 1, locale: 'en-US' }; // Mock object to match expected structure
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [submissionCount, setSubmissionCount] = useState(0);
     const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
@@ -47,6 +60,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [promoCode, setPromoCode] = useState('');
     const [promoStatus, setPromoStatus] = useState<{ valid: boolean; message: string; discount: number } | null>(null);
     const [isPromoLoading, setIsPromoLoading] = useState(false);
+
+    // Embedded Payment Flow State
+    const [isCardElementReady, setIsCardElementReady] = useState(false);
+    const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
+    const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('embedded');
 
     const isAr = lang === 'ar';
     const isPhysical = productVariant !== 'digital';
@@ -157,10 +175,72 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
         setIsProcessing(true);
         setPaymentError(null);
+        setIsRedirecting(false);
+        setRedirectUrl(null);
 
         try {
             const tempOrderId = `ord_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+            console.log('🚀 Initiating payment...', {
+                amount: finalTotal,
+                currency,
+                email: data.email,
+                orderId: tempOrderId,
+                paymentMethod
+            });
+
+            // If using embedded payment and we have a spaceremit code
+            if (paymentMethod === 'embedded' && spaceremitCode) {
+                console.log('💳 Processing embedded payment with SpaceRemit code:', spaceremitCode);
+                
+                // Create payment record with the spaceremit code
+                const result = await paymentService.initiatePayment({
+                    amount: finalTotal,
+                    currency: currency as 'USD' | 'EGP' | 'SAR' || 'USD',
+                    email: data.email,
+                    customerName: data.fullName,
+                    orderId: tempOrderId,
+                    productId: selectedTier.id as string,
+                    productName: selectedTier.name as string,
+                    userId: undefined,
+                    quantity: 1,
+                    locale: isAr ? 'ar' : 'en',
+                    metadata: {
+                        ...data,
+                        tierId: selectedTier.id,
+                        tierName: selectedTier.name,
+                        isPhysical: isPhysical,
+                        lang: selectedTier.selectedLanguage,
+                        shippingCost: selectedShipping?.price || 0,
+                        shippingProvider: selectedShipping?.name,
+                        discount: discountAmount,
+                        promoCode: promoCode,
+                        spaceremit_code: spaceremitCode,
+                        payment_method: 'embedded_card'
+                    } as unknown as Record<string, unknown>
+                });
+
+                console.log('📦 Payment result:', result);
+
+                if (result.success === false) {
+                    const err = result.error;
+                    throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
+                }
+
+                // Payment successful - show success state
+                setSubmissionCount(prev => prev + 1);
+                toast.success(isAr ? 'تم الدفع بنجاح! جاري معالجة طلبك...' : 'Payment successful! Processing your order...');
+                
+                // Redirect to success page
+                setTimeout(() => {
+                    window.location.href = `/checkout/success?order=${tempOrderId}`;
+                }, 1000);
+                
+                return;
+            }
+
+            // Fallback to redirect flow
+            console.log('🔄 Falling back to redirect payment flow');
             const result = await paymentService.initiatePayment({
                 amount: finalTotal,
                 currency: currency as 'USD' | 'EGP' | 'SAR' || 'USD',
@@ -181,28 +261,41 @@ export const useCheckout = (options: useCheckoutOptions) => {
                     shippingCost: selectedShipping?.price || 0,
                     shippingProvider: selectedShipping?.name,
                     discount: discountAmount,
-                    promoCode: promoCode
+                    promoCode: promoCode,
+                    payment_method: 'redirect'
                 } as unknown as Record<string, unknown>
             });
+
+            console.log('📦 Payment result:', result);
 
             if (result.success === false) {
                 const err = result.error;
                 throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
             }
 
+            // Show redirecting state
+            setIsRedirecting(true);
+            setRedirectUrl(result.data.checkoutUrl);
             setSubmissionCount(prev => prev + 1);
+
+            // Show toast message
+            toast.success(isAr ? 'جاري التحويل إلى صفحة الدفع الآمنة...' : 'Redirecting to secure payment page...');
+
+            // The redirect happens in payment.service.ts via window.location.href
         } catch (error) {
-            console.error(error);
+            console.error('❌ Payment error:', error);
             const msg = (error as Error).message;
             setPaymentError(isAr ? (msg || "حدث خطأ أثناء بدء الدفع.") : (msg || "Error initiating payment."));
-        } finally {
             setIsProcessing(false);
+            setIsRedirecting(false);
         }
     };
 
     return {
         form,
         isProcessing,
+        isRedirecting,
+        redirectUrl,
         paymentError,
         shippingProviders,
         isLoadingShipping,
@@ -214,6 +307,13 @@ export const useCheckout = (options: useCheckoutOptions) => {
         discountAmount,
         selectedShipping,
         handleApplyPromo,
-        onSubmit: form.handleSubmit(onSubmit)
+        onSubmit: form.handleSubmit(onSubmit),
+        // Embedded payment flow
+        isCardElementReady,
+        setIsCardElementReady,
+        spaceremitCode,
+        setSpaceremitCode,
+        paymentMethod,
+        setPaymentMethod
     };
 };
