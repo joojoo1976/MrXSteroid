@@ -215,7 +215,7 @@ const AdminDashboard: React.FC = () => {
                                         <p className="text-sm font-black text-white">#{order.id.slice(0, 8)}</p>
                                         <p className="text-xs text-gold-500 font-bold">${order.amount}</p>
                                     </div>
-                                    <p className="text-xs text-zinc-500 mb-4">{order.fullName} - {order.city}, {order.country}</p>
+                                    <p className="text-xs text-zinc-500 mb-4">{order.fullname} - {order.city}, {order.country}</p>
 
                                     <div className="space-y-2">
                                         <p className="text-[10px] text-zinc-500 font-bold uppercase">Assign to Delegate</p>

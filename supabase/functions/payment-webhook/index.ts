@@ -35,28 +35,46 @@ serve(async (req: Request) => {
         )
 
         // Check if already processed
-        const { data: existingOrder } = await supabase
-            .from('orders')
+        const { data: existingPayment } = await supabase
+            .from('payments')
             .select('status')
             .eq('transaction_id', referenceId)
             .single()
 
-        if (existingOrder?.status === 'completed') {
+        if (existingPayment?.status === 'completed' || existingPayment?.status === 'success') {
             console.log(`⏩ Transaction ${referenceId} already processed. Skipping.`)
             return new Response(JSON.stringify({ message: 'Already processed' }), { status: 200 })
         }
 
         // 2. Process Success Case
         if (payload.event === 'transaction.success') {
-            const { error: updateError } = await supabase
-                .from('orders')
-                .update({ status: 'completed' })
+            // Update Payment Record
+            const { data: updatedPayment, error: updateError } = await supabase
+                .from('payments')
+                .update({
+                    status: 'completed',
+                    updated_at: new Date().toISOString()
+                })
                 .eq('transaction_id', referenceId)
+                .select('order_id')
+                .single()
 
             if (updateError) throw updateError
 
+            // Sync with Orders Table if order_id exists
+            if (updatedPayment?.order_id) {
+                console.log(`📦 Syncing Order ${updatedPayment.order_id}...`)
+                await supabase
+                    .from('orders')
+                    .update({
+                        status: 'completed',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', updatedPayment.order_id)
+            }
+
             // Trigger Outgoing Notification (usually via DB Webhook or direct call)
-            console.log(`✅ Transaction ${referenceId} confirmed. Subscription activated.`)
+            console.log(`✅ Transaction ${referenceId} confirmed. Payment and Order status updated.`)
         }
 
         return new Response(JSON.stringify({ success: true }), { status: 200 })

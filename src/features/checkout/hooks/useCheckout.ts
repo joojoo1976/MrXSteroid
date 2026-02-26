@@ -192,7 +192,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
             // If using embedded payment and we have a spaceremit code
             if (paymentMethod === 'embedded' && spaceremitCode) {
                 console.log('💳 Processing embedded payment with SpaceRemit code:', spaceremitCode);
-                
+
                 // Create payment record with the spaceremit code
                 const result = await paymentService.initiatePayment({
                     amount: finalTotal,
@@ -230,12 +230,12 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 // Payment successful - show success state
                 setSubmissionCount(prev => prev + 1);
                 toast.success(isAr ? 'تم الدفع بنجاح! جاري معالجة طلبك...' : 'Payment successful! Processing your order...');
-                
+
                 // Redirect to success page
                 setTimeout(() => {
                     window.location.href = `/checkout/success?order=${tempOrderId}`;
                 }, 1000);
-                
+
                 return;
             }
 
@@ -314,6 +314,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         spaceremitCode,
         setSpaceremitCode,
         paymentMethod,
-        setPaymentMethod
+        setPaymentMethod,
+        prefCurrency
     };
 };
