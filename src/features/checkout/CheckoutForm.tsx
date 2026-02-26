@@ -70,7 +70,8 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         spaceremitCode,
         setSpaceremitCode,
         paymentMethod,
-        setPaymentMethod
+        setPaymentMethod,
+        prefCurrency
     } = useCheckout({
         content,
         lang,
