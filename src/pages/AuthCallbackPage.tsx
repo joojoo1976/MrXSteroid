@@ -30,6 +30,8 @@ const AuthCallbackPage: React.FC = () => {
 
                 // Handle email confirmation (Supabase redirects here after clicking email link)
                 if (type === 'signup' || type === 'email') {
+                    console.log('📧 Email confirmation callback detected');
+
                     // Supabase should have already confirmed the email via cookie/session
                     // Just need to check if user is confirmed and redirect appropriately
                     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -48,6 +50,7 @@ const AuthCallbackPage: React.FC = () => {
 
                     if (session) {
                         const isEmailConfirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
+                        console.log('📧 Email confirmed:', isEmailConfirmed, 'User ID:', session.user.id);
 
                         if (isEmailConfirmed) {
                             // Sync verification status and avatar with profiles table
@@ -57,7 +60,7 @@ const AuthCallbackPage: React.FC = () => {
                                     provider: session.user.app_metadata?.provider,
                                     providerAvatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
                                 });
-                                
+
                                 // Update profile with avatar and sync metadata
                                 const { error: updateError } = await supabase.from('profiles').update({
                                     avatar_url: avatarUrl,
@@ -68,12 +71,17 @@ const AuthCallbackPage: React.FC = () => {
 
                                 if (updateError) {
                                     console.warn('Profile update error:', updateError);
+                                } else {
+                                    console.log('✅ Profile synced successfully');
                                 }
                             } catch (syncErr) {
                                 console.warn('Profile sync after verification:', syncErr);
                             }
 
                             toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
+
+                            // IMPORTANT: Session is already persisted by Supabase via cookie/localStorage
+                            // The AuthContext will pick it up automatically
                             navigate(Page.DASHBOARD);
                         } else {
                             toast.warning(
@@ -85,6 +93,7 @@ const AuthCallbackPage: React.FC = () => {
                         }
                     } else {
                         // Email confirmed but no session - ask user to login
+                        console.log('⚠️ Email confirmed but no session found');
                         toast.success(
                             isRTL
                                 ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
@@ -108,6 +117,7 @@ const AuthCallbackPage: React.FC = () => {
                 const refreshToken = params.get('refresh_token');
 
                 if (accessToken && refreshToken) {
+                    console.log('🔑 Setting OAuth session...');
                     const { data, error } = await supabase.auth.setSession({
                         access_token: accessToken,
                         refresh_token: refreshToken
@@ -141,6 +151,7 @@ const AuthCallbackPage: React.FC = () => {
                     if (sessionError) throw sessionError;
 
                     if (session) {
+                        console.log('✅ Session found, redirecting to dashboard');
                         toast.success(isRTL ? 'مرحباً بك مجدداً!' : 'Welcome back!');
                         navigate(Page.DASHBOARD);
                     } else {
