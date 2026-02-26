@@ -22,6 +22,7 @@ export interface CheckoutFormData {
     goal?: string;
     createAccount: boolean;
     agreeToTerms: boolean;
+    userId?: string; // Add userId for authenticated users
 }
 
 export interface useCheckoutOptions {
@@ -31,6 +32,9 @@ export interface useCheckoutOptions {
     totalAmount: number;
     productVariant: ProductVariant;
     onLocationChange: (isEg: boolean) => void;
+    userId?: string; // Optional: authenticated user ID
+    userEmail?: string; // Optional: authenticated user email
+    userName?: string; // Optional: authenticated user name
 }
 
 export interface CheckoutState {
@@ -45,7 +49,7 @@ export interface CheckoutState {
 }
 
 export const useCheckout = (options: useCheckoutOptions) => {
-    const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange } = options;
+    const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, userId, userEmail, userName } = options;
     const { currency } = usePreferences();
     const prefCurrency = { code: currency, symbol: '$', rate: 1, locale: 'en-US' }; // Mock object to match expected structure
     const [isProcessing, setIsProcessing] = useState(false);
@@ -116,7 +120,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
         defaultValues: {
             country: 'USA',
             createAccount: true,
-            agreeToTerms: false
+            agreeToTerms: false,
+            email: userEmail || '',
+            fullName: userName || '',
+            userId: userId || undefined
         }
     });
 

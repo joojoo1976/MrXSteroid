@@ -9,6 +9,7 @@ import { Checkbox } from '../../shared/ui/checkbox';
 import { ContentStrings, Language, PricingTier, ProductVariant } from '../../types';
 import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
+import { useAuth } from '../../context/AuthContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
 import { SpaceRemitCardElement } from './SpaceRemitCardElement';
 import { env } from '../../config/env';
@@ -47,6 +48,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const isAr = prefLang === 'ar';
     const isImperial = unitSystem === 'imperial';
 
+    // Import useAuth to get authenticated user data
+    const { user, profileData, isAuthenticated } = useAuth();
+
     // Using the new specialized hook for logic
     const {
         form: { register, watch, setValue, formState: { errors } },
@@ -78,8 +82,34 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         selectedTier,
         totalAmount,
         productVariant,
-        onLocationChange
+        onLocationChange,
+        userId: user?.id,
+        userEmail: user?.email,
+        userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name
     });
+
+    // Auto-fill form with authenticated user data
+    useEffect(() => {
+        if (isAuthenticated && user && user.email) {
+            // Fill email from auth user
+            const currentEmail = watch('email');
+            if (!currentEmail) {
+                setValue('email', user.email, { shouldValidate: true });
+            }
+
+            // Fill full name from profile data or user metadata
+            const currentFullName = watch('fullName');
+            if (!currentFullName) {
+                const fullName = profileData?.full_name
+                    || user.user_metadata?.full_name
+                    || user.user_metadata?.name
+                    || '';
+                if (fullName) {
+                    setValue('fullName', fullName, { shouldValidate: true });
+                }
+            }
+        }
+    }, [isAuthenticated, user, profileData, setValue, watch]);
 
     // Store card info in form metadata
     useEffect(() => {
