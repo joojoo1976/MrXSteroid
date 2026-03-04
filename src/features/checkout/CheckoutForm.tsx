@@ -155,7 +155,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-8">
+        <form id="spaceremit-checkout-form" onSubmit={onSubmit} className="space-y-8">
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">

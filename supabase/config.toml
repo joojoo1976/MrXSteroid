@@ -1,0 +1,18 @@
+project_id = "alghvtpkpspnqupbvodu"
+
+[auth]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[auth.email.smtp]
+enable = true
+host = "smtp.gmail.com"
+port = 587
+user = "foryoutalk@gmail.com"
+pass = "env(GMAIL_APP_PASSWORD)"
+admin_email = "foryoutalk@gmail.com"
+sender_name = "Mr. X Steroid"
