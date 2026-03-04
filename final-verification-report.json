@@ -1,0 +1,179 @@
+{
+  "email": {
+    "passed": 8,
+    "failed": 1,
+    "warnings": 0,
+    "tests": [
+      {
+        "name": "SMTP enabled in Supabase config.toml",
+        "passed": true,
+        "message": "✅ SMTP is enabled",
+        "fix": ""
+      },
+      {
+        "name": "SMTP host configured (smtp.gmail.com)",
+        "passed": true,
+        "message": "✅ Gmail SMTP host configured",
+        "fix": ""
+      },
+      {
+        "name": "SMTP port configured (587)",
+        "passed": true,
+        "message": "✅ SMTP port 587 configured",
+        "fix": ""
+      },
+      {
+        "name": "SMTP username configured (foryoutalk@gmail.com)",
+        "passed": true,
+        "message": "✅ SMTP username configured",
+        "fix": ""
+      },
+      {
+        "name": "Gmail App Password configured in config.toml",
+        "passed": true,
+        "message": "✅ App Password reference configured",
+        "fix": ""
+      },
+      {
+        "name": "Gmail App Password value in .env file",
+        "passed": false,
+        "message": "❌ Gmail App Password missing or placeholder in .env",
+        "fix": "Add actual 16-char Gmail App Password to .env file"
+      },
+      {
+        "name": "Email confirmation enabled in Supabase",
+        "passed": true,
+        "message": "✅ Email confirmations enabled",
+        "fix": ""
+      },
+      {
+        "name": "Sender email configured (foryoutalk@gmail.com)",
+        "passed": true,
+        "message": "✅ Sender email configured",
+        "fix": ""
+      },
+      {
+        "name": "Environment file (.env or .env.local) exists",
+        "passed": true,
+        "message": "✅ Environment file found",
+        "fix": ""
+      }
+    ]
+  },
+  "payment": {
+    "passed": 6,
+    "failed": 1,
+    "warnings": 3,
+    "tests": [
+      {
+        "name": "SpaceRemit Public Key configured",
+        "passed": true,
+        "message": "✅ Public Key: pkO6RUYNRP...",
+        "fix": ""
+      },
+      {
+        "name": "SpaceRemit Secret Key configured (in .env)",
+        "passed": false,
+        "message": "⚠️  WARNING: Secret Key is placeholder or default value - MUST be updated in Vercel",
+        "fix": "Add actual SPACEREMIT_SECRET_KEY to Vercel Environment Variables"
+      },
+      {
+        "name": "Webhook Secret configured",
+        "passed": true,
+        "message": "✅ Webhook Secret configured",
+        "fix": ""
+      },
+      {
+        "name": "Supabase Service Role Key configured",
+        "passed": false,
+        "message": "❌ Service Role Key missing or invalid (should start with eyJ)",
+        "fix": "Get SUPABASE_SERVICE_ROLE_KEY from Supabase Dashboard → Settings → API"
+      },
+      {
+        "name": "Callback URL configured",
+        "passed": true,
+        "message": "✅ Callback URL: https://mrxsteroid.vercel.app/api/payments/callback",
+        "fix": ""
+      },
+      {
+        "name": "Webhook handler file exists",
+        "passed": true,
+        "message": "✅ webhook.ts found",
+        "fix": ""
+      },
+      {
+        "name": "Callback handler file exists",
+        "passed": true,
+        "message": "✅ callback.ts found",
+        "fix": ""
+      },
+      {
+        "name": "Webhook signature verification implemented",
+        "passed": true,
+        "message": "✅ Signature verification code present",
+        "fix": ""
+      },
+      {
+        "name": "Webhook URL registered in SpaceRemit Dashboard",
+        "passed": false,
+        "message": "⚠️  WARNING: Manual verification required - see instructions above",
+        "fix": "Register webhook URL in SpaceRemit Dashboard → Websites → Webhooks"
+      },
+      {
+        "name": "IPN configured in SpaceRemit Dashboard",
+        "passed": false,
+        "message": "⚠️  WARNING: Manual verification required - see instructions above",
+        "fix": "Configure IPN in SpaceRemit Dashboard → Settings → IPN Configuration"
+      }
+    ]
+  },
+  "deployment": {
+    "passed": 6,
+    "failed": 0,
+    "warnings": 1,
+    "tests": [
+      {
+        "name": "vercel.json configuration exists",
+        "passed": true,
+        "message": "✅ vercel.json found",
+        "fix": ""
+      },
+      {
+        "name": "Security headers configured",
+        "passed": true,
+        "message": "✅ Security headers present",
+        "fix": ""
+      },
+      {
+        "name": ".env files in .gitignore",
+        "passed": true,
+        "message": "✅ .env files properly ignored",
+        "fix": ""
+      },
+      {
+        "name": "API handlers preserved (not ignored)",
+        "passed": true,
+        "message": "✅ API directory structure intact",
+        "fix": ""
+      },
+      {
+        "name": "Build and test scripts configured",
+        "passed": "vitest",
+        "message": "✅ Build and test scripts present",
+        "fix": ""
+      },
+      {
+        "name": "node_modules in .gitignore",
+        "passed": true,
+        "message": "✅ node_modules properly ignored",
+        "fix": ""
+      },
+      {
+        "name": "Vercel environment variables configured",
+        "passed": false,
+        "message": "⚠️  WARNING: Manual verification required in Vercel Dashboard",
+        "fix": "Add all required environment variables in Vercel → Settings → Environment Variables"
+      }
+    ]
+  }
+}
