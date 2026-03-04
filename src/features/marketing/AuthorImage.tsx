@@ -7,7 +7,7 @@ const AuthorImage: React.FC<{ name: string }> = ({ name }) => {
         <div className={`relative w-64 h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden border-4 border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] transition-transform duration-500 bg-zinc-800 ${isRTL ? '-rotate-3 hover:rotate-0' : 'rotate-3 hover:rotate-0'}`}>
             <div className="absolute inset-0">
                 <img
-                    src="/Author_MrXSteroid.jpg"
+                    src="/screens/about-author.jpg"
                     alt={name}
                     className="w-full h-full object-cover"
                     loading="lazy"
