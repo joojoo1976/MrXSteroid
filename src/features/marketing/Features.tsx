@@ -21,7 +21,7 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-start mb-24">
+        <header className="text-start mb-24">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -31,11 +31,12 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
             {content.featuresTitle}
           </motion.h2>
           <div className="w-32 h-2 bg-gradient-to-r from-gold-600 to-gold-400 mx-auto rounded-full shadow-[0_0_20px_rgba(255,255,160,0.4)] mb-8 animate-pulse"></div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 tablet-grid-2">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 tablet-grid-2">
           {content.features.map((feature, idx) => (
-            <RevealOnScroll key={idx} delay={idx * 150}>
+            <li key={idx}>
+              <RevealOnScroll delay={idx * 150}>
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -61,8 +62,9 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
                 </div>
               </motion.div>
             </RevealOnScroll>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

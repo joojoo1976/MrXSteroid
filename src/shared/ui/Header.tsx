@@ -247,7 +247,7 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 glass-morphism-premium border-b border-zinc-200 dark:border-zinc-800/50 group/nav transition-all duration-500 ${isScrolled ? 'shadow-md backdrop-blur-xl' : ''}`}>
+    <header className={`fixed top-0 w-full z-50 glass-morphism-premium border-b border-zinc-200 dark:border-zinc-800/50 group/nav transition-all duration-500 ${isScrolled ? 'shadow-md backdrop-blur-xl' : ''}`}>
 
       {/* Design Mode Toggle */}
       <button
@@ -299,7 +299,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <div className={`container mx-auto px-4 flex items-center transition-all duration-500 py-0.5`}>
+      <nav className={`container mx-auto px-4 flex items-center transition-all duration-500 py-0.5`}>
         <Reorder.Group
           axis="x"
           values={layoutConfig.sections}
@@ -411,7 +411,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </motion.div>
-    </nav>
+    </header>
   );
 };
 

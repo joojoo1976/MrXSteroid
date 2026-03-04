@@ -22,6 +22,7 @@ import Features from './features/marketing/Features';
 import Footer from './shared/ui/Footer';
 import AdPlaceholder from './shared/ui/AdPlaceholder';
 import RevealOnScroll from './shared/ui/RevealOnScroll';
+import SEO from './shared/ui/SEO';
 
 // Refactored Components - Fixed paths (actual location: src/features/modal/)
 import BlockingDisclaimerModal from './features/modal/BlockingDisclaimerModal';
@@ -76,6 +77,7 @@ const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage')
 const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
+const PaymentConfigDiagnostic = React.lazy(() => import('./pages/PaymentConfigDiagnostic'));
 
 // Lazy Loaded Auth & Landing Pages (Optimization)
 const SmartBookLanding = React.lazy(() => import('./features/marketing/SmartBookLanding'));
@@ -240,7 +242,7 @@ function AppContent({
       />
       <div className="flex-1">
         {currentPage === Page.HOME ? (
-          <div className="animate-fade-in">
+          <main className="animate-fade-in">
             <Hero content={content} openCheckout={openCheckout} playerState={playerState} />
             <div className="container mx-auto px-4 mb-20 animate-fade-in-up">
               <AdPlaceholder slotId="home_hero_bottom" content={content} />
@@ -266,7 +268,7 @@ function AppContent({
             <div className="container mx-auto px-4 mb-20">
               <AdPlaceholder slotId="home_footer_top" content={content} />
             </div>
-          </div>
+          </main>
         ) : (
           <main className="pt-24 pb-20 container mx-auto px-4 min-h-screen animate-fade-in">
             <button onClick={() => navigateTo(Page.HOME)} className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-gold-500 transition-colors font-bold">
@@ -324,6 +326,7 @@ function AppContent({
               {currentPage === Page.REPRESENTATIVE && <AuthGuard><RepresentativePage /></AuthGuard>}
               {currentPage === Page.ADMIN_DASHBOARD && <AuthGuard><AdminDashboard /></AuthGuard>}
               {currentPage === Page.AUTH_CALLBACK && <AuthCallbackPage />}
+              {currentPage === Page.PAYMENT_CONFIG_DIAGNOSTIC && <PaymentConfigDiagnostic />}
             </Suspense>
           </main>
         )}
@@ -373,65 +376,59 @@ export default function App() {
       const state = await initializeLocalization();
       setCurrencyState(state.currency);
 
+      // Map paths to Page enum for robust routing
+      const getPageFromPath = (path: string): Page | null => {
+        const p = path.replace(/^\//, '');
+        if (!p) return Page.HOME;
+
+        const pathMap: Record<string, Page> = {
+          'dashboard': Page.DASHBOARD,
+          'diagnostic': Page.DIAGNOSTIC,
+          'login': Page.LOGIN,
+          'signup': Page.SIGNUP,
+          'profile': Page.PROFILE,
+          'about': Page.ABOUT,
+          'sitemap': Page.SITEMAP,
+          'accessibility': Page.ACCESSIBILITY,
+          'gdpr': Page.GDPR,
+          'ccpa': Page.CCPA,
+          'blog': Page.BLOG,
+          'shipping': Page.SHIPPING_POLICY,
+          'returns': Page.RETURN_POLICY,
+          'cookies': Page.COOKIE_POLICY,
+          'support': Page.SUPPORT,
+          'careers': Page.CAREERS,
+          'faq': Page.FAQ,
+          'contact': Page.CONTACT,
+          'privacy': Page.PRIVACY,
+          'terms': Page.TERMS,
+          'refund': Page.REFUND,
+          'disclaimer': Page.LEGAL_DISCLAIMER_PAGE,
+          'success': Page.PAYMENT_SUCCESS,
+          'payment-success': Page.PAYMENT_SUCCESS,
+          'cancel': Page.PAYMENT_CANCEL,
+          'payment-cancel': Page.PAYMENT_CANCEL,
+          'payment-pending': Page.PAYMENT_PENDING,
+          'representative': Page.REPRESENTATIVE,
+          'admin': Page.ADMIN_DASHBOARD,
+          'auth/callback': Page.AUTH_CALLBACK,
+          'callback': Page.AUTH_CALLBACK,
+          'macro': Page.MACRO,
+          'bodyfat': Page.BODYFAT,
+          'injection': Page.INJECTION,
+          'halflife': Page.HALFLIFE,
+          'lab': Page.LAB,
+          'genetic': Page.GENETIC,
+          'cycle': Page.CYCLE_ARCHITECT,
+          'payment-diagnostic': Page.PAYMENT_CONFIG_DIAGNOSTIC
+        };
+        return pathMap[p] || null;
+      };
+
       // Simple URL Router (Deep Linking)
       const path = window.location.pathname.toLowerCase();
-      if (path === '/dashboard') {
-        setCurrentPage(Page.DASHBOARD);
-      } else if (path === '/diagnostic') {
-        setCurrentPage(Page.DIAGNOSTIC);
-      } else if (path === '/login') {
-        setCurrentPage(Page.LOGIN);
-      } else if (path === '/signup') {
-        setCurrentPage(Page.SIGNUP);
-      } else if (path === '/profile') {
-        setCurrentPage(Page.PROFILE);
-      } else if (path === '/about') {
-        setCurrentPage(Page.ABOUT);
-      } else if (path === '/sitemap') {
-        setCurrentPage(Page.SITEMAP);
-      } else if (path === '/accessibility') {
-        setCurrentPage(Page.ACCESSIBILITY);
-      } else if (path === '/gdpr') {
-        setCurrentPage(Page.GDPR);
-      } else if (path === '/ccpa') {
-        setCurrentPage(Page.CCPA);
-      } else if (path === '/blog') {
-        setCurrentPage(Page.BLOG);
-      } else if (path === '/shipping') {
-        setCurrentPage(Page.SHIPPING_POLICY);
-      } else if (path === '/returns') {
-        setCurrentPage(Page.RETURN_POLICY);
-      } else if (path === '/cookies') {
-        setCurrentPage(Page.COOKIE_POLICY);
-      } else if (path === '/support') {
-        setCurrentPage(Page.SUPPORT);
-      } else if (path === '/careers') {
-        setCurrentPage(Page.CAREERS);
-      } else if (path === '/faq') {
-        setCurrentPage(Page.FAQ);
-      } else if (path === '/contact') {
-        setCurrentPage(Page.CONTACT);
-      } else if (path === '/privacy') {
-        setCurrentPage(Page.PRIVACY);
-      } else if (path === '/terms') {
-        setCurrentPage(Page.TERMS);
-      } else if (path === '/refund') {
-        setCurrentPage(Page.REFUND);
-      } else if (path === '/disclaimer') {
-        setCurrentPage(Page.LEGAL_DISCLAIMER_PAGE);
-      } else if (path === '/success' || path === '/payment-success') {
-        setCurrentPage(Page.PAYMENT_SUCCESS);
-      } else if (path === '/cancel' || path === '/payment-cancel') {
-        setCurrentPage(Page.PAYMENT_CANCEL);
-      } else if (path === '/payment-pending') {
-        setCurrentPage(Page.PAYMENT_PENDING);
-      } else if (path === '/representative') {
-        setCurrentPage(Page.REPRESENTATIVE);
-      } else if (path === '/admin') {
-        setCurrentPage(Page.ADMIN_DASHBOARD);
-      } else if (path === '/auth/callback' || path === '/callback') {
-        setCurrentPage(Page.AUTH_CALLBACK);
-      }
+      const initialPage = getPageFromPath(path);
+      if (initialPage) setCurrentPage(initialPage);
 
       // Check for reset_password flow
       const urlParams = new URLSearchParams(window.location.search);
@@ -442,6 +439,57 @@ export default function App() {
     };
 
     initLoc();
+
+    // Browser back/forward support
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase().replace(/^\//, '');
+      const pathMap: Record<string, Page> = {
+        '': Page.HOME,
+        'dashboard': Page.DASHBOARD,
+        'diagnostic': Page.DIAGNOSTIC,
+        'login': Page.LOGIN,
+        'signup': Page.SIGNUP,
+        'profile': Page.PROFILE,
+        'about': Page.ABOUT,
+        'sitemap': Page.SITEMAP,
+        'accessibility': Page.ACCESSIBILITY,
+        'gdpr': Page.GDPR,
+        'ccpa': Page.CCPA,
+        'blog': Page.BLOG,
+        'shipping': Page.SHIPPING_POLICY,
+        'returns': Page.RETURN_POLICY,
+        'cookies': Page.COOKIE_POLICY,
+        'support': Page.SUPPORT,
+        'careers': Page.CAREERS,
+        'faq': Page.FAQ,
+        'contact': Page.CONTACT,
+        'privacy': Page.PRIVACY,
+        'terms': Page.TERMS,
+        'refund': Page.REFUND,
+        'disclaimer': Page.LEGAL_DISCLAIMER_PAGE,
+        'success': Page.PAYMENT_SUCCESS,
+        'payment-success': Page.PAYMENT_SUCCESS,
+        'cancel': Page.PAYMENT_CANCEL,
+        'payment-cancel': Page.PAYMENT_CANCEL,
+        'payment-pending': Page.PAYMENT_PENDING,
+        'representative': Page.REPRESENTATIVE,
+        'admin': Page.ADMIN_DASHBOARD,
+        'auth/callback': Page.AUTH_CALLBACK,
+        'callback': Page.AUTH_CALLBACK,
+        'macro': Page.MACRO,
+        'bodyfat': Page.BODYFAT,
+        'injection': Page.INJECTION,
+        'halflife': Page.HALFLIFE,
+        'lab': Page.LAB,
+        'genetic': Page.GENETIC,
+        'cycle': Page.CYCLE_ARCHITECT,
+        'payment-diagnostic': Page.PAYMENT_CONFIG_DIAGNOSTIC
+      };
+      setCurrentPage(pathMap[path] || Page.HOME);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Eyes on Theme
@@ -466,6 +514,57 @@ export default function App() {
   const navigateTo = (page: Page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Update URL without reload
+    const pathMap: Record<Page, string> = {
+      [Page.HOME]: '/',
+      [Page.DASHBOARD]: '/dashboard',
+      [Page.DIAGNOSTIC]: '/diagnostic',
+      [Page.LOGIN]: '/login',
+      [Page.SIGNUP]: '/signup',
+      [Page.PROFILE]: '/profile',
+      [Page.ABOUT]: '/about',
+      [Page.SITEMAP]: '/sitemap',
+      [Page.ACCESSIBILITY]: '/accessibility',
+      [Page.GDPR]: '/gdpr',
+      [Page.CCPA]: '/ccpa',
+      [Page.BLOG]: '/blog',
+      [Page.SHIPPING_POLICY]: '/shipping',
+      [Page.RETURN_POLICY]: '/returns',
+      [Page.COOKIE_POLICY]: '/cookies',
+      [Page.SUPPORT]: '/support',
+      [Page.CAREERS]: '/careers',
+      [Page.FAQ]: '/faq',
+      [Page.CONTACT]: '/contact',
+      [Page.PRIVACY]: '/privacy',
+      [Page.TERMS]: '/terms',
+      [Page.REFUND]: '/refund',
+      [Page.LEGAL_DISCLAIMER_PAGE]: '/disclaimer',
+      [Page.PAYMENT_SUCCESS]: '/success',
+      [Page.PAYMENT_CANCEL]: '/cancel',
+      [Page.PAYMENT_PENDING]: '/payment-pending',
+      [Page.REPRESENTATIVE]: '/representative',
+      [Page.ADMIN_DASHBOARD]: '/admin',
+      [Page.AUTH_CALLBACK]: '/auth/callback',
+      [Page.MACRO]: '/macro',
+      [Page.BODYFAT]: '/bodyfat',
+      [Page.INJECTION]: '/injection',
+      [Page.HALFLIFE]: '/halflife',
+      [Page.LAB]: '/lab',
+      [Page.GENETIC]: '/genetic',
+      [Page.CYCLE_ARCHITECT]: '/cycle',
+      [Page.MASTER_CALCULATOR]: '/master-calculator',
+      [Page.SMART_LANDING]: '/smart-landing',
+      [Page.MEDICAL_DISCLAIMER]: '/medical-disclaimer',
+      [Page.RESET_PASSWORD]: '/reset-password',
+      [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
+      [Page.CHECKOUT]: '/checkout',
+    };
+
+    const targetPath = pathMap[page] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ page }, '', targetPath);
+    }
   };
 
   const changeColorTheme = (newColor: string) => { setColorTheme(newColor); localStorage.setItem('colorTheme', newColor); };
@@ -487,6 +586,7 @@ export default function App() {
   return (
     <AuthProvider>
       <PreferencesProvider>
+        <SEO currentPage={currentPage} />
         <div id="scroll-progress" />
         <LazyMotion features={domAnimation}>
           <AppContent
