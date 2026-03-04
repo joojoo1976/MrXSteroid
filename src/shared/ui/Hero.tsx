@@ -17,14 +17,14 @@ interface HeroProps {
 const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({ content, onClick }) => {
   const { language: lang, isRTL } = usePreferences();
   const getDefaultImg = () => {
-    return isRTL ? "/cover-ar.webp" : "/cover-en.webp";
+    return isRTL ? "/screens/home-ar.webp" : "/screens/home-en.webp";
   };
   const [imgSrc, setImgSrc] = useState<string>(getDefaultImg());
   const [retryCount, setRetryCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleError = () => {
-    const base = isRTL ? "/cover-ar" : "/cover-en";
+    const base = isRTL ? "/screens/home-ar" : "/screens/home-en";
     if (retryCount === 0) { setImgSrc(`${base}.jpg`); setRetryCount(1); }
     else if (retryCount === 1) { setImgSrc(`${base}.png`); setRetryCount(2); }
     else if (retryCount === 2) { setImgSrc("https://placehold.co/600x900/18181b/EAB308?text=MR+X+STEROID&font=oswald"); setRetryCount(3); }
@@ -125,6 +125,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
               whileHover={{ scale: 1.05, rotate: -1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openCheckout(content.pricingTiers[0])}
+              aria-label={content.heroCta}
               className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black border-2 border-transparent font-black text-xl rounded-full transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
@@ -140,6 +141,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             whileHover={{ scale: 1.05 }}
             href={isRTL ? "/Example_MrXSteroid_Book_Ar.pdf" : "/Example_MrXSteroid_Book.pdf"}
             download
+            aria-label={content.downloadPreview}
             className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white border-2 border-zinc-200 dark:border-zinc-800 hover:border-gold-500 dark:hover:border-gold-500 font-black text-lg md:text-xl rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-3 group glass-morphism shadow-lg"
           >
             <Download className="w-5 h-5 md:w-6 md:h-6 group-hover:text-gold-500 group-hover:animate-bounce transition-colors" />

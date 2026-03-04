@@ -132,17 +132,29 @@ export const SpaceRemitCardElement: React.FC<SpaceRemitCardElementProps> = ({
 
         try {
             // Validate public key format
-            if (!publicKey || !publicKey.startsWith('pk') && !publicKey.startsWith('sb')) {
-                throw new Error(`Invalid public key format: ${publicKey?.substring(0, 8)}...`);
+            if (!publicKey || (!publicKey.startsWith('pk') && !publicKey.startsWith('sb'))) {
+                throw new Error(`Invalid public key format: ${publicKey?.substring(0, 8) || 'empty'}...`);
             }
 
             console.log('🔧 [SpaceRemit] Initializing with:', {
-                publicKey: `${publicKey?.substring(0, 8)}...`,
+                publicKey: `${publicKey.substring(0, 8)}...`,
                 amount,
                 currency,
                 form_id: 'spaceremit-checkout-form',
-                card_container_id: 'spaceremit-card-element'
+                card_container_id: 'spaceremit-card-element',
+                container_exists: !!document.getElementById('spaceremit-card-element'),
+                container_visible: containerRef.current.offsetHeight > 0
             });
+
+            // Check for CSS issues
+            const containerStyle = window.getComputedStyle(containerRef.current);
+            if (containerStyle.display === 'none' || containerStyle.height === '0px') {
+                console.warn('⚠️ [SpaceRemit] Container may be hidden by CSS!', {
+                    display: containerStyle.display,
+                    height: containerStyle.height,
+                    visibility: containerStyle.visibility
+                });
+            }
 
             // Set up global callbacks BEFORE init
             window.SP_SUCCESSFUL_PAYMENT = (code: string) => {

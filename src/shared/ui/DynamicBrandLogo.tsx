@@ -111,7 +111,7 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
                 {/* RESTORED MASCOT / LOGO */}
                 {showMascot && (
                     <img
-                        src="/logo_MrXSteroid.png"
+                        src="/images/site-logo-mascot.png"
                         alt="Mascot"
                         className={`object-contain ${inline ? 'h-[1.2em]' : 'h-10 md:h-12'}`}
                     />

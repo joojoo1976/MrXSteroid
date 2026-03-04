@@ -12,4 +12,4 @@ Disallow: /payment-pending
 Disallow: /representative
 Disallow: /auth/callback
 
-Sitemap: https://mrxsteroid.vercel.app/sitemap.xml
+Sitemap: https://mrxsteroid.com/sitemap.xml
