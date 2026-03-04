@@ -1,8 +1,6 @@
 
 import { supabase } from './supabase';
-import { errorHandler } from './error-handler';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { securityManager } from './security-enhancements';
 
 export interface SignUpOptions {
     email: string;
@@ -28,6 +26,7 @@ export const authService = {
      * Validates email format
      */
     isValidEmail(email: string): boolean {
+        if (!email) return false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     },
@@ -69,55 +68,55 @@ export const authService = {
      */
     async signUp({ email, password, full_name, user_name }: SignUpOptions): Promise<AuthResponse> {
         try {
-            // Input validation
-            if (!email || !this.isValidEmail(email)) {
-                throw new Error('INVALID_EMAIL_FORMAT');
+            // Input validation - check for empty first, then format
+            if (!email || email.trim() === '') {
+                return { user: null, session: null, error: 'Email is required' };
             }
 
-            if (!this.isSecurePassword(password)) {
-                throw new Error('WEAK_PASSWORD_REQUIREMENTS');
+            if (!this.isValidEmail(email)) {
+                return { user: null, session: null, error: 'Email format is invalid' };
+            }
+
+            if (!password || !this.isSecurePassword(password)) {
+                return { user: null, session: null, error: 'Password does not meet security requirements' };
             }
 
             if (!full_name || full_name.trim().length < 2) {
-                throw new Error('FULL_NAME_TOO_SHORT');
+                return { user: null, session: null, error: 'Full name is too short' };
             }
 
             if (!user_name || user_name.trim().length < 3) {
-                throw new Error('USERNAME_TOO_SHORT');
+                return { user: null, session: null, error: 'Username is too short' };
             }
 
-            // Use enhanced security manager for registration
-            const data = await securityManager.secureRegister(email, password, {
-                full_name,
-                user_name,
-                currency: 'USD',
-                role: 'user'
+            const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name,
+                        user_name,
+                        currency: 'USD',
+                        role: 'user'
+                    },
+                    emailRedirectTo: `${siteUrl}/auth/callback`
+                }
             });
 
-            if (data.user) {
-                return { user: data.user, session: data.session, error: null };
-            } else {
-                throw new Error('REGISTRATION_FAILED');
+            if (error) {
+                return { user: null, session: null, error: error.message };
             }
+
+            return {
+                user: data.user,
+                session: data.session,
+                error: null
+            };
 
         } catch (error: unknown) {
-            errorHandler.handle(error, 'AuthService.signUp');
-
-            let message = 'UNKNOWN_ERROR';
-            if (error instanceof Error) {
-                if (error.message.includes('INVALID_EMAIL_FORMAT')) message = 'Email format is invalid';
-                else if (error.message.includes('WEAK_PASSWORD_REQUIREMENTS')) message = 'Password does not meet security requirements';
-                else if (error.message.includes('FULL_NAME_TOO_SHORT')) message = 'Full name is too short';
-                else if (error.message.includes('USERNAME_TOO_SHORT')) message = 'Username is too short';
-                else if (error.message.includes('NETWORK_UNREACHABLE')) message = 'NETWORK_ERROR';
-                else if (error.message.includes('RATE_LIMIT_EXCEEDED')) message = 'TOO_MANY_REQUESTS';
-                else if (error.message.includes('EMAIL_EXISTS')) message = 'USER_ALREADY_EXISTS';
-                else if (error.message.includes('REGISTRATION_FAILED')) message = 'FAILED_TO_CREATE_ACCOUNT';
-                else message = error.message;
-            } else {
-                message = 'SIGNUP_ERROR';
-            }
-
+            const message = error instanceof Error ? error.message : 'SIGNUP_ERROR';
             return {
                 user: null,
                 session: null,
@@ -133,26 +132,29 @@ export const authService = {
         try {
             // Input validation
             if (!email || !this.isValidEmail(email)) {
-                throw new Error('INVALID_EMAIL_FORMAT');
+                return { user: null, session: null, error: 'Email format is invalid' };
             }
 
             if (!password || password.length < 1) {
-                throw new Error('PASSWORD_REQUIRED');
+                return { user: null, session: null, error: 'Password is required' };
             }
 
-            const data = await securityManager.secureLogin(email, password);
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-            return { user: data.user, session: data.session, error: null };
+            if (error) {
+                return { user: null, session: null, error: error.message };
+            }
+
+            return {
+                user: data.user,
+                session: data.session,
+                error: null
+            };
         } catch (error: unknown) {
-            errorHandler.handle(error, 'AuthService.signIn');
-
-            let message = 'UNKNOWN_ERROR';
-            if (error instanceof Error) {
-                if (error.message.includes('INVALID_EMAIL_FORMAT')) message = 'Email format is invalid';
-                else if (error.message.includes('PASSWORD_REQUIRED')) message = 'Password is required';
-                else message = error.message;
-            }
-
+            const message = error instanceof Error ? error.message : 'SIGNIN_ERROR';
             return {
                 user: null,
                 session: null,
@@ -166,6 +168,6 @@ export const authService = {
      */
     async signOut() {
         const { error } = await supabase.auth.signOut();
-        if (error) errorHandler.handle(error, 'AuthService.signOut');
+        if (error) console.error('Sign out error:', error);
     },
 };

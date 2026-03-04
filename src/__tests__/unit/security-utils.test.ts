@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { 
-    sanitizeInput, 
-    validateEmail, 
-    validatePassword, 
-    validateTransactionId, 
-    encryptData, 
+import {
+    sanitizeInput,
+    validateEmail,
+    validatePassword,
+    validateTransactionId,
+    encryptData,
     decryptData,
     generateSecureToken,
     hashPassword,
     verifyPassword
-} from '../../../shared/lib/security-utils';
+} from '@/shared/lib/security-utils';
 
 // Mock crypto for testing
 vi.mock('crypto', async () => {
@@ -155,9 +155,9 @@ describe('Security Utilities Test Suite', () => {
         it('should encrypt data successfully', () => {
             const data = 'sensitive data';
             const key = 'encryption-key-32-characters-long!';
-            
+
             const result = encryptData(data, key);
-            
+
             expect(result).toBeDefined();
             expect(typeof result).toBe('string');
         });
@@ -165,10 +165,10 @@ describe('Security Utilities Test Suite', () => {
         it('should return different encrypted values for same input', () => {
             const data = 'test data';
             const key = 'encryption-key-32-characters-long!';
-            
+
             const encrypted1 = encryptData(data, key);
             const encrypted2 = encryptData(data, key);
-            
+
             // With proper IV, encrypted values should be different
             expect(encrypted1).not.toBe(encrypted2);
         });
@@ -176,7 +176,7 @@ describe('Security Utilities Test Suite', () => {
         it('should handle empty data', () => {
             const key = 'encryption-key-32-characters-long!';
             const result = encryptData('', key);
-            
+
             expect(result).toBeDefined();
         });
 
@@ -190,17 +190,17 @@ describe('Security Utilities Test Suite', () => {
         it('should decrypt data successfully', () => {
             const data = 'sensitive data';
             const key = 'encryption-key-32-characters-long!';
-            
+
             const encrypted = encryptData(data, key);
             const decrypted = decryptData(encrypted, key);
-            
+
             expect(decrypted).toBe(data);
         });
 
         it('should handle decryption errors', () => {
             const invalidEncrypted = 'invalid-encrypted-data';
             const key = 'encryption-key-32-characters-long!';
-            
+
             expect(() => decryptData(invalidEncrypted, key)).toThrow();
         });
 
@@ -208,9 +208,9 @@ describe('Security Utilities Test Suite', () => {
             const data = 'test data';
             const key1 = 'encryption-key-32-characters-long!';
             const key2 = 'different-key-32-characters-long!';
-            
+
             const encrypted = encryptData(data, key1);
-            
+
             // Decryption with wrong key should fail
             expect(() => decryptData(encrypted, key2)).toThrow();
         });
@@ -225,7 +225,7 @@ describe('Security Utilities Test Suite', () => {
         it('should generate different tokens on each call', () => {
             const token1 = generateSecureToken(32);
             const token2 = generateSecureToken(32);
-            
+
             expect(token1).not.toBe(token2);
         });
 
@@ -244,9 +244,9 @@ describe('Security Utilities Test Suite', () => {
     describe('hashPassword', () => {
         it('should hash password successfully', async () => {
             const password = 'TestPassword123!';
-            
+
             const hashed = await hashPassword(password);
-            
+
             expect(hashed).toBeDefined();
             expect(typeof hashed).toBe('string');
             expect(hashed).not.toBe(password); // Should be different from original
@@ -254,16 +254,16 @@ describe('Security Utilities Test Suite', () => {
 
         it('should create different hashes for same password', async () => {
             const password = 'TestPassword123!';
-            
+
             const hash1 = await hashPassword(password);
             const hash2 = await hashPassword(password);
-            
+
             expect(hash1).not.toBe(hash2); // Salts should make them different
         });
 
         it('should handle empty password', async () => {
             const hashed = await hashPassword('');
-            
+
             expect(hashed).toBeDefined();
         });
 
@@ -277,9 +277,9 @@ describe('Security Utilities Test Suite', () => {
         it('should verify correct password', async () => {
             const password = 'TestPassword123!';
             const hashed = await hashPassword(password);
-            
+
             const isValid = await verifyPassword(password, hashed);
-            
+
             expect(isValid).toBe(true);
         });
 
@@ -287,9 +287,9 @@ describe('Security Utilities Test Suite', () => {
             const password = 'TestPassword123!';
             const wrongPassword = 'WrongPassword456@';
             const hashed = await hashPassword(password);
-            
+
             const isValid = await verifyPassword(wrongPassword, hashed);
-            
+
             expect(isValid).toBe(false);
         });
 

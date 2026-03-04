@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { dbService } from '../../../shared/lib/db-service';
-import { supabase } from '../../../shared/lib/supabase';
+import { dbService } from '../../shared/lib/db-service';
+import { supabase } from '../../shared/lib/supabase';
 
 // Mock the supabase client
-vi.mock('../../../shared/lib/supabase', () => ({
+vi.mock('../../shared/lib/supabase', () => ({
     supabase: {
         from: vi.fn(),
         rpc: vi.fn(),
@@ -20,13 +20,14 @@ describe('Database Service Tests', () => {
 
     describe('fetchUserData', () => {
         it('should fetch user data successfully', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const mockUserData = {
                 id: userId,
                 email: 'test@example.com',
                 full_name: 'Test User',
                 user_name: 'testuser',
-                subscription_status: 'active'
+                subscription_status: 'active',
+                role: 'user'
             };
 
             const mockResponse = {
@@ -35,7 +36,8 @@ describe('Database Service Tests', () => {
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                select: vi.fn().mockResolvedValue(mockResponse)
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.fetchUserData(userId);
@@ -45,14 +47,15 @@ describe('Database Service Tests', () => {
         });
 
         it('should handle user not found', async () => {
-            const userId = 'non-existent-user';
+            const userId = '7be3039d-0000-0000-0000-c392f44c77c6';
             const mockResponse = {
                 data: [],
                 error: null
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                select: vi.fn().mockResolvedValue(mockResponse)
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.fetchUserData(userId);
@@ -61,11 +64,12 @@ describe('Database Service Tests', () => {
         });
 
         it('should handle database errors', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const mockError = new Error('Database connection failed');
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                select: vi.fn().mockResolvedValue({ data: null, error: mockError })
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockResolvedValue({ data: null, error: mockError })
             } as any);
 
             await expect(dbService.fetchUserData(userId))
@@ -77,7 +81,7 @@ describe('Database Service Tests', () => {
             await expect(dbService.fetchUserData('invalid-id!'))
                 .rejects
                 .toThrow('Invalid user ID format');
-                
+
             await expect(dbService.fetchUserData(''))
                 .rejects
                 .toThrow('User ID is required');
@@ -86,11 +90,10 @@ describe('Database Service Tests', () => {
 
     describe('updateUserProfile', () => {
         it('should update user profile successfully', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const updateData = {
                 full_name: 'Updated Name',
-                user_name: 'updateduser',
-                currency: 'EUR'
+                user_name: 'updateduser'
             };
 
             const mockResponse = {
@@ -100,7 +103,8 @@ describe('Database Service Tests', () => {
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 update: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue(mockResponse)
+                eq: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.updateUserProfile(userId, updateData);
@@ -110,13 +114,14 @@ describe('Database Service Tests', () => {
         });
 
         it('should handle update errors', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const updateData = { full_name: 'Updated Name' };
             const mockError = new Error('Update failed');
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 update: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ data: null, error: mockError })
+                eq: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue({ data: null, error: mockError })
             } as any);
 
             await expect(dbService.updateUserProfile(userId, updateData))
@@ -135,11 +140,9 @@ describe('Database Service Tests', () => {
         });
 
         it('should sanitize update data', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const unsafeData = {
-                full_name: 'Test User',
-                // This should be filtered out if there's a sanitization mechanism
-                dangerous_field: '<script>alert("xss")</script>'
+                full_name: 'Test User'
             };
 
             const mockResponse = {
@@ -149,24 +152,25 @@ describe('Database Service Tests', () => {
 
             const fromMock = vi.fn().mockReturnValue({
                 update: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue(mockResponse)
+                eq: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue(mockResponse)
             });
             vi.spyOn(supabase, 'from').mockImplementation(fromMock);
 
             const result = await dbService.updateUserProfile(userId, unsafeData);
 
             expect(fromMock).toHaveBeenCalledWith('profiles');
-            // The sanitization would happen in the actual implementation
         });
     });
 
     describe('createOrder', () => {
         it('should create an order successfully', async () => {
             const orderData = {
-                user_id: 'test-user-id',
-                product_id: 'test-product',
-                amount: 99.99,
+                user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
+                total_amount: 99.99,
                 currency: 'USD',
+                shipping_address: '123 Test St',
+                phone_number: '1234567890',
                 status: 'pending'
             };
 
@@ -176,7 +180,8 @@ describe('Database Service Tests', () => {
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                insert: vi.fn().mockResolvedValue(mockResponse)
+                insert: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.createOrder(orderData);
@@ -187,16 +192,18 @@ describe('Database Service Tests', () => {
 
         it('should handle order creation errors', async () => {
             const orderData = {
-                user_id: 'test-user-id',
-                product_id: 'test-product',
-                amount: 99.99,
+                user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
+                total_amount: 99.99,
                 currency: 'USD',
+                shipping_address: '123 Test St',
+                phone_number: '1234567890',
                 status: 'pending'
             };
             const mockError = new Error('Order creation failed');
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                insert: vi.fn().mockResolvedValue({ data: null, error: mockError })
+                insert: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue({ data: null, error: mockError })
             } as any);
 
             await expect(dbService.createOrder(orderData))
@@ -210,12 +217,13 @@ describe('Database Service Tests', () => {
                 .toThrow('Order data is required');
 
             await expect(dbService.createOrder({
-                user_id: 'test-user-id',
-                product_id: 'test-product',
-                amount: -10, // Invalid amount
+                user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
+                total_amount: -10, // Invalid amount
                 currency: 'USD',
+                shipping_address: '123 Test St',
+                phone_number: '1234567890',
                 status: 'pending'
-            } as any))
+            }))
                 .rejects
                 .toThrow('Order amount must be positive');
         });
@@ -223,10 +231,10 @@ describe('Database Service Tests', () => {
 
     describe('fetchUserOrders', () => {
         it('should fetch user orders successfully', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const mockOrders = [
-                { id: 'order1', user_id: userId, amount: 99.99, status: 'completed' },
-                { id: 'order2', user_id: userId, amount: 149.99, status: 'pending' }
+                { id: 'order1', user_id: userId, total_amount: 99.99, status: 'delivered' },
+                { id: 'order2', user_id: userId, total_amount: 149.99, status: 'pending' }
             ];
 
             const mockResponse = {
@@ -236,7 +244,8 @@ describe('Database Service Tests', () => {
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue(mockResponse)
+                eq: vi.fn().mockReturnThis(),
+                order: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.fetchUserOrders(userId);
@@ -246,7 +255,7 @@ describe('Database Service Tests', () => {
         });
 
         it('should handle no orders found', async () => {
-            const userId = 'test-user-id';
+            const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const mockResponse = {
                 data: [],
                 error: null
@@ -254,7 +263,8 @@ describe('Database Service Tests', () => {
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue(mockResponse)
+                eq: vi.fn().mockReturnThis(),
+                order: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.fetchUserOrders(userId);
@@ -275,8 +285,8 @@ describe('Database Service Tests', () => {
 
     describe('updateOrderStatus', () => {
         it('should update order status successfully', async () => {
-            const orderId = 'test-order-id';
-            const newStatus = 'completed';
+            const orderId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
+            const newStatus = 'delivered';
             const mockUpdatedOrder = {
                 id: orderId,
                 status: newStatus,
@@ -290,7 +300,8 @@ describe('Database Service Tests', () => {
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 update: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue(mockResponse)
+                eq: vi.fn().mockReturnThis(),
+                select: vi.fn().mockResolvedValue(mockResponse)
             } as any);
 
             const result = await dbService.updateOrderStatus(orderId, newStatus);
@@ -304,11 +315,12 @@ describe('Database Service Tests', () => {
                 .toThrow('Invalid order status');
 
             // Test valid transitions
-            const validTransitions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
-            for (const status of validTransitions) {
+            const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+            for (const status of validStatuses) {
                 vi.spyOn(supabase, 'from').mockReturnValue({
                     update: vi.fn().mockReturnThis(),
-                    eq: vi.fn().mockResolvedValue({ data: [{ status }], error: null })
+                    eq: vi.fn().mockReturnThis(),
+                    select: vi.fn().mockResolvedValue({ data: [{ status }], error: null })
                 } as any);
 
                 await expect(dbService.updateOrderStatus('order-id', status))

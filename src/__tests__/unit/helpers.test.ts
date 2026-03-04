@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { 
-    formatCurrency, 
-    formatDate, 
-    convertWeight, 
-    convertLength, 
-    debounce, 
+import {
+    formatCurrency,
+    formatDate,
+    convertWeight,
+    convertLength,
+    debounce,
     throttle,
     isValidEmail,
     isStrongPassword
-} from '../../../shared/lib/utils';
+} from '@/shared/lib/utils';
 
 describe('Helper Functions Test Suite', () => {
     describe('formatCurrency', () => {
@@ -134,36 +134,36 @@ describe('Helper Functions Test Suite', () => {
     describe('debounce', () => {
         it('should debounce function calls', () => {
             vi.useFakeTimers();
-            
+
             const fn = vi.fn();
             const debouncedFn = debounce(fn, 100);
-            
+
             debouncedFn();
             debouncedFn(); // This should cancel the previous call
             debouncedFn(); // This should cancel the previous call
-            
+
             expect(fn).toHaveBeenCalledTimes(0); // Should not have been called yet
-            
+
             vi.advanceTimersByTime(100); // Advance time past debounce delay
-            
+
             expect(fn).toHaveBeenCalledTimes(1); // Should have been called once
-            
+
             vi.useRealTimers();
         });
 
         it('should call function after debounce period', () => {
             vi.useFakeTimers();
-            
+
             const fn = vi.fn();
             const debouncedFn = debounce(fn, 50);
-            
+
             debouncedFn();
             vi.advanceTimersByTime(30); // Before debounce period
             expect(fn).toHaveBeenCalledTimes(0);
-            
+
             vi.advanceTimersByTime(20); // Complete debounce period
             expect(fn).toHaveBeenCalledTimes(1);
-            
+
             vi.useRealTimers();
         });
     });
@@ -171,24 +171,24 @@ describe('Helper Functions Test Suite', () => {
     describe('throttle', () => {
         it('should throttle function calls', () => {
             vi.useFakeTimers();
-            
+
             const fn = vi.fn();
             const throttledFn = throttle(fn, 100);
-            
+
             throttledFn();
             throttledFn(); // This should be ignored
             throttledFn(); // This should be ignored
-            
+
             expect(fn).toHaveBeenCalledTimes(1); // Called immediately
-            
+
             vi.advanceTimersByTime(50); // Before throttle period ends
             throttledFn(); // This should be ignored
             expect(fn).toHaveBeenCalledTimes(1);
-            
+
             vi.advanceTimersByTime(50); // Complete throttle period
             throttledFn(); // This should be called
             expect(fn).toHaveBeenCalledTimes(2);
-            
+
             vi.useRealTimers();
         });
     });
@@ -219,12 +219,12 @@ describe('Helper Functions Test Suite', () => {
         it('should return false for weak passwords', () => {
             expect(isStrongPassword('weak')).toBe(false); // Too short
             expect(isStrongPassword('nouppercase123!')).toBe(false); // No uppercase
-            expect(isValidPassword('NOLOWERCASE123!')).toBe(false); // No lowercase
-            expect(isValidPassword('NoNumbers!')).toBe(false); // No numbers
-            expect(isValidPassword('NoSpecialChars123')).toBe(false); // No special chars
-            expect(isValidPassword('')).toBe(false);
-            expect(isValidPassword(null as any)).toBe(false);
-            expect(isValidPassword(undefined as any)).toBe(false);
+            expect(isStrongPassword('NOLOWERCASE123!')).toBe(false); // No lowercase
+            expect(isStrongPassword('NoNumbers!')).toBe(false); // No numbers
+            expect(isStrongPassword('NoSpecialChars123')).toBe(false); // No special chars
+            expect(isStrongPassword('')).toBe(false);
+            expect(isStrongPassword(null as any)).toBe(false);
+            expect(isStrongPassword(undefined as any)).toBe(false);
         });
 
         it('should validate password length', () => {
