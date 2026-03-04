@@ -82,7 +82,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
           </div>
 
           {/* General Menu */}
-          <div className="lg:col-span-1">
+          <nav className="lg:col-span-1" aria-label={content.generalLinks}>
             <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
               <span className="w-4 h-0.5 bg-gold-500"></span>
               {content.generalLinks}
@@ -103,10 +103,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* Commercial */}
-          <div className="lg:col-span-1">
+          <nav className="lg:col-span-1" aria-label={content.commercialLinks}>
             <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
               <span className="w-4 h-0.5 bg-gold-500"></span>
               {content.commercialLinks}
@@ -125,10 +125,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* International Legal */}
-          <div className="lg:col-span-1">
+          <nav className="lg:col-span-1" aria-label={content.internationalLegalLinks}>
             <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
               <span className="w-4 h-0.5 bg-gold-500"></span>
               {content.internationalLegalLinks}
@@ -148,10 +148,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* Support & Compliance */}
-          <div className="lg:col-span-1">
+          <nav className="lg:col-span-1" aria-label={content.supportLinks}>
             <h4 className="text-xs font-black mb-8 text-gold-500 uppercase tracking-[0.3em] flex items-center gap-3">
               <span className="w-4 h-0.5 bg-gold-500"></span>
               {content.supportLinks}
@@ -184,7 +184,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
         <WeeklyKeywords pool={pool} />

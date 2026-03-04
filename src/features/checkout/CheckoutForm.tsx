@@ -455,7 +455,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             {/* Embedded Card Element */}
                             {paymentMethod === 'embedded' && (
                                 <SpaceRemitCardElement
-                                    publicKey={env.SPACEREMIT_PUBLIC_KEY || ''}
+                                    publicKey={env.SPACEREMIT_PUBLIC_KEY}
                                     amount={finalTotal}
                                     currency={prefCurrency.code || 'USD'}
                                     customerEmail={watch('email')}
@@ -463,12 +463,30 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     onReady={setIsCardElementReady}
                                     onTokenReceived={setSpaceremitCode}
                                     onError={(error) => {
-                                        console.error('Card element error:', error);
-                                        // Fallback to redirect if card element fails
-                                        setPaymentMethod('redirect');
+                                        console.error('❌ [CheckoutForm] Card element error:', error);
+                                        // Show error to user but don't auto-fallback immediately
+                                        // Let user decide to switch to redirect method
                                     }}
                                     disabled={isProcessing || isRedirecting}
                                 />
+                            )}
+
+                            {/* Manual fallback button for embedded failures */}
+                            {paymentMethod === 'embedded' && !isCardElementReady && !isProcessing && (
+                                <div className="pt-4 border-t border-zinc-800">
+                                    <p className="text-xs text-zinc-500 mb-3 text-center">
+                                        {isAr ? 'واجهت مشكلة؟' : 'Having issues?'}
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setPaymentMethod('redirect')}
+                                        className="w-full border-zinc-700 hover:bg-zinc-800 text-zinc-300"
+                                    >
+                                        <ShieldCheck className="w-4 h-4 mr-2" />
+                                        {isAr ? 'التحويل للدفع عبر الرابط الآمن' : 'Switch to secure redirect payment'}
+                                    </Button>
+                                </div>
                             )}
 
                             {/* Redirect Flow Info */}

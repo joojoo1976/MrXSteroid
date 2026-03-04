@@ -55,9 +55,19 @@ const parseEnv = () => {
     const parsed = envSchema.safeParse(processEnv);
 
     if (!parsed.success) {
-        console.error('❌ Invalid environment configuration:', parsed.error.format());
-        // In development, we throw to catch issues early. 
-        // In production, we might want to log and use fallbacks where possible, 
+        const errorDetails = parsed.error.format();
+        console.error('❌ Invalid environment configuration:', errorDetails);
+
+        // Check specifically for SpaceRemit public key
+        if (errorDetails.SPACEREMIT_PUBLIC_KEY) {
+            console.error('⚠️ [CRITICAL] VITE_SPACEREMIT_PUBLIC_KEY is missing or empty!');
+            console.error('📋 Please add this to your .env file:');
+            console.error('   VITE_SPACEREMIT_PUBLIC_KEY=***SPACEREMIT_PUBLIC_KEY_REDACTED***');
+            console.error('📋 For Vercel deployment, add it in Project Settings > Environment Variables');
+        }
+
+        // In development, we throw to catch issues early.
+        // In production, we might want to log and use fallbacks where possible,
         // but for payment critical keys, we should probably fail.
         if (import.meta.env.DEV) {
             throw new Error('Invalid environment configuration. Check console for details.');
@@ -65,6 +75,12 @@ const parseEnv = () => {
         // Return a best-effort config or fallback for production to avoid white-screen of death
         // though critical features might fail.
         return processEnv as unknown as z.infer<typeof envSchema>;
+    }
+
+    // Log successful SpaceRemit config (without exposing full key)
+    if (parsed.data.SPACEREMIT_PUBLIC_KEY) {
+        const keyPreview = parsed.data.SPACEREMIT_PUBLIC_KEY.substring(0, 8) + '...';
+        console.log('✅ [Env] SpaceRemit public key loaded:', keyPreview);
     }
 
     return parsed.data;

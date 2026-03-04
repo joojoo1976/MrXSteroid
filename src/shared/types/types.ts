@@ -59,7 +59,8 @@ export enum Page {
   PAYMENT_PENDING = 'payment_pending',
   REPRESENTATIVE = 'representative',
   ADMIN_DASHBOARD = 'admin_dashboard',
-  AUTH_CALLBACK = 'auth_callback'
+  AUTH_CALLBACK = 'auth_callback',
+  PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic'
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus';
