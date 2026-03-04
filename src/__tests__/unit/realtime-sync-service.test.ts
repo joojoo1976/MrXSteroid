@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { RealtimeSyncService } from '../../../shared/lib/RealtimeSyncService';
-import { supabase } from '../../../shared/lib/supabase';
+import { RealtimeSyncService } from '@/shared/lib/RealtimeSyncService';
+import { supabase } from '@/shared/lib/supabase';
 
 // Mock Supabase client
-vi.mock('../../../shared/lib/supabase', () => ({
+vi.mock('@/shared/lib/supabase', () => ({
     supabase: {
         channel: vi.fn(),
         from: vi.fn(),
@@ -25,20 +25,20 @@ describe('RealtimeSyncService Tests', () => {
         it('should create a secure subscription to user updates', () => {
             const userId = 'test-user-id';
             const callback = vi.fn();
-            
+
             // Mock the channel creation
             const mockChannel = {
                 on: vi.fn().mockReturnThis(),
                 subscribe: vi.fn()
             };
-            
+
             vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as any);
 
             const unsubscribe = realtimeService.subscribeToUserUpdates(userId, callback);
 
             // Verify the channel was created with a user-specific name
             expect(supabase.channel).toHaveBeenCalledWith(`user-updates-${userId}`);
-            
+
             // Verify the subscription was set up correctly
             expect(mockChannel.on).toHaveBeenCalledWith(
                 'postgres_changes',
@@ -50,13 +50,13 @@ describe('RealtimeSyncService Tests', () => {
                 },
                 expect.any(Function)
             );
-            
+
             expect(typeof unsubscribe).toBe('function');
         });
 
         it('should validate user ID format', () => {
             const callback = vi.fn();
-            
+
             expect(() => {
                 realtimeService.subscribeToUserUpdates('invalid user id!', callback);
             }).toThrow('Invalid user ID format');
@@ -81,12 +81,12 @@ describe('RealtimeSyncService Tests', () => {
         it('should create a secure subscription to order updates', () => {
             const orderId = 'test-order-id';
             const callback = vi.fn();
-            
+
             const mockChannel = {
                 on: vi.fn().mockReturnThis(),
                 subscribe: vi.fn()
             };
-            
+
             vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as any);
 
             const unsubscribe = realtimeService.subscribeToOrderUpdates(orderId, callback);
@@ -102,13 +102,13 @@ describe('RealtimeSyncService Tests', () => {
                 },
                 expect.any(Function)
             );
-            
+
             expect(typeof unsubscribe).toBe('function');
         });
 
         it('should validate order ID format', () => {
             const callback = vi.fn();
-            
+
             expect(() => {
                 realtimeService.subscribeToOrderUpdates('invalid order id!', callback);
             }).toThrow('Invalid order ID format');
@@ -118,17 +118,17 @@ describe('RealtimeSyncService Tests', () => {
     describe('syncUserData', () => {
         it('should sync user data with proper validation', async () => {
             const userId = 'test-user-id';
-            const userData = { 
-                full_name: 'Test User', 
+            const userData = {
+                full_name: 'Test User',
                 user_name: 'testuser',
                 currency: 'USD'
             };
-            
-            const mockResponse = { 
-                data: [{ ...userData, id: userId }], 
-                error: null 
+
+            const mockResponse = {
+                data: [{ ...userData, id: userId }],
+                error: null
             };
-            
+
             vi.spyOn(supabase, 'from').mockReturnValue({
                 upsert: vi.fn().mockResolvedValue(mockResponse)
             } as any);
@@ -156,22 +156,22 @@ describe('RealtimeSyncService Tests', () => {
         it('should sanitize user data before syncing', async () => {
             const userId = 'test-user-id';
             // Potentially malicious data that should be sanitized
-            const unsafeUserData = { 
+            const unsafeUserData = {
                 full_name: 'Test User',
                 dangerous_field: '<script>alert("xss")</script>',
                 another_dangerous: 'javascript:alert(1)'
             };
-            
+
             const sanitizedData = {
                 full_name: 'Test User',
                 // dangerous fields should be filtered out or sanitized
             };
-            
-            const mockResponse = { 
-                data: [{ ...sanitizedData, id: userId }], 
-                error: null 
+
+            const mockResponse = {
+                data: [{ ...sanitizedData, id: userId }],
+                error: null
             };
-            
+
             const fromMock = vi.fn().mockReturnValue({
                 upsert: vi.fn().mockResolvedValue(mockResponse)
             });
@@ -201,17 +201,17 @@ describe('RealtimeSyncService Tests', () => {
     describe('syncOrderData', () => {
         it('should sync order data with proper validation', async () => {
             const orderId = 'test-order-id';
-            const orderData = { 
-                status: 'processing', 
+            const orderData = {
+                status: 'processing',
                 amount: 99.99,
                 currency: 'USD'
             };
-            
-            const mockResponse = { 
-                data: [{ ...orderData, id: orderId }], 
-                error: null 
+
+            const mockResponse = {
+                data: [{ ...orderData, id: orderId }],
+                error: null
             };
-            
+
             vi.spyOn(supabase, 'from').mockReturnValue({
                 upsert: vi.fn().mockResolvedValue(mockResponse)
             } as any);
@@ -240,13 +240,13 @@ describe('RealtimeSyncService Tests', () => {
     describe('unsubscribeAll', () => {
         it('should unsubscribe from all channels', () => {
             // Add some mock subscriptions first
-            const mockChannel1 = { unsubscribe: vi.fn() };
-            const mockChannel2 = { unsubscribe: vi.fn() };
-            
+            const mockChannel1 = { unsubscribe: vi.fn(), on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
+            const mockChannel2 = { unsubscribe: vi.fn(), on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
+
             vi.spyOn(supabase, 'channel')
                 .mockReturnValueOnce(mockChannel1 as any)
                 .mockReturnValueOnce(mockChannel2 as any);
-            
+
             // Create subscriptions
             realtimeService.subscribeToUserUpdates('user1', vi.fn());
             realtimeService.subscribeToOrderUpdates('order1', vi.fn());

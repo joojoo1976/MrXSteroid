@@ -16,5 +16,7 @@
             "database": "postgresql://postgres:[joojoo1976_1$Professional#]@db.alghvtpkpspnqupbvodu.supabase.co:5432/postgres"
         }
     ],
-    "sqltools.useNodeRuntime": true
+    "sqltools.useNodeRuntime": true,
+    "codeium.indexStoragePath": "ott$tz-XB3W2vn2Zz4-CdCwZ5l7caF2uYYv1I5o8jCWOEpY",
+    "claudeCode.useTerminal": false
 }

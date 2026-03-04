@@ -81,9 +81,12 @@ describe('Security-Enhanced Auth Service', () => {
       error: null
     };
 
-    // Mock successful registration
-    vi.spyOn(require('./src/lib/security-manager').securityManager, 'secureRegister')
-      .mockResolvedValue(mockUserData);
+    // Mock Supabase signUp to return success
+    const { supabase } = await import('@/shared/lib/supabase');
+    vi.spyOn(supabase.auth, 'signUp').mockResolvedValue({
+      data: mockUserData as any,
+      error: null
+    });
 
     const validResult = await authService.signUp({
       email: 'test@example.com',

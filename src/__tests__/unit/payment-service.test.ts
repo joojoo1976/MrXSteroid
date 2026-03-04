@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { paymentService } from '../../../shared/lib/payment-service';
-import { supabase } from '../../../shared/lib/supabase';
+import { paymentService } from '@/shared/lib/payment-service';
+import { supabase } from '@/shared/lib/supabase';
 
 // Mock external payment gateway
 const mockSpaceremit = {
@@ -14,7 +14,7 @@ vi.mock('spaceremit', () => ({
 }));
 
 // Mock supabase
-vi.mock('../../../shared/lib/supabase', () => ({
+vi.mock('@/shared/lib/supabase', () => ({
     supabase: {
         from: vi.fn(),
         rpc: vi.fn(),
@@ -179,7 +179,7 @@ describe('Payment Service Tests', () => {
 
         it('should handle non-existent transaction', async () => {
             const transactionId = 'non-existent-transaction';
-            
+
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockResolvedValue({ data: [], error: null })

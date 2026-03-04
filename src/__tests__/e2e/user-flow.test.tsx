@@ -1,12 +1,13 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { User, Session } from '@supabase/supabase-js';
-import { AuthProvider, useAuth } from '../context/AuthContext';
-import { supabase } from '../shared/lib/supabase';
-import { mockAuthService } from '../shared/lib/mock-auth-service';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { supabase } from '@/shared/lib/supabase';
+import { mockAuthService } from '@/shared/lib/mock-auth-service';
 
 // Mock Supabase client
-vi.mock('../shared/lib/supabase', () => ({
+vi.mock('@/shared/lib/supabase', () => ({
     supabase: {
         auth: {
             getSession: vi.fn(),
@@ -37,6 +38,12 @@ vi.mock('../shared/lib/supabase', () => ({
 describe('End-to-End User Flow Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://test.supabase.co');
+        vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key');
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
     });
 
     describe('1. Sign-up Flow - Data appears in auth.users and public.profiles', () => {
@@ -140,9 +147,9 @@ describe('End-to-End User Flow Tests', () => {
             } as User;
 
             const mockSession = {
-                access_token: 'test-token',
+                access_token: 'header.payload.signature',
                 refresh_token: 'test-refresh',
-                user: mockConfirmedUser
+                user: mockConfirmedUser as unknown as User
             } as Session;
 
             // Mock getSession after email confirmation click
@@ -160,7 +167,7 @@ describe('End-to-End User Flow Tests', () => {
             expect(session?.user.confirmed_at).toBeTruthy();
 
             // Verify session is persisted (Supabase handles this via localStorage/cookies)
-            expect(session?.access_token).toBe('test-token');
+            expect(session?.access_token).toBe('header.payload.signature');
             expect(session?.refresh_token).toBe('test-refresh');
         });
     });
@@ -178,9 +185,9 @@ describe('End-to-End User Flow Tests', () => {
             } as User;
 
             const mockSession = {
-                access_token: 'test-token',
+                access_token: 'header.payload.signature',
                 refresh_token: 'test-refresh',
-                user: mockUser
+                user: mockUser as unknown as User
             } as Session;
 
             // Mock auth state change listener
@@ -188,10 +195,13 @@ describe('End-to-End User Flow Tests', () => {
             vi.spyOn(supabase.auth, 'onAuthStateChange').mockImplementation((callback) => {
                 mockOnAuthStateChange.mockImplementation(() => callback('SIGNED_IN', mockSession));
                 return {
-                    subscription: {
-                        unsubscribe: vi.fn()
+                    data: {
+                        subscription: {
+                            unsubscribe: vi.fn(),
+                            id: 'mock-sub-id'
+                        }
                     }
-                };
+                } as any;
             });
 
             vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
@@ -246,9 +256,9 @@ describe('End-to-End User Flow Tests', () => {
             } as User;
 
             const mockSession = {
-                access_token: 'test-token',
+                access_token: 'header.payload.signature',
                 refresh_token: 'test-refresh',
-                user: mockUser
+                user: mockUser as unknown as User
             } as Session;
 
             vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
@@ -285,7 +295,7 @@ describe('End-to-End User Flow Tests', () => {
 
             // Verify user data is available for checkout auto-fill
             expect(result.current.user?.email).toBe('test@example.com');
-            expect(result.current.user?.user_metadata?.full_name).toBe('Test User');
+            expect((result.current.user as any)?.user_metadata?.full_name).toBe('Test User');
             expect(result.current.profileData?.full_name).toBe('Test User');
         });
     });
@@ -299,9 +309,9 @@ describe('End-to-End User Flow Tests', () => {
             } as User;
 
             const mockSession = {
-                access_token: 'test-access-token',
+                access_token: 'header.payload.signature',
                 refresh_token: 'test-refresh-token',
-                user: mockUser
+                user: mockUser as unknown as User
             } as Session;
 
             vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
@@ -314,7 +324,7 @@ describe('End-to-End User Flow Tests', () => {
 
             expect(error).toBeNull();
             expect(session).toBeTruthy();
-            expect(session?.access_token).toBe('test-access-token');
+            expect(session?.access_token).toBe('header.payload.signature');
             expect(session?.refresh_token).toBe('test-refresh-token');
             expect(session?.user.email_confirmed_at).toBeTruthy();
 

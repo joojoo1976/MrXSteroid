@@ -58,7 +58,7 @@ export const replaceBrandWithPlainText = (text: string): string => {
     const brandShort = "Mr. X";
     const brandArFull = "مستر إكس-ستيرويد";
     const brandArShort = "مستر إكس";
-    
+
     // Using a placeholder approach that will be handled safely by React components
     const regex = new RegExp(`(${brandFull}|${brandArFull}|${brandShort}|${brandArShort})`, 'g');
     return text.replace(regex, (match) => {
@@ -76,51 +76,72 @@ export interface BrandReplacementResult {
 
 export const replaceBrandWithStructuredData = (text: string): BrandReplacementResult => {
     if (!text) return { parts: [{ text }] };
-    
+
     const brandPatterns = [
         { pattern: "Mr. X-Steroid", type: 'full' },
         { pattern: "Mr. X", type: 'short' },
         { pattern: "مستر إكس-ستيرويد", type: 'ar-full' },
         { pattern: "مستر إكس", type: 'ar-short' }
     ];
-    
+
     // Find all brand occurrences
     const parts = [];
     let lastIndex = 0;
-    
+
     // Create a combined regex for all brands
     const combinedPattern = new RegExp(brandPatterns.map(bp => bp.pattern).join('|'), 'g');
-    
+
     let match;
     while ((match = combinedPattern.exec(text)) !== null) {
         // Add text before match
         if (match.index > lastIndex) {
             parts.push({ text: text.substring(lastIndex, match.index) });
         }
-        
+
         // Add brand match
         const matchedPattern = brandPatterns.find(bp => bp.pattern === match[0]);
-        parts.push({ 
-            text: match[0], 
-            isBrand: true, 
-            brandType: matchedPattern?.type as 'full' | 'short' | 'ar-full' | 'ar-short' 
+        parts.push({
+            text: match[0],
+            isBrand: true,
+            brandType: matchedPattern?.type as 'full' | 'short' | 'ar-full' | 'ar-short'
         });
-        
+
         lastIndex = match.index + match[0].length;
     }
-    
+
     // Add remaining text after last match
     if (lastIndex < text.length) {
         parts.push({ text: text.substring(lastIndex) });
     }
-    
+
     return { parts };
 };
 
-// Legacy function name kept for compatibility but using safe implementation
+// Legacy function - wraps brand names in styled spans
 export const replaceBrandWithHtml = (text: string): string => {
-    // Using the safe plain text implementation to prevent XSS
-    return replaceBrandWithPlainText(text);
+    if (text === null || text === undefined) return text;
+    if (!text || typeof text !== 'string') return text;
+
+    // Use a single combined regex to avoid double-replacement.
+    // Order matters: longer patterns first so "Mr. X-Steroid" matches before "Mr. X".
+    const combinedRegex = /(Mr\.\s*X[-\s]Steroid|مستر\s*إكس[-\s]ستيرويد|Mr\.\s*X|مستر\s*إكس)/g;
+
+    return text.replace(combinedRegex, (match) => {
+        // Determine which brand was matched
+        if (/Mr\.\s*X[-\s]Steroid/.test(match)) {
+            return '<span class="brand-full">Mr. X-Steroid</span>';
+        }
+        if (/مستر\s*إكس[-\s]ستيرويد/.test(match)) {
+            return '<span class="brand-ar-full">مستر إكس-ستيرويد</span>';
+        }
+        if (/Mr\.\s*X/.test(match)) {
+            return '<span class="brand-short">Mr. X</span>';
+        }
+        if (/مستر\s*إكس/.test(match)) {
+            return '<span class="brand-ar-short">مستر إكس</span>';
+        }
+        return match;
+    });
 };
 
 /**
