@@ -5,17 +5,15 @@ import { createClient } from '@supabase/supabase-js';
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Use environment variables first, fallback to provided credentials
-const supabaseUrl = import.meta.env.NEXT_PUBLIC_SUPABASE_URL || 
-                    import.meta.env.VITE_SUPABASE_URL || 
-                    'https://alghvtpkpspnqupbvodu.supabase.co';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ||
+    'https://alghvtpkpspnqupbvodu.supabase.co';
 
-const supabaseAnonKey = import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                        import.meta.env.VITE_SUPABASE_ANON_KEY || 
-                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
 
 // Validate configuration
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    console.error('❌ Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

@@ -37,6 +37,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                             src={isAr ? "/cover-ar.webp" : "/cover-en.webp"}
                             alt="Product Cover"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            onError={(e) => {
+                                // Fallback to placeholder if image not found
+                                (e.target as HTMLImageElement).src = "/images/site-logo-mascot.png";
+                            }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/20 to-transparent pointer-events-none" />
                     </div>

@@ -1,0 +1,9 @@
+<!-- Placeholder cover for English version -->
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <rect width="400" height="600" fill="#1a1a1a"/>
+  <text x="200" y="280" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#eab308" text-anchor="middle">Mr X Steroid</text>
+  <text x="200" y="320" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">English Edition</text>
+  <text x="200" y="360" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa" text-anchor="middle">Your Complete Fitness Guide</text>
+  <rect x="50" y="400" width="300" height="2" fill="#eab308"/>
+  <text x="200" y="450" font-family="Arial, sans-serif" font-size="12" fill="#71717a" text-anchor="middle">STERIOD IQ PRESENTS</text>
+</svg>
