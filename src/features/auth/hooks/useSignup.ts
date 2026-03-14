@@ -75,7 +75,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
         try {
             // Check if Supabase is properly configured
-            const isSupabaseConfigured = import.meta.env.NEXT_PUBLIC_SUPABASE_URL && import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             let result;
             let usedMockAuth = false;
@@ -112,7 +112,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                     }
                 } catch (supabaseError: any) {
                     // If Supabase returns 503 or network error, fall back to mock auth
-                    const isSupabaseUnavailable = 
+                    const isSupabaseUnavailable =
                         supabaseError?.status === 503 ||
                         supabaseError?.message?.includes('503') ||
                         supabaseError?.message?.includes('fetch') ||
@@ -120,9 +120,11 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                         supabaseError?.message?.includes('Service unavailable');
 
                     if (isSupabaseUnavailable) {
-                        console.warn('⚠️ Supabase unavailable (503), falling back to mock authentication...');
+                        console.warn('⚠️ Supabase unavailable (503/Network), falling back to mock authentication...');
+                        console.error('Original Supabase Error:', supabaseError);
+
                         setUsedMockAuth(true);
-                        
+
                         // Fall back to mock auth service
                         result = await mockAuthService.signUp(
                             values.email,
@@ -132,15 +134,16 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                         );
 
                         if (result.error) throw new Error(result.error);
-                        
+
                         // Show warning toast about mock auth
                         toast.warning(
-                            isRTL 
-                                ? "جاري استخدام وضع الاختبار مؤقتاً بسبب مشكلة في الخادم." 
-                                : "Using test mode temporarily due to server issue."
+                            isRTL
+                                ? "جاري استخدام وضع الاختبار مؤقتاً بسبب مشكلة في الاتصال بالخادم. تواصل مع الدعم إذا استمرت المشكلة."
+                                : "Using test mode temporarily due to server connection issue. Contact support if this persists."
                         );
                     } else {
-                        // Re-throw if it's not a 503 error
+                        // Re-throw if it's not a connection error
+                        console.error('Non-connection error from Supabase:', supabaseError);
                         throw supabaseError;
                     }
                 }
@@ -181,18 +184,18 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
             // Only show success screen AFTER profile data is committed
             setSuccess(true);
-            
+
             // Show appropriate success message based on auth method
             if (usedMockAuth) {
                 toast.success(
-                    isRTL 
-                        ? "✅ تم إنشاء الحساب بنجاح! (وضع الاختبار)" 
+                    isRTL
+                        ? "✅ تم إنشاء الحساب بنجاح! (وضع الاختبار)"
                         : "✅ Account created successfully! (Test Mode)"
                 );
             } else {
                 toast.success(
-                    content.signupSuccess || (isRTL 
-                        ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق." 
+                    content.signupSuccess || (isRTL
+                        ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق."
                         : "Account created! Check your email to verify.")
                 );
             }

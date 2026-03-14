@@ -114,7 +114,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-lg md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white max-w-4xl mx-auto mb-12 leading-relaxed animate-text-flash text-center px-2"
+          className="text-lg md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white max-w-4xl mx-auto mb-12 leading-relaxed animate-text-flash text-justify px-2"
         >
           <StyledBrandName text={content.heroSubtitle} />
         </motion.p>

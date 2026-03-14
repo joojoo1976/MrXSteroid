@@ -87,7 +87,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ content, navigateTo: _navigateTo 
                     <h2 className="text-4xl font-black uppercase tracking-tighter">
                         {content.authorSection}
                     </h2>
-                    <p className="text-xl text-zinc-400 italic font-medium leading-relaxed">
+                    <p className="text-xl text-zinc-400 italic font-medium leading-relaxed text-justify">
                         {content.authorBio || (isRTL
                             ? "جورج موريس، باحث وخبير في العلوم الفيزيولوجية الرياضية، كرس سنوات من البحث لترجمة أصعب البروتوكولات العلمية إلى خطط عملية قابلة للتطبيق."
                             : "George Mourice, a researcher and expert in sports physiological sciences, has dedicated years to translating the most complex scientific protocols into actionable plans.")}

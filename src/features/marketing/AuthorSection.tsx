@@ -35,7 +35,7 @@ const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => {
 
                         <div className="relative">
                             <Quote className={`absolute -top-4 start-[-1rem] w-10 h-10 text-gold-500/10 transform ${isRTL ? '' : '-scale-x-100'}`} />
-                            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400 leading-relaxed text-base mb-6 relative z-10">
+                            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400 leading-relaxed text-base mb-6 relative z-10 text-justify">
                                 <p><StyledBrandName text={content.authorBio} /></p>
                             </div>
                         </div>
