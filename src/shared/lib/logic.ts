@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { Currency } from '@/shared/types/types';
-$1/**
+/**
  * SHARED & COOKIE UTILITIES
  */
 export const setCookie = (name: string, value: string, days: number) => {

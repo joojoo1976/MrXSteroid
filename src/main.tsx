@@ -11,7 +11,6 @@ import { performHealthCheck } from "./shared/lib/health-check";
 // Run production pre-flight audit
 performHealthCheck();
 
-
 const rootElement = document.getElementById("root");
 if (!rootElement) {
     console.error("main.tsx: Could not find root element!");
