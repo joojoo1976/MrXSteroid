@@ -1,7 +1,6 @@
 import { supabase } from './supabase';
-$1/**
+/**
  * Enhanced Security Module for Mr. X Steroid Application
- * Implements advanced security measures for user authentication and data protection
  */
 
 export interface SecurityOptions {
