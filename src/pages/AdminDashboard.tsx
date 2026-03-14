@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RealtimeSyncService } from '../shared/lib/RealtimeSyncService';
 import { supabase } from '../shared/lib/supabase';
-import { Database } from '../types/db_types';
+import { Database } from '@/shared/types/db_types';
 import { Card, CardContent } from '../shared/ui/card';
 import { Button } from '../shared/ui/button';
 import { Users, Package, Map, Bell, Search, Filter, PlayCircle } from 'lucide-react';

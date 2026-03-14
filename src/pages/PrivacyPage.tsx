@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Eye, Lock, FileText, Globe } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Shield, Eye, Lock, FileText } from 'lucide-react';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface PrivacyPageProps {

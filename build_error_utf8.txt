@@ -1,0 +1,48 @@
+﻿
+> 008mr.-x-steroid-landing-page@0.0.0 build
+> vite build
+
+[36mvite v6.4.1 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 2051 modules transformed.
+node.exe : [31mΓ£ù[39m 
+Build failed in 11.77s
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: ([31mΓ£ù  
+  [39m Build failed in 11.7   
+ 7s:String) [], RemoteExce    
+ption
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+[31merror during build:
+[31mCould not resolve 
+"../types" from "src/pages/Ref
+undPage.tsx"[31m
+file: [36mC:/MrXSteroid-main/
+src/pages/RefundPage.tsx[31m
+    at getRollupError (file://
+/C:/MrXSteroid-main/node_modul
+es/rollup/dist/es/shared/parse
+Ast.js:402:41)
+    at error (file:///C:/MrXSt
+eroid-main/node_modules/rollup
+/dist/es/shared/parseAst.js:39
+8:42)
+    at ModuleLoader.handleInva
+lidResolvedId (file:///C:/MrXS
+teroid-main/node_modules/rollu
+p/dist/es/shared/node-entry.js
+:21687:24)
+    at file:///C:/MrXSteroid-m
+ain/node_modules/rollup/dist/e
+s/shared/node-entry.js:21647:2
+6[39m

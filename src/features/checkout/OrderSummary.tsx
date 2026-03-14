@@ -2,7 +2,7 @@ import React from 'react';
 import { ShoppingBag, Lock, CheckCircle2 } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { Card, CardContent } from '../../shared/ui/card';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import DynamicBrandLogo from '../../shared/ui/DynamicBrandLogo';
 
 interface OrderSummaryProps {

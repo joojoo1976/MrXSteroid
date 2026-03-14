@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Page } from '../types';
+import { Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import {
     ChevronDown,

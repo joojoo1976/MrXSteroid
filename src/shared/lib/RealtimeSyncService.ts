@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Database } from '../types/db_types';
+import { Database } from '@/shared/types/db_types';
 
 type Delegate = Database['public']['Tables']['delegates']['Row'];
 type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];

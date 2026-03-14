@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, Copy, X } from 'lucide-react';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useDailyIQChallenge } from './hooks/useDailyIQChallenge';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
-import { ContentStrings, Page } from '../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
 import { Button } from '../shared/ui/button';

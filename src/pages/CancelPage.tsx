@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, ArrowLeft, RotateCcw, MessageSquare, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, RotateCcw, MessageSquare, ShieldAlert } from 'lucide-react';
 import { Button } from '../shared/ui/button';
 import { Card, CardContent } from '../shared/ui/card';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface CancelPageProps {

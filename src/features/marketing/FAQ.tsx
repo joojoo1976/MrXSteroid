@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ContentStrings, FaqItem } from '../../types';
+import { ContentStrings, FaqItem } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { Search, MessageSquare, ChevronDown, Zap, HelpCircle } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';

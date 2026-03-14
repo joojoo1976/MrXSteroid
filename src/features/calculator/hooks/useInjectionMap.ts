@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ContentStrings, InjectionSite, Language } from '../../../types';
+import { ContentStrings, InjectionSite, Language } from '@/shared/types/types';
 import { convertValue } from '../../../shared/lib/logic';
 
 export interface Hotspot {

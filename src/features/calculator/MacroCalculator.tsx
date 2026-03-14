@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import KineticCounter from '../../shared/ui/KineticCounter';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../../shared/ui/UnitToggle';
 import { useMacroCalculator } from './hooks/useMacroCalculator';

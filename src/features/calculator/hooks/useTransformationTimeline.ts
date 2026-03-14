@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ContentStrings } from '../../../types';
+import { ContentStrings } from '@/shared/types/types';
 
 interface UseTransformationTimelineOptions {
     content: ContentStrings;

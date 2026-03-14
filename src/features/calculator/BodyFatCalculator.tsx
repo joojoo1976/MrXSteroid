@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../../shared/ui/UnitToggle';
 import KineticCounter from '../../shared/ui/KineticCounter';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, FileCheck } from 'lucide-react';
-import { ContentStrings, Page } from '../types/types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import BrandLogo from './BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from './StyledBrandName';

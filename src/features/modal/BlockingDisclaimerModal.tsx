@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, ShieldCheck, ShieldAlert, ChevronRight, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { getCookie, setCookie } from '../../shared/lib/logic';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';

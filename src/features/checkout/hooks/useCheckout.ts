@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { toast } from 'sonner';
 import { paymentService } from '../../../shared/lib/payment.service';
 import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../../shared/lib/logic';
-import { ContentStrings, Language, ProductVariant, PricingTier } from '../../../types';
+import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
 
 export interface CheckoutFormData {
@@ -288,7 +288,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
             // Show toast message
             toast.success(isAr ? 'جاري التحويل إلى صفحة الدفع الآمنة...' : 'Redirecting to secure payment page...');
 
-            // The redirect happens in payment.service.ts via window.location.href
+            // The redirect happens in payment.service via window.location.href
         } catch (error) {
             console.error('❌ Payment error:', error);
             const msg = (error as Error).message;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ShieldCheck, ChevronRight, Zap, Activity, Dumbbell } from 'lucide-react';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useReadinessQuiz } from './hooks/useReadinessQuiz';
 

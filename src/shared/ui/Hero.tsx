@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ContentStrings, PricingTier } from '../../shared/types/types';
+import { ContentStrings, PricingTier } from '@/shared/types/types';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from './StyledBrandName';
 

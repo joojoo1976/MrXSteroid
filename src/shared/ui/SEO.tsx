@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { Page } from '../../shared/types/types';
+import { Page } from '@/shared/types/types';
 
 interface SEOProps {
     currentPage: Page;

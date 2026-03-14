@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
-import { ContentStrings, Page } from '../../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 import { getAvatarUrl } from '../../../shared/lib/avatar-service';
 

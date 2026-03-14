@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ContentStrings } from '../../../types';
+import { ContentStrings } from '@/shared/types/types';
 
 interface UseDailyIQChallengeOptions {
     content: ContentStrings;

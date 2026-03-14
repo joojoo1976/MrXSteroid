@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { ContentStrings } from '../../../types';
+import { ContentStrings } from '@/shared/types/types';
 
 export interface StackItem {
     id: string;

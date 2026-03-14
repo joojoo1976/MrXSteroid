@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
-import { ContentStrings, SalesNotificationData } from '../../types';
+import { ContentStrings, SalesNotificationData } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 
 const SalesToast: React.FC<{ content: ContentStrings, data: SalesNotificationData[] }> = ({ content, data }) => {

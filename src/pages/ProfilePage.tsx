@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { ContentStrings, Page } from '../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { DynamicBrandLogo } from '../shared/ui/DynamicBrandLogo';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
 import { supabase } from '../shared/lib/supabase';

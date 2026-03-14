@@ -5,7 +5,7 @@ import BrandLogo from '../../shared/ui/BrandLogo';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { convertValue } from '../../shared/lib/logic';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useInjectionMap } from './hooks/useInjectionMap';
 

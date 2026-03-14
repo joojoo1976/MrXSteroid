@@ -1,5 +1,5 @@
 import React from 'react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import ContactSection from '../features/marketing/ContactSection';
 
 interface ContactPageProps {

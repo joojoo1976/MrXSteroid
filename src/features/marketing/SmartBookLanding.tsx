@@ -7,7 +7,7 @@ import { DisclaimerModal } from '../modal/DisclaimerModal';
 import {
     arContent, enContent
 } from '../../i18n';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { env } from '../../config/env';

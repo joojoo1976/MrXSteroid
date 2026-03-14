@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, Lock, X, Download } from 'lucide-react';
-import { PricingTier, ContentStrings, Page, Language } from '../../types';
+import { PricingTier, ContentStrings, Page, Language } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { CheckoutForm, NewPricingTier } from '../checkout/CheckoutForm';
 import { usePreferences } from '../../context/PreferencesContext';

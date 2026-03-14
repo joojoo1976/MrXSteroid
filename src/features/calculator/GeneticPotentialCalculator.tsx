@@ -4,7 +4,7 @@ import { Activity, RefreshCcw, ScanLine, Brain, Trophy, Zap } from 'lucide-react
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import KineticCounter from '../../shared/ui/KineticCounter';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useGeneticPotential } from './hooks/useGeneticPotential';

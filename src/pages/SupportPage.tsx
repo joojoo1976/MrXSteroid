@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HelpCircle, MessageSquare, Mail, Phone, Clock, FileText, Search } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { HelpCircle, MessageSquare, Mail, Clock, FileText, Search } from 'lucide-react';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface SupportPageProps {

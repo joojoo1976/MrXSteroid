@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 
 interface AdPlaceholderProps {
     slotId: string; // For future real Adsense integration

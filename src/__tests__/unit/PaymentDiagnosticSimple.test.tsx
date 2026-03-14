@@ -23,7 +23,7 @@ vi.mock('../../utils/payment-diagnostic', () => ({
 }));
 
 // Mock UI components
-vi.mock('../../components/ui/card', () => ({
+vi.mock('../../shared/ui/card', () => ({
   Card: ({ children }: { children: React.ReactNode }) => <div data-testid="card">{children}</div>,
   CardContent: ({ children }: { children: React.ReactNode }) => <div data-testid="card-content">{children}</div>,
   CardDescription: ({ children }: { children: React.ReactNode }) => <div data-testid="card-description">{children}</div>,
@@ -31,7 +31,7 @@ vi.mock('../../components/ui/card', () => ({
   CardTitle: ({ children }: { children: React.ReactNode }) => <div data-testid="card-title">{children}</div>
 }));
 
-vi.mock('../../components/ui/button', () => ({
+vi.mock('../../shared/ui/button', () => ({
   Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
     <button data-testid="button" onClick={onClick} disabled={disabled}>
       {children}
@@ -39,13 +39,13 @@ vi.mock('../../components/ui/button', () => ({
   )
 }));
 
-vi.mock('../../components/ui/alert', () => ({
+vi.mock('../../shared/ui/alert', () => ({
   Alert: ({ children }: { children: React.ReactNode }) => <div data-testid="alert">{children}</div>,
   AlertDescription: ({ children }: { children: React.ReactNode }) => <div data-testid="alert-description">{children}</div>,
   AlertTitle: ({ children }: { children: React.ReactNode }) => <div data-testid="alert-title">{children}</div>
 }));
 
-vi.mock('../../components/ui/badge', () => ({
+vi.mock('../../shared/ui/badge', () => ({
   Badge: ({ children, variant }: { children: React.ReactNode; variant?: string }) => (
     <span data-testid="badge" data-variant={variant}>
       {children}

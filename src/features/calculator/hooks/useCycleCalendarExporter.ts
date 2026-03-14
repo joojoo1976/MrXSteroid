@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ContentStrings } from '../../../types';
+import { ContentStrings } from '@/shared/types/types';
 
 export interface Compound {
     id: string;

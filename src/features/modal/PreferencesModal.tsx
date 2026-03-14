@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Globe, Scale, Ruler, Palette, RefreshCw } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { Language } from '../../types';
+import { Language } from '@/shared/types/types';
 import { USFlag, EGFlag } from '../../utils/icon-utils';
 
 interface PreferencesModalProps {

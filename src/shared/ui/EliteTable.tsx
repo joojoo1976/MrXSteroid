@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 
 // Simple cn utility if not available, but assuming it is from existing codebase context

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import EliteTable, { EliteTableColumn } from '../../shared/ui/EliteTable';
 import { Activity, Zap } from 'lucide-react';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 
 interface LiveScheduleProps {

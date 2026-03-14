@@ -6,7 +6,7 @@ import { Input } from '../../shared/ui/input';
 import { Label } from '../../shared/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../shared/ui/card';
 import { Checkbox } from '../../shared/ui/checkbox';
-import { ContentStrings, Language, PricingTier, ProductVariant } from '../../types';
+import { ContentStrings, Language, PricingTier, ProductVariant } from '@/shared/types/types';
 import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';

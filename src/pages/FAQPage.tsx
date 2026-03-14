@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Plus, Minus, Search, ShieldCheck, Zap, FlaskConical, Dna } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 

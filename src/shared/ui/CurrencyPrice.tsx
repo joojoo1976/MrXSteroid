@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Currency } from '../../types';
+import { Currency } from '@/shared/types/types';
 import { formatCurrencyWithLocale, convertCurrency, CURRENCY_RATES } from '../../utils/logic';
 
 interface CurrencyPriceProps {

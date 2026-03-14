@@ -4,7 +4,7 @@ import { ArrowLeft, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { CheckoutForm, NewPricingTier } from '../features/checkout/CheckoutForm';
 import { Button } from '../shared/ui/button';
 import { Card } from '../shared/ui/card';
-import { ContentStrings, Page, PricingTier, ProductVariant } from '../types';
+import { ContentStrings, Page, PricingTier, ProductVariant } from '@/shared/types/types';
 import BrandLogo from '../shared/ui/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 

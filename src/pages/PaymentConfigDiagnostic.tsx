@@ -7,7 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Shield, CreditCard, Lock, Globe } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Shield, Lock, Globe } from 'lucide-react';
 import { Button } from '../shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../shared/ui/card';
 import { usePreferences } from '../context/PreferencesContext';
