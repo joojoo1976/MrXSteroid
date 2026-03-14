@@ -3,7 +3,7 @@ import { TRANSITIONS } from '../../shared/lib/logic';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
-import { ContentStrings, Page } from '../../shared/types/types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { md5 } from '../../shared/lib/cryptoUtils';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { usePreferences } from '../../context/PreferencesContext';

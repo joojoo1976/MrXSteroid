@@ -1,4 +1,4 @@
-import { ContentStrings, LabTest, InjectionSite } from '../types';
+import { ContentStrings, LabTest, InjectionSite } from '@/shared/types/types';
 import { seoKeywordsEnglish, fullEnglishDisclaimer, commonCompounds } from './data';
 
 export const labTestsEn: LabTest[] = [

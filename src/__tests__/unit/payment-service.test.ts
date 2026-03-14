@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { paymentService } from '@/shared/lib/payment-service';
+import { paymentService } from '@/shared/lib/payment.service';
 import { supabase } from '@/shared/lib/supabase';
 
 // Mock external payment gateway

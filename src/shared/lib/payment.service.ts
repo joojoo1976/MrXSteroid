@@ -15,7 +15,7 @@ import {
     PaymentSession,
     PaymentStatus,
     PaymentResult
-} from '../../types/payment';
+} from '@/shared/types/payment';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          PAYMENT SERVICE CLASS

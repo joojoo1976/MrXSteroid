@@ -1,8 +1,6 @@
 import { toast } from 'sonner';
-import { Currency } from '../types/types';
-import { errorHandler } from '../shared/lib/error-handler';
-
-/**
+import { Currency } from '@/shared/types/types';
+$1/**
  * SHARED & COOKIE UTILITIES
  */
 export const setCookie = (name: string, value: string, days: number) => {
@@ -446,7 +444,7 @@ export const loadUnitSystem = (): UnitSystem => {
  * ADVANCED LOCALIZATION UTILITIES
  * Consolidated from advancedLocalization.ts
  */
-import { SupportedLanguage, SupportedCountry, LocalizationState, COUNTRY_CONFIGS, CurrencyInfo } from '../../types/localization';
+import { SupportedLanguage, SupportedCountry, LocalizationState, COUNTRY_CONFIGS, CurrencyInfo } from '@/shared/types/localization';
 
 /**
  * Detects the user's country from their IP address using ipapi.co

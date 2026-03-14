@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, BookOpen, Star, Users, Target } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import BrandLogo from '../shared/ui/BrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
 

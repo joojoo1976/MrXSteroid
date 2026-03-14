@@ -12,7 +12,7 @@ import { Loader2, CheckCircle2, XCircle, Clock, ShieldCheck } from 'lucide-react
 import { paymentService } from '../shared/lib/payment.service';
 import { Button } from '../shared/ui/button';
 import BrandLogo from '../shared/ui/BrandLogo';
-import { Page } from '../types';
+import { Page } from '@/shared/types/types';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              TYPE DEFINITIONS

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Truck, Globe, ShieldCheck, Box, Clock } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface ShippingPolicyPageProps {

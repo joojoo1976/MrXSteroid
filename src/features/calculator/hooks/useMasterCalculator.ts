@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { Json } from '../../../types/db_types';
+import { Json } from '../../../shared/types/db_types';
 import { FormulaEngine, FormulaResult } from '../services/formulaEngine';
 import { usePreferences } from '../../../context/PreferencesContext';
 

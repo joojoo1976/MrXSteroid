@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Cookie, Settings, Eye, ShieldCheck, PieChart } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Cookie, Settings, ShieldCheck, PieChart } from 'lucide-react';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 

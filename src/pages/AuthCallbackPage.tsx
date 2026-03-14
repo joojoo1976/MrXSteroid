@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
-import { Page } from '../types';
+import { Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
 

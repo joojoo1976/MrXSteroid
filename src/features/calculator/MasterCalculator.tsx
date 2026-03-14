@@ -16,7 +16,7 @@ import {
     Globe
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
-import { Page } from '../../types';
+import { Page } from '@/shared/types/types';
 import { useMasterCalculator, CalculationGoal, ExperienceLevel, BudgetLevel, UnitSystem } from './hooks/useMasterCalculator';
 import { usePreferences } from '../../context/PreferencesContext';
 import KineticCounter from '../../shared/ui/KineticCounter';

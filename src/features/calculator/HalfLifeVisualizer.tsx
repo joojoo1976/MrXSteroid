@@ -10,7 +10,7 @@ import {
   ResponsiveContainer, ReferenceLine, ReferenceArea, Label
 } from 'recharts';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import KineticCounter from '../../shared/ui/KineticCounter';
 import { usePreferences } from '../../context/PreferencesContext';

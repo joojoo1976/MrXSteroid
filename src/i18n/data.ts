@@ -1,4 +1,4 @@
-import { Compound, SalesNotificationData, TeaserTableData } from '../types';
+import { Compound, SalesNotificationData, TeaserTableData } from '@/shared/types/types';
 
 export const commonCompounds: Compound[] = [
     { id: 'test_e', name: 'Testosterone Enanthate', nameAr: 'تيستوستيرون إينانثات', halfLife: 4.5, esterWeight: 0.72, tips: ['Use twice weekly', 'Standard base for any cycle'] },

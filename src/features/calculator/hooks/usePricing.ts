@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ContentStrings, PricingTier, ProductVariant } from '../../../types';
+import { ContentStrings, PricingTier, ProductVariant } from '@/shared/types/types';
 
 interface UsePricingOptions {
     content: ContentStrings;

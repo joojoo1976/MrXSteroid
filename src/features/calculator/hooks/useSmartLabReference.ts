@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ContentStrings, LabTest } from '../../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface UseSmartLabReferenceOptions {

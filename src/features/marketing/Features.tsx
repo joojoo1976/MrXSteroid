@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 import { IconRenderer } from '../../utils/icon-utils';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';

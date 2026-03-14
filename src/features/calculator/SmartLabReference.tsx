@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
-import { ContentStrings, Page } from '../../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { formatLabRange } from '../../shared/lib/logic';

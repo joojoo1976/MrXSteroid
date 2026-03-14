@@ -4,7 +4,7 @@ import { Lock, ShieldCheck, Loader2, CheckCircle, ArrowLeft } from 'lucide-react
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
 import { errorHandler } from '../shared/lib/error-handler';
-import { ContentStrings, Page } from '../types';
+import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

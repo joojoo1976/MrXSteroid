@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ContentStrings, DailyMeal } from '../../../types';
+import { ContentStrings, DailyMeal } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
 import { foodDatabase } from '../constants/foodDatabase';
 

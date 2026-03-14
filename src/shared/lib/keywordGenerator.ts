@@ -1,7 +1,7 @@
 /**
  * Simple keyword generator for footer SEO
  */
-import { Language } from '../types/types';
+import { Language } from '@/shared/types/types';
 
 export const getWeeklyKeywords = (lang: Language): string[] => {
   const baseKeywords = {

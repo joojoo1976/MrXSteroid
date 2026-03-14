@@ -28,7 +28,7 @@ import { errorHandler } from '../../shared/lib/error-handler';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import DynamicBrandLogo from '../../shared/ui/DynamicBrandLogo';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import { Input } from '../../shared/ui/input';
 import { Textarea } from '../../shared/ui/textarea';
 import { Button } from '../../shared/ui/button';

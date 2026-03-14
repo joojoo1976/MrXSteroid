@@ -1,6 +1,6 @@
 import React from 'react';
 import { Quote } from 'lucide-react';
-import { ContentStrings } from '../../types';
+import { ContentStrings } from '@/shared/types/types';
 import AuthorImage from './AuthorImage';
 
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';

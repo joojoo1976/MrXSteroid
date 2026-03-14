@@ -2,7 +2,7 @@ import React from 'react';
 import { Smartphone, Plus, Minus, Check, LucideIcon, Package, Crown, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
-import { ProductVariant } from '../../types';
+import { ProductVariant } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 
 interface ProductSelectorProps {

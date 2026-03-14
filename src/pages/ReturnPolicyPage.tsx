@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCcw, ShieldAlert, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface ReturnPolicyPageProps {

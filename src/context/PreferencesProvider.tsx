@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { SecureStorage } from '../shared/lib/secureStorage';
-import { Language, ContentStrings, Theme } from '../types';
+import { Language, ContentStrings, Theme } from '@/shared/types/types';
 import { arContent, enContent } from '../i18n';
 import {
     UnitSystem,
@@ -10,7 +10,7 @@ import {
     CURRENCY_RATES,
     formatCurrencyWithLocale
 } from '../shared/lib/logic';
-import { Currency } from '../types';
+import { Currency } from '@/shared/types/types';
 import { PreferencesContext, PreferenceStatus } from './PreferencesContext';
 
 const DEFAULT_LANG = Language.EN;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
-import { Page, ContentStrings } from '../types';
+import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useLogin } from '../features/auth/hooks/useLogin';
 

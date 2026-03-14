@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../shared/lib/supabase';
 import { RealtimeSyncService } from '../shared/lib/RealtimeSyncService';
-import { Database } from '../types/db_types';
+import { Database } from '@/shared/types/db_types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../shared/ui/card';
 import { Button } from '../shared/ui/button';
 import { MapPin, Package, CheckCircle, Clock, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react';
