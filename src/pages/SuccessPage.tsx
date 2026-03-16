@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Download, BookOpen, ShieldCheck } from 'lucide-react';
 import { Button } from '../shared/ui/button';
 import { Card, CardContent } from '../shared/ui/card';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
+import { supabase } from '../shared/lib/supabase';
 
 interface SuccessPageProps {
     content: ContentStrings;
@@ -13,10 +14,50 @@ interface SuccessPageProps {
 
 const SuccessPage: React.FC<SuccessPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
+    const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
 
     useEffect(() => {
-        // Analytics or tracking could be placed here
         console.debug("Payment Success Page Mounted");
+
+        // ─── CLEAN LOCAL STATE ────────────────────────────────────────────
+        // Clear any cached checkout/payment state so the app reflects fresh data
+        try {
+            sessionStorage.removeItem('checkout_state');
+            sessionStorage.removeItem('payment_intent');
+            sessionStorage.removeItem('spaceremit_code');
+            localStorage.removeItem('pending_payment');
+            localStorage.removeItem('checkout_form_data');
+        } catch {
+            // Storage might not be available
+        }
+
+        // ─── FETCH FRESH PROFILE FROM SUPABASE ───────────────────────────
+        // This ensures the UI immediately reflects the activated subscription
+        const fetchFreshProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('subscription_tier, has_paid, plan_tier, subscription_status')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    setSubscriptionTier(profile.subscription_tier || profile.plan_tier);
+                    console.log('✅ [SuccessPage] Fresh profile loaded:', {
+                        tier: profile.subscription_tier,
+                        hasPaid: profile.has_paid,
+                        status: profile.subscription_status,
+                    });
+                }
+            } catch (error) {
+                console.warn('⚠️ [SuccessPage] Could not fetch fresh profile:', error);
+            }
+        };
+
+        fetchFreshProfile();
     }, []);
 
     return (

@@ -186,109 +186,62 @@ export const useCheckout = (options: useCheckoutOptions) => {
         setRedirectUrl(null);
 
         try {
-            const tempOrderId = `ord_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-            console.log('🚀 Initiating payment...', {
-                amount: finalTotal,
-                currency,
+            // ─── MULTI-GATEWAY FLOW via createInvoice API ────────────────────
+            // 1. Create pending invoice → 2. Factory selects gateway by country
+            // 3. Pass tier_id → 4. Redirect to gateway URL
+            console.log('🚀 Creating invoice via multi-gateway API...', {
+                tierId: selectedTier.id,
+                country: data.country,
                 email: data.email,
-                orderId: tempOrderId,
-                paymentMethod
             });
 
-            // If using embedded payment and we have a spaceremit code
-            if (paymentMethod === 'embedded' && spaceremitCode) {
-                console.log('💳 Processing embedded payment with SpaceRemit code:', spaceremitCode);
+            // Determine tier_id from the selected tier
+            const tierId = (selectedTier.id === 'paperback' || selectedTier.requiresShipping) ? 'paperback' : 'pdf';
 
-                // Create payment record with the spaceremit code
-                const result = await paymentService.initiatePayment({
-                    amount: finalTotal,
-                    currency: currency as 'USD' | 'EGP' | 'SAR' || 'USD',
-                    email: data.email,
-                    customerName: data.fullName,
-                    orderId: tempOrderId,
-                    productId: selectedTier.id as string,
-                    productName: selectedTier.name as string,
-                    userId: undefined,
-                    quantity: 1,
-                    locale: isAr ? 'ar' : 'en',
-                    metadata: {
-                        ...data,
-                        tierId: selectedTier.id,
-                        tierName: selectedTier.name,
-                        isPhysical: isPhysical,
-                        lang: selectedTier.selectedLanguage,
-                        shippingCost: selectedShipping?.price || 0,
-                        shippingProvider: selectedShipping?.name,
-                        discount: discountAmount,
-                        promoCode: promoCode,
-                        spaceremit_code: spaceremitCode,
-                        payment_method: 'embedded_card'
-                    } as unknown as Record<string, unknown>
-                });
-
-                console.log('📦 Payment result:', result);
-
-                if (result.success === false) {
-                    const err = result.error;
-                    throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
-                }
-
-                // Payment successful - show success state
-                setSubmissionCount(prev => prev + 1);
-                toast.success(isAr ? 'تم الدفع بنجاح! جاري معالجة طلبك...' : 'Payment successful! Processing your order...');
-
-                // Redirect to success page
-                setTimeout(() => {
-                    window.location.href = `/checkout/success?order=${tempOrderId}`;
-                }, 1000);
-
-                return;
-            }
-
-            // Fallback to redirect flow
-            console.log('🔄 Falling back to redirect payment flow');
-            const result = await paymentService.initiatePayment({
-                amount: finalTotal,
-                currency: currency as 'USD' | 'EGP' | 'SAR' || 'USD',
+            // Call the new multi-gateway createInvoice endpoint
+            const result = await paymentService.createInvoice({
+                userId: data.userId || userId || '',
+                tierId: tierId as 'pdf' | 'paperback',
+                country: data.country,
                 email: data.email,
-                customerName: data.fullName,
-                orderId: tempOrderId,
-                productId: selectedTier.id as string,
-                productName: selectedTier.name as string,
-                userId: undefined,
-                quantity: 1,
+                fullName: data.fullName,
                 locale: isAr ? 'ar' : 'en',
                 metadata: {
-                    ...data,
-                    tierId: selectedTier.id,
-                    tierName: selectedTier.name,
-                    isPhysical: isPhysical,
+                    tierName: selectedTier.name as string,
+                    isPhysical,
                     lang: selectedTier.selectedLanguage,
                     shippingCost: selectedShipping?.price || 0,
                     shippingProvider: selectedShipping?.name,
                     discount: discountAmount,
-                    promoCode: promoCode,
-                    payment_method: 'redirect'
-                } as unknown as Record<string, unknown>
+                    promoCode,
+                    address: data.address,
+                    city: data.city,
+                    zipCode: data.zipCode,
+                },
             });
 
-            console.log('📦 Payment result:', result);
+            console.log('📦 Invoice result:', result);
 
-            if (result.success === false) {
-                const err = result.error;
-                throw new Error(err?.messageAr || err?.message || 'Payment initiation failed');
+            if (!result.success) {
+                throw new Error(result.error || (isAr ? 'فشل إنشاء الفاتورة' : 'Invoice creation failed'));
             }
 
             // Show redirecting state
             setIsRedirecting(true);
-            setRedirectUrl(result.data.checkoutUrl);
+            setRedirectUrl(result.redirectUrl || null);
             setSubmissionCount(prev => prev + 1);
 
-            // Show toast message
-            toast.success(isAr ? 'جاري التحويل إلى صفحة الدفع الآمنة...' : 'Redirecting to secure payment page...');
+            // Toast with gateway name
+            const gatewayLabel = result.gateway?.toUpperCase() || 'payment';
+            toast.success(
+                isAr
+                    ? `جاري التحويل إلى ${gatewayLabel} للدفع الآمن...`
+                    : `Redirecting to ${gatewayLabel} for secure payment...`
+            );
 
-            // The redirect happens in payment.service via window.location.href
+            // Redirect is handled by paymentService.createInvoice() automatically
+            // (it calls window.location.href after 300ms)
+
         } catch (error) {
             console.error('❌ Payment error:', error);
             const msg = (error as Error).message;

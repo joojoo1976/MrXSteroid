@@ -59,6 +59,8 @@ export type Database = {
                     user_name: string | null
                     avatar_url: string | null
                     subscription_status: string // 'inactive' | 'active' etc.
+                    subscription_tier: string // 'none' | 'pdf' | 'paperback'
+                    has_paid: boolean
                     currency: string
                     created_at: string
                     updated_at: string
@@ -71,6 +73,8 @@ export type Database = {
                     user_name?: string | null
                     avatar_url?: string | null
                     subscription_status?: string
+                    subscription_tier?: string
+                    has_paid?: boolean
                     currency?: string
                     created_at?: string
                     updated_at?: string
@@ -83,6 +87,8 @@ export type Database = {
                     user_name?: string | null
                     avatar_url?: string | null
                     subscription_status?: string
+                    subscription_tier?: string
+                    has_paid?: boolean
                     currency?: string
                     created_at?: string
                     updated_at?: string
@@ -421,6 +427,53 @@ export type Database = {
                 Relationships: [
                     {
                         foreignKeyName: "user_history_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            invoices: {
+                Row: {
+                    id: string
+                    user_id: string
+                    gateway: string // 'stripe' | 'paymob' | 'spaceremit'
+                    status: string // 'pending' | 'success' | 'failed'
+                    tier_id: string // 'pdf' | 'paperback'
+                    amount: number
+                    currency: string
+                    gateway_reference_id: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    gateway: string
+                    status?: string
+                    tier_id: string
+                    amount: number
+                    currency: string
+                    gateway_reference_id?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    gateway?: string
+                    status?: string
+                    tier_id?: string
+                    amount?: number
+                    currency?: string
+                    gateway_reference_id?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "invoices_user_id_fkey"
                         columns: ["user_id"]
                         isOneToOne: false
                         referencedRelation: "users"
