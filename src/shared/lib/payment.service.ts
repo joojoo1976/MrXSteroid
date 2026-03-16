@@ -18,6 +18,29 @@ import {
 } from '@/shared/types/payment';
 
 // ═══════════════════════════════════════════════════════════════════════════
+//                          MULTI-GATEWAY INVOICE API
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface CreateInvoiceRequest {
+    userId: string;
+    tierId: 'pdf' | 'paperback';
+    country: string;
+    email: string;
+    fullName: string;
+    locale?: 'ar' | 'en';
+    metadata?: Record<string, unknown>;
+}
+
+export interface CreateInvoiceResponse {
+    success: boolean;
+    invoiceId?: string;
+    redirectUrl?: string;
+    gateway?: string;
+    error?: string;
+    details?: Record<string, string[]>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //                          PAYMENT SERVICE CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -105,6 +128,69 @@ class PaymentService {
     }
 
     /**
+     * 🆕 Create Invoice via Multi-Gateway Strategy Pattern API
+     * 
+     * Calls /api/payments/create-invoice which uses the PaymentFactory
+     * to route to the correct gateway (SpaceRemit, Paymob, or Stripe)
+     * based on the customer's country.
+     */
+    public async createInvoice(request: CreateInvoiceRequest): Promise<CreateInvoiceResponse> {
+        try {
+            loggers.payment.info('Creating invoice via gateway API', {
+                tierId: request.tierId,
+                country: request.country,
+                email: request.email,
+            });
+
+            const response = await fetch('/api/payments/create-invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                loggers.payment.error('Invoice creation failed', data);
+                return {
+                    success: false,
+                    error: data.error || data.message || 'Invoice creation failed',
+                    details: data.details,
+                };
+            }
+
+            loggers.payment.info('Invoice created successfully', {
+                invoiceId: data.invoiceId,
+                gateway: data.gateway,
+                redirectUrl: data.redirectUrl,
+            });
+
+            // Redirect to the payment gateway
+            if (data.redirectUrl) {
+                console.log(`🔗 Redirecting to ${data.gateway} gateway...`);
+                setTimeout(() => {
+                    window.location.href = data.redirectUrl;
+                }, 300);
+            }
+
+            return {
+                success: true,
+                invoiceId: data.invoiceId,
+                redirectUrl: data.redirectUrl,
+                gateway: data.gateway,
+            };
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            errorHandler.handle(error, 'PaymentService.createInvoice');
+            loggers.payment.error('createInvoice failed', { error: message });
+            return { success: false, error: message };
+        }
+    }
+
+    /**
+     * @deprecated Use createInvoice() instead — this method is SpaceRemit-only.
+     * Kept for backward compatibility during migration.
+     * 
      * Initiate Payment Transaction (Redirect Flow)
      */
     public async initiatePayment(payload: PaymentInitPayload): Promise<PaymentResult<PaymentSession>> {
