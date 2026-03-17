@@ -148,14 +148,25 @@ class PaymentService {
                 body: JSON.stringify(request),
             });
 
-            const data = await response.json();
+            // Safe JSON parsing — handle non-JSON error responses (e.g., "A server error occurred")
+            let data: Record<string, unknown>;
+            try {
+                data = await response.json();
+            } catch {
+                const rawText = await response.text().catch(() => `HTTP ${response.status}`);
+                loggers.payment.error('Server returned non-JSON response', { status: response.status, rawText });
+                return {
+                    success: false,
+                    error: `Server error (${response.status}): ${rawText.substring(0, 100)}`,
+                };
+            }
 
             if (!response.ok || !data.success) {
                 loggers.payment.error('Invoice creation failed', data);
                 return {
                     success: false,
-                    error: data.error || data.message || 'Invoice creation failed',
-                    details: data.details,
+                    error: (data.error || data.message || 'Invoice creation failed') as string,
+                    details: data.details as Record<string, string[]>,
                 };
             }
 
