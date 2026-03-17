@@ -38,12 +38,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             paperback: { usd: 40, egp: 2000 },
         };
 
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         const CreateInvoiceSchema = z.object({
-            // userId is optional — guest users will get a generated UUID server-side
-            userId: z.string().uuid({ message: 'Invalid user ID format' }).optional().or(z.literal('')),
-            tierId: z.enum(['pdf', 'paperback'], {
-                error: 'Tier must be "pdf" or "paperback"',
-            }),
+            // userId is optional — guest users get a server-generated UUID
+            userId: z.string().optional().refine(
+                val => !val || val === '' || uuidRegex.test(val),
+                { message: 'Invalid user ID format' }
+            ),
+            tierId: z.enum(['pdf', 'paperback']),
             country: z.string().min(1, 'Country is required'),
             email: z.string().email('Invalid email address'),
             fullName: z.string().min(2, 'Full name is required'),
