@@ -39,7 +39,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const CreateInvoiceSchema = z.object({
-            userId: z.string().uuid({ message: 'Invalid user ID format' }),
+            // userId is optional — guest users will get a generated UUID server-side
+            userId: z.string().uuid({ message: 'Invalid user ID format' }).optional().or(z.literal('')),
             tierId: z.enum(['pdf', 'paperback'], {
                 error: 'Tier must be "pdf" or "paperback"',
             }),
@@ -50,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             metadata: z.record(z.string(), z.unknown()).optional().default({}),
         });
         type CreateInvoiceInput = {
-            userId: string;
+            userId?: string;
             tierId: 'pdf' | 'paperback';
             country: string;
             email: string;
@@ -93,6 +94,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const input: CreateInvoiceInput = parsed.data;
+    // Generate a guest UUID if userId is missing or empty
+    const effectiveUserId: string = (input.userId && input.userId.trim() !== '') 
+        ? input.userId 
+        : crypto.randomUUID();
 
     try {
         const supabase = getSupabaseAdmin();
@@ -114,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
             .insert({
-                user_id: input.userId,
+                user_id: effectiveUserId,
                 gateway: gatewayName.toLowerCase(), // 'stripe', 'paymob', 'spaceremit'
                 status: 'pending',
                 tier_id: input.tierId,
@@ -137,7 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ─── CALL GATEWAY TO GET REDIRECT URL ────────────────────────────
         const result = await gateway.createInvoice({
-            userId: input.userId,
+            userId: effectiveUserId,
             invoiceId,
             tierId: input.tierId,
             amount,
