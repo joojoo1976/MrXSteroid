@@ -91,8 +91,9 @@ export class PaymentFactory {
             return PaymentFactory.getPaymob();
         }
 
-        // 2. Stripe countries
-        if (STRIPE_COUNTRIES.has(normalized)) {
+        // 2. Stripe countries (Only if configured)
+        const hasStripeKey = !!process.env.STRIPE_SECRET_KEY;
+        if (STRIPE_COUNTRIES.has(normalized) && hasStripeKey) {
             console.log(`💳 [PaymentFactory] Routing to Stripe for country: ${normalized}`);
             return PaymentFactory.getStripe();
         }

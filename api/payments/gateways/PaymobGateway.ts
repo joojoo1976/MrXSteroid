@@ -20,7 +20,7 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const PAYMOB_CONFIG = {
-    HMAC_SECRET: process.env.PAYMOB_HMAC_SECRET || '',
+    HMAC_SECRET: process.env.PAYMOB_HMAC_SECRET || process.env.VITE_PAYMOB_HMAC_SECRET || '',
 
     /**
      * Preconfigured Paymob standalone payment links per tier

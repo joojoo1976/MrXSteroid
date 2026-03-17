@@ -21,12 +21,12 @@ import type {
 
 const SPACEREMIT_CONFIG = {
     PUBLIC_KEY: process.env.VITE_SPACEREMIT_PUBLIC_KEY || process.env.SPACEREMIT_PUBLIC_KEY || '',
-    SECRET_KEY: process.env.SPACEREMIT_SECRET_KEY || '',
-    WEBHOOK_SECRET: process.env.SPACEREMIT_WEBHOOK_SECRET || process.env.SPACEREMIT_SECRET_KEY || '',
+    SECRET_KEY: process.env.SPACEREMIT_SECRET_KEY || process.env.VITE_SPACEREMIT_SECRET_KEY || process.env.SPACEREMIT_API_KEY || '',
+    WEBHOOK_SECRET: process.env.SPACEREMIT_WEBHOOK_SECRET || process.env.SPACEREMIT_SECRET_KEY || process.env.VITE_SPACEREMIT_SECRET_KEY || '',
     API_BASE_URL: 'https://spaceremit.com',
-    CALLBACK_URL: process.env.VITE_SPACEREMIT_CALLBACK_URL || 'https://mrxsteroid.vercel.app/api/payments/callback',
-    SUCCESS_URL: 'https://mrxsteroid.vercel.app/success',
-    CANCEL_URL: 'https://mrxsteroid.vercel.app/cancel',
+    CALLBACK_URL: process.env.VITE_SPACEREMIT_CALLBACK_URL || process.env.SPACEREMIT_CALLBACK_URL || 'https://mrxsteroid.vercel.app/api/payments/callback',
+    SUCCESS_URL: process.env.VITE_PAYMENT_SUCCESS_URL || 'https://mrxsteroid.vercel.app/success',
+    CANCEL_URL: process.env.VITE_PAYMENT_CANCEL_URL || 'https://mrxsteroid.vercel.app/cancel',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
