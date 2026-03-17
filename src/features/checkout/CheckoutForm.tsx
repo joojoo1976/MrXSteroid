@@ -11,8 +11,6 @@ import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
-import { SpaceRemitCardElement } from './SpaceRemitCardElement';
-import { env } from '../../config/env';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -406,115 +404,42 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-4">
-                            {/* Payment Method Toggle */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('embedded')}
-                                    className={cn(
-                                        "p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2",
-                                        paymentMethod === 'embedded'
-                                            ? "border-gold-500 bg-gold-500/10"
-                                            : "border-zinc-800 bg-black/20 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <CreditCard className={cn(
-                                        "w-6 h-6",
-                                        paymentMethod === 'embedded' ? "text-gold-500" : "text-zinc-500"
-                                    )} />
-                                    <span className={cn(
-                                        "text-xs font-bold",
-                                        paymentMethod === 'embedded' ? "text-gold-500" : "text-zinc-400"
-                                    )}>
-                                        {isAr ? "بطاقة بنكية" : "Credit Card"}
-                                    </span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('redirect')}
-                                    className={cn(
-                                        "p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2",
-                                        paymentMethod === 'redirect'
-                                            ? "border-gold-500 bg-gold-500/10"
-                                            : "border-zinc-800 bg-black/20 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <ShieldCheck className={cn(
-                                        "w-6 h-6",
-                                        paymentMethod === 'redirect' ? "text-gold-500" : "text-zinc-500"
-                                    )} />
-                                    <span className={cn(
-                                        "text-xs font-bold",
-                                        paymentMethod === 'redirect' ? "text-gold-500" : "text-zinc-400"
-                                    )}>
-                                        {isAr ? "صفحة الدفع الآمنة" : "Secure Page"}
-                                    </span>
-                                </button>
-                            </div>
-
-                            {/* Embedded Card Element */}
-                            {paymentMethod === 'embedded' && (
-                                <SpaceRemitCardElement
-                                    publicKey={env.SPACEREMIT_PUBLIC_KEY}
-                                    amount={finalTotal}
-                                    currency={prefCurrency.code || 'USD'}
-                                    customerEmail={watch('email')}
-                                    customerName={watch('fullName')}
-                                    onReady={setIsCardElementReady}
-                                    onTokenReceived={setSpaceremitCode}
-                                    onError={(error) => {
-                                        console.error('❌ [CheckoutForm] Card element error:', error);
-                                        // Show error to user but don't auto-fallback immediately
-                                        // Let user decide to switch to redirect method
-                                    }}
-                                    disabled={isProcessing || isRedirecting}
-                                />
-                            )}
-
-                            {/* Manual fallback button for embedded failures */}
-                            {paymentMethod === 'embedded' && !isCardElementReady && !isProcessing && (
-                                <div className="pt-4 border-t border-zinc-800">
-                                    <p className="text-xs text-zinc-500 mb-3 text-center">
-                                        {isAr ? 'واجهت مشكلة؟' : 'Having issues?'}
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => setPaymentMethod('redirect')}
-                                        className="w-full border-zinc-700 hover:bg-zinc-800 text-zinc-300"
-                                    >
-                                        <ShieldCheck className="w-4 h-4 mr-2" />
-                                        {isAr ? 'التحويل للدفع عبر الرابط الآمن' : 'Switch to secure redirect payment'}
-                                    </Button>
-                                </div>
-                            )}
-
-                            {/* Redirect Flow Info */}
-                            {paymentMethod === 'redirect' && (
-                                <div className="flex flex-col gap-4">
-                                    <div className="p-4 rounded-xl bg-black/40 border border-zinc-800 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gold-500/10 flex items-center justify-center">
-                                                <CreditCard className="w-5 h-5 text-gold-500" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-white text-sm">{isAr ? "دفع آمن عبر SpaceRemit" : "Secure Payment via SpaceRemit"}</p>
-                                                <p className="text-xs text-zinc-500">{isAr ? "بطاقات الائتمان، مدى، والمزيد" : "Credit Cards, Mada, and more"}</p>
-                                            </div>
-                                        </div>
-                                        <ShieldCheck className="w-5 h-5 text-green-500" />
+                            {/* Secure Payment Info — Multi-Gateway Redirect */}
+                            <div className="p-4 rounded-xl bg-black/40 border border-zinc-800 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gold-500/10 flex items-center justify-center">
+                                        <CreditCard className="w-5 h-5 text-gold-500" />
                                     </div>
-
-                                    {/* Payment Info Box */}
-                                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                                        <p className="text-xs text-blue-400 font-medium leading-relaxed">
-                                            {isAr
-                                                ? "🔒 عند الضغط على زر الدفع، سيتم تحويلك إلى صفحة آمنة لإدخال بيانات البطاقة البنكية. نحن لا نخزن أي بيانات بنكية."
-                                                : "🔒 When you click the payment button, you will be redirected to a secure page to enter your card details. We do not store any banking information."}
+                                    <div>
+                                        <p className="font-bold text-white text-sm">
+                                            {isAr ? "دفع آمن ومشفّر" : "Secure Encrypted Payment"}
+                                        </p>
+                                        <p className="text-xs text-zinc-500">
+                                            {isAr ? "Visa, Mastercard, مدى، وأكثر" : "Visa, Mastercard, Mada, and more"}
                                         </p>
                                     </div>
                                 </div>
-                            )}
+                                <ShieldCheck className="w-5 h-5 text-green-500" />
+                            </div>
+
+                            {/* Accepted Payment Badges */}
+                            <div className="flex items-center justify-center gap-3">
+                                {['VISA', 'Mastercard', 'Mada'].map((card) => (
+                                    <div key={card} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-[10px] font-bold text-zinc-300">
+                                        {card}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Payment Info Box */}
+                            <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3">
+                                <Lock className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                                <p className="text-xs text-green-400 font-medium leading-relaxed">
+                                    {isAr
+                                        ? "عند الضغط على زر الدفع، سيتم تحويلك تلقائياً إلى صفحة دفع آمنة حسب دولتك لإدخال بيانات البطاقة. نحن لا نخزن أي بيانات بنكية."
+                                        : "When you click Pay, you'll be redirected to a secure payment page selected for your country. We never store any banking information."}
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
 
