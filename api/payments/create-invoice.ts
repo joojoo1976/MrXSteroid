@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const { createClient } = await import('@supabase/supabase-js');
         const { z } = await import('zod');
-        const { PaymentFactory } = await import('./gateways/PaymentFactory');
+        const { PaymentFactory } = await import('./gateways/PaymentFactory.js');
 
         const CONFIG = {
             SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',

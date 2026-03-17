@@ -8,7 +8,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { PaymentFactory } from './gateways/PaymentFactory';
+import { PaymentFactory } from './gateways/PaymentFactory.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                         ENVIRONMENT CONFIGURATION
