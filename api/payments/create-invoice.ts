@@ -96,10 +96,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const input: CreateInvoiceInput = parsed.data;
-    // Generate a guest UUID if userId is missing or empty
-    const effectiveUserId: string = (input.userId && input.userId.trim() !== '') 
+    // For guest users, we MUST set user_id to NULL to avoid foreign key violations with public.profiles
+    const effectiveUserId: string | null = (input.userId && input.userId.trim() !== '') 
         ? input.userId 
-        : crypto.randomUUID();
+        : null;
 
     try {
         const supabase = getSupabaseAdmin();
