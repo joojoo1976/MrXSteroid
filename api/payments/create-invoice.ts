@@ -60,18 +60,28 @@ type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>;
 // ═══════════════════════════════════════════════════════════════════════════
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // ─── CORS ────────────────────────────────────────────────────────────
-    res.setHeader('Access-Control-Allow-Origin', 'https://mrxsteroid.vercel.app');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // ─── TOP-LEVEL ERROR BOUNDARY ────────────────────────────────────
+    try {
+        // ─── CORS (allow production + localhost) ─────────────────────────
+        const origin = req.headers.origin || '';
+        const allowedOrigins = [
+            'https://mrxsteroid.vercel.app',
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'http://localhost:4173',
+        ];
+        const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+        res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed' });
+        }
 
     // ─── VALIDATE INPUT ──────────────────────────────────────────────────
     const parsed = CreateInvoiceSchema.safeParse(req.body);
@@ -173,6 +183,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({
             error: 'Internal server error',
             message,
+        });
+    }
+    } catch (topLevelError) {
+        // This catches ANY crash — import failures, missing env, syntax issues, etc.
+        const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
+        console.error('💥 [CreateInvoice] TOP-LEVEL CRASH:', msg);
+        return res.status(500).json({
+            success: false,
+            error: 'Server initialization error',
+            message: msg,
         });
     }
 }
