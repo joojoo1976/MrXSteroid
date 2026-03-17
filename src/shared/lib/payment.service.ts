@@ -150,10 +150,11 @@ class PaymentService {
 
             // Safe JSON parsing — handle non-JSON error responses (e.g., "A server error occurred")
             let data: Record<string, unknown>;
+            const responseClone = response.clone(); // Clone to read text if json fails
             try {
                 data = await response.json();
             } catch {
-                const rawText = await response.text().catch(() => `HTTP ${response.status}`);
+                const rawText = await responseClone.text().catch(() => `HTTP ${response.status}`);
                 loggers.payment.error('Server returned non-JSON response', { status: response.status, rawText });
                 return {
                     success: false,
