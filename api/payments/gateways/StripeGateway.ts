@@ -13,7 +13,7 @@ import type {
     CreateInvoiceParams,
     CreateInvoiceResult,
     WebhookVerificationResult
-} from './IPaymentGateway';
+} from './IPaymentGateway.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              CONFIGURATION
