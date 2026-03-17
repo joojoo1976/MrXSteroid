@@ -501,7 +501,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
                         <Button
                             type="submit"
-                            disabled={isProcessing || isRedirecting || (paymentMethod === 'embedded' && !spaceremitCode && !isCardElementReady)}
+                            disabled={isProcessing || isRedirecting}
                             className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all hover:scale-[1.02] disabled:opacity-70"
                         >
                             {isProcessing || isRedirecting ? (
@@ -513,9 +513,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 ? (isAr ? "جاري التحويل..." : "Redirecting...")
                                 : isProcessing
                                     ? (isAr ? "جاري المعالجة..." : "Processing...")
-                                    : paymentMethod === 'embedded' && spaceremitCode
-                                        ? `${content.payNow} ${formatPrice(finalTotal)}`
-                                        : `${content.payNow} ${formatPrice(finalTotal)}`}
+                                    : `${content.payNow} ${formatPrice(finalTotal)}`}
                         </Button>
 
                         <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">

@@ -68,7 +68,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     // Embedded Payment Flow State
     const [isCardElementReady, setIsCardElementReady] = useState(false);
     const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
-    const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('embedded');
+    const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('redirect');
 
     const isAr = lang === 'ar';
     const isPhysical = productVariant !== 'digital';
