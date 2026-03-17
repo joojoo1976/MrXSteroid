@@ -7,53 +7,6 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-import { z } from 'zod';
-import { PaymentFactory } from './gateways/PaymentFactory';
-
-// ═══════════════════════════════════════════════════════════════════════════
-//                          CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════
-
-const CONFIG = {
-    SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-};
-
-const getSupabaseAdmin = () => {
-    if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_SERVICE_ROLE_KEY) {
-        throw new Error('Missing Supabase configuration');
-    }
-    return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE_ROLE_KEY, {
-        auth: { autoRefreshToken: false, persistSession: false },
-    });
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-//                          ZOD VALIDATION SCHEMAS
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Tier pricing configuration
- */
-const TIER_PRICING: Record<string, { usd: number; egp: number }> = {
-    pdf: { usd: 20, egp: 1000 },
-    paperback: { usd: 40, egp: 2000 },
-};
-
-const CreateInvoiceSchema = z.object({
-    userId: z.string().uuid({ message: 'Invalid user ID format' }),
-    tierId: z.enum(['pdf', 'paperback'], {
-        error: 'Tier must be "pdf" or "paperback"',
-    }),
-    country: z.string().min(1, 'Country is required'),
-    email: z.string().email('Invalid email address'),
-    fullName: z.string().min(2, 'Full name is required'),
-    locale: z.enum(['ar', 'en']).optional().default('en'),
-    metadata: z.record(z.string(), z.unknown()).optional().default({}),
-});
-
-type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          MAIN HANDLER
@@ -62,6 +15,50 @@ type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>;
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ─── TOP-LEVEL ERROR BOUNDARY ────────────────────────────────────
     try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const { z } = await import('zod');
+        const { PaymentFactory } = await import('./gateways/PaymentFactory');
+
+        const CONFIG = {
+            SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+            SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+        };
+
+        const getSupabaseAdmin = () => {
+            if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_SERVICE_ROLE_KEY) {
+                throw new Error('Missing Supabase configuration');
+            }
+            return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE_ROLE_KEY, {
+                auth: { autoRefreshToken: false, persistSession: false },
+            });
+        };
+
+        const TIER_PRICING: Record<string, { usd: number; egp: number }> = {
+            pdf: { usd: 20, egp: 1000 },
+            paperback: { usd: 40, egp: 2000 },
+        };
+
+        const CreateInvoiceSchema = z.object({
+            userId: z.string().uuid({ message: 'Invalid user ID format' }),
+            tierId: z.enum(['pdf', 'paperback'], {
+                error: 'Tier must be "pdf" or "paperback"',
+            }),
+            country: z.string().min(1, 'Country is required'),
+            email: z.string().email('Invalid email address'),
+            fullName: z.string().min(2, 'Full name is required'),
+            locale: z.enum(['ar', 'en']).optional().default('en'),
+            metadata: z.record(z.string(), z.unknown()).optional().default({}),
+        });
+        type CreateInvoiceInput = {
+            userId: string;
+            tierId: 'pdf' | 'paperback';
+            country: string;
+            email: string;
+            fullName: string;
+            locale?: 'ar' | 'en';
+            metadata?: Record<string, unknown>;
+        };
+
         // ─── CORS (allow production + localhost) ─────────────────────────
         const origin = req.headers.origin || '';
         const allowedOrigins = [
