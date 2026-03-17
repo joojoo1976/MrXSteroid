@@ -20,10 +20,10 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const STRIPE_CONFIG = {
-    SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
-    WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
-    SUCCESS_URL: 'https://mrxsteroid.vercel.app/success?txn={CHECKOUT_SESSION_ID}',
-    CANCEL_URL: 'https://mrxsteroid.vercel.app/cancel',
+    SECRET_KEY: process.env.STRIPE_SECRET_KEY || process.env.VITE_STRIPE_SECRET_KEY || '',
+    WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || process.env.VITE_STRIPE_WEBHOOK_SECRET || '',
+    SUCCESS_URL: process.env.VITE_PAYMENT_SUCCESS_URL || 'https://mrxsteroid.vercel.app/success?txn={CHECKOUT_SESSION_ID}',
+    CANCEL_URL: process.env.VITE_PAYMENT_CANCEL_URL || 'https://mrxsteroid.vercel.app/cancel',
 
     /**
      * Mapping of tier IDs to Stripe Price IDs
