@@ -89,7 +89,7 @@ export const replaceBrandWithStructuredData = (text: string): BrandReplacementRe
     // Create a combined regex for all brands
     const combinedPattern = new RegExp(brandPatterns.map(bp => bp.pattern).join('|'), 'g');
 
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = combinedPattern.exec(text)) !== null) {
         // Add text before match
         if (match.index > lastIndex) {
@@ -472,7 +472,7 @@ export async function detectCountryFromIP(): Promise<SupportedCountry> {
 export function detectCountryFromBrowser(): SupportedCountry {
     const browserLang = navigator.language.toLowerCase();
 
-    if (browserLang.startsWith('ar')) return SupportedCountry.SA;
+    if (browserLang.startsWith('ar')) return SupportedCountry.EG;
     if (browserLang.startsWith('en-gb')) return SupportedCountry.GB;
 
     return SupportedCountry.US;

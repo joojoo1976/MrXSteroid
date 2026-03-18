@@ -15,6 +15,11 @@ export interface MockUser {
     subscription_status: string;
     created_at: string;
     role: 'user' | 'delegate' | 'admin';
+    user_metadata?: {
+        full_name?: string;
+        name?: string;
+        [key: string]: any;
+    };
 }
 
 // Mock session interface

@@ -52,13 +52,17 @@ export class PaymobGateway implements IPaymentGateway {
     async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResult> {
         const { invoiceId, tierId } = params;
 
-        const link = PAYMOB_CONFIG.STANDALONE_LINKS[tierId];
+        // Map the new internal names to the preconfigured Paymob link keys
+        // digital -> pdf (499 EGP)
+        // bundle/coaching/coaching_plus -> paperback (750 EGP)
+        const linkKey = tierId === 'digital' || tierId === 'pdf' ? 'pdf' : 'paperback';
+        const link = PAYMOB_CONFIG.STANDALONE_LINKS[linkKey];
 
         if (!link) {
-            throw new Error(`No Paymob standalone link configured for tier: ${tierId}`);
+            throw new Error(`No Paymob standalone link configured for key: ${linkKey}`);
         }
 
-        console.log(`✅ [Paymob] Standalone link selected for invoice: ${invoiceId}, tier: ${tierId}`);
+        console.log(`✅ [Paymob] Standalone link selected for invoice: ${invoiceId}, tier: ${tierId} -> linkKey: ${linkKey}`);
 
         return {
             redirectUrl: link,

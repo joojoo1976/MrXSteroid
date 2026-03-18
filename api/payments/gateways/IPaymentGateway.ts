@@ -14,9 +14,9 @@ import type { VercelRequest } from '@vercel/node';
 export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE';
 
 export interface CreateInvoiceParams {
-    userId: string;
+    userId: string | null;
     invoiceId: string;
-    tierId: 'pdf' | 'paperback';
+    tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
     amount: number;
     currency: string;
     metadata: {

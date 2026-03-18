@@ -63,6 +63,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         promoStatus,
         isPromoLoading,
         finalTotal,
+        formattedTotal,
         selectedShipping,
         handleApplyPromo,
         onSubmit,
@@ -153,7 +154,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     };
 
     return (
-        <form id="spaceremit-checkout-form" onSubmit={onSubmit} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8">
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">
@@ -200,11 +201,11 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 {...register("country")}
                                 className="w-full pl-10 h-10 rounded-md bg-black/40 border border-zinc-800 text-white focus:border-gold-500 focus:ring-0 appearance-none"
                             >
-                                <option value="Egypt">Egypt (مصر)</option>
-                                <option value="Saudi Arabia">Saudi Arabia (السعودية)</option>
-                                <option value="UAE">UAE (الإمارات)</option>
-                                <option value="USA">USA / Global</option>
-                                <option value="Germany">Germany</option>
+                                <option value="EG">Egypt (مصر)</option>
+                                <option value="SA">Saudi Arabia (السعودية)</option>
+                                <option value="AE">UAE (الإمارات)</option>
+                                <option value="US">USA / Global</option>
+                                <option value="DE">Germany</option>
                             </select>
                         </div>
                     </div>
@@ -468,52 +469,30 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         </div>
 
-                        {/* Redirecting State Overlay */}
-                        {isRedirecting && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="w-full p-6 bg-green-500/10 border border-green-500/30 rounded-2xl text-center space-y-4"
-                            >
-                                <div className="flex items-center justify-center gap-3">
-                                    <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
-                                    <span className="text-green-400 font-black text-lg">
-                                        {isAr ? "جاري التحويل إلى صفحة الدفع الآمنة..." : "Redirecting to secure payment..."}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-zinc-400">
-                                    {isAr
-                                        ? "سيتم تحويلك الآن إلى SpaceRemit لإدخال بيانات البطاقة البنكية"
-                                        : "You will be redirected to SpaceRemit to enter your card details"}
-                                </p>
-                                {redirectUrl && (
-                                    <a
-                                        href={redirectUrl}
-                                        className="inline-block text-xs text-gold-500 hover:text-gold-400 underline"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {isAr ? "إذا لم يتم التحويل تلقائياً، اضغط هنا" : "If not redirected automatically, click here"}
-                                    </a>
-                                )}
-                            </motion.div>
-                        )}
+                        {/* 
+                           Redirection state is handled by the submit button's processing state.
+                           Direct navigation avoids React reconciliation crashes.
+                        */}
 
                         <Button
                             type="submit"
                             disabled={isProcessing || isRedirecting}
                             className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all hover:scale-[1.02] disabled:opacity-70"
                         >
-                            {isProcessing || isRedirecting ? (
-                                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                            ) : (
-                                <Lock className="w-5 h-5 mr-2" />
-                            )}
-                            {isRedirecting
-                                ? (isAr ? "جاري التحويل..." : "Redirecting...")
-                                : isProcessing
-                                    ? (isAr ? "جاري المعالجة..." : "Processing...")
-                                    : `${content.payNow} ${formatPrice(finalTotal)}`}
+                            <span className="flex items-center justify-center gap-2">
+                                {isProcessing || isRedirecting ? (
+                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                ) : (
+                                    <Lock className="w-5 h-5" />
+                                )}
+                                <span>
+                                    {isRedirecting
+                                        ? (isAr ? "جاري التحويل..." : "Redirecting...")
+                                        : isProcessing
+                                            ? (isAr ? "جاري المعالجة..." : "Processing...")
+                                            : `${content.payNow} ${formattedTotal}`}
+                                </span>
+                            </span>
                         </Button>
 
                         <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">

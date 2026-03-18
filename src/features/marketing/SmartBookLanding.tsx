@@ -138,25 +138,40 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     }, [loc.isRTL, externalLang, globalLang]);
 
     // Price Calculation & Formatting
-    const formattedPrice = new Intl.NumberFormat(loc.locale, {
+    const isEg = loc.countryCode === 'EG';
+    const finalPrice = isEg ? 499 : (BASE_PRICE_USD * loc.rate);
+    const finalCurrency = isEg ? 'EGP' : loc.currency;
+    const finalLocale = isEg ? 'ar-EG' : loc.locale;
+
+    const formattedPrice = new Intl.NumberFormat(finalLocale, {
         style: 'currency',
-        currency: loc.currency
-    }).format(BASE_PRICE_USD * loc.rate);
+        currency: finalCurrency,
+        currencyDisplay: 'symbol'
+    }).format(finalPrice);
 
     const handlePayment = () => {
-        if (window.SpaceRemit) {
-            window.SpaceRemit.Pay({
-                publicKey: env.SPACEREMIT_PUBLIC_KEY,
-                amount: BASE_PRICE_USD * loc.rate,
-                currency: loc.currency,
-                productName: 'Mr. X-Steroid Complete Guide',
-                productDescription: 'The ultimate bodybuilding and steroid cycle guide.',
-                referenceId: `ORDER-${Date.now()}`
-            });
-        } else {
-            console.error('SpaceRemit SDK not loaded');
-            toast.error(isRTL ? 'نظام الدفع قيد التحميل... يرجى المحاولة مرة أخرى لاحقاً.' : 'Payment system loading... please try again in a moment.');
-        }
+        // Use direct redirection to avoid React reconciliation (insertBefore) crashes
+        // which often happen with embedded iframes during navigation.
+        const isEg = loc.countryCode === 'EG';
+        const amount = isEg ? 499 : (BASE_PRICE_USD * loc.rate);
+        const currency = isEg ? 'EGP' : loc.currency;
+
+        const checkoutParams = new URLSearchParams({
+            k: env.SPACEREMIT_PUBLIC_KEY,
+            amount: amount.toFixed(2),
+            currency: currency,
+            way: 'card', 
+            notes: 'Mr. X-Steroid Complete Guide (Landing)',
+            reference_id: `LND-${Date.now()}`,
+            product_name: 'Mr. X-Steroid Complete Guide',
+            success_url: env.PAYMENT_SUCCESS_URL,
+            cancel_url: env.PAYMENT_CANCEL_URL,
+        });
+
+        const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
+        
+        console.log('🚀 Redirecting to secure payment page:', checkoutUrl);
+        window.location.assign(checkoutUrl);
     };
 
     const content = contentMap[currentLang] || enContent;

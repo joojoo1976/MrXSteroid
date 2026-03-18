@@ -50,8 +50,7 @@ export interface CheckoutState {
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, userId, userEmail, userName } = options;
-    const { currency } = usePreferences();
-    const prefCurrency = { code: currency, symbol: '$', rate: 1, locale: 'en-US' }; // Mock object to match expected structure
+    const { currency, formatPrice: globalFormatPrice } = usePreferences();
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -69,6 +68,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isCardElementReady, setIsCardElementReady] = useState(false);
     const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('redirect');
+
+    // Safe Redirection Side-Effect
+    // No longer using useEffect for redirect to avoid DOM manipulation during unload
+    // which was causing insertBefore crashes. Redirect is now direct in onSubmit.
 
     const isAr = lang === 'ar';
     const isPhysical = productVariant !== 'digital';
@@ -151,9 +154,56 @@ export const useCheckout = (options: useCheckoutOptions) => {
         }
     }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
 
+    const isEg = (selectedCountry || '').toLowerCase() === 'egypt' || selectedCountry === 'مصر';
+    
+    // Explicit EGP pricing for Egypt to match backend
+    const egpPrices: Record<string, number> = {
+        'digital': 499,
+        'bundle': 750,
+        'coaching': 750,
+        'coaching_plus': 750,
+        'pdf': 499,
+        'paperback': 750
+    };
+
+    let baseAmount = totalAmount;
+    if (isEg) {
+        baseAmount = egpPrices[productVariant] || egpPrices['bundle'];
+    }
+
+    console.log('🚀 [useCheckout] RENDER STATE:', {
+        selectedCountry,
+        isEg,
+        productVariant,
+        tierId: selectedTier.id,
+        totalAmount
+    });
+
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
     const discountAmount = promoStatus?.valid ? promoStatus.discount : 0;
-    const finalTotal = Math.max(0, (totalAmount + (selectedShipping?.price || 0)) - discountAmount);
+    const finalTotal = Math.max(0, (baseAmount + (selectedShipping?.price || 0)) - discountAmount);
+
+    const currentCurrency = isEg ? 'EGP' : currency;
+    const prefCurrency = {
+        code: currentCurrency,
+        symbol: isEg ? 'ج.م' : '$',
+        rate: 1,
+        locale: isEg ? 'ar-EG' : 'en-US'
+    };
+
+    const formatAmount = (amount: number) => {
+        if (isEg) {
+            // Precise Arabic formatting for Egyptian Pound
+            return new Intl.NumberFormat('ar-EG', {
+                style: 'currency',
+                currency: 'EGP',
+                currencyDisplay: 'symbol'
+            }).format(amount);
+        }
+        return globalFormatPrice(amount);
+    };
+
+    const formattedTotal = formatAmount(finalTotal);
 
     const handleApplyPromo = async () => {
         if (!promoCode) return;
@@ -180,9 +230,16 @@ export const useCheckout = (options: useCheckoutOptions) => {
             return;
         }
 
+        console.log('🛑 [useCheckout] onSubmit STARTING...', {
+            data,
+            finalTotal,
+            prefCurrency: typeof prefCurrency === 'string' ? prefCurrency : prefCurrency.code
+        });
+
         setIsProcessing(true);
         setPaymentError(null);
-        setIsRedirecting(false);
+        setSubmissionCount(prev => prev + 1);
+        // We set isRedirecting only AFTER the API call succeeds to avoid UI jitter/crashes
         setRedirectUrl(null);
 
         try {
@@ -195,13 +252,12 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 email: data.email,
             });
 
-            // Determine tier_id from the selected tier
-            const tierId = (selectedTier.id === 'paperback' || selectedTier.requiresShipping) ? 'paperback' : 'pdf';
-
             // Call the new multi-gateway createInvoice endpoint
             const result = await paymentService.createInvoice({
                 userId: data.userId || userId || '',
-                tierId: tierId as 'pdf' | 'paperback',
+                tierId: selectedTier.id as string,
+                amount: finalTotal,
+                currency: typeof prefCurrency === 'string' ? prefCurrency : prefCurrency.code,
                 country: data.country,
                 email: data.email,
                 fullName: data.fullName,
@@ -220,27 +276,30 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 },
             });
 
+            if (result.success && result.redirectUrl) {
+                console.log('🚀 Redirecting to:', result.redirectUrl);
+                // Use a small delay and window.location.assign to avoid React insertBefore error
+                setTimeout(() => {
+                    window.location.assign(result.redirectUrl!);
+                }, 100);
+            } else {
+                throw new Error(result.error || 'Payment initiation failed');
+            }
+
             console.log('📦 Invoice result:', result);
 
             if (!result.success) {
                 throw new Error(result.error || (isAr ? 'فشل إنشاء الفاتورة' : 'Invoice creation failed'));
             }
 
-            // Show redirecting state
-            setIsRedirecting(true);
-            setRedirectUrl(result.redirectUrl || null);
-            setSubmissionCount(prev => prev + 1);
-
-            // Toast with gateway name
-            const gatewayLabel = result.gateway?.toUpperCase() || 'payment';
-            toast.success(
-                isAr
-                    ? `جاري التحويل إلى ${gatewayLabel} للدفع الآمن...`
-                    : `Redirecting to ${gatewayLabel} for secure payment...`
-            );
-
-            // Redirect is handled by paymentService.createInvoice() automatically
-            // (it calls window.location.href after 300ms)
+            // 🚀 SUCCESS: Redirect immediately to avoid React reconciliation crashes
+            // This prevents React from trying to re-render while the browser is navigating,
+            // which was causing the "insertBefore" error.
+            if (result.redirectUrl) {
+                console.log('🏁 Redirecting immediately to:', result.redirectUrl);
+                window.location.assign(result.redirectUrl);
+                return;
+            }
 
         } catch (error) {
             console.error('❌ Payment error:', error);
@@ -264,6 +323,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         promoStatus,
         isPromoLoading,
         finalTotal,
+        formattedTotal,
         discountAmount,
         selectedShipping,
         handleApplyPromo,
