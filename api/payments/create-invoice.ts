@@ -34,8 +34,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const TIER_PRICING: Record<string, { usd: number; egp: number }> = {
-            pdf: { usd: 20, egp: 1000 },
-            paperback: { usd: 40, egp: 2000 },
+            digital: { usd: 49.99, egp: 499 },
+            bundle: { usd: 72.00, egp: 750 },
+            coaching: { usd: 82.00, egp: 750 },
+            coaching_plus: { usd: 200.00, egp: 750 },
+            // Legacy mapping
+            pdf: { usd: 49.99, egp: 499 },
+            paperback: { usd: 72.00, egp: 750 },
         };
 
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -45,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 val => !val || val === '' || uuidRegex.test(val),
                 { message: 'Invalid user ID format' }
             ),
-            tierId: z.enum(['pdf', 'paperback']),
+            tierId: z.enum(['digital', 'bundle', 'coaching', 'coaching_plus', 'pdf', 'paperback']),
             country: z.string().min(1, 'Country is required'),
             email: z.string().email('Invalid email address'),
             fullName: z.string().min(2, 'Full name is required'),
@@ -54,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         type CreateInvoiceInput = {
             userId?: string;
-            tierId: 'pdf' | 'paperback';
+            tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
             country: string;
             email: string;
             fullName: string;

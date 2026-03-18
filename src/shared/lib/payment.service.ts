@@ -23,7 +23,9 @@ import {
 
 export interface CreateInvoiceRequest {
     userId: string;
-    tierId: 'pdf' | 'paperback';
+    tierId: string;
+    amount: number;
+    currency: string;
     country: string;
     email: string;
     fullName: string;
@@ -177,19 +179,11 @@ class PaymentService {
                 redirectUrl: data.redirectUrl,
             });
 
-            // Redirect to the payment gateway
-            if (data.redirectUrl) {
-                console.log(`🔗 Redirecting to ${data.gateway} gateway...`);
-                setTimeout(() => {
-                    window.location.href = data.redirectUrl;
-                }, 300);
-            }
-
             return {
                 success: true,
-                invoiceId: data.invoiceId,
-                redirectUrl: data.redirectUrl,
-                gateway: data.gateway,
+                invoiceId: data.invoiceId as string | undefined,
+                redirectUrl: data.redirectUrl as string | undefined,
+                gateway: data.gateway as string | undefined,
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';

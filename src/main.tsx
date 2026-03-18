@@ -11,6 +11,21 @@ import { performHealthCheck } from "./shared/lib/health-check";
 // Run production pre-flight audit
 performHealthCheck();
 
+// Global Error Handler for Debugging Redirect Issues
+if (typeof window !== 'undefined') {
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.error('🔺 GLOBAL ERROR CAUGHT:', { message, source, lineno, colno, error });
+        if (message && message.toString().includes('querySelector')) {
+            console.error('🔍 POSSIBLE NULL QUERYSELECTOR DETECTED!');
+        }
+        return false;
+    };
+    
+    window.onunhandledrejection = function(event) {
+        console.error('🔺 UNHANDLED REJECTION:', event.reason);
+    };
+}
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
     console.error("main.tsx: Could not find root element!");

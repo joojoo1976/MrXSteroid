@@ -26,7 +26,7 @@ export const usePricing = ({ content, isRTL, openCheckout }: UsePricingOptions) 
         let finalTierId = planId;
 
         if (planId === 'coaching' && isCoachingActive) {
-            finalPrice += 200;
+            finalPrice = 200.00;
             finalTierId = 'coaching_plus' as ProductVariant;
         }
 
@@ -53,8 +53,8 @@ export const usePricing = ({ content, isRTL, openCheckout }: UsePricingOptions) 
     const getPlanPrices = useCallback((planId: string) => {
         const isCoachingTier = planId === 'coaching';
         const basePrice = BASE_PRICES[planId] || 0;
-        const grandTotal = isCoachingTier && isCoachingActive ? basePrice + 200 : basePrice;
-        const originalPrice = isCoachingTier && isCoachingActive ? grandTotal * 1.5 : basePrice * 1.4;
+        const grandTotal = isCoachingTier && isCoachingActive ? 200.00 : basePrice;
+        const originalPrice = isCoachingTier && isCoachingActive ? 350.00 : basePrice * 1.4;
 
         return {
             grandTotal,

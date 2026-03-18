@@ -51,7 +51,7 @@ export const COUNTRY_CONFIGS: Record<SupportedCountry, CountryConfig> = {
         nameAr: 'مصر',
         nameEn: 'Egypt',
         language: SupportedLanguage.AR,
-        currency: { code: 'EGP', symbol: 'ج.م', rate: 30.9, locale: 'ar-EG' },
+        currency: { code: 'EGP', symbol: 'ج.م', rate: 50.0, locale: 'ar-EG' },
         flag: '🇪🇬'
     },
     [SupportedCountry.US]: {
