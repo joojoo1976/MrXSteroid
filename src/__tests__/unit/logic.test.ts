@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { replaceBrandWithHtml } from '../../shared/lib/logic';
+import { describe, it, expect } from 'vitest';
+import { replaceBrandWithHtml, calculateBaseAmount } from '../../shared/lib/logic';
 
 describe('Logic Functions Test Suite', () => {
     describe('replaceBrandWithHtml', () => {
@@ -48,6 +48,40 @@ describe('Logic Functions Test Suite', () => {
             expect(replaceBrandWithHtml(null)).toBeNull();
             // @ts-ignore - Testing invalid input
             expect(replaceBrandWithHtml(undefined)).toBeUndefined();
+        });
+    });
+
+    describe('calculateBaseAmount', () => {
+        it('should return 499 EGP for Digital Protocol in Egypt', () => {
+            const result = calculateBaseAmount('Egypt', 'digital', 49.99);
+            expect(result.amount).toBe(499);
+            expect(result.currency).toBe('EGP');
+            expect(result.isEg).toBe(true);
+        });
+
+        it('should return 499 EGP for Egypt (Arabic name)', () => {
+            const result = calculateBaseAmount('مصر', 'digital', 49.99);
+            expect(result.amount).toBe(499);
+            expect(result.currency).toBe('EGP');
+        });
+
+        it('should return 750 EGP for Bundle in Egypt', () => {
+            const result = calculateBaseAmount('Egypt', 'bundle', 72.00);
+            expect(result.amount).toBe(750);
+            expect(result.currency).toBe('EGP');
+        });
+
+        it('should return original USD price for Global (USA)', () => {
+            const result = calculateBaseAmount('USA', 'digital', 49.99);
+            expect(result.amount).toBe(49.99);
+            expect(result.currency).toBe('USD');
+            expect(result.isEg).toBe(false);
+        });
+
+        it('should handle undefined country as Global', () => {
+            const result = calculateBaseAmount(undefined, 'digital', 49.99);
+            expect(result.amount).toBe(49.99);
+            expect(result.isEg).toBe(false);
         });
     });
 });

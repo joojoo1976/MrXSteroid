@@ -9,6 +9,11 @@ import {
 } from '../../i18n';
 import { ContentStrings } from '@/shared/types/types';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import {
+    calculateShippingRates,
+    validatePromoCode,
+    calculateBaseAmount
+} from '../../shared/lib/logic';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { env } from '../../config/env';
 
@@ -138,9 +143,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     }, [loc.isRTL, externalLang, globalLang]);
 
     // Price Calculation & Formatting
-    const isEg = loc.countryCode === 'EG';
-    const finalPrice = isEg ? 499 : (BASE_PRICE_USD * loc.rate);
-    const finalCurrency = isEg ? 'EGP' : loc.currency;
+    const { amount: finalPrice, currency: finalCurrency, isEg } = calculateBaseAmount(loc.countryCode, 'digital', BASE_PRICE_USD * loc.rate);
     const finalLocale = isEg ? 'ar-EG' : loc.locale;
 
     const formattedPrice = new Intl.NumberFormat(finalLocale, {

@@ -4,7 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { paymentService } from '../../../shared/lib/payment.service';
-import { ShippingProvider, validatePromoCode, calculateShippingRates } from '../../../shared/lib/logic';
+import { 
+    ShippingProvider, 
+    validatePromoCode, 
+    calculateShippingRates,
+    calculateBaseAmount 
+} from '../../../shared/lib/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
 
@@ -154,22 +159,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         }
     }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
 
-    const isEg = (selectedCountry || '').toLowerCase() === 'egypt' || selectedCountry === 'مصر';
-    
-    // Explicit EGP pricing for Egypt to match backend
-    const egpPrices: Record<string, number> = {
-        'digital': 499,
-        'bundle': 750,
-        'coaching': 750,
-        'coaching_plus': 750,
-        'pdf': 499,
-        'paperback': 750
-    };
-
-    let baseAmount = totalAmount;
-    if (isEg) {
-        baseAmount = egpPrices[productVariant] || egpPrices['bundle'];
-    }
+    const { amount: baseAmount, isEg } = calculateBaseAmount(selectedCountry, productVariant, totalAmount);
 
     console.log('🚀 [useCheckout] RENDER STATE:', {
         selectedCountry,
