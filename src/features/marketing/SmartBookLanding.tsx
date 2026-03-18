@@ -10,8 +10,6 @@ import {
 import { ContentStrings } from '@/shared/types/types';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import {
-    calculateShippingRates,
-    validatePromoCode,
     calculateBaseAmount
 } from '../../shared/lib/logic';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
