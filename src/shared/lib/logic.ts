@@ -257,6 +257,48 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
     ];
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+//                              PRICING CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const EGP_PRICES: Record<string, number> = {
+    'digital': 499,
+    'bundle': 750,
+    'coaching': 750,
+    'coaching_plus': 750,
+    'pdf': 499,
+    'paperback': 750
+};
+
+/**
+ * Calculates the base amount for a product based on country and original USD price.
+ * Ensures consistent pricing across frontend and backend.
+ */
+export function calculateBaseAmount(
+    country: string | undefined,
+    productVariant: string,
+    defaultUsdAmount: number
+): { amount: number; currency: string; isEg: boolean } {
+    const isEg = (country || '').toLowerCase() === 'egypt' || country === 'مصر' || country === 'EG';
+    
+    if (isEg) {
+        return {
+            amount: EGP_PRICES[productVariant] || EGP_PRICES['bundle'] || 750,
+            currency: 'EGP',
+            isEg: true
+        };
+    }
+
+    return {
+        amount: defaultUsdAmount,
+        currency: 'USD',
+        isEg: false
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          EXISTING LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
 export const calculateShippingRates = async (address: { country: string }): Promise<ShippingProvider[]> => {
     // Mock reusing existing logic or just returning consistent data
     // In a real app this uses the full address
