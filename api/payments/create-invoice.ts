@@ -110,8 +110,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const supabase = getSupabaseAdmin();
 
         // ─── DETERMINE GATEWAY & PRICING ─────────────────────────────────
-        const gateway = PaymentFactory.getGateway(input.country);
+        // SECURE GEOLOCATION: Vercel header overrides the client payload
+        const vcalCountry = (req.headers['x-vercel-ip-country'] as string) || '';
+        const secureCountryCode = vcalCountry.trim() !== '' ? vcalCountry : input.country;
+        
+        const gateway = PaymentFactory.getGateway(secureCountryCode);
         const gatewayName = gateway.getGatewayName();
+        
+        // Ensure downstream functions utilize the verified country code
+        input.country = secureCountryCode;
 
         // Determine currency and amount based on gateway
         const isEgypt = gatewayName === 'PAYMOB';
