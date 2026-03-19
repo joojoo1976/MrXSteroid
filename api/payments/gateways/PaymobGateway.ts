@@ -20,6 +20,7 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const PAYMOB_CONFIG = {
+    API_KEY: process.env.PAYMOB_API_KEY || process.env.VITE_PAYMOB_API_KEY || '',
     HMAC_SECRET: process.env.PAYMOB_HMAC_SECRET || process.env.VITE_PAYMOB_HMAC_SECRET || '',
 
     /**
