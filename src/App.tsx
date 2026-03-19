@@ -142,26 +142,7 @@ function AppContent({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Auto-detection Toast Logic
-  useEffect(() => {
-    if (isAutoDetected) {
-      const countryCode = localStorage.getItem('advanced_localization_state')
-        ? JSON.parse(localStorage.getItem('advanced_localization_state')!).country
-        : 'US';
-
-      toast(content.toastLocalizationTitle || (isRTL ? 'تخصيص ذكي' : 'Smart Localization'), {
-        description: (content.toastLocalizationDesc || (isRTL
-          ? `تم ضبط اللغة والوحدات بناءً على موقعك ({country})`
-          : `Language and units optimized for your region ({country}).`)).replace('{country}', countryCode),
-        action: {
-          label: content.changeButton || (isRTL ? 'تغيير' : 'Change'),
-          onClick: () => setIsPreferencesOpen(true),
-        },
-        duration: 5000,
-        icon: <Globe className="w-4 h-4 text-gold-500" />,
-      });
-    }
-  }, [isAutoDetected, isRTL, content]);
+  // Auto-detection Toast Logic (Removed as requested by user)
 
   const togglePlay = () => {
     if (!audioRef.current) return;
