@@ -35,6 +35,7 @@ import FloatingSideIcon from './shared/ui/FloatingSideIcon';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { usePreferences } from './context/PreferencesContext';
 import { PreferencesProvider } from './context/PreferencesProvider';
+import { RegionProvider } from './context/RegionContext';
 import PreferencesModal from './features/modal/PreferencesModal';
 import AuthGuard from './features/auth/AuthGuard';
 
@@ -585,7 +586,8 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <PreferencesProvider>
+      <RegionProvider>
+        <PreferencesProvider>
         <SEO currentPage={currentPage} />
         <div id="scroll-progress" />
         <LazyMotion features={domAnimation}>
@@ -600,6 +602,7 @@ export default function App() {
           />
         </LazyMotion>
       </PreferencesProvider>
+      </RegionProvider>
     </AuthProvider>
   );
 }

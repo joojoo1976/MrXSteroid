@@ -12,6 +12,7 @@ import {
 } from '../../../shared/lib/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
+import { useRegion } from '../../../context/RegionContext';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -56,6 +57,7 @@ export interface CheckoutState {
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
+    const { isEgypt: isEgRegion, countryCode: vCountry } = useRegion();
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -140,8 +142,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
     // Handle Country Change
     useEffect(() => {
-        const isEg = (selectedCountry || '').toLowerCase() === 'egypt' || selectedCountry === 'مصر';
-        onLocationChange(isEg);
+        // Enforce server-side verification flag for the location change prop
+        onLocationChange(isEgRegion);
 
         if (selectedTier.requiresShipping && selectedCountry) {
             const fetchShipping = async () => {
@@ -159,10 +161,12 @@ export const useCheckout = (options: useCheckoutOptions) => {
         }
     }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
 
-    const { amount: baseAmount, isEg } = calculateBaseAmount(selectedCountry, productVariant, totalAmount);
+    // Use the reliable region context for base amount parsing, ignoring client input
+    const { amount: baseAmount, isEg } = calculateBaseAmount(vCountry, productVariant, totalAmount);
 
     console.log('🚀 [useCheckout] RENDER STATE:', {
         selectedCountry,
+        vCountry,
         isEg,
         productVariant,
         tierId: selectedTier.id,
