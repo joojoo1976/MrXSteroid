@@ -251,6 +251,21 @@ export class RealtimeSyncService {
         return !error;
     }
 
+    static subscribeToAllLocations(onUpdate: (payload: SupabaseRealtimePayload<any>) => void) {
+        return supabase
+            .channel('admin-all-locations')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'realtime_locations'
+                },
+                (payload) => onUpdate(payload as any)
+            )
+            .subscribe();
+    }
+
     static subscribeToAllAssignments(onUpdate: (payload: SupabaseRealtimePayload<Assignment>) => void) {
         return supabase
             .channel('admin-all-assignments')

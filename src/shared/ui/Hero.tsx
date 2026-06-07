@@ -43,7 +43,7 @@ const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({
             </div>
             <div className={`absolute inset-0 ms-4 bg-zinc-900 ${isRTL ? 'rounded-s-xl' : 'rounded-e-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-e' : 'border-s'} border-zinc-800 h-full p-1`}>
               {/* High-priority LCP image (Eager loaded, fetchpriority hint for Chromium browsers) */}
-              <img loading="eager" fetchPriority="high" key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
+              <img loading="eager" {...{ fetchPriority: "high" } as any} key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
             </div>
             <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-s-xl me-4' : 'rounded-e-xl ms-4'} z-30`}></div>
           </div>

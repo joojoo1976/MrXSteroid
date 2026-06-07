@@ -3,6 +3,7 @@ import { TRANSITIONS } from '../../shared/lib/logic';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
+import { MockUser } from '../lib/mock-auth-service';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { md5 } from '../../shared/lib/cryptoUtils';
 import DynamicBrandLogo from './DynamicBrandLogo';
@@ -24,12 +25,12 @@ interface HeaderProps {
   content: ContentStrings;
   currentPage: Page;
   navigateTo: (page: Page) => void;
-  user?: User | null;
+  user?: User | MockUser | null;
   onLogout?: () => void;
   onOpenPreferences: () => void;
 }
 
-const getProfilePic = (user: User | null | undefined) => {
+const getProfilePic = (user: User | MockUser | null | undefined) => {
   if (!user) return null;
   if (user.user_metadata?.avatar_url) return user.user_metadata.avatar_url;
   const emailHash = md5(user.email?.toLowerCase().trim() || '');
