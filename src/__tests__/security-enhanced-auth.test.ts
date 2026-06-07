@@ -75,7 +75,7 @@ describe('Security-Enhanced Auth Service', () => {
   });
 
   test('should allow valid signup data', async () => {
-    const mockUserData = {
+    const mockUserData: { user: { id: string; email: string }; session: { access_token: string }; error: null } = {
       user: { id: 'test-user-id', email: 'test@example.com' },
       session: { access_token: 'test-token' },
       error: null

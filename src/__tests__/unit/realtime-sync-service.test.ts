@@ -124,7 +124,7 @@ describe('RealtimeSyncService Tests', () => {
                 currency: 'USD'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: any; error: any } = {
                 data: [{ ...userData, id: userId }],
                 error: null
             };
@@ -167,7 +167,7 @@ describe('RealtimeSyncService Tests', () => {
                 // dangerous fields should be filtered out or sanitized
             };
 
-            const mockResponse = {
+            const mockResponse: { data: any; error: any } = {
                 data: [{ ...sanitizedData, id: userId }],
                 error: null
             };
@@ -207,7 +207,7 @@ describe('RealtimeSyncService Tests', () => {
                 currency: 'USD'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: any; error: any } = {
                 data: [{ ...orderData, id: orderId }],
                 error: null
             };

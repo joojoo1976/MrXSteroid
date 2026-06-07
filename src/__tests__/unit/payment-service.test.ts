@@ -1,17 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { paymentService } from '@/shared/lib/payment.service';
 import { supabase } from '@/shared/lib/supabase';
-
-// Mock external payment gateway
-const mockSpaceremit = {
-    initialize: vi.fn(),
-    createTransaction: vi.fn(),
-    verifyTransaction: vi.fn()
-};
-
-vi.mock('spaceremit', () => ({
-    default: vi.fn(() => mockSpaceremit)
-}));
 
 // Mock supabase
 vi.mock('@/shared/lib/supabase', () => ({
@@ -24,367 +13,184 @@ vi.mock('@/shared/lib/supabase', () => ({
     }
 }));
 
+// Mock env
+vi.mock('@/config/env', () => ({
+    env: {
+        SPACEREMIT_PUBLIC_KEY: 'pk_test_valid_key_for_testing',
+        SPACEREMIT_API_URL: 'https://api.spaceremit.com/api/v2',
+        SPACEREMIT_CALLBACK_URL: 'https://example.com/payment/callback',
+        PAYMENT_CANCEL_URL: 'https://example.com/payment/cancel'
+    }
+}));
+
 describe('Payment Service Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    describe('initializePayment', () => {
-        it('should initialize payment successfully', async () => {
+    describe('initiatePayment', () => {
+        it('should initiate payment and return a session', async () => {
             const paymentData = {
                 userId: 'test-user-id',
+                orderId: 'order-123',
                 amount: 99.99,
-                currency: 'USD',
+                currency: 'USD' as const,
                 productId: 'test-product',
-                productName: 'Test Product'
+                productName: 'Test Product',
+                email: 'test@example.com',
+                customerName: 'Test User',
+                quantity: 1,
+                locale: 'en' as const
             };
-
-            const mockTransaction = {
-                id: 'txn_test_transaction',
-                status: 'initialized',
-                amount: 99.99,
-                currency: 'USD',
-                redirect_url: 'https://spaceremit.com/pay/test_transaction'
-            };
-
-            mockSpaceremit.createTransaction.mockResolvedValue({ data: mockTransaction, error: null });
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                insert: vi.fn().mockResolvedValue({ data: [mockTransaction], error: null })
-            } as any);
-
-            const result = await paymentService.initializePayment(paymentData);
-
-            expect(result).toEqual(mockTransaction);
-            expect(mockSpaceremit.createTransaction).toHaveBeenCalledWith({
-                amount: paymentData.amount,
-                currency: paymentData.currency,
-                reference_id: expect.any(String),
-                customer_email: expect.any(String),
-                callback_url: expect.any(String),
-                success_url: expect.any(String),
-                cancel_url: expect.any(String)
-            });
-        });
-
-        it('should handle payment initialization errors', async () => {
-            const paymentData = {
-                userId: 'test-user-id',
-                amount: 99.99,
-                currency: 'USD',
-                productId: 'test-product',
-                productName: 'Test Product'
-            };
-
-            const mockError = new Error('Payment gateway unavailable');
-
-            mockSpaceremit.createTransaction.mockResolvedValue({ data: null, error: mockError });
-
-            await expect(paymentService.initializePayment(paymentData))
-                .rejects
-                .toThrow('Payment gateway unavailable');
-        });
-
-        it('should validate payment data', async () => {
-            await expect(paymentService.initializePayment({} as any))
-                .rejects
-                .toThrow('Payment data is required');
-
-            await expect(paymentService.initializePayment({
-                userId: 'test-user-id',
-                amount: -10, // Invalid amount
-                currency: 'USD',
-                productId: 'test-product',
-                productName: 'Test Product'
-            } as any))
-                .rejects
-                .toThrow('Amount must be positive');
-
-            await expect(paymentService.initializePayment({
-                userId: 'test-user-id',
-                amount: 99.99,
-                currency: 'INVALID', // Invalid currency
-                productId: 'test-product',
-                productName: 'Test Product'
-            } as any))
-                .rejects
-                .toThrow('Invalid currency');
-        });
-
-        it('should validate user ID format', async () => {
-            await expect(paymentService.initializePayment({
-                userId: 'invalid user id!', // Invalid format
-                amount: 99.99,
-                currency: 'USD',
-                productId: 'test-product',
-                productName: 'Test Product'
-            } as any))
-                .rejects
-                .toThrow('Invalid user ID format');
-        });
-    });
-
-    describe('verifyPayment', () => {
-        it('should verify payment successfully', async () => {
-            const transactionId = 'txn_test_transaction';
-            const mockPaymentData = {
-                id: transactionId,
-                status: 'completed',
-                amount: 99.99,
-                currency: 'USD',
-                user_id: 'test-user-id'
-            };
-
-            const mockVerification = {
-                success: true,
-                data: {
-                    status: 'completed',
-                    amount: 99.99,
-                    currency: 'USD',
-                    reference: transactionId
-                }
-            };
-
-            mockSpaceremit.verifyTransaction.mockResolvedValue(mockVerification);
-
-            vi.spyOn(supabase, 'from').mockReturnValue({
+                insert: vi.fn().mockReturnThis(),
                 select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ data: [mockPaymentData], error: null })
+                single: vi.fn().mockResolvedValue({ data: { id: 'db-record-id' }, error: null })
             } as any);
 
-            const result = await paymentService.verifyPayment(transactionId);
-
-            expect(result).toEqual({
-                isValid: true,
-                paymentData: mockPaymentData
+            // Mock window.location.href
+            Object.defineProperty(window, 'location', {
+                value: { href: '' },
+                writable: true
             });
-        });
 
-        it('should handle verification failure', async () => {
-            const transactionId = 'invalid-transaction-id';
-            const mockVerification = {
-                success: false,
-                error: 'Transaction not found'
-            };
+            const result = await paymentService.initiatePayment(paymentData);
 
-            mockSpaceremit.verifyTransaction.mockResolvedValue(mockVerification);
-
-            const result = await paymentService.verifyPayment(transactionId);
-
-            expect(result).toEqual({
-                isValid: false,
-                error: 'Transaction not found'
-            });
-        });
-
-        it('should handle non-existent transaction', async () => {
-            const transactionId = 'non-existent-transaction';
-
-            vi.spyOn(supabase, 'from').mockReturnValue({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ data: [], error: null })
-            } as any);
-
-            await expect(paymentService.verifyPayment(transactionId))
-                .rejects
-                .toThrow('Payment record not found');
-        });
-
-        it('should validate transaction ID', async () => {
-            await expect(paymentService.verifyPayment(''))
-                .rejects
-                .toThrow('Transaction ID is required');
-
-            await expect(paymentService.verifyPayment('invalid id!'))
-                .rejects
-                .toThrow('Invalid transaction ID format');
-        });
-    });
-
-    describe('updatePaymentStatus', () => {
-        it('should update payment status successfully', async () => {
-            const transactionId = 'txn_test_transaction';
-            const newStatus = 'completed';
-            const mockUpdatedPayment = {
-                id: transactionId,
-                status: newStatus,
-                updated_at: new Date().toISOString()
-            };
-
-            vi.spyOn(supabase, 'from').mockReturnValue({
-                update: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ data: [mockUpdatedPayment], error: null })
-            } as any);
-
-            const result = await paymentService.updatePaymentStatus(transactionId, newStatus);
-
-            expect(result).toEqual(mockUpdatedPayment);
-            expect(supabase.from).toHaveBeenCalledWith('payments');
-        });
-
-        it('should validate payment status', async () => {
-            await expect(paymentService.updatePaymentStatus('txn_test', 'invalid_status'))
-                .rejects
-                .toThrow('Invalid payment status');
-
-            // Test valid statuses
-            const validStatuses = ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'];
-            for (const status of validStatuses) {
-                vi.spyOn(supabase, 'from').mockReturnValue({
-                    update: vi.fn().mockReturnThis(),
-                    eq: vi.fn().mockResolvedValue({ data: [{ status }], error: null })
-                } as any);
-
-                await expect(paymentService.updatePaymentStatus('txn_test', status))
-                    .resolves
-                    .toBeDefined();
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.transactionId).toMatch(/^MRX_/);
+                expect(result.data.checkoutUrl).toContain('spaceremit.com');
             }
         });
 
-        it('should validate transaction ID', async () => {
-            await expect(paymentService.updatePaymentStatus('', 'completed'))
-                .rejects
-                .toThrow('Transaction ID is required');
-
-            await expect(paymentService.updatePaymentStatus('invalid id!', 'completed'))
-                .rejects
-                .toThrow('Invalid transaction ID format');
-        });
-    });
-
-    describe('createPaymentRecord', () => {
-        it('should create payment record successfully', async () => {
+        it('should handle database errors gracefully', async () => {
             const paymentData = {
-                transaction_id: 'txn_test_new',
-                user_id: 'test-user-id',
+                userId: 'test-user-id',
+                orderId: 'order-123',
                 amount: 99.99,
-                currency: 'USD',
-                status: 'pending',
-                product_id: 'test-product',
-                customer_email: 'test@example.com'
-            };
-
-            const mockCreatedPayment = {
-                ...paymentData,
-                id: 'db_record_id',
-                created_at: new Date().toISOString()
+                currency: 'USD' as const,
+                productId: 'test-product',
+                productName: 'Test Product',
+                email: 'test@example.com',
+                customerName: 'Test User',
+                quantity: 1,
+                locale: 'en' as const
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                insert: vi.fn().mockResolvedValue({ data: [mockCreatedPayment], error: null })
+                insert: vi.fn().mockReturnThis(),
+                select: vi.fn().mockReturnThis(),
+                single: vi.fn().mockResolvedValue({ data: null, error: new Error('DB error') })
             } as any);
 
-            const result = await paymentService.createPaymentRecord(paymentData);
+            const result = await paymentService.initiatePayment(paymentData);
 
-            expect(result).toEqual(mockCreatedPayment);
-            expect(supabase.from).toHaveBeenCalledWith('payments');
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect((result as any).error.code).toBe('DB_INSERT_FAILED');
+            }
         });
+    });
 
-        it('should handle duplicate transaction IDs', async () => {
-            const paymentData = {
-                transaction_id: 'duplicate-txn',
-                user_id: 'test-user-id',
+    describe('checkTransactionStatus', () => {
+        it('should return transaction status successfully', async () => {
+            const transactionId = 'MRX_TESTID_ABC123';
+            const mockPaymentData = {
+                transaction_id: transactionId,
+                status: 'completed',
                 amount: 99.99,
                 currency: 'USD',
-                status: 'pending',
-                product_id: 'test-product',
-                customer_email: 'test@example.com'
+                paid_at: new Date().toISOString(),
+                error_message: null as string | null
             };
-
-            const mockError = { message: 'duplicate key value violates unique constraint', details: 'transaction_id already exists' };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
-                insert: vi.fn().mockResolvedValue({ data: null, error: mockError })
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                single: vi.fn().mockResolvedValue({ data: mockPaymentData, error: null })
             } as any);
 
-            await expect(paymentService.createPaymentRecord(paymentData))
-                .rejects
-                .toThrow('A payment with this transaction ID already exists');
+            const result = await paymentService.checkTransactionStatus(transactionId);
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.status).toBe('completed');
+                expect(result.data.transactionId).toBe(transactionId);
+            }
         });
 
-        it('should validate payment record data', async () => {
-            await expect(paymentService.createPaymentRecord({} as any))
-                .rejects
-                .toThrow('Payment record data is required');
+        it('should return error when transaction not found', async () => {
+            const transactionId = 'NONEXISTENT';
 
-            await expect(paymentService.createPaymentRecord({
-                transaction_id: 'test-txn',
-                user_id: 'test-user-id',
-                amount: -50, // Invalid amount
-                currency: 'USD',
-                status: 'pending',
-                product_id: 'test-product',
-                customer_email: 'test@example.com'
-            } as any))
-                .rejects
-                .toThrow('Amount must be positive');
+            vi.spyOn(supabase, 'from').mockReturnValue({
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                single: vi.fn().mockResolvedValue({ data: null, error: new Error('Row not found') })
+            } as any);
+
+            const result = await paymentService.checkTransactionStatus(transactionId);
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect((result as any).error.code).toBe('STATUS_CHECK_FAILED');
+            }
         });
     });
 
-    describe('validatePaymentData', () => {
-        it('should validate complete payment data', () => {
-            const validData = {
-                userId: 'valid-user-id',
+    describe('createInvoice', () => {
+        it('should create invoice via API successfully', async () => {
+            const invoiceRequest = {
+                userId: 'user-123',
+                tierId: 'tier-pro',
                 amount: 99.99,
                 currency: 'USD',
-                productId: 'valid-product',
-                productName: 'Valid Product'
+                country: 'US',
+                email: 'test@example.com',
+                fullName: 'Test User'
             };
 
-            expect(paymentService.validatePaymentData(validData)).toBe(true);
+            // Mock fetch
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                clone: () => ({ text: () => Promise.resolve('') }),
+                json: () => Promise.resolve({
+                    success: true,
+                    invoiceId: 'inv_12345',
+                    redirectUrl: 'https://payment.example.com/pay/inv_12345',
+                    gateway: 'spaceremit'
+                })
+            } as any);
+
+            const result = await paymentService.createInvoice(invoiceRequest);
+
+            expect(result.success).toBe(true);
+            expect(result.invoiceId).toBe('inv_12345');
+            expect(result.gateway).toBe('spaceremit');
         });
 
-        it('should reject invalid amounts', () => {
-            expect(paymentService.validatePaymentData({
-                userId: 'valid-user-id',
-                amount: -10,
-                currency: 'USD',
-                productId: 'valid-product',
-                productName: 'Valid Product'
-            })).toBe(false);
-
-            expect(paymentService.validatePaymentData({
-                userId: 'valid-user-id',
-                amount: 0,
-                currency: 'USD',
-                productId: 'valid-product',
-                productName: 'Valid Product'
-            })).toBe(false); // Amount should be > 0
-        });
-
-        it('should reject invalid currencies', () => {
-            expect(paymentService.validatePaymentData({
-                userId: 'valid-user-id',
-                amount: 99.99,
-                currency: 'INVALID',
-                productId: 'valid-product',
-                productName: 'Valid Product'
-            })).toBe(false);
-        });
-
-        it('should reject invalid user IDs', () => {
-            expect(paymentService.validatePaymentData({
-                userId: 'invalid user id!',
+        it('should handle API failure gracefully', async () => {
+            const invoiceRequest = {
+                userId: 'user-123',
+                tierId: 'tier-pro',
                 amount: 99.99,
                 currency: 'USD',
-                productId: 'valid-product',
-                productName: 'Valid Product'
-            })).toBe(false);
-        });
-    });
+                country: 'US',
+                email: 'test@example.com',
+                fullName: 'Test User'
+            };
 
-    describe('validateTransactionId', () => {
-        it('should accept valid transaction IDs', () => {
-            expect(paymentService.validateTransactionId('txn_valid_transaction')).toBe(true);
-            expect(paymentService.validateTransactionId('pay_ABC123')).toBe(true);
-            expect(paymentService.validateTransactionId('ch_abc-def_123')).toBe(true);
-        });
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 500,
+                clone: () => ({ text: () => Promise.resolve('Internal Server Error') }),
+                json: () => Promise.resolve({ success: false, error: 'Payment gateway unavailable' })
+            } as any);
 
-        it('should reject invalid transaction IDs', () => {
-            expect(paymentService.validateTransactionId('')).toBe(false);
-            expect(paymentService.validateTransactionId('invalid id!')).toBe(false);
-            expect(paymentService.validateTransactionId('spaces not allowed')).toBe(false);
-            expect(paymentService.validateTransactionId('special<chars>')).toBe(false);
+            const result = await paymentService.createInvoice(invoiceRequest);
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBeTruthy();
         });
     });
 });

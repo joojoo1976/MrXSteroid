@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { MockUser } from '../shared/lib/mock-auth-service';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { DynamicBrandLogo } from '../shared/ui/DynamicBrandLogo';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
@@ -12,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 
 interface ProfilePageProps {
-    user: SupabaseUser | null;
+    user: SupabaseUser | MockUser | null;
     content: ContentStrings;
     navigateTo: (page: Page) => void;
 }
@@ -86,7 +87,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     // Fix: Use centralized avatar service for auto-fetching
     const profilePic = getAvatarUrl({
         email: profileData?.email || user.email || undefined,
-        provider: user.app_metadata?.provider,
+        provider: (user as any).app_metadata?.provider,
         providerAvatarUrl: profileData?.avatar_url || userData.avatar_url || userData.picture,
     });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { dbService } from '../../shared/lib/db-service';
 import { supabase } from '../../shared/lib/supabase';
 
@@ -30,7 +30,7 @@ describe('Database Service Tests', () => {
                 role: 'user'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: typeof mockUserData[]; error: null } = {
                 data: [mockUserData],
                 error: null
             };
@@ -48,7 +48,7 @@ describe('Database Service Tests', () => {
 
         it('should handle user not found', async () => {
             const userId = '7be3039d-0000-0000-0000-c392f44c77c6';
-            const mockResponse = {
+            const mockResponse: { data: never[]; error: null } = {
                 data: [],
                 error: null
             };
@@ -96,7 +96,7 @@ describe('Database Service Tests', () => {
                 user_name: 'updateduser'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: Array<typeof updateData & { id: string }>; error: null } = {
                 data: [{ ...updateData, id: userId }],
                 error: null
             };
@@ -145,7 +145,7 @@ describe('Database Service Tests', () => {
                 full_name: 'Test User'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: Array<typeof unsafeData & { id: string }>; error: null } = {
                 data: [{ ...unsafeData, id: userId }],
                 error: null
             };
@@ -157,7 +157,7 @@ describe('Database Service Tests', () => {
             });
             vi.spyOn(supabase, 'from').mockImplementation(fromMock);
 
-            const result = await dbService.updateUserProfile(userId, unsafeData);
+            await dbService.updateUserProfile(userId, unsafeData);
 
             expect(fromMock).toHaveBeenCalledWith('profiles');
         });
@@ -174,7 +174,7 @@ describe('Database Service Tests', () => {
                 status: 'pending'
             };
 
-            const mockResponse = {
+            const mockResponse: { data: Array<typeof orderData & { id: string }>; error: null } = {
                 data: [{ ...orderData, id: 'new-order-id' }],
                 error: null
             };
@@ -218,7 +218,7 @@ describe('Database Service Tests', () => {
 
             await expect(dbService.createOrder({
                 user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
-                total_amount: -10, // Invalid amount
+                total_amount: -10,
                 currency: 'USD',
                 shipping_address: '123 Test St',
                 phone_number: '1234567890',
@@ -237,7 +237,7 @@ describe('Database Service Tests', () => {
                 { id: 'order2', user_id: userId, total_amount: 149.99, status: 'pending' }
             ];
 
-            const mockResponse = {
+            const mockResponse: { data: typeof mockOrders; error: null } = {
                 data: mockOrders,
                 error: null
             };
@@ -256,7 +256,7 @@ describe('Database Service Tests', () => {
 
         it('should handle no orders found', async () => {
             const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
-            const mockResponse = {
+            const mockResponse: { data: never[]; error: null } = {
                 data: [],
                 error: null
             };
@@ -293,7 +293,7 @@ describe('Database Service Tests', () => {
                 updated_at: new Date().toISOString()
             };
 
-            const mockResponse = {
+            const mockResponse: { data: typeof mockUpdatedOrder[]; error: null } = {
                 data: [mockUpdatedOrder],
                 error: null
             };
@@ -314,7 +314,6 @@ describe('Database Service Tests', () => {
                 .rejects
                 .toThrow('Invalid order status');
 
-            // Test valid transitions
             const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
             for (const status of validStatuses) {
                 vi.spyOn(supabase, 'from').mockReturnValue({

@@ -56,7 +56,7 @@ describe('End-to-End User Flow Tests', () => {
                     full_name: 'Test User',
                     user_name: 'testuser'
                 }
-            } as User;
+            } as unknown as User;
 
             const mockSession = {
                 access_token: 'test-token',
@@ -144,7 +144,7 @@ describe('End-to-End User Flow Tests', () => {
                     full_name: 'Test User',
                     user_name: 'testuser'
                 }
-            } as User;
+            } as unknown as User;
 
             const mockSession = {
                 access_token: 'header.payload.signature',
@@ -182,7 +182,7 @@ describe('End-to-End User Flow Tests', () => {
                     full_name: 'Test User',
                     user_name: 'testuser'
                 }
-            } as User;
+            } as unknown as User;
 
             const mockSession = {
                 access_token: 'header.payload.signature',
@@ -253,7 +253,7 @@ describe('End-to-End User Flow Tests', () => {
                     full_name: 'Test User',
                     user_name: 'testuser'
                 }
-            } as User;
+            } as unknown as User;
 
             const mockSession = {
                 access_token: 'header.payload.signature',
@@ -306,7 +306,7 @@ describe('End-to-End User Flow Tests', () => {
                 id: 'test-user-id',
                 email: 'test@example.com',
                 email_confirmed_at: new Date().toISOString()
-            } as User;
+            } as unknown as User;
 
             const mockSession = {
                 access_token: 'header.payload.signature',
@@ -341,14 +341,14 @@ describe('End-to-End User Flow Tests', () => {
                 id: 'test-user-id',
                 email: 'test@example.com',
                 email_confirmed_at: null
-            } as User;
+            } as unknown as User;
 
             // Confirmed user
             const confirmedUser = {
                 id: 'test-user-id-2',
                 email: 'confirmed@example.com',
                 email_confirmed_at: new Date().toISOString()
-            } as User;
+            } as unknown as User;
 
             const unconfirmedSession = {
                 access_token: 'unconfirmed-token',
