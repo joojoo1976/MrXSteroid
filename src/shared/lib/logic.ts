@@ -263,12 +263,22 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
 
 export const EGP_PRICES: Record<string, number> = {
     'digital': 499,
-    'bundle': 750,
-    'coaching': 750,
-    'coaching_plus': 750,
+    'bundle': 749,
+    'coaching': 849,
+    'coaching_plus': 10848, // 849 + 9999
     'pdf': 499,
-    'paperback': 750
+    'paperback': 749
 };
+
+export const EGP_ORIGINAL_PRICES: Record<string, number> = {
+    'digital': 699,
+    'bundle': 849,
+    'coaching': 949,
+    'coaching_plus': 11848,
+};
+
+export const COACHING_ADDON_EGP = 9999;
+export const COACHING_ADDON_USD = 200.00;
 
 /**
  * Calculates the base amount for a product based on country and original USD price.

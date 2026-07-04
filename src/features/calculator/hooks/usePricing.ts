@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { ContentStrings, PricingTier, ProductVariant } from '@/shared/types/types';
 
-import { EGP_PRICES } from '../../../shared/lib/logic';
+import { EGP_PRICES, EGP_ORIGINAL_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../../shared/lib/logic';
 
 interface UsePricingOptions {
     content: ContentStrings;
@@ -17,34 +17,64 @@ const BASE_PRICES: Record<string, number> = {
     'coaching': 82.00
 };
 
+const BASE_ORIGINAL_PRICES: Record<string, number> = {
+    'digital': 69.99,
+    'bundle': 100.80,
+    'coaching': 114.80
+};
+
 export const usePricing = ({ content, openCheckout, selectedLocation, bookLanguage }: UsePricingOptions) => {
-    const [isCoachingActive, setIsCoachingActive] = useState(false);
+    // coaching checkbox is now per-plan, track by planId
+    const [coachingActivePlan, setCoachingActivePlan] = useState<string | null>(null);
+
+    const isCoachingActive = (planId: string) => coachingActivePlan === planId;
+    const toggleCoaching = (planId: string) => {
+        setCoachingActivePlan(prev => prev === planId ? null : planId);
+    };
+
+    // Legacy support: expose a single isCoachingActive boolean for coaching plan (backward compat)
+    const isCoachingActiveLegacy = coachingActivePlan === 'coaching';
+    const setIsCoachingActive = (val: boolean) => {
+        setCoachingActivePlan(val ? 'coaching' : null);
+    };
 
     const plans = content.pricingPlans;
+
+    const getCoachingAddon = useCallback(() => {
+        return selectedLocation === 'EG' ? COACHING_ADDON_EGP : COACHING_ADDON_USD;
+    }, [selectedLocation]);
 
     const handleCheckout = useCallback((planId: ProductVariant) => {
         const plan = plans.find(p => p.id === planId);
         if (!plan) return;
 
-        let finalPrice = BASE_PRICES[planId] || 0;
+        const coachingIsActive = coachingActivePlan === planId;
+        const coachingAddon = getCoachingAddon();
+
+        let finalPrice: number;
         let finalTierId = planId;
 
-        if (planId === 'coaching' && isCoachingActive) {
-            finalPrice = 200.00;
-            finalTierId = 'coaching_plus' as ProductVariant;
+        if (selectedLocation === 'EG') {
+            finalPrice = EGP_PRICES[planId] || 849;
+            if (coachingIsActive) finalPrice += coachingAddon;
+        } else {
+            finalPrice = BASE_PRICES[planId] || 0;
+            if (coachingIsActive) finalPrice += coachingAddon;
         }
 
-        if (selectedLocation === 'EG') {
-            finalPrice = EGP_PRICES[finalTierId] || 750;
+        if (coachingIsActive) {
+            finalTierId = (planId + '_plus') as ProductVariant;
         }
+
+        const originalPriceStr = selectedLocation === 'EG'
+            ? String((EGP_ORIGINAL_PRICES[planId] || 949) + (coachingIsActive ? coachingAddon * 1.18 : 0))
+            : String((BASE_ORIGINAL_PRICES[planId] || finalPrice * 1.4) + (coachingIsActive ? coachingAddon * 1.5 : 0));
 
         const tierData: PricingTier = {
             id: finalTierId,
-            name: plan.name + (planId === 'coaching' && isCoachingActive ? " + Coaching" : ""),
+            name: plan.name + (coachingIsActive ? (selectedLocation === 'EG' ? ' + تدريب شخصي' : ' + Coaching') : ''),
             price: finalPrice,
-            originalPrice: selectedLocation === 'EG' 
-                ? (finalTierId === 'digital' ? "699" : (finalTierId === 'coaching_plus' ? "1125" : "1050"))
-                : (planId === 'coaching' && isCoachingActive ? (finalPrice * 1.5).toFixed(2) : (finalPrice * 1.4).toFixed(2)),
+            originalPrice: originalPriceStr,
             description: plan.description,
             features: plan.features,
             buttonText: plan.cta,
@@ -52,33 +82,39 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
             selectedLanguage: bookLanguage,
             selectedLocation: selectedLocation,
             requiresShipping: planId !== 'digital',
-            requiresBodyStats: planId === 'coaching' && isCoachingActive,
+            requiresBodyStats: coachingIsActive,
             includesEbook: true,
             includesAudiobook: planId !== 'digital',
-            includesCoaching: planId === 'coaching' && isCoachingActive
+            includesCoaching: coachingIsActive
         };
 
         openCheckout(tierData);
-    }, [isCoachingActive, bookLanguage, selectedLocation, openCheckout, plans]);
+    }, [coachingActivePlan, bookLanguage, selectedLocation, openCheckout, plans, getCoachingAddon]);
 
     const getPlanPrices = useCallback((planId: string) => {
-        const isCoachingTier = planId === 'coaching';
+        const coachingIsActive = coachingActivePlan === planId;
+        const coachingAddon = getCoachingAddon();
+
         if (selectedLocation === 'EG') {
-            const finalId = isCoachingTier && isCoachingActive ? 'coaching_plus' : planId;
-            const grandTotal = EGP_PRICES[finalId] || EGP_PRICES['coaching'] || 750;
-            const originalPrice = finalId === 'digital' ? 699 : (finalId === 'coaching_plus' ? 1125 : 1050);
+            const basePrice = EGP_PRICES[planId] || 849;
+            const origPrice = EGP_ORIGINAL_PRICES[planId] || 949;
+            const grandTotal = basePrice + (coachingIsActive ? coachingAddon : 0);
+            const originalPrice = origPrice + (coachingIsActive ? Math.round(coachingAddon * 1.18) : 0);
             return { grandTotal, originalPrice };
         } else {
             const basePrice = BASE_PRICES[planId] || 0;
-            const grandTotal = isCoachingTier && isCoachingActive ? 200.00 : basePrice;
-            const originalPrice = isCoachingTier && isCoachingActive ? 350.00 : basePrice * 1.4;
+            const origPrice = BASE_ORIGINAL_PRICES[planId] || basePrice * 1.4;
+            const grandTotal = basePrice + (coachingIsActive ? coachingAddon : 0);
+            const originalPrice = origPrice + (coachingIsActive ? coachingAddon * 1.5 : 0);
             return { grandTotal, originalPrice };
         }
-    }, [isCoachingActive, selectedLocation]);
+    }, [coachingActivePlan, selectedLocation, getCoachingAddon]);
 
     return {
-        isCoachingActive,
+        isCoachingActive: isCoachingActiveLegacy,
         setIsCoachingActive,
+        isCoachingActiveForPlan: isCoachingActive,
+        toggleCoachingForPlan: toggleCoaching,
         handleCheckout,
         getPlanPrices,
         plans
