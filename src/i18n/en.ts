@@ -1579,32 +1579,53 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     pricingInitialize: "Initialize Protocol",
     pricingBestValue: "Best Value",
     pricingBilledInUsd: "Billed in USD",
-    pricingAddCoaching: "Add Coaching",
+    pricingAddCoaching: "Add 1-on-1 Coaching",
     pricingCoachingRate: "+ $200.00 / Cycle",
-    pricingRequiresStats: "Requires Body Stats",
-    pricingCoachingUnlock: "Unlocks 1-on-1 analysis of bloodwork, diet, and compound titration.",
+    pricingRequiresStats: "Requires Body Stats & Bloodwork",
+    pricingCoachingUnlock: "Unlocks full 1-on-1 analysis including: body measurements, bloodwork review, compound calibration, and custom diet protocol design.",
     supportLinks: "Support & Help",
     pricingPlans: [
         {
             id: 'digital',
             name: "Digital Protocol",
             description: "Immediate Access. Zero Friction.",
-            features: ["eBook (PDF/EPUB)", "Instant Delivery", "Basic Cycle Templates"],
+            features: [
+                "📖 eBook (PDF/EPUB) — Both Formats",
+                "⚡ Instant Automatic Delivery",
+                "📋 Basic Cycle Templates Included"
+            ],
             cta: "Instant Access"
         },
         {
             id: 'bundle',
             name: "Tactical Bundle",
             description: "Maximum Value. The Complete Arsenal.",
-            features: ["Glossy Paperback", "Digital Copy Included", "Bonus: Audiobook", "Home Workout PDF", "Free Shipping"],
+            features: [
+                "📚 Glossy Paperback Physical Edition",
+                "🎁 FREE: Digital Copy Included (Instant Delivery)",
+                "🎧 BONUS: Full Audiobook",
+                "💪 BONUS: Home Workout PDF Guide"
+            ],
             cta: "Get The Bundle"
         },
         {
             id: 'coaching',
             name: "Smart Professional",
             description: "Elite Status. Full Optimization.",
-            features: ["Hardcover Premium Edition", "VIP Community Access", "Priority Global Shipping", "Safe Exit Protocol"],
-            upsellFeatures: ["1-on-1 Cycle Coaching (1 Full Cycle)", "Bloodwork Analysis", "Custom PCT Protocol"],
+            features: [
+                "📗 Hardcover Premium Edition",
+                "🎁 FREE: Digital Copy Included (Instant Delivery)",
+                "👑 VIP Community Access (Exclusive)",
+                "🚀 Priority Global Shipping",
+                "🛡️ Safe Exit Protocol",
+                "🎧 BONUS: Full Audiobook",
+                "💪 BONUS: Home Workout PDF Guide"
+            ],
+            upsellFeatures: [
+                "🏋️ 1-on-1 Cycle Coaching (1 Full Cycle)",
+                "🔬 Full Bloodwork Analysis",
+                "💉 Custom PCT Protocol Design"
+            ],
             cta: "Get Pro Edition"
         }
     ],
