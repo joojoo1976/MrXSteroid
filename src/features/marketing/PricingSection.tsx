@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, Zap, AlertTriangle, ArrowRight, Monitor, Package, Crown } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
+import { useRegion } from '../../context/RegionContext';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { usePricing } from '../calculator/hooks/usePricing';
 
@@ -11,7 +12,22 @@ interface PricingSectionProps {
 }
 
 const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }) => {
-    const { formatPrice, t, isRTL } = usePreferences();
+    const { t, isRTL } = usePreferences();
+    const { isEgypt } = useRegion();
+
+    const [selectedLocation, setSelectedLocation] = React.useState<'EG' | 'GLOBAL'>('GLOBAL');
+    const [bookLanguage, setBookLanguage] = React.useState<'ar' | 'en'>(isRTL ? 'ar' : 'en');
+    const [hasManuallySetLocation, setHasManuallySetLocation] = React.useState(false);
+
+    React.useEffect(() => {
+        if (isEgypt && !hasManuallySetLocation) {
+            setSelectedLocation('EG');
+        }
+    }, [isEgypt, hasManuallySetLocation]);
+
+    React.useEffect(() => {
+        setBookLanguage(isRTL ? 'ar' : 'en');
+    }, [isRTL]);
 
     const {
         isCoachingActive,
@@ -19,7 +35,26 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
         handleCheckout,
         getPlanPrices,
         plans
-    } = usePricing({ content, isRTL, openCheckout });
+    } = usePricing({ content, isRTL, openCheckout, selectedLocation, bookLanguage });
+
+    const formatPriceWithLocation = (amount: number) => {
+        if (selectedLocation === 'EG') {
+            return new Intl.NumberFormat(isRTL ? 'ar-EG' : 'en-EG', {
+                style: 'currency',
+                currency: 'EGP',
+                currencyDisplay: 'symbol',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        return new Intl.NumberFormat(isRTL ? 'ar-US' : 'en-US', {
+            style: 'currency',
+            currency: 'USD',
+            currencyDisplay: 'symbol',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    };
 
     return (
         <section className="py-12 relative overflow-hidden bg-black" id="pricing">
@@ -41,6 +76,51 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                     <p className="text-zinc-400 max-w-2xl mx-auto font-medium text-base">
                         {t('pricingSubtitle')}
                     </p>
+                </div>
+
+                {/* Region & Language Selectors */}
+                <div className="max-w-md mx-auto mb-12 p-3 bg-zinc-900/60 border border-zinc-800 rounded-3xl backdrop-blur-md shadow-[0_0_50px_rgba(0,0,0,0.5)] space-y-4">
+                    {/* Location Selector */}
+                    <div className="flex flex-col gap-2 p-1.5 bg-black/40 rounded-2xl border border-zinc-800/50">
+                        <span className="text-[10px] uppercase tracking-widest font-black text-zinc-500 px-3 pt-1 block">
+                            {isRTL ? "موقع الدفع (التسعير)" : "Payment Region (Pricing)"}
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => { setSelectedLocation('EG'); setHasManuallySetLocation(true); }}
+                                className={`py-3 px-4 rounded-xl text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 ${selectedLocation === 'EG' ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/20 scale-[1.02]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <span className="text-base">🇪🇬</span> {isRTL ? "داخل مصر (بالجنيه)" : "Inside Egypt (EGP)"}
+                            </button>
+                            <button
+                                onClick={() => { setSelectedLocation('GLOBAL'); setHasManuallySetLocation(true); }}
+                                className={`py-3 px-4 rounded-xl text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 ${selectedLocation === 'GLOBAL' ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/20 scale-[1.02]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <span className="text-base">🌐</span> {isRTL ? "خارج مصر / حول العالم" : "Outside Egypt / Global"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Book Language Selector */}
+                    <div className="flex flex-col gap-2 p-1.5 bg-black/40 rounded-2xl border border-zinc-800/50">
+                        <span className="text-[10px] uppercase tracking-widest font-black text-zinc-500 px-3 pt-1 block">
+                            {isRTL ? "لغة الكتاب المفضلة" : "Preferred Book Language"}
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => setBookLanguage('ar')}
+                                className={`py-3 px-4 rounded-xl text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 ${bookLanguage === 'ar' ? 'bg-white text-black shadow-lg shadow-white/10 scale-[1.02]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <span className="text-base">🇸🇦</span> {isRTL ? "العربية" : "Arabic"}
+                            </button>
+                            <button
+                                onClick={() => setBookLanguage('en')}
+                                className={`py-3 px-4 rounded-xl text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 ${bookLanguage === 'en' ? 'bg-white text-black shadow-lg shadow-white/10 scale-[1.02]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <span className="text-base">🇬🇧</span> {isRTL ? "الإنجليزية" : "English"}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto">
@@ -86,13 +166,15 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     <div className="absolute top-0 end-0 w-16 h-16 bg-white/5 rounded-bl-full group-hover:bg-white/10 transition-colors"></div>
                                     <div className="flex items-baseline gap-2 relative z-10">
                                         <span className={`text-4xl font-black tracking-tighter ${config.color === 'gold' ? 'text-gold-500' : 'text-white'}`}>
-                                            {formatPrice(grandTotal)}
+                                            {formatPriceWithLocation(grandTotal)}
                                         </span>
                                         <span className="text-xs text-zinc-500 line-through font-bold opacity-50">
-                                            {formatPrice(originalPrice)}
+                                            {formatPriceWithLocation(originalPrice)}
                                         </span>
                                     </div>
-                                    <div className="text-[9px] text-zinc-500 uppercase tracking-widest font-black mt-1 opacity-60">{content.pricingBilledInUsd}</div>
+                                    <div className="text-[9px] text-zinc-500 uppercase tracking-widest font-black mt-1 opacity-60">
+                                        {selectedLocation === 'EG' ? (isRTL ? 'الدفع بالجنيه المصري' : 'Billed in EGP') : content.pricingBilledInUsd}
+                                    </div>
                                 </div>
 
                                 {isCoachingTier && (

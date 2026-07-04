@@ -10,6 +10,7 @@ import { usePreferences } from '../context/PreferencesContext';
 
 import { ProductSelector } from '../features/checkout/ProductSelector';
 import { OrderSummary } from '../features/checkout/OrderSummary';
+import { EGP_PRICES } from '../shared/lib/logic';
 
 interface CheckoutPageProps {
     content: ContentStrings;
@@ -41,15 +42,19 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     const [quantity, setQuantity] = useState(1);
     const [shippingCost, setShippingCost] = useState(0);
 
+    const isEg = selectedTier?.selectedLocation === 'EG';
+
     // Calculate Totals
     const totals = React.useMemo(() => {
-        const itemPrice = VARIANT_PRICES[variant];
+        const itemPrice = isEg 
+            ? (EGP_PRICES[variant] || 750) 
+            : (VARIANT_PRICES[variant] || 0);
 
         // Handle any logic adjustments if needed (coaching vs coaching_plus is already in VARIANT_PRICES)
         const subtotal = itemPrice * quantity;
         const grandTotal = subtotal + shippingCost;
         return { itemPrice, subtotal, shippingCost, grandTotal };
-    }, [variant, quantity, shippingCost]);
+    }, [variant, quantity, shippingCost, isEg]);
 
     // Update Shipping Zone callback (passed to Form)
     const handleLocationChange = (isEg: boolean) => {
@@ -149,6 +154,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                     requiresShipping: variant !== 'digital',
                                     requiresBodyStats: variant === 'coaching_plus',
                                     selectedLanguage: isAr ? 'ar' : 'en',
+                                    selectedLocation: isAr ? 'EG' : 'GLOBAL',
                                     includesEbook: true,
                                     includesAudiobook: variant === 'bundle' || variant === 'coaching' || variant === 'coaching_plus',
                                     includesCoaching: variant === 'coaching_plus'
@@ -176,6 +182,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             quantity={quantity}
                             totals={totals}
                             isAr={isAr}
+                            isEg={isEg}
                         />
                     </motion.div>
                 </div>

@@ -34,7 +34,7 @@ export interface CheckoutFormData {
 export interface useCheckoutOptions {
     content: ContentStrings;
     lang: Language;
-    selectedTier: PricingTier & { requiresShipping?: boolean; requiresBodyStats?: boolean; selectedLanguage?: 'en' | 'ar' };
+    selectedTier: PricingTier & { requiresShipping?: boolean; requiresBodyStats?: boolean; selectedLanguage?: 'en' | 'ar'; selectedLocation?: 'EG' | 'GLOBAL' };
     totalAmount: number;
     productVariant: ProductVariant;
     onLocationChange: (isEg: boolean) => void;
@@ -161,8 +161,9 @@ export const useCheckout = (options: useCheckoutOptions) => {
         }
     }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
 
-    // Use the reliable region context for base amount parsing, ignoring client input
-    const { amount: baseAmount, isEg } = calculateBaseAmount(vCountry, productVariant, totalAmount);
+    // Use the selectedLocation from the selected tier if specified, otherwise fall back to region context
+    const isEg = selectedTier.selectedLocation === 'EG' || (selectedTier.selectedLocation === undefined && isEgRegion);
+    const { amount: baseAmount } = calculateBaseAmount(isEg ? 'EG' : 'US', productVariant, totalAmount);
 
     console.log('🚀 [useCheckout] RENDER STATE:', {
         selectedCountry,
