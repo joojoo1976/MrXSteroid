@@ -45,11 +45,11 @@ const VARIANTS: { id: ProductVariant; labelAr: string; labelEn: string; price: n
 
 export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVariant, onSelectVariant, quantity, setQuantity, isAr }) => {
     const { formatPrice } = usePreferences();
-    const isCoachingOrPlus = selectedVariant === 'coaching' || selectedVariant === 'coaching_plus';
-    const coachingAddon = selectedVariant === 'coaching_plus';
+    const coachingAddon = selectedVariant.endsWith('_plus');
 
     const handleCoachingToggle = () => {
-        onSelectVariant(coachingAddon ? 'coaching' : 'coaching_plus');
+        const baseVariant = coachingAddon ? selectedVariant.replace('_plus', '') : selectedVariant;
+        onSelectVariant(coachingAddon ? (baseVariant as ProductVariant) : `${baseVariant}_plus` as ProductVariant);
     };
 
     return (
@@ -61,14 +61,14 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
 
             <div className="grid md:grid-cols-3 gap-4">
                 {VARIANTS.map((variant) => {
-                    const Icon = variant.icon;
-                    // Highlight the card if it matches the base variant (even if coaching_plus is selected)
-                    const isSelected = selectedVariant === variant.id || (variant.id === 'coaching' && selectedVariant === 'coaching_plus');
+                    // Highlight the card if it matches the base variant
+                    const baseSelected = selectedVariant.replace('_plus', '');
+                    const isSelected = baseSelected === variant.id;
 
                     return (
                         <div
                             key={variant.id}
-                            onClick={() => onSelectVariant(variant.id)}
+                            onClick={() => onSelectVariant(coachingAddon ? `${variant.id}_plus` as ProductVariant : variant.id)}
                             className={cn(
                                 "relative cursor-pointer rounded-2xl border-2 transition-all duration-300 p-6 flex flex-col justify-between h-full group overflow-hidden",
                                 isSelected
@@ -112,8 +112,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
 
             {/* Coaching Add-on Section */}
             <AnimatePresence>
-                {isCoachingOrPlus && (
-                    <motion.div
+                <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -152,8 +151,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                                 />
                             </label>
 
-                            {coachingAddon && (
-                                <motion.div
+                            <motion.div
                                     initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="mt-3 pt-3 border-t border-zinc-800 flex items-center gap-2 text-xs text-amber-500 font-bold"
@@ -163,10 +161,8 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                                         ? "تنبيه: سيتطلب تحميل نتائج التحاليل وصور الجسم الحالية بعد الدفع."
                                         : "Note: You will be required to upload bloodwork and physique photos after payment."}
                                 </motion.div>
-                            )}
                         </div>
                     </motion.div>
-                )}
             </AnimatePresence>
 
             {/* Quantity Selector */}

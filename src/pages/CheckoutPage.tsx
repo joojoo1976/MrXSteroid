@@ -46,15 +46,29 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
 
     // Calculate Totals
     const totals = React.useMemo(() => {
-        const itemPrice = isEg 
-            ? (EGP_PRICES[variant] || 750) 
-            : (VARIANT_PRICES[variant] || 0);
+        // If the user hasn't changed the variant from what was passed in, and quantity is 1, use exact price from selectedTier
+        if (selectedTier && selectedTier.id === variant && quantity === 1 && selectedTier.price !== undefined) {
+            const subtotal = selectedTier.price;
+            const grandTotal = subtotal + shippingCost;
+            return { itemPrice: selectedTier.price, subtotal, shippingCost, grandTotal };
+        }
 
-        // Handle any logic adjustments if needed (coaching vs coaching_plus is already in VARIANT_PRICES)
+        const isPlus = variant.endsWith('_plus');
+        const baseVariant = isPlus ? variant.replace('_plus', '') : variant;
+
+        let itemPrice = 0;
+        if (isEg) {
+            itemPrice = EGP_PRICES[baseVariant as ProductVariant] || EGP_PRICES['bundle']; // Fallback
+            if (isPlus) itemPrice += 9999; // Coaching Addon EGP
+        } else {
+            itemPrice = VARIANT_PRICES[baseVariant as ProductVariant] || VARIANT_PRICES['bundle']; // Fallback
+            if (isPlus) itemPrice += 200; // Coaching Addon USD
+        }
+
         const subtotal = itemPrice * quantity;
         const grandTotal = subtotal + shippingCost;
         return { itemPrice, subtotal, shippingCost, grandTotal };
-    }, [variant, quantity, shippingCost, isEg]);
+    }, [variant, quantity, shippingCost, isEg, selectedTier]);
 
     // Update Shipping Zone callback (passed to Form)
     const handleLocationChange = (isEg: boolean) => {
