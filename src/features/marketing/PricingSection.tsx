@@ -264,7 +264,6 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                 <div className="mb-5 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800 relative group-hover:border-emerald-500/20 transition-all">
                                     <label
                                         className="flex items-center justify-between p-3 cursor-pointer group/label select-none"
-                                        onClick={() => toggleCoachingForPlan(plan.id)}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
@@ -283,7 +282,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                                 </div>
                                             </div>
                                         </div>
-                                        <input type="checkbox" className="hidden" checked={planCoachingActive} readOnly />
+                                        <input 
+                                            type="checkbox" 
+                                            className="hidden" 
+                                            checked={planCoachingActive} 
+                                            onChange={() => toggleCoachingForPlan(plan.id)} 
+                                        />
                                     </label>
 
                                     <AnimatePresence>
