@@ -15,10 +15,24 @@ interface OrderSummaryProps {
         grandTotal: number;
     };
     isAr: boolean;
+    isEg?: boolean;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, quantity, totals, isAr }) => {
-    const { formatPrice } = usePreferences();
+export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, quantity, totals, isAr, isEg }) => {
+    const { formatPrice: globalFormatPrice } = usePreferences();
+
+    const formatPrice = React.useCallback((amount: number) => {
+        if (isEg) {
+            return new Intl.NumberFormat(isAr ? 'ar-EG' : 'en-EG', {
+                style: 'currency',
+                currency: 'EGP',
+                currencyDisplay: 'symbol',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        return globalFormatPrice(amount);
+    }, [isEg, isAr, globalFormatPrice]);
 
     return (
         <Card className="bg-zinc-900 border-zinc-800 shadow-3xl overflow-hidden border-2 rounded-[2.5rem] sticky top-32">

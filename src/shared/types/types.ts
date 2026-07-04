@@ -88,6 +88,7 @@ export interface PricingTier {
   includesAudiobook: boolean;
   includesCoaching: boolean;
   selectedLanguage?: 'en' | 'ar';
+  selectedLocation?: 'EG' | 'GLOBAL';
 }
 
 export interface TargetAudience {
