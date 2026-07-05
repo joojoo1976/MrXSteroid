@@ -17,14 +17,14 @@ interface HeroProps {
 const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({ content, onClick }) => {
   const { language: lang, isRTL } = usePreferences();
   const getDefaultImg = () => {
-    return isRTL ? "/screens/home-ar.webp" : "/screens/home-en.webp";
+    return isRTL ? "/cover-ar.webp" : "/cover-en.webp";
   };
   const [imgSrc, setImgSrc] = useState<string>(getDefaultImg());
   const [retryCount, setRetryCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleError = () => {
-    const base = isRTL ? "/screens/home-ar" : "/screens/home-en";
+    const base = isRTL ? "/cover-ar" : "/cover-en";
     if (retryCount === 0) { setImgSrc(`${base}.jpg`); setRetryCount(1); }
     else if (retryCount === 1) { setImgSrc(`${base}.png`); setRetryCount(2); }
     else if (retryCount === 2) { setImgSrc("https://placehold.co/600x900/18181b/EAB308?text=MR+X+STEROID&font=oswald"); setRetryCount(3); }

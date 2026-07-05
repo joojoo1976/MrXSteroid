@@ -220,7 +220,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                             {/* Author Info */}
                             <div className="flex items-center gap-4 p-3 border-s-4 border-gold-500 bg-zinc-900/30 rounded-e-2xl">
                                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gold-500/30">
-                                    <img src="/author-small.jpg" alt="George Mourice" className="w-full h-full object-cover" />
+                                    <img src="/Author_MrXSteroid.webp" alt="George Mourice" className="w-full h-full object-cover" />
                                 </div>
                                 <div>
                                     <p className="text-white font-black text-sm leading-tight">{content.authorName || 'George Mourice'}</p>
