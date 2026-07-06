@@ -148,19 +148,21 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             {content.downloadPreview}
           </motion.a>
 
-          <motion.button
-            layout={false}
-            whileHover={{ scale: 1.05 }}
+          <button
             onClick={playerState.togglePlay}
-            className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 border-2 font-black text-lg md:text-xl rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-3 group relative overflow-hidden ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-xl' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500'}`}
+            aria-label={playerState.isPlaying ? "Pause Intro" : "Listen to Intro"}
+            style={{ transform: 'scale(1)', transition: 'transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease' }}
+            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+            className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 border-2 font-black text-lg md:text-xl rounded-2xl md:rounded-full flex items-center justify-center gap-3 relative overflow-hidden ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-xl' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500'}`}
           >
             {playerState.isPlaying ? <Pause className="w-5 h-5 md:w-6 md:h-6" /> : <Volume2 className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />}
-            {content.audioPreviewBtn}
-            <div
+            <span>{content.audioPreviewBtn}</span>
+            <span
               className="absolute bottom-0 start-0 h-1 bg-black/20 animate-progress w-full"
-              style={{ opacity: playerState.isPlaying ? 1 : 0, pointerEvents: 'none' }}
+              style={{ opacity: playerState.isPlaying ? 1 : 0 }}
             />
-          </motion.button>
+          </button>
         </div>
 
         <div className="relative">
