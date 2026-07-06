@@ -149,15 +149,17 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           </motion.a>
 
           <motion.button
+            layout={false}
             whileHover={{ scale: 1.05 }}
             onClick={playerState.togglePlay}
             className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 border-2 font-black text-lg md:text-xl rounded-2xl md:rounded-full transition-all flex items-center justify-center gap-3 group relative overflow-hidden ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-xl' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500'}`}
           >
             {playerState.isPlaying ? <Pause className="w-5 h-5 md:w-6 md:h-6" /> : <Volume2 className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />}
             {content.audioPreviewBtn}
-            {playerState.isPlaying && (
-              <div className="absolute bottom-0 start-0 h-1 bg-black/20 animate-progress w-full"></div>
-            )}
+            <div
+              className="absolute bottom-0 start-0 h-1 bg-black/20 animate-progress w-full"
+              style={{ opacity: playerState.isPlaying ? 1 : 0, pointerEvents: 'none' }}
+            />
           </motion.button>
         </div>
 
