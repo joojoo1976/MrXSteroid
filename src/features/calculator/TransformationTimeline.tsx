@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp } from 'lucide-react';
+import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen, ShieldCheck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -57,7 +57,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             <div className="absolute -top-12 -inset-inline-start-24 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
             <div className="absolute -bottom-12 -inset-inline-end-24 w-96 h-96 bg-zinc-700/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
 
+            {/* ── Section Header ── */}
             <div className="text-center mb-12 md:mb-16 relative">
+                {/* Badge */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-widest mb-6"
+                >
+                    <Activity className="w-3.5 h-3.5" />
+                    {isRTL ? 'علم البيولوجيا التطبيقي' : 'Applied Biology Science'}
+                </motion.div>
+
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -65,8 +77,22 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 >
                     {content.timelineTitle}
                 </motion.h2>
-                <div className="h-1 w-24 bg-gold-500 mx-auto mb-6 rounded-full"></div>
-                <p className="text-sm md:text-xl text-zinc-500 max-w-6xl mx-auto font-bold italic tracking-tight"><StyledBrandName text={content.timelineSubtitle} /></p>
+                <div className="h-1 w-24 bg-gold-500 mx-auto mb-6 rounded-full animate-pulse"></div>
+                <p className="text-base md:text-xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto font-semibold leading-relaxed"><StyledBrandName text={content.timelineSubtitle} /></p>
+
+                {/* Quick stats row */}
+                <div className="flex flex-wrap justify-center gap-3 md:gap-6 mt-8">
+                    {[
+                        { icon: <BookOpen className="w-4 h-4" />, label: isRTL ? '4 مراحل مفصلة' : '4 Detailed Phases' },
+                        { icon: <TrendingUp className="w-4 h-4" />, label: isRTL ? 'مخططات تفاعلية' : 'Interactive Charts' },
+                        { icon: <ShieldCheck className="w-4 h-4" />, label: isRTL ? 'نصائح الخبراء' : 'Expert Tips' },
+                    ].map((stat, i) => (
+                        <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-black text-zinc-600 dark:text-zinc-300">
+                            <span className="text-gold-500">{stat.icon}</span>
+                            {stat.label}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Dashboard Container */}
@@ -252,35 +278,58 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
 
                         {/* Narrative Section */}
-                        <div className="w-full p-6 md:p-10 space-y-6 flex-grow flex flex-col justify-center text-start overflow-y-auto max-h-[450px] hide-scrollbar">
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative group/item">
+                        <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start overflow-y-auto max-h-[500px] hide-scrollbar">
+
+                            {/* Biological block */}
+                            <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="relative group/item">
                                 <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
                                 <div className="ps-6 group-hover/item:ps-8 transition-all">
-                                    <h4 className="text-sm md:text-base font-black text-blue-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                                        <Activity className="w-5 h-5" />
+                                    <h4 className="text-xs md:text-sm font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                        <Activity className="w-4 h-4" />
                                         {content.timelineLabels.biologicalTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base md:text-lg font-bold"><StyledBrandName text={activeData.details.biological} /></p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
+                                        <StyledBrandName text={activeData.details.biological} />
+                                    </p>
                                 </div>
                             </motion.div>
 
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="relative group/item">
+                            {/* Feeling block */}
+                            <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="relative group/item">
                                 <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
                                 <div className="ps-6 group-hover/item:ps-8 transition-all">
-                                    <h4 className="text-sm md:text-base font-black text-purple-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                                        <Brain className="w-5 h-5" />
+                                    <h4 className="text-xs md:text-sm font-black text-purple-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                        <Brain className="w-4 h-4" />
                                         {content.timelineLabels.feelingTitle}
                                     </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base md:text-lg font-bold"><StyledBrandName text={activeData.details.feeling} /></p>
+                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
+                                        <StyledBrandName text={activeData.details.feeling} />
+                                    </p>
                                 </div>
                             </motion.div>
 
-                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-zinc-900 dark:bg-white text-white dark:text-black p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group/action ring-2 ring-gold-500/20">
-                                <h4 className="text-sm md:text-base font-black text-gold-500 dark:text-gold-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                                    <Zap className="w-5 h-5 fill-gold-500" />
+                            {/* Expert action block */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.3 }}
+                                className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-50 text-white dark:text-black p-5 md:p-7 rounded-2xl shadow-2xl relative overflow-hidden ring-2 ring-gold-500/30 group/action"
+                            >
+                                {/* Shimmer */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover/action:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                <h4 className="text-xs md:text-sm font-black text-gold-400 dark:text-gold-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                    <Zap className="w-4 h-4 fill-gold-400" />
                                     {content.timelineLabels.actionTitle}
                                 </h4>
-                                <p className="text-lg md:text-xl font-black leading-tight relative italic text-white dark:text-black"><StyledBrandName text={activeData.details.action} /></p>
+                                <p className="text-base md:text-lg font-black leading-tight italic text-white dark:text-black">
+                                    <StyledBrandName text={activeData.details.action} />
+                                </p>
+
+                                {/* Expert badge */}
+                                <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
+                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                    {isRTL ? 'نصيحة الخبير' : 'Expert Tip'}
+                                </div>
                             </motion.div>
                         </div>
 
