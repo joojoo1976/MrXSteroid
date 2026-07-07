@@ -59,7 +59,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             alt="Mr. X Steroid"
             loading="eager"
             {...{ fetchPriority: "high" } as any}
-            className="w-1/2 h-auto object-contain mix-blend-multiply dark:mix-blend-screen dark:invert drop-shadow-[0_0_40px_rgba(234,179,8,0.2)] group-hover:drop-shadow-[0_20px_80px_rgba(234,179,8,0.45)] transition-all duration-700 group-hover:scale-[1.03]"
+            className="w-1/2 h-auto object-contain drop-shadow-[0_0_40px_rgba(234,179,8,0.2)] group-hover:drop-shadow-[0_20px_80px_rgba(234,179,8,0.45)] transition-all duration-700 group-hover:scale-[1.03]"
           />
         </motion.div>
 
