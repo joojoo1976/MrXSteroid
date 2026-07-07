@@ -357,7 +357,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                         <h4 className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{item.label}</h4>
                         <div className="text-xl font-black font-mono leading-none flex items-baseline gap-1">
                           <KineticCounter value={item.val} />
-                          <span className="text-[9px] text-zinc-500 font-black">{isImperial ? 'OZ' : 'G'}</span>
+                          <span className="text-[9px] text-zinc-500 font-black">G</span>
                         </div>
                       </div>
                     </motion.div>
