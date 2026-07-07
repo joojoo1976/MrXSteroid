@@ -1,8 +1,7 @@
-import React from 'react';
-import { Download, Pause, Play, Volume2, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
-import DynamicBrandLogo from './DynamicBrandLogo';
 import { StyledBrandName } from './StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -12,6 +11,62 @@ interface HeroProps {
   openCheckout: (tier: PricingTier) => void;
   playerState: { isPlaying: boolean; togglePlay: () => void; };
 }
+
+// Internal BookCover Component to keep Hero self-contained
+const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({ content, onClick }) => {
+  const { language: lang, isRTL } = usePreferences();
+  const getDefaultImg = () => {
+    return isRTL ? "/cover-ar.webp" : "/cover-en.webp";
+  };
+  const [imgSrc, setImgSrc] = useState<string>(getDefaultImg());
+  const [retryCount, setRetryCount] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const handleError = () => {
+    const base = isRTL ? "/cover-ar" : "/cover-en";
+    if (retryCount === 0) { setImgSrc(`${base}.jpg`); setRetryCount(1); }
+    else if (retryCount === 1) { setImgSrc(`${base}.png`); setRetryCount(2); }
+    else if (retryCount === 2) { setImgSrc("https://placehold.co/600x900/18181b/EAB308?text=MR+X+STEROID&font=oswald"); setRetryCount(3); }
+  };
+
+  return (
+    <div className="relative w-72 md:w-[24rem] aspect-[2/3] mx-auto my-12 group cursor-pointer z-20 [perspective:1500px]" onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}>
+      <div className={`absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gold-500/20 blur-[60px] rounded-full opacity-60 transition-all duration-700 ${isFlipped ? 'opacity-30 scale-90' : 'group-hover:opacity-100'}`}></div>
+      <div className={`relative w-full h-full transition-transform duration-700 ease-in-out [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(-180deg)]' : 'group-hover:[transform:rotateY(-10deg)_rotateX(5deg)]'}`}>
+        {/* Front */}
+        <div className="absolute inset-0 [backface-visibility:hidden] z-20">
+          <div className={`relative w-full h-full ${isRTL ? 'rounded-s-xl rounded-e-sm' : 'rounded-e-xl rounded-s-sm'} shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-background ${isRTL ? 'border-e' : 'border-s'} border-t border-b border-zinc-700 overflow-hidden`}>
+            <div className={`absolute top-[2px] bottom-[2px] ${isRTL ? 'start-0' : 'end-0'} w-4 bg-gradient-to-r ${isRTL ? 'from-zinc-600 to-zinc-800' : 'from-zinc-800 to-zinc-600'} ${isRTL ? 'rounded-e-sm' : 'rounded-s-sm'} z-10 ${isRTL ? 'border-e' : 'border-s'} border-zinc-600`}></div>
+            <div className={`absolute top-4 ${isRTL ? 'start-4' : 'end-4'} bg-gold-500 text-black text-xs font-black px-2 py-1 rounded-sm z-30 shadow-md uppercase tracking-wider`}>
+              {content.heroEditions[lang as keyof typeof content.heroEditions]}
+            </div>
+            <div className={`absolute inset-0 ms-4 bg-zinc-900 ${isRTL ? 'rounded-s-xl' : 'rounded-e-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-e' : 'border-s'} border-zinc-800 h-full p-1`}>
+              {/* High-priority LCP image */}
+              <img loading="eager" {...{ fetchPriority: "high" } as any} key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
+            </div>
+            <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-s-xl me-4' : 'rounded-e-xl ms-4'} z-30`}></div>
+          </div>
+        </div>
+        {/* Back */}
+        <div className="absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] z-10">
+          <div className={`w-full h-full ${isRTL ? 'rounded-e-xl rounded-s-sm' : 'rounded-s-xl rounded-e-sm'} bg-zinc-900 border border-zinc-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col p-1 relative overflow-hidden`}>
+            <div className={`flex-1 bg-background ${isRTL ? 'rounded-e-lg rounded-s-sm ms-4' : 'rounded-s-lg rounded-e-sm me-4'} border border-zinc-800 relative overflow-hidden p-6 flex flex-col items-center justify-between`}>
+              <div className="relative z-20 text-center">
+                <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700">
+                  <Lock className="w-6 h-6 text-gold-500" />
+                </div>
+                <h3 className="text-xl font-black text-white mb-1">SECRET PROTOCOLS</h3>
+              </div>
+              <div className="relative z-20 w-full pt-4">
+                <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-black text-base uppercase tracking-wider rounded-lg shadow-lg shadow-gold-500/20 transition-all flex items-center justify-center gap-2">BUY NOW</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying: boolean, togglePlay: () => void } }> = ({ content, playerState }) => {
   const { isRTL } = usePreferences();
@@ -40,11 +95,13 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
       <div className="absolute bottom-1/4 end-1/4 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full animate-float-slow [animation-delay:-2s]"></div>
 
       <div className="container mx-auto text-center relative z-10">
+
+        {/* Hero Section Image — transparent bg, adapts to dark/light mode */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="relative mx-auto flex items-center justify-center cursor-pointer group mb-16"
+          className="relative mx-auto flex items-center justify-center cursor-pointer group mb-8"
           style={{ maxWidth: '700px' }}
           onClick={() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -118,9 +175,13 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           </button>
         </div>
 
+        {/* Book Cover — language-aware with 3D flip effect */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gold-500/20 blur-[100px] rounded-full -z-10 animate-float-slow"></div>
+          <BookCover content={content} onClick={() => openCheckout(content.pricingTiers[0])} />
+        </div>
 
-
-        <div className="max-w-md mx-auto mt-4 animate-float-slow">
+        <div className="max-w-md mx-auto mt-12 animate-float-slow">
           <AudioPlayer content={content} playerState={playerState} />
         </div>
       </div>
