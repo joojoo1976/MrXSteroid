@@ -60,7 +60,7 @@ export const ArabicVideoSection: React.FC = () => {
                         <iframe
                             width="100%"
                             height="100%"
-                            src="https://www.youtube.com/embed/CBU1p650G7I?si=1dRgij4qZgJxiG3H"
+                            src="https://www.youtube.com/embed/CBU1p650G7I?si=f45p1jsek8qclbT1"
                             title="YouTube video player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
