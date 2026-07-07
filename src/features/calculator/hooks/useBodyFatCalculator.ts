@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import { ContentStrings } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
 
+import { usePreferences } from '../../../context/PreferencesContext';
+
 export interface BodyFatResult {
     bodyFatPercentage: number;
     bodyFatMass: number;
@@ -17,7 +19,8 @@ interface UseBodyFatCalculatorOptions {
 }
 
 export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculatorOptions) => {
-    const isAr = false; // Remove dependency on content.lang
+    const { language } = usePreferences();
+    const isAr = language === 'ar';
     const isImperial = unitSystem === 'imperial';
 
     const [gender, setGender] = useState('male');
@@ -127,12 +130,14 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
         setResult(null);
 
         setTimeout(() => {
-            let bodyFatPercentage: number;
-
+            // US Navy Body Fat Formula (NASM-validated)
+            // Male: %BF = 86.010 × log10(waist − neck) − 70.041 × log10(height) + 36.76
+            // Female: %BF = 163.205 × log10(waist + hip − neck) − 97.684 × log10(height) − 78.387
+            let bodyFatPercentage = 0;
             if (gender === 'male') {
-                bodyFatPercentage = 495 / (1.20 * (wi / 100) + 0.23 * a - 0.10 * (n / 100) - 5.4) - 450;
+                bodyFatPercentage = 86.010 * Math.log10(Math.max(1, wi - n)) - 70.041 * Math.log10(h) + 36.76;
             } else {
-                bodyFatPercentage = 495 / (1.20 * (wi / 100) + 0.23 * a - 0.10 * (n / 100) - 0.20 * (hi / 100) - 5.4) - 450;
+                bodyFatPercentage = 163.205 * Math.log10(Math.max(1, wi + hi - n)) - 97.684 * Math.log10(h) - 78.387;
             }
 
             bodyFatPercentage = Math.max(0, Math.min(100, bodyFatPercentage));

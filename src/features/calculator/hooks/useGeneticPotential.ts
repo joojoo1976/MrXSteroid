@@ -131,6 +131,14 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
         if (radio < 0.10) type = content.geneticCalculator.bodyTypes.ecto;
         else if (radio > 0.115) type = content.geneticCalculator.bodyTypes.endo;
 
+        // Display conversion: baseMeasurements is always metric (cm)
+        // Convert to display unit if imperial
+        const toDisplay = (cm: number) => isImperial ? parseFloat((cm / 2.54).toFixed(1)) : cm;
+        const thighRaw = parseFloat(normalizeNum(formData.thigh)) || 0;
+        const calfRaw = parseFloat(normalizeNum(formData.calf)) || 0;
+        // thigh/calf are stored as display values (not in baseMeasurements), use as-is
+        // but they are entered in the current unit system, so no conversion needed here
+
         setResult({
             natural: Math.round(naturalWeight),
             enhanced: Math.round(enhancedWeight),
@@ -140,11 +148,11 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
             goldenRatio: potentialShoulderWaist,
             physiqueScore: Math.round(physiqueScore),
             potentials: [
-                { name: content.geneticCalculator.labels.chest, current: curChest, potential: naturalPotentials.chest, unit: isImperial ? 'in' : 'cm' },
-                { name: content.geneticCalculator.labels.shoulders, current: curShoulders, potential: naturalPotentials.shoulders, unit: isImperial ? 'in' : 'cm' },
-                { name: content.geneticCalculator.labels.waist, current: curWaist, potential: naturalPotentials.waist, unit: isImperial ? 'in' : 'cm' },
-                { name: content.geneticCalculator.labels.thigh, current: parseFloat(normalizeNum(formData.thigh)) || 0, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
-                { name: content.geneticCalculator.labels.calf, current: parseFloat(normalizeNum(formData.calf)) || 0, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
+                { name: content.geneticCalculator.labels.chest, current: toDisplay(curChest), potential: naturalPotentials.chest, unit: isImperial ? 'in' : 'cm' },
+                { name: content.geneticCalculator.labels.shoulders, current: toDisplay(curShoulders), potential: naturalPotentials.shoulders, unit: isImperial ? 'in' : 'cm' },
+                { name: content.geneticCalculator.labels.waist, current: toDisplay(curWaist), potential: naturalPotentials.waist, unit: isImperial ? 'in' : 'cm' },
+                { name: content.geneticCalculator.labels.thigh, current: thighRaw, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
+                { name: content.geneticCalculator.labels.calf, current: calfRaw, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
             ]
         });
     }, [baseMeasurements, formData, content, isImperial, isRTL]);

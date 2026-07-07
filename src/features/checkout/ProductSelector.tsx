@@ -64,6 +64,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({ selectedVarian
                     // Highlight the card if it matches the base variant
                     const baseSelected = selectedVariant.replace('_plus', '');
                     const isSelected = baseSelected === variant.id;
+                    const Icon = variant.icon;
 
                     return (
                         <div

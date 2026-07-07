@@ -56,8 +56,24 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const storedAuto = localStorage.getItem('mrx_unit_system');
         if (storedAuto) return storedAuto as UnitSystem;
 
-        const browserCountry = detectCountryFromBrowser();
-        return getSystemFromRegion(browserCountry);
+        // Tie default to initial language: English -> imperial, Arabic -> metric
+        const initialLang = (() => {
+            const explicitLang = localStorage.getItem('mrx_explicit_language');
+            if (explicitLang) return explicitLang as Language;
+
+            const storedAutoLang = SecureStorage.getItem('language');
+            if (storedAutoLang) return storedAutoLang as Language;
+
+            const browserLangs = navigator.languages || [navigator.language];
+            for (const lang of browserLangs) {
+                const code = lang.split('-')[0].toLowerCase();
+                if (code === 'ar') return Language.AR;
+                if (code === 'en') return Language.EN;
+            }
+            return DEFAULT_LANG;
+        })();
+
+        return initialLang === Language.AR ? 'metric' : 'imperial';
     });
 
     const [theme, setThemeState] = useState<Theme>(() => {
@@ -95,9 +111,10 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 localStorage.setItem('mrx_currency', detectedCurrency);
 
                 if (!hasExplicitUnits || force) {
-                    const detectedUnit = getSystemFromRegion(geoState.country);
-                    setUnitSystemState(detectedUnit);
-                    localStorage.setItem('mrx_unit_system', detectedUnit);
+                    const currentLang = (hasExplicitLang && !force) ? language : detectedLang;
+                    const smartDefault: UnitSystem = currentLang === Language.AR ? 'metric' : 'imperial';
+                    setUnitSystemState(smartDefault);
+                    localStorage.setItem('mrx_unit_system', smartDefault);
                 }
 
                 setIsAutoDetected(true);
@@ -181,6 +198,14 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem('mrx_explicit_language', newLang);
         SecureStorage.setItem('language', newLang);
         setIsAutoDetected(false);
+
+        // Smart unit default: apply only when user has NOT explicitly overridden units
+        const hasExplicitUnits = !!localStorage.getItem('mrx_explicit_units');
+        if (!hasExplicitUnits) {
+            const smartDefault: UnitSystem = newLang === Language.AR ? 'metric' : 'imperial';
+            setUnitSystemState(smartDefault);
+            localStorage.setItem('mrx_unit_system', smartDefault);
+        }
     }, []);
 
     const setUnitSystem = useCallback((system: UnitSystem) => {

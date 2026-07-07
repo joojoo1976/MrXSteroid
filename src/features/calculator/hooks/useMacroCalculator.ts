@@ -4,6 +4,8 @@ import { ContentStrings, DailyMeal } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
 import { foodDatabase } from '../constants/foodDatabase';
 
+import { usePreferences } from '../../../context/PreferencesContext';
+
 export interface CalcResult {
     calories: number;
     protein: number;
@@ -36,7 +38,8 @@ interface UseMacroCalculatorOptions {
 }
 
 export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOptions) => {
-    const isAr = false; // Remove dependency on content.lang
+    const { language } = usePreferences();
+    const isAr = language === 'ar';
     const isImperial = unitSystem === 'imperial';
 
     const [weight, setWeight] = useState('');
@@ -94,22 +97,25 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
         }
     };
 
-    const generateSimulation = useCallback((calories: number, currentGoal: string, currentWeight: string) => {
-        const data = [];
-        let weightTrend = parseFloat(normalizeNum(currentWeight));
+    const generateSimulation = useCallback((calories: number, currentGoal: string, _currentWeight: string) => {
+        // Use internal metric base weight for consistent simulation
+        // Realistic weekly changes: cut ≈ -0.5 kg, bulk ≈ +0.25 kg, maintain ≈ ±0.05 kg
+        const weeklyChangeKg = currentGoal === 'cut' ? -0.5 : currentGoal === 'bulk' ? 0.25 : 0.05;
+        let weightTrendKg = baseWeight || 80; // fallback 80kg
 
+        const data = [];
         for (let i = 0; i <= 12; i++) {
-            const variation = Math.random() * 0.5 - 0.25;
-            const change = currentGoal === 'cut' ? -0.8 : currentGoal === 'bulk' ? 0.6 : 0.1;
-            weightTrend += change + variation;
+            const variation = (Math.random() * 0.3 - 0.15); // ±0.15 kg noise
+            weightTrendKg += weeklyChangeKg + variation;
+            const displayWeight = isImperial ? weightTrendKg * 2.20462 : weightTrendKg;
             data.push({
                 week: `W${i}`,
-                weight: parseFloat(weightTrend.toFixed(1)),
+                weight: parseFloat(displayWeight.toFixed(1)),
                 efficiency: Math.round(85 + Math.random() * 10),
             });
         }
         setSimulationData(data);
-    }, []);
+    }, [baseWeight, isImperial]);
 
     const calculate = useCallback(() => {
         const w = baseWeight;

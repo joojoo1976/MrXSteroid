@@ -8,6 +8,7 @@ import { ContentStrings, Page } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useGeneticPotential } from './hooks/useGeneticPotential';
+import { UnitToggle } from '../../shared/ui/UnitToggle';
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;
@@ -128,7 +129,8 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
       </motion.div>
 
       {/* AdSlot: Top Banner */}
-      <div className="mb-12">
+      <div className="mb-12 flex flex-col items-center gap-6">
+        <UnitToggle className="scale-125 shadow-2xl border-white/10" />
         <AdPlaceholder slotId="genetic_top_banner" format="horizontal" content={content} />
       </div>
 
@@ -153,7 +155,10 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{content.geneticCalculator.labels.height}</label>
+                  <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                    {content.geneticCalculator.labels.height}
+                    <span className="text-[9px] opacity-50">{isImperial ? 'in' : 'cm'}</span>
+                  </label>
                   <motion.input
                     whileFocus={{ scale: 1.05, borderColor: "rgba(234, 179, 8, 0.5)" }}
                     type="text"
@@ -180,7 +185,8 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
               <div className="space-y-3">
                 <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                   {content.geneticCalculator.labels.wrist}
-                  <span className="text-gold-500/50 text-xs lowercase italic font-bold">REQUIRED</span>
+                  <span className="text-[9px] opacity-50">{isImperial ? 'in' : 'cm'}</span>
+                  <span className="text-gold-500/50 text-xs lowercase italic font-bold ms-auto">REQUIRED</span>
                 </label>
                 <motion.input
                   whileFocus={{ scale: 1.02, borderColor: "rgba(234, 179, 8, 0.5)" }}
@@ -196,7 +202,8 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
               <div className="space-y-3">
                 <label className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                   {content.geneticCalculator.labels.ankle}
-                  <span className="text-gold-500/50 text-xs lowercase italic font-bold">REQUIRED</span>
+                  <span className="text-[9px] opacity-50">{isImperial ? 'in' : 'cm'}</span>
+                  <span className="text-gold-500/50 text-xs lowercase italic font-bold ms-auto">REQUIRED</span>
                 </label>
                 <motion.input
                   whileFocus={{ scale: 1.02, borderColor: "rgba(234, 179, 8, 0.5)" }}
