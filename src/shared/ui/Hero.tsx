@@ -44,34 +44,26 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="mb-8"
+          className="relative mx-auto flex items-center justify-center cursor-pointer group mb-16"
+          style={{ maxWidth: '700px' }}
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }));
+          }}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="relative mx-auto flex items-center justify-center cursor-pointer group mb-8"
-            style={{ maxWidth: '700px' }}
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }));
+          {/* Glow behind image */}
+          <div className="absolute inset-0 bg-gold-500/15 blur-[80px] rounded-full -z-10 animate-pulse group-hover:bg-gold-500/25 transition-all duration-700" />
+
+          <img
+            src="/MrXSteroid_Hero_Section.webp"
+            alt="Mr. X Steroid"
+            loading="eager"
+            {...{ fetchPriority: "high" } as any}
+            className="w-full h-auto object-contain drop-shadow-[0_20px_60px_rgba(234,179,8,0.25)] group-hover:drop-shadow-[0_20px_80px_rgba(234,179,8,0.45)] transition-all duration-700 group-hover:scale-[1.03]"
+            style={{
+              filter: 'drop-shadow(0 0 40px rgba(234,179,8,0.2))',
             }}
-          >
-            {/* Glow behind image */}
-            <div className="absolute inset-0 bg-gold-500/15 blur-[80px] rounded-full -z-10 animate-pulse group-hover:bg-gold-500/25 transition-all duration-700" />
-
-            <img
-              src="/MrXSteroid_Hero_Section.webp"
-              alt="Mr. X Steroid"
-              loading="eager"
-              {...{ fetchPriority: "high" } as any}
-              className="w-full h-auto object-contain drop-shadow-[0_20px_60px_rgba(234,179,8,0.25)] group-hover:drop-shadow-[0_20px_80px_rgba(234,179,8,0.45)] transition-all duration-700 group-hover:scale-[1.03]"
-              style={{
-                filter: 'drop-shadow(0 0 40px rgba(234,179,8,0.2))',
-              }}
-            />
-          </motion.div>
-
+          />
         </motion.div>
 
         <motion.p
