@@ -33,20 +33,26 @@ const CustomTooltip = ({ active, payload, label, content }: {
   label?: string;
   content: ContentStrings;
 }) => {
+  const { isRTL } = usePreferences();
   if (active && payload && payload.length) {
     return (
       <div className="bg-black/90 border-2 border-gold-500/50 p-6 rounded-3xl backdrop-blur-3xl shadow-2xl">
         <p className="text-zinc-500 font-black mb-3 border-b border-white/10 pb-2">{content.halfLifeVisualizer.tooltipDay} {label}</p>
         <div className="space-y-2">
-          {payload.map((entry, index: number) => (
-            <div key={index} className="flex justify-between items-center gap-8">
-              <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${['bg-yellow-500', 'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500'][payload.indexOf(entry) % 5]}`}></div>
-                <span className="text-white font-bold text-sm uppercase">{entry.name.split('_')[0]}</span>
+          {payload.map((entry, index: number) => {
+            const compoundKey = entry.name.split('_')[0];
+            const comp = content.halfLifeVisualizer.compounds.find(c => c.id === compoundKey);
+            const dispName = comp ? (isRTL && comp.nameAr ? comp.nameAr : comp.name) : compoundKey;
+            return (
+              <div key={index} className="flex justify-between items-center gap-8">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                  <span className="text-white font-bold text-sm uppercase">{dispName}</span>
+                </div>
+                <span className="text-gold-500 font-mono font-black">{Math.round(entry.value)} {content.units.mg}</span>
               </div>
-              <span className="text-gold-500 font-mono font-black">{Math.round(entry.value)} {content.units.mg}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div className="mt-4 pt-4 border-t border-gold-500/20 flex justify-between items-center">
           <span className="text-gold-500 font-black uppercase text-xs tracking-widest">{content.hlTotal}</span>
@@ -59,7 +65,7 @@ const CustomTooltip = ({ active, payload, label, content }: {
 };
 
 const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
-  const { isRTL } = usePreferences();
+  const { isRTL, unitSystem, setUnitSystem } = usePreferences();
 
   const {
     stack,
@@ -74,11 +80,13 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
     startWeek,
     setStartWeek,
     selectedCompound,
+    effectiveDose,
     addToStack,
     removeFromStack,
+    clearStack,
     simulationData,
     colors
-  } = useHalfLifeVisualizer({ content, isRTL: isRTL || false });
+  } = useHalfLifeVisualizer({ content, isRTL: isRTL || false, unitSystem });
 
   // --- Animation Variants ---
   const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
@@ -103,6 +111,37 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
         {/* Input Sidebar */}
         <motion.div initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} className="lg:col-span-4 space-y-8">
           <div className="bg-white dark:bg-background/40 p-10 rounded-[4rem] border-4 border-zinc-100 dark:border-zinc-800 shadow-3xl space-y-8 h-fit card-shine backdrop-blur-3xl">
+            {/* Metric/Imperial Toggle */}
+            <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-3xl border border-zinc-100 dark:border-zinc-800/80">
+              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                {content.hlUnitToggleLabel || "Measurement System"}
+              </span>
+              <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-900">
+                <button
+                  type="button"
+                  onClick={() => setUnitSystem('metric')}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                    unitSystem === 'metric'
+                      ? 'bg-gold-500 text-black shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {content.hlMetric || "METRIC"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnitSystem('imperial')}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                    unitSystem === 'imperial'
+                      ? 'bg-gold-500 text-black shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {content.hlImperial || "IMPERIAL"}
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <label htmlFor="half-life-compound" className="text-sm font-black uppercase tracking-[0.3em] text-gold-500 flex items-center gap-2">
                 <Zap className="w-4 h-4" /> {content.halfLifeVisualizer.compoundLabel}
@@ -121,6 +160,12 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                 </select>
                 <ChevronDown className={`absolute top-1/2 end-6 -translate-y-1/2 text-gold-500 pointer-events-none`} />
               </div>
+              {selectedCompound && (
+                <div className="mt-4 flex justify-between text-xs font-bold text-zinc-400 bg-zinc-950/60 p-4 rounded-2xl border border-white/5 shadow-inner">
+                  <span>{content.hlHalfLifeLabel || "Half-Life"}: <strong className="text-gold-500 font-mono font-black">{selectedCompound.halfLife} {isRTL ? "أيام" : "Days"}</strong></span>
+                  <span>{content.hlClearanceLabel || "Full Clearance"}: <strong className="text-gold-500 font-mono font-black">{Math.round(selectedCompound.halfLife * 5.32)} {isRTL ? "أيام" : "Days"}</strong></span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-6">
@@ -136,6 +181,11 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   title={content.halfLifeVisualizer.dosageLabel}
                   className={`w-full bg-zinc-900 border-zinc-800 text-white border-2 focus:border-gold-500 rounded-2xl p-4 text-lg font-black text-center outline-none shadow-inner ${dosage > 1000 ? 'border-red-500 text-red-500' : 'border-transparent'}`}
                 />
+                {selectedCompound?.esterWeight && (
+                  <div className="mt-2 text-[10px] text-zinc-500 font-black uppercase text-center tracking-tight">
+                    {content.hlEffectiveDose || "Effective Active Dose"}: <span className="text-gold-500 font-mono font-bold">{effectiveDose}mg</span>
+                  </div>
+                )}
                 {dosage > 1000 && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black text-red-500 bg-red-500/10 p-2 rounded-xl border border-red-500/20 flex items-center gap-1 justify-center mt-1">
                     <ShieldAlert size={12} />
@@ -197,17 +247,34 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
 
             {stack.length > 0 && (
               <div className="pt-8 border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 space-y-4">
-                <h4 className="text-sm font-black text-zinc-500 uppercase tracking-[0.5em]">{content.halfLifeVisualizer.activeStackTitle}</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-black text-zinc-500 uppercase tracking-[0.2em]">{content.halfLifeVisualizer.activeStackTitle}</h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(content.hlClearStackConfirm || "Clear all compounds from the simulator?")) {
+                        clearStack();
+                      }
+                    }}
+                    className="text-[10px] font-black uppercase text-red-500 hover:text-red-400 transition-colors flex items-center gap-1 border border-red-500/20 px-3 py-1 rounded-xl bg-red-500/5 hover:bg-red-500/10"
+                  >
+                    <RotateCcw size={10} /> {content.hlClearStack || "Reset Stack"}
+                  </button>
+                </div>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {stack.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-background p-4 rounded-2xl border border-transparent hover:border-gold-500/20 transition-all">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${item.bgColorClass}`}></div>
-                        <div className="text-sm font-black truncate max-w-[120px]">{content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId)?.name}</div>
+                  {stack.map((item) => {
+                    const c = content.halfLifeVisualizer.compounds.find(cc => cc.id === item.compoundId);
+                    const dispName = c ? (isRTL && c.nameAr ? c.nameAr : c.name) : item.compoundId;
+                    return (
+                      <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-background p-4 rounded-2xl border border-transparent hover:border-gold-500/20 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: item.color }}></div>
+                          <div className="text-sm font-black truncate max-w-[120px]">{dispName}</div>
+                        </div>
+                        <button onClick={() => removeFromStack(item.id)} className="text-zinc-400 hover:text-red-500 p-2" title={content.labClose} aria-label={content.labClose}><Trash2 size={16} /></button>
                       </div>
-                      <button onClick={() => removeFromStack(item.id)} className="text-zinc-400 hover:text-red-500 p-2" title={content.labClose} aria-label={content.labClose}><Trash2 size={16} /></button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -284,6 +351,54 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                     </ReferenceLine>
                   </AreaChart>
                 </ResponsiveContainer>
+              </div>
+
+              {/* Protocol Metrics & Biological Timeline */}
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Cycle Biological Timeline */}
+                <div className="bg-zinc-900/40 backdrop-blur-xl p-10 rounded-[3rem] border border-white/5 space-y-6">
+                  <h4 className="font-black text-lg uppercase tracking-widest text-gold-500 flex items-center gap-3">
+                    <Calendar className="w-5 h-5 animate-pulse" />
+                    {content.halfLifeVisualizer.peakTimelineTitle || "Cycle Timeline"}
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm font-bold text-zinc-400">{content.hlActiveDays || "Active Protocol Days"}</span>
+                      <span className="font-mono font-black text-white text-lg">{simulationData.totalActiveDays} {isRTL ? "أيام" : "Days"}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm font-bold text-zinc-400">{content.hlStartsDay || "PCT Initiation Day"}</span>
+                      <span className="font-mono font-black text-green-400 text-lg">{Math.round(simulationData.pctStartDay)} {isRTL ? "أيام" : "Days"}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm font-bold text-zinc-400">{content.hlClearanceLabel || "Full Clearance"}</span>
+                      <span className="font-mono font-black text-yellow-400 text-lg">~{Math.round(simulationData.clearanceDay)} {isRTL ? "أيام" : "Days"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-zinc-400">{content.hlAvgPeak || "Avg. Serum Peak"}</span>
+                      <span className="font-mono font-black text-gold-500 text-lg">{simulationData.weeklyAveragePeak} mg</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compound Peak Breakdown */}
+                <div className="bg-zinc-900/40 backdrop-blur-xl p-10 rounded-[3rem] border border-white/5 space-y-6">
+                  <h4 className="font-black text-lg uppercase tracking-widest text-gold-500 flex items-center gap-3">
+                    <Activity className="w-5 h-5 animate-pulse" />
+                    {content.halfLifeVisualizer.compoundBreakdownTitle || "Per-Compound Peak Analysis"}
+                  </h4>
+                  <div className="space-y-4 max-h-[180px] overflow-y-auto custom-scrollbar pr-2">
+                    {simulationData.weeklyPeakByCompound.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center border-b border-white/5 pb-3 last:border-b-0 last:pb-0">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm font-bold text-zinc-300 truncate max-w-[150px] md:max-w-none">{item.name}</span>
+                        </div>
+                        <span className="font-mono font-black text-white">{item.peak} mg</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Dynamic AI Analysis */}

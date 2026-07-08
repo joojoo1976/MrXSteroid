@@ -705,6 +705,17 @@ export interface ContentStrings {
   hlUltraLevel?: string;
   hlModerateLevel?: string;
   hlLiteLevel?: string;
+  hlEffectiveDose?: string;
+  hlHalfLifeLabel?: string;
+  hlClearanceLabel?: string;
+  hlActiveDays?: string;
+  hlAvgPeak?: string;
+  hlClearStack?: string;
+  hlClearStackConfirm?: string;
+  hlUnitToggleLabel?: string;
+  hlMetric?: string;
+  hlImperial?: string;
+
 
   // Privacy & Terms
   privacyCollectionTitle?: string;
@@ -1007,6 +1018,12 @@ export interface ContentStrings {
     emptyStackMsg: string;
     emptyStackDesc: string;
     hazardWarning: string;
+    effectiveDoseLabel?: string;
+    halfLifeInfoLabel?: string;
+    clearanceInfoLabel?: string;
+    peakTimelineTitle?: string;
+    compoundBreakdownTitle?: string;
+    clearanceChartLabel?: string;
     compounds: Compound[];
     frequencies: {
       ed: string;
