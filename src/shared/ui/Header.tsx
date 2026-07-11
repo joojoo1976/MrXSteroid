@@ -8,6 +8,7 @@ import { ContentStrings, Page } from '@/shared/types/types';
 import { md5 } from '../../shared/lib/cryptoUtils';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { usePreferences } from '../../context/PreferencesContext';
+import ThemeSwitcher from './ThemeSwitcher';
 
 type HeaderSection = 'logo' | 'lang-theme' | 'nav' | 'auth';
 
@@ -19,6 +20,7 @@ interface LayoutConfig {
 
 interface HeaderProps {
   theme: 'light' | 'dark' | 'system';
+  resolvedTheme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   colorTheme: string;
   changeColorTheme: (color: string) => void;
@@ -49,7 +51,7 @@ const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
 };
 
 const Header: React.FC<HeaderProps> = ({
-  theme, setTheme, colorTheme: _colorTheme, changeColorTheme: _changeColorTheme, content, currentPage, navigateTo, user, onLogout, onOpenPreferences
+  theme, resolvedTheme, setTheme, colorTheme: _colorTheme, changeColorTheme: _changeColorTheme, content, currentPage, navigateTo, user, onLogout, onOpenPreferences
 }) => {
   const { language: lang, isRTL } = usePreferences();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -117,35 +119,13 @@ const Header: React.FC<HeaderProps> = ({
       case 'lang-theme':
         return (
           <div key="lang-theme" className="flex items-center gap-2">
-            <button
-              onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
-              onBlur={() => setTimeout(() => setIsThemeDropdownOpen(false), 200)}
-              className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[44px] h-[36px]"
-              title="Toggle Theme"
-            >
-              <ThemeIcon theme={theme} />
-              <div className="flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded px-0.5 ml-1">
-                <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isThemeDropdownOpen ? 'rotate-180 text-gold-500' : 'text-zinc-500'}`} />
-              </div>
-            </button>
-            {isThemeDropdownOpen && (
-              <div className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-[60] ${TRANSITIONS.SLIDE_UP} p-1.5`}>
-                {(['light', 'dark', 'system'] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => { setTheme(t); setIsThemeDropdownOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all rounded-xl ${theme === t ? 'bg-gold-50 dark:bg-gold-500/10 text-gold-600 dark:text-gold-500 font-black' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-                  >
-                    {t === 'light' ? <Sun className="w-4 h-4" /> : t === 'dark' ? <Moon className="w-4 h-4" /> : (
-                      <div className="relative">
-                        <Sun className="w-3.5 h-3.5 opacity-50" /><Moon className="w-2.5 h-2.5 absolute -top-1 -right-1" />
-                      </div>
-                    )}
-                    {content.themeNames[t]}
-                  </button>
-                ))}
-              </div>
-            )}
+            <ThemeSwitcher
+              theme={theme}
+              resolvedTheme={resolvedTheme}
+              setTheme={setTheme}
+              isRTL={isRTL}
+              variant="pill"
+            />
 
             {/* Smart Globe Button - Opens Unified Settings */}
             <button
