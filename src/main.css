@@ -4,160 +4,188 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- CSS VARIABLES & THEMES --- */
+/* ═══════════════════════════════════════════════════════════════════
+   MR. X — THEME SYSTEM v2.0
+   Dark Identity: Background #100444  │  Accent/Text #FFFFA3
+   Light: Clean whites with deep navy accents
+   ═══════════════════════════════════════════════════════════════════ */
 @layer base {
-  :root {
-    /* Mr. X Elite Theme (Carbon & Gold) */
-    --background: 0 0% 4%;
-    /* #0a0a0a Carbon Black */
-    --foreground: 45 20% 96%;
-    /* Warm White */
 
-    --card: 0 0% 6%;
-    /* #0f0f0f */
-    --card-foreground: 45 20% 96%;
-
-    --popover: 0 0% 4%;
-    --popover-foreground: 45 20% 96%;
-
+  /* ── LIGHT MODE ──────────────────────────────────────────────── */
+  :root,
+  .light {
+    /* Tailwind semantic tokens */
+    --background: 0 0% 98%;
+    --foreground: 249 87% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 249 87% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 249 87% 14%;
     --primary: 46 85% 55%;
-    /* #f4c430 Vibrant Gold */
     --primary-foreground: 0 0% 5%;
-
-    --secondary: 0 0% 9%;
-    /* Dark Carbon */
-    --secondary-foreground: 45 20% 96%;
-
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 125 100% 54%;
-    /* #39FF14 Fluorescent Green */
+    --secondary: 249 30% 93%;
+    --secondary-foreground: 249 87% 14%;
+    --muted: 249 20% 94%;
+    --muted-foreground: 249 40% 40%;
+    --accent: 125 100% 40%;
     --accent-foreground: 0 0% 5%;
-
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 98%;
-
-    --border: 46 30% 15%;
-    /* Subtle Gold Border */
-    --input: 0 0% 12%;
+    --border: 249 30% 88%;
+    --input: 249 20% 94%;
     --ring: 46 85% 55%;
-    /* Gold Ring */
-
     --radius: 0.75rem;
-
-    /* Mr. X Gold Palette */
     --gold-500: 46 85% 55%;
     --gold-400: 46 90% 65%;
     --gold-600: 46 80% 45%;
 
-    /* Sidebar Variables (Dark) */
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 45 20% 96%;
+    /* Mr. X Design Tokens — Light */
+    --mrx-bg-primary:      #fafafa;
+    --mrx-bg-secondary:    #f0eeff;
+    --mrx-bg-card:         rgba(255,255,255,0.9);
+    --mrx-bg-glass:        rgba(255,255,255,0.6);
+    --mrx-text-primary:    #100444;
+    --mrx-text-secondary:  rgba(16,4,68,0.65);
+    --mrx-text-muted:      rgba(16,4,68,0.45);
+    --mrx-border:          rgba(16,4,68,0.12);
+    --mrx-border-strong:   rgba(16,4,68,0.25);
+    --mrx-highlight:       #100444;
+    --mrx-highlight-glow:  rgba(16,4,68,0.2);
+    --mrx-gold:            #d4a017;
+    --mrx-switcher-bg:     rgba(16,4,68,0.06);
+    --mrx-switcher-active: #ffffff;
+    --mrx-switcher-shadow: 0 2px 8px rgba(16,4,68,0.18);
+
+    /* Sidebar */
+    --sidebar-background: 249 30% 97%;
+    --sidebar-foreground: 249 87% 14%;
     --sidebar-primary: 46 85% 55%;
     --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 46 85% 55%;
-    --sidebar-border: 46 20% 15%;
+    --sidebar-accent: 249 30% 92%;
+    --sidebar-accent-foreground: 249 87% 14%;
+    --sidebar-border: 249 30% 88%;
     --sidebar-ring: 46 85% 55%;
     --sidebar-width: 17rem;
     --sidebar-width-mobile: 18rem;
     --sidebar-width-icon: 3rem;
   }
 
-  /* .dark class is redundant but kept for compatibility */
-  /* .dark class overrides */
+  /* ── DARK MODE — هوية ثنائية صارمة: #100444 / #FFFFA3 ────────── */
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 45 20% 96%;
-    --card: 0 0% 6%;
-    --card-foreground: 45 20% 96%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 45 20% 96%;
-    --primary: 46 85% 55%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 0 0% 9%;
-    --secondary-foreground: 45 20% 96%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    /* Tailwind semantic tokens — mapped to brand identity */
+    --background: 249 87% 14%;         /* #100444 */
+    --foreground: 60 100% 82%;         /* #FFFFA3 */
+    --card: 249 80% 17%;
+    --card-foreground: 60 100% 82%;
+    --popover: 249 87% 12%;
+    --popover-foreground: 60 100% 82%;
+    --primary: 46 85% 55%;             /* Gold accent يظل نشطاً */
+    --primary-foreground: 249 87% 10%;
+    --secondary: 249 70% 20%;
+    --secondary-foreground: 60 100% 82%;
+    --muted: 249 60% 18%;
+    --muted-foreground: 60 60% 65%;
     --accent: 125 100% 54%;
     --accent-foreground: 0 0% 5%;
     --destructive: 0 85% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 46 30% 15%;
-    --input: 0 0% 12%;
-    --ring: 46 85% 55%;
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 45 20% 96%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 249 60% 25%;
+    --input: 249 70% 18%;
+    --ring: 60 100% 82%;
+    --gold-500: 46 85% 55%;
+    --gold-400: 46 90% 65%;
+    --gold-600: 46 80% 45%;
+
+    /* Mr. X Design Tokens — Dark (Strict Identity) */
+    --mrx-bg-primary:      #100444;
+    --mrx-bg-secondary:    #1a0a5c;
+    --mrx-bg-tertiary:     #0d0336;
+    --mrx-bg-card:         rgba(26,10,92,0.7);
+    --mrx-bg-glass:        rgba(16,4,68,0.5);
+    --mrx-text-primary:    #FFFFA3;
+    --mrx-text-secondary:  rgba(255,255,163,0.75);
+    --mrx-text-muted:      rgba(255,255,163,0.45);
+    --mrx-border:          rgba(255,255,163,0.12);
+    --mrx-border-strong:   rgba(255,255,163,0.28);
+    --mrx-highlight:       #FFFFA3;
+    --mrx-highlight-glow:  rgba(255,255,163,0.35);
+    --mrx-gold:            #f4c430;
+    --mrx-switcher-bg:     rgba(255,255,163,0.07);
+    --mrx-switcher-active: rgba(255,255,163,0.14);
+    --mrx-switcher-shadow: 0 2px 14px rgba(255,255,163,0.22);
+
+    /* Sidebar */
+    --sidebar-background: 249 87% 11%;
+    --sidebar-foreground: 60 100% 82%;
     --sidebar-primary: 46 85% 55%;
     --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 46 85% 55%;
-    --sidebar-border: 46 20% 15%;
-    --sidebar-ring: 46 85% 55%;
-    --gold-500: 46 85% 55%;
+    --sidebar-accent: 249 70% 18%;
+    --sidebar-accent-foreground: 60 100% 82%;
+    --sidebar-border: 249 60% 22%;
+    --sidebar-ring: 60 100% 82%;
+    --sidebar-width: 17rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem;
   }
 
-  /* Theme Overrides */
-  .theme-blue {
-    --gold-500: 221 83% 53%;
-    --primary: 221 83% 53%;
-    --ring: 221 83% 53%;
+  /* ── DARK GLASSMORPHISM — مستمد من #100444/#FFFFA3 حصراً ──────── */
+  .dark .glass-morphism {
+    background: rgba(16,4,68,0.5);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255,255,163,0.08);
   }
 
-  .dark.theme-blue {
-    --gold-500: 217 91% 60%;
-    --primary: 217 91% 60%;
-    --ring: 217 91% 60%;
+  .dark .glass-morphism-premium {
+    --glass-bg: 16, 4, 68;
+    --glass-opacity: 0.75;
+    --glass-border: 255, 255, 163;
+    background: rgba(16,4,68,0.75);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(255,255,163,0.1);
   }
 
-  .theme-red {
-    --gold-500: 350 89% 60%;
-    --primary: 350 89% 60%;
-    --ring: 350 89% 60%;
-  }
-
-  .dark.theme-red {
-    --gold-500: 345 96% 65%;
-    --primary: 345 96% 65%;
-    --ring: 345 96% 65%;
-  }
-
-  .theme-green {
-    --gold-500: 142 71% 45%;
-    --primary: 142 71% 45%;
-    --ring: 142 71% 45%;
-  }
-
-  .dark.theme-green {
-    --gold-500: 142 76% 56%;
-    --primary: 142 76% 56%;
-    --ring: 142 76% 56%;
-  }
-
-  .theme-purple {
-    --gold-500: 262 83% 58%;
-    --primary: 262 83% 58%;
-    --ring: 262 83% 58%;
-  }
-
-  .dark.theme-purple {
-    --gold-500: 270 95% 65%;
-    --primary: 270 95% 65%;
-    --ring: 270 95% 65%;
-  }
+  /* ── COLOR ACCENT OVERRIDES (للتوافق مع نظام الألوان الحالي) ─── */
+  .theme-blue   { --gold-500: 221 83% 53%; --primary: 221 83% 53%; --ring: 221 83% 53%; }
+  .dark.theme-blue  { --gold-500: 217 91% 60%; --primary: 217 91% 60%; --ring: 217 91% 60%; }
+  .theme-red    { --gold-500: 350 89% 60%; --primary: 350 89% 60%; --ring: 350 89% 60%; }
+  .dark.theme-red   { --gold-500: 345 96% 65%; --primary: 345 96% 65%; --ring: 345 96% 65%; }
+  .theme-green  { --gold-500: 142 71% 45%; --primary: 142 71% 45%; --ring: 142 71% 45%; }
+  .dark.theme-green { --gold-500: 142 76% 56%; --primary: 142 76% 56%; --ring: 142 76% 56%; }
+  .theme-purple { --gold-500: 262 83% 58%; --primary: 262 83% 58%; --ring: 262 83% 58%; }
+  .dark.theme-purple{ --gold-500: 270 95% 65%; --primary: 270 95% 65%; --ring: 270 95% 65%; }
 }
 
-/* --- GLOBAL BASE STYLES --- */
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL BASE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
 @layer base {
+
+  /* ── Smooth theme transitions (250ms — sweet spot) ──────────── */
   * {
     @apply border-border;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      background-color 250ms cubic-bezier(0.4,0,0.2,1),
+      border-color     250ms cubic-bezier(0.4,0,0.2,1),
+      color            250ms cubic-bezier(0.4,0,0.2,1),
+      box-shadow       250ms cubic-bezier(0.4,0,0.2,1),
+      opacity          250ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── prefers-reduced-motion — احترام إعدادات المستخدم ──────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration:  0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
   }
 
   body {
     @apply bg-background text-foreground;
-    transition: font-family 0.2s ease;
+    transition: background-color 250ms cubic-bezier(0.4,0,0.2,1),
+                color 250ms cubic-bezier(0.4,0,0.2,1);
   }
 
   /* Font Enforcement */

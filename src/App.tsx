@@ -38,6 +38,7 @@ import { PreferencesProvider } from './context/PreferencesProvider';
 import { RegionProvider } from './context/RegionContext';
 import PreferencesModal from './features/modal/PreferencesModal';
 import AuthGuard from './features/auth/AuthGuard';
+import { useTheme } from './hooks/useTheme';
 
 // Note: SmartBookLanding, LoginPage, SignupPage, ResetPasswordPage moved to Lazy Loaded section below
 
@@ -102,6 +103,7 @@ const ArabicVideoSection = React.lazy(() => import('./features/marketing/ArabicV
 
 interface AppContentProps {
   theme: 'light' | 'dark' | 'system';
+  resolvedTheme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   colorTheme: string;
   changeColorTheme: (color: string) => void;
@@ -120,7 +122,7 @@ interface AppContentProps {
 
 
 function AppContent({
-  theme, setTheme, colorTheme, changeColorTheme,
+  theme, resolvedTheme, setTheme, colorTheme, changeColorTheme,
   currencyState, currentPage, navigateTo, isCheckoutOpen, setIsCheckoutOpen,
   selectedTier, setSelectedTier,
   legalState, setLegalState, setHasPurchased
@@ -210,7 +212,7 @@ function AppContent({
   const sharedComponents = (
     <>
       <Header
-        theme={theme} setTheme={setTheme}
+        theme={theme} resolvedTheme={resolvedTheme} setTheme={setTheme}
         colorTheme={colorTheme} changeColorTheme={changeColorTheme}
         content={content} currentPage={currentPage} navigateTo={navigateTo}
         user={user} onLogout={signOut}
@@ -341,7 +343,7 @@ function AppContent({
 }
 
 export default function App() {
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'dark');
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [colorTheme, setColorTheme] = useState<string>(() => localStorage.getItem('colorTheme') || 'gold');
   const [currencyState, setCurrencyState] = useState<{ code: string; symbol: string; rate: number; locale: string }>({ code: 'USD', symbol: '$', rate: 1, locale: 'en-US' });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -474,17 +476,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Eyes on Theme
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-  }, [theme]);
+
 
   // Apply Color Theme
   useEffect(() => {
@@ -573,7 +565,7 @@ export default function App() {
         <div id="scroll-progress" />
         <LazyMotion features={domAnimation}>
           <AppContent
-            theme={theme} setTheme={setTheme}
+            theme={theme} resolvedTheme={resolvedTheme} setTheme={setTheme}
             colorTheme={colorTheme} changeColorTheme={changeColorTheme}
             currencyState={currencyState}
             currentPage={currentPage} navigateTo={navigateTo}

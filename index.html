@@ -1,7 +1,45 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
+  <!--
+    ╔══════════════════════════════════════════════════════════════╗
+    ║  MR. X — Anti-FOUC Theme Script                            ║
+    ║  يُنفَّذ قبل رندر DOM بالكامل لمنع وميض اللون الفاتح         ║
+    ║  Flash of Unstyled Content (FOUC) Prevention               ║
+    ╚══════════════════════════════════════════════════════════════╝
+  -->
+  <script>
+    (function () {
+      try {
+        // ── قراءة التفضيل المحفوظ، الافتراضي: dark ──────────────
+        var stored = localStorage.getItem('mrx_ui_theme') || 'dark';
+
+        // ── حسم وضع "النظام" عبر matchMedia ────────────────────
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : (stored === 'light' ? 'light' : 'dark');
+
+        // ── تطبيق الكلاس على <html> فوراً ───────────────────────
+        var root = document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(resolved);
+
+        // ── حفظ بيانات وصفية للمكونات React ─────────────────────
+        root.setAttribute('data-theme-mode', stored);
+        root.setAttribute('data-resolved-theme', resolved);
+
+        // ── مزامنة LocalStorage بالمفتاح القديم (للتوافق) ────────
+        if (!localStorage.getItem('theme')) {
+          localStorage.setItem('theme', stored);
+        }
+      } catch (e) {
+        // Fallback آمن عند حظر localStorage (private mode)
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
   <meta name="spaceremit-verification" content="5QWXZP2T0SGFPREK4WBUGOYIJ4EZGBJ4SPQ0ZMO7N4F8U43NXM">
   <meta charset="UTF-8" />
   <link rel="icon" href="/icon.webp" />

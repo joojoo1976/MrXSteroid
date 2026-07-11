@@ -14,8 +14,9 @@ export enum Currency {
 }
 
 export enum Theme {
-  DARK = 'dark',
-  GOLD = 'gold'
+  LIGHT  = 'light',
+  DARK   = 'dark',
+  SYSTEM = 'system',
 }
 
 export enum Page {
