@@ -116,7 +116,7 @@ describe('WCAG Color Contrast — getContrastRatio()', () => {
 // ══════════════════════════════════════════════════════════════════════
 describe('Anti-FOUC Logic', () => {
   it('should resolve "dark" stored mode to class "dark"', () => {
-    const stored = 'dark';
+    const stored = 'dark' as 'light' | 'dark' | 'system';
     const resolved = stored === 'system'
       ? (true /* systemPrefersDark */ ? 'dark' : 'light')
       : (stored === 'light' ? 'light' : 'dark');
@@ -124,7 +124,7 @@ describe('Anti-FOUC Logic', () => {
   });
 
   it('should resolve "light" stored mode to class "light"', () => {
-    const stored = 'light';
+    const stored = 'light' as 'light' | 'dark' | 'system';
     const resolved = stored === 'system'
       ? (true ? 'dark' : 'light')
       : (stored === 'light' ? 'light' : 'dark');
@@ -150,7 +150,7 @@ describe('Anti-FOUC Logic', () => {
   });
 
   it('should default to "dark" when localStorage is empty', () => {
-    const stored = null; // localStorage.getItem returns null
+    const stored: string | null = null; // localStorage.getItem returns null
     const effective = stored || 'dark';
     const resolved = effective === 'system'
       ? 'dark'
@@ -193,7 +193,7 @@ describe('useTheme Core Logic', () => {
     });
 
     it('returns "dark" when both keys are null', () => {
-      const mockGet = (_: string) => null;
+      const mockGet = (_: string): string | null => null;
       const validModes = ['light', 'dark', 'system'];
       const modern = mockGet('mrx_ui_theme');
       const legacy = mockGet('theme');
@@ -303,7 +303,7 @@ describe('useTheme Core Logic', () => {
 describe('System Listener Logic', () => {
   it('should NOT update resolved theme when mode is not "system"', () => {
     let resolvedTheme = 'dark';
-    const currentMode = 'dark'; // NOT system
+    const currentMode = 'dark' as 'light' | 'dark' | 'system'; // NOT system
 
     // Simulate matchMedia change handler
     const handler = (matches: boolean) => {
