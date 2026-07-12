@@ -32,7 +32,7 @@ const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: stri
   React.useEffect(() => {
     const start = ref.current;
     const end = value;
-    const duration = 1800;
+    const duration = 1500;
     const startTime = performance.now();
     const tick = (now: number) => {
       const elapsed = now - startTime;
@@ -60,13 +60,12 @@ const MacroRingCard: React.FC<{
   percent: number; delay: number;
 }> = ({ label, value, total: _total, color, bgColor, textColor, icon: Icon, desc, kcal, percent, delay }) => (
   <motion.div
-    initial={{ opacity: 0, y: 30, scale: 0.9 }}
+    initial={{ opacity: 0, y: 20, scale: 0.95 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={{ delay, type: 'spring', stiffness: 120 }}
-    whileHover={{ y: -6, scale: 1.03 }}
+    transition={{ delay, type: 'spring', stiffness: 100 }}
+    whileHover={{ y: -4, scale: 1.02 }}
     className={`relative overflow-hidden rounded-3xl p-5 border-2 ${bgColor} shadow-xl group cursor-default`}
   >
-    {/* توهج خلفي */}
     <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-30 ${color}`} />
     <div className="relative z-10">
       <div className="flex items-center justify-between mb-3">
@@ -80,13 +79,12 @@ const MacroRingCard: React.FC<{
       </div>
       <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">{label}</h4>
       <p className="text-[10px] font-medium text-zinc-500 leading-snug mb-3">{desc}</p>
-      {/* شريط التقدم */}
       <div className="h-1.5 bg-black/20 rounded-full overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${color}`}
           initial={{ width: 0 }}
           animate={{ width: `${Math.min(percent, 100)}%` }}
-          transition={{ delay: delay + 0.3, duration: 1.2, ease: 'easeOut' }}
+          transition={{ delay: delay + 0.2, duration: 1.0, ease: 'easeOut' }}
         />
       </div>
       <div className="flex justify-between mt-1">
@@ -103,10 +101,10 @@ const StatPill: React.FC<{
   icon: React.ElementType; color: string; delay: number; info?: string;
 }> = ({ label, value, unit = '', icon: Icon, color, delay, info }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
+    initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ delay, type: 'spring' }}
-    whileHover={{ scale: 1.05 }}
+    whileHover={{ scale: 1.03 }}
     className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-3 group overflow-hidden"
     title={info}
   >
@@ -213,7 +211,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
 
         {/* ══════════ لوحة الإدخال (INPUT PANEL) ══════════ */}
         <motion.div
-          initial={{ x: -50, opacity: 0 }}
+          initial={{ x: -30, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           className="lg:col-span-5 bg-white dark:bg-zinc-950/60 p-6 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 lg:sticky lg:top-24 backdrop-blur-xl"
         >
@@ -356,18 +354,12 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
         {/* ══════════ لوحة النتائج المذهلة (RESULTS PANEL) ══════════ */}
         <div className="lg:col-span-7 space-y-8">
           {result ? (
-            <motion.div
-              key="results-panel"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-8"
-            >
+            <div className="space-y-8">
 
               {/* ── لوحة نصائح الذكاء الاصطناعي الفوري ── */}
               <motion.div
-                initial={{ x: 60, opacity: 0 }}
+                initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 100 }}
                 className="relative p-5 bg-gradient-to-br from-gold-500 via-gold-600 to-amber-700 rounded-3xl text-black shadow-2xl overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
@@ -413,7 +405,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
 
               {/* ── تبويب نظرة عامة (OVERVIEW TAB) ── */}
               {activeTab === 'overview' && (
-                <motion.div key="tab-overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="space-y-6">
 
                   {/* كرت السعرات الرئيسي */}
                   <div className="relative p-6 rounded-[2.5rem] border border-zinc-800 bg-zinc-900 text-white shadow-2xl overflow-hidden">
@@ -437,7 +429,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
 
                       {/* المخطط الدائري التفاعلي */}
                       <div className="w-40 h-40 relative shrink-0">
-                        <ResponsiveContainer width="100%" height="100%">
+                        {/* استخدام key ديناميكي لمنع أخطاء DOM insertBefore تماماً */}
+                        <ResponsiveContainer width="100%" height="100%" key={`pie-container-${unitSystem}-${gender}-${result.calories}`}>
                           <PieChart>
                             <Pie
                               data={[
@@ -548,12 +541,12 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                       delay={0.3}
                     />
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* ── تبويب التفاصيل الحيوية (DETAILS TAB) ── */}
               {activeTab === 'details' && (
-                <motion.div key="tab-details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="space-y-6">
 
                   {/* تفاصيل معدلات الأيض الحيوية */}
                   <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4">
@@ -596,13 +589,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                           tip: content.calcFatsDesc || 'ضروري لإنتاج الهرمونات الذكورية (التستوستيرون) وامتصاص الفيتامينات القابلة للذوبان.',
                         },
                       ].map(({ label, value, kcal, pct, color, icon: Icon, textColor, tip }, i) => (
-                        <motion.div
-                          key={label}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.12 }}
-                          className="space-y-2"
-                        >
+                        <div key={label} className="space-y-2">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-zinc-800">
                               <Icon className={`w-4 h-4 ${textColor}`} />
@@ -623,11 +610,11 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                               style={{ backgroundColor: color }}
                               initial={{ width: 0 }}
                               animate={{ width: `${Math.min(pct, 100)}%` }}
-                              transition={{ delay: 0.3 + i * 0.12, duration: 1.2, ease: 'easeOut' }}
+                              transition={{ delay: 0.2 + i * 0.1, duration: 1.0, ease: 'easeOut' }}
                             />
                           </div>
                           <p className="text-[10px] text-zinc-600 font-medium ms-11 leading-snug">{tip}</p>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
 
@@ -635,9 +622,9 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                     <div className="mt-6 p-4 bg-zinc-900 rounded-2xl border border-zinc-800">
                       <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-3">{isAr ? 'تقسيم السعرات اليومية' : 'Daily Calorie Split'}</p>
                       <div className="flex h-4 rounded-full overflow-hidden gap-0.5">
-                        <motion.div className="bg-gold-500 h-full" style={{ width: `${proteinPct}%` }} initial={{ width: 0 }} animate={{ width: `${proteinPct}%` }} transition={{ duration: 1.5 }} />
-                        <motion.div className="bg-blue-500 h-full" style={{ width: `${carbsPct}%` }} initial={{ width: 0 }} animate={{ width: `${carbsPct}%` }} transition={{ duration: 1.5, delay: 0.1 }} />
-                        <motion.div className="bg-rose-500 h-full flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} />
+                        <motion.div className="bg-gold-500 h-full" style={{ width: `${proteinPct}%` }} initial={{ width: 0 }} animate={{ width: `${proteinPct}%` }} transition={{ duration: 1.2 }} />
+                        <motion.div className="bg-blue-500 h-full" style={{ width: `${carbsPct}%` }} initial={{ width: 0 }} animate={{ width: `${carbsPct}%` }} transition={{ duration: 1.2, delay: 0.1 }} />
+                        <motion.div className="bg-rose-500 h-full flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} />
                       </div>
                       <div className="flex gap-4 mt-2">
                         {[[ '#EAB308', content.calcProtein, Math.round(proteinPct) ], [ '#3b82f6', content.calcCarbs, Math.round(carbsPct) ], [ '#ef4444', content.calcFats, Math.round(fatsPct) ]].map(([c, l, p]) => (
@@ -649,12 +636,12 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* ── تبويب التوقع والمستقبل (SIMULATION TAB) ── */}
               {activeTab === 'simulation' && simulationData && (
-                <motion.div key="tab-sim" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="space-y-6">
                   <div className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-6 md:p-8 text-white overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-gold-500/5 rounded-full blur-3xl" />
                     <div className="relative z-10">
@@ -687,7 +674,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                       <p className="text-zinc-500 font-bold text-sm mb-6">{content.calcPatternAnalysisLabel}</p>
 
                       <div className="h-[280px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                        {/* استخدام key ديناميكي لحل أخطاء DOM insertBefore تماماً */}
+                        <ResponsiveContainer width="100%" height="100%" key={`sim-container-${unitSystem}-${gender}-${simulationData.length}`}>
                           <AreaChart data={simulationData}>
                             <defs>
                               <linearGradient id="simGrad" x1="0" y1="0" x2="0" y2="1">
@@ -702,7 +690,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                               contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px' }}
                               itemStyle={{ color: '#EAB308', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="weight" stroke="#EAB308" fillOpacity={1} fill="url(#simGrad)" strokeWidth={3} animationDuration={2000} />
+                            <Area type="monotone" dataKey="weight" stroke="#EAB308" fillOpacity={1} fill="url(#simGrad)" strokeWidth={3} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
@@ -717,18 +705,18 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                           <p className="text-xs font-black uppercase text-zinc-500 mb-1">{isAr ? 'الوزن المتوقع (١٢ أسبوع)' : '12-Week Projection'}</p>
                           <p className="text-2xl font-black text-green-400">
-                            <AnimatedNumber value={simulationData[simulationData.length - 1]?.weight ?? 0} decimals={1} suffix={isImperial ? ' lbs' : ' kg'} />
+                            <AnimatedNumber value={simulationData[simulationData.length - 1]?.weight ?? 0} decimals={0} suffix={isImperial ? ' lbs' : ' kg'} />
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* ── تبويب وجبات التغذية (MEALS TAB) ── */}
               {activeTab === 'meals' && (
-                <motion.div key="tab-meals" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                <div className="space-y-8">
                   {mealPlan && showMealPlan ? (
                     <>
                       {/* مخطط توزيع السعرات والماكروز اليومي على الوجبات */}
@@ -738,7 +726,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                             <TrendingUp className="w-4 h-4 text-gold-500" /> {content.calcDistributionTitle}
                           </h3>
                           <div className="h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
+                            {/* استخدام key ديناميكي لحل أخطاء DOM insertBefore تماماً */}
+                            <ResponsiveContainer width="100%" height="100%" key={`dist-container-${unitSystem}-${gender}-${chartData.length}`}>
                               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                   {[['colorP', '#EAB308'], ['colorC', '#3b82f6'], ['colorF', '#ef4444']].map(([id, c]) => (
@@ -769,12 +758,8 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
 
                       <div className="grid md:grid-cols-2 gap-6">
                         {mealPlan.map((meal, idx) => (
-                          <motion.div
+                          <div
                             key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.08, type: 'spring', stiffness: 120 }}
-                            whileHover={{ y: -4 }}
                             className="bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group"
                           >
                             <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -821,7 +806,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                                 ))}
                               </div>
                             </div>
-                          </motion.div>
+                          </div>
                         ))}
                       </div>
 
@@ -847,10 +832,10 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                       <p className="font-bold">{isAr ? 'جاري إعداد وتحليل خطة وجباتك النخبوية...' : 'Generating your meal plan…'}</p>
                     </div>
                   )}
-                </motion.div>
+                </div>
               )}
 
-            </motion.div>
+            </div>
           ) : (
             <motion.div
               key="empty-state"
