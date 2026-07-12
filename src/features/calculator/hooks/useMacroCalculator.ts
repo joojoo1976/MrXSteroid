@@ -61,24 +61,25 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
     const [baseHeight, setBaseHeight] = useState<number>(0);
 
     const normalizeNum = (str: string) => {
+        if (!str) return '';
         return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)])
-            .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
+            .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶Typed".indexOf(d)]);
     };
 
-    // تحديث قيم المدخلات والنتائج فوراً عند تغيير نظام الوحدات (متري/إمبراطوري)
+    // مزامنة وتحديث قيم المدخلات الحرة والنتائج عند تغيير نظام الوحدات (متري/إمبراطوري)
     useEffect(() => {
         if (baseWeight > 0) {
             const displayVal = convertValue(baseWeight, 'weight', unitSystem);
-            setWeight(displayVal.toFixed(1));
+            // استخدام التقريب لأقرب رقم صحيح لإزالة كسر (.0) العائق وجعل الإدخال حراً ومريحاً
+            setWeight(Math.round(displayVal).toString());
         }
         if (baseHeight > 0) {
             const displayVal = convertValue(baseHeight, 'height', unitSystem);
-            setHeight(displayVal.toFixed(1));
+            setHeight(Math.round(displayVal).toString());
         }
 
-        // إذا كانت هناك نتائج معروضة، نقوم بتحديث المخططات والمحاكاة لتتوافق مع نظام الوحدات المختار
+        // تحديث المخططات الحية والتوقعات وخطة الوجبات تلقائياً بناءً على النظام المحدد
         if (result) {
-            // 1. تحديث مخطط المحاكاة الأسبوعي (التوقع)
             const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;
             let weightTrendKg = baseWeight || 80;
             const simPoints: SimulationPoint[] = [];
@@ -88,13 +89,12 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
                 const displayW = unitSystem === 'imperial' ? weightTrendKg * 2.20462262 : weightTrendKg;
                 simPoints.push({
                     week: `W${i}`,
-                    weight: parseFloat(displayW.toFixed(1)),
+                    weight: Math.round(displayW),
                     efficiency: Math.round(85 + Math.random() * 10),
                 });
             }
             setSimulationData(simPoints);
 
-            // 2. تحديث خطة الوجبات بالمقادير المناسبة للوحدة الحالية (جرام مقابل أونصة)
             const updatedMeals: DailyMeal[] = [];
             const targetP = result.protein / 4;
             const targetC = result.carbs / 4;
@@ -131,17 +131,31 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
 
     const handleWeightChange = (val: string) => {
         setWeight(val);
-        const num = parseFloat(normalizeNum(val));
+        if (val === '') {
+            setBaseWeight(0);
+            return;
+        }
+        const cleanVal = normalizeNum(val);
+        const num = parseFloat(cleanVal);
         if (!isNaN(num)) {
             setBaseWeight(isImperial ? toMetric(num, 'weight') : num);
+        } else {
+            setBaseWeight(0);
         }
     };
 
     const handleHeightChange = (val: string) => {
         setHeight(val);
-        const num = parseFloat(normalizeNum(val));
+        if (val === '') {
+            setBaseHeight(0);
+            return;
+        }
+        const cleanVal = normalizeNum(val);
+        const num = parseFloat(cleanVal);
         if (!isNaN(num)) {
             setBaseHeight(isImperial ? toMetric(num, 'height') : num);
+        } else {
+            setBaseHeight(0);
         }
     };
 
@@ -156,7 +170,7 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
             const displayWeight = isImperial ? weightTrendKg * 2.20462262 : weightTrendKg;
             data.push({
                 week: `W${i}`,
-                weight: parseFloat(displayWeight.toFixed(1)),
+                weight: Math.round(displayWeight),
                 efficiency: Math.round(85 + Math.random() * 10),
             });
         }
@@ -166,9 +180,10 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
     const calculate = useCallback(() => {
         const w = baseWeight;
         const h = baseHeight;
-        const a = parseFloat(normalizeNum(age));
+        const cleanAge = normalizeNum(age);
+        const a = parseFloat(cleanAge);
 
-        if (!w || !h || !a) {
+        if (!w || !h || !a || isNaN(w) || isNaN(h) || isNaN(a)) {
             toast.error(isAr ? "يرجى إدخال أرقام صحيحة في جميع الحقول" : "Please enter valid numbers in all fields");
             return;
         }
@@ -231,7 +246,7 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
                 const displayWeight = isImperial ? weightTrendKg * 2.20462262 : weightTrendKg;
                 simPoints.push({
                     week: `W${i}`,
-                    weight: parseFloat(displayWeight.toFixed(1)),
+                    weight: Math.round(displayWeight),
                     efficiency: Math.round(85 + Math.random() * 10),
                 });
             }
