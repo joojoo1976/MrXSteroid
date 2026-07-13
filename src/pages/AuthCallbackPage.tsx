@@ -1,59 +1,64 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
-import { Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
 
+// Custom navigation helper (matches App.tsx Page enum routing)
+const navigateToPage = (path: string) => {
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: path.replace(/^\//, '').replace(/\//g, '_') }));
+    // Fallback: force re-render by popstate
+    window.dispatchEvent(new PopStateEvent('popstate'));
+};
+
 const AuthCallbackPage: React.FC = () => {
-    const navigate = useNavigate();
     const { isRTL } = usePreferences();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
             try {
                 // Get the current URL and extract hash fragment
-                const hashFragment = window.location.hash.substring(1); // Remove the '#'
+                const hashFragment = window.location.hash.substring(1);
                 const params = new URLSearchParams(hashFragment);
 
+                // Also check query params (for some OAuth flows)
+                const queryParams = new URLSearchParams(window.location.search);
+
                 // Check for error in URL
-                const errorDescription = params.get('error_description');
+                const errorDescription = params.get('error_description') || queryParams.get('error_description');
                 if (errorDescription) {
                     toast.error(errorDescription);
-                    navigate(Page.LOGIN);
+                    navigateToPage('/login');
                     return;
                 }
 
                 // Check for email confirmation type
-                const type = params.get('type');
+                const type = params.get('type') || queryParams.get('type');
 
                 // Handle email confirmation (Supabase redirects here after clicking email link)
                 if (type === 'signup' || type === 'email') {
-                    console.log('📧 Email confirmation callback detected');
+                    console.log('Email confirmation callback detected');
 
-                    // Supabase should have already confirmed the email via cookie/session
-                    // Just need to check if user is confirmed and redirect appropriately
                     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
                     if (sessionError) {
                         console.warn('Session error after email confirmation:', sessionError);
-                        // Even without session, email might be confirmed
                         toast.success(
                             isRTL
                                 ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
                                 : 'Email confirmed! Please log in.'
                         );
-                        navigate(Page.LOGIN);
+                        navigateToPage('/login');
                         return;
                     }
 
                     if (session) {
                         const isEmailConfirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
-                        console.log('📧 Email confirmed:', isEmailConfirmed, 'User ID:', session.user.id);
+                        console.log('Email confirmed:', isEmailConfirmed, 'User ID:', session.user.id);
 
                         if (isEmailConfirmed) {
-                            // Sync verification status and avatar with profiles table
+                            // Sync profile data after email confirmation (now we have an active session)
                             try {
                                 const avatarUrl = getAvatarUrl({
                                     email: session.user.email || undefined,
@@ -61,7 +66,6 @@ const AuthCallbackPage: React.FC = () => {
                                     providerAvatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
                                 });
 
-                                // Update profile with avatar and sync metadata
                                 const { error: updateError } = await supabase.from('profiles').update({
                                     avatar_url: avatarUrl,
                                     full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
@@ -72,43 +76,37 @@ const AuthCallbackPage: React.FC = () => {
                                 if (updateError) {
                                     console.warn('Profile update error:', updateError);
                                 } else {
-                                    console.log('✅ Profile synced successfully');
+                                    console.log('Profile synced successfully after email confirmation');
                                 }
                             } catch (syncErr) {
                                 console.warn('Profile sync after verification:', syncErr);
                             }
 
                             toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
-
-                            // IMPORTANT: Session is already persisted by Supabase via cookie/localStorage
-                            // The AuthContext will pick it up automatically
-                            navigate(Page.DASHBOARD);
+                            navigateToPage('/dashboard');
                         } else {
                             toast.warning(
                                 isRTL
                                     ? 'يرجى تأكيد بريدك الإلكتروني أولاً'
                                     : 'Please confirm your email first'
                             );
-                            navigate(Page.PROFILE);
+                            navigateToPage('/profile');
                         }
                     } else {
-                        // Email confirmed but no session - ask user to login
-                        console.log('⚠️ Email confirmed but no session found');
+                        console.log('Email confirmed but no session found');
                         toast.success(
                             isRTL
                                 ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
                                 : 'Email confirmed! Please log in.'
                         );
-                        navigate(Page.LOGIN);
+                        navigateToPage('/login');
                     }
                     return;
                 }
 
-                // Check for recovery type
+                // Check for recovery type (password reset)
                 if (type === 'recovery') {
-                    navigate(Page.RESET_PASSWORD, {
-                        state: { recoveryToken: params.get('token') }
-                    });
+                    navigateToPage('/reset-password');
                     return;
                 }
 
@@ -117,7 +115,7 @@ const AuthCallbackPage: React.FC = () => {
                 const refreshToken = params.get('refresh_token');
 
                 if (accessToken && refreshToken) {
-                    console.log('🔑 Setting OAuth session...');
+                    console.log('Setting OAuth session...');
                     const { data, error } = await supabase.auth.setSession({
                         access_token: accessToken,
                         refresh_token: refreshToken
@@ -125,7 +123,7 @@ const AuthCallbackPage: React.FC = () => {
 
                     if (error) throw error;
 
-                    // Sync OAuth avatar to profiles table
+                    // Sync OAuth profile
                     if (data.user) {
                         try {
                             const avatarUrl = getAvatarUrl({
@@ -144,29 +142,27 @@ const AuthCallbackPage: React.FC = () => {
                     }
 
                     toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
-                    navigate(Page.DASHBOARD);
+                    navigateToPage('/dashboard');
                 } else {
+                    // No tokens in URL — check if session exists from cookie/localStorage
                     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
                     if (sessionError) throw sessionError;
 
                     if (session) {
-                        console.log('✅ Session found, redirecting to dashboard');
+                        console.log('Session found, redirecting to dashboard');
                         toast.success(isRTL ? 'مرحباً بك مجدداً!' : 'Welcome back!');
-                        navigate(Page.DASHBOARD);
+                        navigateToPage('/dashboard');
                     } else {
-                        // If no session, it might be an email confirmation link that didn't provide tokens in fragment
-                        // but Supabase might have handled it via cookies if same origin.
-                        // Or it's an invalid access.
                         console.warn('No session found in callback');
                         toast.info(isRTL ? 'يرجى تسجيل الدخول.' : 'Please log in to continue.');
-                        navigate(Page.LOGIN);
+                        navigateToPage('/login');
                     }
                 }
             } catch (error: unknown) {
                 console.error('Auth callback error:', error);
                 toast.error(isRTL ? 'فشل التحقق. يرجى المحاولة مرة أخرى.' : 'Verification failed. Please try again.');
-                navigate(Page.LOGIN);
+                navigateToPage('/login');
             }
         };
 
@@ -176,14 +172,18 @@ const AuthCallbackPage: React.FC = () => {
         if (window.location.hash) {
             history.replaceState(null, '', window.location.pathname);
         }
-    }, [navigate, isRTL]);
+    }, [isRTL]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
             <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold-500 mb-4"></div>
-                <h2 className="text-xl font-semibold text-foreground">Completing authentication...</h2>
-                <p className="text-muted-foreground">Please wait while we verify your credentials</p>
+                <h2 className="text-xl font-semibold text-foreground">
+                    {isRTL ? 'جاري إتمام المصادقة...' : 'Completing authentication...'}
+                </h2>
+                <p className="text-muted-foreground">
+                    {isRTL ? 'يرجى الانتظار whilst نتحقق من بياناتك...' : 'Please wait while we verify your credentials'}
+                </p>
             </div>
         </div>
     );
