@@ -78,7 +78,7 @@ export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
             setLoading(true);
 
             // Check if Supabase is properly configured
-            const isSupabaseConfigured = import.meta.env.NEXT_PUBLIC_SUPABASE_URL && import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
             let result;
 

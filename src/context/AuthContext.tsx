@@ -37,8 +37,8 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // Check configuration once
-    const isSupabaseConfigured = Boolean(import.meta.env.NEXT_PUBLIC_SUPABASE_URL && import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    // Check configuration once (supports both VITE_ and NEXT_PUBLIC_ prefixes)
+    const isSupabaseConfigured = Boolean((import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY));
 
     const [user, setUser] = useState<User | MockUser | null>(() => {
         if (!isSupabaseConfigured) return mockAuthService.getCurrentUser();
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signOut = async () => {
         try {
             // Check if Supabase is configured
-            const isSupabaseConfigured = import.meta.env.NEXT_PUBLIC_SUPABASE_URL && import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+            const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
             if (isSupabaseConfigured) {
                 await supabase.auth.signOut();

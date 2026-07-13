@@ -7,7 +7,7 @@ import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
-import { getAvatarUrl } from '../../../shared/lib/avatar-service';
+// avatar-service import removed — avatar sync deferred to AuthCallbackPage
 
 // Password validation helper - matches auth-service requirements
 const isSecurePassword = (password: string): boolean => {
@@ -160,29 +160,12 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                 setUsedMockAuth(true);
             }
 
-            // Store Gravatar URL as default avatar for email signups
-            // Commit profile data BEFORE showing success screen
-            if (!usedMockAuth && 'data' in result && result.data?.user?.id) {
-                const userId = result.data.user.id;
-                try {
-                    const avatarUrl = getAvatarUrl({ email: values.email });
-                    // Update profile with avatar and ensure full_name/user_name are committed
-                    const { error: profileError } = await supabase.from('profiles').update({
-                        avatar_url: avatarUrl,
-                        full_name: values.fullName,
-                        user_name: values.username,
-                        updated_at: new Date().toISOString()
-                    }).eq('id', userId);
+            // Profile update is deferred to AuthCallbackPage after email confirmation
+            // because RLS requires an active session (auth.uid()) which doesn't exist yet.
+            // The DB trigger 'handle_new_user' already creates the profile row with
+            // full_name, user_name, avatar_url, currency, and role from metadata.
 
-                    if (profileError) {
-                        console.warn('Profile update error:', profileError);
-                    }
-                } catch (avatarErr) {
-                    console.warn('Could not set default avatar:', avatarErr);
-                }
-            }
-
-            // Only show success screen AFTER profile data is committed
+            // Only show success screen
             setSuccess(true);
 
             // Show appropriate success message based on auth method
