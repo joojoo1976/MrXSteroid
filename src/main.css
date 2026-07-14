@@ -255,10 +255,7 @@
     transition: direction 0.3s ease;
   }
 
-  input,
-  textarea {
-    unicode-bidi: plaintext;
-  }
+  /* unicode-bidi: plaintext removed — was causing English input issues in RTL mode */
 }
 
 /* --- UTILITY CLASSES --- */

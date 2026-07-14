@@ -134,9 +134,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
+                                                                dir="ltr"
                                                                 disabled={loading}
                                                                 autoComplete="name"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.fullNamePlaceholder || "John Doe"}
                                                             />
                                                         </div>
@@ -159,9 +160,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
+                                                                dir="ltr"
                                                                 disabled={loading}
                                                                 autoComplete="username"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.usernamePlaceholder || "johndoe123"}
                                                             />
                                                         </div>
@@ -186,9 +188,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                         <Input
                                                             {...field}
                                                             type="email"
+                                                            dir="ltr"
                                                             disabled={loading}
                                                             autoComplete="email"
-                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                             placeholder={content.emailPlaceholder || "name@example.com"}
                                                         />
                                                     </div>
@@ -213,9 +216,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 type="password"
+                                                                dir="ltr"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.passwordPlaceholder || "••••••••"}
                                                             />
                                                         </div>
@@ -239,9 +243,10 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 type="password"
+                                                                dir="ltr"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.passwordPlaceholder || (isRTL ? "••••••••" : "••••••••")}
                                                             />
                                                         </div>
