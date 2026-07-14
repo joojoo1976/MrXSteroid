@@ -256,6 +256,22 @@
   }
 
   /* unicode-bidi: plaintext removed — was causing English input issues in RTL mode */
+
+  /* ── إصلاح حقول الإدخال في وضع RTL — Force LTR for latin inputs ── */
+  input[dir="ltr"],
+  input[type="email"],
+  input[type="password"],
+  input[type="text"][dir="ltr"] {
+    direction: ltr !important;
+    unicode-bidi: normal !important;
+    text-align: left !important;
+  }
+
+  /* Ensure all form inputs are never restricted by global RTL settings */
+  input:not([dir="rtl"]),
+  textarea:not([dir="rtl"]) {
+    unicode-bidi: normal;
+  }
 }
 
 /* --- UTILITY CLASSES --- */
