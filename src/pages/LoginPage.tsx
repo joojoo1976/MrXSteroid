@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
+import { useAuth } from '../context/AuthContext';
 import { useLogin } from '../features/auth/hooks/useLogin';
 
 // Design System
@@ -24,10 +25,12 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
   const { isRTL } = usePreferences();
+  const { refreshUser } = useAuth();
 
   const { form, loading, isLocked, lockoutTimer, onSubmit } = useLogin({
     isRTL,
-    navigateTo
+    navigateTo,
+    refreshUser
   });
 
   return (
@@ -80,8 +83,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                       <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-3.5 h-3.5 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
                       <Input
                         {...field}
+                        dir="ltr"
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
                         placeholder={content.emailPlaceholder || "john@example.com"}
                       />
                     </div>
@@ -105,8 +109,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                       <Input
                         {...field}
                         type="password"
+                        dir="ltr"
                         disabled={loading || isLocked}
-                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all`}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
                         placeholder={content.passwordPlaceholder || "••••••••"}
                       />
                     </div>

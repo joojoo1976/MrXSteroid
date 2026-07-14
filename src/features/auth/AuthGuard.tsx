@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../shared/lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
+import { Page } from '../../shared/types/types';
 
 /**
  * Enterprise-Grade Auth Guard (Client-Side)
@@ -11,14 +12,15 @@ import { toast } from 'sonner';
  * 1. User Session existence via Supabase Auth.
  * 2. Subscription Status ('active') for 'steroid_book' product.
  * 
- * If check fails, redirects to Login or Pricing page, preserving returnUrl.
+ * If check fails, uses SPA navigation (not window.location.href) to redirect.
  */
 interface AuthGuardProps {
     children: React.ReactNode;
     requireSubscription?: boolean;
+    navigateTo?: (page: Page) => void;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = false }) => {
+const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = false, navigateTo }) => {
     const { user, loading } = useAuth();
     const [isChecking, setIsChecking] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -28,8 +30,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
             if (loading) return; // Wait for AuthContext
 
             if (!user) {
-                // User is not logged in
-                window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+                // User is not logged in - use SPA navigation if available
+                if (navigateTo) {
+                    navigateTo(Page.LOGIN);
+                } else {
+                    window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+                }
                 return;
             }
 
@@ -44,7 +50,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
 
                 if (error || !sub || sub.status !== 'active') {
                     toast.error("Active subscription required for this content.");
-                    window.location.href = `/pricing?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+                    if (navigateTo) {
+                        navigateTo(Page.LOGIN);
+                    } else {
+                        window.location.href = `/pricing?returnUrl=${encodeURIComponent(window.location.pathname)}`;
+                    }
                     return;
                 }
             }
@@ -55,7 +65,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
         };
 
         checkAccess();
-    }, [user, loading, requireSubscription]);
+    }, [user, loading, requireSubscription, navigateTo]);
 
     if (loading || isChecking) {
         return (

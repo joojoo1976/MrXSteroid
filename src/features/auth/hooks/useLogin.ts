@@ -19,12 +19,13 @@ type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
 interface UseLoginOptions {
     isRTL: boolean;
     navigateTo: (page: Page) => void;
+    refreshUser?: () => Promise<void>;
 }
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 30000; // 30 seconds
 
-export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
+export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) => {
     const [loading, setLoading] = useState(false);
     const [attempts, setAttempts] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
@@ -104,6 +105,10 @@ export const useLogin = ({ isRTL, navigateTo }: UseLoginOptions) => {
             }
 
             toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
+            // Wait for AuthContext to process the sign-in before navigating
+            if (refreshUser) {
+                await refreshUser();
+            }
             navigateTo(Page.DASHBOARD);
         } catch (error) {
             await errorHandler.handle(error, 'Login');

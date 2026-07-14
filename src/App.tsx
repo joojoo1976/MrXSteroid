@@ -265,8 +265,8 @@ function AppContent({
               {currentPage === Page.HALFLIFE && <HalfLifeVisualizer content={content} />}
               {currentPage === Page.LAB && <SmartLabReference content={content} navigateTo={navigateTo} />}
               {currentPage === Page.GENETIC && <GeneticPotentialCalculator content={content} navigateTo={navigateTo} />}
-              {currentPage === Page.CYCLE_ARCHITECT && <AuthGuard requireSubscription={true}><CycleCalendarExporter content={content} navigateTo={navigateTo} /></AuthGuard>}
-              {currentPage === Page.MASTER_CALCULATOR && <AuthGuard requireSubscription={true}><MasterCalculator navigateTo={navigateTo} /></AuthGuard>}
+              {currentPage === Page.CYCLE_ARCHITECT && <AuthGuard requireSubscription={true} navigateTo={navigateTo}><CycleCalendarExporter content={content} navigateTo={navigateTo} /></AuthGuard>}
+              {currentPage === Page.MASTER_CALCULATOR && <AuthGuard requireSubscription={true} navigateTo={navigateTo}><MasterCalculator navigateTo={navigateTo} /></AuthGuard>}
               {currentPage === Page.SMART_LANDING && <SmartBookLanding />}
               {currentPage === Page.LOGIN && <LoginPage content={content} navigateTo={navigateTo} />}
               {currentPage === Page.SIGNUP && <SignupPage content={content} navigateTo={navigateTo} />}
