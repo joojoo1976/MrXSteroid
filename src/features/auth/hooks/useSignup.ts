@@ -74,8 +74,9 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         setLoading(true);
 
         try {
-            // Check if Supabase is properly configured
-            const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+            // Check if Supabase is properly configured (support both VITE_ and NEXT_PUBLIC_ prefixes)
+            const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) &&
+                (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
             let result;
             let usedMockAuth = false;
