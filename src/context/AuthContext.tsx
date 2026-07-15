@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
     });
 
-    const [loading, setLoading] = useState(() => !isSupabaseConfigured); // If mock, not loading
+    const [loading, setLoading] = useState(true); // Always start loading; resolved after getSession()
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
     // Fetch profile data from the profiles table
