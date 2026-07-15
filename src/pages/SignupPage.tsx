@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
 import { ContentStrings, Page } from '@/shared/types/types';
@@ -29,6 +29,14 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
         isRTL,
         navigateTo
     });
+
+    // Set SP_FORM_ID only while the signup page (with the registration form) is mounted
+    useEffect(() => {
+        (window as any).SP_FORM_ID = "registration-form";
+        return () => {
+            delete (window as any).SP_FORM_ID;
+        };
+    }, []);
 
     if (success) {
         return (
@@ -135,6 +143,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
+                                                                inputMode="latin"
+                                                                lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="name"
                                                                 className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
@@ -161,6 +171,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
+                                                                inputMode="latin"
+                                                                lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="username"
                                                                 className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
@@ -189,6 +201,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             {...field}
                                                             type="email"
                                                             dir="ltr"
+                                                            inputMode="email"
+                                                            lang="en"
                                                             disabled={loading}
                                                             autoComplete="email"
                                                             className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
@@ -217,6 +231,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 {...field}
                                                                 type="password"
                                                                 dir="ltr"
+                                                                inputMode="latin"
+                                                                lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
                                                                 className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
@@ -244,6 +260,8 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 {...field}
                                                                 type="password"
                                                                 dir="ltr"
+                                                                inputMode="latin"
+                                                                lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
                                                                 className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}

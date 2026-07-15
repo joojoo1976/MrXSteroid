@@ -84,6 +84,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                       <Input
                         {...field}
                         dir="ltr"
+                        inputMode="email"
+                        lang="en"
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
                         placeholder={content.emailPlaceholder || "john@example.com"}
@@ -110,6 +112,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                         {...field}
                         type="password"
                         dir="ltr"
+                        inputMode="latin"
+                        lang="en"
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
                         placeholder={content.passwordPlaceholder || "••••••••"}
