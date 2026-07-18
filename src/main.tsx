@@ -1,5 +1,3 @@
-// Define SP_FORM_ID for spaceremit.js before any other imports
-window.SP_FORM_ID = "registration-form";
 
 import React from "react";
 import { createRoot } from "react-dom/client";
