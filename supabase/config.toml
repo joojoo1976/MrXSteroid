@@ -1,18 +1,44 @@
 project_id = "alghvtpkpspnqupbvodu"
 
 [auth]
-enable_signup = true
+site_url = "https://mrxsteroid-georges-projects-78ef250b.vercel.app/"
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://localhost:5173/*",
+  "https://mrxsteroid.vercel.app/**",
+  "https://mrxsteroid.vercel.app/dashboard",
+  "https://joojoo1976.github.io/MrXSteroid/auth/callback",
+  "https://mrxsteroid.vercel.app/auth/callback",
+  "https://mrxsteroid-georges-projects-78ef250b.vercel.app/",
+  "https://mrxsteroid-georges-projects-78ef250b.vercel.app/**",
+  "https://mrxsteroid-*-georges-projects-78ef250b.vercel.app",
+  "https://mrxsteroid-*-georges-projects-78ef250b.vercel.app/**"
+]
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
 
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
+max_frequency = "1m0s"
 
 [auth.email.smtp]
-enable = true
-host = "smtp.gmail.com"
-port = 587
-user = "foryoutalk@gmail.com"
-pass = "env(GMAIL_APP_PASSWORD)"
-admin_email = "foryoutalk@gmail.com"
-sender_name = "Mr. X Steroid"
+enabled = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+message_service_sid = ""
+auth_token = ""
