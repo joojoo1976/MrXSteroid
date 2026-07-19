@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { MockUser } from '../shared/lib/mock-auth-service';
@@ -7,7 +7,7 @@ import { DynamicBrandLogo } from '../shared/ui/DynamicBrandLogo';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
 import { supabase } from '../shared/lib/supabase';
 import { toast } from 'sonner';
-import { AlertCircle, CheckCircle2, User, Mail, Shield, ArrowLeft, Camera } from 'lucide-react';
+import { AlertCircle, CheckCircle2, User, Mail, Shield, ArrowLeft, Camera, Loader2 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
@@ -23,6 +23,63 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     const { loading, profileData, refreshUser } = useAuth();
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [isResending, setIsResending] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user?.id) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error(isRTL ? 'يرجى اختيار ملف صورة فقط' : 'Please select an image file only');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error(isRTL ? 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت' : 'Image size must be less than 2MB');
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // Update profile in DB
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('id', user.id);
+
+            if (updateError) throw updateError;
+
+            setLocalAvatarUrl(publicUrl);
+            await refreshUser();
+            toast.success(isRTL ? '✅ تم تحديث الصورة الشخصية بنجاح!' : '✅ Profile picture updated successfully!');
+        } catch (err: any) {
+            console.error('Avatar upload error:', err);
+            toast.error(isRTL ? `فشل رفع الصورة: ${err.message}` : `Failed to upload avatar: ${err.message}`);
+        } finally {
+            setIsUploadingAvatar(false);
+            // Reset input so same file can be selected again
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     useEffect(() => {
         // Check if user has confirmed their email on mount
@@ -198,15 +255,31 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                     >
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-xl shadow-zinc-200/50 dark:shadow-none">
                             <div className="relative inline-block mb-6">
+                                {/* Hidden file input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleAvatarUpload}
+                                />
                                 <div className="w-32 h-32 rounded-full border-4 border-gold-500/20 p-1 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 overflow-hidden shadow-inner">
-                                    <img src={profilePic} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                    <img
+                                        src={localAvatarUrl || profilePic}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover rounded-full"
+                                    />
                                 </div>
                                 <button
                                     aria-label={isRTL ? "تغيير الصورة الشخصية" : "Change Profile Picture"}
                                     title={isRTL ? "تغيير الصورة الشخصية" : "Change Profile Picture"}
-                                    className="absolute bottom-0 right-0 p-2 bg-gold-500 text-black rounded-full shadow-lg hover:scale-110 transition-transform border-4 border-white dark:border-zinc-900"
+                                    disabled={isUploadingAvatar}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="absolute bottom-0 right-0 p-2 bg-gold-500 text-black rounded-full shadow-lg hover:scale-110 transition-transform border-4 border-white dark:border-zinc-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    <Camera className="w-4 h-4" />
+                                    {isUploadingAvatar
+                                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                                        : <Camera className="w-4 h-4" />}
                                 </button>
                             </div>
                             <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-1">{displayName}</h2>
