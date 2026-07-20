@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { MockUser } from '../shared/lib/mock-auth-service';
 import { ContentStrings, Page } from '@/shared/types/types';
@@ -25,27 +25,80 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
     const [isResending, setIsResending] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
+    const [showAvatarSpecs, setShowAvatarSpecs] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // ─── Avatar upload rules ───────────────────────────────────────────────
+    const AVATAR_RULES = {
+        maxSizeBytes: 2 * 1024 * 1024,           // 2 MB
+        maxSizeMB: 2,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        allowedExt: 'JPG, PNG, WebP',
+        minDimension: 100,
+        maxDimension: 2000,
+    };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !user?.id) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            toast.error(isRTL ? 'يرجى اختيار ملف صورة فقط' : 'Please select an image file only');
+        // 1. Validate file type (strict: only JPG / PNG / WebP)
+        if (!AVATAR_RULES.allowedTypes.includes(file.type)) {
+            toast.error(
+                isRTL
+                    ? `❌ صيغة غير مدعومة. الصيغ المقبولة: ${AVATAR_RULES.allowedExt}`
+                    : `❌ Unsupported format. Allowed: ${AVATAR_RULES.allowedExt}`
+            );
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error(isRTL ? 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت' : 'Image size must be less than 2MB');
+        // 2. Validate file size (max 2 MB)
+        if (file.size > AVATAR_RULES.maxSizeBytes) {
+            toast.error(
+                isRTL
+                    ? `❌ حجم الصورة يتجاوز ${AVATAR_RULES.maxSizeMB} ميجابايت. يرجى ضغط الصورة أولاً.`
+                    : `❌ Image exceeds ${AVATAR_RULES.maxSizeMB}MB. Please compress it first.`
+            );
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
+        // 3. Validate image dimensions
+        const dimensionError = await new Promise<string | null>((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(img.src);
+                if (img.width < AVATAR_RULES.minDimension || img.height < AVATAR_RULES.minDimension) {
+                    resolve(
+                        isRTL
+                            ? `❌ الصورة صغيرة جداً. الحد الأدنى ${AVATAR_RULES.minDimension}×${AVATAR_RULES.minDimension} بكسل.`
+                            : `❌ Image too small. Minimum ${AVATAR_RULES.minDimension}×${AVATAR_RULES.minDimension}px.`
+                    );
+                } else if (img.width > AVATAR_RULES.maxDimension || img.height > AVATAR_RULES.maxDimension) {
+                    resolve(
+                        isRTL
+                            ? `❌ الصورة كبيرة جداً. الحد الأقصى ${AVATAR_RULES.maxDimension}×${AVATAR_RULES.maxDimension} بكسل.`
+                            : `❌ Image too large. Maximum ${AVATAR_RULES.maxDimension}×${AVATAR_RULES.maxDimension}px.`
+                    );
+                } else {
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(isRTL ? '❌ تعذّر قراءة الصورة' : '❌ Could not read image');
+            img.src = URL.createObjectURL(file);
+        });
+
+        if (dimensionError) {
+            toast.error(dimensionError);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        setShowAvatarSpecs(false);
         setIsUploadingAvatar(true);
         try {
-            const fileExt = file.name.split('.').pop();
+            const fileExt = file.name.split('.').pop()?.toLowerCase();
             const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
             // Upload to Supabase Storage
@@ -76,7 +129,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
             toast.error(isRTL ? `فشل رفع الصورة: ${err.message}` : `Failed to upload avatar: ${err.message}`);
         } finally {
             setIsUploadingAvatar(false);
-            // Reset input so same file can be selected again
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
@@ -254,12 +306,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                         className="md:col-span-1"
                     >
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-xl shadow-zinc-200/50 dark:shadow-none">
-                            <div className="relative inline-block mb-6">
+
+                            {/* Avatar + Camera Button */}
+                            <div className="relative inline-block mb-4">
                                 {/* Hidden file input */}
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/webp"
                                     className="hidden"
                                     onChange={handleAvatarUpload}
                                 />
@@ -274,7 +328,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                     aria-label={isRTL ? "تغيير الصورة الشخصية" : "Change Profile Picture"}
                                     title={isRTL ? "تغيير الصورة الشخصية" : "Change Profile Picture"}
                                     disabled={isUploadingAvatar}
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() => setShowAvatarSpecs(prev => !prev)}
                                     className="absolute bottom-0 right-0 p-2 bg-gold-500 text-black rounded-full shadow-lg hover:scale-110 transition-transform border-4 border-white dark:border-zinc-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {isUploadingAvatar
@@ -282,6 +336,73 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                         : <Camera className="w-4 h-4" />}
                                 </button>
                             </div>
+
+                            {/* ─── Avatar Specs Card (bilingual) ─── */}
+                            <AnimatePresence>
+                                {showAvatarSpecs && !isUploadingAvatar && (
+                                    <motion.div
+                                        key="avatar-specs"
+                                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="mb-5 rounded-2xl border border-gold-500/30 bg-gold-500/5 p-4 text-start shadow-sm"
+                                    >
+                                        {/* Title */}
+                                        <p className="text-xs font-black text-gold-600 dark:text-gold-400 uppercase tracking-wider mb-3 flex items-center gap-1">
+                                            <Camera className="w-3.5 h-3.5" />
+                                            {isRTL ? 'متطلبات الصورة' : 'Photo Requirements'}
+                                        </p>
+
+                                        {/* Rules list */}
+                                        <ul className="space-y-1.5 mb-4">
+                                            {[
+                                                {
+                                                    ar: '📁 الصيغ المقبولة: JPG، PNG، WebP',
+                                                    en: '📁 Formats: JPG, PNG, WebP'
+                                                },
+                                                {
+                                                    ar: '📦 الحجم الأقصى: 2 ميجابايت',
+                                                    en: '📦 Max size: 2 MB'
+                                                },
+                                                {
+                                                    ar: '📐 الأبعاد: 100×100 كحد أدنى',
+                                                    en: '📐 Min dimensions: 100×100 px'
+                                                },
+                                                {
+                                                    ar: '📐 الأبعاد: 2000×2000 كحد أقصى',
+                                                    en: '📐 Max dimensions: 2000×2000 px'
+                                                },
+                                                {
+                                                    ar: '⬛ الشكل المُوصى به: مربع (1:1)',
+                                                    en: '⬛ Recommended: square (1:1)'
+                                                },
+                                            ].map((rule, i) => (
+                                                <li key={i} className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                                    {isRTL ? rule.ar : rule.en}
+                                                </li>
+                                            ))}
+                                        </ul>
+
+                                        {/* Action buttons */}
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => { setShowAvatarSpecs(false); fileInputRef.current?.click(); }}
+                                                className="flex-1 py-2 px-3 rounded-xl bg-gold-500 text-black text-xs font-black hover:bg-gold-600 transition-colors"
+                                            >
+                                                {isRTL ? '📂 اختر صورة' : '📂 Choose Photo'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowAvatarSpecs(false)}
+                                                className="py-2 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-500 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            >
+                                                {isRTL ? 'إلغاء' : 'Cancel'}
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-1">{displayName}</h2>
                             <p className="text-sm text-gold-600 dark:text-gold-500 font-bold uppercase tracking-wider">
                                 {isRTL ? `عضو منذ ${memberSince}` : `Member Since ${memberSince}`}
