@@ -8,6 +8,7 @@ import { ContentStrings, Page } from '@/shared/types/types';
 import { md5 } from '../../shared/lib/cryptoUtils';
 import DynamicBrandLogo from './DynamicBrandLogo';
 import { usePreferences } from '../../context/PreferencesContext';
+import { useAuth } from '../../context/AuthContext';
 import ThemeSwitcher from './ThemeSwitcher';
 
 type HeaderSection = 'logo' | 'lang-theme' | 'nav' | 'auth';
@@ -32,9 +33,14 @@ interface HeaderProps {
   onOpenPreferences: () => void;
 }
 
-const getProfilePic = (user: User | MockUser | null | undefined) => {
+const getProfilePic = (user: User | MockUser | null | undefined, dbAvatarUrl?: string | null) => {
   if (!user) return null;
+  // Priority 1: Avatar stored in DB profiles table (uploaded by user)
+  if (dbAvatarUrl) return dbAvatarUrl;
+  // Priority 2: Avatar from OAuth provider metadata (Google, etc.)
   if (user.user_metadata?.avatar_url) return user.user_metadata.avatar_url;
+  if (user.user_metadata?.picture) return user.user_metadata.picture;
+  // Priority 3: Gravatar fallback
   const emailHash = md5(user.email?.toLowerCase().trim() || '');
   return `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=100`;
 };
@@ -54,6 +60,9 @@ const Header: React.FC<HeaderProps> = ({
   theme, resolvedTheme, setTheme, colorTheme: _colorTheme, changeColorTheme: _changeColorTheme, content, currentPage, navigateTo, user, onLogout, onOpenPreferences
 }) => {
   const { language: lang, isRTL } = usePreferences();
+  // Use profileData from AuthContext so avatar updates instantly after upload
+  const { profileData } = useAuth();
+  const profilePic = getProfilePic(user, profileData?.avatar_url);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
@@ -197,10 +206,10 @@ const Header: React.FC<HeaderProps> = ({
                   className="flex items-center gap-2 group transition-all"
                 >
                   <div className="w-7 h-7 rounded-full border-2 border-gold-500/50 group-hover:border-gold-500 overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                    <img src={getProfilePic(user) || ''} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={profilePic || ''} alt="Profile" className="w-full h-full object-cover" />
                   </div>
                   <span className="hidden lg:inline text-xs font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-gold-500 transition-colors">
-                    {user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    {profileData?.user_name || user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                 </button>
                 <button
@@ -346,9 +355,9 @@ const Header: React.FC<HeaderProps> = ({
                     className="w-full py-4 rounded-xl border border-zinc-200 dark:border-zinc-800 font-bold flex items-center justify-center gap-3"
                   >
                     <div className="w-8 h-8 rounded-full border border-gold-500/50 overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                      <img src={getProfilePic(user) || ''} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={profilePic || ''} alt="Profile" className="w-full h-full object-cover" />
                     </div>
-                    <span>{user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
+                    <span>{profileData?.user_name || user.user_metadata?.user_name || user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
                   </button>
                   <button onClick={() => { onLogout?.(); setIsMobileMenuOpen(false); }} className="w-full py-4 rounded-xl border border-zinc-200 dark:border-zinc-800 font-bold text-center text-red-500 flex items-center justify-center gap-2">
                     <LogOut className="w-4 h-4" /> {content.logout || "Logout"}
