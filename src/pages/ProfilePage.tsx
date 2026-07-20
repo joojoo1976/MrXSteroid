@@ -42,8 +42,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
         const file = e.target.files?.[0];
         if (!file || !user?.id) return;
 
-        // 1. Validate file type (strict: only JPG / PNG / WebP)
-        if (!AVATAR_RULES.allowedTypes.includes(file.type)) {
+        // 1. Validate file extension (strict check on file name)
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+        if (!fileExt || !allowedExts.includes(fileExt)) {
             toast.error(
                 isRTL
                     ? `❌ صيغة غير مدعومة. الصيغ المقبولة: ${AVATAR_RULES.allowedExt}`
@@ -64,41 +66,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
             return;
         }
 
-        // 3. Validate image dimensions
-        const dimensionError = await new Promise<string | null>((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                URL.revokeObjectURL(img.src);
-                if (img.width < AVATAR_RULES.minDimension || img.height < AVATAR_RULES.minDimension) {
-                    resolve(
-                        isRTL
-                            ? `❌ الصورة صغيرة جداً. الحد الأدنى ${AVATAR_RULES.minDimension}×${AVATAR_RULES.minDimension} بكسل.`
-                            : `❌ Image too small. Minimum ${AVATAR_RULES.minDimension}×${AVATAR_RULES.minDimension}px.`
-                    );
-                } else if (img.width > AVATAR_RULES.maxDimension || img.height > AVATAR_RULES.maxDimension) {
-                    resolve(
-                        isRTL
-                            ? `❌ الصورة كبيرة جداً. الحد الأقصى ${AVATAR_RULES.maxDimension}×${AVATAR_RULES.maxDimension} بكسل.`
-                            : `❌ Image too large. Maximum ${AVATAR_RULES.maxDimension}×${AVATAR_RULES.maxDimension}px.`
-                    );
-                } else {
-                    resolve(null);
-                }
-            };
-            img.onerror = () => resolve(isRTL ? '❌ تعذّر قراءة الصورة' : '❌ Could not read image');
-            img.src = URL.createObjectURL(file);
-        });
-
-        if (dimensionError) {
-            toast.error(dimensionError);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            return;
-        }
-
         setShowAvatarSpecs(false);
         setIsUploadingAvatar(true);
         try {
-            const fileExt = file.name.split('.').pop()?.toLowerCase();
             const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
             // Upload to Supabase Storage
