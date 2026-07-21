@@ -808,6 +808,31 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
                             </div>
                           </div>
                         ))}
+                        {/* بطاقة دعوة لحساب نسبة الدهون */}
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          className={`bg-gradient-to-br from-zinc-900 to-black border-2 border-gold-500/20 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group flex flex-col justify-center items-center text-center h-full min-h-[300px] ${mealPlan.length % 2 === 0 ? 'md:col-span-2' : ''}`}
+                        >
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(234,179,8,0.1),transparent)]" />
+                          <div className="w-16 h-16 bg-gold-500/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                            <Zap className="w-8 h-8 text-gold-500" />
+                          </div>
+                          <h4 className="text-xl font-black uppercase tracking-tight text-white mb-2 z-10">
+                            {isAr ? 'لماذا فارغة؟ اكتشف نسبة دهونك!' : 'Why empty? Discover your Body Fat!'}
+                          </h4>
+                          <p className="text-xs font-medium text-zinc-400 mb-6 max-w-sm z-10 leading-relaxed">
+                            {isAr 
+                              ? 'هل تعلم أن معرفة نسبة الدهون الدقيقة في جسمك تُحسن من دقة حساب الماكروز بنسبة تصل إلى ٣٠٪؟ استغل هذه المساحة لحساب نسبة دهونك الآن.' 
+                              : 'Did you know that knowing your exact body fat percentage improves macro accuracy by up to 30%? Calculate it now.'}
+                          </p>
+                          <button
+                            onClick={() => navigateTo(Page.BODYFAT)}
+                            className="relative z-10 px-8 py-4 bg-gold-500 hover:bg-gold-400 text-black text-sm font-black uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] flex items-center gap-3"
+                          >
+                            <Calculator className="w-5 h-5" />
+                            {isAr ? 'حاسبة نسبة الدهون' : 'Body Fat Calculator'}
+                          </button>
+                        </motion.div>
                       </div>
 
                       {/* نصائح الخبير النخبوية */}
