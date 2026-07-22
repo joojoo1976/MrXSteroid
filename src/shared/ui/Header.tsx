@@ -133,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({
               resolvedTheme={resolvedTheme}
               setTheme={setTheme}
               isRTL={isRTL}
-              variant="pill"
+              variant="icon"
             />
 
             {/* Smart Globe Button - Opens Unified Settings */}
