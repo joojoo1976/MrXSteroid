@@ -155,21 +155,28 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem('mrx_theme', theme);
     }, [theme]);
 
-    // Side Effects: User Profile Currency Sync
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+    // Side Effects: User Profile Currency & Unit Sync
     useEffect(() => {
         const syncProfile = async (userId: string) => {
             try {
                 const response = await import('../shared/lib/supabase').then(m => m.supabase
                     .from('profiles')
-                    .select('currency')
+                    .select('currency, unit_system')
                     .eq('id', userId)
                     .single());
 
-                const data = response.data as unknown as { currency: string } | null;
+                const data = response.data as unknown as { currency?: string; unit_system?: string } | null;
 
                 if (data?.currency) {
                     setCurrency(data.currency);
                     localStorage.setItem('mrx_currency', data.currency);
+                }
+                if (data?.unit_system && (data.unit_system === 'metric' || data.unit_system === 'imperial')) {
+                    setUnitSystemState(data.unit_system as UnitSystem);
+                    localStorage.setItem('mrx_explicit_units', data.unit_system);
+                    localStorage.setItem('mrx_unit_system', data.unit_system);
                 }
             } catch (err) {
                 console.warn('Profile sync failed:', err);
@@ -180,10 +187,18 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
         import('../shared/lib/supabase').then(async m => {
             const { data } = await m.supabase.auth.getSession();
-            if (data.session?.user) syncProfile(data.session.user.id);
+            if (data.session?.user) {
+                setCurrentUserId(data.session.user.id);
+                syncProfile(data.session.user.id);
+            }
 
             const { data: { subscription } } = m.supabase.auth.onAuthStateChange((_event, session) => {
-                if (session?.user) syncProfile(session.user.id);
+                if (session?.user) {
+                    setCurrentUserId(session.user.id);
+                    syncProfile(session.user.id);
+                } else {
+                    setCurrentUserId(null);
+                }
             });
             authSubscription = subscription;
         });
@@ -214,7 +229,25 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem('mrx_unit_system', system);
         setIsAutoDetected(false);
         window.dispatchEvent(new CustomEvent('mrx_unit_change', { detail: system }));
-    }, []);
+
+        // 1. Sync to Supabase user profile if logged in
+        if (currentUserId) {
+            import('../shared/lib/supabase').then(m => {
+                m.supabase
+                    .from('profiles')
+                    .update({ unit_system: system })
+                    .eq('id', currentUserId)
+                    .then(({ error }) => {
+                        if (error) console.warn('Database unit_system sync failed:', error);
+                    });
+            });
+        }
+
+        // 2. Show rich interactive toast with system explanation & auth recommendation
+        import('../shared/lib/unitNotification').then(m => {
+            m.showUnitChangeToast(system, !!currentUserId, language === Language.AR);
+        });
+    }, [currentUserId, language]);
 
     const setTheme = useCallback((newTheme: Theme) => {
         setThemeState(newTheme);
