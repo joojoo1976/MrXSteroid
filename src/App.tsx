@@ -131,6 +131,17 @@ function AppContent({
   const { user, signOut } = useAuth();
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
+  // Global navigation custom event listener (e.g. from Toast notifications)
+  useEffect(() => {
+    const handleNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail === 'signup') navigateTo(Page.SIGNUP);
+      else if (customEvent.detail === 'login') navigateTo(Page.LOGIN);
+    };
+    window.addEventListener('mrx_navigate_page', handleNavigate);
+    return () => window.removeEventListener('mrx_navigate_page', handleNavigate);
+  }, [navigateTo]);
+
   // Sync ErrorHandler with localized content
   useEffect(() => {
     if (content) {
