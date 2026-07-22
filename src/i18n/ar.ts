@@ -1028,6 +1028,9 @@ export const arContent: ContentStrings = {
     calcCarbsDesc: "بروتوكول شحن الجليكوجين الفائق",
     calcFatsDesc: "تحسين التوازن الهرموني والغدد الصماء",
     calcPredictiveAccuracyVal: "94.7%",
+    calcExpertAdviceLabel: "نصائح الخبير النخبوية",
+    calcMealAdvice: "للحصول على أقصى استفادة بنائية، حافظ على مواعيد وجباتك بدقة واحرص على شرب ما لا يقل عن 4 لترات من الماء يومياً مع توزيع الماكروز بالتساوي.",
+    calcOptimizedForStack: "تم تحسين هذا البروتوكول الأيضي بواسطة مستر إكس ستيرويد",
 
     calcShuffleLabel: "تبديل الوجبات",
     calcAwaitingInputLabel: "في انتظار مدخلات العضلات",

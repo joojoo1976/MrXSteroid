@@ -1029,6 +1029,9 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     calcCarbsDesc: "Glycogen Supercompensation Protocol",
     calcFatsDesc: "Endocrine & Hormonal Optimization",
     calcPredictiveAccuracyVal: "94.7%",
+    calcExpertAdviceLabel: "Elite Expert Advice",
+    calcMealAdvice: "To maximize anabolic gains, strictly adhere to your meal timings and ensure a minimum intake of 4 liters of water daily while distributing macros evenly.",
+    calcOptimizedForStack: "METABOLIC PROTOCOL OPTIMIZED BY MR. X STEROID",
 
     calcShuffleLabel: "Shuffle Meals",
     calcAwaitingInputLabel: "Awaiting Muscle Input",
