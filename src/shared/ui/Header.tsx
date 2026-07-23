@@ -139,11 +139,11 @@ const Header: React.FC<HeaderProps> = ({
             {/* Smart Globe Button - Opens Unified Settings */}
             <button
               onClick={onOpenPreferences}
-              className="flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-gold-500/50 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm group min-w-[44px] h-[36px]"
-              title="Preferences"
+              className="group flex items-center justify-center gap-1.5 px-2.5 py-1.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800/90 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all text-xs font-semibold text-zinc-700 dark:text-zinc-200 shadow-xs outline-none select-none"
+              title={isRTL ? 'إعدادات العرض' : 'Preferences'}
+              aria-label={isRTL ? 'إعدادات العرض' : 'Preferences'}
             >
-              <Globe className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-              <span className="hidden sm:inline uppercase text-[9px] tracking-widest bg-gold-500/10 text-gold-600 dark:text-gold-500 px-1.5 rounded">PREFERENCES</span>
+              <Globe className="w-4 h-4 text-gold-500 dark:text-gold-400 group-hover:rotate-12 transition-transform" />
             </button>
           </div>
         );
