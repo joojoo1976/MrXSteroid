@@ -975,8 +975,22 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     cookieMessage: "We use cookies to improve experience.",
     cookieAccept: "Accept",
     cookieReject: "Reject",
-    calcTitle: "MacroCalc Pro — Elite Nutrition Intelligence Engine",
-    calcSubtitle: "Clinical-Grade Macronutrient Analysis · AI-Powered Meal Architecture · Precision Metabolic Targeting",
+    calcTitle: "Macro & Meal Calculator — Macro Planner",
+    calcSubtitle: "Precision & Flexibility Without Deprivation · Full Customization · Instant Results & Absolute Control",
+    calcFeatures: [
+      {
+        title: "Precision & Flexibility Without Deprivation",
+        desc: "Accurate calculation of your daily calorie and macro needs with a comfortable meal distribution tailored to your lifestyle."
+      },
+      {
+        title: "Full Customization for Your Goal",
+        desc: "A targeted nutrition plan decoding your body to help you build muscle or accelerate fat loss."
+      },
+      {
+        title: "Instant Results & Absolute Control",
+        desc: "Transforming complex data into simple, actionable steps putting you on the right track from day one."
+      }
+    ],
     calcGender: "Gender",
     calcMale: "Male",
     calcFemale: "Female",

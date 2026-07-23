@@ -772,6 +772,7 @@ export interface ContentStrings {
   // Macro Calculator
   calcTitle: string;
   calcSubtitle: string;
+  calcFeatures?: { title: string; desc: string }[];
   calcGender: string;
   calcMale: string;
   calcFemale: string;
