@@ -230,7 +230,7 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
       </motion.div>
 
       {/* AdSlot: Top */}
-      <div className="mb-12 relative flex flex-col items-center gap-6">
+      <div className="mb-12 relative z-30 flex flex-col items-center gap-6">
         <UnitToggle className="scale-125 shadow-2xl border-white/10" />
         <AdPlaceholder slotId="macro_top_banner" format="horizontal" content={content} />
       </div>
