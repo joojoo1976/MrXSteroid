@@ -19,6 +19,9 @@ export interface CheckoutFormData {
     email: string;
     country: string;
     phoneNumber?: string;
+    secondaryPhoneNumber?: string;
+    countryCode?: string;
+    secondaryCountryCode?: string;
     address?: string;
     city?: string;
     zipCode?: string;
@@ -83,7 +86,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
         fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
         email: z.string().email({ message: content.checkout.validation.emailInvalid }),
         country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
-        phoneNumber: z.string().optional(),
+        phoneNumber: z.string().min(6, { message: isAr ? "رقم الموبايل الأساسي مطلوب" : "Primary phone number is required" }),
+        secondaryPhoneNumber: z.string().min(6, { message: isAr ? "رقم الموبايل الإضافي مطلوب" : "Secondary phone number is required" }),
+        countryCode: z.string().optional(),
+        secondaryCountryCode: z.string().optional(),
         address: z.string().optional(),
         city: z.string().optional(),
         zipCode: z.string().optional(),
@@ -104,8 +110,9 @@ export const useCheckout = (options: useCheckoutOptions) => {
             if (!data.city) {
                 ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.cityRequired, path: ["city"] });
             }
-            if (!data.zipCode) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.zipRequired, path: ["zipCode"] });
+            // Postal code condition: REQUIRED for International (outside EG), OPTIONAL for Egypt
+            if (data.country !== 'EG' && (!data.zipCode || data.zipCode.length < 3)) {
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: isAr ? "الرمز البريدي مطلوب للدول الخارجية" : "Postal Code is required for international orders", path: ["zipCode"] });
             }
             if (!data.shippingProvider) {
                 ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.shippingRequired, path: ["shippingProvider"] });
@@ -125,12 +132,15 @@ export const useCheckout = (options: useCheckoutOptions) => {
         resolver: zodResolver(schema),
         defaultValues: {
             country: regionOption === 'EG' ? 'EG' : 'US',
+            countryCode: '+20',
+            secondaryCountryCode: '+20',
             createAccount: true,
             agreeToTerms: false,
             email: userEmail || '',
             fullName: userName || '',
             userId: userId || undefined,
-            phoneNumber: ''
+            phoneNumber: '',
+            secondaryPhoneNumber: ''
         }
     });
 
@@ -146,7 +156,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         onLocationChange(isEgyptRegion);
     };
 
-    // Handle Country Change
+    // Handle Country Change & Auto Shipping Provider Selection
     useEffect(() => {
         const isEg = selectedCountry === 'EG' || regionOption === 'EG';
         onLocationChange(isEg);
@@ -157,6 +167,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 try {
                     const providers = await calculateShippingRates({ country: selectedCountry });
                     setShippingProviders(providers);
+                    // Automatically set first available shipping provider if not set
+                    if (providers.length > 0) {
+                        form.setValue('shippingProvider', providers[0].id, { shouldValidate: true });
+                    }
                 } catch {
                     toast.error("Failed to load shipping rates");
                 } finally {
@@ -165,7 +179,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
             };
             fetchShipping();
         }
-    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, regionOption]);
+    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, regionOption, form]);
 
     const isEg = regionOption === 'EG' || selectedCountry === 'EG';
     const { amount: baseAmount } = calculateBaseAmount(isEg ? 'EG' : 'US', productVariant, totalAmount);

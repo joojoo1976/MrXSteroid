@@ -241,12 +241,11 @@ export interface ShippingProvider {
 }
 
 export const getShippingProviders = async (country: string): Promise<ShippingProvider[]> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const isEgypt = country && (country.toLowerCase() === 'egypt' || country === 'مصر');
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const isEgypt = country && (country.toUpperCase() === 'EG' || country.toLowerCase() === 'egypt' || country.includes('مصر'));
     if (isEgypt) {
         return [
-            { id: 'bosta_standard', name: 'Bosta Standard (3-5 Days)', price: 5.00, estimatedDays: '3-5' },
-            { id: 'bosta_express', name: 'Bosta Express (1-2 Days)', price: 12.00, estimatedDays: '1-2' },
+            { id: 'eg_standard', name: 'الشحن القياسي - جمهورية مصر العربية', price: 239.00, estimatedDays: '2-4' },
         ];
     }
     return [
