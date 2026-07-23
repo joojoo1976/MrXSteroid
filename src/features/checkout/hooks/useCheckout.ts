@@ -42,6 +42,7 @@ export interface useCheckoutOptions {
     totalAmount: number;
     productVariant: ProductVariant;
     onLocationChange: (isEg: boolean) => void;
+    onDiscountChange?: (discountAmount: number) => void;
     userId?: string;
     userEmail?: string;
     userName?: string;
@@ -51,7 +52,7 @@ export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
-    const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, userId, userEmail, userName } = options;
+    const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, onDiscountChange, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
     const { isEgypt: isEgRegion, countryCode: vCountry } = useRegion();
     
@@ -70,7 +71,13 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
     // Promo Code State
     const [promoCode, setPromoCode] = useState('');
-    const [promoStatus, setPromoStatus] = useState<{ valid: boolean; message: string; discount: number } | null>(null);
+    const [promoStatus, setPromoStatus] = useState<{
+        valid: boolean;
+        message: string;
+        discount: number;       // fixed flat amount
+        discountPct?: number;   // percentage (0.5 or 1)
+        codeType?: 'fixed' | 'pct';
+    } | null>(null);
     const [isPromoLoading, setIsPromoLoading] = useState(false);
 
     // Embedded Payment Flow State
@@ -185,8 +192,17 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const { amount: baseAmount } = calculateBaseAmount(isEg ? 'EG' : 'US', productVariant, totalAmount);
 
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
-    const discountAmount = promoStatus?.valid ? promoStatus.discount : 0;
-    const finalTotal = Math.max(0, (baseAmount + (selectedShipping?.price || 0)) - discountAmount);
+    const subTotalWithShipping = baseAmount + (selectedShipping?.price || 0);
+    // Compute discount: percentage takes priority over fixed amount
+    const discountAmount = (() => {
+        if (!promoStatus?.valid) return 0;
+        if (promoStatus.codeType === 'pct' && promoStatus.discountPct) {
+            return Math.round(subTotalWithShipping * (promoStatus.discountPct / 100) * 100) / 100;
+        }
+        return promoStatus.discount || 0;
+    })();
+    const discountPct = promoStatus?.codeType === 'pct' ? (promoStatus.discountPct ?? 0) : 0;
+    const finalTotal = Math.max(0, subTotalWithShipping - discountAmount);
 
     const currentCurrency = isEg ? 'EGP' : currency;
     const prefCurrency = {
@@ -215,14 +231,29 @@ export const useCheckout = (options: useCheckoutOptions) => {
         try {
             const result = await validatePromoCode(promoCode);
             if (result.valid) {
-                setPromoStatus({ valid: true, message: result.message, discount: result.discount || 0 });
+                const newStatus = {
+                    valid: true,
+                    message: result.message,
+                    discount: result.discount || 0,
+                    discountPct: result.discountPct,
+                    codeType: result.codeType,
+                };
+                setPromoStatus(newStatus);
                 toast.success(result.message);
+                // Notify parent of discount change
+                if (onDiscountChange) {
+                    const computedDiscount = result.codeType === 'pct' && result.discountPct
+                        ? Math.round(subTotalWithShipping * (result.discountPct / 100) * 100) / 100
+                        : (result.discount || 0);
+                    onDiscountChange(computedDiscount);
+                }
             } else {
                 setPromoStatus({ valid: false, message: result.message, discount: 0 });
                 toast.error(result.message);
+                if (onDiscountChange) onDiscountChange(0);
             }
         } catch {
-            toast.error("Error validating code");
+            toast.error(isAr ? "خطأ في التحقق من الكود" : "Error validating code");
         } finally {
             setIsPromoLoading(false);
         }
@@ -321,6 +352,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         finalTotal,
         formattedTotal,
         discountAmount,
+        discountPct,
         selectedShipping,
         handleApplyPromo,
         onSubmit: form.handleSubmit(onSubmit),

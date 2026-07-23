@@ -43,6 +43,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
 
     const [quantity, setQuantity] = useState(1);
     const [shippingCost, setShippingCost] = useState(0);
+    const [discountAmount, setDiscountAmount] = useState(0);
 
     // ── Region state — driven from: selectedTier (initial) > geo > default ──
     const [isEg, setIsEg] = useState<boolean>(() => {
@@ -53,6 +54,10 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     // Handle Region Toggle from ProductSelector
     const handleRegionChange = useCallback((newIsEg: boolean) => {
         setIsEg(newIsEg);
+    }, []);
+
+    const handleDiscountChange = useCallback((amount: number) => {
+        setDiscountAmount(amount);
     }, []);
 
     // ── Totals ──────────────────────────────────────────────────────────────
@@ -72,9 +77,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
         }
 
         const subtotal = itemPrice * quantity;
-        const grandTotal = subtotal + addonPrice + shippingCost;
-        return { itemPrice, subtotal, addonPrice, shippingCost, grandTotal };
-    }, [variant, quantity, shippingCost, isEg]);
+        const grandTotal = Math.max(0, subtotal + addonPrice + shippingCost - discountAmount);
+        return { itemPrice, subtotal, addonPrice, shippingCost, discountAmount, grandTotal };
+    }, [variant, quantity, shippingCost, isEg, discountAmount]);
 
     // Handle shipping cost from CheckoutForm
     const handleLocationChange = useCallback((egFromForm: boolean) => {
@@ -191,6 +196,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                 quantity={quantity}
                                 onLocationChange={handleLocationChange}
                                 onShippingChange={setShippingCost}
+                                onDiscountChange={handleDiscountChange}
                                 totalAmount={totals.subtotal + (totals.addonPrice || 0)}
                                 openLegal={openLegal}
                             />

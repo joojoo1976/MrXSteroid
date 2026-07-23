@@ -316,7 +316,10 @@ export const calculateShippingRates = async (address: { country: string }): Prom
 
 const PROMO_ATTEMPTS = new Map<string, { count: number; lastAttempt: number }>();
 
-export const validatePromoCode = async (code: string, ip: string = 'user_ip'): Promise<{ valid: boolean; message: string; discount?: number }> => {
+export const validatePromoCode = async (
+    code: string,
+    ip: string = 'user_ip'
+): Promise<{ valid: boolean; message: string; discount?: number; discountPct?: number; codeType?: 'fixed' | 'pct' }> => {
     const normalizeCode = code.toUpperCase().trim();
     const now = Date.now();
 
@@ -336,11 +339,35 @@ export const validatePromoCode = async (code: string, ip: string = 'user_ip'): P
     PROMO_ATTEMPTS.set(ip, { count: attempts.count + 1, lastAttempt: now });
     await new Promise(r => setTimeout(r, 800)); // Dramatic pause
 
+    // ── Legacy fixed code ──────────────────────────────────────────────────
     if (normalizeCode === 'STEROIDIQ') {
-        return { valid: true, message: "Valid Code Applied", discount: 1.00 }; // -$1.00 as per spec
+        return { valid: true, message: "✅ Valid Code Applied — $1 Discount", discount: 1.00, codeType: 'fixed' };
     }
 
-    return { valid: false, message: "Invalid Code" };
+    // ── Quiz-generated IQ codes: IQ1P-XXXX (1%) or IQ05-XXXX (0.5%) ──────
+    // Format: IQ1P-[4 alphanumeric chars]
+    const onePercentMatch = /^IQ1P-[A-Z0-9]{4}$/.test(normalizeCode);
+    if (onePercentMatch) {
+        return {
+            valid: true,
+            message: "🔥 Steroid IQ Code Applied — 1% Discount",
+            discountPct: 1,        // 1 percent
+            codeType: 'pct'
+        };
+    }
+
+    // Format: IQ05-[4 alphanumeric chars]
+    const halfPercentMatch = /^IQ05-[A-Z0-9]{4}$/.test(normalizeCode);
+    if (halfPercentMatch) {
+        return {
+            valid: true,
+            message: "🔥 Steroid IQ Code Applied — 0.5% Discount",
+            discountPct: 0.5,      // 0.5 percent
+            codeType: 'pct'
+        };
+    }
+
+    return { valid: false, message: "❌ Invalid or expired code." };
 };
 
 /**

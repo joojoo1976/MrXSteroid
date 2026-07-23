@@ -13,6 +13,7 @@ interface OrderSummaryProps {
         subtotal: number;
         addonPrice?: number;
         shippingCost: number;
+        discountAmount?: number;
         grandTotal: number;
     };
     isAr: boolean;
@@ -101,6 +102,12 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                             <span className="text-green-500 uppercase tracking-wider text-xs">{isAr ? "مجاني" : "FREE"}</span>
                         </div>
                     )}
+                    {totals.discountAmount && totals.discountAmount > 0 ? (
+                        <div className="flex justify-between font-bold text-sm text-green-400">
+                            <span>{isAr ? "خصم كود (Steroid IQ)" : "Steroid IQ Discount"}</span>
+                            <span className="font-mono text-green-400">-{formatPrice(totals.discountAmount)}</span>
+                        </div>
+                    ) : null}
                 </div>
 
                 {/* Grand Total */}
