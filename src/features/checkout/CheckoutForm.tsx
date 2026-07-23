@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle, MapPin, Target, Truck, CheckCircle2 } from 'lucide-react';
+import {
+    Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle,
+    MapPin, Target, Truck, CheckCircle2, Smartphone, Store, Globe, Phone
+} from 'lucide-react';
 import { Button } from '../../shared/ui/button';
 import { Input } from '../../shared/ui/input';
 import { Label } from '../../shared/ui/label';
@@ -10,7 +13,7 @@ import { ContentStrings, Language, PricingTier, ProductVariant } from '@/shared/
 import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
-import { useCheckout } from '../../features/checkout/hooks/useCheckout';
+import { useCheckout, PaymobMethod, RegionOption } from '../../features/checkout/hooks/useCheckout';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -46,15 +49,12 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const isAr = prefLang === 'ar';
     const isImperial = unitSystem === 'imperial';
 
-    // Import useAuth to get authenticated user data
     const { user, profileData, isAuthenticated } = useAuth();
 
-    // Using the new specialized hook for logic
     const {
         form: { register, watch, setValue, formState: { errors } },
         isProcessing,
         isRedirecting,
-        redirectUrl,
         paymentError,
         shippingProviders,
         isLoadingShipping,
@@ -62,19 +62,15 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         setPromoCode,
         promoStatus,
         isPromoLoading,
-        finalTotal,
         formattedTotal,
         selectedShipping,
         handleApplyPromo,
         onSubmit,
-        // Embedded payment flow
-        isCardElementReady,
-        setIsCardElementReady,
-        spaceremitCode,
-        setSpaceremitCode,
-        paymentMethod,
-        setPaymentMethod,
-        prefCurrency
+        regionOption,
+        setRegionOption,
+        paymobMethod,
+        setPaymobMethod,
+        isEg,
     } = useCheckout({
         content,
         lang,
@@ -87,16 +83,14 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name
     });
 
-    // Auto-fill form with authenticated user data
+    // Auto-fill authenticated user data
     useEffect(() => {
         if (isAuthenticated && user && user.email) {
-            // Fill email from auth user
             const currentEmail = watch('email');
             if (!currentEmail) {
                 setValue('email', user.email, { shouldValidate: true });
             }
 
-            // Fill full name from profile data or user metadata
             const currentFullName = watch('fullName');
             if (!currentFullName) {
                 const fullName = profileData?.full_name
@@ -109,13 +103,6 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
             }
         }
     }, [isAuthenticated, user, profileData, setValue, watch]);
-
-    // Store card info in form metadata
-    useEffect(() => {
-        if (spaceremitCode) {
-            console.log('💳 SpaceRemit code received:', spaceremitCode);
-        }
-    }, [spaceremitCode]);
 
     // Notify parent about shipping cost changes
     useEffect(() => {
@@ -154,25 +141,93 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
+            
+            {/* ════════════════════════════════════════════════════════════
+                1. REGION / LOCATION TOGGLE (داخل مصر 🇪🇬 / خارج مصر 🌍)
+            ════════════════════════════════════════════════════════════ */}
+            <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-gold-500 text-lg">
+                        <Globe className="w-5 h-5 text-gold-500" />
+                        {isAr ? "01. حدد موقعك الإقليمي" : "01. Select Your Region"}
+                    </CardTitle>
+                    <CardDescription className="text-zinc-400 text-xs">
+                        {isAr
+                            ? "تحديد النطاق الجغرافي يضمن عرض وسائل الدفع المتاحة لدولتك مباشرة"
+                            : "Select your region to view tailored local or international payment methods"}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                    <div className="grid grid-cols-2 gap-3">
+                        <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setRegionOption('EG')}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden",
+                                regionOption === 'EG'
+                                    ? "bg-gold-500/10 border-gold-500 text-white shadow-[0_0_25px_rgba(234,179,8,0.15)] ring-2 ring-gold-500/20"
+                                    : "bg-black/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                            )}
+                        >
+                            {regionOption === 'EG' && (
+                                <CheckCircle2 className="w-4 h-4 text-gold-500 absolute top-2.5 end-2.5" />
+                            )}
+                            <span className="text-3xl mb-1">🇪🇬</span>
+                            <span className="font-black text-sm">{isAr ? "داخل مصر" : "Inside Egypt"}</span>
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                                EGP (بالجنيه المصري)
+                            </span>
+                        </motion.button>
+
+                        <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setRegionOption('GLOBAL')}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden",
+                                regionOption === 'GLOBAL'
+                                    ? "bg-gold-500/10 border-gold-500 text-white shadow-[0_0_25px_rgba(234,179,8,0.15)] ring-2 ring-gold-500/20"
+                                    : "bg-black/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                            )}
+                        >
+                            {regionOption === 'GLOBAL' && (
+                                <CheckCircle2 className="w-4 h-4 text-gold-500 absolute top-2.5 end-2.5" />
+                            )}
+                            <span className="text-3xl mb-1">🌍</span>
+                            <span className="font-black text-sm">{isAr ? "خارج مصر" : "Outside Egypt"}</span>
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                                USD ($ الدولي)
+                            </span>
+                        </motion.button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* ════════════════════════════════════════════════════════════
+                2. BILLING & CUSTOMER DETAILS
+            ════════════════════════════════════════════════════════════ */}
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">
                         <User className="w-5 h-5 text-gold-500" />
-                        {content.billingDetails || (isAr ? "تفاصيل الفاتورة" : "Billing Details")}
+                        02. {content.billingDetails || (isAr ? "تفاصيل الفاتورة" : "Billing Details")}
                     </CardTitle>
                     <CardDescription className="text-zinc-400">
-                        {isAr ? "أدخل تفاصيلك لإتمام الطلب" : "Enter your details to complete the order"}
+                        {isAr ? "أدخل تفاصيلك لإتمام طلبك بآمان" : "Enter your contact info to complete the order"}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label className="text-zinc-300">{content.fullName || (isAr ? "الاسم الكامل" : "Full Name")}</Label>
                         <div className="relative">
-                            <User className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                            <User className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
                             <Input
                                 {...register("fullName")}
-                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.fullName && "border-red-500")}
+                                className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.fullName && "border-red-500")}
                                 placeholder={content.checkout.placeholders.fullName}
                             />
                         </div>
@@ -182,34 +237,39 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                     <div className="space-y-2">
                         <Label className="text-zinc-300">{content.emailAddress || (isAr ? "البريد الإلكتروني" : "Email Address")}</Label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                            <Mail className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
                             <Input
                                 {...register("email")}
                                 type="email"
-                                className={cn("pl-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.email && "border-red-500")}
+                                className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.email && "border-red-500")}
                                 placeholder={content.checkout.placeholders.email}
                             />
                         </div>
                         {errors.email && <p className="text-xs text-red-500 font-bold">{errors.email.message}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                        <Label className="text-zinc-300">{isAr ? "الدولة" : "Country"}</Label>
-                        <div className="relative">
-                            <MapPin className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
-                            <select
-                                {...register("country")}
-                                className="w-full pl-10 h-10 rounded-md bg-black/40 border border-zinc-800 text-white focus:border-gold-500 focus:ring-0 appearance-none"
-                            >
-                                <option value="EG">Egypt (مصر)</option>
-                                <option value="SA">Saudi Arabia (السعودية)</option>
-                                <option value="AE">UAE (الإمارات)</option>
-                                <option value="US">USA / Global</option>
-                                <option value="DE">Germany</option>
-                            </select>
+                    {!isEg && (
+                        <div className="space-y-2">
+                            <Label className="text-zinc-300">{isAr ? "الدولة" : "Country"}</Label>
+                            <div className="relative">
+                                <MapPin className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
+                                <select
+                                    {...register("country")}
+                                    className="w-full ps-10 h-10 rounded-md bg-black/40 border border-zinc-800 text-white focus:border-gold-500 focus:ring-0 appearance-none"
+                                >
+                                    <option value="US">USA (الولايات المتحدة)</option>
+                                    <option value="SA">Saudi Arabia (السعودية)</option>
+                                    <option value="AE">UAE (الإمارات)</option>
+                                    <option value="KW">Kuwait (الكويت)</option>
+                                    <option value="QA">Qatar (قطر)</option>
+                                    <option value="GB">UK (المملكة المتحدة)</option>
+                                    <option value="DE">Germany (ألمانيا)</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
+                    {/* Shipping Details if physical */}
                     <AnimatePresence>
                         {selectedTier.requiresShipping && (
                             <motion.div
@@ -293,6 +353,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         )}
                     </AnimatePresence>
 
+                    {/* Body Stats if required */}
                     {selectedTier.requiresBodyStats && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
@@ -300,7 +361,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             className="space-y-4 pt-4 border-t border-zinc-800"
                         >
                             <h4 className="text-sm font-black uppercase tracking-widest text-gold-500">
-                                {isAr ? 'بيانات التجهيز و المتابعة' : 'Preparation & Coaching Data'}
+                                {isAr ? 'بيانات التجهيز والمتابعة' : 'Coaching Stats Data'}
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -350,6 +411,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         </motion.div>
                     )}
+
                     <div className="flex items-center space-x-2 mt-4 rtl:space-x-reverse">
                         <Checkbox id="createAccount" checked={watch("createAccount")} onCheckedChange={(checked) => setValue('createAccount', checked as boolean)} />
                         <label htmlFor="createAccount" className="text-sm font-medium text-zinc-400 cursor-pointer">
@@ -359,6 +421,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 </CardContent>
             </Card>
 
+            {/* ════════════════════════════════════════════════════════════
+                PROMO CODE CARD
+            ════════════════════════════════════════════════════════════ */}
             <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gold-500">
@@ -396,59 +461,200 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 </CardContent>
             </Card>
 
+            {/* ════════════════════════════════════════════════════════════
+                3. CONDITIONAL PAYMOB PAYMENT GATEWAYS (بوابة Paymob)
+            ════════════════════════════════════════════════════════════ */}
             <div className="space-y-6">
                 <h3 className="text-xl font-black text-white flex items-center gap-2">
                     <span className="text-gold-500">03.</span>
-                    {isAr ? "طريقة الدفع" : "Payment Method"}
+                    {isAr ? "اختر طريقة الدفع المناسبة عبر Paymob" : "Select Payment Method via Paymob"}
                 </h3>
 
-                <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
-                    <CardContent className="p-6">
-                        <div className="flex flex-col gap-4">
-                            {/* Secure Payment Info — Multi-Gateway Redirect */}
-                            <div className="p-4 rounded-xl bg-black/40 border border-zinc-800 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gold-500/10 flex items-center justify-center">
-                                        <CreditCard className="w-5 h-5 text-gold-500" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-white text-sm">
-                                            {isAr ? "دفع آمن ومشفّر" : "Secure Encrypted Payment"}
-                                        </p>
-                                        <p className="text-xs text-zinc-500">
-                                            {isAr ? "Visa, Mastercard, مدى، وأكثر" : "Visa, Mastercard, Mada, and more"}
-                                        </p>
-                                    </div>
+                <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
+                    <CardContent className="p-6 space-y-5">
+                        
+                        {/* LOCAL EGYPT PAYMENT METHODS (داخل مصر 🇪🇬) */}
+                        {isEg ? (
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-black uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
+                                        🇪🇬 {isAr ? "وسائل الدفع المحلية المتاحة في مصر (EGP)" : "Local Egypt Payment Methods (EGP)"}
+                                    </span>
                                 </div>
-                                <ShieldCheck className="w-5 h-5 text-green-500" />
-                            </div>
 
-                            {/* Accepted Payment Badges */}
-                            <div className="flex items-center justify-center gap-3">
-                                {['VISA', 'Mastercard', 'Mada'].map((card) => (
-                                    <div key={card} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-[10px] font-bold text-zinc-300">
-                                        {card}
+                                {/* Option 1: Card (5573815) */}
+                                <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('card')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'card'
+                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'card' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                            <CreditCard className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "بطاقة بنكية / أونلاين (Online Card)" : "Online Credit / Debit Card"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "فيزا / ماستركارد بالجنيه المصري (ID: 5573815)" : "Visa & Mastercard online in EGP"}
+                                            </p>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
+                                            Paymob
+                                        </span>
+                                        {paymobMethod === 'card' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
+                                    </div>
+                                </motion.div>
 
-                            {/* Payment Info Box */}
-                            <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3">
-                                <Lock className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
-                                <p className="text-xs text-green-400 font-medium leading-relaxed">
-                                    {isAr
-                                        ? "عند الضغط على زر الدفع، سيتم تحويلك تلقائياً إلى صفحة دفع آمنة حسب دولتك لإدخال بيانات البطاقة. نحن لا نخزن أي بيانات بنكية."
-                                        : "When you click Pay, you'll be redirected to a secure payment page selected for your country. We never store any banking information."}
-                                </p>
+                                {/* Option 2: Mobile Wallet (5792309) */}
+                                <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('wallet')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col gap-3",
+                                        paymobMethod === 'wallet'
+                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3.5">
+                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'wallet' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                                <Smartphone className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-white text-sm">
+                                                    {isAr ? "محفظة إلكترونية (Mobile Wallets)" : "Mobile Wallets (Vodafone Cash / Orange / Etisalat)"}
+                                                </p>
+                                                <p className="text-xs text-zinc-400 font-medium">
+                                                    {isAr ? "فودافون كاش، اتصالات، أورنج، وي كاش (ID: 5792309)" : "Vodafone Cash, Etisalat Cash, Orange Money"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
+                                                Paymob
+                                            </span>
+                                            {paymobMethod === 'wallet' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
+                                        </div>
+                                    </div>
+
+                                    {/* Optional Wallet Phone Number Input */}
+                                    {paymobMethod === 'wallet' && (
+                                        <div className="pt-2 border-t border-gold-500/20">
+                                            <Label className="text-xs text-gold-400 font-bold mb-1 block">
+                                                {isAr ? "رقم المحفظة الإلكترونية (اختياري)" : "Wallet Phone Number (Optional)"}
+                                            </Label>
+                                            <div className="relative">
+                                                <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
+                                                <Input
+                                                    {...register("phoneNumber")}
+                                                    className="ps-10 bg-black/60 border-zinc-700 text-sm focus:border-gold-500"
+                                                    placeholder="010xxxxxxx"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+
+                                {/* Option 3: Accept Kiosk / Cash (5792311) */}
+                                <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('kiosk')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'kiosk'
+                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'kiosk' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                            <Store className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "أمان / مصاري / كاش (Accept Kiosk)" : "Accept Kiosk Cash (Aman / Masary)"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "دفع نقدي بمنافذ أمان ومصاري بسلسلة كود مرجعي (ID: 5792311)" : "Pay cash via Aman or Masary kiosk codes"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
+                                            Paymob
+                                        </span>
+                                        {paymobMethod === 'kiosk' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
+                                    </div>
+                                </motion.div>
                             </div>
+                        ) : (
+                            /* INTERNATIONAL PAYMENT METHOD (خارج مصر 🌍) */
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-black uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
+                                        🌍 {isAr ? "وسيلة الدفع الدولية المتاحة (USD)" : "International Payment Gateway (USD)"}
+                                    </span>
+                                </div>
+
+                                <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('paypal')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'paypal'
+                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className="w-10 h-10 rounded-xl bg-gold-500 text-black font-bold flex items-center justify-center shrink-0">
+                                            <CreditCard className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "PayPal / بطاقة دولية (Paymob PayPal)" : "PayPal & Global Credit Cards"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "دفع آمن دولياً بالدولار الأمريكي (ID: 5792310)" : "Secure international payment in USD"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
+                                            Paymob PayPal
+                                        </span>
+                                        {paymobMethod === 'paypal' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {/* Security Notice */}
+                        <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3 mt-4">
+                            <Lock className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                            <p className="text-xs text-green-400 font-medium leading-relaxed">
+                                {isAr
+                                    ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
+                                    : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page."}
+                            </p>
                         </div>
                     </CardContent>
 
                     <CardFooter className="bg-black/20 p-8 flex flex-col gap-6">
                         {paymentError && (
-                            <div className="w-full p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500 text-xs font-bold mb-2">
-                                <AlertCircle className="w-4 h-4" />
-                                {paymentError}
+                            <div className="w-full p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3 text-red-400 text-xs font-bold mb-2">
+                                <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                                <span>{paymentError}</span>
                             </div>
                         )}
 
@@ -469,15 +675,11 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         </div>
 
-                        {/* 
-                           Redirection state is handled by the submit button's processing state.
-                           Direct navigation avoids React reconciliation crashes.
-                        */}
-
+                        {/* Paymob Submit Button */}
                         <Button
                             type="submit"
                             disabled={isProcessing || isRedirecting}
-                            className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all hover:scale-[1.02] disabled:opacity-70"
+                            className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.25)] transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70"
                         >
                             <span className="flex items-center justify-center gap-2">
                                 {isProcessing || isRedirecting ? (
@@ -487,16 +689,16 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 )}
                                 <span>
                                     {isRedirecting
-                                        ? (isAr ? "جاري التحويل..." : "Redirecting...")
+                                        ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting to Paymob...")
                                         : isProcessing
-                                            ? (isAr ? "جاري المعالجة..." : "Processing...")
+                                            ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
                                             : `${content.payNow} ${formattedTotal}`}
                                 </span>
                             </span>
                         </Button>
 
                         <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
-                            <div className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{content.secureCheckout}</div>
+                            <div className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-green-500" />{content.secureCheckout}</div>
                         </div>
                     </CardFooter>
                 </Card>
@@ -504,3 +706,5 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         </form>
     );
 };
+
+export default CheckoutForm;

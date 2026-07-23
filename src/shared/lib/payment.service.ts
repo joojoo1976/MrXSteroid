@@ -30,6 +30,9 @@ export interface CreateInvoiceRequest {
     email: string;
     fullName: string;
     locale?: 'ar' | 'en';
+    paymentMethod?: string;
+    integrationId?: number | string;
+    phoneNumber?: string;
     metadata?: Record<string, unknown>;
 }
 

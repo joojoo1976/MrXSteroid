@@ -55,6 +55,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             email: z.string().email('Invalid email address'),
             fullName: z.string().min(2, 'Full name is required'),
             locale: z.enum(['ar', 'en']).optional().default('en'),
+            paymentMethod: z.string().optional(),
+            integrationId: z.union([z.number(), z.string()]).optional(),
+            phoneNumber: z.string().optional(),
             metadata: z.record(z.string(), z.unknown()).optional().default({}),
         });
         type CreateInvoiceInput = {
@@ -64,6 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             email: string;
             fullName: string;
             locale?: 'ar' | 'en';
+            paymentMethod?: string;
+            integrationId?: number | string;
+            phoneNumber?: string;
             metadata?: Record<string, unknown>;
         };
 
@@ -110,24 +116,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const supabase = getSupabaseAdmin();
 
         // ─── DETERMINE GATEWAY & PRICING ─────────────────────────────────
-        // SECURE GEOLOCATION: Vercel header overrides the client payload
+        // SECURE GEOLOCATION: Vercel header overrides the client payload for country detection.
+        // However, if client explicitly selects 'paypal' method (outside Egypt via Paymob),
+        // we still route through Paymob gateway with the PayPal integration ID (5792310).
         const vcalCountry = (req.headers['x-vercel-ip-country'] as string) || '';
         const secureCountryCode = vcalCountry.trim() !== '' ? vcalCountry : input.country;
         
-        const gateway = PaymentFactory.getGateway(secureCountryCode);
-        const gatewayName = gateway.getGatewayName();
+        // Determine if user is explicitly requesting Paymob PayPal (outside Egypt flow)
+        const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
+        const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
+        
+        // Use Paymob factory gateway for EG country OR when Paymob method explicitly selected
+        let gateway;
+        let gatewayName: string;
+        if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
+            const { PaymobGateway } = await import('./gateways/PaymobGateway.js');
+            gateway = new PaymobGateway();
+            gatewayName = 'PAYMOB';
+        } else {
+            gateway = PaymentFactory.getGateway(secureCountryCode);
+            gatewayName = gateway.getGatewayName();
+        }
         
         // Ensure downstream functions utilize the verified country code
         input.country = secureCountryCode;
 
-        // Determine currency and amount based on gateway
-        const isEgypt = gatewayName === 'PAYMOB';
-        const currency = isEgypt ? 'EGP' : 'USD';
+        // Determine currency and amount based on gateway/region
+        const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
+        const currency = (input.paymentMethod === 'paypal') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
         const amount = isEgypt
             ? TIER_PRICING[input.tierId].egp
             : TIER_PRICING[input.tierId].usd;
 
-        console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Tier: ${input.tierId}, Amount: ${amount} ${currency}`);
+        console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Method: ${input.paymentMethod}, Integration: ${input.integrationId}, Tier: ${input.tierId}, Amount: ${amount} ${currency}`);
 
         // ─── CREATE INVOICE RECORD (Pending) ─────────────────────────────
         const { data: invoice, error: insertError } = await supabase
@@ -165,6 +186,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 email: input.email,
                 fullName: input.fullName,
                 locale: input.locale,
+                paymentMethod: input.paymentMethod,
+                integrationId: input.integrationId,
+                phoneNumber: input.phoneNumber,
                 ...input.metadata,
             },
         });
