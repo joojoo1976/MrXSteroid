@@ -2,11 +2,9 @@ import { z } from 'zod';
 
 /**
  * Environment Configuration
- * This file centralizes all environment variable access and validation.
- * It ensures the application fails early if critical configuration is missing.
+ * Centralizes all environment variable access and validation.
  */
 
-// Define the schema for environment variables
 const envSchema = z.object({
     // Supabase Configuration
     SUPABASE_URL: z.string().url().min(1, 'Supabase URL is required'),
@@ -14,9 +12,14 @@ const envSchema = z.object({
 
     // SpaceRemit Configuration
     SPACEREMIT_API_URL: z.string().url().default('https://spaceremit.com/api/v2'),
+    SPACEREMIT_PUBLIC_KEY: z.string().optional().default('pkO6RUYNRPVWTC7VDPNOFLMAUTJ0GNN42YEALB26SSOQR46EX20A'),
 
-    // Public Key (no default to enforce configuration)
-    SPACEREMIT_PUBLIC_KEY: z.string().min(1, 'SpaceRemit Public Key is required'),
+    // Paymob Configuration
+    PAYMOB_API_KEY: z.string().optional(),
+    PAYMOB_CARD_INTEGRATION_ID: z.string().optional().default('5573815'),
+    PAYMOB_WALLET_INTEGRATION_ID: z.string().optional().default('5792309'),
+    PAYMOB_KIOSK_INTEGRATION_ID: z.string().optional().default('5792311'),
+    PAYMOB_PAYPAL_INTEGRATION_ID: z.string().optional().default('5792310'),
 
     // Callback URLs
     SPACEREMIT_CALLBACK_URL: z.string().url().default('https://mrxsteroid.vercel.app/api/payments/callback'),
@@ -33,58 +36,35 @@ const envSchema = z.object({
     GEMINI_API_KEY: z.string().optional(),
 });
 
-// Helper to parse environment variables
 const parseEnv = () => {
-    // Collect variables - Support both VITE_ and NEXT_PUBLIC_ prefixes for compatibility
     const processEnv = {
         SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL,
         SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         SPACEREMIT_API_URL: 'https://spaceremit.com/api/v2',
         SPACEREMIT_PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY,
+        PAYMOB_API_KEY: import.meta.env.VITE_PAYMOB_API_KEY || import.meta.env.PAYMOB_API_KEY,
+        PAYMOB_CARD_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_CARD_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_CARD_INTEGRATION_ID || '5573815',
+        PAYMOB_WALLET_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_WALLET_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_WALLET_INTEGRATION_ID || '5792309',
+        PAYMOB_KIOSK_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_KIOSK_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_KIOSK_INTEGRATION_ID || '5792311',
+        PAYMOB_PAYPAL_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_PAYPAL_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_PAYPAL_INTEGRATION_ID || '5792310',
         SPACEREMIT_CALLBACK_URL: import.meta.env.VITE_SPACEREMIT_CALLBACK_URL,
         PAYMENT_SUCCESS_URL: import.meta.env.VITE_PAYMENT_SUCCESS_URL,
         PAYMENT_CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL,
         MODE: import.meta.env.MODE,
         SITE_URL: import.meta.env.VITE_SITE_URL || import.meta.env.NEXT_PUBLIC_SITE_URL,
-        ENCRYPTION_KEY: import.meta.env.VITE_ENCRYPTION_KEY,
+        ENCRYPTION_KEY: import.meta.env.VITE_ENCRYPTION_KEY || 'mrxsteroid_encryption_key_32_chars_minimum_for_aes256',
         OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY,
         GEMINI_API_KEY: import.meta.env.VITE_GEMINI_API_KEY,
     };
 
-    // Parse and validate
     const parsed = envSchema.safeParse(processEnv);
 
     if (!parsed.success) {
-        const errorDetails = parsed.error.format();
-        console.error('❌ Invalid environment configuration:', errorDetails);
-
-        // Check specifically for SpaceRemit public key
-        if (errorDetails.SPACEREMIT_PUBLIC_KEY) {
-            console.error('⚠️ [CRITICAL] VITE_SPACEREMIT_PUBLIC_KEY is missing or empty!');
-            console.error('📋 Please add this to your .env file:');
-            console.error('   VITE_SPACEREMIT_PUBLIC_KEY=pkO6RUYNRPVWTC7VDPNOFLMAUTJ0GNN42YEALB26SSOQR46EX20A');
-            console.error('📋 For Vercel deployment, add it in Project Settings > Environment Variables');
-        }
-
-        // In development, we throw to catch issues early.
-        // In production, we might want to log and use fallbacks where possible,
-        // but for payment critical keys, we should probably fail.
-        if (import.meta.env.DEV) {
-            throw new Error('Invalid environment configuration. Check console for details.');
-        }
-        // Return a best-effort config or fallback for production to avoid white-screen of death
-        // though critical features might fail.
+        console.error('❌ Invalid environment configuration:', parsed.error.format());
         return processEnv as unknown as z.infer<typeof envSchema>;
-    }
-
-    // Log successful SpaceRemit config (without exposing full key)
-    if (parsed.data.SPACEREMIT_PUBLIC_KEY) {
-        const keyPreview = parsed.data.SPACEREMIT_PUBLIC_KEY.substring(0, 8) + '...';
-        console.log('✅ [Env] SpaceRemit public key loaded:', keyPreview);
     }
 
     return parsed.data;
 };
 
-// Export the validated configuration
 export const env = parseEnv();

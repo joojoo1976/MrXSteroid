@@ -18,6 +18,7 @@ export interface CheckoutFormData {
     fullName: string;
     email: string;
     country: string;
+    phoneNumber?: string;
     address?: string;
     city?: string;
     zipCode?: string;
@@ -28,7 +29,7 @@ export interface CheckoutFormData {
     goal?: string;
     createAccount: boolean;
     agreeToTerms: boolean;
-    userId?: string; // Add userId for authenticated users
+    userId?: string;
 }
 
 export interface useCheckoutOptions {
@@ -38,26 +39,19 @@ export interface useCheckoutOptions {
     totalAmount: number;
     productVariant: ProductVariant;
     onLocationChange: (isEg: boolean) => void;
-    userId?: string; // Optional: authenticated user ID
-    userEmail?: string; // Optional: authenticated user email
-    userName?: string; // Optional: authenticated user name
+    userId?: string;
+    userEmail?: string;
+    userName?: string;
 }
 
-export interface CheckoutState {
-    isProcessing: boolean;
-    isRedirecting: boolean;
-    paymentError: string | null;
-    redirectUrl: string | null;
-    // Embedded payment flow
-    isCardElementReady: boolean;
-    spaceremitCode: string | null;
-    paymentMethod: 'embedded' | 'redirect';
-}
+export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal';
+export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
     const { isEgypt: isEgRegion, countryCode: vCountry } = useRegion();
+    
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -65,6 +59,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [submissionCount, setSubmissionCount] = useState(0);
     const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
     const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+
+    // Region & Paymob Payment Method Selection
+    const initialRegion: RegionOption = selectedTier.selectedLocation === 'EG' || isEgRegion ? 'EG' : 'GLOBAL';
+    const [regionOption, setRegionOption] = useState<RegionOption>(initialRegion);
+    const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(initialRegion === 'EG' ? 'card' : 'paypal');
 
     // Promo Code State
     const [promoCode, setPromoCode] = useState('');
@@ -76,10 +75,6 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('redirect');
 
-    // Safe Redirection Side-Effect
-    // No longer using useEffect for redirect to avoid DOM manipulation during unload
-    // which was causing insertBefore crashes. Redirect is now direct in onSubmit.
-
     const isAr = lang === 'ar';
     const isPhysical = productVariant !== 'digital';
 
@@ -88,6 +83,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
         fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
         email: z.string().email({ message: content.checkout.validation.emailInvalid }),
         country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
+        phoneNumber: z.string().optional(),
         address: z.string().optional(),
         city: z.string().optional(),
         zipCode: z.string().optional(),
@@ -128,22 +124,32 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const form = useForm<CheckoutFormData>({
         resolver: zodResolver(schema),
         defaultValues: {
-            country: 'USA',
+            country: regionOption === 'EG' ? 'EG' : 'US',
             createAccount: true,
             agreeToTerms: false,
             email: userEmail || '',
             fullName: userName || '',
-            userId: userId || undefined
+            userId: userId || undefined,
+            phoneNumber: ''
         }
     });
 
     const selectedCountry = form.watch('country');
     const selectedShippingId = form.watch('shippingProvider');
 
+    // Handle Region Toggle Change
+    const handleRegionChange = (newRegion: RegionOption) => {
+        setRegionOption(newRegion);
+        const isEgyptRegion = newRegion === 'EG';
+        form.setValue('country', isEgyptRegion ? 'EG' : 'US');
+        setPaymobMethod(isEgyptRegion ? 'card' : 'paypal');
+        onLocationChange(isEgyptRegion);
+    };
+
     // Handle Country Change
     useEffect(() => {
-        // Enforce server-side verification flag for the location change prop
-        onLocationChange(isEgRegion);
+        const isEg = selectedCountry === 'EG' || regionOption === 'EG';
+        onLocationChange(isEg);
 
         if (selectedTier.requiresShipping && selectedCountry) {
             const fetchShipping = async () => {
@@ -159,20 +165,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
             };
             fetchShipping();
         }
-    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange]);
+    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, regionOption]);
 
-    // Use the selectedLocation from the selected tier if specified, otherwise fall back to region context
-    const isEg = selectedTier.selectedLocation === 'EG' || (selectedTier.selectedLocation === undefined && isEgRegion);
+    const isEg = regionOption === 'EG' || selectedCountry === 'EG';
     const { amount: baseAmount } = calculateBaseAmount(isEg ? 'EG' : 'US', productVariant, totalAmount);
-
-    console.log('🚀 [useCheckout] RENDER STATE:', {
-        selectedCountry,
-        vCountry,
-        isEg,
-        productVariant,
-        tierId: selectedTier.id,
-        totalAmount
-    });
 
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
     const discountAmount = promoStatus?.valid ? promoStatus.discount : 0;
@@ -188,7 +184,6 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
     const formatAmount = (amount: number) => {
         if (isEg) {
-            // Precise Arabic formatting for Egyptian Pound
             return new Intl.NumberFormat('ar-EG', {
                 style: 'currency',
                 currency: 'EGP',
@@ -225,38 +220,43 @@ export const useCheckout = (options: useCheckoutOptions) => {
             return;
         }
 
-        console.log('🛑 [useCheckout] onSubmit STARTING...', {
-            data,
-            finalTotal,
-            prefCurrency: typeof prefCurrency === 'string' ? prefCurrency : prefCurrency.code
-        });
-
         setIsProcessing(true);
         setPaymentError(null);
         setSubmissionCount(prev => prev + 1);
-        // We set isRedirecting only AFTER the API call succeeds to avoid UI jitter/crashes
         setRedirectUrl(null);
 
         try {
-            // ─── MULTI-GATEWAY FLOW via createInvoice API ────────────────────
-            // 1. Create pending invoice → 2. Factory selects gateway by country
-            // 3. Pass tier_id → 4. Redirect to gateway URL
-            console.log('🚀 Creating invoice via multi-gateway API...', {
+            const integrationIdsMap: Record<PaymobMethod, number> = {
+                card: 5573815,
+                wallet: 5792309,
+                kiosk: 5792311,
+                paypal: 5792310
+            };
+
+            const activeIntegrationId = integrationIdsMap[paymobMethod] || (isEg ? 5573815 : 5792310);
+
+            console.log('🚀 Initiating Paymob Multi-Gateway Invoice...', {
                 tierId: selectedTier.id,
-                country: data.country,
+                regionOption,
+                paymobMethod,
+                integrationId: activeIntegrationId,
+                country: isEg ? 'EG' : data.country,
                 email: data.email,
+                amount: finalTotal,
             });
 
-            // Call the new multi-gateway createInvoice endpoint
             const result = await paymentService.createInvoice({
                 userId: data.userId || userId || '',
                 tierId: selectedTier.id as string,
                 amount: finalTotal,
-                currency: typeof prefCurrency === 'string' ? prefCurrency : prefCurrency.code,
-                country: data.country,
+                currency: isEg ? 'EGP' : 'USD',
+                country: isEg ? 'EG' : (data.country || 'US'),
                 email: data.email,
                 fullName: data.fullName,
                 locale: isAr ? 'ar' : 'en',
+                paymentMethod: paymobMethod,
+                integrationId: activeIntegrationId,
+                phoneNumber: data.phoneNumber || '',
                 metadata: {
                     tierName: selectedTier.name as string,
                     isPhysical,
@@ -268,32 +268,19 @@ export const useCheckout = (options: useCheckoutOptions) => {
                     address: data.address,
                     city: data.city,
                     zipCode: data.zipCode,
+                    paymobMethod,
+                    integrationId: activeIntegrationId,
                 },
             });
 
             if (result.success && result.redirectUrl) {
-                console.log('🚀 Redirecting to:', result.redirectUrl);
-                // Use a small delay and window.location.assign to avoid React insertBefore error
+                console.log('🚀 Redirecting to Paymob Gateway URL:', result.redirectUrl);
+                setIsRedirecting(true);
                 setTimeout(() => {
                     window.location.assign(result.redirectUrl!);
                 }, 100);
             } else {
-                throw new Error(result.error || 'Payment initiation failed');
-            }
-
-            console.log('📦 Invoice result:', result);
-
-            if (!result.success) {
-                throw new Error(result.error || (isAr ? 'فشل إنشاء الفاتورة' : 'Invoice creation failed'));
-            }
-
-            // 🚀 SUCCESS: Redirect immediately to avoid React reconciliation crashes
-            // This prevents React from trying to re-render while the browser is navigating,
-            // which was causing the "insertBefore" error.
-            if (result.redirectUrl) {
-                console.log('🏁 Redirecting immediately to:', result.redirectUrl);
-                window.location.assign(result.redirectUrl);
-                return;
+                throw new Error(result.error || (isAr ? 'فشل إنشاء عملية الدفع' : 'Payment initiation failed'));
             }
 
         } catch (error) {
@@ -323,7 +310,13 @@ export const useCheckout = (options: useCheckoutOptions) => {
         selectedShipping,
         handleApplyPromo,
         onSubmit: form.handleSubmit(onSubmit),
-        // Embedded payment flow
+        // Region & Paymob Methods
+        regionOption,
+        setRegionOption: handleRegionChange,
+        paymobMethod,
+        setPaymobMethod,
+        isEg,
+        // Embedded payment flow compat
         isCardElementReady,
         setIsCardElementReady,
         spaceremitCode,
