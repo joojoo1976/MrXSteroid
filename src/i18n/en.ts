@@ -1333,19 +1333,26 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         welcomeMessage: "Hey Champ. I am the AI version of Mr. X. How can I help you with your training or nutrition today?"
     },
     quiz: {
-        title: "Are You Ready?",
-        subtitle: "A quick quiz to determine your level and whether you are ready to enter the hormonal world or need more foundation.",
-        startBtn: "Start Quiz",
+        title: "Are You Ready for the Next Level?",
+        subtitle: "A precise scientific quiz that determines your true level in 5 questions and reveals your readiness for the hormonal world.",
+        startBtn: "Start the Quiz Now",
         questionLabel: "Question",
         totalLabel: "Total",
+        retakeBtn: "Retake Quiz",
+        ctaPricingLabel: "Get the Book & Start Your Cycle",
+        discountCodeLabel: "Your Discount Code (Steroid IQ)",
+        discountCopiedLabel: "✅ Code Copied!",
+        discountHint: "Enter this code in the 'Discount Code' field at checkout",
         questions: [
+            // Q1
             {
-                question: "How many years of consistent training do you have?",
+                question: "How many years of consistent, regular training do you have?",
                 options: [
                     { text: "Less than 3 years", score: 0 },
                     { text: "More than 5 years", score: 1 }
                 ]
             },
+            // Q2
             {
                 question: "What is your current body fat percentage?",
                 options: [
@@ -1353,38 +1360,124 @@ These Terms shall be governed and construed in accordance with the laws of <stro
                     { text: "Under 12% (visible abs)", score: 1 }
                 ]
             },
+            // Q3
             {
-                question: "Do you weigh your food and track calories daily?",
+                question: "Do you weigh your food and track calories precisely every day?",
                 options: [
                     { text: "Sometimes / I just eat healthy", score: 0 },
-                    { text: "Yes, every gram is tracked", score: 1 }
+                    { text: "Yes, every gram is weighed and tracked", score: 1 }
                 ]
             },
+            // Q4
             {
                 question: "Do you know what PCT (Post Cycle Therapy) is?",
                 options: [
-                    { text: "Heard of it / Don't know much", score: 0 },
+                    { text: "Heard of it / Don't know it well", score: 0 },
                     { text: "Yes, I know SERMs & HCG protocols", score: 1 }
                 ]
             },
+            // Q5
             {
-                question: "Have you done bloodwork (Kidney, Liver, Hormones) recently?",
+                question: "Have you done a full bloodwork panel (Kidney, Liver, Hormones) recently?",
                 options: [
-                    { text: "No / A long time ago", score: 0 },
-                    { text: "Yes, and I know my baseline", score: 1 }
+                    { text: "No / Not in a long time", score: 0 },
+                    { text: "Yes, and I know my baseline numbers", score: 1 }
+                ]
+            },
+            // Q6
+            {
+                question: "Do you know the difference between Testosterone Enanthate and Cypionate?",
+                options: [
+                    { text: "No, they're the same to me", score: 0 },
+                    { text: "Yes, I know the half-life & frequency differences", score: 1 }
+                ]
+            },
+            // Q7
+            {
+                question: "Do you know what Aromatization is and why it happens?",
+                options: [
+                    { text: "I've heard the word but that's about it", score: 0 },
+                    { text: "Yes, and I know how to manage it with an AI", score: 1 }
+                ]
+            },
+            // Q8
+            {
+                question: "Do you consistently sleep 7-8 hours per night?",
+                options: [
+                    { text: "Rarely — my life is too busy", score: 0 },
+                    { text: "Yes, quality sleep is my top priority", score: 1 }
+                ]
+            },
+            // Q9
+            {
+                question: "Do you understand the Anabolic vs Androgenic ratio concept?",
+                options: [
+                    { text: "No, I don't fully understand it", score: 0 },
+                    { text: "Yes, and I use it to choose compounds", score: 1 }
+                ]
+            },
+            // Q10
+            {
+                question: "Can you read and interpret your own bloodwork results?",
+                options: [
+                    { text: "No, I just hand it to the doctor", score: 0 },
+                    { text: "Yes, I understand RBC, Hematocrit, ALT values", score: 1 }
+                ]
+            },
+            // Q11
+            {
+                question: "How do you handle training injuries?",
+                options: [
+                    { text: "I push through even when it hurts", score: 0 },
+                    { text: "I stop, treat it, then return gradually", score: 1 }
+                ]
+            },
+            // Q12
+            {
+                question: "Are you familiar with the concept of Supercompensation in training?",
+                options: [
+                    { text: "No, I've never heard that term", score: 0 },
+                    { text: "Yes, I structure my programs around it", score: 1 }
+                ]
+            },
+            // Q13
+            {
+                question: "How often do you change your training program?",
+                options: [
+                    { text: "Every month or randomly", score: 0 },
+                    { text: "Based on structured Periodization phases", score: 1 }
+                ]
+            },
+            // Q14
+            {
+                question: "Do you know the joint-related side effects of Estrogen inhibitors (AIs)?",
+                options: [
+                    { text: "No, I didn't know they affected joints", score: 0 },
+                    { text: "Yes, and I dose carefully because of this", score: 1 }
+                ]
+            },
+            // Q15
+            {
+                question: "Have you reached near your Natural Genetic Potential?",
+                options: [
+                    { text: "No, I'm still progressing quickly", score: 0 },
+                    { text: "Yes, my gains have slowed despite discipline", score: 1 }
                 ]
             }
         ],
         results: {
             natural: {
-                title: "Stay Natural (For Now)",
-                desc: "You have great potential for natural growth. Using hormones now might hurt you more than help because your foundation (Diet/Training) needs tuning. This book will help you max out your natural genetic potential first.",
-                cta: "Get the Book to Maximize Gains"
+                title: "Not Quite Ready... Yet",
+                badge: "⚠️ Build Your Foundation First",
+                desc: "Your results reveal raw, untapped potential — and the golden phase ahead of you is something you haven't even touched yet. Entering the hormonal world without proper scientific preparation makes you easy prey for death dealers who sell danger disguised as promises. This book is your shield — it teaches you how to build the right foundation, maximize your natural results, and know exactly when you're truly ready. Invest in yourself today, not in empty words.",
+                cta: "Get the Book & Start Your Cycle"
             },
             enhanced: {
-                title: "You Are Ready for the Next Step",
-                desc: "You have the experience and a solid foundation. The next step requires precise science to protect you. You don't need random advice; you need the strict scientific protocols in this book.",
-                cta: "Get the Book & Start Your Cycle"
+                title: "You Are Ready for the Next Level 🔥",
+                badge: "✅ Advanced Level — Elite Tier",
+                desc: "The results are clear: you have the discipline and foundation that 95% of those entering this world lack. But that's exactly the danger — those who know a little often think they know a lot. This book will hand you information you've never read before: secret protocols, precise mathematical formulas, and hormonal blueprints that power world-class athletes. Your readiness is the key — and the book is the lock waiting for you.",
+                cta: "Get the Book & Start Your Cycle",
+                discountPrefix: "🎁 Your Intelligence Reward — Exclusive Discount Code:"
             }
         }
     },

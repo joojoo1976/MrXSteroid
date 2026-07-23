@@ -220,16 +220,24 @@ export interface QuizContent {
   questions: QuizQuestion[];
   questionLabel: string;
   totalLabel: string;
+  retakeBtn: string;
+  ctaPricingLabel: string;
+  discountCodeLabel: string;
+  discountCopiedLabel: string;
+  discountHint: string;
   results: {
     natural: {
       title: string;
+      badge: string;
       desc: string;
       cta: string;
     };
     enhanced: {
       title: string;
+      badge: string;
       desc: string;
       cta: string;
+      discountPrefix: string;
     };
   };
 }
