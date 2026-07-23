@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { CheckoutForm, NewPricingTier } from '../features/checkout/CheckoutForm';
 import { Button } from '../shared/ui/button';
 import { Card } from '../shared/ui/card';
 import { ContentStrings, Page, PricingTier, ProductVariant } from '@/shared/types/types';
-import BrandLogo from '../shared/ui/BrandLogo';
+import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
 import { usePreferences } from '../context/PreferencesContext';
+import { useRegion } from '../context/RegionContext';
 
 import { ProductSelector } from '../features/checkout/ProductSelector';
 import { OrderSummary } from '../features/checkout/OrderSummary';
-import { EGP_PRICES } from '../shared/lib/logic';
+import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../shared/lib/logic';
 
 interface CheckoutPageProps {
     content: ContentStrings;
@@ -20,17 +21,18 @@ interface CheckoutPageProps {
     openLegal: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
 }
 
-const VARIANT_PRICES: Record<ProductVariant, number> = {
-    'digital': 49.99,
-    'paperback': 72.00,
-    'bundle': 72.00,
-    'hardcover': 82.00,
-    'coaching': 82.00,
-    'coaching_plus': 282.00
+const USD_PRICES: Record<string, number> = {
+    digital: 49.99,
+    bundle: 72.00,
+    coaching: 82.00,
+    coaching_plus: 282.00,
+    paperback: 72.00,
+    hardcover: 82.00,
 };
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navigateTo, onSuccess, openLegal }) => {
     const { language } = usePreferences();
+    const { isEgypt: isGeoEgypt } = useRegion();
     const isAr = language === 'ar';
 
     // Initialize variant based on selectedTier or default to digital
@@ -42,38 +44,41 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     const [quantity, setQuantity] = useState(1);
     const [shippingCost, setShippingCost] = useState(0);
 
-    const isEg = selectedTier?.selectedLocation === 'EG';
+    // ── Region state — driven from: selectedTier (initial) > geo > default ──
+    const [isEg, setIsEg] = useState<boolean>(() => {
+        if (selectedTier?.selectedLocation) return selectedTier.selectedLocation === 'EG';
+        return isAr || isGeoEgypt;
+    });
 
-    // Calculate Totals
+    // Handle Region Toggle from ProductSelector
+    const handleRegionChange = useCallback((newIsEg: boolean) => {
+        setIsEg(newIsEg);
+    }, []);
+
+    // ── Totals ──────────────────────────────────────────────────────────────
     const totals = React.useMemo(() => {
-        // If the user hasn't changed the variant from what was passed in, and quantity is 1, use exact price from selectedTier
-        if (selectedTier && selectedTier.id === variant && quantity === 1 && selectedTier.price !== undefined) {
-            const subtotal = selectedTier.price;
-            const grandTotal = subtotal + shippingCost;
-            return { itemPrice: selectedTier.price, subtotal, shippingCost, grandTotal };
-        }
-
         const isPlus = variant.endsWith('_plus');
         const baseVariant = isPlus ? variant.replace('_plus', '') : variant;
 
-        let itemPrice = 0;
+        let itemPrice: number;
         if (isEg) {
-            itemPrice = EGP_PRICES[baseVariant as ProductVariant] || EGP_PRICES['bundle']; // Fallback
-            if (isPlus) itemPrice += 9999; // Coaching Addon EGP
+            itemPrice = EGP_PRICES[baseVariant as ProductVariant] ?? EGP_PRICES['bundle'];
+            if (isPlus) itemPrice += COACHING_ADDON_EGP;
         } else {
-            itemPrice = VARIANT_PRICES[baseVariant as ProductVariant] || VARIANT_PRICES['bundle']; // Fallback
-            if (isPlus) itemPrice += 200; // Coaching Addon USD
+            itemPrice = USD_PRICES[baseVariant as ProductVariant] ?? USD_PRICES['bundle'];
+            if (isPlus) itemPrice += COACHING_ADDON_USD;
         }
 
         const subtotal = itemPrice * quantity;
         const grandTotal = subtotal + shippingCost;
         return { itemPrice, subtotal, shippingCost, grandTotal };
-    }, [variant, quantity, shippingCost, isEg, selectedTier]);
+    }, [variant, quantity, shippingCost, isEg]);
 
-    // Update Shipping Zone callback (passed to Form)
-    const handleLocationChange = (isEg: boolean) => {
-        // We can use this for any UI changes later if needed
-    };
+    // Handle shipping cost from CheckoutForm
+    const handleLocationChange = useCallback((egFromForm: boolean) => {
+        // sync region with CheckoutForm region toggle (if user changes region inside form)
+        setIsEg(egFromForm);
+    }, []);
 
     if (!selectedTier && !variant) {
         return (
@@ -82,10 +87,10 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                     <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto">
                         <ShoppingBag className="w-10 h-10 text-zinc-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-white">{isAr ? "سلة التسوق فارغة" : "Your cart is empty"}</h2>
-                    <p className="text-zinc-400">{isAr ? "يرجى اختيار باقة قبل المتابعة لإتمام الدفع." : "Please select a plan before proceeding to checkout."}</p>
+                    <h2 className="text-2xl font-black text-white">{isAr ? 'سلة التسوق فارغة' : 'Your cart is empty'}</h2>
+                    <p className="text-zinc-400">{isAr ? 'يرجى اختيار باقة قبل المتابعة لإتمام الدفع.' : 'Please select a plan before proceeding to checkout.'}</p>
                     <Button onClick={() => navigateTo(Page.HOME)} className="w-full bg-gold-500 text-black font-black">
-                        {content.backToHome || (isAr ? "العودة للرئيسية" : "Back to Home")}
+                        {content.backToHome || (isAr ? 'العودة للرئيسية' : 'Back to Home')}
                     </Button>
                 </Card>
             </div>
@@ -101,8 +106,8 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
             </div>
 
             <div className="max-w-7xl mx-auto">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16 px-4">
+                {/* ── Header ─────────────────────────────────────────────── */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-8 mb-16 px-4">
                     <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
                         <Button
                             variant="ghost"
@@ -110,13 +115,16 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             className="group hover:bg-white/5 text-zinc-400 hover:text-white mb-4"
                         >
                             <ArrowLeft className={`w-4 h-4 ${isAr ? 'rotate-180' : ''} mr-2 group-hover:-translate-x-1 transition-transform`} />
-                            {isAr ? "رجوع" : "Back"}
+                            {isAr ? 'رجوع' : 'Back'}
                         </Button>
-                        <div className="flex items-center gap-4">
-                            <BrandLogo className="text-3xl" />
-                            <div className="h-8 w-px bg-zinc-800 hidden md:block" />
-                            <h1 className="text-3xl font-black tracking-tighter uppercase text-zinc-400">
-                                {content.checkoutTitle || (isAr ? "إتمام الدفع" : "Secure Checkout")}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {/* DynamicBrandLogo with min-w to prevent clipping */}
+                            <div className="min-w-max shrink-0">
+                                <DynamicBrandLogo variant="full" showMascot={false} className="text-2xl md:text-3xl" />
+                            </div>
+                            <div className="h-8 w-px bg-zinc-800 hidden md:block shrink-0" />
+                            <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase text-zinc-400 whitespace-nowrap">
+                                {content.checkoutTitle || (isAr ? 'إتمام الدفع' : 'Secure Checkout')}
                             </h1>
                         </div>
                     </motion.div>
@@ -124,7 +132,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl"
+                        className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shrink-0"
                     >
                         <ShieldCheck className="w-6 h-6 text-green-500" />
                         <div>
@@ -135,25 +143,28 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                 </div>
 
                 <div className="grid lg:grid-cols-12 gap-12 items-start">
-                    {/* Main Checkout Section (Form) */}
+                    {/* ── Main Checkout Section ───────────────────────────── */}
                     <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         className="lg:col-span-8 space-y-8"
                     >
-                        {/* 01. Product Selection */}
+                        {/* 01 + 02. Product Selection with Region Toggle */}
                         <ProductSelector
                             selectedVariant={variant}
                             onSelectVariant={setVariant}
                             quantity={quantity}
                             setQuantity={setQuantity}
                             isAr={isAr}
+                            isEg={isEg}
+                            onRegionChange={handleRegionChange}
                         />
 
-                        {/* 02. Customer & Payment Details */}
+                        {/* 03. Payment Details */}
                         <div className="space-y-6">
                             <h3 className="text-xl font-black text-white flex items-center gap-2">
-                                {content.orderSummary}
+                                <span className="text-gold-500">03.</span>
+                                {isAr ? 'بيانات الدفع وإتمام الطلب' : 'Payment & Order Completion'}
                             </h3>
                             <CheckoutForm
                                 content={content}
@@ -168,10 +179,10 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                     requiresShipping: variant !== 'digital',
                                     requiresBodyStats: variant === 'coaching_plus',
                                     selectedLanguage: isAr ? 'ar' : 'en',
-                                    selectedLocation: isAr ? 'EG' : 'GLOBAL',
+                                    selectedLocation: isEg ? 'EG' : 'GLOBAL',
                                     includesEbook: true,
                                     includesAudiobook: variant === 'bundle' || variant === 'coaching' || variant === 'coaching_plus',
-                                    includesCoaching: variant === 'coaching_plus'
+                                    includesCoaching: variant === 'coaching_plus',
                                 } as NewPricingTier}
                                 onSuccess={onSuccess}
                                 productVariant={variant}
@@ -184,7 +195,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                         </div>
                     </motion.div>
 
-                    {/* Sticky Order Summary Sidebar */}
+                    {/* ── Sticky Order Summary Sidebar ────────────────────── */}
                     <motion.div
                         initial={{ x: 20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
