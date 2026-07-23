@@ -61,17 +61,19 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
         const baseVariant = isPlus ? variant.replace('_plus', '') : variant;
 
         let itemPrice: number;
+        let addonPrice: number = 0;
+
         if (isEg) {
             itemPrice = EGP_PRICES[baseVariant as ProductVariant] ?? EGP_PRICES['bundle'];
-            if (isPlus) itemPrice += COACHING_ADDON_EGP;
+            if (isPlus) addonPrice = COACHING_ADDON_EGP;
         } else {
             itemPrice = USD_PRICES[baseVariant as ProductVariant] ?? USD_PRICES['bundle'];
-            if (isPlus) itemPrice += COACHING_ADDON_USD;
+            if (isPlus) addonPrice = COACHING_ADDON_USD;
         }
 
         const subtotal = itemPrice * quantity;
-        const grandTotal = subtotal + shippingCost;
-        return { itemPrice, subtotal, shippingCost, grandTotal };
+        const grandTotal = subtotal + addonPrice + shippingCost;
+        return { itemPrice, subtotal, addonPrice, shippingCost, grandTotal };
     }, [variant, quantity, shippingCost, isEg]);
 
     // Handle shipping cost from CheckoutForm
@@ -172,7 +174,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                 selectedTier={(selectedTier as NewPricingTier | null) || {
                                     id: variant,
                                     name: variant,
-                                    price: totals.subtotal,
+                                    price: totals.subtotal + (totals.addonPrice || 0),
                                     description: '',
                                     features: [],
                                     buttonText: '',
@@ -189,7 +191,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                 quantity={quantity}
                                 onLocationChange={handleLocationChange}
                                 onShippingChange={setShippingCost}
-                                totalAmount={totals.subtotal}
+                                totalAmount={totals.subtotal + (totals.addonPrice || 0)}
                                 openLegal={openLegal}
                             />
                         </div>

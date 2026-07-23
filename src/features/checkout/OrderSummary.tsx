@@ -11,6 +11,7 @@ interface OrderSummaryProps {
     quantity: number;
     totals: {
         subtotal: number;
+        addonPrice?: number;
         shippingCost: number;
         grandTotal: number;
     };
@@ -81,6 +82,14 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ content, variant, qu
                         <span>{content.subtotal}</span>
                         <span className="font-mono text-white">{formatPrice(totals.subtotal)}</span>
                     </div>
+                    {totals.addonPrice ? (
+                        <div className="flex justify-between text-zinc-400 font-bold text-sm">
+                            <span className="text-gold-500">
+                                {isAr ? "تدريب شخصي أونلاين لمدة كورس واحد" : "Online Personal Training for One Course"}
+                            </span>
+                            <span className="font-mono text-gold-500">+{formatPrice(totals.addonPrice)}</span>
+                        </div>
+                    ) : null}
                     {totals.shippingCost > 0 ? (
                         <div className="flex justify-between text-zinc-400 font-bold text-sm">
                             <span>{content.shipping}</span>
