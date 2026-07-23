@@ -35,7 +35,7 @@ export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '' }) => {
     const systemTitle = isRTL ? 'نظام القياس' : 'Unit System';
 
     return (
-        <div ref={ref} className={`relative inline-flex flex-col items-center ${className}`}>
+        <div ref={ref} className={`relative inline-flex flex-col items-center ${isOpen ? 'z-[100]' : 'z-30'} ${className}`}>
 
             {/* ── Floating badge label above button ── */}
             <motion.div
@@ -123,11 +123,11 @@ export const UnitToggle: React.FC<UnitToggleProps> = ({ className = '' }) => {
                         exit ={{ opacity: 0, y: -8, scale: 0.95 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         className={`
-                            absolute top-[calc(100%+10px)] z-[70]
-                            ${isRTL ? 'right-0' : 'left-0'}
+                            absolute top-[calc(100%+10px)] z-[100]
+                            left-1/2 -translate-x-1/2
                             min-w-[220px] rounded-2xl overflow-hidden
                             border-2 border-zinc-700/60 bg-zinc-950/95 backdrop-blur-3xl
-                            shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]
+                            shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)]
                         `}
                     >
                         {/* Panel header */}
