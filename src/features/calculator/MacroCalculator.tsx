@@ -179,12 +179,40 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
           <BrandLogo className="text-3xl md:text-5xl" onClick={() => navigateTo(Page.HOME)} />
         </div>
 
-        <h1 className="text-5xl md:text-8xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter">
           {content.calcTitle}
         </h1>
-        <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-bold italic">
-          {content.calcSubtitle}
-        </p>
+
+        {content.calcFeatures && content.calcFeatures.length > 0 ? (
+          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto mb-8">
+            {content.calcFeatures.map((feat, idx) => {
+              const icons = [Scale, Target, Zap];
+              const IconComp = icons[idx % icons.length];
+              return (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl shadow-xl hover:border-gold-500/40 transition-all text-start flex flex-col justify-start group"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <IconComp className="w-4 h-4 text-gold-500" />
+                    </div>
+                    <h3 className="font-black text-sm text-zinc-900 dark:text-white leading-tight">
+                      {feat.title}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-semibold">
+                    {feat.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-bold italic mb-6">
+            {content.calcSubtitle}
+          </p>
+        )}
 
         {/* شارات الأمان والدقة */}
         <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
