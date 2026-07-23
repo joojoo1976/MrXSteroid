@@ -1,17 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, ShieldCheck, ChevronRight, Zap, Activity, Dumbbell } from 'lucide-react';
+import {
+    Trophy, ShieldCheck, ChevronRight, Zap, Activity,
+    Dumbbell, Copy, Check, ArrowDown, Lock, Unlock
+} from 'lucide-react';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useReadinessQuiz } from './hooks/useReadinessQuiz';
 
-const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () => void }> = ({ content, onComplete }) => {
+const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () => void }> = ({ content }) => {
+    const isAr = content.lang === 'ar';
+
     const {
         currentQ,
         finished,
         handleAnswer,
-        result
-    } = useReadinessQuiz({ content, onComplete });
+        result,
+        isReady,
+        discountCode,
+        discountValue,
+        reset,
+        sessionQuestions,
+        totalQuestions,
+    } = useReadinessQuiz({ content });
+
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        if (discountCode) {
+            navigator.clipboard.writeText(discountCode).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2500);
+            });
+        }
+    };
+
+    /** Smooth scroll to pricing section */
+    const scrollToPricing = () => {
+        const el = document.getElementById('pricing');
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     return (
         <section id="readiness-quiz" className="py-8 lg:py-10 bg-background text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
@@ -30,7 +60,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                         className="relative bg-background/40 backdrop-blur-3xl rounded-xl md:rounded-2xl p-4 md:p-6 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-2 border-zinc-800/50 overflow-hidden card-shine animate-glow"
                     >
                         {/* Dynamic Top Stripe */}
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-600 via-white to-gold-400"></div>
+                        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isReady ? 'from-green-600 via-gold-400 to-green-400' : 'from-gold-600 via-white to-gold-400'}`}></div>
 
                         <AnimatePresence mode="wait">
                             {!finished ? (
@@ -63,14 +93,14 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                                 {content.quiz.questionLabel} {currentQ + 1}
                                             </span>
                                             <span className="text-sm font-black text-zinc-300 uppercase tracking-wider">
-                                                {content.quiz.questions.length} {content.quiz.totalLabel}
+                                                {totalQuestions} {content.quiz.totalLabel}
                                             </span>
                                         </div>
                                         <div className="h-3 bg-black/40 rounded-full overflow-hidden p-0.5 shadow-inner border border-white/5">
                                             <motion.div
                                                 className="h-full bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.4)] relative overflow-hidden"
                                                 initial={{ width: 0 }}
-                                                animate={{ width: `${((currentQ + 1) / content.quiz.questions.length) * 100}%` }}
+                                                animate={{ width: `${((currentQ + 1) / totalQuestions) * 100}%` }}
                                                 transition={{ type: "spring", stiffness: 100, damping: 20 }}
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer"></div>
@@ -86,10 +116,10 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                                         className="space-y-4"
                                     >
                                         <h3 className="text-lg md:text-xl font-black leading-tight text-center mb-4">
-                                            {content.quiz.questions[currentQ].question}
+                                            {sessionQuestions[currentQ].question}
                                         </h3>
                                         <div className="grid gap-3">
-                                            {content.quiz.questions[currentQ].options.map((opt, idx) => (
+                                            {sessionQuestions[currentQ].options.map((opt, idx) => (
                                                 <motion.button
                                                     key={idx}
                                                     whileHover={{ scale: 1.05, x: 10, borderColor: "rgba(234, 179, 8, 0.5)" }}
@@ -116,53 +146,150 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings, onComplete: () =
                             ) : (
                                 <motion.div
                                     key="quiz-results"
-                                    initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                                    initial={{ opacity: 0, scale: 0.8, rotate: -3 }}
                                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                    className="text-center py-10 relative z-10"
+                                    transition={{ type: 'spring', stiffness: 80, damping: 18 }}
+                                    className="text-center py-8 relative z-10"
                                 >
-                                    <div className="relative inline-block mb-12">
+                                    {/* Result Icon */}
+                                    <div className="relative inline-block mb-8">
                                         <motion.div
                                             animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.5, 0.2] }}
                                             transition={{ repeat: Infinity, duration: 4 }}
-                                            className="absolute inset-0 bg-gold-500 blur-[80px] rounded-full"
+                                            className={`absolute inset-0 ${isReady ? 'bg-green-500' : 'bg-gold-500'} blur-[80px] rounded-full`}
                                         ></motion.div>
                                         <motion.div
                                             whileHover={{ rotateY: 360 }}
                                             transition={{ duration: 1 }}
-                                            className="w-40 h-40 bg-gradient-to-br from-gold-400 via-yellow-200 to-gold-600 rounded-[3rem] flex items-center justify-center relative shadow-3xl ring-8 ring-white/10"
+                                            className={`w-32 h-32 bg-gradient-to-br ${isReady ? 'from-green-400 via-emerald-200 to-gold-500' : 'from-gold-400 via-yellow-200 to-gold-600'} rounded-[2.5rem] flex items-center justify-center relative shadow-3xl ring-8 ring-white/10`}
                                         >
-                                            {result && result.title.includes('Enhanced') ? <Trophy className="w-20 h-20 text-black animate-bounce" /> : <ShieldCheck className="w-20 h-20 text-black animate-pulse" />}
+                                            {isReady
+                                                ? <Unlock className="w-16 h-16 text-black" />
+                                                : <Lock className="w-16 h-16 text-black" />
+                                            }
                                         </motion.div>
                                     </div>
 
                                     {result && (
                                         <>
-                                            <h3 className="text-5xl md:text-7xl font-black mb-10 bg-clip-text text-transparent bg-gradient-to-r from-white via-gold-400 to-white animate-text-flash tracking-tight">
+                                            {/* Badge */}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-widest mb-4 border ${isReady ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'}`}
+                                            >
+                                                {result.badge}
+                                            </motion.div>
+
+                                            {/* Title */}
+                                            <h3 className={`text-4xl md:text-6xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r ${isReady ? 'from-green-300 via-gold-400 to-green-300' : 'from-white via-gold-400 to-white'} animate-text-flash tracking-tight`}>
                                                 {result.title}
                                             </h3>
 
+                                            {/* Description Box */}
                                             <motion.div
                                                 initial={{ y: 20, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
-                                                transition={{ delay: 0.4 }}
-                                                className="bg-background/60 rounded-[3rem] p-10 border-4 border-gold-500/20 mb-16 shadow-2xl relative overflow-hidden group"
+                                                transition={{ delay: 0.3 }}
+                                                className="bg-background/60 rounded-2xl p-6 md:p-8 border-2 border-gold-500/20 mb-8 shadow-2xl relative overflow-hidden group text-start"
                                             >
                                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-50"></div>
-                                                <p className="text-zinc-300 leading-relaxed text-2xl font-bold italic">"<StyledBrandName text={result.desc} />"</p>
-                                                <Activity className="absolute bottom-6 right-10 w-16 h-16 text-white/5 group-hover:text-gold-500/10 transition-colors" />
+                                                <p className="text-zinc-300 leading-relaxed text-lg font-bold">
+                                                    "<StyledBrandName text={result.desc} />"
+                                                </p>
+                                                <Activity className="absolute bottom-4 right-6 w-12 h-12 text-white/5 group-hover:text-gold-500/10 transition-colors" />
                                             </motion.div>
 
-                                            <motion.button
-                                                whileHover={{ scale: 1.1, boxShadow: "0 0 50px rgba(234, 179, 8, 0.4)" }}
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={onComplete}
-                                                className="w-full md:w-auto px-20 py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-2xl rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 mx-auto relative overflow-hidden group"
+                                            {/* DISCOUNT CODE — only for "enhanced" / ready */}
+                                            {isReady && discountCode && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.5 }}
+                                                    className="mb-8"
+                                                >
+                                                    <p className="text-gold-400 font-black text-base mb-3">
+                                                        {content.quiz.results.enhanced.discountPrefix}
+                                                    </p>
+
+                                                    {/* Discount Value Badge */}
+                                                    <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-full px-4 py-1 mb-4">
+                                                        <span className="text-green-400 font-black text-sm uppercase tracking-widest">
+                                                            {discountValue}% {isAr ? 'خصم' : 'Discount'}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Code Box */}
+                                                    <div className="flex items-center justify-center gap-3">
+                                                        <div className="flex-1 max-w-xs bg-black/60 border-2 border-gold-500/40 rounded-2xl px-6 py-4 font-mono text-2xl font-black text-gold-400 tracking-[0.2em] text-center shadow-[0_0_30px_rgba(234,179,8,0.15)] select-all">
+                                                            {discountCode}
+                                                        </div>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={handleCopy}
+                                                            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-gold-500 hover:bg-gold-400 text-black'}`}
+                                                        >
+                                                            {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
+                                                        </motion.button>
+                                                    </div>
+
+                                                    {/* Copied feedback */}
+                                                    <AnimatePresence>
+                                                        {copied && (
+                                                            <motion.p
+                                                                initial={{ opacity: 0, y: 5 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                exit={{ opacity: 0 }}
+                                                                className="text-green-400 font-black text-sm mt-2"
+                                                            >
+                                                                {content.quiz.discountCopiedLabel}
+                                                            </motion.p>
+                                                        )}
+                                                    </AnimatePresence>
+
+                                                    <p className="text-zinc-500 text-xs font-medium mt-3 italic">
+                                                        {content.quiz.discountHint}
+                                                    </p>
+                                                </motion.div>
+                                            )}
+
+                                            {/* CTA — scroll to pricing */}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: isReady ? 0.7 : 0.5 }}
+                                                className="flex flex-col items-center gap-4"
                                             >
-                                                <span className="relative z-10">{result.cta}</span>
-                                                <ChevronRight className="w-8 h-8 relative z-10 group-hover:translate-x-3 transition-transform" />
-                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                                                <Zap className="absolute top-2 left-4 w-6 h-6 text-white/30 animate-pulse" />
-                                            </motion.button>
+                                                {/* Scroll hint */}
+                                                <motion.div
+                                                    animate={{ y: [0, 8, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 1.6 }}
+                                                    className="text-zinc-500"
+                                                >
+                                                    <ArrowDown className="w-5 h-5" />
+                                                </motion.div>
+
+                                                <motion.button
+                                                    whileHover={{ scale: 1.07, boxShadow: "0 0 60px rgba(234, 179, 8, 0.5)" }}
+                                                    whileTap={{ scale: 0.93 }}
+                                                    onClick={scrollToPricing}
+                                                    className="w-full md:w-auto px-12 py-6 bg-gradient-to-r from-gold-600 to-gold-400 hover:from-gold-500 hover:to-gold-300 text-black font-black text-xl rounded-[2rem] shadow-2xl transition-all flex items-center justify-center gap-4 mx-auto relative overflow-hidden group"
+                                                >
+                                                    <span className="relative z-10">{result.cta}</span>
+                                                    <ChevronRight className="w-7 h-7 relative z-10 group-hover:translate-x-3 transition-transform" />
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                                                    <Zap className="absolute top-2 left-4 w-5 h-5 text-white/30 animate-pulse" />
+                                                </motion.button>
+
+                                                {/* Retake button */}
+                                                <button
+                                                    onClick={reset}
+                                                    className="text-zinc-500 hover:text-zinc-300 text-sm font-bold transition-colors underline underline-offset-4"
+                                                >
+                                                    {content.quiz.retakeBtn}
+                                                </button>
+                                            </motion.div>
                                         </>
                                     )}
                                 </motion.div>
