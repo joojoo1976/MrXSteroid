@@ -201,8 +201,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                             <motion.div
                                 key={plan.id}
                                 layout
+                                onClick={() => handleCheckout(plan.id as import('@/shared/types/types').ProductVariant)}
                                 className={`
-                                    relative p-5 rounded-2xl border-2 transition-all duration-300 flex flex-col group
+                                    relative p-5 rounded-2xl border-2 transition-all duration-300 flex flex-col group cursor-pointer
                                     ${isPopular
                                         ? 'bg-zinc-900/80 border-gold-500 shadow-[0_0_40px_rgba(234,179,8,0.15)] scale-105 z-20'
                                         : 'bg-black/60 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/40'
@@ -261,7 +262,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                 </div>
 
                                 {/* خيار إضافة التدريب الشخصي (لكل الباقات الثلاث) */}
-                                <div className="mb-5 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800 relative group-hover:border-emerald-500/20 transition-all">
+                                <div 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="mb-5 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800 relative group-hover:border-emerald-500/20 transition-all cursor-default"
+                                >
                                     <label
                                         className="flex items-center justify-between p-3 cursor-pointer group/label select-none"
                                     >
@@ -341,9 +345,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
 
                                 {/* زر الدفع */}
                                 <motion.button
+                                    type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    onClick={() => handleCheckout(plan.id as import('@/shared/types/types').ProductVariant)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckout(plan.id as import('@/shared/types/types').ProductVariant);
+                                    }}
                                     className={`
                                         w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn shadow-xl
                                         ${isPopular
