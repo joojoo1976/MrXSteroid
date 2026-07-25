@@ -32,6 +32,7 @@ if (!rootElement) {
 
 
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 // Simple Error Boundary implementation
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
@@ -84,6 +85,7 @@ root.render(
         <ErrorBoundary>
             <App />
             <SpeedInsights />
+            <Analytics />
         </ErrorBoundary>
     </React.StrictMode>
 );
