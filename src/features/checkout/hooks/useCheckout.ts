@@ -93,8 +93,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
         fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
         email: z.string().email({ message: content.checkout.validation.emailInvalid }),
         country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
-        phoneNumber: z.string().min(6, { message: isAr ? "رقم الموبايل الأساسي مطلوب" : "Primary phone number is required" }),
-        secondaryPhoneNumber: z.string().min(6, { message: isAr ? "رقم الموبايل الإضافي مطلوب" : "Secondary phone number is required" }),
+        phoneNumber: z.string().optional(),
+        secondaryPhoneNumber: z.string().optional(),
         countryCode: z.string().optional(),
         secondaryCountryCode: z.string().optional(),
         address: z.string().optional(),
@@ -136,7 +136,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
     });
 
     const form = useForm<CheckoutFormData>({
-        resolver: zodResolver(schema),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolver: zodResolver(schema) as any,
         defaultValues: {
             country: regionOption === 'EG' ? 'EG' : 'US',
             countryCode: '+20',
@@ -355,7 +356,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
         discountPct,
         selectedShipping,
         handleApplyPromo,
-        onSubmit: form.handleSubmit(onSubmit),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSubmit: form.handleSubmit(onSubmit as any),
         // Region & Paymob Methods
         regionOption,
         setRegionOption: handleRegionChange,

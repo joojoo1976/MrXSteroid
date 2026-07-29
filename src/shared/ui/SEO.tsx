@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { Page } from '@/shared/types/types';
+import { Page, Language } from '@/shared/types/types';
 
 interface SEOProps {
     currentPage: Page;
 }
 
 const SEO: React.FC<SEOProps> = ({ currentPage }) => {
-    const { content } = usePreferences();
+    const { content, language } = usePreferences();
 
     useEffect(() => {
         if (!content) return;
@@ -61,29 +61,67 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
                 title = `${content.faqPageTitle} | Mr. X-Steroid`;
                 break;
             default:
-                // Use default title for HOME or undefined pages
                 break;
         }
 
-        // Update the DOM
+        // Update Document Title
         document.title = title;
 
-        // Update meta description
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', description);
+        // Update Meta Description
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+            metaDesc = document.createElement('meta');
+            metaDesc.setAttribute('name', 'description');
+            document.head.appendChild(metaDesc);
         }
+        metaDesc.setAttribute('content', description);
 
         // Update Open Graph tags
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle) ogTitle.setAttribute('content', title);
+        let ogTitle = document.querySelector('meta[property="og:title"]');
+        if (!ogTitle) {
+            ogTitle = document.createElement('meta');
+            ogTitle.setAttribute('property', 'og:title');
+            document.head.appendChild(ogTitle);
+        }
+        ogTitle.setAttribute('content', title);
 
-        const ogDesc = document.querySelector('meta[property="og:description"]');
-        if (ogDesc) ogDesc.setAttribute('content', description);
+        let ogDesc = document.querySelector('meta[property="og:description"]');
+        if (!ogDesc) {
+            ogDesc = document.createElement('meta');
+            ogDesc.setAttribute('property', 'og:description');
+            document.head.appendChild(ogDesc);
+        }
+        ogDesc.setAttribute('content', description);
 
-    }, [currentPage, content]);
+        // Dynamic hreflang & Canonical URL SEO updates
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mrxsteroid.vercel.app';
+        const path = window.location.pathname.replace(/^\/(ar|en)/, '') || '';
 
-    return null; // This component handles side effects only
+        const arUrl = `${baseUrl}/ar${path}`;
+        const enUrl = `${baseUrl}/en${path}`;
+
+        const updateLinkTag = (rel: string, hreflang: string | null, href: string) => {
+            const selector = hreflang 
+                ? `link[rel="${rel}"][hreflang="${hreflang}"]` 
+                : `link[rel="${rel}"]`;
+            let link = document.querySelector(selector) as HTMLLinkElement;
+            if (!link) {
+                link = document.createElement('link');
+                link.setAttribute('rel', rel);
+                if (hreflang) link.setAttribute('hreflang', hreflang);
+                document.head.appendChild(link);
+            }
+            link.setAttribute('href', href);
+        };
+
+        updateLinkTag('alternate', 'ar', arUrl);
+        updateLinkTag('alternate', 'en', enUrl);
+        updateLinkTag('alternate', 'x-default', enUrl);
+        updateLinkTag('canonical', null, language === Language.AR ? arUrl : enUrl);
+
+    }, [currentPage, content, language]);
+
+    return null;
 };
 
 export default SEO;

@@ -250,7 +250,7 @@ export class PaymobGateway implements IPaymentGateway {
             // Allow callback in test mode if HMAC secret is not set
             const queryObj = req.query || {};
             const merchantOrderId = queryObj.merchant_order_id as string || queryObj.order as string;
-            const success = queryObj.success === 'true' || queryObj.success === true;
+            const success = String(queryObj.success) === 'true';
             return {
                 valid: true,
                 invoiceId: merchantOrderId,

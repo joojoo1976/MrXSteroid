@@ -143,7 +143,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
-                                                                inputMode="latin"
+                                                                inputMode="text"
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="name"
@@ -171,7 +171,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
-                                                                inputMode="latin"
+                                                                inputMode="text"
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="username"
@@ -231,7 +231,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 {...field}
                                                                 type="password"
                                                                 dir="ltr"
-                                                                inputMode="latin"
+                                                                inputMode="text"
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
@@ -260,7 +260,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 {...field}
                                                                 type="password"
                                                                 dir="ltr"
-                                                                inputMode="latin"
+                                                                inputMode="text"
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"

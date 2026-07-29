@@ -7,9 +7,11 @@ import {
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useReadinessQuiz } from './hooks/useReadinessQuiz';
+import { usePreferences } from '../../context/PreferencesContext';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () => void }> = ({ content }) => {
-    const isAr = content.lang === 'ar';
+    const { isRTL: isAr } = usePreferences();
+
 
     const {
         currentQ,

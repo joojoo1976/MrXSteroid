@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { SecureStorage } from '../shared/lib/secureStorage';
+import { detectBrowserLocale } from '../shared/lib/localeDetector';
 import { Language, ContentStrings, Theme } from '@/shared/types/types';
 import { arContent, enContent } from '../i18n';
 import {
@@ -30,7 +31,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     // Initial Sync Detection for Zero-Latency First Interaction
     const [language, setLanguageState] = useState<Language>(() => {
-        // Priority 1: Explicit user override
+        // Priority 1: Explicit user override (localStorage or Cookie)
         const explicit = localStorage.getItem('mrx_explicit_language');
         if (explicit) return explicit as Language;
 
@@ -38,42 +39,23 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const storedAuto = SecureStorage.getItem('language');
         if (storedAuto) return storedAuto as Language;
 
-        // Priority 3: Browser Sniffing (Reliable Fallback)
-        const browserLangs = navigator.languages || [navigator.language];
-        for (const lang of browserLangs) {
-            const code = lang.split('-')[0].toLowerCase();
-            if (code === 'ar') return Language.AR;
-            if (code === 'en') return Language.EN;
-        }
-
-        return DEFAULT_LANG;
+        // Priority 3: Accept-Language Browser Detection
+        const detected = detectBrowserLocale();
+        return detected.language;
     });
 
     const [unitSystem, setUnitSystemState] = useState<UnitSystem>(() => {
+        // Priority 1: Explicit user override
         const explicit = localStorage.getItem('mrx_explicit_units');
         if (explicit) return explicit as UnitSystem;
 
+        // Priority 2: Stored unit system
         const storedAuto = localStorage.getItem('mrx_unit_system');
         if (storedAuto) return storedAuto as UnitSystem;
 
-        // Tie default to initial language: English -> imperial, Arabic -> metric
-        const initialLang = (() => {
-            const explicitLang = localStorage.getItem('mrx_explicit_language');
-            if (explicitLang) return explicitLang as Language;
-
-            const storedAutoLang = SecureStorage.getItem('language');
-            if (storedAutoLang) return storedAutoLang as Language;
-
-            const browserLangs = navigator.languages || [navigator.language];
-            for (const lang of browserLangs) {
-                const code = lang.split('-')[0].toLowerCase();
-                if (code === 'ar') return Language.AR;
-                if (code === 'en') return Language.EN;
-            }
-            return DEFAULT_LANG;
-        })();
-
-        return initialLang === Language.AR ? 'metric' : 'imperial';
+        // Priority 3: Smart Default tied to initial detected language
+        const detected = detectBrowserLocale();
+        return detected.unitSystem;
     });
 
     const [theme, setThemeState] = useState<Theme>(() => {
@@ -82,7 +64,9 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         return DEFAULT_THEME;
     });
 
-    const [locale, setLocale] = useState<string>('en-US');
+    const [locale, setLocale] = useState<string>(() => {
+        return language === Language.AR ? 'ar-EG' : 'en-US';
+    });
     const [currency, setCurrency] = useState<string>('USD');
 
     const initPreferences = useCallback(async (force = false) => {

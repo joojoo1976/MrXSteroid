@@ -112,7 +112,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                         {...field}
                         type="password"
                         dir="ltr"
-                        inputMode="latin"
+                        inputMode="text"
                         lang="en"
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
