@@ -17,6 +17,10 @@ import KineticCounter from '../../shared/ui/KineticCounter';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
 
+// Unit conversion helpers
+const MG_TO_LBS_DOSE_NOTE = (mg: number, unit: string) => unit === 'imperial' ? `${(mg / 453.592).toFixed(2)} oz` : `${mg} mg`;
+const DOSE_UNIT = (unit: string) => unit === 'imperial' ? 'oz' : 'mg';
+
 interface HalfLifeVisualizerProps {
   content: ContentStrings;
 }
@@ -166,12 +170,39 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   </div>
                 </motion.div>
               )}
+              {/* Medical Alert per Compound */}
+              {selectedCompound && (isRTL ? selectedCompound.medicalAlertAr : selectedCompound.medicalAlert) && (
+                <motion.div
+                  key={selectedCompound.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-4"
+                >
+                  <div className="absolute top-0 end-0 opacity-5 pointer-events-none">
+                    <ShieldAlert size={80} className="text-amber-400" />
+                  </div>
+                  <div className="flex items-start gap-3 relative z-10">
+                    <div className="flex-shrink-0 mt-0.5 p-2 rounded-xl bg-amber-500/20">
+                      <ShieldAlert size={14} className="text-amber-400" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-1">
+                        {isRTL ? 'تنبيه طبي' : 'MEDICAL ALERT'}
+                      </div>
+                      <p className="text-[11px] font-bold text-zinc-300 leading-relaxed">
+                        {isRTL ? selectedCompound.medicalAlertAr : selectedCompound.medicalAlert}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Dosage Input */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <label htmlFor="dosage-input" className="text-xs font-black uppercase tracking-widest text-zinc-400">{hlViz?.dosageLabel}</label>
+                <label htmlFor="dosage-input" className="text-xs font-black uppercase tracking-widest text-zinc-400">{hlViz?.dosageLabel} ({unitSystem === 'imperial' ? 'oz' : 'mg'})</label>
                 <button type="button" onClick={() => setShowSlider(!showSlider)}
                   className="text-[10px] font-black text-gold-500 border border-gold-500/20 px-2.5 py-1 rounded-lg hover:bg-gold-500/10 transition-colors">
                   {showSlider ? (isRTL ? '# رقمي' : '# Number') : (isRTL ? '⟺ شريط' : '⟺ Slider')}
@@ -183,7 +214,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                     onChange={e => setDosage(Number(e.target.value))}
                     className="w-full h-2 rounded-full appearance-none cursor-pointer accent-gold-500 bg-zinc-800" />
                   <div className="flex justify-between text-[10px] font-black text-zinc-600">
-                    <span>25mg</span><span className="text-gold-500 text-sm">{dosage}mg</span><span>1000mg</span>
+                    <span>{unitSystem === 'imperial' ? '0.05oz' : '25mg'}</span><span className="text-gold-500 text-sm">{unitSystem === 'imperial' ? (dosage / 28.35).toFixed(1) + 'oz' : dosage + 'mg'}</span><span>{unitSystem === 'imperial' ? '2.20oz' : '1000mg'}</span>
                   </div>
                 </div>
               ) : (
@@ -262,7 +293,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                           <div>
                             <div className="text-sm font-black truncate max-w-[120px] dark:text-white">{dispName}</div>
-                            <div className="text-[10px] text-zinc-500">{item.dosage}mg · {item.duration}w</div>
+                            <div className="text-[10px] text-zinc-500">{unitSystem === 'imperial' ? (item.dosage / 28.35).toFixed(1) + 'oz' : item.dosage + 'mg'} · {item.duration}{isRTL ? 'أسبوع' : 'w'}</div>
                           </div>
                         </div>
                         <button onClick={() => removeFromStack(item.id)} className="text-zinc-500 hover:text-red-500 p-2 rounded-lg hover:bg-red-500/10 transition-all" title={content.labClose}>
@@ -293,8 +324,8 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   },
                   {
                     icon: TrendingUp, color: 'text-gold-500',
-                    label: hlViz?.peakLabel ?? 'Cmax Peak', sub: hlViz?.mgSerumLabel,
-                    animVal: Math.round(simulationData.maxLevel), suffix: '', badge: 'PEAK'
+                    label: hlViz?.peakLabel ?? 'Cmax Peak', sub: unitSystem === 'imperial' ? (isRTL ? 'أوقية / مصل' : 'oz active / serum') : hlViz?.mgSerumLabel,
+                    animVal: unitSystem === 'imperial' ? Math.round(simulationData.maxLevel / 28.35 * 100) / 100 : Math.round(simulationData.maxLevel), suffix: unitSystem === 'imperial' ? 'oz' : 'mg', badge: 'PEAK'
                   },
                   {
                     icon: ShieldAlert,
@@ -360,7 +391,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   <div className="flex gap-3">
                     <div className="bg-gold-500/10 px-3 py-1.5 rounded-xl flex items-center gap-2 border border-gold-500/20">
                       <TrendingUp className="w-3.5 h-3.5 text-gold-500" />
-                      <span className="text-sm font-black text-gold-400">Cmax: {Math.round(simulationData.maxLevel)}{content.units?.mg ?? 'mg'}</span>
+                      <span className="text-sm font-black text-gold-400">Cmax: {unitSystem === 'imperial' ? (simulationData.maxLevel / 28.35).toFixed(1) + 'oz' : Math.round(simulationData.maxLevel) + (content.units?.mg ?? 'mg')}</span>
                     </div>
                     <div className="bg-green-500/10 px-3 py-1.5 rounded-xl flex items-center gap-2 border border-green-500/20">
                       <Clock className="w-3.5 h-3.5 text-green-400" />

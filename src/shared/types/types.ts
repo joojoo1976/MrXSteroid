@@ -158,6 +158,8 @@ export interface Compound {
   esterWeight?: number; // 0.0 - 1.0 (percentage of active hormone)
   tips?: string[];
   warnings?: string[];
+  medicalAlert?: string;
+  medicalAlertAr?: string;
 }
 
 export interface InjectionLog {
