@@ -1121,8 +1121,8 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         }
     },
     halfLifeVisualizer: {
-        title: "PharmaSim™: Professional Pharmacokinetic & Cycle Architect",
-        subtitle: "A clinical-grade simulation engine for monitoring compound accumulation, serum saturation kinetics, and HPTA recovery timelines. Engineer your cycle with surgical precision.",
+        title: "PharmaSim™ — Interactive Pharmacokinetics, Half-Life & Real-Time Cycle Blood Level Simulator",
+        subtitle: "The world’s most advanced pharmacokinetics simulator for tracking blood compound levels. Calculate time-decay rates, half-lives, and dosage accumulation with real-time dynamic charts supporting Metric and Imperial units.",
         compoundLabel: "Select Compound / Ester",
         dosageLabel: "Dose (mg/wk)",
         durationLabel: "Duration (Weeks)",
