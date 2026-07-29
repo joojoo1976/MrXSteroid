@@ -234,6 +234,8 @@ function AppContent({
         onClose={() => setIsPreferencesOpen(false)}
         colorTheme={colorTheme}
         changeColorTheme={changeColorTheme}
+        theme={theme}
+        setTheme={setTheme}
       />
       <div className="flex-1">
         {currentPage === Page.HOME ? (

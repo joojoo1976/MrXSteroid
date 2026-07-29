@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TRANSITIONS } from '../../shared/lib/logic';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move } from 'lucide-react';
+import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move, Scale } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { MockUser } from '../lib/mock-auth-service';
 import { ContentStrings, Page } from '@/shared/types/types';
@@ -125,7 +125,17 @@ const Header: React.FC<HeaderProps> = ({
             <DynamicBrandLogo variant='full' showMascot onClick={() => navigateTo(Page.HOME)} className="py-0.5 scale-75 md:scale-80 origin-start" />
           </div>
         );
-      case 'lang-theme':
+      case 'lang-theme': {
+        const isCalculatorPage = [
+          Page.MACRO,
+          Page.BODYFAT,
+          Page.INJECTION,
+          Page.HALFLIFE,
+          Page.LAB,
+          Page.GENETIC,
+          Page.CYCLE_ARCHITECT
+        ].includes(currentPage);
+
         return (
           <div key="lang-theme" className="flex items-center gap-2">
             <ThemeSwitcher
@@ -135,6 +145,21 @@ const Header: React.FC<HeaderProps> = ({
               isRTL={isRTL}
               variant="icon"
             />
+
+            {/* Contextual Unit Switcher Button - Shown ONLY on interactive calculator pages & matching Smart Display Settings size */}
+            {isCalculatorPage && (
+              <button
+                onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
+                className="group flex items-center justify-center gap-1.5 px-2.5 py-1.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800/90 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs outline-none select-none cursor-pointer"
+                title={isRTL ? (unitSystem === 'metric' ? 'نظام القياس: متري (اضغط للتغيير إلى إمبراطوري)' : 'نظام القياس: إمبراطوري (اضغط للتغيير إلى متري)') : (unitSystem === 'metric' ? 'Unit System: Metric (Click for Imperial)' : 'Unit System: Imperial (Click for Metric)')}
+                aria-label={isRTL ? 'تغيير نظام القياس' : 'Toggle Unit System'}
+              >
+                <Scale className="w-4 h-4 text-gold-500 dark:text-gold-400 group-hover:scale-110 transition-transform" />
+                <span className="font-mono text-[10px] font-black uppercase tracking-tight text-zinc-800 dark:text-zinc-100">
+                  {unitSystem === 'metric' ? (isRTL ? 'متري' : 'METRIC') : (isRTL ? 'إمبراطوري' : 'IMPERIAL')}
+                </span>
+              </button>
+            )}
 
             {/* Smart Globe Button - Opens Unified Settings */}
             <button
@@ -147,6 +172,7 @@ const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
         );
+      }
       case 'nav':
         return (
           <div key="nav" className="hidden md:flex items-center gap-4">

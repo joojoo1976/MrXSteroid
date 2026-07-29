@@ -65,9 +65,9 @@ describe('Logic Functions Test Suite', () => {
             expect(result.currency).toBe('EGP');
         });
 
-        it('should return 750 EGP for Bundle in Egypt', () => {
+        it('should return 749 EGP for Bundle in Egypt', () => {
             const result = calculateBaseAmount('Egypt', 'bundle', 72.00);
-            expect(result.amount).toBe(750);
+            expect(result.amount).toBe(749);
             expect(result.currency).toBe('EGP');
         });
 

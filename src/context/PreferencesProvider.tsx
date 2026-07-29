@@ -212,6 +212,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setLanguageState(newLang);
         localStorage.setItem('mrx_explicit_language', newLang);
         SecureStorage.setItem('language', newLang);
+        import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_language', newLang));
         setIsAutoDetected(false);
 
         // Smart unit default: apply only when user has NOT explicitly overridden units
@@ -220,6 +221,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
             const smartDefault: UnitSystem = newLang === Language.AR ? 'metric' : 'imperial';
             setUnitSystemState(smartDefault);
             localStorage.setItem('mrx_unit_system', smartDefault);
+            import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_unit_system', smartDefault));
         }
     }, []);
 
@@ -227,6 +229,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setUnitSystemState(system);
         localStorage.setItem('mrx_explicit_units', system);
         localStorage.setItem('mrx_unit_system', system);
+        import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_unit_system', system));
         setIsAutoDetected(false);
         window.dispatchEvent(new CustomEvent('mrx_unit_change', { detail: system }));
 
@@ -251,6 +254,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const setTheme = useCallback((newTheme: Theme) => {
         setThemeState(newTheme);
+        import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_theme', newTheme));
     }, []);
 
     const content = useMemo(() => resolveContent(language), [language]);
