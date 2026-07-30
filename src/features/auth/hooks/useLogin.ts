@@ -103,6 +103,14 @@ export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) =>
                         toast.error(isRTL ? "يرجى تأكيد بريدك الإلكتروني عبر الرابط المرسل إليك أولاً." : "Please verify your email address via the sent link first.");
                         return;
                     }
+                    if (errStr.includes('No account found with this phone number')) {
+                        toast.error(isRTL ? "عفواً، لا يوجد حساب مسجل برقم الهاتف هذا. تحقق من الرقم أو أنشئ حساباً جديداً." : "No account found with this phone number. Please check the number or sign up.");
+                        return;
+                    }
+                    if (errStr.includes('Invalid login credentials') || errStr.includes('invalid credentials')) {
+                        toast.error(isRTL ? "بيانات الدخول غير صحيحة (البريد الإلكتروني/رقم الهاتف أو كلمة المرور)." : "Invalid login credentials (email/phone or password).");
+                        return;
+                    }
                     throw new Error(errStr);
                 }
             } else {

@@ -185,19 +185,38 @@ export const authService = {
 
             if (idType === 'phone') {
                 const cleanPhone = cleanInput.replace(/[\s\-\(\)]/g, '');
-                // Lookup associated email from profiles table
-                const { data: profile, error: profileErr } = await supabase
-                    .from('profiles')
-                    .select('email')
-                    .eq('phone_number', cleanPhone)
-                    .maybeSingle();
+                const phoneVariants = Array.from(new Set([
+                    cleanPhone,
+                    cleanPhone.startsWith('+') ? cleanPhone.slice(1) : '+' + cleanPhone,
+                    cleanPhone.startsWith('00') ? '+' + cleanPhone.slice(2) : cleanPhone,
+                ]));
 
-                if (profile && profile.email) {
-                    targetEmail = profile.email;
+                let foundEmail: string | null = null;
+
+                // 1. Try to find profile by phone number variants
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('email, phone_number')
+                    .in('phone_number', phoneVariants)
+                    .limit(1);
+
+                if (profiles && profiles.length > 0 && profiles[0].email) {
+                    foundEmail = profiles[0].email;
                 } else {
-                    // Try direct phone auth via Supabase if enabled
+                    // 2. Try RPC function get_email_by_phone
+                    try {
+                        const { data: rpcEmail } = await supabase.rpc('get_email_by_phone', { p_phone: cleanPhone });
+                        if (rpcEmail) foundEmail = rpcEmail;
+                    } catch (_) { /* ignore if RPC not present */ }
+                }
+
+                if (foundEmail) {
+                    targetEmail = foundEmail;
+                } else {
+                    // 3. Try direct phone auth via Supabase Native Phone Auth (E.164)
+                    const e164Phone = cleanPhone.startsWith('+') ? cleanPhone : '+' + cleanPhone;
                     const { data: phoneAuthData, error: phoneAuthError } = await supabase.auth.signInWithPassword({
-                        phone: cleanPhone,
+                        phone: e164Phone,
                         password
                     });
 
