@@ -7,6 +7,7 @@ export interface SignUpOptions {
     password: string;
     full_name: string;
     user_name: string;
+    phone_number?: string;
 }
 
 export interface AuthResponse {
@@ -15,11 +16,9 @@ export interface AuthResponse {
     error: AuthError | string | null;
 }
 
-
-
 /**
  * Enterprise Auth Service for Mr. X Steroid
- * Handles User Registration with Metadata and Error Safety
+ * Handles User Registration with Metadata, Phone Number, Dual Login and Error Safety
  */
 export const authService = {
     /**
@@ -28,14 +27,36 @@ export const authService = {
     isValidEmail(email: string): boolean {
         if (!email) return false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+        return emailRegex.test(email.trim());
+    },
+
+    /**
+     * Validates phone number format
+     */
+    isValidPhone(phone: string): boolean {
+        if (!phone) return false;
+        // Strip spaces, dashes, parentheses
+        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+        // Must contain 7-15 digits, optional leading +
+        const phoneRegex = /^\+?[0-9]{7,15}$/;
+        return phoneRegex.test(cleanPhone);
+    },
+
+    /**
+     * Detects if an identifier string is an email or phone number
+     */
+    getIdentifierType(identifier: string): 'email' | 'phone' | 'invalid' {
+        if (!identifier || !identifier.trim()) return 'invalid';
+        const trimmed = identifier.trim();
+        if (this.isValidEmail(trimmed)) return 'email';
+        if (this.isValidPhone(trimmed)) return 'phone';
+        return 'invalid';
     },
 
     /**
      * Validates password strength
      */
     isSecurePassword(password: string): boolean {
-        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
         const minLength = /.{8,}/;
         const hasUpper = /[A-Z]/;
         const hasLower = /[a-z]/;
@@ -58,23 +79,25 @@ export const authService = {
         if (!username || username.trim().length < 3) {
             return false;
         }
-        // Only allow alphanumeric characters and underscores
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         return usernameRegex.test(username);
     },
 
     /**
-     * Registers a new user with metadata and localized redirects.
+     * Registers a new user with metadata, phone number and localized redirects.
      */
-    async signUp({ email, password, full_name, user_name }: SignUpOptions): Promise<AuthResponse> {
+    async signUp({ email, password, full_name, user_name, phone_number }: SignUpOptions): Promise<AuthResponse> {
         try {
-            // Input validation - check for empty first, then format
             if (!email || email.trim() === '') {
                 return { user: null, session: null, error: 'Email is required' };
             }
 
             if (!this.isValidEmail(email)) {
                 return { user: null, session: null, error: 'Email format is invalid' };
+            }
+
+            if (phone_number && phone_number.trim() && !this.isValidPhone(phone_number)) {
+                return { user: null, session: null, error: 'Phone number format is invalid' };
             }
 
             if (!password || !this.isSecurePassword(password)) {
@@ -89,15 +112,32 @@ export const authService = {
                 return { user: null, session: null, error: 'Username is too short' };
             }
 
+            const cleanPhone = phone_number ? phone_number.replace(/[\s\-\(\)]/g, '') : null;
+
+            // Check if phone number is already registered in profiles
+            if (cleanPhone) {
+                const { data: existingPhone } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('phone_number', cleanPhone)
+                    .maybeSingle();
+
+                if (existingPhone) {
+                    return { user: null, session: null, error: 'Phone number is already registered' };
+                }
+            }
+
             const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
 
             const { data, error } = await supabase.auth.signUp({
-                email,
+                email: email.trim(),
                 password,
+                phone: cleanPhone || undefined,
                 options: {
                     data: {
-                        full_name,
-                        user_name,
+                        full_name: full_name.trim(),
+                        user_name: user_name.trim(),
+                        phone_number: cleanPhone,
                         currency: 'USD',
                         role: 'user'
                     },
@@ -126,21 +166,58 @@ export const authService = {
     },
 
     /**
-     * Signs in a user with enhanced security.
+     * Signs in a user with dual identifier support (Email OR Phone Number).
      */
-    async signIn(email: string, password: string): Promise<AuthResponse> {
+    async signIn(identifier: string, password: string): Promise<AuthResponse> {
         try {
-            // Input validation
-            if (!email || !this.isValidEmail(email)) {
-                return { user: null, session: null, error: 'Email format is invalid' };
+            if (!identifier || !identifier.trim()) {
+                return { user: null, session: null, error: 'Email or phone number is required' };
             }
 
             if (!password || password.length < 1) {
                 return { user: null, session: null, error: 'Password is required' };
             }
 
+            const cleanInput = identifier.trim();
+            const idType = this.getIdentifierType(cleanInput);
+
+            let targetEmail = cleanInput;
+
+            if (idType === 'phone') {
+                const cleanPhone = cleanInput.replace(/[\s\-\(\)]/g, '');
+                // Lookup associated email from profiles table
+                const { data: profile, error: profileErr } = await supabase
+                    .from('profiles')
+                    .select('email')
+                    .eq('phone_number', cleanPhone)
+                    .maybeSingle();
+
+                if (profile && profile.email) {
+                    targetEmail = profile.email;
+                } else {
+                    // Try direct phone auth via Supabase if enabled
+                    const { data: phoneAuthData, error: phoneAuthError } = await supabase.auth.signInWithPassword({
+                        phone: cleanPhone,
+                        password
+                    });
+
+                    if (!phoneAuthError && phoneAuthData.user) {
+                        return {
+                            user: phoneAuthData.user,
+                            session: phoneAuthData.session,
+                            error: null
+                        };
+                    }
+
+                    return { user: null, session: null, error: 'No account found with this phone number' };
+                }
+            } else if (idType === 'invalid') {
+                return { user: null, session: null, error: 'Please enter a valid email address or phone number' };
+            }
+
+            // Perform sign in with resolved email
             const { data, error } = await supabase.auth.signInWithPassword({
-                email,
+                email: targetEmail,
                 password
             });
 

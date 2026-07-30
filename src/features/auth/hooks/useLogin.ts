@@ -8,9 +8,19 @@ import { errorHandler } from '../../../shared/lib/error-handler';
 import { Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 
-// Inline login schema
+import { authService } from '../../../shared/lib/auth-service';
+
+// Dual login schema (Email OR Phone Number)
 const createLoginSchema = (isRTL: boolean) => z.object({
-    email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
+    identifier: z.string().min(1, isRTL ? 'البريد الإلكتروني أو رقم الهاتف مطلوب' : 'Email or phone number is required')
+        .refine((val) => {
+            const clean = val.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^\+?[0-9\s\-\(\)]{7,20}$/;
+            return emailRegex.test(clean) || phoneRegex.test(clean);
+        }, {
+            message: isRTL ? 'يرجى إدخال بريد إلكتروني صحيح أو رقم هاتف مغاير' : 'Please enter a valid email address or phone number'
+        }),
     password: z.string().min(1, isRTL ? 'كلمة المرور مطلوبة' : 'Password is required'),
 });
 
@@ -64,7 +74,7 @@ export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) =>
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            email: "",
+            identifier: "",
             password: "",
         },
     });
@@ -78,25 +88,26 @@ export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) =>
         try {
             setLoading(true);
 
-            // Check if Supabase is properly configured
             const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
             let result;
 
             if (isSupabaseConfigured) {
-                // Use Supabase for login
-                result = await supabase.auth.signInWithPassword({
-                    email: values.email,
-                    password: values.password,
-                });
+                // Use Enterprise authService for dual identifier login (email or phone)
+                result = await authService.signIn(values.identifier, values.password);
 
                 if (result.error) {
                     setAttempts((prev) => prev + 1);
-                    throw result.error;
+                    const errStr = typeof result.error === 'string' ? result.error : result.error.message;
+                    if (errStr.includes('Email not confirmed')) {
+                        toast.error(isRTL ? "يرجى تأكيد بريدك الإلكتروني عبر الرابط المرسل إليك أولاً." : "Please verify your email address via the sent link first.");
+                        return;
+                    }
+                    throw new Error(errStr);
                 }
             } else {
                 // Use mock auth service when Supabase is not configured
-                result = await mockAuthService.signIn(values.email, values.password);
+                result = await mockAuthService.signIn(values.identifier, values.password);
 
                 if (result.error) {
                     setAttempts((prev) => prev + 1);
@@ -105,7 +116,6 @@ export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) =>
             }
 
             toast.success(isRTL ? 'تم تسجيل الدخول بنجاح!' : 'Login successful!');
-            // Wait for AuthContext to process the sign-in before navigating
             if (refreshUser) {
                 await refreshUser();
             }

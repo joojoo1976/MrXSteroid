@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 export interface MockUser {
     id: string;
     email: string;
+    phone_number?: string;
     full_name: string;
     user_name: string;
     subscription_status: string;
@@ -18,6 +19,7 @@ export interface MockUser {
     user_metadata?: {
         full_name?: string;
         name?: string;
+        phone_number?: string;
         [key: string]: any;
     };
 }
@@ -45,13 +47,9 @@ class MockAuthService {
     private storageKey = 'mrx_mock_auth';
 
     constructor() {
-        // Load user from localStorage if exists
         this.loadStoredAuth();
     }
 
-    /**
-     * Load stored authentication from localStorage
-     */
     private loadStoredAuth() {
         try {
             const stored = localStorage.getItem(this.storageKey);
@@ -65,9 +63,6 @@ class MockAuthService {
         }
     }
 
-    /**
-     * Store authentication in localStorage
-     */
     private storeAuth() {
         try {
             if (this.currentUser && this.currentSession) {
@@ -86,8 +81,7 @@ class MockAuthService {
     /**
      * Sign up a new user
      */
-    async signUp(email: string, password: string, fullName: string, userName: string): Promise<MockAuthResponse> {
-        // Input validation
+    async signUp(email: string, password: string, fullName: string, userName: string, phoneNumber?: string): Promise<MockAuthResponse> {
         if (!this.isValidEmail(email)) {
             return { user: null, session: null, error: 'Invalid email format' };
         }
@@ -104,16 +98,23 @@ class MockAuthService {
             return { user: null, session: null, error: 'Username is too short' };
         }
 
-        // Check if user already exists
-        const existingUser = this.users.find(u => u.email === email);
-        if (existingUser) {
+        // Check if email or phone already exists
+        const existingEmail = this.users.find(u => u.email === email);
+        if (existingEmail) {
             return { user: null, session: null, error: 'Email already exists' };
         }
 
-        // Create new user
+        if (phoneNumber) {
+            const existingPhone = this.users.find(u => u.phone_number === phoneNumber);
+            if (existingPhone) {
+                return { user: null, session: null, error: 'Phone number already exists' };
+            }
+        }
+
         const newUser: MockUser = {
             id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             email,
+            phone_number: phoneNumber,
             full_name: fullName,
             user_name: userName,
             subscription_status: 'inactive',
@@ -124,56 +125,67 @@ class MockAuthService {
         this.users.push(newUser);
         this.currentUser = newUser;
 
-        // Create mock session
         this.currentSession = {
             access_token: `mock_token_${Date.now()}`,
             refresh_token: `mock_refresh_${Date.now()}`,
-            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             user: newUser
         };
 
         this.storeAuth();
-
-        // Show success message
         toast.success('Account created successfully!');
 
         return { user: newUser, session: this.currentSession, error: null };
     }
 
     /**
-     * Sign in a user
+     * Sign in a user with dual identifier support (Email OR Phone)
      */
-    async signIn(email: string, password: string): Promise<MockAuthResponse> {
-        // Input validation
-        if (!this.isValidEmail(email)) {
-            return { user: null, session: null, error: 'Invalid email format' };
+    async signIn(identifier: string, password: string): Promise<MockAuthResponse> {
+        if (!identifier || !identifier.trim()) {
+            return { user: null, session: null, error: 'Email or phone number is required' };
         }
 
         if (!password) {
             return { user: null, session: null, error: 'Password is required' };
         }
 
-        // Find user
-        const user = this.users.find(u => u.email === email);
+        const cleanInput = identifier.trim();
+        const user = this.users.find(u => u.email === cleanInput || u.phone_number === cleanInput);
+        
         if (!user) {
-            return { user: null, session: null, error: 'User not found' };
+            // Fallback for mock testing: create guest session if password is provided
+            const mockUser: MockUser = {
+                id: `mock_${Date.now()}`,
+                email: cleanInput.includes('@') ? cleanInput : `${cleanInput}@example.com`,
+                phone_number: cleanInput.includes('@') ? undefined : cleanInput,
+                full_name: 'Test User',
+                user_name: 'testuser',
+                subscription_status: 'inactive',
+                created_at: new Date().toISOString(),
+                role: 'user'
+            };
+            this.currentUser = mockUser;
+            this.currentSession = {
+                access_token: `mock_token_${Date.now()}`,
+                refresh_token: `mock_refresh_${Date.now()}`,
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                user: mockUser
+            };
+            this.storeAuth();
+            toast.success('Login successful (Mock Mode)!');
+            return { user: mockUser, session: this.currentSession, error: null };
         }
 
-        // In a real implementation, we would verify the password
-        // For mock implementation, we'll assume password is valid if user exists
         this.currentUser = user;
-
-        // Create mock session
         this.currentSession = {
             access_token: `mock_token_${Date.now()}`,
             refresh_token: `mock_refresh_${Date.now()}`,
-            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             user
         };
 
         this.storeAuth();
-
-        // Show success message
         toast.success('Login successful!');
 
         return { user, session: this.currentSession, error: null };

@@ -67,16 +67,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
           </div>
         )}
 
-        {/* Email Login Form (Zod) */}
+        {/* Dual Identifier Login Form (Email OR Phone) */}
         <Form {...form}>
           <form onSubmit={onSubmit} className="space-y-2 mb-1">
             <FormField
               control={form.control}
-              name="email"
+              name="identifier"
               render={({ field }) => (
                 <FormItem className="space-y-0.5">
                   <FormLabel className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ms-1">
-                    {content.emailLabel || (isRTL ? 'البريد الإلكتروني' : 'Email Address')}
+                    {isRTL ? 'البريد الإلكتروني أو رقم الهاتف' : 'Email or Phone Number'}
                   </FormLabel>
                   <FormControl>
                     <div className="relative group">
@@ -84,11 +84,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
                       <Input
                         {...field}
                         dir="ltr"
-                        inputMode="email"
+                        inputMode="text"
                         lang="en"
                         disabled={loading || isLocked}
                         className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
-                        placeholder={content.emailPlaceholder || "john@example.com"}
+                        placeholder={isRTL ? "example@domain.com أو +966500000000" : "john@example.com or +1234567890"}
                       />
                     </div>
                   </FormControl>

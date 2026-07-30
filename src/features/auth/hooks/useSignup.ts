@@ -30,6 +30,13 @@ const createSignupSchema = (isRTL: boolean) => z.object({
     fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب' : 'Full name is required'),
     username: z.string().min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters'),
     email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
+    phoneNumber: z.string().optional().refine((val) => {
+        if (!val || !val.trim()) return true;
+        const clean = val.replace(/[\s\-\(\)]/g, '');
+        return /^\+?[0-9]{7,15}$/.test(clean);
+    }, {
+        message: isRTL ? 'رقم الهاتف غير صحيح (مثال: +966500000000)' : 'Invalid phone format (e.g. +1234567890)'
+    }),
     password: z.string()
         .min(8, isRTL ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters')
         .refine(
@@ -65,6 +72,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             fullName: "",
             username: "",
             email: "",
+            phoneNumber: "",
             password: "",
             confirmPassword: "",
         },
@@ -74,23 +82,41 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         setLoading(true);
 
         try {
-            // Check if Supabase is properly configured (support both VITE_ and NEXT_PUBLIC_ prefixes)
             const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) &&
                 (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
             let result;
             let usedMockAuth = false;
 
+            const cleanPhone = values.phoneNumber ? values.phoneNumber.replace(/[\s\-\(\)]/g, '') : null;
+
             if (isSupabaseConfigured) {
                 try {
+                    // Check if phone number is already registered in profiles table
+                    if (cleanPhone) {
+                        const { data: existingPhone } = await supabase
+                            .from('profiles')
+                            .select('id')
+                            .eq('phone_number', cleanPhone)
+                            .maybeSingle();
+
+                        if (existingPhone) {
+                            toast.error(isRTL ? "رقم الهاتف هذا مسجل بالفعل حساب أخر." : "This phone number is already registered.");
+                            setLoading(false);
+                            return;
+                        }
+                    }
+
                     // Use Supabase for signup
                     result = await supabase.auth.signUp({
-                        email: values.email,
+                        email: values.email.trim(),
                         password: values.password,
+                        phone: cleanPhone || undefined,
                         options: {
                             data: {
-                                full_name: values.fullName,
-                                user_name: values.username,
+                                full_name: values.fullName.trim(),
+                                user_name: values.username.trim(),
+                                phone_number: cleanPhone,
                                 currency: 'USD',
                                 role: 'user'
                             },
@@ -131,7 +157,8 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                             values.email,
                             values.password,
                             values.fullName,
-                            values.username
+                            values.username,
+                            cleanPhone || undefined
                         );
 
                         if (result.error) throw new Error(result.error);
@@ -154,7 +181,8 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                     values.email,
                     values.password,
                     values.fullName,
-                    values.username
+                    values.username,
+                    cleanPhone || undefined
                 );
 
                 if (result.error) throw new Error(result.error);

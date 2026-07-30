@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, AlertTriangle, Phone } from 'lucide-react';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
@@ -186,34 +186,65 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                         />
                                     </div>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="email"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-0.5">
-                                                <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
-                                                    {content.emailLabel || (isRTL ? "البريد الإلكتروني" : "Email Address")}
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <div className="relative">
-                                                        <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
-                                                        <Input
-                                                            {...field}
-                                                            type="email"
-                                                            dir="ltr"
-                                                            inputMode="email"
-                                                            lang="en"
-                                                            disabled={loading}
-                                                            autoComplete="email"
-                                                            className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
-                                                            placeholder={content.emailPlaceholder || "name@example.com"}
-                                                        />
-                                                    </div>
-                                                </FormControl>
-                                                <FormMessage className="font-bold text-[9px]" />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem className="space-y-0.5">
+                                                    <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                        {content.emailLabel || (isRTL ? "البريد الإلكتروني" : "Email Address")}
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <Input
+                                                                {...field}
+                                                                type="email"
+                                                                dir="ltr"
+                                                                inputMode="email"
+                                                                lang="en"
+                                                                disabled={loading}
+                                                                autoComplete="email"
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                placeholder={content.emailPlaceholder || "name@example.com"}
+                                                            />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage className="font-bold text-[9px]" />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="phoneNumber"
+                                            render={({ field }) => (
+                                                <FormItem className="space-y-0.5">
+                                                    <FormLabel className="text-[9px] font-black uppercase tracking-wider text-zinc-500 ms-1">
+                                                        {isRTL ? "رقم الهاتف المحمول" : "Mobile Phone"}
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <Phone className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <Input
+                                                                {...field}
+                                                                type="tel"
+                                                                dir="ltr"
+                                                                inputMode="tel"
+                                                                lang="en"
+                                                                disabled={loading}
+                                                                autoComplete="tel"
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                placeholder="+966500000000"
+                                                            />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage className="font-bold text-[9px]" />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <FormField

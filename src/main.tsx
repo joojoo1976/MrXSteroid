@@ -9,7 +9,7 @@ import { performHealthCheck } from "./shared/lib/health-check";
 // Run production pre-flight audit
 performHealthCheck();
 
-// Global Error Handler for Debugging Redirect Issues
+// Global Error Handler for Debugging Redirect Issues & DOM Node Removal Safety
 if (typeof window !== 'undefined') {
     window.onerror = function(message, source, lineno, colno, error) {
         console.error('🔺 GLOBAL ERROR CAUGHT:', { message, source, lineno, colno, error });
@@ -21,6 +21,25 @@ if (typeof window !== 'undefined') {
     
     window.onunhandledrejection = function(event) {
         console.error('🔺 UNHANDLED REJECTION:', event.reason);
+    };
+
+    // Safe DOM Node patch to eliminate React NotFoundError (removeChild / insertBefore)
+    const originalRemoveChild = Node.prototype.removeChild;
+    Node.prototype.removeChild = function <T extends Node>(child: T): T {
+        if (child.parentNode !== this) {
+            console.warn('Cannot remove child, parent is not the current node:', child);
+            return child;
+        }
+        return originalRemoveChild.call(this, child) as T;
+    };
+
+    const originalInsertBefore = Node.prototype.insertBefore;
+    Node.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
+        if (referenceNode && referenceNode.parentNode !== this) {
+            console.warn('Cannot insert before, reference parent is not current node:', referenceNode);
+            return newNode;
+        }
+        return originalInsertBefore.call(this, newNode, referenceNode) as T;
     };
 }
 

@@ -1,8 +1,9 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MR. X STEROID - FINAL UNIFIED AUTH SCHEMA
--- Version: 2.0.0
--- Date: 2026-07-14
+-- Version: 2.1.0
+-- Date: 2026-07-30
 -- Purpose: Complete profiles table, trigger, RLS, and helper functions
+--          + Phone number unique field support + Dual Email/Phone login helper
 -- 
 -- HOW TO USE:
 --   1. Go to Supabase Dashboard > SQL Editor
@@ -18,6 +19,7 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     email TEXT UNIQUE,
+    phone_number TEXT UNIQUE,
     full_name TEXT,
     user_name TEXT UNIQUE,
     avatar_url TEXT,
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Add columns if table already exists (safe incremental)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone_number TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT 'none';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS has_paid BOOLEAN DEFAULT false;
@@ -44,6 +47,15 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS payment_method TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS card_last_four TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS card_brand TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- Add UNIQUE constraint on phone_number (only for non-NULL values)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_phone_number_unique'
+  ) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT profiles_phone_number_unique UNIQUE (phone_number);
+  END IF;
+END $$;
 
 -- 2. TRIGGER FUNCTION: Auto-create profile on signup
 -- ───────────────────────────────────────────────────
@@ -57,10 +69,11 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, full_name, user_name, avatar_url, currency, role)
+    INSERT INTO public.profiles (id, email, phone_number, full_name, user_name, avatar_url, currency, role)
     VALUES (
         NEW.id,
         NEW.email,
+        NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data ->> 'phone_number', '')), ''),
         COALESCE(
             NEW.raw_user_meta_data ->> 'full_name',
             NEW.raw_user_meta_data ->> 'fullName',
@@ -79,11 +92,12 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data ->> 'role', 'user')
     )
     ON CONFLICT (id) DO UPDATE SET
-        full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
-        user_name = COALESCE(EXCLUDED.user_name, public.profiles.user_name),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
-        email = COALESCE(EXCLUDED.email, public.profiles.email),
-        updated_at = NOW();
+        full_name    = COALESCE(EXCLUDED.full_name,    public.profiles.full_name),
+        user_name    = COALESCE(EXCLUDED.user_name,    public.profiles.user_name),
+        avatar_url   = COALESCE(EXCLUDED.avatar_url,   public.profiles.avatar_url),
+        email        = COALESCE(EXCLUDED.email,        public.profiles.email),
+        phone_number = COALESCE(EXCLUDED.phone_number, public.profiles.phone_number),
+        updated_at   = NOW();
     RETURN NEW;
 END;
 $$;
@@ -205,6 +219,25 @@ ON CONFLICT (id) DO NOTHING;
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_user_name ON public.profiles(user_name);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_phone_number
+    ON public.profiles(phone_number)
+    WHERE phone_number IS NOT NULL;
+
+-- 9b. DUAL AUTH HELPER: Resolve email from phone_number for signIn
+-- ────────────────────────────────────────────────────────────────
+-- Usage: SELECT public.get_email_by_phone('+966500000000');
+CREATE OR REPLACE FUNCTION public.get_email_by_phone(p_phone TEXT)
+RETURNS TEXT
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT email FROM public.profiles
+    WHERE phone_number = TRIM(p_phone)
+    LIMIT 1;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_email_by_phone(TEXT) TO authenticated, anon;
 
 -- 10. STORAGE BUCKETS
 -- ────────────────────
