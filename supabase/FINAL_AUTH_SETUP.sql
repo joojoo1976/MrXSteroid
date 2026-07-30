@@ -164,12 +164,16 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ───────────────────────────
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Drop old policies to avoid conflicts
+-- Drop old and current policies to avoid conflicts on script re-runs
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles are viewable by owner or admin" ON public.profiles;
 DROP POLICY IF EXISTS "Admin CRUD profiles" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_own_or_admin" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_delete_admin_only" ON public.profiles;
 
 -- SELECT: User can read own profile, Admin can read all
 CREATE POLICY "profiles_select_own_or_admin"
