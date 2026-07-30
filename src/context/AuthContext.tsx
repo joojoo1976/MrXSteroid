@@ -6,12 +6,17 @@ import { mockAuthService, MockUser, MockSession } from '../shared/lib/mock-auth-
 export interface ProfileData {
     full_name?: string;
     user_name?: string;
+    phone_number?: string;
     avatar_url?: string;
     subscription_status?: string;
+    subscription_tier?: string;
     role?: string;
     email?: string;
     has_paid?: boolean;
     plan_tier?: string;
+    currency?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface AuthContextType {
@@ -59,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, user_name, avatar_url, subscription_status, role, email, has_paid, plan_tier')
+                .select('full_name, user_name, phone_number, avatar_url, subscription_status, subscription_tier, role, email, has_paid, plan_tier, currency, created_at, updated_at')
                 .eq('id', userId)
                 .single();
 
