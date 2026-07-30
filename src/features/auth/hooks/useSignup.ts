@@ -7,7 +7,6 @@ import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
-// avatar-service import removed — avatar sync deferred to AuthCallbackPage
 
 // Password validation helper - matches auth-service requirements
 const isSecurePassword = (password: string): boolean => {
@@ -27,23 +26,25 @@ const isSecurePassword = (password: string): boolean => {
 
 // Inline signup schema
 const createSignupSchema = (isRTL: boolean) => z.object({
-    fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب' : 'Full name is required'),
-    username: z.string().min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters'),
+    fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب (حرفان على الأقل)' : 'Full name is required (min 2 chars)'),
+    username: z.string()
+        .min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters')
+        .regex(/^[a-zA-Z0-9_]+$/, isRTL ? 'اسم المستخدم يقبل أحرف إنجليزية وأرقام وشرطة سفلية فقط' : 'Username: letters, numbers and underscores only'),
     email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
     phoneNumber: z.string().optional().refine((val) => {
         if (!val || !val.trim()) return true;
         const clean = val.replace(/[\s\-\(\)]/g, '');
         return /^\+?[0-9]{7,15}$/.test(clean);
     }, {
-        message: isRTL ? 'رقم الهاتف غير صحيح (مثال: +966500000000)' : 'Invalid phone format (e.g. +1234567890)'
+        message: isRTL ? 'رقم الهاتف غير صحيح (مثال: +966500000000)' : 'Invalid phone format (e.g. +966500000000)'
     }),
     password: z.string()
         .min(8, isRTL ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters')
         .refine(
             (pwd) => isSecurePassword(pwd),
             isRTL
-                ? 'كلمة المرور يجب أن تحتوي على حرف كبير، حرف صغير، رقم ورمز خاص'
-                : 'Password must contain uppercase, lowercase, number and special character'
+                ? 'يجب أن تحتوي على حرف كبير، حرف صغير، رقم ورمز خاص (!@#$%^&*...)'
+                : 'Must contain uppercase, lowercase, number and special character (!@#$%^&*...)'
         ),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -69,12 +70,12 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
     const form = useForm<SignupFormValues>({
         resolver: zodResolver(signupSchema),
         defaultValues: {
-            fullName: "",
-            username: "",
-            email: "",
-            phoneNumber: "",
-            password: "",
-            confirmPassword: "",
+            fullName: '',
+            username: '',
+            email: '',
+            phoneNumber: '',
+            password: '',
+            confirmPassword: '',
         },
     });
 
@@ -82,17 +83,66 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
         setLoading(true);
 
         try {
-            const isSupabaseConfigured = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) &&
-                (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+            const isSupabaseConfigured = !!(
+                (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) &&
+                (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+            );
 
-            let result;
-            let usedMockAuth = false;
+            const cleanEmail = values.email.trim().toLowerCase();
+            const cleanPhone = values.phoneNumber ? values.phoneNumber.replace(/[\s\-\(\)]/g, '').trim() : null;
+            const cleanUsername = values.username.trim().toLowerCase();
 
-            const cleanPhone = values.phoneNumber ? values.phoneNumber.replace(/[\s\-\(\)]/g, '') : null;
+            let isMock = false;
 
             if (isSupabaseConfigured) {
                 try {
-                    // Check if phone number is already registered in profiles table
+                    // ─────────────────────────────────────────────────────────────────
+                    // PRE-CHECK 1: Duplicate Email via profiles table (faster check)
+                    // ─────────────────────────────────────────────────────────────────
+                    const { data: existingEmailProfile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .ilike('email', cleanEmail)
+                        .maybeSingle();
+
+                    if (existingEmailProfile) {
+                        toast.error(
+                            isRTL
+                                ? '⚠️ هذا البريد الإلكتروني مسجّل بالفعل. جرّب تسجيل الدخول.'
+                                : '⚠️ This email is already registered. Try signing in instead.'
+                        );
+                        form.setError('email', {
+                            type: 'manual',
+                            message: isRTL ? 'بريد إلكتروني مُسجَّل مسبقاً' : 'Email already registered'
+                        });
+                        return;
+                    }
+
+                    // ─────────────────────────────────────────────────────────────────
+                    // PRE-CHECK 2: Duplicate Username
+                    // ─────────────────────────────────────────────────────────────────
+                    const { data: existingUsername } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .ilike('user_name', cleanUsername)
+                        .maybeSingle();
+
+                    if (existingUsername) {
+                        toast.error(
+                            isRTL
+                                ? '⚠️ اسم المستخدم هذا مستخدم بالفعل. اختر اسماً آخر.'
+                                : '⚠️ This username is already taken. Choose a different one.'
+                        );
+                        form.setError('username', {
+                            type: 'manual',
+                            message: isRTL ? 'اسم المستخدم محجوز مسبقاً' : 'Username already taken'
+                        });
+                        return;
+                    }
+
+                    // ─────────────────────────────────────────────────────────────────
+                    // PRE-CHECK 3: Duplicate Phone Number
+                    // ─────────────────────────────────────────────────────────────────
                     if (cleanPhone) {
                         const { data: existingPhone } = await supabase
                             .from('profiles')
@@ -101,149 +151,197 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                             .maybeSingle();
 
                         if (existingPhone) {
-                            toast.error(isRTL ? "رقم الهاتف هذا مسجل بالفعل حساب أخر." : "This phone number is already registered.");
-                            setLoading(false);
+                            toast.error(
+                                isRTL
+                                    ? '⚠️ رقم الهاتف هذا مسجّل بالفعل لحساب آخر.'
+                                    : '⚠️ This phone number is already registered to another account.'
+                            );
+                            form.setError('phoneNumber', {
+                                type: 'manual',
+                                message: isRTL ? 'رقم الهاتف مُسجَّل مسبقاً' : 'Phone already registered'
+                            });
                             return;
                         }
                     }
 
-                    // Use Supabase for signup
-                    result = await supabase.auth.signUp({
-                        email: values.email.trim(),
+                    // ─────────────────────────────────────────────────────────────────
+                    // SIGNUP: Register with Supabase Auth
+                    // ─────────────────────────────────────────────────────────────────
+                    const { data, error } = await supabase.auth.signUp({
+                        email: cleanEmail,
                         password: values.password,
-                        phone: cleanPhone || undefined,
                         options: {
                             data: {
                                 full_name: values.fullName.trim(),
-                                user_name: values.username.trim(),
+                                user_name: cleanUsername,
                                 phone_number: cleanPhone,
                                 currency: 'USD',
-                                role: 'user'
+                                role: 'user',
                             },
                             emailRedirectTo: `${window.location.origin}/auth/callback`,
                         },
                     });
 
-                    // Log the response for debugging
-                    console.log("Supabase signUp response:", result);
+                    console.log('📋 Supabase signUp response:', { data, error });
 
-                    // Check for duplicate identity (for Supabase)
-                    if (result.error && (result.error.message?.includes('User already registered') || result.error.message?.includes('Email already exists'))) {
-                        toast.error(isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.");
+                    // ─────────────────────────────────────────────────────────────────
+                    // CRITICAL: Supabase returns data.user with EMPTY identities array
+                    // when the email is already registered (instead of returning error).
+                    // This is a Supabase security feature to prevent email enumeration.
+                    // We MUST check identities to detect duplicate registrations.
+                    // ─────────────────────────────────────────────────────────────────
+                    if (!error && data.user && data.user.identities && data.user.identities.length === 0) {
+                        toast.error(
+                            isRTL
+                                ? '⚠️ هذا البريد الإلكتروني مسجّل بالفعل. جرّب تسجيل الدخول أو استعادة كلمة المرور.'
+                                : '⚠️ This email is already registered. Try signing in or resetting your password.'
+                        );
+                        form.setError('email', {
+                            type: 'manual',
+                            message: isRTL ? 'بريد إلكتروني مُسجَّل مسبقاً' : 'Email already registered'
+                        });
                         return;
                     }
 
-                    if (result.error) {
-                        console.error("Supabase signUp error:", result.error);
-                        throw result.error;
+                    // Handle actual Supabase errors
+                    if (error) {
+                        console.error('❌ Supabase signUp error:', error);
+                        const msg = error.message?.toLowerCase() || '';
+                        if (msg.includes('user already registered') || msg.includes('email already') || msg.includes('already registered')) {
+                            toast.error(
+                                isRTL
+                                    ? '⚠️ هذا البريد الإلكتروني مسجّل بالفعل.'
+                                    : '⚠️ This email is already registered.'
+                            );
+                            form.setError('email', {
+                                type: 'manual',
+                                message: isRTL ? 'بريد إلكتروني مُسجَّل مسبقاً' : 'Email already registered'
+                            });
+                            return;
+                        }
+                        throw error;
                     }
+
                 } catch (supabaseError: any) {
-                    // If Supabase returns 503 or network error, fall back to mock auth
-                    const isSupabaseUnavailable =
+                    // Fall back to mock auth ONLY if Supabase is unreachable (503/network)
+                    const isNetworkError =
                         supabaseError?.status === 503 ||
                         supabaseError?.message?.includes('503') ||
                         supabaseError?.message?.includes('fetch') ||
                         supabaseError?.message?.includes('network') ||
+                        supabaseError?.message?.includes('Failed to fetch') ||
                         supabaseError?.message?.includes('Service unavailable');
 
-                    if (isSupabaseUnavailable) {
-                        console.warn('⚠️ Supabase unavailable (503/Network), falling back to mock authentication...');
-                        console.error('Original Supabase Error:', supabaseError);
-
+                    if (isNetworkError) {
+                        console.warn('⚠️ Supabase unreachable — falling back to mock auth...');
+                        isMock = true;
                         setUsedMockAuth(true);
 
-                        // Fall back to mock auth service
-                        result = await mockAuthService.signUp(
-                            values.email,
+                        const mockResult = await mockAuthService.signUp(
+                            cleanEmail,
                             values.password,
-                            values.fullName,
-                            values.username,
+                            values.fullName.trim(),
+                            cleanUsername,
                             cleanPhone || undefined
                         );
 
-                        if (result.error) throw new Error(result.error);
+                        if (mockResult.error) {
+                            toast.error(
+                                mockResult.error.includes('already') || mockResult.error.includes('exists')
+                                    ? (isRTL ? '⚠️ هذا البريد الإلكتروني مُسجَّل بالفعل (وضع تجريبي).' : '⚠️ Email already registered (test mode).')
+                                    : mockResult.error
+                            );
+                            return;
+                        }
 
-                        // Show warning toast about mock auth
                         toast.warning(
                             isRTL
-                                ? "جاري استخدام وضع الاختبار مؤقتاً بسبب مشكلة في الاتصال بالخادم. تواصل مع الدعم إذا استمرت المشكلة."
-                                : "Using test mode temporarily due to server connection issue. Contact support if this persists."
+                                ? '⚠️ الخادم غير متاح. تم إنشاء حساب تجريبي مؤقت. تواصل مع الدعم إذا استمرت المشكلة.'
+                                : '⚠️ Server unavailable. A temporary test account was created. Contact support if this persists.'
                         );
                     } else {
-                        // Re-throw if it's not a connection error
-                        console.error('Non-connection error from Supabase:', supabaseError);
+                        console.error('❌ Non-network Supabase error:', supabaseError);
                         throw supabaseError;
                     }
                 }
             } else {
-                // Use mock auth service when Supabase is not configured
-                result = await mockAuthService.signUp(
-                    values.email,
+                // No Supabase configured — use mock auth entirely
+                isMock = true;
+                setUsedMockAuth(true);
+
+                const mockResult = await mockAuthService.signUp(
+                    cleanEmail,
                     values.password,
-                    values.fullName,
-                    values.username,
+                    values.fullName.trim(),
+                    cleanUsername,
                     cleanPhone || undefined
                 );
 
-                if (result.error) throw new Error(result.error);
-                setUsedMockAuth(true);
+                if (mockResult.error) {
+                    const isDuplicate = mockResult.error.toLowerCase().includes('already') || mockResult.error.toLowerCase().includes('exists');
+                    if (isDuplicate) {
+                        toast.error(isRTL ? '⚠️ هذا البريد الإلكتروني مُسجَّل بالفعل.' : '⚠️ This email is already registered.');
+                        form.setError('email', {
+                            type: 'manual',
+                            message: isRTL ? 'بريد إلكتروني مُسجَّل مسبقاً' : 'Email already registered'
+                        });
+                    } else {
+                        toast.error(mockResult.error);
+                    }
+                    return;
+                }
             }
 
-            // Profile update is deferred to AuthCallbackPage after email confirmation
-            // because RLS requires an active session (auth.uid()) which doesn't exist yet.
-            // The DB trigger 'handle_new_user' already creates the profile row with
-            // full_name, user_name, avatar_url, currency, and role from metadata.
-
-            // Only show success screen
+            // ─────────────────────────────────────────────────────────────────
+            // SUCCESS
+            // ─────────────────────────────────────────────────────────────────
             setSuccess(true);
 
-            // Show appropriate success message based on auth method
-            if (usedMockAuth) {
+            if (isMock) {
                 toast.success(
                     isRTL
-                        ? "✅ تم إنشاء الحساب بنجاح! (وضع الاختبار)"
-                        : "✅ Account created successfully! (Test Mode)"
+                        ? '✅ تم إنشاء الحساب بنجاح! (وضع الاختبار)'
+                        : '✅ Account created successfully! (Test Mode)'
                 );
             } else {
                 toast.success(
                     content.signupSuccess || (isRTL
-                        ? "تم إنشاء الحساب! افحص بريدك الإلكتروني للتحقق."
-                        : "Account created! Check your email to verify.")
+                        ? '✅ تم إنشاء الحساب! تحقق من بريدك الإلكتروني للتفعيل.'
+                        : '✅ Account created! Check your email to verify.')
                 );
             }
 
         } catch (error: unknown) {
-            console.error('Signup error:', error);
+            console.error('❌ Signup error:', error);
 
-            let errorMessage = isRTL ? "حدث خطأ أثناء إنشاء الحساب." : "An error occurred during signup.";
+            let errorMessage = isRTL ? 'حدث خطأ أثناء إنشاء الحساب.' : 'An error occurred during signup.';
 
             if (error instanceof Error) {
-                if (error.message.includes('User already registered') || error.message.includes('Email already exists') || error.message.includes('already exists')) {
-                    errorMessage = isRTL ? "هذا البريد الإلكتروني مسجل بالفعل." : "This email is already registered.";
-                } else if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('503')) {
-                    errorMessage = isRTL ? "الخدمة غير متوفرة حالياً. حاول مرة أخرى." : "Service unavailable (503). Please try again later.";
-                } else if (error.message?.includes('RATE_LIMIT_EXCEEDED') || error.message?.includes('Too many requests')) {
-                    errorMessage = isRTL ? "لقد حاولت عدة مرات. يرجى الانتظار قليلاً." : "Too many requests. Please wait a moment.";
-                } else if (error.message?.includes('INVALID_EMAIL_FORMAT')) {
-                    errorMessage = isRTL ? "تنسيق البريد الإلكتروني غير صحيح." : "Invalid email format.";
-                } else if (error.message?.includes('WEAK_PASSWORD_REQUIREMENTS')) {
-                    errorMessage = isRTL ? "كلمة المرور لا تفي بشروط الأمان." : "Password does not meet security requirements.";
+                const msg = error.message.toLowerCase();
+                if (msg.includes('user already registered') || msg.includes('email already') || msg.includes('already registered') || msg.includes('already exists')) {
+                    errorMessage = isRTL ? '⚠️ هذا البريد الإلكتروني مسجّل بالفعل.' : '⚠️ This email is already registered.';
+                    form.setError('email', { type: 'manual', message: isRTL ? 'بريد إلكتروني مُسجَّل مسبقاً' : 'Email already registered' });
+                } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('503')) {
+                    errorMessage = isRTL ? 'الخدمة غير متوفرة حالياً. حاول مرة أخرى.' : 'Service unavailable. Please try again later.';
+                } else if (msg.includes('rate_limit') || msg.includes('too many requests')) {
+                    errorMessage = isRTL ? 'لقد حاولت عدة مرات. يرجى الانتظار قليلاً.' : 'Too many requests. Please wait a moment.';
+                } else if (msg.includes('password') || msg.includes('weak')) {
+                    errorMessage = isRTL ? 'كلمة المرور لا تفي بشروط الأمان.' : 'Password does not meet security requirements.';
                 } else {
                     errorMessage = error.message;
                 }
             } else if (typeof error === 'object' && error !== null) {
                 const errObj = error as any;
                 if (errObj.status === 503) {
-                    errorMessage = isRTL ? "الخدمة غير متوفرة حالياً. حاول مرة أخرى." : "Service unavailable (503). Please try again later.";
+                    errorMessage = isRTL ? 'الخدمة غير متوفرة حالياً. حاول مرة أخرى.' : 'Service unavailable. Please try again later.';
                 } else if (errObj.message) {
                     errorMessage = errObj.message;
                 }
             }
 
             toast.error(errorMessage);
-            // Don't re-throw or call external error handler if it's just a 503 to avoid crash
-            if (!errorMessage.includes('503') && !errorMessage.includes('Service unavailable')) {
-                await errorHandler.handle(error, 'Signup');
+            if (!errorMessage.includes('503') && !errorMessage.includes('Service unavailable') && !errorMessage.includes('unavailable')) {
+                try { await errorHandler.handle(error, 'Signup'); } catch (_) { /* silent */ }
             }
         } finally {
             setLoading(false);

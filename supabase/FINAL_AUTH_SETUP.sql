@@ -271,21 +271,62 @@ CREATE POLICY "Admin upload products" ON storage.objects
 
 -- 11. TABLE COMMENT
 -- ─────────────────
-COMMENT ON TABLE public.profiles IS 'Extended user data synchronized with Supabase Auth v2.0';
+COMMENT ON TABLE public.profiles IS 'Extended user data synchronized with Supabase Auth v2.1 — with phone_number support';
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- VERIFICATION QUERY (Run separately to check)
+-- 12. DUPLICATE EMAIL CLEANUP
 -- ═══════════════════════════════════════════════════════════════════════════
--- SELECT 
---     column_name, data_type, is_nullable, column_default
+-- Supabase Auth allows re-registration of unconfirmed emails.
+-- This query shows duplicate registrations in auth.users:
+-- SELECT email, COUNT(*) AS count
+-- FROM auth.users
+-- GROUP BY email
+-- HAVING COUNT(*) > 1;
+--
+-- To delete unconfirmed duplicate accounts (SAFE — keeps the confirmed one):
+-- DELETE FROM auth.users
+-- WHERE id IN (
+--     SELECT id FROM (
+--         SELECT id,
+--                email,
+--                email_confirmed_at,
+--                ROW_NUMBER() OVER (
+--                    PARTITION BY email
+--                    ORDER BY CASE WHEN email_confirmed_at IS NOT NULL THEN 0 ELSE 1 END, created_at ASC
+--                ) AS rn
+--         FROM auth.users
+--         WHERE email IN (
+--             SELECT email FROM auth.users GROUP BY email HAVING COUNT(*) > 1
+--         )
+--     ) ranked
+--     WHERE rn > 1
+-- );
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- VERIFICATION QUERIES (Run separately to check schema)
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 1. List all profile columns:
+-- SELECT column_name, data_type, is_nullable, column_default
 -- FROM information_schema.columns
 -- WHERE table_schema = 'public' AND table_name = 'profiles'
 -- ORDER BY ordinal_position;
 --
+-- 2. Verify trigger exists:
 -- SELECT trigger_name, event_manipulation, action_statement
 -- FROM information_schema.triggers
 -- WHERE event_object_table = 'users' AND trigger_schema = 'auth';
 --
+-- 3. Verify RLS policies:
 -- SELECT policyname, cmd, qual, with_check
 -- FROM pg_policies
 -- WHERE tablename = 'profiles' AND schemaname = 'public';
+--
+-- 4. Test get_email_by_phone function:
+-- SELECT public.get_email_by_phone('+966500000000');
+--
+-- 5. Count users vs profiles:
+-- SELECT
+--     (SELECT COUNT(*) FROM auth.users) AS total_auth_users,
+--     (SELECT COUNT(*) FROM public.profiles) AS total_profiles,
+--     (SELECT COUNT(*) FROM auth.users WHERE email_confirmed_at IS NOT NULL) AS confirmed_users;
+

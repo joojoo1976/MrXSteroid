@@ -31,5 +31,3 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
 });
 
-// تعريف المتغير الذي كان يسبب خطأ في الصورة (SP_FORM_ID)
-(window as any).SP_FORM_ID = "registration-form";

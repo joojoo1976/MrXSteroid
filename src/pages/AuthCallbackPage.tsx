@@ -8,7 +8,6 @@ import { getAvatarUrl } from '../shared/lib/avatar-service';
 const navigateToPage = (path: string) => {
     window.history.pushState({}, '', path);
     window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: path.replace(/^\//, '').replace(/\//g, '_') }));
-    // Fallback: force re-render by popstate
     window.dispatchEvent(new PopStateEvent('popstate'));
 };
 
@@ -18,175 +17,199 @@ const AuthCallbackPage: React.FC = () => {
     useEffect(() => {
         const handleAuthCallback = async () => {
             try {
-                // Get the current URL and extract hash fragment
                 const hashFragment = window.location.hash.substring(1);
-                const params = new URLSearchParams(hashFragment);
-
-                // Also check query params (for some OAuth flows)
+                const hashParams = new URLSearchParams(hashFragment);
                 const queryParams = new URLSearchParams(window.location.search);
 
-                // Check for error in URL
-                const errorDescription = params.get('error_description') || queryParams.get('error_description');
+                // ── Error in URL ──────────────────────────────────────────
+                const errorDescription =
+                    hashParams.get('error_description') || queryParams.get('error_description');
                 if (errorDescription) {
-                    toast.error(errorDescription);
+                    toast.error(
+                        isRTL
+                            ? `خطأ في التحقق: ${errorDescription}`
+                            : `Verification error: ${errorDescription}`
+                    );
                     navigateToPage('/login');
                     return;
                 }
 
-                // Check for email confirmation type
-                const type = params.get('type') || queryParams.get('type');
+                const type = hashParams.get('type') || queryParams.get('type');
 
-                // Handle email confirmation (Supabase redirects here after clicking email link)
-                if (type === 'signup' || type === 'email') {
-                    console.log('Email confirmation callback detected');
+                // ── PKCE flow: code in query params (Supabase v2 default) ─
+                const code = queryParams.get('code');
+                if (code) {
+                    console.log('📧 PKCE code detected — exchanging for session...');
+                    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-                    if (sessionError) {
-                        console.warn('Session error after email confirmation:', sessionError);
-                        toast.success(
+                    if (error) {
+                        console.error('❌ exchangeCodeForSession error:', error);
+                        toast.error(
                             isRTL
-                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
-                                : 'Email confirmed! Please log in.'
+                                ? 'فشل تأكيد البريد الإلكتروني. الرابط منتهي أو مستخدم من قبل.'
+                                : 'Email confirmation failed. Link expired or already used.'
                         );
                         navigateToPage('/login');
                         return;
                     }
 
-                    if (session) {
-                        const isEmailConfirmed = !!(session.user.email_confirmed_at || session.user.confirmed_at);
-                        console.log('Email confirmed:', isEmailConfirmed, 'User ID:', session.user.id);
-
-                        if (isEmailConfirmed) {
-                            // Sync profile data after email confirmation (now we have an active session)
-                            try {
-                                const avatarUrl = getAvatarUrl({
-                                    email: session.user.email || undefined,
-                                    provider: session.user.app_metadata?.provider,
-                                    providerAvatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
-                                });
-
-                                const { error: updateError } = await supabase.from('profiles').update({
-                                    avatar_url: avatarUrl,
-                                    full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
-                                    user_name: session.user.user_metadata?.user_name || session.user.user_metadata?.username,
-                                    updated_at: new Date().toISOString()
-                                }).eq('id', session.user.id);
-
-                                if (updateError) {
-                                    console.warn('Profile update error:', updateError);
-                                } else {
-                                    console.log('Profile synced successfully after email confirmation');
-                                }
-                            } catch (syncErr) {
-                                console.warn('Profile sync after verification:', syncErr);
-                            }
-
-                            toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
-                            navigateToPage('/dashboard');
-                        } else {
-                            toast.warning(
-                                isRTL
-                                    ? 'يرجى تأكيد بريدك الإلكتروني أولاً'
-                                    : 'Please confirm your email first'
-                            );
-                            navigateToPage('/profile');
-                        }
-                    } else {
-                        console.log('Email confirmed but no session found');
+                    if (data.session) {
+                        await syncProfileAfterVerification(data.session.user);
                         toast.success(
                             isRTL
-                                ? 'تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول.'
-                                : 'Email confirmed! Please log in.'
+                                ? '✅ تم التحقق من حسابك بنجاح! مرحباً بك.'
+                                : '✅ Account verified successfully! Welcome.'
                         );
-                        navigateToPage('/login');
+                        navigateToPage('/dashboard');
+                        return;
+                    }
+                }
+
+                // ── Legacy implicit flow: tokens in hash (Supabase v1 style) ─
+                const accessToken = hashParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token');
+
+                if (accessToken && refreshToken) {
+                    console.log('🔑 Implicit token flow detected...');
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken,
+                    });
+
+                    if (error) {
+                        console.error('❌ setSession error:', error);
+                        throw error;
+                    }
+
+                    if (data.user) {
+                        await syncProfileAfterVerification(data.user);
+                    }
+
+                    toast.success(
+                        isRTL
+                            ? '✅ تم التحقق من حسابك بنجاح!'
+                            : '✅ Account verified successfully!'
+                    );
+                    navigateToPage('/dashboard');
+                    return;
+                }
+
+                // ── Email confirmation without active session (email-only confirm) ─
+                if (type === 'signup' || type === 'email' || type === 'email_change') {
+                    console.log('📨 Email confirmation type detected, checking session...');
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError) {
+                        console.warn('Session error after email confirmation:', sessionError);
+                    }
+
+                    if (session && (session.user.email_confirmed_at || session.user.confirmed_at)) {
+                        await syncProfileAfterVerification(session.user);
+                        toast.success(
+                            isRTL
+                                ? '✅ تم تأكيد بريدك الإلكتروني! يمكنك الآن تسجيل الدخول.'
+                                : '✅ Email confirmed! You can now log in.'
+                        );
+                        navigateToPage('/dashboard');
+                    } else {
+                        toast.success(
+                            isRTL
+                                ? '✅ تم تأكيد بريدك الإلكتروني! يرجى تسجيل الدخول الآن.'
+                                : '✅ Email confirmed! Please log in now.'
+                        );
+                        navigateToPage('/login?verified=true');
                     }
                     return;
                 }
 
-                // Check for recovery type (password reset)
+                // ── Password reset flow ────────────────────────────────────
                 if (type === 'recovery') {
+                    console.log('🔄 Password recovery flow');
                     navigateToPage('/reset-password');
                     return;
                 }
 
-                // Check for access token and refresh token (OAuth flow)
-                const accessToken = params.get('access_token');
-                const refreshToken = params.get('refresh_token');
+                // ── Fallback: check if session already exists ──────────────
+                const { data: { session }, error: fallbackError } = await supabase.auth.getSession();
 
-                if (accessToken && refreshToken) {
-                    console.log('Setting OAuth session...');
-                    const { data, error } = await supabase.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken
-                    });
+                if (fallbackError) throw fallbackError;
 
-                    if (error) throw error;
-
-                    // Sync OAuth profile
-                    if (data.user) {
-                        try {
-                            const avatarUrl = getAvatarUrl({
-                                email: data.user.email || undefined,
-                                provider: data.user.app_metadata?.provider,
-                                providerAvatarUrl: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture,
-                            });
-                            await supabase.from('profiles').update({
-                                avatar_url: avatarUrl,
-                                full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name,
-                                updated_at: new Date().toISOString()
-                            }).eq('id', data.user.id);
-                        } catch (syncErr) {
-                            console.warn('OAuth profile sync:', syncErr);
-                        }
-                    }
-
-                    toast.success(isRTL ? 'تم التحقق من الحساب بنجاح!' : 'Account verified successfully!');
+                if (session) {
+                    console.log('✅ Active session found — redirecting to dashboard');
                     navigateToPage('/dashboard');
                 } else {
-                    // No tokens in URL — check if session exists from cookie/localStorage
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-                    if (sessionError) throw sessionError;
-
-                    if (session) {
-                        console.log('Session found, redirecting to dashboard');
-                        toast.success(isRTL ? 'مرحباً بك مجدداً!' : 'Welcome back!');
-                        navigateToPage('/dashboard');
-                    } else {
-                        console.warn('No session found in callback');
-                        toast.info(isRTL ? 'يرجى تسجيل الدخول.' : 'Please log in to continue.');
-                        navigateToPage('/login');
-                    }
+                    console.warn('⚠️ No session found in callback — redirecting to login');
+                    toast.info(
+                        isRTL
+                            ? 'يرجى تسجيل الدخول للمتابعة.'
+                            : 'Please log in to continue.'
+                    );
+                    navigateToPage('/login');
                 }
             } catch (error: unknown) {
-                console.error('Auth callback error:', error);
-                toast.error(isRTL ? 'فشل التحقق. يرجى المحاولة مرة أخرى.' : 'Verification failed. Please try again.');
+                console.error('❌ Auth callback error:', error);
+                toast.error(
+                    isRTL
+                        ? 'فشل عملية التحقق. يرجى المحاولة مرة أخرى.'
+                        : 'Verification failed. Please try again.'
+                );
                 navigateToPage('/login');
             }
         };
 
         handleAuthCallback();
 
-        // Clean up URL hash after processing
-        if (window.location.hash) {
+        // Clean URL after processing
+        if (window.location.hash || window.location.search) {
             history.replaceState(null, '', window.location.pathname);
         }
     }, [isRTL]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
-            <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold-500 mb-4"></div>
-                <h2 className="text-xl font-semibold text-foreground">
+            <div className="text-center space-y-4">
+                <div className="inline-block animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-gold-500 mb-2"></div>
+                <h2 className="text-xl font-bold text-foreground">
                     {isRTL ? 'جاري إتمام المصادقة...' : 'Completing authentication...'}
                 </h2>
-                <p className="text-muted-foreground">
-                    {isRTL ? 'يرجى الانتظار whilst نتحقق من بياناتك...' : 'Please wait while we verify your credentials'}
+                <p className="text-muted-foreground text-sm">
+                    {isRTL
+                        ? 'يرجى الانتظار بينما نتحقق من بياناتك...'
+                        : 'Please wait while we verify your credentials...'}
                 </p>
             </div>
         </div>
     );
 };
+
+/**
+ * Syncs profile data after email confirmation.
+ * Called after exchangeCodeForSession or setSession succeeds.
+ */
+async function syncProfileAfterVerification(user: { id: string; email?: string | null; app_metadata?: any; user_metadata?: any }) {
+    try {
+        const avatarUrl = getAvatarUrl({
+            email: user.email || undefined,
+            provider: user.app_metadata?.provider,
+            providerAvatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+        });
+
+        const { error } = await supabase.from('profiles').update({
+            avatar_url: avatarUrl,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name,
+            user_name: user.user_metadata?.user_name || user.user_metadata?.username,
+            phone_number: user.user_metadata?.phone_number || null,
+            updated_at: new Date().toISOString(),
+        }).eq('id', user.id);
+
+        if (error) {
+            console.warn('⚠️ Profile sync warning:', error.message);
+        } else {
+            console.log('✅ Profile synced successfully after verification for user:', user.id);
+        }
+    } catch (err) {
+        console.warn('⚠️ Profile sync error (non-fatal):', err);
+    }
+}
 
 export default AuthCallbackPage;
