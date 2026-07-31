@@ -10,10 +10,14 @@ import {
   Droplets,
   Thermometer,
   Activity,
-  Zap
+  Zap,
+  Sparkles,
+  ArrowRightLeft,
+  HeartPulse
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -85,6 +89,72 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
           {content.labReference.subtitle}
         </p>
       </motion.div>
+
+      {/* ── System Guide: المرجع الذكي للتحاليل ── */}
+      <div className="mb-10">
+        <SystemGuideCard
+          isAr={isRTL}
+          icon={Sparkles}
+          title={{
+            ar: 'محرك التفسير المخبري الذكي',
+            en: 'Smart Lab Interpretation Engine',
+          }}
+          subtitle={{
+            ar: 'قراءة تحليلية فورية للهرمونات والأعضاء والفيتامينات',
+            en: 'Instant analytical readings for hormones, organs and vitamins',
+          }}
+          intro={{
+            ar: 'يعتمد هذا المرجع على قاعدة بيانات سريرية شاملة ومحرك تحويل وحدات دولي لترجمة نتائج تحاليلك فورياً إلى تفسير واضح وتوصيات عملية قابلة للتنفيذ:',
+            en: 'This reference relies on a comprehensive clinical database and an international unit-conversion engine to translate your bloodwork into clear interpretation and actionable recommendations:',
+          }}
+          items={[
+            {
+              icon: FlaskConical,
+              title: {
+                ar: '1. قاعدة بيانات التحاليل الشاملة',
+                en: '1. Comprehensive Test Database',
+              },
+              body: {
+                ar: 'تغطي الهرمونات (تيستوستيرون، إستراديول، LH/FSH) ووظائف الكبد والكلى والغدة الدرقية والفيتامينات والمعادن عبر مئات الاختبارات.',
+                en: 'Covers hormones (testosterone, estradiol, LH/FSH), liver, kidney and thyroid function, vitamins and minerals across hundreds of tests.',
+              },
+            },
+            {
+              icon: ArrowRightLeft,
+              title: {
+                ar: '2. محول الوحدات الدولي (SI/US)',
+                en: '2. International Unit Converter (SI/US)',
+              },
+              body: {
+                ar: 'يحوّل الوحدات تلقائياً بين النظام المتري والأمريكي (nmol/L ↔ ng/dL، pmol/L ↔ pg/mL) لقراءة النتائج دون أي لبس.',
+                en: 'Auto-converts between metric and US units (nmol/L ↔ ng/dL, pmol/L ↔ pg/mL) so results are never misinterpreted.',
+              },
+            },
+            {
+              icon: Activity,
+              title: {
+                ar: '3. تفسير فوري بمستويات مرجعية',
+                en: '3. Instant Range Interpretation',
+              },
+              body: {
+                ar: 'يقارن قيمتك بالمدى المرجعي المعياري لكل تحليل ويصنّفها (منخفض / مثالي / مرتفع) مع إبراز القيم الحساسة خارج الحدود.',
+                en: 'Compares your value against each test standard reference range and flags it (low / optimal / high) with out-of-range highlights.',
+              },
+            },
+            {
+              icon: HeartPulse,
+              title: {
+                ar: '4. توصيات سريرية وربط بالمنظومة',
+                en: '4. Clinical Advice & Ecosystem Link',
+              },
+              body: {
+                ar: 'يقترح توصيات سريرية عملية بناءً على الانحراف المكتشف ويربطك بالحاسبات الأخرى لضبط الدواء أو المكملات أو النظام الغذائي.',
+                en: 'Offers practical clinical recommendations based on the detected deviation and links you to related calculators for dosing or diet adjustments.',
+              },
+            },
+          ]}
+        />
+      </div>
 
       {/* AdSlot: Search Top */}
       <div className="mb-10">

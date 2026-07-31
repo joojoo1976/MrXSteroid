@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Activity, AlertTriangle } from 'lucide-react';
+import { Shield, Zap, Activity, AlertTriangle, Sparkles, Rotate3d, RefreshCw } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { convertValue } from '../../shared/lib/logic';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
@@ -17,6 +18,7 @@ interface InjectionMapProps {
 
 const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
   const { unitSystem, language } = usePreferences();
+  const isAr = language === 'ar';
 
   const {
     rotation,
@@ -55,6 +57,72 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           {mapContent.subtitle}
         </motion.p>
       </header>
+
+      {/* ── System Guide: خريطة الحقن التفاعلية ── */}
+      <div className="mb-8 relative z-10">
+        <SystemGuideCard
+          isAr={isAr}
+          icon={Sparkles}
+          title={{
+            ar: 'نظام خريطة الحقن التفاعلي الذكي',
+            en: 'Smart Interactive Injection Mapping System',
+          }}
+          subtitle={{
+            ar: 'توزيع الحقن العضلي بأمان مع كفاءة امتصاص مثلى',
+            en: 'Safe intramuscular injection rotation with optimal absorption efficiency',
+          }}
+          intro={{
+            ar: 'تعتمد هذه الخريطة على نموذج تشريحي ثلاثي الأبعاد ومحرك أمان سريري لترشدك إلى أفضل موقع حقن للاستخدام المفرد والمتكرر، مع تجنّب الأعصاب والأوعية الدموية:',
+            en: 'Powered by a 3D anatomical model and a clinical safety engine, this map guides you to optimal single and repeat injection sites while avoiding nerves and vessels:',
+          }}
+          items={[
+            {
+              icon: Rotate3d,
+              title: {
+                ar: '1. النموذج التشريحي ثلاثي الأبعاد',
+                en: '1. 3D Anatomical Model',
+              },
+              body: {
+                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي) يوضح عضلات الحقن الرئيسية بدقة تشريحية عالية مع أسماء المواقع بلغتك.',
+                en: 'A rotatable front/back human model highlighting the main injection muscles with anatomically accurate, localized site names.',
+              },
+            },
+            {
+              icon: Shield,
+              title: {
+                ar: '2. محرك الأمان ومستوى الخطر',
+                en: '2. Safety & Risk Engine',
+              },
+              body: {
+                ar: 'يقيّم كل موقع حسب قربه من الأعصاب والأوردة وحجم العضلة، ويعرض مؤشر أمان رقمياً يحدد صلاحية الاستخدام المتكرر.',
+                en: 'Scores every site by proximity to nerves, veins and muscle volume, showing a numeric safety rating for repeat-use suitability.',
+              },
+            },
+            {
+              icon: RefreshCw,
+              title: {
+                ar: '3. نظام التناوب الذكي (Rotation)',
+                en: '3. Smart Rotation Logic',
+              },
+              body: {
+                ar: 'يحسب أفضل تسلسل تناوب بين المواقع لمنع التليّف العضلي والندوب الدهنية، ويوزع الأحمال بأمان على العضلات الكبرى.',
+                en: 'Computes the optimal rotation sequence across sites to prevent muscle fibrosis and lipohypertrophy while balancing load on major muscles.',
+              },
+            },
+            {
+              icon: Zap,
+              title: {
+                ar: '4. مؤشرات الامتصاص والتوجيه',
+                en: '4. Absorption Indicators & Guidance',
+              },
+              body: {
+                ar: 'يعرض كفاءة امتصاص كل موقع وحجم الحقن الآمن وعمق الإبرة المناسب، مع نصائح فورية للجرعة المنفردة والمتكررة.',
+                en: 'Shows per-site absorption efficiency, safe injection volume and recommended needle depth with instant dosing guidance.',
+              },
+            },
+          ]}
+        />
+      </div>
 
       {/* AdSlot: Top Banner */}
       <div className="mb-8 font-sans">

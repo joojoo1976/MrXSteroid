@@ -4,7 +4,7 @@ import {
   ShieldAlert, Calendar, ChevronDown, Clock,
   Info, Gauge, FlaskConical, Droplet, RotateCcw,
   Zap, Plus, Trash2, TrendingUp, LineChart, Activity,
-  Target, Beaker
+  Target, Beaker, Sparkles
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -14,6 +14,7 @@ import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import KineticCounter from '../../shared/ui/KineticCounter';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
 
@@ -118,6 +119,72 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
           ))}
         </div>
       </motion.div>
+
+      {/* ── System Guide: محاكي نصف العمر ── */}
+      <div className="mb-12">
+        <SystemGuideCard
+          isAr={isRTL}
+          icon={Sparkles}
+          title={{
+            ar: 'محرك الحرائك الدوائية المتقدم',
+            en: 'Advanced Pharmacokinetic Half-Life Engine',
+          }}
+          subtitle={{
+            ar: 'محاكاة التركيز الدوائي لحظة بلحظة بدقة 6 ساعات',
+            en: 'Sub-daily drug concentration simulation with 6-hour resolution',
+          }}
+          intro={{
+            ar: 'يعتمد هذا المحاكي على معادلة باتمان الدوائية (Bateman Equation) لرسم منحنى تركيز كل مركب في دمك لحظة بلحظة، ويربط عمر النصف بموعد التصفية وبدء بروتوكول PCT تلقائياً:',
+            en: 'This simulator relies on the Bateman pharmacokinetic equation to plot each compound blood concentration curve in real time, linking half-life to clearance timing and automatic PCT scheduling:',
+          }}
+          items={[
+            {
+              icon: FlaskConical,
+              title: {
+                ar: '1. معادلة باتمان الدوائية',
+                en: '1. Bateman PK Equation',
+              },
+              body: {
+                ar: 'تجمع بين معدل الامتصاص والتحلل لرسم منحنى التركيز الفعلي في الدم، فتتجنب هدر الجرعات أو التراكم الخطير فوق الحد الآمن.',
+                en: 'Combines absorption and elimination rates to plot true blood concentration curves, avoiding wasted doses and unsafe accumulation.',
+              },
+            },
+            {
+              icon: Clock,
+              title: {
+                ar: '2. دقة زمنية تصل لـ 6 ساعات',
+                en: '2. Up to 6-Hour Temporal Resolution',
+              },
+              body: {
+                ar: 'تولّد نقاطاً زمنية كثيفة لمراقبة القمم والقيعان (الذروة والحضيض) لكل مركب، وهو أمر حاسم للجرعات المتكررة والتراكيب الزيتية طويلة الأجل.',
+                en: 'Generates dense time points to track peaks and troughs of every compound — critical for frequent dosing and long-ester oils.',
+              },
+            },
+            {
+              icon: LineChart,
+              title: {
+                ar: '3. محاكي التراكم وحالة الاستقرار',
+                en: '3. Accumulation & Steady-State Simulator',
+              },
+              body: {
+                ar: 'تحسب حالة الاستقرار (Steady-State) وتعدد الجرعات والتراكب بين المركبات، لتعرف بالضبط متى تصل تركيزاتك للذروة الفعلية.',
+                en: 'Models steady-state, multi-dose and compound stacking so you know exactly when your blood levels reach true peak.',
+              },
+            },
+            {
+              icon: ShieldAlert,
+              title: {
+                ar: '4. بروتوكول PCT والتصفية التلقائية',
+                en: '4. Auto PCT & Clearance Protocol',
+              },
+              body: {
+                ar: 'تعتمد التصفية الدوائية على 5.32× من عمر النصف، وتولّد توقيت بدء PCT تلقائياً لمنع الوصول لقاع هرموني خطير بعد الكورس.',
+                en: 'Uses 5.32× half-life clearance and auto-generates PCT start timing to prevent a dangerous hormonal crash post-cycle.',
+              },
+            },
+          ]}
+        />
+      </div>
 
       <div className="grid lg:grid-cols-12 gap-10">
         {/* Sidebar */}

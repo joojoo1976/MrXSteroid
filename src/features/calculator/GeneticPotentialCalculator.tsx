@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, RefreshCcw, ScanLine, Brain, Trophy, Zap } from 'lucide-react';
+import { Activity, RefreshCcw, ScanLine, Brain, Trophy, Zap, Sparkles } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import KineticCounter from '../../shared/ui/KineticCounter';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -127,6 +128,72 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
           {content.geneticCalculator.subtitle}
         </p>
       </motion.div>
+
+      {/* ── System Guide: الإمكانات الوراثية ── */}
+      <div className="mb-12">
+        <SystemGuideCard
+          isAr={isRTL}
+          icon={Sparkles}
+          title={{
+            ar: 'محرك الإمكانات الوراثية GenoPeak™',
+            en: 'GenoPeak™ Genetic Ceiling Engine',
+          }}
+          subtitle={{
+            ar: 'توقع السقف العضلي الطبيعي ومقارنته بموقعك الحالي',
+            en: 'Predicts your natural muscular ceiling and measures your current position',
+          }}
+          intro={{
+            ar: 'يعتمد هذا المحرك على معادلات أنثروبومترية موثقة في الأدبيات العلمية لقراءة هيكلك العظمي (الرسغ والكاحل والطول) وتوقع السقف الطبيعي للكتلة العضلية بدقة عالية، ثم يربطك بخطة الوصول:',
+            en: 'This engine relies on anthropometric equations documented in the scientific literature to read your skeletal frame (wrist, ankle, height) and predict your natural muscle ceiling with high accuracy, then maps your road to it:',
+          }}
+          items={[
+            {
+              icon: Brain,
+              title: {
+                ar: '1. نموذج المعادلات الأنثروبومترية',
+                en: '1. Anthropometric Equation Model',
+              },
+              body: {
+                ar: 'تدمج معادلات FFMI ونماذج الإطار الهيكلي لتحويل قياساتك إلى تقدير رقمي للسقف العضلي الطبيعي بدون منشطات.',
+                en: 'Combines FFMI formulas and skeletal-frame models to convert your measurements into a numeric estimate of your natural, drug-free muscle ceiling.',
+              },
+            },
+            {
+              icon: ScanLine,
+              title: {
+                ar: '2. تحليل الأبعاد الهيكلية',
+                en: '2. Structural Frame Analysis',
+              },
+              body: {
+                ar: 'تحلل مقاس الرسغ والكاحل والطول لتحديد إطار جسمك (خفيف / متوسط / ثقيل) الذي يحدد سعة تراكم الكتلة العضلية لديك.',
+                en: 'Analyzes wrist, ankle and height to classify your frame (small / medium / large), which governs how much muscle you can realistically carry.',
+              },
+            },
+            {
+              icon: Trophy,
+              title: {
+                ar: '3. توقع السقف الوراثي للكتلة',
+                en: '3. Genetic Muscle Ceiling Prediction',
+              },
+              body: {
+                ar: 'تعرض وزنك المستهدف عند نسبة دهون منخفضة ضمن السقف الطبيعي، فتعرف أقصى كتلة عضلية يمكنك بلوغها بصحة واستدامة.',
+                en: 'Shows your target weight at low body fat under the natural ceiling, so you know the max muscle mass you can reach healthily and sustainably.',
+              },
+            },
+            {
+              icon: Zap,
+              title: {
+                ar: '4. فجوة الإمكانات وخطة الوصول',
+                en: '4. Potential Gap & Roadmap',
+              },
+              body: {
+                ar: 'تقيس الفجوة بين وضعك الحالي والسقف المتوقع وتمنحك خريطة زمنية واقعية للوصول عبر التغذية والتدريب المتراكمين.',
+                en: 'Measures the gap between your current state and expected ceiling, then gives you a realistic timeline to reach it through progressive training and nutrition.',
+              },
+            },
+          ]}
+        />
+      </div>
 
       {/* AdSlot: Top Banner */}
       <div className="mb-12 flex flex-col items-center gap-6">

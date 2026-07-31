@@ -16,6 +16,7 @@ import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../../shared/ui/UnitToggle';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { useMacroCalculator } from './hooks/useMacroCalculator';
 
 interface MacroCalculatorProps {
@@ -228,6 +229,71 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
           ))}
         </div>
       </motion.div>
+
+      {/* ── System Guide: محرك الماكروز الذكي ── */}
+      <SystemGuideCard
+        isAr={isAr}
+        icon={Sparkles}
+        title={{
+          ar: 'محرك الماكروز الذكي متعدد النماذج',
+          en: 'Multi-Model Smart Macro Engine',
+        }}
+        subtitle={{
+          ar: 'منظومة حساب السعرات والماكروز والأيض اليومي',
+          en: 'Calories, Macros & Daily Metabolic System',
+        }}
+        intro={{
+          ar: 'تجمع هذه الحاسبة 4 نماذج رياضية وسريرية متكاملة لتحديد سعراتك وماكروزك بدقة متناهية دون أي تخمين، وتربطها مباشرة بحاسبات المنصة لتصميم خطتك الغذائية:',
+          en: 'This calculator integrates 4 clinical and mathematical models to define your exact calories and macros with zero guesswork, wired into the platform calculators for a complete nutrition plan:',
+        }}
+        items={[
+          {
+            icon: Flame,
+            title: {
+              ar: '1. محرك BMR الأساسي (Mifflin-St Jeor)',
+              en: '1. Basal Metabolic Engine (Mifflin-St Jeor)',
+            },
+            body: {
+              ar: 'تحسب الحد الأدنى من السعرات اللازمة لعمل أعضائك سكونياً، فتضمن ألا يتباطأ الأيض أثناء التنشيف ولا تضيع كتلتك العضلية في العجز الحراري.',
+              en: 'Computes the minimum calories your organs need at rest, so your metabolism never stalls during a cut and muscle tissue is preserved.',
+            },
+          },
+          {
+            icon: Activity,
+            title: {
+              ar: '2. محرك TDEE ونماذج النشاط',
+              en: '2. TDEE Engine & Activity Multipliers',
+            },
+            body: {
+              ar: 'تضرب BMR في معامل نشاطك اليومي (من 1.2 للمكتبي حتى 1.9 للتدريب المكثف) لتعطيك استهلاكك الحقيقي الكلي للتحكم الدقيق في وزنك.',
+              en: 'Applies your daily activity multiplier (1.2 sedentary up to 1.9 intense training) to surface your true total daily expenditure.',
+            },
+          },
+          {
+            icon: Target,
+            title: {
+              ar: '3. توزيع الماكروز حسب الهدف',
+              en: '3. Goal-Based Macro Split',
+            },
+            body: {
+              ar: 'تكيّف نسب البروتين والكربوهيدرات والدهون تلقائياً حسب هدفك (تنشيف / تضخيم / إعادة تشكيل) لحماية الكتلة العضلية الصافية وتحقيق النتائج.',
+              en: 'Auto-tunes protein, carb and fat ratios to your goal (cut / bulk / recomp) to protect lean muscle and drive results.',
+            },
+          },
+          {
+            icon: UtensilsCrossed,
+            title: {
+              ar: '4. محاكي الوزن وخطط الوجبات',
+              en: '4. Weight Simulation & Meal Plans',
+            },
+            body: {
+              ar: 'تتنبأ بمسار وزنك أسبوعياً عبر النموذج الديناميكي، وتولّد خطط وجبات عملية قابلة للتخصيص متوافقة مع ماكروزك وأسلوب حياتك.',
+              en: 'Projects your weekly weight trajectory and generates practical, customizable meal plans matched to your macros.',
+            },
+          },
+        ]}
+        className="mb-12"
+      />
 
       {/* AdSlot: Top */}
       <div className="mb-12 relative z-30 flex flex-col items-center gap-6">

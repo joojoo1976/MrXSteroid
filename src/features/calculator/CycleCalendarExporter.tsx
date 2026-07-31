@@ -1,6 +1,7 @@
 import React from 'react';
-import { CalendarCheck, Target, X, Plus, Download, Lock } from 'lucide-react';
+import { CalendarCheck, Target, X, Plus, Download, Lock, Sparkles, RefreshCw, EyeOff } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
+import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useCycleCalendarExporter } from './hooks/useCycleCalendarExporter';
@@ -68,6 +69,72 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                 <CalendarCheck className="w-16 h-16 text-gold-500 mx-auto mb-4" />
                 <h1 className="text-3xl font-black mb-2">{content.cycleArchitect.title}</h1>
                 <p className="text-zinc-500 max-w-2xl mx-auto">{content.cycleArchitect.subtitle}</p>
+            </div>
+
+            {/* ── System Guide: مزامنة جدول الكورس ── */}
+            <div className="mb-10">
+                <SystemGuideCard
+                    isAr={isRTL}
+                    icon={Sparkles}
+                    title={{
+                        ar: 'محرك مزامنة الجدول الدوائي CycleSync Pro',
+                        en: 'CycleSync Pro — Protocol Calendar Engine',
+                    }}
+                    subtitle={{
+                        ar: 'بناء الكورس وحساب التصفية وتصدير التقويم الذكي',
+                        en: 'Protocol building, clearance scheduling & smart calendar export',
+                    }}
+                    intro={{
+                        ar: 'يجمع هذا المحرك بين مصمم الكورس، وحساب عمر النصف والتصفية التلقائية، ووضع التخفي، وتصدير ICS مباشر لتقويم هاتفك، في منظومة واحدة متزامنة تماماً:',
+                        en: 'This engine fuses the cycle builder, half-life clearance scheduling, stealth mode and direct ICS export to your phone calendar into one fully synchronized system:',
+                    }}
+                    items={[
+                        {
+                            icon: CalendarCheck,
+                            title: {
+                                ar: '1. مصمم الكورس بالنماذج الجاهزة',
+                                en: '1. Preset Cycle Builder',
+                            },
+                            body: {
+                                ar: 'نماذج جاهزة (تضخيم مبتدئ / تنشيف / TRT) تضيف المركبات والجرعات والتكرار تلقائياً مع تحكم كامل بالتخصيص اليدوي.',
+                                en: 'Ready presets (beginner bulk / cutting / TRT) auto-populate compounds, dosages and frequency with full manual customization.',
+                            },
+                        },
+                        {
+                            icon: RefreshCw,
+                            title: {
+                                ar: '2. التصفية الذاتية وحساب نصف العمر',
+                                en: '2. Auto-Rotation & Half-Life Clearance',
+                            },
+                            body: {
+                                ar: 'يحسب نهاية تأثير كل مركب بناءً على عمر نصفه ويولّد توقيت التصفية تلقائياً لمنع فترات هرمونية ميتة أثناء الكورس.',
+                                en: 'Computes each compound end of action from its half-life and auto-generates clearance timing to avoid dead hormonal gaps mid-cycle.',
+                            },
+                        },
+                        {
+                            icon: EyeOff,
+                            title: {
+                                ar: '3. وضع التخفي (Stealth Mode)',
+                                en: '3. Stealth Mode',
+                            },
+                            body: {
+                                ar: 'يستخدم مسميات بديلة محايدة في تقويمك للحفاظ على خصوصيتك الكاملة دون كشف محتوى الجدول لأي طرف آخر.',
+                                en: 'Uses discreet alternative labels in your calendar to keep your schedule fully private from any third party.',
+                            },
+                        },
+                        {
+                            icon: Download,
+                            title: {
+                                ar: '4. تصدير ICS وتكامل التقويم',
+                                en: '4. ICS Export & Calendar Sync',
+                            },
+                            body: {
+                                ar: 'يصدّر الجدول بصيغة ICS القياسية إلى Google/Apple/Outlook مع ربط تلقائي لمواعيد الحقن والتنشيف وPCT، وتعمل التنبيهات مباشرة.',
+                                en: 'Exports the schedule to standard ICS for Google/Apple/Outlook, auto-linking injection, cruise and PCT events with working reminders.',
+                            },
+                        },
+                    ]}
+                />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
