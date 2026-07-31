@@ -437,6 +437,25 @@ export const toMetric = (value: number, type: 'weight' | 'height' | 'volume' | '
 };
 
 /**
+ * Localized weight unit label ('كجم' | 'رطل' | 'kg' | 'lbs') for the given system/language.
+ */
+export const getWeightUnitLabel = (system: UnitSystem, isAr: boolean): string =>
+    isAr ? (system === 'imperial' ? 'رطل' : 'كجم') : (system === 'imperial' ? 'lbs' : 'kg');
+
+/**
+ * Localized length unit label ('سم' | 'بوصة' | 'cm' | 'in') for the given system/language.
+ */
+export const getLengthUnitLabel = (system: UnitSystem, isAr: boolean): string =>
+    isAr ? (system === 'imperial' ? 'بوصة' : 'سم') : (system === 'imperial' ? 'in' : 'cm');
+
+/**
+ * Converts a metric value into the display unit system with 1-decimal precision.
+ * Pure function — safe to call in render/memoized contexts.
+ */
+export const toDisplayUnit = (metricValue: number, type: 'weight' | 'length', system: UnitSystem): number =>
+    parseFloat(convertValue(metricValue, type, system).toFixed(1));
+
+/**
  * Converts lab values between US and SI units.
  */
 export const convertLabValue = (value: number, unit: string, toSystem: UnitSystem): { value: number, unit: string } => {

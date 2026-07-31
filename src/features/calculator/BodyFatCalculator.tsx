@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Scale, User, Activity, Target, TrendingUp, RefreshCw,
+  Scale, Activity, Target, TrendingUp, RefreshCw,
   ChevronRight, ChevronLeft, Flame, Zap, Award, Info,
-  Shield, Star, Heart, ArrowRight, CheckCircle2, RotateCcw,
-  Ruler, Dumbbell, BarChart3, Brain
+  Shield, ArrowRight, CheckCircle2, RotateCcw,
+  Dumbbell, BarChart3, Brain, Sparkles, Lightbulb,
+  Apple, Droplets, LineChart, HelpCircle
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { UnitToggle } from '../../shared/ui/UnitToggle';
-import { useBodyFatCalculator } from './hooks/useBodyFatCalculator';
+import { useBodyFatCalculator, BodyFatDisplayResult } from './hooks/useBodyFatCalculator';
 
 interface BodyFatCalculatorProps {
   content: ContentStrings;
@@ -160,7 +161,7 @@ const StatCard: React.FC<{
       <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">{label}</p>
       <p className="text-lg font-black text-white font-mono leading-none">
         {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
-        {unit && <span className="text-xs text-zinc-500 ms-1">{unit}</span>}
+        {unit && <span className="text-xs text-zinc-400 ms-1 font-sans">{unit}</span>}
       </p>
     </div>
   </motion.div>
@@ -238,6 +239,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
   const { language: lang, unitSystem } = usePreferences();
   const isAr = lang === 'ar';
   const isImperial = unitSystem === 'imperial';
+  const [showSystemInfo, setShowSystemInfo] = useState(true);
 
   const {
     step, nextStep, prevStep,
@@ -249,15 +251,24 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
     hip, handleHipChange,
     neck, handleNeckChange,
     activityLevel, setActivityLevel,
-    result, isCalculating,
+    result: baseResult,
+    displayResult,
+    isCalculating,
     ecosystemSynced,
     calculate, reset,
     getCategoryConfig,
     getEmpathyMessage,
   } = useBodyFatCalculator({ content, unitSystem });
 
+  // Live unit/language-aware result (displayResult mirrors baseResult; null when no calculation yet)
+  const result = (displayResult ?? baseResult) as BodyFatDisplayResult | null;
+
   const catConfig = getCategoryConfig();
   const empathy = getEmpathyMessage();
+
+  // Dynamic unit labels
+  const weightUnit = result?.weightUnit || (isAr ? (isImperial ? 'رطل' : 'كجم') : (isImperial ? 'lbs' : 'kg'));
+  const lengthUnit = result?.lengthUnit || (isAr ? (isImperial ? 'بوصة' : 'سم') : (isImperial ? 'in' : 'cm'));
 
   const activityLevels = isAr
     ? [
@@ -298,7 +309,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16 relative"
+        className="text-center mb-12 relative"
       >
         <motion.div
           animate={{ rotate: 360 }}
@@ -315,23 +326,111 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
         <h1 className="text-4xl md:text-7xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tighter">
           {content.bfTitle}
         </h1>
-        <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto font-bold italic">
+        <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto font-bold italic mb-6">
           {content.bfSubtitle}
         </p>
 
-        {/* Trust badges */}
-        <div className="flex items-center justify-center gap-3 mt-5 flex-wrap">
-          {[
-            { icon: Shield, label: isAr ? 'معادلة البحرية الأمريكية' : 'US Navy Formula', color: 'text-blue-400' },
-            { icon: Zap, label: isAr ? 'تحليل فوري' : 'Real-Time Analysis', color: 'text-gold-400' },
-            { icon: Star, label: isAr ? 'نتائج دقيقة' : 'High Accuracy', color: 'text-rose-400' },
-          ].map(({ icon: I, label, color }) => (
-            <div key={label} className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900/60 border border-zinc-800 rounded-full backdrop-blur-sm">
-              <I className={`w-3 h-3 ${color}`} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{label}</span>
+        {/* ── Requirement 3: Detailed Explanation Banner for "تحليل متعدد الأبعاد ونظام تنبؤ متقدم" ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto bg-gradient-to-br from-zinc-900/90 via-zinc-950 to-zinc-900/90 border border-gold-500/30 rounded-3xl p-6 shadow-2xl text-start relative overflow-hidden backdrop-blur-2xl"
+        >
+          <div className="absolute top-0 end-0 w-48 h-48 bg-gold-500/10 blur-3xl rounded-full pointer-events-none" />
+
+          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-gold-500/10 border border-gold-500/30 text-gold-400 shrink-0">
+                <Sparkles className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-base md:text-lg font-black text-white flex items-center gap-2">
+                  <span>{isAr ? 'تحليل متعدد الأبعاد ونظام تنبؤ متقدم' : 'Multi-Dimensional Analysis & Advanced Prediction System'}</span>
+                </h2>
+                <p className="text-xs text-gold-400/90 font-bold">
+                  {isAr ? 'منظومة حساب تركيب الجسم وحجم الدهون الصافية والأيض اليومي' : 'Body Composition, Fat Mass & Metabolic Engine'}
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+
+            <button
+              onClick={() => setShowSystemInfo(prev => !prev)}
+              className="px-4 py-2 bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/30 text-gold-400 text-xs font-black rounded-xl transition-all flex items-center gap-2"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>{showSystemInfo ? (isAr ? 'إخفاء الشرح' : 'Hide Details') : (isAr ? 'شرح المنظومة وفائدتها' : 'System Guide & Benefits')}</span>
+            </button>
+          </div>
+
+          {/* Collapsible / Rich System Guide Explanation */}
+          <AnimatePresence>
+            {showSystemInfo && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4 text-xs leading-relaxed text-zinc-300 border-t border-zinc-800/80 pt-4 mt-2"
+              >
+                <p className="font-medium text-zinc-300">
+                  {isAr
+                    ? 'تعتمد هذه الحاسبة على دمج 4 نماذج رياضية وسريرية متقدمة لتزويدك بتحليل شامل لتركيب جسمك دون الحاجة لفحوصات الأشعة المقطعية المكلفة:'
+                    : 'This calculator integrates 4 clinical mathematical models to provide a full body composition analysis without costly DEXA scans:'
+                  }
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-1">
+                    <div className="flex items-center gap-2 text-gold-400 font-black">
+                      <Shield className="w-4 h-4" />
+                      <span>{isAr ? '1. معادلة البحرية الأمريكية (US Navy Formula)' : '1. US Navy Body Fat Formula'}</span>
+                    </div>
+                    <p className="text-zinc-400 text-[11px]">
+                      {isAr
+                        ? 'تقيس نسبة الدهون من خلال الخصر والرقبة والحوض بدقة تصل إلى ٩٤٪ مقارنة بالـ DEXA Scan، مما يضمن لك تتبع التغيرات الحقيقية في الانسجة الدهنية.'
+                        : 'Calculates fat percentage using waist, neck, and hip ratios with up to 94% accuracy vs DEXA scan.'}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-1">
+                    <div className="flex items-center gap-2 text-gold-400 font-black">
+                      <Dumbbell className="w-4 h-4" />
+                      <span>{isAr ? '2. تفكيك الكتلة الصافية (Lean Body Mass)' : '2. Lean Muscle Mass Separation'}</span>
+                    </div>
+                    <p className="text-zinc-400 text-[11px]">
+                      {isAr
+                        ? 'تفصل الوزن الإجمالي إلى كتلة عضلية صافية مقابل دهون صافية، لمنع انخداعك بالوزن الإجمالي على الميزان أثناء إعادة التشكيل العضلي (Recomposition).'
+                        : 'Separates total weight into pure muscle/bone mass vs fat mass to monitor true muscle retention during cuts.'}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-1">
+                    <div className="flex items-center gap-2 text-gold-400 font-black">
+                      <Flame className="w-4 h-4" />
+                      <span>{isAr ? '3. محرك BMR & TDEE (Mifflin-St Jeor)' : '3. BMR & TDEE Metabolic Prediction'}</span>
+                    </div>
+                    <p className="text-zinc-400 text-[11px]">
+                      {isAr
+                        ? 'تحسب السعرات الحرارية التي يحرقها جسمك سكونياً ونشاطياً لمنع تباطؤ الأيض أو الهدم العضلي أثناء فترة التنشيف.'
+                        : 'Calculates basal metabolic rate and active expenditure to design a precise caloric deficit.'}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-1">
+                    <div className="flex items-center gap-2 text-gold-400 font-black">
+                      <Target className="w-4 h-4" />
+                      <span>{isAr ? '4. وجه الاستفادة والتوجيه الرقمي' : '4. Actionable Benefit & Direction'}</span>
+                    </div>
+                    <p className="text-zinc-400 text-[11px]">
+                      {isAr
+                        ? `تحدد لك الهدف الرقمي المباشر بالـ ${weightUnit} الواجب خسارتها من الدهون فقط للوصول للنطاق الذهبي، وتُربط تلقائياً بحاسبة السعرات وحاسبة الإمكانات الجينية.`
+                        : `Provides exact target ${weightUnit} of pure fat to lose to reach ideal range, linked with Macro & Genetic Calculators.`}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </motion.div>
 
       {/* AdSlot Top */}
@@ -418,14 +517,14 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                       value={weight}
                       onChange={handleWeightChange}
                       placeholder={isImperial ? '176' : '80'}
-                      unit={isImperial ? 'lbs' : 'kg'}
+                      unit={weightUnit}
                     />
                     <InputField
                       label={content.bfHeight}
                       value={height}
                       onChange={handleHeightChange}
                       placeholder={isImperial ? '70' : '180'}
-                      unit={isImperial ? 'in' : 'cm'}
+                      unit={lengthUnit}
                     />
                   </div>
 
@@ -487,7 +586,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                       value={waist}
                       onChange={handleWaistChange}
                       placeholder={isImperial ? '32' : '82'}
-                      unit={isImperial ? 'in' : 'cm'}
+                      unit={lengthUnit}
                       tooltip={measurementTips.waist}
                     />
                     {gender === 'female' && (
@@ -496,7 +595,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                         value={hip}
                         onChange={handleHipChange}
                         placeholder={isImperial ? '38' : '97'}
-                        unit={isImperial ? 'in' : 'cm'}
+                        unit={lengthUnit}
                         tooltip={measurementTips.hip}
                       />
                     )}
@@ -505,7 +604,7 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                       value={neck}
                       onChange={handleNeckChange}
                       placeholder={isImperial ? '16' : '40'}
-                      unit={isImperial ? 'in' : 'cm'}
+                      unit={lengthUnit}
                       tooltip={measurementTips.neck}
                     />
                   </div>
@@ -698,11 +797,11 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                     style={{ width: `${((result.idealBodyFatMax - result.idealBodyFatMin) / (gender === 'male' ? 50 : 60)) * 100}%`, marginLeft: `${(result.idealBodyFatMin / (gender === 'male' ? 50 : 60)) * 100}%` }}
                   />
                 </div>
-                {result.kgToLose > 0 && (
-                  <p className="text-[10px] text-zinc-500 mt-2">
+                {result.displayWeightToLose > 0 && (
+                  <p className="text-[10px] text-zinc-400 mt-2 font-medium">
                     {isAr
-                      ? `تحتاج لخسارة ~${result.kgToLose} كجم من الدهون للوصول للمثالي`
-                      : `~${result.kgToLose} kg of fat to reach ideal range`}
+                      ? `تحتاج لخسارة ~${result.displayWeightToLose} ${weightUnit} من الدهون فقط للوصول للنطاق المثالي`
+                      : `~${result.displayWeightToLose} ${weightUnit} of pure fat to reach ideal range`}
                   </p>
                 )}
               </div>
@@ -715,13 +814,13 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
               transition={{ delay: 0.2 }}
               className="grid grid-cols-2 md:grid-cols-4 gap-4"
             >
-              <StatCard icon={Target} label={content.bfMassLabel} value={result.bodyFatMass} unit={isImperial ? 'lbs' : 'kg'} color="bg-rose-500/80" delay={0.05} />
-              <StatCard icon={Dumbbell} label={content.bfLeanMassLabel} value={result.leanBodyMass} unit={isImperial ? 'lbs' : 'kg'} color="bg-gold-500/80" delay={0.1} />
-              <StatCard icon={Flame} label={isAr ? 'معدل الأيض الأساسي' : 'BMR'} value={result.bmr} unit="kcal" color="bg-orange-500/80" delay={0.15} />
-              <StatCard icon={Activity} label={isAr ? 'الاستهلاك اليومي TDEE' : 'TDEE'} value={result.tdee} unit="kcal" color="bg-blue-500/80" delay={0.2} />
+              <StatCard icon={Target} label={content.bfMassLabel} value={result.displayBodyFatMass} unit={weightUnit} color="bg-rose-500/80" delay={0.05} />
+              <StatCard icon={Dumbbell} label={content.bfLeanMassLabel} value={result.displayLeanBodyMass} unit={weightUnit} color="bg-gold-500/80" delay={0.1} />
+              <StatCard icon={Flame} label={isAr ? 'معدل الأيض الأساسي' : 'BMR'} value={result.bmr} unit={isAr ? 'سعرة' : 'kcal'} color="bg-orange-500/80" delay={0.15} />
+              <StatCard icon={Activity} label={isAr ? 'الاستهلاك اليومي TDEE' : 'TDEE'} value={result.tdee} unit={isAr ? 'سعرة' : 'kcal'} color="bg-blue-500/80" delay={0.2} />
             </motion.div>
 
-            {/* ── AI Insight Card ── */}
+            {/* ── AI Insight Card ("تشريح جسمك التفصيلي") ── */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -739,8 +838,8 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                   </h4>
                   <p className="text-sm font-bold leading-snug">
                     {isAr
-                      ? `تمتلك ${result.leanBodyMass.toFixed(1)} كجم من الكتلة العضلية الصافية، و${result.bodyFatMass.toFixed(1)} كجم دهون. معدل الأيض الأساسي ${result.bmr} سعرة/يوم، وأنت تستهلك ~${result.tdee} سعرة في ظل نشاطك الحالي.${result.kgToLose > 0 ? ` لتصل للنطاق المثالي تحتاج لخسارة ${result.kgToLose} كجم من الدهون فقط.` : ' أنت بالفعل في النطاق المثالي — رائع!'}`
-                      : `You carry ${result.leanBodyMass.toFixed(1)} kg of lean muscle mass and ${result.bodyFatMass.toFixed(1)} kg of fat. Your basal metabolic rate is ${result.bmr} kcal/day, burning ~${result.tdee} kcal at your current activity level.${result.kgToLose > 0 ? ` To reach ideal range, you need to lose only ${result.kgToLose} kg of fat.` : ' You are already in the ideal range — excellent!'}`
+                      ? `تمتلك ${result.displayLeanBodyMass} ${weightUnit} من الكتلة العضلية الصافية، و${result.displayBodyFatMass} ${weightUnit} دهون. معدل الأيض الأساسي ${result.bmr} سعرة/يوم، وأنت تستهلك ~${result.tdee} سعرة في ظل نشاطك الحالي.${result.displayWeightToLose > 0 ? ` لتصل للنطاق المثالي تحتاج لخسارة ${result.displayWeightToLose} ${weightUnit} من الدهون فقط.` : ' أنت بالفعل في النطاق المثالي — رائع!'}`
+                      : `You carry ${result.displayLeanBodyMass} ${weightUnit} of lean muscle mass and ${result.displayBodyFatMass} ${weightUnit} of fat. Your basal metabolic rate is ${result.bmr} kcal/day, burning ~${result.tdee} kcal at your current activity level.${result.displayWeightToLose > 0 ? ` To reach ideal range, you need to lose only ${result.displayWeightToLose} ${weightUnit} of pure fat.` : ' You are already in the ideal range — excellent!'}`
                     }
                   </p>
                 </div>
@@ -764,6 +863,94 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
                   : content.bfCategoryDescriptions.female[result.categoryKey === 'fitness' ? 'athletes' : result.categoryKey === 'essential' ? 'essential' : result.categoryKey === 'athletes' ? 'athletes' : result.categoryKey === 'obese' ? 'obese' : 'average']
                 }
               </p>
+            </motion.div>
+
+            {/* ── Requirement 2: HELPFUL TIPS RECTANGLE (مستطيل النصائح المفيدة والشاملة) ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.33 }}
+              className="p-6 md:p-8 rounded-[2.5rem] bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border-2 border-gold-500/40 shadow-2xl relative overflow-hidden space-y-6"
+            >
+              <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600" />
+              
+              <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
+                <div className="p-3 bg-gold-500/10 border border-gold-500/30 rounded-2xl text-gold-400">
+                  <Lightbulb className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-base md:text-lg font-black text-white flex items-center gap-2">
+                    <span>{isAr ? '💡 دليل النصائح التوجيهية الحصرية' : '💡 Comprehensive Actionable Tips Guide'}</span>
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    {isAr ? 'خطط عمل موجهة سريرياً بناءً على تركيب جسمك ونسبة دهونك' : 'Tailored action plan based on your body composition results'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Tip 1: Nutrition */}
+                <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl space-y-2 hover:border-gold-500/30 transition-all">
+                  <div className="flex items-center gap-2 text-gold-400 font-black text-xs uppercase tracking-wider">
+                    <Apple className="w-4 h-4 text-gold-500" />
+                    <span>{isAr ? '1. التغذية والماكروز المستهدفة' : '1. Target Nutrition Strategy'}</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                    {result.categoryKey === 'obese' || result.categoryKey === 'average'
+                      ? (isAr
+                        ? `اعتمد عجزاً حرارياً متدرجاً بمقدار ٣٠٠-٥٠٠ سعرة عن TDEE (${result.tdee} سعرة)، مع تناول بروتين لا يقل عن ${isImperial ? '0.9-1.0' : '2.0-2.2'} جرام لكل ${weightUnit} من الكتلة الصافية (${result.displayLeanBodyMass} ${weightUnit}) لحماية العضلات.`
+                        : `Maintain a 300-500 kcal deficit below your TDEE (${result.tdee} kcal). Set daily protein to ${isImperial ? '0.9-1.0' : '2.0-2.2'}g per ${weightUnit} of lean mass (${result.displayLeanBodyMass} ${weightUnit}).`)
+                      : (isAr
+                        ? `أنت في نطاق لياقة ممتاز! حافظ على سعرات الثبات (${result.tdee} سعرة) مع تدوير الكربوهيدرات (Carb Cycling) في أيام التمرين الثقيلة لتعزيز البناء العضلي الصافي.`
+                        : `You are in great shape! Stay near maintenance (${result.tdee} kcal) and cycle carbohydrates on heavy training days to support clean hypertrophy.`)
+                    }
+                  </p>
+                </div>
+
+                {/* Tip 2: Exercise */}
+                <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl space-y-2 hover:border-gold-500/30 transition-all">
+                  <div className="flex items-center gap-2 text-gold-400 font-black text-xs uppercase tracking-wider">
+                    <Dumbbell className="w-4 h-4 text-gold-500" />
+                    <span>{isAr ? '2. نظام التمرين والكارديو' : '2. Training & Cardio Focus'}</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                    {isAr
+                      ? `ركز على تمارين المقاومة الثقيلة (٣–٥ أيام أسبوعياً) كأولوية للحفاظ على الكتلة الصافية (${result.displayLeanBodyMass} ${weightUnit}). أضف ١٢٠–١٥٠ دقيقة كارديو منخفض الشدة (LISS) أسبوعياً لحرق الدهون دون إجهاد الجهاز العصبي.`
+                      : `Prioritize heavy resistance training (3–5 days/week) to preserve your lean mass (${result.displayLeanBodyMass} ${weightUnit}). Add 120-150 min of low-intensity cardio (LISS) weekly.`
+                    }
+                  </p>
+                </div>
+
+                {/* Tip 3: Recovery */}
+                <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl space-y-2 hover:border-gold-500/30 transition-all">
+                  <div className="flex items-center gap-2 text-gold-400 font-black text-xs uppercase tracking-wider">
+                    <Droplets className="w-4 h-4 text-gold-500" />
+                    <span>{isAr ? '3. الترطيب وهرمون الكورتيزول' : '3. Hydration & Cortisol Control'}</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                    {isAr
+                      ? 'اشرب ٣.٥–٤ ليتر ماء يومياً لتعزيز الأيض وإخراج السوائل المحتبسة. احرص على النوم ٧–٩ ساعات ليلاً لخفض هرمون الكورتيزول الذي يحفز تخزين الدهون في منطقة الخصر.'
+                      : 'Drink 3.5-4L of water daily to maintain metabolic efficiency. Sleep 7-9 hours to prevent cortisol spikes that promote abdominal fat storage.'
+                    }
+                  </p>
+                </div>
+
+                {/* Tip 4: Tracking */}
+                <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl space-y-2 hover:border-gold-500/30 transition-all">
+                  <div className="flex items-center gap-2 text-gold-400 font-black text-xs uppercase tracking-wider">
+                    <LineChart className="w-4 h-4 text-gold-500" />
+                    <span>{isAr ? '4. بروتوكول القياس والمتابعة' : '4. Weekly Measurement Protocol'}</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                    {isAr
+                      ? `لا تعتمد على الميزان فقط! قِس محيط الخصر بالشريط مرة كل ٧ أيام في الصباح على الريق. خروج الدهون الصافية يظهر في انكماش قياس الخصر بالـ ${lengthUnit} حتى لو ثبت الوزن.`
+                      : `Do not rely solely on the scale! Measure waist circumference every 7 days upon waking. Fat loss reflects in reduced waist ${lengthUnit} even when total weight stays flat.`
+                    }
+                  </p>
+                </div>
+
+              </div>
             </motion.div>
 
             {/* ── Action Buttons ── */}

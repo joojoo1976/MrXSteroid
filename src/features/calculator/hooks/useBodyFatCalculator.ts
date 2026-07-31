@@ -1,22 +1,31 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings } from '@/shared/types/types';
-import { convertValue, toMetric } from '../../../shared/lib/logic';
+import { convertValue, toMetric, toDisplayUnit, getWeightUnitLabel, getLengthUnitLabel } from '../../../shared/lib/logic';
 import { usePreferences } from '../../../context/PreferencesContext';
 
 export interface BodyFatResult {
   bodyFatPercentage: number;
-  bodyFatMass: number;
-  leanBodyMass: number;
+  bodyFatMass: number;   // metric kg
+  leanBodyMass: number;  // metric kg
   bmi: number;
   bmr: number;
   tdee: number;
   idealBodyFat: number;
   idealBodyFatMin: number;
   idealBodyFatMax: number;
-  kgToLose: number;
+  kgToLose: number;      // metric kg
   category: string;
   categoryKey: 'essential' | 'athletes' | 'fitness' | 'average' | 'obese';
+}
+
+/** Result enriched with live unit-system/language-aware display values. */
+export interface BodyFatDisplayResult extends BodyFatResult {
+  displayBodyFatMass: number;  // kg or lbs
+  displayLeanBodyMass: number; // kg or lbs
+  displayWeightToLose: number; // kg or lbs
+  weightUnit: string;          // 'كجم' | 'رطل' | 'kg' | 'lbs'
+  lengthUnit: string;          // 'سم' | 'بوصة' | 'cm' | 'in'
 }
 
 interface UseBodyFatCalculatorOptions {
@@ -62,7 +71,7 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
   const [isCalculating, setIsCalculating] = useState(false);
   const [ecosystemSynced, setEcosystemSynced] = useState(false);
 
-  // Unit conversion on toggle
+  // Unit conversion on toggle for inputs
   if (lastUnitSystem !== unitSystem) {
     setLastUnitSystem(unitSystem);
     if (baseWeight > 0) setWeight(convertValue(baseWeight, 'weight', unitSystem).toFixed(1));
@@ -71,6 +80,19 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
     if (baseHip > 0) setHip(convertValue(baseHip, 'length', unitSystem).toFixed(1));
     if (baseNeck > 0) setNeck(convertValue(baseNeck, 'length', unitSystem).toFixed(1));
   }
+
+  // Live unit/language-aware display metrics (pure derivation, no effect needed)
+  const displayResult = useMemo<BodyFatDisplayResult | null>(() => {
+    if (!result) return null;
+    return {
+      ...result,
+      displayBodyFatMass: toDisplayUnit(result.bodyFatMass, 'weight', unitSystem),
+      displayLeanBodyMass: toDisplayUnit(result.leanBodyMass, 'weight', unitSystem),
+      displayWeightToLose: toDisplayUnit(result.kgToLose, 'weight', unitSystem),
+      weightUnit: getWeightUnitLabel(unitSystem, isAr),
+      lengthUnit: getLengthUnitLabel(unitSystem, isAr),
+    };
+  }, [result, unitSystem, isAr]);
 
   const normalizeNum = (str: string) =>
     str
@@ -111,11 +133,11 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
       return false;
     }
     if (!baseWeight || baseWeight < 30 || baseWeight > 300) {
-      toast.error(isAr ? 'أدخل وزناً صحيحاً بين ٣٠ و٣٠٠ كجم' : 'Enter a valid weight');
+      toast.error(isAr ? 'أدخل وزناً صحيحاً' : 'Enter a valid weight');
       return false;
     }
     if (!baseHeight || baseHeight < 100 || baseHeight > 250) {
-      toast.error(isAr ? 'أدخل طولاً صحيحاً بين ١٠٠ و٢٥٠ سم' : 'Enter a valid height');
+      toast.error(isAr ? 'أدخل طولاً صحيحاً' : 'Enter a valid height');
       return false;
     }
     return true;
@@ -124,15 +146,15 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
   // Validate step 2
   const validateStep2 = (): boolean => {
     if (!baseWaist || baseWaist < 40 || baseWaist > 200) {
-      toast.error(isAr ? 'أدخل قياس خصر صحيح بين ٤٠ و٢٠٠ سم' : 'Enter a valid waist circumference');
+      toast.error(isAr ? 'أدخل قياس خصر صحيح' : 'Enter a valid waist circumference');
       return false;
     }
     if (!baseNeck || baseNeck < 20 || baseNeck > 80) {
-      toast.error(isAr ? 'أدخل قياس رقبة صحيح بين ٢٠ و٨٠ سم' : 'Enter a valid neck circumference');
+      toast.error(isAr ? 'أدخل قياس رقبة صحيح' : 'Enter a valid neck circumference');
       return false;
     }
     if (gender === 'female' && (!baseHip || baseHip < 50 || baseHip > 200)) {
-      toast.error(isAr ? 'أدخل قياس حوض صحيح بين ٥٠ و٢٠٠ سم' : 'Enter a valid hip circumference');
+      toast.error(isAr ? 'أدخل قياس حوض صحيح' : 'Enter a valid hip circumference');
       return false;
     }
     return true;
@@ -146,7 +168,7 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
 
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1) as 1 | 2 | 3);
 
-  const calculate = useCallback(() => {
+  const calculate = () => {
     const a = parseFloat(normalizeNum(age));
     const w = baseWeight;
     const h = baseHeight;
@@ -249,8 +271,8 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
       setIsCalculating(false);
       setStep(3);
       setTimeout(() => setEcosystemSynced(true), 1000);
-    }, 1600);
-  }, [age, baseWeight, baseHeight, baseWaist, baseHip, baseNeck, gender, activityLevel, content.bfCategories, isAr]);
+    }, 1400);
+  };
 
   const reset = () => {
     setStep(1);
@@ -396,6 +418,7 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
     activityLevel,
     setActivityLevel,
     result,
+    displayResult,
     isCalculating,
     ecosystemSynced,
     calculate,
