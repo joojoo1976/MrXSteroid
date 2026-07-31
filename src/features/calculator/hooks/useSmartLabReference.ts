@@ -1,85 +1,164 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ContentStrings } from '@/shared/types/types';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { usePreferences } from '../../../context/PreferencesContext';
+import { LAB_CATEGORIES, LAB_TESTS, LAB_UI } from '@/data/labReference';
+import { BilingualText, LabTestData, LabCategory } from '@/data/labReference';
+import { LabCategoryId } from '@/data/labReference.types';
+import {
+  LabUnitSystem,
+  convertLabValueSystem,
+  evaluateLabValue,
+  formatRange,
+  getActiveRange,
+  roundTo,
+} from '@/shared/lib/lab';
 
-interface UseSmartLabReferenceOptions {
-    content: ContentStrings;
+export type LabCategoryFilter = LabCategoryId | 'all';
+
+export interface LabAnalysisResult {
+  status: 'low' | 'normal' | 'high';
+  value: number;
+  ratio: number;
+  position: number;
+  range: { min: number; max: number; unit: string; decimals: number };
 }
 
-export const useSmartLabReference = ({ content }: UseSmartLabReferenceOptions) => {
-    const [search, setSearch] = useState('');
-    const [analyzingId, setAnalyzingId] = useState<string | null>(null);
-    const [value, setValue] = useState('');
-    const [activeCategory, setActiveCategory] = useState('all');
+export interface LabCategoryMeta extends LabCategory {
+  count: number;
+}
 
-    const filteredTests = useMemo(() => {
-        return content.labReference.tests.filter(test => {
-            const matchesSearch = test.name.toLowerCase().includes(search.toLowerCase()) ||
-                test.id.toLowerCase().includes(search.toLowerCase());
-            const matchesCategory = activeCategory === 'all' || test.category === activeCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [content.labReference.tests, search, activeCategory]);
+export interface UseSmartLabReferenceReturn {
+  t: (text: BilingualText) => string;
+  search: string;
+  setSearch: (val: string) => void;
+  activeCategory: LabCategoryFilter;
+  setActiveCategory: (category: LabCategoryFilter) => void;
+  categories: LabCategoryMeta[];
+  filteredTests: LabTestData[];
+  selectedId: string | null;
+  selectedTest: LabTestData | null;
+  openDetails: (id: string) => void;
+  closeDetails: () => void;
+  unitSystem: LabUnitSystem;
+  setUnitSystem: (system: LabUnitSystem) => void;
+  value: string;
+  setValue: (val: string) => void;
+  getAnalysis: () => LabAnalysisResult | null;
+  formatRangeFor: (test: LabTestData, system: LabUnitSystem) => string;
+}
 
-    const getAnalysis = useCallback((test: { min: number, max: number }) => {
+export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
+  const { unitSystem: prefUnitSystem, isRTL } = usePreferences();
+
+  const [search, setSearchState] = useState('');
+  const [activeCategory, setActiveCategoryState] = useState<LabCategoryFilter>('all');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [unitSystem, setUnitSystemState] = useState<LabUnitSystem>(
+    prefUnitSystem === 'imperial' ? 'imperial' : 'metric'
+  );
+  const [value, setValueState] = useState('');
+
+  const t = useCallback((text: BilingualText) => (isRTL ? text.ar : text.en), [isRTL]);
+
+  const categories = useMemo<LabCategoryMeta[]>(
+    () =>
+      LAB_CATEGORIES.map(cat => ({
+        ...cat,
+        count: LAB_TESTS.filter(test => test.category === cat.id).length,
+      })),
+    []
+  );
+
+  const filteredTests = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return LAB_TESTS.filter(test => {
+      if (activeCategory !== 'all' && test.category !== activeCategory) return false;
+      if (!q) return true;
+      const haystack = [
+        test.id,
+        test.name.en,
+        test.name.ar,
+        test.description.en,
+        test.description.ar,
+        ...test.keywords,
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [search, activeCategory]);
+
+  const selectedTest = useMemo(
+    () => LAB_TESTS.find(test => test.id === selectedId) ?? null,
+    [selectedId]
+  );
+
+  const formatRangeFor = useCallback(
+    (test: LabTestData, system: LabUnitSystem) => formatRange(test, system),
+    []
+  );
+
+  const getAnalysis = useCallback((): LabAnalysisResult | null => {
+    if (!selectedTest) return null;
+    const val = parseFloat(value);
+    if (Number.isNaN(val)) return null;
+    const evalResult = evaluateLabValue(val, unitSystem, selectedTest.range);
+    const active = getActiveRange(selectedTest, unitSystem);
+    return { ...evalResult, value: val, range: active };
+  }, [selectedTest, value, unitSystem]);
+
+  const setUnitSystem = useCallback(
+    (system: LabUnitSystem) => {
+      setUnitSystemState(prev => {
+        if (prev === system || !selectedTest) return system;
         const val = parseFloat(value);
-        if (isNaN(val)) return null;
-        if (val < test.min) return {
-            text: content.labReference.status.low,
-            color: 'text-blue-500',
-            bg: 'bg-blue-500/10',
-            border: 'border-blue-500/30',
-            shadow: 'shadow-blue-500/20',
-            icon: AlertCircle
-        };
-        if (val > test.max) return {
-            text: content.labReference.status.high,
-            color: 'text-red-500',
-            bg: 'bg-red-500/10',
-            border: 'border-red-500/30',
-            shadow: 'shadow-red-500/20',
-            icon: AlertCircle
-        };
-        return {
-            text: content.labReference.status.normal,
-            color: 'text-green-500',
-            bg: 'bg-green-500/10',
-            border: 'border-green-500/30',
-            shadow: 'shadow-green-500/20',
-            icon: CheckCircle2
-        };
-    }, [value, content.labReference.status]);
+        if (!Number.isNaN(val)) {
+          const converted = convertLabValueSystem(val, prev, system, selectedTest.range);
+          setValueState(String(roundTo(converted, 6)));
+        }
+        return system;
+      });
+      return system;
+    },
+    [selectedTest, value]
+  );
 
-    const handleSearchChange = useCallback((val: string) => {
-        setSearch(val);
-        setAnalyzingId(null);
-    }, []);
+  const setSearch = useCallback((val: string) => {
+    setSearchState(val);
+  }, []);
 
-    const handleCategoryChange = useCallback((category: string) => {
-        setActiveCategory(category);
-        setAnalyzingId(null);
-    }, []);
+  const setActiveCategory = useCallback((category: LabCategoryFilter) => {
+    setActiveCategoryState(category);
+  }, []);
 
-    const startAnalysis = useCallback((id: string) => {
-        setAnalyzingId(id);
-        setValue('');
-    }, []);
+  const openDetails = useCallback((id: string) => {
+    setSelectedId(id);
+    setValueState('');
+  }, []);
 
-    const closeAnalysis = useCallback(() => {
-        setAnalyzingId(null);
-    }, []);
+  const closeDetails = useCallback(() => {
+    setSelectedId(null);
+    setValueState('');
+  }, []);
 
-    return {
-        search,
-        setSearch: handleSearchChange,
-        analyzingId,
-        setAnalyzingId: startAnalysis,
-        closeAnalysis,
-        value,
-        setValue,
-        activeCategory,
-        setActiveCategory: handleCategoryChange,
-        filteredTests,
-        getAnalysis
-    };
+  return {
+    t,
+    search,
+    setSearch,
+    activeCategory,
+    setActiveCategory,
+    categories,
+    filteredTests,
+    selectedId,
+    selectedTest,
+    openDetails,
+    closeDetails,
+    unitSystem,
+    setUnitSystem,
+    value,
+    setValue: setValueState,
+    getAnalysis,
+    formatRangeFor,
+  };
 };
+
+export { LAB_UI };
