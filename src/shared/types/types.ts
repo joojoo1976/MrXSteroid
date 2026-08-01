@@ -139,8 +139,14 @@ export interface TimelinePhaseStats {
 
 export interface TimelinePhase {
   week: string;
+  /** Numeric start week — powers the live computation engine. */
+  weekStart: number;
+  /** Numeric end week — powers the live computation engine. */
+  weekEnd: number;
   title: string;
   shortDesc: string;
+  /** Premium marketing tagline shown under the title. */
+  tagline: string;
   iconKey: 'spark' | 'muscle' | 'trophy' | 'flag' | string;
   stats: TimelinePhaseStats;
   details: {
@@ -1169,6 +1175,23 @@ export interface ContentStrings {
     phaseLabel: string;
     chartTitle: string;
     chartSubtitle: string;
+    // Live computation engine labels
+    engineTitle: string;
+    engineSubtitle: string;
+    startWeightLabel: string;
+    bodyFatLabel: string;
+    trainingAgeLabel: string;
+    trainingNovice: string;
+    trainingIntermediate: string;
+    trainingAdvanced: string;
+    weeklyFatLoss: string;
+    weeklyMuscleGain: string;
+    cumulativeMuscle: string;
+    projectedFatPct: string;
+    metric: string;
+    imperial: string;
+    perWeek: string;
+    disclaimer: string;
   };
   timeUnits: {
     days: string;

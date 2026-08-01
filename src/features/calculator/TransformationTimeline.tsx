@@ -1,15 +1,29 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen, ShieldCheck } from 'lucide-react';
+import {
+    Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
+    ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
+    ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart,
+} from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useTransformationTimeline } from './hooks/useTransformationTimeline';
+import {
+    formatWeight,
+    clamp,
+    roundTo,
+    type TrainingAge,
+} from './lib/transformationEngine';
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Small presentational primitives
+// ═══════════════════════════════════════════════════════════════════════════
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
     <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50">
-        <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-500/10 rounded-lg text-zinc-500 group-hover/metric:scale-110 transition-all`}>
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-500/10 rounded-lg text-zinc-500 group-hover/metric:scale-110 transition-all">
             {icon}
         </div>
         <div className="flex-1 min-w-0">
@@ -21,6 +35,7 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
                 <motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: `${value}%` }}
+                    viewport={{ once: true }}
                     className={`h-full ${colorClass} rounded-full`}
                 />
             </div>
@@ -28,17 +43,99 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
     </div>
 );
 
+/** Neon silhouette — SVG kinetic micro-graphic representing muscle vs fat. */
+const KineticSilhouette: React.FC<{ musclePct: number; fatPct: number; isAr: boolean }> = ({ musclePct, fatPct, isAr }) => {
+    const muscle = clamp(musclePct, 5, 100);
+    const fat = clamp(fatPct, 5, 100);
+    return (
+        <div className="relative w-full max-w-[240px] mx-auto aspect-square" aria-hidden="true">
+            {/* Pulsing halo */}
+            <div className="absolute inset-0 rounded-full bg-gold-500/5 blur-2xl animate-pulse" />
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_0_18px_rgba(234,179,8,0.25)]">
+                <defs>
+                    <linearGradient id="muscleGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+                    <linearGradient id="fatGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.25" />
+                    </linearGradient>
+                </defs>
+
+                {/* Fat ring (shrinks as fat drops) */}
+                <circle
+                    cx="100" cy="100" r={30 + fat * 0.5}
+                    fill="none" stroke="url(#fatGrad)" strokeWidth="10"
+                    strokeDasharray={`${(100 - fat) * 1.9} 600`}
+                    strokeLinecap="round"
+                    className="transition-all duration-700"
+                />
+
+                {/* Muscle core (grows with hypertrophy) */}
+                <motion.circle
+                    cx="100" cy="100"
+                    r={18 + muscle * 0.22}
+                    fill="url(#muscleGrad)"
+                    initial={{ r: 20 }}
+                    animate={{ r: 18 + muscle * 0.22 }}
+                    transition={{ type: 'spring', stiffness: 60, damping: 14 }}
+                    className="opacity-90"
+                />
+
+                {/* Atomic nucleus */}
+                <circle cx="100" cy="100" r="6" fill="#fff" className="animate-pulse" />
+                <text x="100" y="196" textAnchor="middle" fontSize="9" fontWeight="800" fill="currentColor" className="text-zinc-400 dark:text-zinc-500">
+                    {isAr ? 'كتلة عضلية × نسبة دهون' : 'Muscle × Fat'}
+                </text>
+            </svg>
+        </div>
+    );
+};
+
+/** Glassmorphism stat tile for the live engine panel. */
+const EngineTile: React.FC<{
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    accentClass?: string;
+    trend?: 'up' | 'down';
+}> = ({ icon, label, value, accentClass = 'text-gold-500', trend }) => (
+    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5">
+        <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+            <span className={`flex items-center justify-center w-7 h-7 rounded-lg bg-white/70 dark:bg-white/10 ${accentClass}`}>{icon}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>
+        </div>
+        <span className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono">{value}</span>
+    </div>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Main component
+// ═══════════════════════════════════════════════════════════════════════════
+
 const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content }) => {
-    const { isRTL } = usePreferences();
+    const { isRTL, unitSystem, setUnitSystem } = usePreferences();
+    const isAr = isRTL;
+    const isMetric = unitSystem === 'metric';
+    const L = content.timelineLabels;
 
     const {
         activePhase,
         activeData,
+        activeAggregate,
         chartData,
         nextPhase,
         prevPhase,
         setPhase,
-        totalPhases
+        totalPhases,
+        startWeightKg,
+        setStartWeightKg,
+        startBodyFatPct,
+        setStartBodyFatPct,
+        trainingAge,
+        setTrainingAge,
     } = useTransformationTimeline({ content });
 
     const getPhaseIcon = (key: string) => {
@@ -51,15 +148,30 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         }
     };
 
+    // Live engine values formatted in the active unit system.
+    const startWeightDisplay = formatWeight(startWeightKg, unitSystem, isAr);
+    const activeMuscleGain = formatWeight(activeAggregate?.muscleGainKg ?? 0, unitSystem, isAr);
+    const activeFatPctEnd = `${roundTo(activeAggregate?.bodyFatPctEnd ?? startBodyFatPct, 1)}%`;
+    const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
+
+    const trainingAgeOptions: { id: TrainingAge; label: string }[] = [
+        { id: 'novice', label: L.trainingNovice },
+        { id: 'intermediate', label: L.trainingIntermediate },
+        { id: 'advanced', label: L.trainingAdvanced },
+    ];
+
     return (
-        <div className="max-w-[1400px] mx-auto px-4 md:px-6 relative py-12 md:py-20">
+        <section
+            id="transformation-timeline"
+            aria-labelledby="timeline-h2"
+            className="max-w-[1400px] mx-auto px-4 md:px-6 relative py-12 md:py-20"
+        >
             {/* Background Kinetic Orbs */}
             <div className="absolute -top-12 -inset-inline-start-24 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full animate-float-slow -z-10"></div>
             <div className="absolute -bottom-12 -inset-inline-end-24 w-96 h-96 bg-zinc-700/5 blur-[120px] rounded-full animate-float-slow -z-10 [animation-delay:-3s]"></div>
 
             {/* ── Section Header ── */}
             <div className="text-center mb-12 md:mb-16 relative">
-                {/* Badge */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -67,25 +179,29 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-widest mb-6"
                 >
                     <Activity className="w-3.5 h-3.5" />
-                    {isRTL ? 'علم البيولوجيا التطبيقي' : 'Applied Biology Science'}
+                    {isAr ? 'علم البيولوجيا التطبيقي' : 'Applied Biology Science'}
                 </motion.div>
 
                 <motion.h2
+                    id="timeline-h2"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white animate-text-flash tracking-tight"
                 >
                     {content.timelineTitle}
                 </motion.h2>
                 <div className="h-1 w-24 bg-gold-500 mx-auto mb-6 rounded-full animate-pulse"></div>
-                <p className="text-base md:text-xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto font-semibold leading-relaxed"><StyledBrandName text={content.timelineSubtitle} /></p>
+                <p className="text-base md:text-xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto font-semibold leading-relaxed">
+                    <StyledBrandName text={content.timelineSubtitle} />
+                </p>
 
                 {/* Quick stats row */}
                 <div className="flex flex-wrap justify-center gap-3 md:gap-6 mt-8">
                     {[
-                        { icon: <BookOpen className="w-4 h-4" />, label: isRTL ? '4 مراحل مفصلة' : '4 Detailed Phases' },
-                        { icon: <TrendingUp className="w-4 h-4" />, label: isRTL ? 'مخططات تفاعلية' : 'Interactive Charts' },
-                        { icon: <ShieldCheck className="w-4 h-4" />, label: isRTL ? 'نصائح الخبراء' : 'Expert Tips' },
+                        { icon: <BookOpen className="w-4 h-4" />, label: isAr ? '4 مراحل مفصلة' : '4 Detailed Phases' },
+                        { icon: <LineChart className="w-4 h-4" />, label: isAr ? 'توقعات حية' : 'Live Projections' },
+                        { icon: <ShieldCheck className="w-4 h-4" />, label: isAr ? 'نصائح الخبراء' : 'Expert Tips' },
                     ].map((stat, i) => (
                         <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-black text-zinc-600 dark:text-zinc-300">
                             <span className="text-gold-500">{stat.icon}</span>
@@ -95,7 +211,165 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 </div>
             </div>
 
-            {/* Dashboard Container */}
+            {/* ── Live Prediction Engine Panel ── */}
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border border-white/40 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-2xl p-5 md:p-8 mb-6 md:mb-8 shadow-2xl"
+            >
+                {/* Neon top edge */}
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-500/70 to-transparent" />
+
+                <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
+                    {/* Header + inputs */}
+                    <div className="flex-1 space-y-5">
+                        <div>
+                            <h3 className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white flex items-center gap-2">
+                                <Gauge className="w-5 h-5 text-gold-500 animate-pulse" />
+                                {L.engineTitle}
+                            </h3>
+                            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">{L.engineSubtitle}</p>
+                        </div>
+
+                        {/* Unit toggle */}
+                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800">
+                            <button
+                                type="button"
+                                onClick={() => setUnitSystem('metric')}
+                                aria-pressed={isMetric}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${isMetric ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                            >
+                                <Scale className="w-3.5 h-3.5" />
+                                {L.metric} · kg
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setUnitSystem('imperial')}
+                                aria-pressed={!isMetric}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${!isMetric ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                            >
+                                <Ruler className="w-3.5 h-3.5" />
+                                {L.imperial} · lbs
+                            </button>
+                        </div>
+
+                        {/* Start weight slider */}
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                    <Dumbbell className="w-3 h-3 text-gold-500" />
+                                    {L.startWeightLabel}
+                                </span>
+                                <span className="text-sm font-black text-zinc-900 dark:text-white font-mono">{startWeightDisplay}</span>
+                            </div>
+                            <input
+                                type="range"
+                                min={40}
+                                max={160}
+                                value={startWeightKg}
+                                onChange={(e) => setStartWeightKg(Number(e.target.value))}
+                                aria-label={L.startWeightLabel}
+                                className="w-full accent-gold-500"
+                            />
+                        </div>
+
+                        {/* Body fat slider */}
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                    <Percent className="w-3 h-3 text-gold-500" />
+                                    {L.bodyFatLabel}
+                                </span>
+                                <span className="text-sm font-black text-zinc-900 dark:text-white font-mono">{startBodyFatPct}%</span>
+                            </div>
+                            <input
+                                type="range"
+                                min={8}
+                                max={40}
+                                value={startBodyFatPct}
+                                onChange={(e) => setStartBodyFatPct(Number(e.target.value))}
+                                aria-label={L.bodyFatLabel}
+                                className="w-full accent-gold-500"
+                            />
+                        </div>
+
+                        {/* Training age selector */}
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mb-2">
+                                <Timer className="w-3 h-3 text-gold-500" />
+                                {L.trainingAgeLabel}
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                                {trainingAgeOptions.map((opt) => {
+                                    const selected = trainingAge === opt.id;
+                                    return (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            onClick={() => setTrainingAge(opt.id)}
+                                            aria-pressed={selected}
+                                            className={`px-3.5 py-2 rounded-xl text-[11px] font-black transition-all border ${
+                                                selected
+                                                    ? 'bg-gold-500/15 border-gold-500/40 text-gold-600 dark:text-gold-400 shadow-lg shadow-gold-500/10'
+                                                    : 'bg-white/60 dark:bg-white/5 border-white/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-gold-500/30'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Kinetic silhouette + live numbers */}
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                        <div className="col-span-2 flex justify-center">
+                            <KineticSilhouette
+                                musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
+                                fatPct={startBodyFatPct}
+                                isAr={isAr}
+                            />
+                        </div>
+                        <EngineTile
+                            icon={<Flame className="w-3.5 h-3.5" />}
+                            label={L.weeklyFatLoss}
+                            value={activeFatLossRate}
+                            accentClass="text-orange-500"
+                            trend="down"
+                        />
+                        <EngineTile
+                            icon={<Droplet className="w-3.5 h-3.5" />}
+                            label={L.projectedFatPct}
+                            value={activeFatPctEnd}
+                            accentClass="text-blue-500"
+                            trend="down"
+                        />
+                        <EngineTile
+                            icon={<BicepsFlexed className="w-3.5 h-3.5" />}
+                            label={L.weeklyMuscleGain}
+                            value={activeMuscleGain}
+                            accentClass="text-purple-500"
+                            trend="up"
+                        />
+                        <EngineTile
+                            icon={<TrendingUp className="w-3.5 h-3.5" />}
+                            label={L.cumulativeMuscle}
+                            value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
+                            accentClass="text-gold-500"
+                            trend="up"
+                        />
+                    </div>
+                </div>
+
+                <p className="mt-5 text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex items-center gap-1.5">
+                    <ShieldCheck className="w-3 h-3 text-green-500 shrink-0" />
+                    {L.disclaimer}
+                </p>
+            </motion.div>
+
+            {/* ── Dashboard Container ── */}
             <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
 
                 {/* Vertical Sidebar (Weeks Selection) */}
@@ -108,14 +382,14 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     <motion.div
                         className="absolute block lg:hidden top-1/2 -translate-y-1/2 h-1 w-24 bg-gradient-to-r from-transparent via-white to-transparent blur-md z-0"
                         animate={{ left: ['-20%', '120%'] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                     />
 
                     {/* Pulsing Line Effect (Desktop Vertical) */}
                     <motion.div
                         className="absolute hidden lg:block left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-transparent via-white to-transparent blur-md z-0"
                         animate={{ top: ['-20%', '120%'] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                     />
 
                     {content.timelinePhases.map((phase, idx) => {
@@ -129,7 +403,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl relative overflow-hidden ${isActive ? 'bg-zinc-900 dark:bg-white text-gold-500 scale-110 ring-4 ring-gold-500/20' : isCompleted ? 'bg-gold-500 text-black' : 'bg-white dark:bg-zinc-900 text-zinc-400 border-2 border-zinc-200 dark:border-zinc-800'}`}>
+                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl relative overflow-hidden ${
+                                    isActive
+                                        ? 'bg-zinc-900 dark:bg-white text-gold-500 scale-110 ring-4 ring-gold-500/20 shadow-[0_0_25px_-5px_rgba(234,179,8,0.6)]'
+                                        : isCompleted
+                                            ? 'bg-gold-500 text-black'
+                                            : 'bg-white dark:bg-zinc-900 text-zinc-400 border-2 border-zinc-200 dark:border-zinc-800'
+                                }`}>
                                     {getPhaseIcon(phase.iconKey)}
                                     <AnimatePresence>
                                         {isActive && (
@@ -157,6 +437,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         className="bg-white/90 dark:bg-background/90 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col min-h-[400px]"
                     >
                         <div className="absolute top-0 inset-inline-end-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
@@ -165,19 +446,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             <div>
                                 <h3 className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-gold-500 animate-pulse" />
-                                    {content.timelineLabels.chartTitle}
+                                    {L.chartTitle}
                                 </h3>
-                                <p className="text-xs font-bold text-zinc-500 mt-0.5 uppercase tracking-widest">{content.timelineLabels.chartSubtitle}</p>
+                                <p className="text-xs font-bold text-zinc-500 mt-0.5 uppercase tracking-widest">{L.chartSubtitle}</p>
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                                 {[
-                                    { label: content.timelineLabels.strength, color: 'red-500' },
-                                    { label: content.timelineLabels.hypertrophy, color: 'purple-500' },
-                                    { label: content.timelineLabels.water, color: 'blue-500' },
-                                    { label: content.timelineLabels.fatLoss, color: 'orange-500' },
-                                    { label: content.timelineLabels.mood, color: 'green-500' }
+                                    { label: L.strength, color: 'red-500' },
+                                    { label: L.hypertrophy, color: 'purple-500' },
+                                    { label: L.water, color: 'blue-500' },
+                                    { label: L.fatLoss, color: 'orange-500' },
+                                    { label: L.mood, color: 'green-500' },
                                 ].map((item, i) => (
-                                    <div key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase`}>
+                                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase">
                                         <div className={`w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
                                         {item.label}
                                     </div>
@@ -232,11 +513,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             fontWeight: 'bold'
                                         }}
                                     />
-                                    <Area name={content.timelineLabels.strength} type="monotone" dataKey="strength" stackId="1" stroke="#ef4444" fillOpacity={1} fill="url(#colorStrength)" strokeWidth={2} />
-                                    <Area name={content.timelineLabels.hypertrophy} type="monotone" dataKey="hypertrophy" stackId="1" stroke="#a855f7" fillOpacity={1} fill="url(#colorHypertrophy)" strokeWidth={2} />
-                                    <Area name={content.timelineLabels.water} type="monotone" dataKey="waterRetention" stackId="1" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2} />
-                                    <Area name={content.timelineLabels.fatLoss} type="monotone" dataKey="fatLoss" stackId="1" stroke="#f97316" fillOpacity={1} fill="url(#colorFat)" strokeWidth={2} />
-                                    <Area name={content.timelineLabels.mood} type="monotone" dataKey="mood" stackId="1" stroke="#22c55e" fillOpacity={1} fill="url(#colorMood)" strokeWidth={2} />
+                                    <Area name={L.strength} type="monotone" dataKey="strength" stackId="1" stroke="#ef4444" fillOpacity={1} fill="url(#colorStrength)" strokeWidth={2} />
+                                    <Area name={L.hypertrophy} type="monotone" dataKey="hypertrophy" stackId="1" stroke="#a855f7" fillOpacity={1} fill="url(#colorHypertrophy)" strokeWidth={2} />
+                                    <Area name={L.water} type="monotone" dataKey="waterRetention" stackId="1" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2} />
+                                    <Area name={L.fatLoss} type="monotone" dataKey="fatLoss" stackId="1" stroke="#f97316" fillOpacity={1} fill="url(#colorFat)" strokeWidth={2} />
+                                    <Area name={L.mood} type="monotone" dataKey="mood" stackId="1" stroke="#22c55e" fillOpacity={1} fill="url(#colorMood)" strokeWidth={2} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -247,7 +528,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         key={activePhase}
                         initial={{ opacity: 0, x: isRTL ? -30 : 30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 120 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 120 }}
                         className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[500px]"
                     >
                         {/* Stats Header */}
@@ -269,11 +550,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             </div>
 
                             <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
-                                <MetricBar label={content.timelineLabels.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
-                                <MetricBar label={content.timelineLabels.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
-                                <MetricBar label={content.timelineLabels.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
-                                <MetricBar label={content.timelineLabels.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-2.5 h-2.5" />} />
-                                <MetricBar label={content.timelineLabels.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-2.5 h-2.5" />} />
+                                <MetricBar label={L.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
+                                <MetricBar label={L.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
+                                <MetricBar label={L.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
+                                <MetricBar label={L.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-2.5 h-2.5" />} />
+                                <MetricBar label={L.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-2.5 h-2.5" />} />
                             </div>
                         </div>
 
@@ -286,7 +567,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <div className="ps-6 group-hover/item:ps-8 transition-all">
                                     <h4 className="text-xs md:text-sm font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                         <Activity className="w-4 h-4" />
-                                        {content.timelineLabels.biologicalTitle}
+                                        {L.biologicalTitle}
                                     </h4>
                                     <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
                                         <StyledBrandName text={activeData.details.biological} />
@@ -300,7 +581,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <div className="ps-6 group-hover/item:ps-8 transition-all">
                                     <h4 className="text-xs md:text-sm font-black text-purple-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                         <Brain className="w-4 h-4" />
-                                        {content.timelineLabels.feelingTitle}
+                                        {L.feelingTitle}
                                     </h4>
                                     <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
                                         <StyledBrandName text={activeData.details.feeling} />
@@ -315,26 +596,24 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 transition={{ delay: 0.3 }}
                                 className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-50 text-white dark:text-black p-5 md:p-7 rounded-2xl shadow-2xl relative overflow-hidden ring-2 ring-gold-500/30 group/action"
                             >
-                                {/* Shimmer */}
                                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover/action:opacity-100 transition-opacity duration-500 pointer-events-none" />
                                 <h4 className="text-xs md:text-sm font-black text-gold-400 dark:text-gold-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                     <Zap className="w-4 h-4 fill-gold-400" />
-                                    {content.timelineLabels.actionTitle}
+                                    {L.actionTitle}
                                 </h4>
                                 <p className="text-base md:text-lg font-black leading-tight italic text-white dark:text-black">
                                     <StyledBrandName text={activeData.details.action} />
                                 </p>
 
-                                {/* Expert badge */}
                                 <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
                                     <ShieldCheck className="w-2.5 h-2.5" />
-                                    {isRTL ? 'نصيحة الخبير' : 'Expert Tip'}
+                                    {isAr ? 'نصيحة الخبير' : 'Expert Tip'}
                                 </div>
                             </motion.div>
                         </div>
 
                         <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between mt-auto">
-                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{content.timelineLabels.phaseLabel} {activePhase + 1} / {totalPhases}</span>
+                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{L.phaseLabel} {activePhase + 1} / {totalPhases}</span>
                             <div className="flex gap-2">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -357,7 +636,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </motion.div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 };
 
