@@ -13,8 +13,9 @@ import { ContentStrings, Language, PricingTier, ProductVariant } from '@/shared/
 import { cn } from '../../shared/lib/utils';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
-import { useCheckout, PaymobMethod, RegionOption } from '../../features/checkout/hooks/useCheckout';
-import { WORLD_COUNTRIES, EGYPT_GOVERNORATES, CountryOption } from '../../shared/lib/locationData';
+import { useCheckout } from '../../features/checkout/hooks/useCheckout';
+import { WORLD_COUNTRIES, EGYPT_GOVERNORATES } from '../../shared/lib/locationData';
+import { PhoneInput } from '../../shared/ui/PhoneInput';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -264,27 +265,15 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 <span>{isAr ? "رقم الموبايل الأساسي للتواصل" : "Primary Phone Number"}</span>
                                 <span className="text-[10px] text-gold-500 font-black">{isAr ? "(إجباري)" : "(Required)"}</span>
                             </Label>
-                            <div className="flex gap-2">
-                                <select
-                                    {...register("countryCode")}
-                                    className="w-24 px-2 h-10 rounded-md bg-black/60 border border-zinc-800 text-gold-500 font-mono text-xs focus:border-gold-500 appearance-none text-center font-bold"
-                                >
-                                    {WORLD_COUNTRIES.map(c => (
-                                        <option key={`p1-${c.code}`} value={c.dialCode}>
-                                            {c.flag} {c.dialCode}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="relative flex-1">
-                                    <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
-                                    <Input
-                                        {...register("phoneNumber")}
-                                        type="tel"
-                                        className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 text-sm font-mono", errors.phoneNumber && "border-red-500")}
-                                        placeholder="01012345678"
-                                    />
-                                </div>
-                            </div>
+                            <PhoneInput
+                                value={watch('phoneNumber')}
+                                onChange={(v) => setValue('phoneNumber', v, { shouldValidate: true })}
+                                countryCode={watch('countryCode')}
+                                onCountryChange={(code) => setValue('countryCode', code, { shouldValidate: true })}
+                                locale={isAr ? 'ar' : 'en'}
+                                error={!!errors.phoneNumber}
+                                placeholder="01012345678"
+                            />
                             {errors.phoneNumber && <p className="text-xs text-red-500 font-bold">{errors.phoneNumber.message}</p>}
                         </div>
 
@@ -294,27 +283,15 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 <span>{isAr ? "رقم موبايل إضافي (ضروري)" : "Secondary Phone (Required)"}</span>
                                 <span className="text-[10px] text-amber-400 font-black">{isAr ? "(للضرورة)" : "(Backup)"}</span>
                             </Label>
-                            <div className="flex gap-2">
-                                <select
-                                    {...register("secondaryCountryCode")}
-                                    className="w-24 px-2 h-10 rounded-md bg-black/60 border border-zinc-800 text-gold-500 font-mono text-xs focus:border-gold-500 appearance-none text-center font-bold"
-                                >
-                                    {WORLD_COUNTRIES.map(c => (
-                                        <option key={`p2-${c.code}`} value={c.dialCode}>
-                                            {c.flag} {c.dialCode}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="relative flex-1">
-                                    <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500 text-zinc-500" />
-                                    <Input
-                                        {...register("secondaryPhoneNumber")}
-                                        type="tel"
-                                        className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 text-sm font-mono", errors.secondaryPhoneNumber && "border-red-500")}
-                                        placeholder="01187654321"
-                                    />
-                                </div>
-                            </div>
+                            <PhoneInput
+                                value={watch('secondaryPhoneNumber')}
+                                onChange={(v) => setValue('secondaryPhoneNumber', v, { shouldValidate: true })}
+                                countryCode={watch('secondaryCountryCode')}
+                                onCountryChange={(code) => setValue('secondaryCountryCode', code, { shouldValidate: true })}
+                                locale={isAr ? 'ar' : 'en'}
+                                error={!!errors.secondaryPhoneNumber}
+                                placeholder="01187654321"
+                            />
                             {errors.secondaryPhoneNumber && <p className="text-xs text-red-500 font-bold">{errors.secondaryPhoneNumber.message}</p>}
                         </div>
                     </div>
