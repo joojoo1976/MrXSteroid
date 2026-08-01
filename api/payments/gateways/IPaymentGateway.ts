@@ -30,6 +30,8 @@ export interface CreateInvoiceParams {
 export interface CreateInvoiceResult {
     redirectUrl: string;
     externalReferenceId: string;
+    /** Embedded-flow client secret (e.g. Stripe PaymentIntent client_secret). Present when no redirect is required. */
+    clientSecret?: string;
 }
 
 export interface WebhookVerificationResult {
@@ -56,6 +58,13 @@ export interface IPaymentGateway {
      * The gateway should NOT create the Supabase invoice record — that's done by the API endpoint.
      */
     createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResult>;
+
+    /**
+     * Create a PaymentIntent (embedded flow) and return a client secret.
+     * The gateway should NOT create the Supabase invoice record — that's done by the API endpoint.
+     * Only gateways supporting embedded payment elements implement this.
+     */
+    createPaymentIntent?(params: CreateInvoiceParams): Promise<CreateInvoiceResult>;
 
     /**
      * Verify the authenticity of a webhook/callback request.

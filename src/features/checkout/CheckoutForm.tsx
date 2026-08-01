@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle,
-    MapPin, Target, Truck, CheckCircle2, Smartphone, Store, Globe, Phone
+    MapPin, Target, Truck, CheckCircle2, Smartphone, Store, Globe, Phone, Zap
 } from 'lucide-react';
 import { Button } from '../../shared/ui/button';
 import { Input } from '../../shared/ui/input';
@@ -16,6 +16,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
 import { WORLD_COUNTRIES, EGYPT_GOVERNORATES } from '../../shared/lib/locationData';
 import { PhoneInput } from '../../shared/ui/PhoneInput';
+import { env } from '../../config/env';
+import { StripePaymentElement, type StripePaymentElementHandle } from './StripePaymentElement';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -47,6 +49,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     onShippingChange,
     onDiscountChange,
     totalAmount,
+    onSuccess,
     openLegal
 }) => {
     const { unitSystem, language: prefLang, formatPrice } = usePreferences();
@@ -58,8 +61,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const {
         form: { register, watch, setValue, formState: { errors } },
         isProcessing,
+        setIsProcessing,
         isRedirecting,
         paymentError,
+        setPaymentError,
         shippingProviders,
         isLoadingShipping,
         promoCode,
@@ -77,6 +82,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         paymobMethod,
         setPaymobMethod,
         isEg,
+        stripeClientSecret,
+        stripeInvoiceId,
+        isStripeReady,
+        setIsStripeReady,
     } = useCheckout({
         content,
         lang,
@@ -89,6 +98,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         userEmail: user?.email,
         userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name
     });
+
+    const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
+    const stripePublishableKey = env.STRIPE_PUBLISHABLE_KEY || '';
+    const isStripeSelected = paymobMethod === 'stripe';
 
     // Auto-fill authenticated user data
     useEffect(() => {
@@ -779,6 +792,68 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         {paymobMethod === 'paypal' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
                                     </div>
                                 </motion.div>
+
+                                {/* Option 2: Link by Stripe (embedded PaymentElement) */}
+                                <motion.div
+                                    id="checkout-method-stripe"
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('stripe')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'stripe'
+                                            ? "border-[#635bff] bg-[#635bff]/10 shadow-[0_0_20px_rgba(99,91,255,0.2)] ring-1 ring-[#635bff]/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'stripe' ? "bg-[#635bff] text-white font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                            <Zap className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "بطاقة دولية / Link by Stripe" : "Card / Link by Stripe"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "دفع مضمّن آمن بدون إعادة توجيه — PCI-DSS" : "Secure embedded checkout — no redirect, PCI-DSS"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-[#635bff] bg-[#635bff]/10 px-2 py-0.5 rounded-full border border-[#635bff]/20">
+                                            Stripe
+                                        </span>
+                                        {paymobMethod === 'stripe' && <CheckCircle2 className="w-5 h-5 text-[#635bff]" />}
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {/* Stripe PaymentElement — shown after client secret is generated */}
+                        {isStripeSelected && (
+                            <div id="checkout-stripe-element" className="pt-2 border-t border-zinc-800">
+                                {stripeClientSecret ? (
+                                    stripePublishableKey ? (
+                                        <StripePaymentElement
+                                            ref={stripePaymentRef}
+                                            clientSecret={stripeClientSecret}
+                                            publishableKey={stripePublishableKey}
+                                            locale={isAr ? 'ar' : 'en'}
+                                            successUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/success?txn=${stripeInvoiceId || ''}`}
+                                            onReady={() => setIsStripeReady(true)}
+                                            onError={(msg) => {
+                                                setPaymentError(isAr ? `فشل الدفع: ${msg}` : `Payment failed: ${msg}`);
+                                            }}
+                                        />
+                                    ) : (
+                                        <p className="text-xs text-red-400 font-bold">
+                                            {isAr ? "Stripe غير مكوّن. أضف VITE_STRIPE_PUBLISHABLE_KEY في المتغيرات البيئية." : "Stripe is not configured. Add VITE_STRIPE_PUBLISHABLE_KEY to environment variables."}
+                                        </p>
+                                    )
+                                ) : (
+                                    <p className="text-xs text-zinc-400 font-medium">
+                                        {isAr ? "اضغط زر الدفع أدناه لتجهيز جلسة دفع آمنة عبر Stripe." : "Press the pay button below to start a secure Stripe checkout session."}
+                                    </p>
+                                )}
                             </div>
                         )}
 
@@ -786,9 +861,13 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3 mt-4">
                             <Lock className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
                             <p className="text-xs text-green-400 font-medium leading-relaxed">
-                                {isAr
-                                    ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
-                                    : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page."}
+                                {isStripeSelected
+                                    ? (isAr
+                                        ? "مدفوعات Stripe محمية بتشفير 256-bit SSL ومتوافقة مع PCI-DSS Level 1. لا يتم تخزين بيانات بطاقتك على خوادمنا إطلاقاً."
+                                        : "Payments are secured via Stripe 256-bit SSL encryption and PCI-DSS Level 1 compliance. Your card details never touch our servers.")
+                                    : (isAr
+                                        ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
+                                        : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page.")}
                             </p>
                         </div>
                     </CardContent>
@@ -818,12 +897,41 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         </div>
 
-                        {/* Paymob Submit Button */}
+                        {/* Paymob / Stripe Submit Button */}
                         <Button
                             id="checkout-submit-btn"
                             type="submit"
-                            disabled={isProcessing || isRedirecting}
-                            className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.25)] transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70"
+                            disabled={isProcessing || isRedirecting || (isStripeSelected && !!stripeClientSecret && !isStripeReady)}
+                            onClick={(e) => {
+                                // Stripe embedded flow: when a client secret is already ready,
+                                // confirm the payment via PaymentElement instead of re-submitting the form.
+                                if (isStripeSelected && stripeClientSecret) {
+                                    e.preventDefault();
+                                    if (!stripePaymentRef.current) {
+                                        setPaymentError(isAr ? "عنصر الدفع لم يكتمل تحميله بعد" : "Payment element not ready yet");
+                                        return;
+                                    }
+                                    setPaymentError(null);
+                                    setIsProcessing(true);
+                                    stripePaymentRef.current.confirmPayment()
+                                        .then(({ success, error }) => {
+                                            setIsProcessing(false);
+                                            if (!success) {
+                                                setPaymentError(error || (isAr ? "فشل تأكيد الدفع" : "Payment confirmation failed"));
+                                            } else {
+                                                onSuccess?.();
+                                            }
+                                        })
+                                        .catch((err: Error) => {
+                                            setIsProcessing(false);
+                                            setPaymentError(err.message || (isAr ? "فشل تأكيد الدفع" : "Payment confirmation failed"));
+                                        });
+                                }
+                            }}
+                            className={cn(
+                                "w-full py-8 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.25)] transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70",
+                                isStripeSelected ? "bg-[#635bff] hover:bg-[#7a73ff] shadow-[0_0_30px_rgba(99,91,255,0.35)]" : "bg-gold-500 hover:bg-gold-400"
+                            )}
                         >
                             <span className="flex items-center justify-center gap-2">
                                 {isProcessing || isRedirecting ? (
@@ -832,11 +940,19 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     <Lock className="w-5 h-5" />
                                 )}
                                 <span>
-                                    {isRedirecting
-                                        ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting to Paymob...")
-                                        : isProcessing
-                                            ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
-                                            : `${content.payNow} ${formattedTotal}`}
+                                    {isStripeSelected
+                                        ? (isRedirecting
+                                            ? (isAr ? "جاري التحويل..." : "Redirecting...")
+                                            : isProcessing
+                                                ? (isAr ? "جاري معالجة الدفع..." : "Processing Payment...")
+                                                : isStripeReady
+                                                    ? `${content.payNow} ${formattedTotal}`
+                                                    : (isAr ? "تجهيز جلسة دفع آمنة..." : "Start Secure Checkout"))
+                                        : isRedirecting
+                                            ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting to Paymob...")
+                                            : isProcessing
+                                                ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
+                                                : `${content.payNow} ${formattedTotal}`}
                                 </span>
                             </span>
                         </Button>

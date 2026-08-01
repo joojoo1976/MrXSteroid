@@ -40,6 +40,7 @@ export interface CreateInvoiceResponse {
     success: boolean;
     invoiceId?: string;
     redirectUrl?: string;
+    clientSecret?: string;
     gateway?: string;
     error?: string;
     details?: Record<string, string[]>;
@@ -180,12 +181,14 @@ class PaymentService {
                 invoiceId: data.invoiceId,
                 gateway: data.gateway,
                 redirectUrl: data.redirectUrl,
+                hasClientSecret: !!data.clientSecret,
             });
 
             return {
                 success: true,
                 invoiceId: data.invoiceId as string | undefined,
                 redirectUrl: data.redirectUrl as string | undefined,
+                clientSecret: data.clientSecret as string | undefined,
                 gateway: data.gateway as string | undefined,
             };
         } catch (error) {

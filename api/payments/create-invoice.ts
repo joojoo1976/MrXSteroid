@@ -125,11 +125,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Determine if user is explicitly requesting Paymob PayPal (outside Egypt flow)
         const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
         const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
+        const isStripeEmbedded = input.paymentMethod === 'stripe';
         
-        // Use Paymob factory gateway for EG country OR when Paymob method explicitly selected
-        let gateway;
+        // Use Paymob factory gateway for EG country OR when Paymob method explicitly selected.
+        // Stripe embedded flow (Link by Stripe) always routes through Stripe regardless of country.
+        let gateway: import('./gateways/IPaymentGateway.js').IPaymentGateway;
         let gatewayName: string;
-        if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
+        if (isStripeEmbedded) {
+            const { StripeGateway } = await import('./gateways/StripeGateway.js');
+            gateway = new StripeGateway();
+            gatewayName = 'STRIPE';
+        } else if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
             const { PaymobGateway } = await import('./gateways/PaymobGateway.js');
             gateway = new PaymobGateway();
             gatewayName = 'PAYMOB';
@@ -143,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Determine currency and amount based on gateway/region
         const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
-        const currency = (input.paymentMethod === 'paypal') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
+        const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
         const amount = isEgypt
             ? TIER_PRICING[input.tierId].egp
             : TIER_PRICING[input.tierId].usd;
@@ -175,8 +181,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const invoiceId = invoice.id;
         console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}`);
 
-        // ─── CALL GATEWAY TO GET REDIRECT URL ────────────────────────────
-        const result = await gateway.createInvoice({
+        // ─── CALL GATEWAY TO GET REDIRECT URL OR CLIENT SECRET ──────────
+        const gatewayParams = {
             userId: effectiveUserId,
             invoiceId,
             tierId: input.tierId,
@@ -191,7 +197,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 phoneNumber: input.phoneNumber,
                 ...input.metadata,
             },
-        });
+        };
+
+        const result = typeof gateway.createPaymentIntent === 'function'
+            ? await gateway.createPaymentIntent(gatewayParams)
+            : await gateway.createInvoice(gatewayParams);
 
         // ─── UPDATE INVOICE WITH GATEWAY REFERENCE ───────────────────────
         const { error: updateError } = await supabase
@@ -214,6 +224,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             success: true,
             invoiceId,
             redirectUrl: result.redirectUrl,
+            clientSecret: result.clientSecret,
             gateway: gatewayName.toLowerCase(),
         });
 

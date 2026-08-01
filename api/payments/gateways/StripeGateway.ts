@@ -128,6 +128,42 @@ export class StripeGateway implements IPaymentGateway {
     }
 
     /**
+     * Create a Stripe PaymentIntent (embedded flow with PaymentElement + Link).
+     *
+     * Uses `automatic_payment_methods: { enabled: true }` so Stripe Link, cards,
+     * and other configured methods are offered automatically.
+     */
+    async createPaymentIntent(params: CreateInvoiceParams): Promise<CreateInvoiceResult> {
+        const { invoiceId, tierId, amount, currency, metadata } = params;
+        const stripe = getStripe();
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(amount * 100), // Stripe expects cents
+            currency: currency.toLowerCase(),
+            automatic_payment_methods: { enabled: true },
+            description: `Mr. X Steroid — ${tierId === 'pdf' ? 'PDF Edition' : tierId === 'paperback' ? 'Paperback Edition' : tierId} (Invoice ${invoiceId})`,
+            metadata: {
+                invoice_id: invoiceId,
+                tier_id: tierId,
+                user_id: params.userId || '',
+                full_name: metadata.fullName,
+            },
+        });
+
+        if (!paymentIntent.client_secret) {
+            throw new Error('Stripe did not return a PaymentIntent client secret');
+        }
+
+        console.log(`✅ [Stripe] PaymentIntent created: ${paymentIntent.id} for invoice: ${invoiceId}`);
+
+        return {
+            redirectUrl: '',
+            externalReferenceId: paymentIntent.id,
+            clientSecret: paymentIntent.client_secret,
+        };
+    }
+
+    /**
      * Verify Stripe Webhook using constructEvent
      * 
      * Stripe provides a robust signature verification via constructEvent.
@@ -155,14 +191,29 @@ export class StripeGateway implements IPaymentGateway {
             return { valid: false, errorMessage };
         }
 
+        const readInvoiceId = (obj: Record<string, unknown>) => {
+            const metadata = (obj.metadata as Record<string, string>) || {};
+            return metadata.invoice_id || (obj.client_reference_id as string) || undefined;
+        };
+
         // Handle relevant event types
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             return {
                 valid: true,
-                invoiceId: session.client_reference_id || session.metadata?.invoice_id || undefined,
+                invoiceId: readInvoiceId(session as unknown as Record<string, unknown>) || session.client_reference_id || session.metadata?.invoice_id || undefined,
                 status: session.payment_status === 'paid' ? 'success' : 'failed',
                 externalReferenceId: session.id,
+            };
+        }
+
+        if (event.type === 'payment_intent.succeeded') {
+            const pi = event.data.object as Stripe.PaymentIntent;
+            return {
+                valid: true,
+                invoiceId: readInvoiceId(pi as unknown as Record<string, unknown>) || pi.metadata?.invoice_id || undefined,
+                status: 'success',
+                externalReferenceId: pi.id,
             };
         }
 
@@ -170,7 +221,7 @@ export class StripeGateway implements IPaymentGateway {
             const obj = event.data.object as unknown as Record<string, unknown>;
             return {
                 valid: true,
-                invoiceId: (obj.client_reference_id as string) || (obj.metadata as Record<string, string>)?.invoice_id,
+                invoiceId: readInvoiceId(obj),
                 status: 'failed',
                 externalReferenceId: obj.id as string,
                 errorMessage: 'Payment failed or session expired',

@@ -26,6 +26,9 @@ const envSchema = z.object({
     PAYMENT_SUCCESS_URL: z.string().default(`${typeof window !== 'undefined' ? window.location.origin : ''}/success`),
     PAYMENT_CANCEL_URL: z.string().default(`${typeof window !== 'undefined' ? window.location.origin : ''}/cancel`),
 
+    // Stripe (Link by Stripe / PaymentElement — client-side publishable key)
+    STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+
     // App Config
     MODE: z.enum(['development', 'production', 'test']).default('development'),
     SITE_URL: z.string().url().optional().default('https://mrxsteroid.vercel.app'),
@@ -47,6 +50,7 @@ const parseEnv = () => {
         PAYMOB_WALLET_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_WALLET_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_WALLET_INTEGRATION_ID || '5792309',
         PAYMOB_KIOSK_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_KIOSK_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_KIOSK_INTEGRATION_ID || '5792311',
         PAYMOB_PAYPAL_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_PAYPAL_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_PAYPAL_INTEGRATION_ID || '5792310',
+        STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
         SPACEREMIT_CALLBACK_URL: import.meta.env.VITE_SPACEREMIT_CALLBACK_URL,
         PAYMENT_SUCCESS_URL: import.meta.env.VITE_PAYMENT_SUCCESS_URL,
         PAYMENT_CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL,

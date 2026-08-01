@@ -48,13 +48,13 @@ export interface useCheckoutOptions {
     userName?: string;
 }
 
-export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal';
+export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, onDiscountChange, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
-    const { isEgypt: isEgRegion, countryCode: vCountry } = useRegion();
+    const { isEgypt: isEgRegion } = useRegion();
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
@@ -84,6 +84,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isCardElementReady, setIsCardElementReady] = useState(false);
     const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<'embedded' | 'redirect'>('redirect');
+
+    // Stripe (Link by Stripe) embedded flow state
+    const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+    const [stripeInvoiceId, setStripeInvoiceId] = useState<string | null>(null);
+    const [isStripeReady, setIsStripeReady] = useState(false);
 
     const isAr = lang === 'ar';
     const isPhysical = productVariant !== 'digital';
@@ -155,12 +160,24 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const selectedCountry = form.watch('country');
     const selectedShippingId = form.watch('shippingProvider');
 
+    // Reset Stripe embedded state whenever the payment method changes
+    useEffect(() => {
+        if (paymobMethod !== 'stripe') {
+            setStripeClientSecret(null);
+            setStripeInvoiceId(null);
+            setIsStripeReady(false);
+        }
+    }, [paymobMethod]);
+
     // Handle Region Toggle Change
     const handleRegionChange = (newRegion: RegionOption) => {
         setRegionOption(newRegion);
         const isEgyptRegion = newRegion === 'EG';
         form.setValue('country', isEgyptRegion ? 'EG' : 'US');
         setPaymobMethod(isEgyptRegion ? 'card' : 'paypal');
+        setStripeClientSecret(null);
+        setStripeInvoiceId(null);
+        setIsStripeReady(false);
         onLocationChange(isEgyptRegion);
     };
 
@@ -276,12 +293,14 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 card: 5573815,
                 wallet: 5792309,
                 kiosk: 5792311,
-                paypal: 5792310
+                paypal: 5792310,
+                stripe: 0,
             };
 
-            const activeIntegrationId = integrationIdsMap[paymobMethod] || (isEg ? 5573815 : 5792310);
+            const isStripeFlow = paymobMethod === 'stripe';
+            const activeIntegrationId = isStripeFlow ? undefined : (integrationIdsMap[paymobMethod] || (isEg ? 5573815 : 5792310));
 
-            console.log('🚀 Initiating Paymob Multi-Gateway Invoice...', {
+            console.log('🚀 Initiating Payment Gateway Invoice...', {
                 tierId: selectedTier.id,
                 regionOption,
                 paymobMethod,
@@ -295,8 +314,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 userId: data.userId || userId || '',
                 tierId: selectedTier.id as string,
                 amount: finalTotal,
-                currency: isEg ? 'EGP' : 'USD',
-                country: isEg ? 'EG' : (data.country || 'US'),
+                currency: isStripeFlow ? 'USD' : (isEg ? 'EGP' : 'USD'),
+                country: isStripeFlow ? (data.country || 'US') : (isEg ? 'EG' : (data.country || 'US')),
                 email: data.email,
                 fullName: data.fullName,
                 locale: isAr ? 'ar' : 'en',
@@ -319,8 +338,17 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 },
             });
 
+            // Stripe embedded flow: keep client secret for PaymentElement, no redirect
+            if (isStripeFlow && result.success && result.clientSecret) {
+                setStripeClientSecret(result.clientSecret);
+                setStripeInvoiceId(result.invoiceId || null);
+                setIsStripeReady(false);
+                setIsProcessing(false);
+                return;
+            }
+
             if (result.success && result.redirectUrl) {
-                console.log('🚀 Redirecting to Paymob Gateway URL:', result.redirectUrl);
+                console.log('🚀 Redirecting to Payment Gateway URL:', result.redirectUrl);
                 setIsRedirecting(true);
                 setTimeout(() => {
                     window.location.assign(result.redirectUrl!);
@@ -341,9 +369,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
     return {
         form,
         isProcessing,
+        setIsProcessing,
         isRedirecting,
         redirectUrl,
         paymentError,
+        setPaymentError,
         shippingProviders,
         isLoadingShipping,
         promoCode,
@@ -371,6 +401,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
         setSpaceremitCode,
         paymentMethod,
         setPaymentMethod,
-        prefCurrency
+        prefCurrency,
+        // Stripe embedded flow
+        stripeClientSecret,
+        stripeInvoiceId,
+        isStripeReady,
+        setIsStripeReady
     };
 };
