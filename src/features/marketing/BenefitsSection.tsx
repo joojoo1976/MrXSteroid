@@ -133,12 +133,12 @@ const BenefitsSection: React.FC<BenefitsSectionProps> = ({ content }) => {
 
                         <div className="text-center md:text-start flex-grow">
                             <h4 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white mb-2">
-                                {isRTL ? 'استثمر في صحتك وعلمك لتتفادى الأخطاء المميتة' : 'Invest in Your Health & Knowledge to Avoid Fatal Mistakes'}
+                                {isRTL ? 'صحتك وعلمك هما أثمن استثمار لرحلة نحو الشباب الدائم، والنضارة، وإشراق الحضور المهيب!' : 'Your Health & Knowledge Are Your Most Valuable Investment'}
                             </h4>
                             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
                                 {isRTL
-                                    ? 'هذا الدليل تم تبسيطه ليكون مفهوماً لكل المستويات، مع الحفاظ على القيمة العلمية الصارمة والبروتوكولات الآمنة المعتمدة عالمياً.'
-                                    : 'This guide has been simplified to be understood by all levels, while preserving the strict scientific value and globally approved safe protocols.'}
+                                    ? 'لا تدع الأخطاء المميتة تسلبك أوج قوتك؛ لقد صممنا هذا الدليل بحسّ علمي صارم وبروتوكولات عالمية آمنة، ولكن بأسلوب مبسط يناسب الجميع دون استثناء. استعد لإطالة عمرك بصحة وقوة، والتمتع بذكاء ملفت يُبهر كل من حولك—على سبيل المثال، ستتعلم كيف تحول خطواتك اليومية إلى درع يقيك المخاطر وتمنحك أفضل نسخة من ذاتك.'
+                                    : 'Don\u2019t let fatal mistakes rob you of your peak strength; we designed this guide with rigorous scientific insight and safe global protocols, yet in a simplified style that suits everyone without exception. Get ready to extend your life with health and strength, and enjoy impressive intelligence that amazes everyone around you — for example, you will learn how to turn your daily steps into a shield that protects you from risks and gives you the best version of yourself.'}
                             </p>
                         </div>
                     </div>
