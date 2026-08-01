@@ -6,6 +6,16 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // Forward API calls to the deployed Vercel serverless functions so the
+    // checkout (create-invoice, callback, webhook) works during local dev.
+    proxy: {
+      '/api': {
+        target: 'https://mrxsteroid.vercel.app',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

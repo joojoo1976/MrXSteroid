@@ -609,7 +609,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                     {isAr ? "اختر طريقة الدفع المناسبة عبر Paymob" : "Select Payment Method via Paymob"}
                 </h3>
 
-                <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
+                <Card id="checkout-payment-methods" className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl scroll-mt-32">
                     <CardContent className="p-6 space-y-5">
                         
                         {/* LOCAL EGYPT PAYMENT METHODS (داخل مصر 🇪🇬) */}
@@ -623,6 +623,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
                                 {/* Option 1: Card (5573815) */}
                                 <motion.div
+                                    id="checkout-method-card"
                                     whileHover={{ scale: 1.01 }}
                                     onClick={() => setPaymobMethod('card')}
                                     className={cn(
@@ -655,6 +656,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
                                 {/* Option 2: Mobile Wallet (5792309) */}
                                 <motion.div
+                                    id="checkout-method-wallet"
                                     whileHover={{ scale: 1.01 }}
                                     onClick={() => setPaymobMethod('wallet')}
                                     className={cn(
@@ -706,6 +708,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
                                 {/* Option 3: Accept Kiosk / Cash (5792311) */}
                                 <motion.div
+                                    id="checkout-method-kiosk"
                                     whileHover={{ scale: 1.01 }}
                                     onClick={() => setPaymobMethod('kiosk')}
                                     className={cn(
@@ -746,6 +749,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 </div>
 
                                 <motion.div
+                                    id="checkout-method-paypal"
                                     whileHover={{ scale: 1.01 }}
                                     onClick={() => setPaymobMethod('paypal')}
                                     className={cn(
@@ -816,6 +820,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
                         {/* Paymob Submit Button */}
                         <Button
+                            id="checkout-submit-btn"
                             type="submit"
                             disabled={isProcessing || isRedirecting}
                             className="w-full py-8 bg-gold-500 hover:bg-gold-400 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.25)] transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70"

@@ -216,6 +216,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             totals={totals}
                             isAr={isAr}
                             isEg={isEg}
+                            onSubmitOrder={() => document.getElementById('checkout-submit-btn')?.click()}
                         />
                     </motion.div>
                 </div>
