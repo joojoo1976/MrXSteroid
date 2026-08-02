@@ -1095,6 +1095,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
             current: "Current",
             potential: "Potential",
             analysis: "Casey Butt Analysis",
+            boundariesLabel: "Genetic Boundaries",
             roadmap: "Muscular Roadmap",
             ffmi: "Fat Free Mass Index (FFMI)",
             goldenRatio: "Golden Ratio",
@@ -1114,6 +1115,51 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         disclaimer: "Projections are derived from validated statistical models (Casey Butt, FFMI). Individual genetic variance applies. This is not medical advice.",
         unlockMsg: "Reaching your genetic ceiling requires elite-level knowledge. Start here.",
         errorMsg: "Please complete all required biometric fields to generate your analysis.",
+        caseyExplainTitle: "How the Casey Butt Model Works",
+        caseyExplainIntro: "This model — derived from Casey Butt's anthropometric research and published FFMI standards — estimates the maximum natural muscle mass your body can carry drug-free, driven by three fixed skeletal anchors: wrist girth, ankle girth, and height.",
+        caseyFormulaLabel: "Core Formula",
+        caseyFormula: "Max Weight = Height(in)^1.5 × ( √Wrist/21 + √Ankle/15 ) × (1 + (Body Fat − 8)/100)",
+        caseyStepsTitle: "How to read it, step by step",
+        caseySteps: [
+            "1. Skeletal Base: the square-roots of wrist & ankle girths estimate bone thickness and overall frame size.",
+            "2. Height Factor: multiplied to the 1.5 power because longer bones carry more muscle mass non-linearly.",
+            "3. Body-Fat Modifier: the output is scaled to your target body-fat %, giving weight at a lean, healthy percentage.",
+            "4. FFMI: converted to Fat-Free Mass Index per m² and height-normalized for a fair comparison at your actual height."
+        ],
+        radarLegendTitle: "Reading the Radar Chart",
+        radarLegendIntro: "Each axis of the radar maps one body measurement. The shaded area from center to the layer peaks reflects its expected natural ceiling relative to your skeletal frame:",
+        radarLegend: [
+            { key: "shoulders", label: "Shoulders", note: "Widest physical x-axis — primary V-taper visual" },
+            { key: "chest", label: "Chest", note: "Wide ribs + thick lat anchor; slow but trainable" },
+            { key: "waist", label: "Waist", note: "Smallest point driving the golden ratio — shrinks with diet" },
+            { key: "thigh", label: "Thigh", note: "Largest muscle reservoir — fastest growth with heavy volume" },
+            { key: "calf", label: "Calf", note: "Most stubborn — responds to frequency & time, not just load" }
+        ],
+        boundariesIntro: "The boundary values below represent the expected structural ceiling for each measurement at your natural limit, revealing the gap between your current state and your peak.",
+        boundariesDetailsTitle: "Explaining Each Genetic Boundary",
+        boundariesDetails: [
+            "Shoulders: ceiling ≈ 0.75 × height. Governed by clavicle width; the least trainable ceiling and a dominant aesthetic measure.",
+            "Chest: ceiling ≈ 0.62 × height. Tied to ribcage width and how thoroughly chest & lat fibres are built over years.",
+            "Waist: floor ≈ 0.42 × height. Not built by muscle — reduced via diet and skin/visceral fat loss; the key to the taper ratio.",
+            "Thigh: ceiling ≈ 2.85 × ankle — the largest reservoir and the easiest to grow with progressive heavy compound lifting.",
+            "Calf: ceiling ≈ 1.95 × ankle — the slowest responder, driven by rep frequency, duration and ankle proportions, not load alone.",
+            "Arm: ceiling ≈ 2.5 × wrist — scales muscle to wrist bone thickness; a fairly fixed structural reference."
+        ],
+        advice: {
+            title: "Medical & Health Advisory",
+            eyebrow: "Your healthcare decision",
+            body: "The equations above (Casey Butt, FFMI) are statistical prediction tools from sports-fit literature — not a medical diagnosis and not a prescription of any drug protocol.",
+            points: [
+                "Results are estimates and may vary widely by individual build, nutrition, and training history.",
+                "No number here is a logical reason to change your diet or medication on your own.",
+                "Always consult a physician or a licensed dietitian before starting any nutrition, fitness, or health program.",
+                "For anything related to supplements, hormones, or side effects, seek only a qualified healthcare professional."
+            ],
+            footer: "This tool is strictly educational and informational; it does not provide medical recommendations."
+        },
+        awaitingSubtitle: "Enter your key measurements (Height, Wrist, Ankle), then press Analyze to reveal your instant genetic ceiling.",
+        currentVsPotential: "Current vs Potential",
+        potentialCeiling: "Projected Ceiling",
         bodyTypes: {
             ecto: "Ectomorph — Lean Frame",
             meso: "Mesomorph — Optimal Frame",

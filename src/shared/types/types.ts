@@ -975,6 +975,7 @@ export interface ContentStrings {
       current: string;
       potential: string;
       analysis: string;
+      boundariesLabel: string;
       roadmap: string;
       ffmi: string;
       goldenRatio: string;
@@ -998,6 +999,28 @@ export interface ContentStrings {
     disclaimer: string;
     unlockMsg: string;
     errorMsg: string;
+    caseyExplainTitle: string;
+    caseyExplainIntro: string;
+    caseyFormulaLabel: string;
+    caseyFormula: string;
+    caseyStepsTitle: string;
+    caseySteps: string[];
+    radarLegendTitle: string;
+    radarLegendIntro: string;
+    radarLegend: { key: string; label: string; note: string }[];
+    boundariesIntro: string;
+    boundariesDetailsTitle: string;
+    boundariesDetails: string[];
+    advice: {
+      title: string;
+      eyebrow: string;
+      body: string;
+      points: string[];
+      footer: string;
+    };
+    awaitingSubtitle: string;
+    currentVsPotential: string;
+    potentialCeiling: string;
     bodyTypes: {
       ecto: string;
       meso: string;
