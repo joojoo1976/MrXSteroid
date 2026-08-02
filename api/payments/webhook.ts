@@ -4,12 +4,17 @@
  * ║  Route: /api/payments/webhook                                            ║
  * ║  Secondary webhook endpoint for payment gateway notifications             ║
  * ║  Uses the same idempotent Strategy Pattern as callback.ts                 ║
+ * ║                                                                          ║
+ * ║  Uses the Web API (Request/Response) so the RAW request body is read      ║
+ * ║  via `req.text()` — required for Stripe signature verification, since     ║
+ * ║  Vercel's parser turns JSON bodies into objects and re-stringifying       ║
+ * ║  breaks the signature.                                                    ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { PaymentFactory } from './gateways/PaymentFactory';
+import { PaymentFactory } from './gateways/PaymentFactory.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                         CONFIGURATION
@@ -29,38 +34,75 @@ const getSupabaseAdmin = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-//                         HANDLER
+//                         HELPER
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+const json = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+/**
+ * Build a VercelRequest-compatible object from a Web API Request.
+ *
+ * - `body` is the RAW request text (never re-stringified), so Stripe's
+ *   signature check matches the exact bytes Stripe sent.
+ * - `headers` and `query` are normalized for the gateway strategy detection.
+ */
+function buildVercelLikeRequest(req: Request, rawBody: string): VercelRequest {
+    const url = new URL(req.url || 'http://localhost');
+    const query: Record<string, string> = {};
+    url.searchParams.forEach((value, key) => { query[key] = value; });
+
+    const headers: Record<string, string> = {};
+    req.headers.forEach((value, key) => { headers[key.toLowerCase()] = value; });
+
+    return {
+        method: req.method || 'POST',
+        url: req.url || '',
+        headers,
+        query,
+        body: rawBody,
+    } as unknown as VercelRequest;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                         HANDLER (Web API)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export default async function handler(req: Request): Promise<Response> {
     // Only accept POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return json({ error: 'Method not allowed' }, 405);
     }
 
     try {
         const supabase = getSupabaseAdmin();
-        const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+
+        // Read the RAW body exactly as Stripe sent it.
+        const rawBody = await req.text();
+        const reqLike = buildVercelLikeRequest(req, rawBody);
 
         // Detect gateway from request headers/params
-        const gateway = PaymentFactory.detectGatewayFromRequest(req);
+        const gateway = PaymentFactory.detectGatewayFromRequest(reqLike);
         const gatewayName = gateway.getGatewayName();
 
         console.log(`📥 [Webhook] ${gatewayName} webhook received`);
 
         // Verify the webhook signature
-        const verification = await gateway.verifyWebhook(req, rawBody);
+        const verification = await gateway.verifyWebhook(reqLike, rawBody);
 
         if (!verification.valid) {
             console.error(`❌ [Webhook] ${gatewayName} verification failed:`, verification.errorMessage);
-            return res.status(401).json({ error: 'Invalid webhook signature' });
+            return json({ error: 'Invalid webhook signature' }, 401);
         }
 
         const invoiceId = verification.invoiceId;
 
         // No actionable status or no invoice tracked
         if (!verification.status || !invoiceId) {
-            return res.status(200).json({ status: 'ok', message: 'Event acknowledged' });
+            return json({ status: 'ok', message: 'Event acknowledged' });
         }
 
         // ─── IDEMPOTENCY CHECK ───────────────────────────────────────────
@@ -72,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (existing?.status === 'success') {
             console.log(`⚡ [Webhook] Invoice ${invoiceId} already processed — idempotent skip`);
-            return res.status(200).json({ status: 'ok', message: 'Already processed' });
+            return json({ status: 'ok', message: 'Already processed' });
         }
 
         // ─── PROCESS PAYMENT RESULT ──────────────────────────────────────
@@ -121,11 +163,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             console.log(`❌ [Webhook] Payment failed for invoice: ${invoiceId}`);
         }
 
-        return res.status(200).json({ status: 'ok' });
+        return json({ status: 'ok' });
     } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         console.error('❌ [Webhook] Error:', errorMessage);
         // Return 200 to prevent gateway retries on server errors
-        return res.status(200).json({ error: 'Internal Error', message: errorMessage });
+        return json({ error: 'Internal Error', message: errorMessage });
     }
 }
