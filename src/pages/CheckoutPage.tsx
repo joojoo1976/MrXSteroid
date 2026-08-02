@@ -194,6 +194,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                 onSuccess={onSuccess}
                                 productVariant={variant}
                                 quantity={quantity}
+                                isEg={isEg}
                                 onLocationChange={handleLocationChange}
                                 onShippingChange={setShippingCost}
                                 onDiscountChange={handleDiscountChange}

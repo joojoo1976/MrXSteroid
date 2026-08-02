@@ -47,6 +47,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, co
                                 onSuccess={handleSuccess}
                                 productVariant={newTier.id || 'digital'}
                                 quantity={1}
+                                isEg={isEgypt}
                                 onLocationChange={setIsEgypt}
                                 totalAmount={tier.price}
                                 openLegal={openLegal}

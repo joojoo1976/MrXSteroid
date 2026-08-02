@@ -12,7 +12,6 @@ import {
 } from '../../../shared/lib/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
-import { useRegion } from '../../../context/RegionContext';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -41,6 +40,7 @@ export interface useCheckoutOptions {
     selectedTier: PricingTier & { requiresShipping?: boolean; requiresBodyStats?: boolean; selectedLanguage?: 'en' | 'ar'; selectedLocation?: 'EG' | 'GLOBAL' };
     totalAmount: number;
     productVariant: ProductVariant;
+    isEg: boolean;
     onLocationChange: (isEg: boolean) => void;
     onDiscountChange?: (discountAmount: number) => void;
     userId?: string;
@@ -52,9 +52,8 @@ export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
-    const { content, lang, selectedTier, totalAmount, productVariant, onLocationChange, onDiscountChange, userId, userEmail, userName } = options;
+    const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
-    const { isEgypt: isEgRegion } = useRegion();
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
@@ -65,9 +64,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isLoadingShipping, setIsLoadingShipping] = useState(false);
 
     // Region & Paymob Payment Method Selection
-    const initialRegion: RegionOption = selectedTier.selectedLocation === 'EG' || isEgRegion ? 'EG' : 'GLOBAL';
-    const [regionOption, setRegionOption] = useState<RegionOption>(initialRegion);
-    const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(initialRegion === 'EG' ? 'card' : 'paypal');
+    // Single source of truth: `isEg` prop (from CheckoutPage). regionOption is
+    // derived so every region toggle across the page stays in sync.
+    const regionOption: RegionOption = isEgProp ? 'EG' : 'GLOBAL';
+    const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(regionOption === 'EG' ? 'card' : 'paypal');
 
     // Promo Code State
     const [promoCode, setPromoCode] = useState('');
@@ -171,7 +171,6 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
     // Handle Region Toggle Change
     const handleRegionChange = (newRegion: RegionOption) => {
-        setRegionOption(newRegion);
         const isEgyptRegion = newRegion === 'EG';
         form.setValue('country', isEgyptRegion ? 'EG' : 'US');
         setPaymobMethod(isEgyptRegion ? 'card' : 'paypal');

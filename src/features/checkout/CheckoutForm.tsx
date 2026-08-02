@@ -33,6 +33,7 @@ export interface CheckoutFormProps {
     onSuccess: () => void;
     productVariant: ProductVariant;
     quantity: number;
+    isEg: boolean;
     onLocationChange: (isEgypt: boolean) => void;
     onShippingChange?: (cost: number) => void;
     onDiscountChange?: (discountAmount: number) => void;
@@ -45,6 +46,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     lang,
     selectedTier,
     productVariant,
+    isEg: isEgProp,
     onLocationChange,
     onShippingChange,
     onDiscountChange,
@@ -92,6 +94,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         selectedTier,
         totalAmount,
         productVariant,
+        isEg: isEgProp,
         onLocationChange,
         onDiscountChange,
         userId: user?.id,
