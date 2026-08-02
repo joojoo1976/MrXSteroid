@@ -22,6 +22,13 @@ export interface Hotspot {
     description?: string;
 }
 
+export interface SavedPosition {
+    x: number;
+    y: number;
+}
+
+const CUSTOM_POSITIONS_KEY = 'mrx_injection_custom_positions';
+
 const FIXED_FRONT_POINTS = [
     { id: 'delt_side_l', baseId: 'delt_side', x: 28, y: 26 },
     { id: 'delt_side_r', baseId: 'delt_side', x: 69, y: 26 },
@@ -52,6 +59,16 @@ const FIXED_BACK_POINTS = [
     { id: 'calves_r', baseId: 'calves', x: 58, y: 81 },
 ];
 
+const loadCustomPositions = (): Record<string, SavedPosition> => {
+    try {
+        const raw = localStorage.getItem(CUSTOM_POSITIONS_KEY);
+        if (raw) return JSON.parse(raw) as Record<string, SavedPosition>;
+    } catch {
+        /* corrupted storage — ignore */
+    }
+    return {};
+};
+
 interface UseInjectionMapOptions {
     content: ContentStrings;
     unitSystem: 'metric' | 'imperial';
@@ -62,11 +79,37 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
     const [rotation, setRotation] = useState(0);
     const [activeSite, setActiveSite] = useState<Hotspot | null>(null);
     const [hoverSite, setHoverSite] = useState<Hotspot | null>(null);
+    const [customPositions, setCustomPositions] = useState<Record<string, SavedPosition>>(loadCustomPositions);
 
     const isImperial = unitSystem === 'imperial';
     const lang = language as Language;
     const mapContent = content.injectionMap;
     const currentView = rotation <= 50 ? 'front' : 'back';
+
+    const setCustomPosition = useCallback((id: string, x: number, y: number) => {
+        setCustomPositions(prev => {
+            const next = { ...prev, [id]: { x, y } };
+            try {
+                localStorage.setItem(CUSTOM_POSITIONS_KEY, JSON.stringify(next));
+            } catch {
+                /* storage quota — ignore */
+            }
+            return next;
+        });
+    }, []);
+
+    const resetCustomPositions = useCallback(() => {
+        setCustomPositions({});
+        try {
+            localStorage.removeItem(CUSTOM_POSITIONS_KEY);
+        } catch {
+            /* ignore */
+        }
+    }, []);
+
+    const positionFor = useCallback((id: string, x: number, y: number): SavedPosition => {
+        return customPositions[id] || { x, y };
+    }, [customPositions]);
 
     const activeHotspots = useMemo(() => {
         if (mapContent.sites) {
@@ -89,13 +132,14 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
                 if (data) {
                     const abs = absorptionMap[fixed.baseId] || 85;
                     const isRight = fixed.id.endsWith('_r');
+                    const pos = positionFor(fixed.id, fixed.x, fixed.y);
                     result.push({
                         ...data,
                         id: fixed.id,
                         name: getName(data, isRight ? rightLabel : leftLabel),
                         side: 'front',
-                        x: fixed.x,
-                        y: fixed.y,
+                        x: pos.x,
+                        y: pos.y,
                         absorption: abs,
                         icon: data.icon || "💉",
                         riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
@@ -110,13 +154,14 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
                 if (data) {
                     const abs = absorptionMap[fixed.baseId] || 85;
                     const isRight = fixed.id.endsWith('_r');
+                    const pos = positionFor(fixed.id, fixed.x, fixed.y);
                     result.push({
                         ...data,
                         id: fixed.id,
                         name: getName(data, isRight ? rightLabel : leftLabel),
                         side: 'back',
-                        x: fixed.x,
-                        y: fixed.y,
+                        x: pos.x,
+                        y: pos.y,
                         absorption: abs,
                         icon: data.icon || "💉",
                         riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
@@ -128,7 +173,7 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
             return result;
         }
         return [];
-    }, [mapContent]);
+    }, [mapContent, positionFor]);
 
     const dynamicStats = useMemo(() => {
         if (activeSite) {
@@ -177,6 +222,9 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
         currentView,
         activeHotspots,
         dynamicStats,
-        isImperial
+        isImperial,
+        customPositions,
+        setCustomPosition,
+        resetCustomPositions,
     };
 };

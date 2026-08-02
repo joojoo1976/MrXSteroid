@@ -1173,6 +1173,30 @@ export interface ContentStrings {
     closeDetailsBtn: string;
     comfortableSpot: string;
 
+    medicalAdvice: {
+      eyebrow: string;
+      title: string;
+      intro: string;
+      points: string[];
+      warning: string;
+      footer: string;
+    };
+
+    editPoints: {
+      eyebrow: string;
+      title: string;
+      intro: string;
+      dragHint: string;
+      saveHint: string;
+      enableBtn: string;
+      disableBtn: string;
+      resetBtn: string;
+      savedToast: string;
+      resetToast: string;
+      activeLabel: string;
+      inactiveLabel: string;
+    };
+
     sites: InjectionSite[];
   };
 

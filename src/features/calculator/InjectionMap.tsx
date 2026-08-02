@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Activity, AlertTriangle, Sparkles, Rotate3d, RefreshCw } from 'lucide-react';
+import {
+  Shield, Zap, Activity, AlertTriangle, Sparkles, Rotate3d, RefreshCw,
+  Stethoscope, Move, Undo2, CheckCircle2
+} from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
@@ -8,7 +11,7 @@ import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { convertValue } from '../../shared/lib/logic';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useInjectionMap } from './hooks/useInjectionMap';
+import { useInjectionMap, Hotspot } from './hooks/useInjectionMap';
 
 
 interface InjectionMapProps {
@@ -30,7 +33,9 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     currentView,
     activeHotspots,
     dynamicStats,
-    isImperial
+    isImperial,
+    setCustomPosition,
+    resetCustomPositions,
   } = useInjectionMap({
     content,
     unitSystem: unitSystem || 'metric',
@@ -38,6 +43,51 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
   });
 
   const mapContent = content.injectionMap;
+
+  const [editMode, setEditMode] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showAdvice, setShowAdvice] = useState(true);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 2600);
+  };
+
+  const handleDrag = (site: Hotspot, e: React.PointerEvent) => {
+    if (!editMode) {
+      setActiveSite(site);
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+
+    const update = (clientX: number, clientY: number) => {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect || rect.width === 0) return;
+      let nx = ((clientX - rect.left) / rect.width) * 100;
+      let ny = ((clientY - rect.top) / rect.height) * 100;
+      nx = Math.min(100, Math.max(0, nx));
+      ny = Math.min(100, Math.max(0, ny));
+      setCustomPosition(site.id, nx, ny);
+    };
+
+    const onMove = (ev: PointerEvent) => {
+      ev.preventDefault();
+      update(ev.clientX, ev.clientY);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const handleReset = () => {
+    resetCustomPositions();
+    showToast(mapContent.editPoints?.resetToast || 'Reset Points');
+  };
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 relative font-cairo" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -57,6 +107,21 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           {mapContent.subtitle}
         </motion.p>
       </header>
+
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] bg-emerald-500 text-black font-black px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-5 h-5" />
+            <span dir="auto">{toast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── System Guide: خريطة الحقن التفاعلية ── */}
       <div className="mb-8 relative z-10">
@@ -78,21 +143,15 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           items={[
             {
               icon: Rotate3d,
-              title: {
-                ar: '1. النموذج التشريحي ثلاثي الأبعاد',
-                en: '1. 3D Anatomical Model',
-              },
+              title: { ar: '1. النموذج التشريحي ثلاثي الأبعاد', en: '1. 3D Anatomical Model' },
               body: {
-                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي) يوضح عضلات الحقن الرئيسية بدقة تشريحية عالية مع أسماء المواقع بلغتك.',
-                en: 'A rotatable front/back human model highlighting the main injection muscles with anatomically accurate, localized site names.',
+                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي)، ويمكنك تحريك أي نقطة لتدقيق موقع العضلة على جسدك بدقة.',
+                en: 'A rotatable front/back human model; you can drag any point to precisely match your own anatomy.',
               },
             },
             {
               icon: Shield,
-              title: {
-                ar: '2. محرك الأمان ومستوى الخطر',
-                en: '2. Safety & Risk Engine',
-              },
+              title: { ar: '2. محرك الأمان ومستوى الخطر', en: '2. Safety & Risk Engine' },
               body: {
                 ar: 'يقيّم كل موقع حسب قربه من الأعصاب والأوردة وحجم العضلة، ويعرض مؤشر أمان رقمياً يحدد صلاحية الاستخدام المتكرر.',
                 en: 'Scores every site by proximity to nerves, veins and muscle volume, showing a numeric safety rating for repeat-use suitability.',
@@ -100,10 +159,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             },
             {
               icon: RefreshCw,
-              title: {
-                ar: '3. نظام التناوب الذكي (Rotation)',
-                en: '3. Smart Rotation Logic',
-              },
+              title: { ar: '3. نظام التناوب الذكي (Rotation)', en: '3. Smart Rotation Logic' },
               body: {
                 ar: 'يحسب أفضل تسلسل تناوب بين المواقع لمنع التليّف العضلي والندوب الدهنية، ويوزع الأحمال بأمان على العضلات الكبرى.',
                 en: 'Computes the optimal rotation sequence across sites to prevent muscle fibrosis and lipohypertrophy while balancing load on major muscles.',
@@ -111,10 +167,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             },
             {
               icon: Zap,
-              title: {
-                ar: '4. مؤشرات الامتصاص والتوجيه',
-                en: '4. Absorption Indicators & Guidance',
-              },
+              title: { ar: '4. مؤشرات الامتصاص والتوجيه', en: '4. Absorption Indicators & Guidance' },
               body: {
                 ar: 'يعرض كفاءة امتصاص كل موقع وحجم الحقن الآمن وعمق الإبرة المناسب، مع نصائح فورية للجرعة المنفردة والمتكررة.',
                 en: 'Shows per-site absorption efficiency, safe injection volume and recommended needle depth with instant dosing guidance.',
@@ -134,10 +187,40 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           <StatCard label={mapContent.efficiencyLabel || "Efficiency"} value={`${dynamicStats.absorption}%`} color="text-gold-400" icon={<Zap className="w-4 h-4" />} />
           <StatCard label={mapContent.riskLevelLabel} value={`${dynamicStats.safety}%`} color={dynamicStats.safety > 80 ? "text-green-400" : "text-yellow-400"} icon={<Shield className="w-4 h-4" />} />
           <StatCard label={mapContent.stimulatedCellsLabel} value={dynamicStats.cells} color="text-cyan-400" icon={<Activity className="w-4 h-4" />} />
+
+          {/* Point Editing Panel */}
+          <div className={`rounded-[2rem] border p-5 flex flex-col gap-3 transition-colors ${editMode ? 'bg-amber-500/10 border-amber-500/40' : 'bg-zinc-900/40 border-white/5'}`}>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-300 font-bold">
+              <Move className="w-4 h-4 text-amber-400" />
+              {mapContent.editPoints?.eyebrow}
+            </div>
+            <h4 className="text-lg font-black text-white leading-snug">{mapContent.editPoints?.title}</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed">{mapContent.editPoints?.intro}</p>
+            {editMode && (
+              <p className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                {mapContent.editPoints?.activeLabel}
+              </p>
+            )}
+            <button
+              onClick={() => setEditMode(m => !m)}
+              className={`w-full py-3 rounded-xl font-black transition-all flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'}`}
+            >
+              <Move className="w-4 h-4" />
+              {mapContent.editPoints?.[editMode ? 'disableBtn' : 'enableBtn']}
+            </button>
+            <button
+              onClick={handleReset}
+              className="w-full py-3 rounded-xl font-black text-zinc-300 border border-white/10 hover:bg-white/5 flex items-center justify-center gap-2"
+            >
+              <Undo2 className="w-4 h-4" />
+              {mapContent.editPoints?.resetBtn}
+            </button>
+          </div>
         </div>
 
         <div className="lg:col-span-6 flex flex-col items-center">
-          <div className="w-full max-w-md mb-8">
+          <div className="w-full max-w-md mb-4">
             <div className="flex justify-between px-2 mb-2 text-gold-400 font-bold text-sm uppercase tracking-widest">
               <span className="cursor-pointer hover:text-white transition-colors" onClick={() => setRotation(0)}>
                 {mapContent.viewFront || "Front View"}
@@ -149,16 +232,11 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             <input type="range" min="0" max="100" value={rotation} onChange={(e) => setRotation(parseInt(e.target.value))} aria-label="Rotation Control" className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-gold-500" />
           </div>
 
-          <div className="relative w-[450px] h-[700px] group">
+          <div className="relative w-[450px] h-[700px] group" dir="ltr">
             <div className="absolute inset-0 rounded-[3rem] bg-zinc-900 border-2 border-yellow-500/20 shadow-2xl overflow-hidden z-0">
               <div className="absolute inset-0 bg-[linear-gradient(rgba(234,179,8,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(234,179,8,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-              <motion.div
-                animate={{ top: ['0%', '100%', '0%'] }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="absolute left-0 w-full h-1 bg-gold-500/50 blur-sm z-20 shadow-[0_0_20px_rgba(234,179,8,0.5)]"
-              />
               <div className="relative w-full h-full flex items-center justify-center p-8 overflow-visible">
-                <div className="relative w-full h-full scale-[1.35] translate-y-14 flex items-center justify-center">
+                <div ref={canvasRef} className="relative w-full h-full scale-[1.35] translate-y-14 flex items-center justify-center">
                   <AnimatePresence mode="wait">
                     <motion.div key={currentView} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full flex items-center justify-center">
                       <img
@@ -170,39 +248,41 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                     </motion.div>
                   </AnimatePresence>
 
-                  <div className="absolute inset-0 z-30 pointer-events-none">
+                  <div
+                    className="absolute inset-0 z-30"
+                    style={{ pointerEvents: editMode ? 'auto' : 'none' }}
+                  >
                     {activeHotspots.filter(h => h.side === currentView).map(spot => (
                       <motion.div
                         key={spot.id}
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute pointer-events-auto"
+                        className="absolute"
                         style={{
                           top: `${spot.y}%`,
                           left: `${spot.x}%`,
-                          transform: 'translate(-50%, -50%)'
+                          transform: 'translate(-50%, -50%)',
+                          touchAction: editMode ? 'none' : 'auto',
+                          cursor: editMode ? 'grab' : 'pointer',
                         }}
+                        onPointerDown={(e) => handleDrag(spot, e)}
+                        onMouseEnter={() => setHoverSite(spot)}
+                        onMouseLeave={() => setHoverSite(null)}
                       >
                         <motion.div
                           animate={{
                             scale: [1, 1.5, 1],
                             opacity: [0.5, 0.2, 0.5]
                           }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                           className={`absolute inset-0 w-8 h-8 -left-4 -top-4 rounded-full blur-md ${activeSite?.id === spot.id ? 'bg-gold-400' : 'bg-primary'}`}
                         />
-
                         <motion.button
+                          type="button"
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => setActiveSite(spot)}
-                          onMouseEnter={() => setHoverSite(spot)}
-                          onMouseLeave={() => setHoverSite(null)}
-                          className={`relative w-4 h-4 rounded-full border-2 border-white/20 shadow-lg cursor-pointer transition-colors ${activeSite?.id === spot.id
+                          onClick={(e) => { e.stopPropagation(); if (!editMode) setActiveSite(spot); }}
+                          className={`relative w-4 h-4 rounded-full border-2 border-white/20 shadow-lg transition-colors ${editMode ? 'bg-amber-400 border-amber-400 ring-4 ring-amber-400/20' : 'cursor-pointer'} ${activeSite?.id === spot.id && !editMode
                             ? 'bg-gold-400 ring-4 ring-gold-400/30'
                             : 'bg-primary ring-4 ring-primary/20 hover:bg-gold-500 hover:ring-gold-500/30'
                             }`}
@@ -261,6 +341,14 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
               </AnimatePresence>
             </div>
           </div>
+
+          {/* Unit / Hint bar */}
+          <div className="mt-4 w-full max-w-md text-center">
+            <p className="text-xs text-zinc-500 font-bold tracking-widest uppercase flex items-center justify-center gap-2">
+              <Move className="w-3.5 h-3.5 text-amber-400" />
+              {editMode ? mapContent.editPoints?.dragHint : mapContent.editPoints?.inactiveLabel}
+            </p>
+          </div>
         </div>
 
         <div className="lg:col-span-3">
@@ -307,6 +395,48 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      {/* Medical & Safety Advisory */}
+      <div className="mt-10 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-black text-emerald-400 flex items-center gap-2">
+            <Stethoscope className="w-6 h-6" />
+            {mapContent.medicalAdvice?.title}
+          </h2>
+          <button onClick={() => setShowAdvice(s => !s)} className="text-xs font-bold text-zinc-400 hover:text-white uppercase tracking-widest">
+            {showAdvice ? '−' : '+'}
+          </button>
+        </div>
+        <AnimatePresence>
+          {showAdvice && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="rounded-[2.5rem] border border-emerald-500/25 bg-emerald-500/5 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4">
+                  {mapContent.medicalAdvice?.points?.map((point, i) => (
+                    <div key={i} className="flex items-start gap-3" dir="auto">
+                      <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      </span>
+                      <p className="text-sm text-zinc-300 leading-relaxed">{point}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30" dir="auto">
+                  <p className="text-sm font-bold text-red-300 leading-relaxed">{mapContent.medicalAdvice?.warning}</p>
+                </div>
+                <p className="mt-4 text-xs text-zinc-500 italic leading-relaxed" dir="auto">
+                  {mapContent.medicalAdvice?.footer}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="mt-12 font-sans">
