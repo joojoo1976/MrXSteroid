@@ -1,0 +1,7 @@
+dist/
+node_modules/
+.git/
+.env
+.env.local
+*.log
+src/__tests__/

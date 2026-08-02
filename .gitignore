@@ -75,3 +75,7 @@ htmlcov/
 *.tar.xz
 *.tar.zst
 ```.github/workflows/  
+
+.vercel
+.env*
+!.env.example
