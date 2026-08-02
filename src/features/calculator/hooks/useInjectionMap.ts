@@ -80,6 +80,7 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
     const [activeSite, setActiveSite] = useState<Hotspot | null>(null);
     const [hoverSite, setHoverSite] = useState<Hotspot | null>(null);
     const [customPositions, setCustomPositions] = useState<Record<string, SavedPosition>>(loadCustomPositions);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const isImperial = unitSystem === 'imperial';
     const lang = language as Language;
@@ -87,19 +88,25 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
     const currentView = rotation <= 50 ? 'front' : 'back';
 
     const setCustomPosition = useCallback((id: string, x: number, y: number) => {
+        setCustomPositions(prev => ({ ...prev, [id]: { x, y } }));
+        setHasUnsavedChanges(true);
+    }, []);
+
+    const savePositions = useCallback(() => {
         setCustomPositions(prev => {
-            const next = { ...prev, [id]: { x, y } };
             try {
-                localStorage.setItem(CUSTOM_POSITIONS_KEY, JSON.stringify(next));
+                localStorage.setItem(CUSTOM_POSITIONS_KEY, JSON.stringify(prev));
             } catch {
                 /* storage quota — ignore */
             }
-            return next;
+            return prev;
         });
+        setHasUnsavedChanges(false);
     }, []);
 
     const resetCustomPositions = useCallback(() => {
         setCustomPositions({});
+        setHasUnsavedChanges(false);
         try {
             localStorage.removeItem(CUSTOM_POSITIONS_KEY);
         } catch {
@@ -225,6 +232,8 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
         isImperial,
         customPositions,
         setCustomPosition,
+        savePositions,
+        hasUnsavedChanges,
         resetCustomPositions,
     };
 };

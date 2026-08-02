@@ -35,6 +35,8 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     dynamicStats,
     isImperial,
     setCustomPosition,
+    savePositions,
+    hasUnsavedChanges,
     resetCustomPositions,
   } = useInjectionMap({
     content,
@@ -87,6 +89,12 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
   const handleReset = () => {
     resetCustomPositions();
     showToast(mapContent.editPoints?.resetToast || 'Reset Points');
+  };
+
+  const handleSave = () => {
+    savePositions();
+    setEditMode(false);
+    showToast(mapContent.editPoints?.savedToast || 'Saved');
   };
 
   return (
@@ -209,6 +217,17 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
               <Move className="w-4 h-4" />
               {mapContent.editPoints?.[editMode ? 'disableBtn' : 'enableBtn']}
             </button>
+            {hasUnsavedChanges && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={handleSave}
+                className="w-full py-3 rounded-xl font-black bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {mapContent.editPoints?.saveBtn || "Save Points"}
+              </motion.button>
+            )}
             <button
               onClick={handleReset}
               className="w-full py-3 rounded-xl font-black text-zinc-300 border border-white/10 hover:bg-white/5 flex items-center justify-center gap-2"

@@ -1191,6 +1191,7 @@ export interface ContentStrings {
       enableBtn: string;
       disableBtn: string;
       resetBtn: string;
+      saveBtn: string;
       savedToast: string;
       resetToast: string;
       activeLabel: string;

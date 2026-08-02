@@ -1316,6 +1316,7 @@ export const arContent: ContentStrings = {
             enableBtn: "تفعيل وضع التحرك",
             disableBtn: "إنهاء التحرك",
             resetBtn: "إعادة التعيين للأساس",
+            saveBtn: "حفظ المواضع نهائيًا",
             savedToast: "تم حفظ مواضع النقاط بنجاح",
             resetToast: "تمت إعادة جميع النقاط إلى الوضع الافتراضي",
             activeLabel: "وضع التحرك مفعل",

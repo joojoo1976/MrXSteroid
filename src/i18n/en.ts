@@ -1328,6 +1328,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
           enableBtn: "Enable Drag Mode",
           disableBtn: "Finish Editing",
           resetBtn: "Reset to Default",
+          saveBtn: "Save Points Permanently",
           savedToast: "Point positions saved successfully",
           resetToast: "All points restored to default positions",
           activeLabel: "Drag Mode Active",
