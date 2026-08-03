@@ -161,7 +161,7 @@ export const useInjectionMap = ({ content, unitSystem, language }: UseInjectionM
                 safety: baseSafety,
                 cells: baseCells.toLocaleString(),
                 powerDesc: `${mapContent.featureCards?.power.desc.split('...')[0]} ${lang === 'ar' ? 'في' : 'in'} ${activeSite.name}`,
-                tissueDesc: `${mapContent.featureCards?.tissue.desc.split('...')[0]} (${activeSite.bestFor || 'Hypertrophy'})`,
+                tissueDesc: `${mapContent.featureCards?.tissue.desc.split('...')[0]} (${(activeSite.bestFor || 'Hypertrophy').replace('{maxVol}', displayVol)})`,
                 burnDesc: `${mapContent.featureCards?.burn.desc.split('...')[0]} [${activeSite.riskLevel} Risk]`,
                 displayVol
             };

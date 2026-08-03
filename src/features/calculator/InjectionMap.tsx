@@ -88,6 +88,11 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     return site.angleDepth ? site.angleDepth.replace('{depth}', depth || '') : '';
   };
 
+  const renderSiteText = (site: Hotspot, text?: string): string => {
+    if (!text) return '';
+    return text.replace('{maxVol}', formatVolume(site));
+  };
+
   const muscleTypeLabel = (site: Hotspot) => {
     if (site.muscleType === 'Small') return deep.smallMuscle;
     if (site.muscleType === 'Large') return deep.largeMuscle;
@@ -227,7 +232,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                 />
               </div>
-              <p className="text-xs text-zinc-400 mt-3 leading-relaxed">{activeSite.bestFor}</p>
+              <p className="text-xs text-zinc-400 mt-3 leading-relaxed">{renderSiteText(activeSite, activeSite.bestFor)}</p>
             </motion.div>
           )}
         </div>
@@ -482,7 +487,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                       <Clock className="w-4 h-4 text-gold-400" />
                       {deep.rotationLabel}
                     </div>
-                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{activeSite.rotationAdvice}</p>
+                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{renderSiteText(activeSite, activeSite.rotationAdvice)}</p>
                   </div>
 
                   {/* Precautions */}
