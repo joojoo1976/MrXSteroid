@@ -457,8 +457,26 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
               </motion.div>
             ) : (
               <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8 bg-zinc-900/20 border-2 border-dashed border-white/5 rounded-[2.5rem]">
-                <BrainCircuit className="w-10 h-10 text-gold-500/60 mb-4" />
-                <p className="text-zinc-400 font-bold">{deep.selectPointHint}</p>
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 bg-gold-500/20 blur-2xl rounded-full"></div>
+                  <div className="relative w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
+                    <BrainCircuit className="w-8 h-8 text-gold-500/80" />
+                  </div>
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gold-400 font-black mb-2">
+                  {deep.sidebarEyebrow}
+                </span>
+                <h4 className="text-lg font-black text-white leading-snug mb-2">{deep.sidebarTitle}</h4>
+                <p className="text-xs text-zinc-400 font-bold leading-relaxed mb-2" dir="auto">
+                  {deep.sidebarSubtitle}
+                </p>
+                <p className="text-zinc-200 font-black leading-relaxed" dir="auto">
+                  {deep.selectPointHint}
+                </p>
+                <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-zinc-300" dir="ltr">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse"></span>
+                  {deep.measurementLabel}: {isImperial ? deep.measurementImperial : deep.measurementMetric}
+                </div>
               </div>
             )}
           </AnimatePresence>

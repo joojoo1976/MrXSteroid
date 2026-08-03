@@ -1213,6 +1213,9 @@ export interface ContentStrings {
       closeBtn: string;
       selectPointHint: string;
       hoverHint: string;
+      measurementLabel: string;
+      measurementMetric: string;
+      measurementImperial: string;
     };
 
     sites: InjectionSite[];
