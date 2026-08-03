@@ -23,7 +23,6 @@ import {
     Info
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../../shared/lib/supabase';
 import { errorHandler } from '../../shared/lib/error-handler';
 import { usePreferences } from '../../context/PreferencesContext';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -120,19 +119,24 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
 
         setIsSubmitting(true);
         try {
-            const { error } = await supabase
-                .from('contact_messages')
-                .insert([{
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     name: data.name,
                     email: data.email,
-                    subject: data.subject,
                     topic: data.topic,
+                    subject: data.subject,
                     message: data.message,
-                    order_id: data.orderId || null,
-                    user_agent: window.navigator.userAgent,
-                }]);
+                    orderId: data.orderId || null,
+                    userAgent: window.navigator.userAgent,
+                }),
+            });
 
-            if (error) throw error;
+            const result: { message?: string } | null = await response.json().catch((): null => null);
+            if (!response.ok) {
+                throw new Error(result?.message || `Request failed with status ${response.status}`);
+            }
 
             setIsSubmitted(true);
             toast.success(content.contactTransmissionReceivedTitle || "Transmission Securely Received");
@@ -142,6 +146,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
             setTimeout(() => setIsSubmitted(false), 5000);
         } catch (error) {
             errorHandler.handle(error, 'ContactForm');
+            toast.error(content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again.");
         } finally {
             setIsSubmitting(false);
         }

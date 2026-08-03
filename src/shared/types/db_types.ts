@@ -219,10 +219,10 @@ export type Database = {
             contact_messages: {
                 Row: {
                     id: string
-                    name: string
+                    operator_name: string
                     email: string
+                    mission_type: string
                     subject: string
-                    topic: string
                     message: string
                     order_id: string | null
                     user_agent: string | null
@@ -230,10 +230,10 @@ export type Database = {
                 }
                 Insert: {
                     id?: string
-                    name: string
+                    operator_name: string
                     email: string
+                    mission_type: string
                     subject: string
-                    topic: string
                     message: string
                     order_id?: string | null
                     user_agent?: string | null
@@ -241,10 +241,10 @@ export type Database = {
                 }
                 Update: {
                     id?: string
-                    name?: string
+                    operator_name?: string
                     email?: string
+                    mission_type?: string
                     subject?: string
-                    topic?: string
                     message?: string
                     order_id?: string | null
                     user_agent?: string | null
