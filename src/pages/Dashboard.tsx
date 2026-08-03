@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { getAvatarUrl } from '../shared/lib/avatar-service';
+import { getCalculatorHistory, deleteCalculatorHistory } from '../shared/lib/calculator-history';
+import { downloadSecureBook } from '../shared/lib/secure-download';
 import {
     ChevronDown,
     BookOpen,
@@ -25,8 +27,14 @@ import {
     Activity,
     Layers,
     UserCheck,
-    Sliders
+    Sliders,
+    History,
+    Trash2,
+    Syringe,
+    Loader2,
+    RefreshCw
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface DashboardProps {
     navigateTo: (page: Page) => void;
@@ -36,12 +44,69 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
     const { isRTL, content } = usePreferences();
     const { user, loading, signOut, profileData } = useAuth();
 
+    const [history, setHistory] = useState<Array<{ id: string; tool: string; title: string | null; inputs: Record<string, unknown>; result: Record<string, unknown>; created_at: string }>>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [downloading, setDownloading] = useState<'en' | 'ar' | null>(null);
+
     // Protection Logic
     useEffect(() => {
         if (!loading && !user) {
             navigateTo(Page.LOGIN);
         }
     }, [user, loading, navigateTo]);
+
+    const loadHistory = async () => {
+        if (!user) return;
+        setHistoryLoading(true);
+        const rows = await getCalculatorHistory(40);
+        setHistory(rows as Array<{ id: string; tool: string; title: string | null; inputs: Record<string, unknown>; result: Record<string, unknown>; created_at: string }>);
+        setHistoryLoading(false);
+    };
+
+    useEffect(() => {
+        if (!user) return;
+        let cancelled = false;
+        Promise.resolve()
+            .then(() => {
+                if (cancelled) return;
+                setHistoryLoading(true);
+                return getCalculatorHistory(40);
+            })
+            .then(rows => {
+                if (cancelled) return;
+                setHistory(rows as Array<{ id: string; tool: string; title: string | null; inputs: Record<string, unknown>; result: Record<string, unknown>; created_at: string }>);
+                setHistoryLoading(false);
+            })
+            .catch(() => {
+                if (!cancelled) setHistoryLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [user]);
+
+    const handleDeleteHistory = async (id: string) => {
+        const ok = await deleteCalculatorHistory(id);
+        if (ok) {
+            setHistory(prev => prev.filter(h => h.id !== id));
+            toast.success(isRTL ? 'تم حذف السجل' : 'History entry deleted');
+        } else {
+            toast.error(isRTL ? 'فشل حذف السجل' : 'Failed to delete entry');
+        }
+    };
+
+    const handleSecureDownload = async (file: 'en' | 'ar') => {
+        setDownloading(file);
+        const res = await downloadSecureBook(file);
+        setDownloading(null);
+        if (res.ok) {
+            toast.success(isRTL ? 'بدأ تحميل الكتاب الآمن' : 'Secure download started');
+        } else if (res.error === 'auth') {
+            toast.error(isRTL ? 'جلسة منتهية، يرجى تسجيل الدخول مجدداً' : 'Session expired. Please log in again.');
+        } else if (res.error === 'subscription') {
+            toast.error(isRTL ? 'الاشتراك المدفوع مطلوب لهذا التحميل' : 'Active subscription required for this download.');
+        } else {
+            toast.error(isRTL ? 'فشل التحميل، حاول مرة أخرى' : 'Download failed. Please try again.');
+        }
+    };
 
     if (loading) {
         return (
@@ -110,7 +175,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
 
     const avatarUrl = getAvatarUrl({
         email: email,
-        provider: (user as any).app_metadata?.provider,
+        provider: (user as unknown as { app_metadata?: { provider?: string } }).app_metadata?.provider,
         providerAvatarUrl: profileData?.avatar_url || userData.avatar_url || userData.picture,
     });
 
@@ -147,8 +212,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         {
             icon: BookOpen,
             label: isRTL ? 'الكتاب الإلكتروني الذهبي الكامل' : 'Full Golden E-Book Guide',
-            downloadUrl: '/Example_MrXSteroid_Book.pdf',
-            arabicUrl: '/Example_MrXSteroid_Book_Ar.pdf'
+            download: 'en' as 'en' | 'ar'
         },
         {
             icon: Sliders,
@@ -161,6 +225,34 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
             page: Page.GENETIC
         },
     ];
+
+    // Tool icon/label metadata for the assessment history section
+    const historyToolMeta: Record<string, { icon: typeof Calculator; label: string }> = {
+        macro: { icon: Calculator, label: isRTL ? 'حاسبة الماكروز' : 'Macro Calculator' },
+        bodyfat: { icon: Activity, label: isRTL ? 'حاسبة نسبة الدهون' : 'Body Fat' },
+        injection: { icon: Syringe, label: isRTL ? 'خريطة الحقن' : 'Injection Map' },
+        halflife: { icon: Activity, label: isRTL ? 'نصف العمر' : 'Half-Life' },
+        genetic: { icon: Sparkles, label: isRTL ? 'الإمكانات الجينية' : 'Genetic' },
+    };
+
+    const formatHistorySummary = (entry: { tool: string; inputs: Record<string, unknown>; result: Record<string, unknown> }): string => {
+        const r = entry.result || {};
+        const i = entry.inputs || {};
+        switch (entry.tool) {
+            case 'macro':
+                return `${r.calories ?? '?'} ${isRTL ? 'سعرة' : 'kcal'} · P ${r.protein ?? '?'}/C ${r.carbs ?? '?'}/F ${r.fats ?? '?'}`;
+            case 'bodyfat':
+                return `${isRTL ? 'نسبة الدهون' : 'Body Fat'} ${r.bodyFatPercentage ?? '?'}% · BMI ${r.bmi ?? '?'}`;
+            case 'injection':
+                return `${String(i.siteName ?? '')} · ${String(r.riskLevel ?? '')}`;
+            case 'halflife':
+                return `${isRTL ? 'عدد المركبات' : 'Compounds'}: ${Array.isArray(r.stack) ? r.stack.length : 0}`;
+            case 'genetic':
+                return `${isRTL ? 'طبيعي' : 'Natural'} ${r.natural ?? '?'} kg · ${isRTL ? 'معزز' : 'Enhanced'} ${r.enhanced ?? '?'} kg`;
+            default:
+                return JSON.stringify(r).slice(0, 120);
+        }
+    };
 
     return (
         <div className="min-h-screen pt-28 pb-20 px-4 bg-black text-white selection:bg-gold-500 selection:text-black relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -445,21 +537,25 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                             <div className="p-6 pt-2 border-t border-gold-500/20">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {paidContentItems.map((item, index) => (
-                                        item.downloadUrl ? (
-                                            <a
+                                        item.download ? (
+                                            <button
                                                 key={index}
-                                                href={isRTL ? item.arabicUrl : item.downloadUrl}
-                                                download
+                                                onClick={() => handleSecureDownload(item.download)}
+                                                disabled={downloading !== null}
                                                 className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-950/80 border border-gold-500/30 hover:border-gold-400 hover:bg-zinc-900 transition-all text-start group"
                                             >
                                                 <div className="p-3 rounded-xl bg-gold-500/20 text-gold-400 group-hover:scale-110 transition-transform shrink-0">
-                                                    <Download className="w-5 h-5" />
+                                                    {downloading === item.download ? (
+                                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                                    ) : (
+                                                        <Download className="w-5 h-5" />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-bold text-white group-hover:text-gold-400 transition-colors">{item.label}</h4>
-                                                    <p className="text-xs text-zinc-500">{isRTL ? 'تحميل مباشر ملف PDF' : 'Direct PDF Download'}</p>
+                                                    <p className="text-xs text-zinc-500">{isRTL ? 'تحميل آمن ومشفر' : 'Secure authenticated download'}</p>
                                                 </div>
-                                            </a>
+                                            </button>
                                         ) : (
                                             <button
                                                 key={index}
@@ -495,6 +591,82 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                         )}
                     </details>
                 </div>
+
+                {/* ── Assessment & Calculator History ──────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6"
+                >
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-gold-500/10 rounded-xl border border-gold-500/20 text-gold-500">
+                                <History className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-white">{isRTL ? 'سجل التقييمات والحاسبات' : 'Assessment & Calculator History'}</h2>
+                                <p className="text-xs text-zinc-400">{isRTL ? 'آخر النتائج المحفوظة من أدواتك تلقائياً' : 'Your latest auto-saved tool results'}</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={loadHistory}
+                            className="text-xs font-bold text-gold-400 hover:text-gold-300 flex items-center gap-1.5"
+                        >
+                            <RefreshCw className={`w-3.5 h-3.5 ${historyLoading ? 'animate-spin' : ''}`} />
+                            <span>{isRTL ? 'تحديث' : 'Refresh'}</span>
+                        </button>
+                    </div>
+
+                    {historyLoading && history.length === 0 ? (
+                        <div className="flex items-center justify-center gap-3 py-10 text-zinc-500">
+                            <Loader2 className="w-5 h-5 animate-spin text-gold-500" />
+                            <p className="text-sm font-bold">{isRTL ? 'جاري تحميل السجل...' : 'Loading history...'}</p>
+                        </div>
+                    ) : history.length === 0 ? (
+                        <div className="text-center py-10 space-y-3">
+                            <History className="w-10 h-10 text-zinc-700 mx-auto" />
+                            <p className="text-sm font-bold text-zinc-500">
+                                {isRTL ? 'لا توجد نتائج محفوظة بعد' : 'No saved results yet'}
+                            </p>
+                            <p className="text-xs text-zinc-600">
+                                {isRTL ? 'استخدم أي حاسبة وستُحفظ نتائجك هنا تلقائياً.' : 'Run any calculator and your results will be saved here automatically.'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {history.map(entry => {
+                                const meta = historyToolMeta[entry.tool] || { icon: Calculator, label: entry.tool };
+                                const IconComp = meta.icon;
+                                return (
+                                    <div
+                                        key={entry.id}
+                                        className="flex items-start gap-4 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 hover:border-gold-500/30 transition-colors"
+                                    >
+                                        <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
+                                            <IconComp className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <h4 className="text-sm font-bold text-white truncate">{entry.title || meta.label}</h4>
+                                                <span className="text-[10px] text-zinc-500 font-bold shrink-0 uppercase">
+                                                    {new Date(entry.created_at).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-zinc-400 mt-1 truncate">{formatHistorySummary(entry)}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteHistory(entry.id)}
+                                            aria-label={isRTL ? 'حذف السجل' : 'Delete entry'}
+                                            className="p-2 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </motion.div>
 
             </div>
         </div>

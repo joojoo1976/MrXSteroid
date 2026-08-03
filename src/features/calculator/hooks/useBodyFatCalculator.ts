@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { ContentStrings } from '@/shared/types/types';
 import { convertValue, toMetric, toDisplayUnit, getWeightUnitLabel, getLengthUnitLabel } from '../../../shared/lib/logic';
 import { usePreferences } from '../../../context/PreferencesContext';
+import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
 
 export interface BodyFatResult {
   bodyFatPercentage: number;
@@ -256,6 +257,14 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
       };
 
       setResult(finalResult);
+
+      // Auto-save assessment to the user's calculator history
+      saveCalculatorResult({
+        tool: 'bodyfat',
+        title: isAr ? 'حاسبة نسبة الدهون' : 'Body Fat Calculator',
+        inputs: { gender, age: a, weight: w, height: h, waist: wi, hip: hi, neck: n, activityLevel },
+        result: finalResult as unknown as Record<string, unknown>,
+      });
 
       window.dispatchEvent(
         new CustomEvent('bodyfat_calculated', {

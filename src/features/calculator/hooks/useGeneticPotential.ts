@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
+import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
 
 export interface GeneticResult {
     natural: number;
@@ -139,7 +140,7 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
         // thigh/calf are stored as display values (not in baseMeasurements), use as-is
         // but they are entered in the current unit system, so no conversion needed here
 
-        setResult({
+        const geneticResult: GeneticResult = {
             natural: Math.round(naturalWeight),
             enhanced: Math.round(enhancedWeight),
             type,
@@ -154,8 +155,18 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
                 { name: content.geneticCalculator.labels.thigh, current: thighRaw, potential: naturalPotentials.thigh, unit: isImperial ? 'in' : 'cm' },
                 { name: content.geneticCalculator.labels.calf, current: calfRaw, potential: naturalPotentials.calf, unit: isImperial ? 'in' : 'cm' },
             ]
+        };
+
+        setResult(geneticResult);
+
+        // Auto-save assessment to the user's calculator history
+        saveCalculatorResult({
+            tool: 'genetic',
+            title: isRTL ? 'حاسبة الإمكانات الجينية' : 'Genetic Potential Calculator',
+            inputs: { height: h, wrist: w, ankle: a, bodyFat: bf, unitSystem },
+            result: geneticResult as unknown as Record<string, unknown>,
         });
-    }, [baseMeasurements, formData, content, isImperial, isRTL]);
+    }, [baseMeasurements, formData, content, isImperial, isRTL, unitSystem]);
 
     const reset = useCallback(() => {
         setFormData({ height: '', wrist: '', ankle: '', bodyFat: '12', shoulders: '', chest: '', waist: '', thigh: '', calf: '' });

@@ -13,6 +13,7 @@ import { convertValue } from '../../shared/lib/logic';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useInjectionMap, Hotspot } from './hooks/useInjectionMap';
+import { saveCalculatorResult } from '../../shared/lib/calculator-history';
 
 
 interface InjectionMapProps {
@@ -295,7 +296,21 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                           type="button"
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); setActiveSite(spot); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSite(spot);
+                            saveCalculatorResult({
+                              tool: 'injection',
+                              title: isAr ? 'خريطة مواضع الحقن' : 'Injection Map',
+                              inputs: { siteId: spot.id, siteName: spot.name, unitSystem: unitSystem || 'metric' },
+                              result: {
+                                riskLevel: spot.riskLevel,
+                                absorption: spot.absorption,
+                                maxVolumeMl: spot.maxVolumeMl,
+                                needle: spot.needle,
+                              } as unknown as Record<string, unknown>,
+                            });
+                          }}
                           className={`relative w-4 h-4 rounded-full border-2 border-white/20 shadow-lg transition-colors cursor-pointer ${activeSite?.id === spot.id
                             ? 'bg-gold-400 ring-4 ring-gold-400/30'
                             : 'bg-primary ring-4 ring-primary/20 hover:bg-gold-500 hover:ring-gold-500/30'

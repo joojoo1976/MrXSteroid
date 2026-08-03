@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ContentStrings } from '@/shared/types/types';
 import { UnitSystem } from '@/shared/lib/logic';
+import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
 
 export interface StackItem {
     id: string;
@@ -102,7 +103,16 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
             bgColorClass: `bg-gold-500`
         };
         setStack([...stack, newItem]);
-    }, [selectedCompound, compoundId, dosage, frequency, duration, startWeek, stack, colors]);
+
+        // Auto-save the assessed stack snapshot to the user's calculator history
+        const compoundName = selectedCompound?.name || compoundId;
+        saveCalculatorResult({
+            tool: 'halflife',
+            title: isRTL ? 'محاكي نصف العمر فارماسيم' : 'PharmaSim Half-Life Simulator',
+            inputs: { compoundId, compoundName, dosage, frequency, duration, startWeek, unitSystem },
+            result: { stack: [...stack, newItem].map(s => ({ compoundId: s.compoundId, dosage: s.dosage, frequency: s.frequency, duration: s.duration })) } as Record<string, unknown>,
+        });
+    }, [selectedCompound, compoundId, dosage, frequency, duration, startWeek, stack, colors, isRTL, unitSystem]);
 
     const removeFromStack = useCallback((id: string) => {
         setStack(prev => prev.filter(s => s.id !== id));

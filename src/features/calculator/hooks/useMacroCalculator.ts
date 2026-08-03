@@ -4,6 +4,7 @@ import { ContentStrings, DailyMeal } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
 import { foodDatabase } from '../constants/foodDatabase';
 import { usePreferences } from '../../../context/PreferencesContext';
+import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
 
 export interface CalcResult {
     calories: number;
@@ -235,6 +236,14 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
 
             setResult(newResult);
             setAiInsight(content.calcAiInsightText);
+            
+            // Auto-save assessment to the user's calculator history
+            saveCalculatorResult({
+                tool: 'macro',
+                title: isAr ? 'حاسبة الماكروز' : 'Macro Calculator',
+                inputs: { weight: baseWeight, height: baseHeight, age: a, gender, activity, goal },
+                result: newResult as unknown as Record<string, unknown>,
+            });
             
             // حساب وإعداد البيانات الأيضية للمحاكاة الأسبوعية
             const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;

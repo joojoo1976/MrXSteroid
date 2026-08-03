@@ -57,6 +57,11 @@
       ]
     }
   ],
+  "functions": {
+    "api/download.ts": {
+      "includeFiles": "private/books/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

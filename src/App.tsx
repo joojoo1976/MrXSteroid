@@ -38,6 +38,7 @@ import { PreferencesProvider } from './context/PreferencesProvider';
 import { RegionProvider } from './context/RegionContext';
 import PreferencesModal from './features/modal/PreferencesModal';
 import AuthGuard from './features/auth/AuthGuard';
+import AdminGuard from './features/auth/AdminGuard';
 import { useTheme } from './hooks/useTheme';
 
 // Note: SmartBookLanding, LoginPage, SignupPage, ResetPasswordPage moved to Lazy Loaded section below
@@ -78,6 +79,7 @@ const CancelPage = React.lazy(() => import('./pages/CancelPage'));
 const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage'));
 const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminAnalytics = React.lazy(() => import('./pages/AdminAnalytics'));
 const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
 const PaymentConfigDiagnostic = React.lazy(() => import('./pages/PaymentConfigDiagnostic'));
 
@@ -322,6 +324,7 @@ function AppContent({
               )}
               {currentPage === Page.REPRESENTATIVE && <AuthGuard><RepresentativePage /></AuthGuard>}
               {currentPage === Page.ADMIN_DASHBOARD && <AuthGuard><AdminDashboard /></AuthGuard>}
+              {currentPage === Page.ADMIN_ANALYTICS && <AdminGuard navigateTo={navigateTo}><AdminAnalytics /></AdminGuard>}
               {currentPage === Page.AUTH_CALLBACK && <AuthCallbackPage />}
               {currentPage === Page.PAYMENT_CONFIG_DIAGNOSTIC && <PaymentConfigDiagnostic />}
             </Suspense>
@@ -408,6 +411,7 @@ export default function App() {
           'payment-pending': Page.PAYMENT_PENDING,
           'representative': Page.REPRESENTATIVE,
           'admin': Page.ADMIN_DASHBOARD,
+          'admin-analytics': Page.ADMIN_ANALYTICS,
           'auth/callback': Page.AUTH_CALLBACK,
           'callback': Page.AUTH_CALLBACK,
           'macro': Page.MACRO,
@@ -471,6 +475,7 @@ export default function App() {
         'payment-pending': Page.PAYMENT_PENDING,
         'representative': Page.REPRESENTATIVE,
         'admin': Page.ADMIN_DASHBOARD,
+        'admin-analytics': Page.ADMIN_ANALYTICS,
         'auth/callback': Page.AUTH_CALLBACK,
         'callback': Page.AUTH_CALLBACK,
         'macro': Page.MACRO,
@@ -532,6 +537,7 @@ export default function App() {
       [Page.PAYMENT_PENDING]: '/payment-pending',
       [Page.REPRESENTATIVE]: '/representative',
       [Page.ADMIN_DASHBOARD]: '/admin',
+      [Page.ADMIN_ANALYTICS]: '/admin-analytics',
       [Page.AUTH_CALLBACK]: '/auth/callback',
       [Page.MACRO]: '/macro',
       [Page.BODYFAT]: '/bodyfat',
