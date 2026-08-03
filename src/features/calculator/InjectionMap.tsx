@@ -55,6 +55,25 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     return `${ml} ml`;
   };
 
+  const formatNeedleLength = (site: Hotspot): string => {
+    const inchArr = site.needleLengthInch;
+    if (!inchArr || inchArr.length === 0) return '';
+    const fmt = (inch: number) => {
+      if (isImperial) return `${inch}"`;
+      const cm = (inch * 2.54);
+      return `${cm % 1 === 0 ? cm.toFixed(0) : cm.toFixed(1)} cm`;
+    };
+    if (inchArr.length === 1) return fmt(inchArr[0]);
+    return `${fmt(inchArr[0])} – ${fmt(inchArr[1])}`;
+  };
+
+  const formatNeedle = (site: Hotspot): string => {
+    if (site.needleGauge && site.needleLengthInch && site.needleLengthInch.length > 0) {
+      return `${site.needleGauge} (${formatNeedleLength(site)})`;
+    }
+    return site.needleSpecs || site.needle;
+  };
+
   const muscleTypeLabel = (site: Hotspot) => {
     if (site.muscleType === 'Small') return deep.smallMuscle;
     if (site.muscleType === 'Large') return deep.largeMuscle;
@@ -284,7 +303,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-bold">
                           <Crosshair className="w-3.5 h-3.5 text-gold-400" />
-                          {hoverSite.needle}
+                          {formatNeedle(hoverSite)}
                         </div>
                       </div>
                       {hoverSite.riskLevel && (
@@ -384,7 +403,10 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                         <ScanLine className="w-3.5 h-3.5 text-gold-400" />
                         {deep.needleLabel}
                       </div>
-                      <p className="text-xl font-black text-white">{activeSite.needleSpecs || activeSite.needle}</p>
+                      <p className="text-xl font-black text-white">{formatNeedle(activeSite)}</p>
+                      {activeSite.needleSpecs && (
+                        <p className="text-[10px] text-zinc-500 font-bold mt-1 leading-snug" dir="auto">{activeSite.needleSpecs}</p>
+                      )}
                     </div>
                   </div>
 

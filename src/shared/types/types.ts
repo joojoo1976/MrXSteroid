@@ -197,7 +197,9 @@ export interface InjectionSite {
   muscleType?: 'Small' | 'Medium' | 'Large';
   nearbyStructures?: string; // Nerves/vessels warning text
   landmarks?: string; // Anatomical landmarks explanation
-  needleSpecs?: string; // Detailed needle recommendation
+  needleSpecs?: string; // Detailed needle recommendation (descriptive tail)
+  needleGauge?: string; // e.g. "25–27G"
+  needleLengthInch?: number[]; // e.g. [1, 1.5] — min/max in inches, or single value
   maxVolumeMl?: number; // Numeric max volume for unit conversion
   absorptionRate?: number; // Bioavailability % (0-100)
   angleDepth?: string; // e.g. "90° perpendicular"

@@ -26,6 +26,8 @@ export interface Hotspot {
     nearbyStructures?: string;
     landmarks?: string;
     needleSpecs?: string;
+    needleGauge?: string;
+    needleLengthInch?: number[];
     maxVolumeMl?: number;
     absorptionRate?: number;
     angleDepth?: string;
