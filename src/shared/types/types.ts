@@ -192,6 +192,17 @@ export interface InjectionSite {
   pathD: string; // SVG Path Data
   icon?: string; // e.g. "💉"
   advice?: string; // e.g. "Rotation is key..."
+
+  // Deep Intelligence Anatomy Schema (bilingual in ar/en content files)
+  muscleType?: 'Small' | 'Medium' | 'Large';
+  nearbyStructures?: string; // Nerves/vessels warning text
+  landmarks?: string; // Anatomical landmarks explanation
+  needleSpecs?: string; // Detailed needle recommendation
+  maxVolumeMl?: number; // Numeric max volume for unit conversion
+  absorptionRate?: number; // Bioavailability % (0-100)
+  angleDepth?: string; // e.g. "90° perpendicular"
+  rotationAdvice?: string; // Recovery & rotation advice
+  precautions?: string[]; // Safety & aspiration rules
 }
 
 export interface FaqItem {
@@ -1182,20 +1193,26 @@ export interface ContentStrings {
       footer: string;
     };
 
-    editPoints: {
-      eyebrow: string;
-      title: string;
-      intro: string;
-      dragHint: string;
-      saveHint: string;
-      enableBtn: string;
-      disableBtn: string;
-      resetBtn: string;
-      saveBtn: string;
-      savedToast: string;
-      resetToast: string;
-      activeLabel: string;
-      inactiveLabel: string;
+    deepLabels: {
+      sidebarEyebrow: string;
+      sidebarTitle: string;
+      sidebarSubtitle: string;
+      anatomicalLabel: string;
+      volumeLabel: string;
+      needleLabel: string;
+      absorptionLabel: string;
+      angleLabel: string;
+      rotationLabel: string;
+      precautionsLabel: string;
+      muscleTypeLabel: string;
+      smallMuscle: string;
+      mediumMuscle: string;
+      largeMuscle: string;
+      safetyLabel: string;
+      nearNerves: string;
+      closeBtn: string;
+      selectPointHint: string;
+      hoverHint: string;
     };
 
     sites: InjectionSite[];

@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Zap, Activity, AlertTriangle, Sparkles, Rotate3d, RefreshCw,
-  Stethoscope, Move, Undo2, CheckCircle2
+  Stethoscope, CheckCircle2, Syringe, Crosshair, Clock, TrendingUp,
+  ScanLine, BrainCircuit, X
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -34,10 +35,6 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     activeHotspots,
     dynamicStats,
     isImperial,
-    setCustomPosition,
-    savePositions,
-    hasUnsavedChanges,
-    resetCustomPositions,
   } = useInjectionMap({
     content,
     unitSystem: unitSystem || 'metric',
@@ -45,56 +42,29 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
   });
 
   const mapContent = content.injectionMap;
-
-  const [editMode, setEditMode] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [showAdvice, setShowAdvice] = useState(true);
+  const deep = mapContent.deepLabels;
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2600);
-  };
+  const [showAdvice, setShowAdvice] = useState(true);
 
-  const handleDrag = (site: Hotspot, e: React.PointerEvent) => {
-    if (!editMode) {
-      setActiveSite(site);
-      return;
+  const formatVolume = (site: Hotspot) => {
+    const ml = site.maxVolumeMl ?? parseFloat(site.volume.match(/[0-9.]+/)?.[0] || "1");
+    if (isImperial) {
+      return `${convertValue(ml, 'volume', 'imperial').toFixed(2)} oz`;
     }
-    e.preventDefault();
-    e.stopPropagation();
-
-    const update = (clientX: number, clientY: number) => {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect || rect.width === 0) return;
-      let nx = ((clientX - rect.left) / rect.width) * 100;
-      let ny = ((clientY - rect.top) / rect.height) * 100;
-      nx = Math.min(100, Math.max(0, nx));
-      ny = Math.min(100, Math.max(0, ny));
-      setCustomPosition(site.id, nx, ny);
-    };
-
-    const onMove = (ev: PointerEvent) => {
-      ev.preventDefault();
-      update(ev.clientX, ev.clientY);
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    return `${ml} ml`;
   };
 
-  const handleReset = () => {
-    resetCustomPositions();
-    showToast(mapContent.editPoints?.resetToast || 'Reset Points');
+  const muscleTypeLabel = (site: Hotspot) => {
+    if (site.muscleType === 'Small') return deep.smallMuscle;
+    if (site.muscleType === 'Large') return deep.largeMuscle;
+    return deep.mediumMuscle;
   };
 
-  const handleSave = () => {
-    savePositions();
-    setEditMode(false);
-    showToast(mapContent.editPoints?.savedToast || 'Saved');
+  const riskMeta = (risk: string) => {
+    if (risk === 'Low') return { label: 'Low', color: 'text-emerald-400', bar: 'w-[90%] bg-emerald-500', chip: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' };
+    if (risk === 'Medium') return { label: 'Medium', color: 'text-amber-400', bar: 'w-[60%] bg-amber-500', chip: 'bg-amber-500/10 border-amber-500/30 text-amber-400' };
+    return { label: 'High', color: 'text-red-400', bar: 'w-[30%] bg-red-500', chip: 'bg-red-500/10 border-red-500/30 text-red-400' };
   };
 
   return (
@@ -115,21 +85,6 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           {mapContent.subtitle}
         </motion.p>
       </header>
-
-      {/* Toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] bg-emerald-500 text-black font-black px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            <span dir="auto">{toast}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── System Guide: خريطة الحقن التفاعلية ── */}
       <div className="mb-8 relative z-10">
@@ -153,8 +108,8 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
               icon: Rotate3d,
               title: { ar: '1. النموذج التشريحي ثلاثي الأبعاد', en: '1. 3D Anatomical Model' },
               body: {
-                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي)، ويمكنك تحريك أي نقطة لتدقيق موقع العضلة على جسدك بدقة.',
-                en: 'A rotatable front/back human model; you can drag any point to precisely match your own anatomy.',
+                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي)، مع نقاط تشريحية مثبتة بدقة على العضلات.',
+                en: 'A rotatable front/back human model with anatomical points anchored precisely over the target muscles.',
               },
             },
             {
@@ -195,47 +150,29 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
           <StatCard label={mapContent.efficiencyLabel || "Efficiency"} value={`${dynamicStats.absorption}%`} color="text-gold-400" icon={<Zap className="w-4 h-4" />} />
           <StatCard label={mapContent.riskLevelLabel} value={`${dynamicStats.safety}%`} color={dynamicStats.safety > 80 ? "text-green-400" : "text-yellow-400"} icon={<Shield className="w-4 h-4" />} />
           <StatCard label={mapContent.stimulatedCellsLabel} value={dynamicStats.cells} color="text-cyan-400" icon={<Activity className="w-4 h-4" />} />
-
-          {/* Point Editing Panel */}
-          <div className={`rounded-[2rem] border p-5 flex flex-col gap-3 transition-colors ${editMode ? 'bg-amber-500/10 border-amber-500/40' : 'bg-zinc-900/40 border-white/5'}`}>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-300 font-bold">
-              <Move className="w-4 h-4 text-amber-400" />
-              {mapContent.editPoints?.eyebrow}
-            </div>
-            <h4 className="text-lg font-black text-white leading-snug">{mapContent.editPoints?.title}</h4>
-            <p className="text-xs text-zinc-400 leading-relaxed">{mapContent.editPoints?.intro}</p>
-            {editMode && (
-              <p className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                {mapContent.editPoints?.activeLabel}
-              </p>
-            )}
-            <button
-              onClick={() => setEditMode(m => !m)}
-              className={`w-full py-3 rounded-xl font-black transition-all flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'}`}
+          {activeSite && (
+            <motion.div
+              key={activeSite.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-[2rem] border border-gold-500/25 bg-gold-500/5 p-5"
             >
-              <Move className="w-4 h-4" />
-              {mapContent.editPoints?.[editMode ? 'disableBtn' : 'enableBtn']}
-            </button>
-            {hasUnsavedChanges && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                onClick={handleSave}
-                className="w-full py-3 rounded-xl font-black bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {mapContent.editPoints?.saveBtn || "Save Points"}
-              </motion.button>
-            )}
-            <button
-              onClick={handleReset}
-              className="w-full py-3 rounded-xl font-black text-zinc-300 border border-white/10 hover:bg-white/5 flex items-center justify-center gap-2"
-            >
-              <Undo2 className="w-4 h-4" />
-              {mapContent.editPoints?.resetBtn}
-            </button>
-          </div>
+              <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-gold-300 font-bold mb-2">
+                <TrendingUp className="w-4 h-4" />
+                {deep.absorptionLabel}
+              </div>
+              <p className="text-3xl font-black text-gold-400 mb-1">{dynamicStats.absorption}%</p>
+              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-gold-500 to-amber-400 shadow-[0_0_10px_rgba(255,215,0,0.6)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${dynamicStats.absorption}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="text-xs text-zinc-400 mt-3 leading-relaxed">{activeSite.bestFor}</p>
+            </motion.div>
+          )}
         </div>
 
         <div className="lg:col-span-6 flex flex-col items-center">
@@ -267,10 +204,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                     </motion.div>
                   </AnimatePresence>
 
-                  <div
-                    className="absolute inset-0 z-30"
-                    style={{ pointerEvents: editMode ? 'auto' : 'none' }}
-                  >
+                  <div className="absolute inset-0 z-30">
                     {activeHotspots.filter(h => h.side === currentView).map(spot => (
                       <motion.div
                         key={spot.id}
@@ -281,10 +215,9 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                           top: `${spot.y}%`,
                           left: `${spot.x}%`,
                           transform: 'translate(-50%, -50%)',
-                          touchAction: editMode ? 'none' : 'auto',
-                          cursor: editMode ? 'grab' : 'pointer',
+                          cursor: 'pointer',
+                          touchAction: 'auto',
                         }}
-                        onPointerDown={(e) => handleDrag(spot, e)}
                         onMouseEnter={() => setHoverSite(spot)}
                         onMouseLeave={() => setHoverSite(null)}
                       >
@@ -300,8 +233,8 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                           type="button"
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); if (!editMode) setActiveSite(spot); }}
-                          className={`relative w-4 h-4 rounded-full border-2 border-white/20 shadow-lg transition-colors ${editMode ? 'bg-amber-400 border-amber-400 ring-4 ring-amber-400/20' : 'cursor-pointer'} ${activeSite?.id === spot.id && !editMode
+                          onClick={(e) => { e.stopPropagation(); setActiveSite(spot); }}
+                          className={`relative w-4 h-4 rounded-full border-2 border-white/20 shadow-lg transition-colors cursor-pointer ${activeSite?.id === spot.id
                             ? 'bg-gold-400 ring-4 ring-gold-400/30'
                             : 'bg-primary ring-4 ring-primary/20 hover:bg-gold-500 hover:ring-gold-500/30'
                             }`}
@@ -313,13 +246,15 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
               </div>
             </div>
 
+            {/* Glassmorphism Hover Tooltip with connector arrow */}
             <div className="absolute inset-0 z-50 pointer-events-none overflow-visible">
               <AnimatePresence>
                 {hoverSite && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
+                    key={hoverSite.id}
+                    initial={{ opacity: 0, scale: 0.9, y: 4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 4 }}
                     style={{
                       top: `${(hoverSite.y - 50) * 1.35 + 50 + (56 / 700 * 100)}%`,
                       left: `${(hoverSite.x - 50) * 1.35 + 50}%`,
@@ -328,13 +263,13 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                   >
                     <div className={`absolute left-1/2 -translate-x-1/2 w-8 h-[50px] flex justify-center ${hoverSite.y < 50 ? 'bottom-full origin-bottom' : 'top-full origin-top'}`}>
                       <svg width="20" height="50" viewBox="0 0 20 50" className={`overflow-visible ${hoverSite.y < 50 ? 'rotate-180' : ''}`}>
-                        <line x1="10" y1="0" x2="10" y2="45" stroke="#fbbf24" strokeWidth="2" />
+                        <line x1="10" y1="0" x2="10" y2="45" stroke="#fbbf24" strokeWidth="2" strokeDasharray="3 3" />
                         <path d="M 10 50 L 5 42 L 15 42 Z" fill="#fbbf24" />
                         <circle cx="10" cy="0" r="3" fill="#fbbf24" />
                       </svg>
                     </div>
 
-                    <div className="relative w-64 bg-zinc-950/98 border border-gold-500/50 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] backdrop-blur-xl ring-1 ring-white/10">
+                    <div className="relative w-64 bg-zinc-950/70 backdrop-blur-2xl border border-gold-500/40 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] ring-1 ring-white/10">
                       <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
                         <span className="text-gold-400 font-black text-xl tracking-tight">{hoverSite.name}</span>
                         {hoverSite.icon && <span className="text-2xl filter drop-shadow-md">{hoverSite.icon}</span>}
@@ -342,9 +277,19 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                       <div className="text-zinc-200 text-sm font-medium leading-relaxed" dir="auto">
                         {hoverSite.description}
                       </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-bold">
+                          <Syringe className="w-3.5 h-3.5 text-gold-400" />
+                          {formatVolume(hoverSite)}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-bold">
+                          <Crosshair className="w-3.5 h-3.5 text-gold-400" />
+                          {hoverSite.needle}
+                        </div>
+                      </div>
                       {hoverSite.riskLevel && (
                         <div className="mt-3 flex items-center gap-2">
-                          <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Safe Level</span>
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">{deep.safetyLabel}</span>
                           <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
                             <div
                               className={`h-full bg-gold-500 shadow-[0_0_10px_#ea7e08] ${hoverSite.riskLevel === 'Low' ? 'w-[90%]' :
@@ -361,55 +306,159 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             </div>
           </div>
 
-          {/* Unit / Hint bar */}
+          {/* Hint bar */}
           <div className="mt-4 w-full max-w-md text-center">
             <p className="text-xs text-zinc-500 font-bold tracking-widest uppercase flex items-center justify-center gap-2">
-              <Move className="w-3.5 h-3.5 text-amber-400" />
-              {editMode ? mapContent.editPoints?.dragHint : mapContent.editPoints?.inactiveLabel}
+              <ScanLine className="w-3.5 h-3.5 text-gold-400" />
+              {hoverSite ? deep.hoverHint : mapContent.labels?.selectPoint || deep.selectPointHint}
             </p>
           </div>
         </div>
 
+        {/* Deep Intelligence Side Panel */}
         <div className="lg:col-span-3">
           <AnimatePresence mode="wait">
             {activeSite ? (
-              <motion.div key={activeSite.id} className="h-full bg-zinc-900/40 border border-yellow-500/20 rounded-[2.5rem] p-6 flex flex-col shadow-2xl overflow-y-auto">
-                <h3 className="text-xl font-black text-gold-400 mb-4">{activeSite.name}</h3>
-                <div className="space-y-6">
-                  <div className="p-5 bg-zinc-800/50 rounded-2xl border border-white/5">
-                    <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest mb-2">{mapContent.needleSizeLabel}</p>
-                    <p className="text-3xl font-black text-white">{activeSite.needle}</p>
+              <motion.div
+                key={activeSite.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                className="h-full max-h-[700px] bg-zinc-900/40 border border-yellow-500/20 rounded-[2.5rem] p-6 flex flex-col shadow-2xl overflow-y-auto"
+              >
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-gold-400 font-black mb-1">
+                  <BrainCircuit className="w-4 h-4" />
+                  {deep.sidebarEyebrow}
+                </div>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="text-xl font-black text-gold-400 leading-tight">{activeSite.name}</h3>
+                  <button onClick={() => setActiveSite(null)} className="flex-shrink-0 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors" aria-label={deep.closeBtn}>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-[11px] text-zinc-500 font-bold mb-4 leading-relaxed">{deep.sidebarSubtitle}</p>
+
+                <div className="space-y-3 text-sm">
+                  {/* Muscle type + risk chips */}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-black">
+                      {deep.muscleTypeLabel}: {muscleTypeLabel(activeSite)}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full border text-xs font-black ${riskMeta(activeSite.riskLevel).chip}`}>
+                      {deep.safetyLabel}: {riskMeta(activeSite.riskLevel).label}
+                    </span>
                   </div>
-                  <div className="p-5 bg-zinc-800/50 rounded-2xl border border-white/5">
-                    <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest mb-2">{mapContent.maxVolumeLabel}</p>
-                    <p className="text-3xl font-black text-white">
-                      {isImperial
-                        ? `${convertValue(parseFloat(activeSite.volume.match(/[0-9.]+/)?.[0] || "1"), 'volume', 'imperial').toFixed(2)} oz`
-                        : activeSite.volume
-                      }
-                    </p>
+
+                  {/* Anatomical Landmarks */}
+                  <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400 font-bold uppercase tracking-widest mb-2">
+                      <Crosshair className="w-4 h-4 text-gold-400" />
+                      {deep.anatomicalLabel}
+                    </div>
+                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{activeSite.landmarks}</p>
                   </div>
-                  {activeSite.warning && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
-                      <p className="text-lg text-red-400 font-black leading-relaxed flex items-center gap-3">
-                        <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-                        <StyledBrandName text={activeSite.warning} />
-                      </p>
+
+                  {/* Nearby Structures */}
+                  {activeSite.nearbyStructures && (
+                    <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
+                      <div className="flex items-center gap-2 text-xs text-red-400 font-bold uppercase tracking-widest mb-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        {deep.nearNerves}
+                      </div>
+                      <p className="text-zinc-300 font-medium leading-relaxed" dir="auto">{activeSite.nearbyStructures}</p>
                     </div>
                   )}
-                  <div className="relative p-6 bg-gold-500/10 border border-gold-500/20 rounded-2xl">
-                    <p className="text-xl md:text-2xl text-zinc-200 mt-2 font-black italic leading-relaxed">
+
+                  {/* Volume + Needle */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-1.5">
+                        <Syringe className="w-3.5 h-3.5 text-gold-400" />
+                        {deep.volumeLabel}
+                      </div>
+                      <p className="text-xl font-black text-white">{formatVolume(activeSite)}</p>
+                      <p className="text-[10px] text-zinc-500 font-bold mt-1">{mapContent.maxVolumeLabel}</p>
+                    </div>
+                    <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-1.5">
+                        <ScanLine className="w-3.5 h-3.5 text-gold-400" />
+                        {deep.needleLabel}
+                      </div>
+                      <p className="text-xl font-black text-white">{activeSite.needleSpecs || activeSite.needle}</p>
+                    </div>
+                  </div>
+
+                  {/* Absorption */}
+                  <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400 font-bold uppercase tracking-widest mb-2">
+                      <Zap className="w-4 h-4 text-gold-400" />
+                      {deep.absorptionLabel}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-black text-gold-400">{activeSite.absorption}%</span>
+                      <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-gold-500 to-amber-400 shadow-[0_0_10px_rgba(255,215,0,0.6)]"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${activeSite.absorption}%` }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Angle & Depth */}
+                  <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400 font-bold uppercase tracking-widest mb-2">
+                      <Activity className="w-4 h-4 text-gold-400" />
+                      {deep.angleLabel}
+                    </div>
+                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{activeSite.angleDepth}</p>
+                  </div>
+
+                  {/* Rotation & Recovery */}
+                  <div className="p-4 bg-zinc-800/50 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400 font-bold uppercase tracking-widest mb-2">
+                      <Clock className="w-4 h-4 text-gold-400" />
+                      {deep.rotationLabel}
+                    </div>
+                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{activeSite.rotationAdvice}</p>
+                  </div>
+
+                  {/* Precautions */}
+                  {activeSite.precautions && activeSite.precautions.length > 0 && (
+                    <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                      <div className="flex items-center gap-2 text-xs text-emerald-400 font-bold uppercase tracking-widest mb-2">
+                        <Shield className="w-4 h-4" />
+                        {deep.precautionsLabel}
+                      </div>
+                      <ul className="space-y-2">
+                        {activeSite.precautions.map((prec, i) => (
+                          <li key={i} className="flex items-start gap-2" dir="auto">
+                            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-400" />
+                            <span className="text-zinc-300 font-medium leading-relaxed">{prec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Advice quote */}
+                  <div className="relative p-4 bg-gold-500/10 border border-gold-500/20 rounded-2xl">
+                    <p className="text-sm text-zinc-200 font-black italic leading-relaxed">
                       "<StyledBrandName text={activeSite.advice} />"
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setActiveSite(null)} className="mt-auto w-full py-4 bg-gold-500 text-black font-black rounded-2xl">
-                  {mapContent.closeDetailsBtn}
+
+                <button onClick={() => setActiveSite(null)} className="mt-4 w-full py-3 bg-gold-500 text-black font-black rounded-2xl hover:bg-gold-400 transition-colors">
+                  {deep.closeBtn}
                 </button>
               </motion.div>
             ) : (
-              <div className="h-full flex items-center justify-center text-center p-8 bg-zinc-900/20 border-2 border-dashed border-white/5 rounded-[2.5rem]">
-                <p className="text-zinc-400 font-bold">{mapContent.labels?.selectPoint || "Select Point"}</p>
+              <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8 bg-zinc-900/20 border-2 border-dashed border-white/5 rounded-[2.5rem]">
+                <BrainCircuit className="w-10 h-10 text-gold-500/60 mb-4" />
+                <p className="text-zinc-400 font-bold">{deep.selectPointHint}</p>
               </div>
             )}
           </AnimatePresence>
