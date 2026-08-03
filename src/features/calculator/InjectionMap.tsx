@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Zap, Activity, AlertTriangle, Sparkles, Rotate3d, RefreshCw,
   Stethoscope, CheckCircle2, Syringe, Crosshair, Clock, TrendingUp,
-  ScanLine, BrainCircuit, X
+  ScanLine, BrainCircuit, X, Ruler, MousePointerClick
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
@@ -119,21 +119,37 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             en: 'Safe intramuscular injection rotation with optimal absorption efficiency',
           }}
           intro={{
-            ar: 'تعتمد هذه الخريطة على نموذج تشريحي ثلاثي الأبعاد ومحرك أمان سريري لترشدك إلى أفضل موقع حقن للاستخدام المفرد والمتكرر، مع تجنّب الأعصاب والأوعية الدموية:',
-            en: 'Powered by a 3D anatomical model and a clinical safety engine, this map guides you to optimal single and repeat injection sites while avoiding nerves and vessels:',
+            ar: 'نموذج تشريحي تفاعلي مدعوم بمحرك تحليل سريري عميق: مرّر فوق أي نقطة لمعاينة فورية، وانقر لفتح البروتوكول الطبي الكامل — المعالم، الأعصاب المجاورة، الإبرة، الحجم، الزاوية، والتناوب. كل القيم تُعرض تلقائيًا وفق نظام القياس النشط (متري/إمبراطوري):',
+            en: 'An interactive anatomical model powered by a deep clinical analysis engine: hover any point for an instant preview, and click to open the full medical protocol — landmarks, nearby nerves, needle, volume, angle and rotation. Every value renders automatically in your active measurement system (Metric/Imperial):',
           }}
           items={[
             {
               icon: Rotate3d,
               title: { ar: '1. النموذج التشريحي ثلاثي الأبعاد', en: '1. 3D Anatomical Model' },
               body: {
-                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي)، مع نقاط تشريحية مثبتة بدقة على العضلات.',
-                en: 'A rotatable front/back human model with anatomical points anchored precisely over the target muscles.',
+                ar: 'جسد بشري تفاعلي قابل للتدوير (أمامي/خلفي) بنقاط تشريحية مُعايَرة ومثبتة بدقة فوق العضلات المستهدفة دون الحاجة لأي تحريك يدوي.',
+                en: 'A rotatable front/back human model with calibrated anatomical points anchored precisely over the target muscles — no manual dragging needed.',
+              },
+            },
+            {
+              icon: MousePointerClick,
+              title: { ar: '2. معاينة فورية بالتلميح الزجاجي', en: '2. Instant Glass Preview' },
+              body: {
+                ar: 'مرّر المؤشر فوق أي نقطة لفتح تلميح زجاجي متصل بسهم مع الوصف، الحجم الآمن، مواصفات الإبرة، ومستوى الأمان في لحظة.',
+                en: 'Hover any point to open a glass tooltip with a connector arrow showing description, safe volume, needle specs and safety level instantly.',
+              },
+            },
+            {
+              icon: BrainCircuit,
+              title: { ar: '3. لوحة التحليل السريري العميق', en: '3. Deep Intelligence Panel' },
+              body: {
+                ar: 'انقر أي موقع لعرض البروتوكول الكامل: المعالم التشريحية، البنى المجاورة من أعصاب وأوعية، نوع العضلة، حدود الحجم، زاوية الحقن، إرشادات التناوب، وقواعد الشفط والأمان.',
+                en: 'Click any site for the full protocol: anatomical landmarks, nearby nerves and vessels, muscle type, volume limits, injection angle, rotation guidance, and aspiration safety rules.',
               },
             },
             {
               icon: Shield,
-              title: { ar: '2. محرك الأمان ومستوى الخطر', en: '2. Safety & Risk Engine' },
+              title: { ar: '4. محرك الأمان ومستوى الخطر', en: '4. Safety & Risk Engine' },
               body: {
                 ar: 'يقيّم كل موقع حسب قربه من الأعصاب والأوردة وحجم العضلة، ويعرض مؤشر أمان رقمياً يحدد صلاحية الاستخدام المتكرر.',
                 en: 'Scores every site by proximity to nerves, veins and muscle volume, showing a numeric safety rating for repeat-use suitability.',
@@ -141,7 +157,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             },
             {
               icon: RefreshCw,
-              title: { ar: '3. نظام التناوب الذكي (Rotation)', en: '3. Smart Rotation Logic' },
+              title: { ar: '5. نظام التناوب الذكي (Rotation)', en: '5. Smart Rotation Logic' },
               body: {
                 ar: 'يحسب أفضل تسلسل تناوب بين المواقع لمنع التليّف العضلي والندوب الدهنية، ويوزع الأحمال بأمان على العضلات الكبرى.',
                 en: 'Computes the optimal rotation sequence across sites to prevent muscle fibrosis and lipohypertrophy while balancing load on major muscles.',
@@ -149,10 +165,18 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
             },
             {
               icon: Zap,
-              title: { ar: '4. مؤشرات الامتصاص والتوجيه', en: '4. Absorption Indicators & Guidance' },
+              title: { ar: '6. مؤشرات الامتصاص والتوجيه', en: '6. Absorption Indicators & Guidance' },
               body: {
-                ar: 'يعرض كفاءة امتصاص كل موقع وحجم الحقن الآمن وعمق الإبرة المناسب، مع نصائح فورية للجرعة المنفردة والمتكررة.',
-                en: 'Shows per-site absorption efficiency, safe injection volume and recommended needle depth with instant dosing guidance.',
+                ar: 'يعرض كفاءة امتصاص كل موقع وحجم الحقن الآمن ومواصفات الإبرة المناسبة، مع توجيه فوري للجرعة المنفردة والمتكررة.',
+                en: 'Shows per-site absorption efficiency, safe injection volume and recommended needle specs with instant single and repeat dosing guidance.',
+              },
+            },
+            {
+              icon: Ruler,
+              title: { ar: '7. نظام قياس ذكي (متري/إمبراطوري)', en: '7. Smart Unit System (Metric/Imperial)' },
+              body: {
+                ar: 'تحويل تلقائي لحظي لكل القيم مع تغيير نظام القياس: الأحجام (مل/أوقية) وأطوال الإبر (سم/بوصة) تُعرض فورًا بالوحدة المناسبة.',
+                en: 'Instant automatic conversion of every value on unit-system switch: volumes (ml/oz) and needle lengths (cm/in) render immediately in the right unit.',
               },
             },
           ]}
