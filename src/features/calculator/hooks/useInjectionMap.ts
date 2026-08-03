@@ -30,6 +30,7 @@ export interface Hotspot {
     needleLengthInch?: number[];
     maxVolumeMl?: number;
     absorptionRate?: number;
+    depthInch?: number;
     angleDepth?: string;
     rotationAdvice?: string;
     precautions?: string[];

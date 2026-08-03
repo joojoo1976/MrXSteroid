@@ -74,6 +74,20 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
     return site.needleSpecs || site.needle;
   };
 
+  const formatDepth = (site: Hotspot): string => {
+    const inch = site.depthInch;
+    if (!inch) return '';
+    if (isImperial) return `${inch}"`;
+    const cm = inch * 2.54;
+    const unit = isAr ? ' سم' : ' cm';
+    return `${cm % 1 === 0 ? cm.toFixed(0) : cm.toFixed(2)}${unit}`;
+  };
+
+  const renderAngleDepth = (site: Hotspot): string => {
+    const depth = formatDepth(site);
+    return site.angleDepth ? site.angleDepth.replace('{depth}', depth || '') : '';
+  };
+
   const muscleTypeLabel = (site: Hotspot) => {
     if (site.muscleType === 'Small') return deep.smallMuscle;
     if (site.muscleType === 'Large') return deep.largeMuscle;
@@ -459,7 +473,7 @@ const InjectionMap: React.FC<InjectionMapProps> = ({ content, navigateTo }) => {
                       <Activity className="w-4 h-4 text-gold-400" />
                       {deep.angleLabel}
                     </div>
-                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{activeSite.angleDepth}</p>
+                    <p className="text-zinc-200 font-medium leading-relaxed" dir="auto">{renderAngleDepth(activeSite)}</p>
                   </div>
 
                   {/* Rotation & Recovery */}

@@ -200,6 +200,7 @@ export interface InjectionSite {
   needleSpecs?: string; // Detailed needle recommendation (descriptive tail)
   needleGauge?: string; // e.g. "25–27G"
   needleLengthInch?: number[]; // e.g. [1, 1.5] — min/max in inches, or single value
+  depthInch?: number; // Max penetration depth in inches (e.g. 0.5, 1.5) for dynamic unit display
   maxVolumeMl?: number; // Numeric max volume for unit conversion
   absorptionRate?: number; // Bioavailability % (0-100)
   angleDepth?: string; // e.g. "90° perpendicular"

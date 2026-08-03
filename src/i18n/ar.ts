@@ -446,7 +446,8 @@ export const injectionSitesAr: InjectionSite[] = [
         needleSpecs: "إبرة قصيرة بنمط الأنسولين فقط.",
         needleGauge: "27G",
         needleLengthInch: [0.5],
-        angleDepth: "90 درجة بعمق ضحل، أقصى اختراق 0.5 بوصة.",
+        depthInch: 0.5,
+        angleDepth: "90 درجة بعمق ضحل، أقصى اختراق {depth}.",
         rotationAdvice: "4 أيام كحد أدنى. تجنب هذا الموقع للتدوير المتكرر — احتفظ به للجرعات الصغيرة.",
         precautions: [
             "اسحب المكبس 5–10 ثوانٍ كاملة — الأوردة تمر عبر العضلة مباشرة.",
@@ -477,7 +478,8 @@ export const injectionSitesAr: InjectionSite[] = [
         needleSpecs: "حقن عميق داخل العضل.",
         needleGauge: "23–25G",
         needleLengthInch: [1, 1.5],
-        angleDepth: "90 درجة عمودية، بطول 1.5 بوصة للأجسام الأثقل.",
+        depthInch: 1.5,
+        angleDepth: "90 درجة عمودية، بطول {depth} للأجسام الأثقل.",
         rotationAdvice: "5 أيام بين الجلسات. النقطة المرجعية الأكثر أمانًا في الخريطة كلها.",
         precautions: [
             "اسحب المكبس قبل كل حقنة.",

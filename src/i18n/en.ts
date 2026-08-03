@@ -446,7 +446,8 @@ export const injectionSitesEn: InjectionSite[] = [
         needleSpecs: "Insulin-style short needle only.",
         needleGauge: "27G",
         needleLengthInch: [0.5],
-        angleDepth: "90° shallow, 0.5\" penetration max.",
+        depthInch: 0.5,
+        angleDepth: "90° shallow, {depth} penetration max.",
         rotationAdvice: "4 days minimum. Avoid this site for frequent rotation — reserve for tiny doses.",
         precautions: [
             "Aspirate for a full 5–10 seconds — veins run directly through.",
@@ -477,7 +478,8 @@ export const injectionSitesEn: InjectionSite[] = [
         needleSpecs: "Deep IM delivery.",
         needleGauge: "23–25G",
         needleLengthInch: [1, 1.5],
-        angleDepth: "90° perpendicular, 1.5\" for heavier individuals.",
+        depthInch: 1.5,
+        angleDepth: "90° perpendicular, {depth} for heavier individuals.",
         rotationAdvice: "5 days between sessions. The safest rotation anchor of the whole map.",
         precautions: [
             "Aspirate before every injection.",

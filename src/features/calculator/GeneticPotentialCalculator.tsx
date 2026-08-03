@@ -109,6 +109,14 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
     reset
   } = useGeneticPotential({ content, unitSystem, isRTL: isRTL || false });
 
+  const caseyFormulaForUnits = () => {
+    const base = content.geneticCalculator.caseyFormula;
+    if (isImperial) return base;
+    return base
+      .replace('Height(in)', 'Height(cm)')
+      .replace('الطول(بوصة)', 'الطول(سم)');
+  };
+
   return (
     <div className={`max-w-7xl mx-auto px-4 py-12 ${isRTL ? 'font-cairo' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
@@ -442,7 +450,7 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
                       <div className="mb-5 p-3 bg-white/5 rounded-xl border border-white/10 font-mono text-[11px] text-gold-300 leading-relaxed">
                         <span className="text-[9px] uppercase tracking-widest text-zinc-500 block mb-1">{content.geneticCalculator.caseyFormulaLabel}:</span>
-                        {content.geneticCalculator.caseyFormula}
+                        {caseyFormulaForUnits()}
                       </div>
 
                       <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3">
