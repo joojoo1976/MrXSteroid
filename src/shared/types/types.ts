@@ -1609,6 +1609,7 @@ export interface ContentStrings {
     yesLabel: string;
     noLabel: string;
     saveBtnGeneric: string;
+    missingRequired: string;
   };
 }
 

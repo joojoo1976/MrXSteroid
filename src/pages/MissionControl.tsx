@@ -493,7 +493,7 @@ const CatalogSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: 
     const setF = (k: keyof ProductForm, v: string | number) => setForm(prev => ({ ...prev, [k]: v }));
 
     const saveProduct = async () => {
-        if (!form.name || !form.slug) return toast.error('Missing name/slug');
+        if (!form.name || !form.slug) return toast.error(mc.missingRequired);
         setSaving(true);
         const base = {
             name: form.name, slug: form.slug, sku: form.sku || null,

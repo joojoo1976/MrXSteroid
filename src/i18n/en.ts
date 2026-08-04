@@ -2383,5 +2383,6 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         yesLabel: "Yes",
         noLabel: "No",
         saveBtnGeneric: "Save",
+        missingRequired: "Please fill in the required fields.",
     }
 };

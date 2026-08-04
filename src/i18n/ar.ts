@@ -2376,5 +2376,6 @@ export const arContent: ContentStrings = {
         yesLabel: "نعم",
         noLabel: "لا",
         saveBtnGeneric: "حفظ",
+        missingRequired: "يرجى ملء الحقول المطلوبة.",
     }
 };
