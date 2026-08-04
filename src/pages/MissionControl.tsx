@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
     LayoutDashboard,
     ShoppingCart,
@@ -36,8 +36,9 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import { supabase } from '../shared/lib/supabase';
-import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product, Coupon, DiscountRule, Banner } from '../features/admin/useAdminData';
+import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product, Coupon, DiscountRule, Banner, CustomerNote } from '../features/admin/useAdminData';
 import { usePreferences } from '../context/PreferencesContext';
+import { useAuth } from '../context/AuthContext';
 import { ContentStrings } from '../shared/types/types';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
@@ -216,7 +217,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
         case 'orders': return <OrdersSection data={data} search={search} mc={mc} />;
         case 'catalog': return <CatalogSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'marketing': return <MarketingSection data={data} onRefresh={onRefresh} mc={mc} />;
-        case 'customers': return <CustomersSection data={data} search={search} mc={mc} />;
+        case 'customers': return <CustomersSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
         case 'settings': return <SettingsSection data={data} mc={mc} />;
@@ -1273,8 +1274,33 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
 /* ════════════════════════════════════════════════════════════════════════
    CUSTOMERS (CRM)
    ════════════════════════════════════════════════════════════════════════ */
-const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; mc: MC }> = ({ data, search, mc }) => {
+const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; onRefresh: () => void; mc: MC }> = ({ data, search, onRefresh, mc }) => {
+    const { user } = useAuth();
     const [selected, setSelected] = useState<Profile | null>(null);
+    const [noteText, setNoteText] = useState('');
+    const [editingNote, setEditingNote] = useState<CustomerNote | null>(null);
+    const [noteBusy, setNoteBusy] = useState(false);
+
+    const VIP_SPEND = 500;
+    const ACTIVE_WINDOW_DAYS = 90;
+
+    type Segment = 'vip' | 'active' | 'inactive' | 'new';
+
+    const activeCutoff = useMemo(() => {
+        let latest = 0;
+        data.orders.forEach(o => { const t = new Date(o.created_at).getTime(); if (t > latest) latest = t; });
+        data.invoices.forEach(i => { const t = new Date(i.created_at).getTime(); if (t > latest) latest = t; });
+        if (!latest) return 0;
+        return latest - ACTIVE_WINDOW_DAYS * 86400000;
+    }, [data.orders, data.invoices]);
+
+    const segmentOf = useCallback((p: Profile & { spend: number; total: number; orderCount: number }): Segment => {
+        if (p.spend >= VIP_SPEND || p.total >= 3 || p.has_paid) return 'vip';
+        const lastActivity = p.orderCount > 0;
+        const hasRecentInvoice = activeCutoff > 0 && data.invoices.some(i => i.user_id === p.id && new Date(i.created_at).getTime() >= activeCutoff);
+        if (lastActivity || hasRecentInvoice) return 'active';
+        return p.total === 0 && p.orderCount === 0 ? 'new' : 'inactive';
+    }, [data.invoices, activeCutoff]);
 
     const enriched = useMemo(() => {
         const success = data.invoices.filter(i => i.status === 'success');
@@ -1283,23 +1309,77 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
             const spend = invs.reduce((s, i) => s + Number(i.amount || 0), 0);
             const orderCount = data.orders.filter(o => o.email === p.email).length;
             const total = invs.length;
-            return { ...p, spend, total, orderCount };
+            const segment = segmentOf({ ...p, spend, total, orderCount });
+            return { ...p, spend, total, orderCount, segment };
         });
         if (search) {
             const q = search.toLowerCase();
             list = list.filter(p =>
                 (p.full_name || '').toLowerCase().includes(q) ||
                 (p.email || '').toLowerCase().includes(q) ||
-                (p.user_name || '').toLowerCase().includes(q)
+                (p.user_name || '').toLowerCase().includes(q) ||
+                (p.phone_number || '').toLowerCase().includes(q)
             );
         }
         return list.sort((a, b) => b.spend - a.spend);
-    }, [data.profiles, data.invoices, data.orders, search]);
+    }, [data.profiles, data.invoices, data.orders, search, segmentOf]);
 
     const selectedOrders = useMemo(() => {
         if (!selected) return [];
         return data.orders.filter(o => o.email === selected.email);
     }, [selected, data.orders]);
+
+    const selectedNotes = useMemo(() => {
+        if (!selected) return [];
+        return data.customerNotes.filter(n => n.user_id === selected.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }, [selected, data.customerNotes]);
+
+    const segBadge = (seg: Segment) => {
+        const map: Record<Segment, { txt: string; cls: string }> = {
+            vip: { txt: mc.segmentVip, cls: 'bg-gold-500/15 text-gold-500 border-gold-500/40' },
+            active: { txt: mc.segmentActive, cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
+            inactive: { txt: mc.segmentInactive, cls: 'bg-zinc-800 text-zinc-400 border-zinc-700' },
+            new: { txt: mc.segmentNew, cls: 'bg-sky-500/15 text-sky-400 border-sky-500/40' },
+        };
+        const m = map[seg];
+        return (
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${m.cls}`}>
+                {m.txt}
+            </span>
+        );
+    };
+
+    const addNote = async () => {
+        if (!selected || !noteText.trim()) return;
+        setNoteBusy(true);
+        const { error } = await supabase.from('customer_notes').insert({ user_id: selected.id, note: noteText.trim(), created_by: user?.id || null });
+        setNoteBusy(false);
+        if (error) return toast.error(`${mc.noteAddFailed} ${error.message}`);
+        setNoteText('');
+        toast.success(mc.noteAdded);
+        onRefresh();
+    };
+
+    const deleteNote = async (id: string) => {
+        setNoteBusy(true);
+        const { error } = await supabase.from('customer_notes').delete().eq('id', id);
+        setNoteBusy(false);
+        if (error) return toast.error(`${mc.noteDeleteFailed} ${error.message}`);
+        if (editingNote?.id === id) setEditingNote(null);
+        toast.success(mc.noteDeleted);
+        onRefresh();
+    };
+
+    const saveNoteEdit = async () => {
+        if (!editingNote || !editingNote.note.trim()) return;
+        setNoteBusy(true);
+        const { error } = await supabase.from('customer_notes').update({ note: editingNote.note.trim() }).eq('id', editingNote.id);
+        setNoteBusy(false);
+        if (error) return toast.error(`${mc.noteSaveFailed} ${error.message}`);
+        setEditingNote(null);
+        toast.success(mc.noteSaved);
+        onRefresh();
+    };
 
     return (
         <div className="space-y-6">
@@ -1314,6 +1394,8 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                         <thead>
                             <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
                                 <th className="p-4">{mc.customerCol}</th>
+                                <th className="p-4">{mc.phoneCol}</th>
+                                <th className="p-4">{mc.segmentCol}</th>
                                 <th className="p-4">{mc.totalSpent}</th>
                                 <th className="p-4">{mc.purchasesCol}</th>
                                 <th className="p-4">{mc.ordersCol}</th>
@@ -1328,6 +1410,8 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                         <p className="font-bold text-white">{p.full_name || p.user_name || '—'}</p>
                                         <p className="text-xs text-zinc-500">{p.email || p.id.slice(0, 8)}</p>
                                     </td>
+                                    <td className="p-4 text-xs text-zinc-400 font-bold">{p.phone_number || '—'}</td>
+                                    <td className="p-4">{segBadge(p.segment)}</td>
                                     <td className="p-4 text-white font-bold">{fmtCurrency(p.spend, 'USD')}</td>
                                     <td className="p-4 text-xs text-zinc-400 font-bold">{p.total}</td>
                                     <td className="p-4 text-xs text-zinc-400 font-bold">{p.orderCount}</td>
@@ -1337,7 +1421,7 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                     </td>
                                 </tr>
                             ))}
-                            {enriched.length === 0 && <tr><td colSpan={6} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noCustomersFound}</td></tr>}
+                            {enriched.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noCustomersFound}</td></tr>}
                         </tbody>
                     </table>
                 </div>
@@ -1352,8 +1436,12 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                         </div>
                         <div className="space-y-6">
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-1">
-                                <p className="text-white font-black text-lg">{selected.full_name || '—'}</p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="text-white font-black text-lg">{selected.full_name || '—'}</p>
+                                    {segBadge(segmentOf({ ...selected, spend: enriched.find(e => e.id === selected.id)?.spend || 0, total: enriched.find(e => e.id === selected.id)?.total || 0, orderCount: enriched.find(e => e.id === selected.id)?.orderCount || 0 }))}
+                                </div>
                                 <p className="text-sm text-zinc-400">{selected.email || '—'}</p>
+                                {selected.phone_number && <p className="text-sm text-zinc-400" dir="ltr">{selected.phone_number}</p>}
                                 <p className="text-xs text-zinc-500">{mc.roleLabel}: <span className="text-gold-500 font-bold uppercase">{selected.role}</span></p>
                                 <p className="text-xs text-zinc-500">{mc.subLabel}: <span className="text-emerald-400 font-bold uppercase">{selected.subscription_status || 'none'}</span> · {selected.subscription_tier || '—'}</p>
                                 <p className="text-xs text-zinc-500">{mc.premiumLabel}: {selected.has_paid ? <span className="text-green-400 font-bold">{mc.activeBadge}</span> : <span className="text-zinc-600">{mc.freeBadge}</span>}</p>
@@ -1371,6 +1459,56 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                     </div>
                                 ))}
                                 {selectedOrders.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-6">{mc.noOrdersForCustomer}</p>}
+                            </div>
+
+                            <div className="space-y-3">
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{mc.adminNotes} ({selectedNotes.length})</p>
+                                <div className="flex gap-2">
+                                    <textarea
+                                        value={noteText}
+                                        onChange={e => setNoteText(e.target.value)}
+                                        placeholder={mc.addNotePlaceholder}
+                                        rows={2}
+                                        className="flex-1 bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none resize-none"
+                                    />
+                                    <button
+                                        onClick={addNote}
+                                        disabled={noteBusy || !noteText.trim()}
+                                        className="self-end px-3 py-2 rounded-lg bg-gold-500 text-black text-[11px] font-black uppercase hover:bg-gold-400 disabled:opacity-40 transition-all"
+                                    >
+                                        {mc.addNoteBtn}
+                                    </button>
+                                </div>
+                                {selectedNotes.map(n => (
+                                    <div key={n.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
+                                        {editingNote?.id === n.id ? (
+                                            <>
+                                                <textarea
+                                                    value={editingNote.note}
+                                                    onChange={e => setEditingNote({ ...editingNote, note: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none resize-none"
+                                                />
+                                                <div className="flex gap-2 mt-2">
+                                                    <button onClick={saveNoteEdit} disabled={noteBusy} className="px-3 py-1.5 rounded-lg bg-gold-500 text-black text-[10px] font-black uppercase hover:bg-gold-400 disabled:opacity-40 transition-all">{mc.saveChanges}</button>
+                                                    <button onClick={() => setEditingNote(null)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[10px] font-black uppercase hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-sm text-zinc-200 whitespace-pre-wrap">{n.note}</p>
+                                                <div className="flex items-center justify-between mt-2">
+                                                    <p className="text-[10px] text-zinc-600 font-bold">{new Date(n.created_at).toLocaleString()}</p>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => setEditingNote(n)} className="text-[10px] font-black uppercase text-zinc-400 hover:text-gold-500 transition-colors">{mc.editNote}</button>
+                                                        <button onClick={() => deleteNote(n.id)} className="text-[10px] font-black uppercase text-zinc-400 hover:text-red-500 transition-colors">{mc.deleteNote}</button>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                                {selectedNotes.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-3">{mc.noNotes}</p>}
                             </div>
                         </div>
                     </div>

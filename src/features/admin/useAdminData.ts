@@ -15,6 +15,7 @@ export type ProductVariant = Database['public']['Tables']['product_variants']['R
 export type Coupon = Database['public']['Tables']['coupon_codes']['Row'];
 export type DiscountRule = Database['public']['Tables']['discount_rules']['Row'];
 export type Banner = Database['public']['Tables']['banners']['Row'];
+export type CustomerNote = Database['public']['Tables']['customer_notes']['Row'];
 
 export interface AdminData {
     invoices: Invoice[];
@@ -30,6 +31,7 @@ export interface AdminData {
     coupons: Coupon[];
     discountRules: DiscountRule[];
     banners: Banner[];
+    customerNotes: CustomerNote[];
     loading: boolean;
     refreshing: boolean;
     refresh: () => Promise<void>;
@@ -49,6 +51,7 @@ const empty: AdminData = {
     coupons: [],
     discountRules: [],
     banners: [],
+    customerNotes: [],
     loading: true,
     refreshing: false,
     refresh: async () => {},
@@ -69,6 +72,7 @@ export function useAdminData(): AdminData {
         coupons: [],
         discountRules: [],
         banners: [],
+        customerNotes: [],
     });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -77,7 +81,7 @@ export function useAdminData(): AdminData {
         if (quiet) setRefreshing(true);
         else setLoading(true);
         try {
-            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_, cpn, rul, ban] = await Promise.all([
+            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_, cpn, rul, ban, cnote] = await Promise.all([
                 supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
@@ -91,6 +95,7 @@ export function useAdminData(): AdminData {
                 supabase.from('coupon_codes').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('discount_rules').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('banners').select('*').order('sort_order', { ascending: true }).limit(500),
+                supabase.from('customer_notes').select('*').order('created_at', { ascending: false }).limit(500),
             ]);
             setState({
                 invoices: (inv.data || []) as Invoice[],
@@ -106,6 +111,7 @@ export function useAdminData(): AdminData {
                 coupons: (cpn.data || []) as Coupon[],
                 discountRules: (rul.data || []) as DiscountRule[],
                 banners: (ban.data || []) as Banner[],
+                customerNotes: (cnote.data || []) as CustomerNote[],
             });
             const warns: Array<{ name: string; e: { message?: string } | null }> = [
                 { name: 'invoices', e: inv.error },
@@ -121,6 +127,7 @@ export function useAdminData(): AdminData {
                 { name: 'coupon_codes', e: cpn.error },
                 { name: 'discount_rules', e: rul.error },
                 { name: 'banners', e: ban.error },
+                { name: 'customer_notes', e: cnote.error },
             ];
             warns.forEach(({ name, e }) => {
                 if (e) console.warn(`[AdminData] ${name} error:`, e.message);

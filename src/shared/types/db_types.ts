@@ -65,6 +65,7 @@ export type Database = {
                     created_at: string
                     updated_at: string
                     role: 'user' | 'delegate' | 'admin'
+                    phone_number: string | null
                 }
                 Insert: {
                     id: string
@@ -79,6 +80,7 @@ export type Database = {
                     created_at?: string
                     updated_at?: string
                     role?: 'user' | 'delegate' | 'admin'
+                    phone_number?: string | null
                 }
                 Update: {
                     id?: string
@@ -93,6 +95,7 @@ export type Database = {
                     created_at?: string
                     updated_at?: string
                     role?: 'user' | 'delegate' | 'admin'
+                    phone_number?: string | null
                 }
                 Relationships: [
                     {
@@ -806,6 +809,41 @@ export type Database = {
                     created_at?: string
                 }
                 Relationships: []
+            }
+            customer_notes: {
+                Row: {
+                    id: string
+                    user_id: string
+                    note: string
+                    created_by: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    note: string
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    note?: string
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "customer_notes_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
         }
         Views: {
