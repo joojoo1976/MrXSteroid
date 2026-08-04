@@ -690,6 +690,123 @@ export type Database = {
                     }
                 ]
             }
+            coupon_codes: {
+                Row: {
+                    id: string
+                    code: string
+                    discount_type: string
+                    discount_value: number
+                    min_order_amount: number | null
+                    product_ids: string[] | null
+                    max_uses: number | null
+                    max_per_user: number | null
+                    starts_at: string | null
+                    ends_at: string | null
+                    is_active: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    code: string
+                    discount_type?: string
+                    discount_value?: number
+                    min_order_amount?: number | null
+                    product_ids?: string[] | null
+                    max_uses?: number | null
+                    max_per_user?: number | null
+                    starts_at?: string | null
+                    ends_at?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    code?: string
+                    discount_type?: string
+                    discount_value?: number
+                    min_order_amount?: number | null
+                    product_ids?: string[] | null
+                    max_uses?: number | null
+                    max_per_user?: number | null
+                    starts_at?: string | null
+                    ends_at?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            discount_rules: {
+                Row: {
+                    id: string
+                    name: string
+                    rule_type: string
+                    threshold_amount: number | null
+                    buy_quantity: number | null
+                    get_quantity: number | null
+                    discount_percent: number | null
+                    is_active: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    rule_type?: string
+                    threshold_amount?: number | null
+                    buy_quantity?: number | null
+                    get_quantity?: number | null
+                    discount_percent?: number | null
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    rule_type?: string
+                    threshold_amount?: number | null
+                    buy_quantity?: number | null
+                    get_quantity?: number | null
+                    discount_percent?: number | null
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            banners: {
+                Row: {
+                    id: string
+                    title: string | null
+                    subtitle: string | null
+                    image_url: string | null
+                    link_url: string | null
+                    position: string
+                    sort_order: number
+                    is_active: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    title?: string | null
+                    subtitle?: string | null
+                    image_url?: string | null
+                    link_url?: string | null
+                    position?: string
+                    sort_order?: number
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    title?: string | null
+                    subtitle?: string | null
+                    image_url?: string | null
+                    link_url?: string | null
+                    position?: string
+                    sort_order?: number
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
         }
         Views: {
             [_ in never]: never

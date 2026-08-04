@@ -14,6 +14,7 @@ import {
     Loader2,
     Package,
     PackageSearch,
+    Megaphone,
     Wallet,
     Clock,
     DollarSign,
@@ -35,12 +36,12 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import { supabase } from '../shared/lib/supabase';
-import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product } from '../features/admin/useAdminData';
+import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product, Coupon, DiscountRule, Banner } from '../features/admin/useAdminData';
 import { usePreferences } from '../context/PreferencesContext';
 import { ContentStrings } from '../shared/types/types';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
-type SectionKey = 'overview' | 'orders' | 'catalog' | 'customers' | 'messages' | 'logistics' | 'settings';
+type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings';
 
 interface VariantForm {
     id?: string;
@@ -80,6 +81,7 @@ const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
     { key: 'overview', icon: LayoutDashboard },
     { key: 'orders', icon: ShoppingCart },
     { key: 'catalog', icon: PackageSearch },
+    { key: 'marketing', icon: Megaphone },
     { key: 'customers', icon: Users },
     { key: 'messages', icon: Mail },
     { key: 'logistics', icon: Map },
@@ -213,6 +215,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
         case 'overview': return <OverviewSection data={data} search={search} mc={mc} />;
         case 'orders': return <OrdersSection data={data} search={search} mc={mc} />;
         case 'catalog': return <CatalogSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
+        case 'marketing': return <MarketingSection data={data} onRefresh={onRefresh} mc={mc} />;
         case 'customers': return <CustomersSection data={data} search={search} mc={mc} />;
         case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
@@ -720,6 +723,398 @@ const CatalogSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: 
                                 </button>
                                 <button onClick={() => setEditing(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+   MARKETING & PROMOTIONS
+   ════════════════════════════════════════════════════════════════════════ */
+const MarketingSection: React.FC<{ data: ReturnType<typeof useAdminData>; onRefresh: () => void; mc: MC }> = ({ data, onRefresh, mc }) => {
+    const [tab, setTab] = useState<'coupons' | 'rules' | 'banners'>('coupons');
+    const [busy, setBusy] = useState(false);
+
+    const discountTypeLabel = (t: string) => t === 'percentage' ? mc.discountTypePercentage : t === 'fixed' ? mc.discountTypeFixed : mc.discountTypeFreeShipping;
+
+    // ── Coupons ──
+    const [couponForm, setCouponForm] = useState<Coupon | 'new' | null>(null);
+    const [cSaving, setCSaving] = useState(false);
+    const couponInit = (): Partial<Coupon> => ({ code: '', discount_type: 'percentage', discount_value: 0, min_order_amount: null, max_uses: null, max_per_user: null, starts_at: null, ends_at: null, is_active: true });
+    const [cForm, setCForm] = useState<Partial<Coupon>>(couponInit());
+    const cSet = (k: keyof Coupon, v: string | number | boolean | null) => setCForm(prev => ({ ...prev, [k]: v }));
+
+    const openCoupon = (target: Coupon | 'new' | null) => {
+        if (!target) return;
+        setCForm(target === 'new' ? couponInit() : { ...target });
+        setCouponForm(target);
+    };
+
+    const saveCoupon = async () => {
+        if (!cForm.code) return;
+        setCSaving(true);
+        const payload = {
+            code: String(cForm.code).toUpperCase(),
+            discount_type: cForm.discount_type || 'percentage',
+            discount_value: Number(cForm.discount_value) || 0,
+            min_order_amount: cForm.min_order_amount == null ? null : Number(cForm.min_order_amount),
+            max_uses: cForm.max_uses == null ? null : Number(cForm.max_uses),
+            max_per_user: cForm.max_per_user == null ? null : Number(cForm.max_per_user),
+            starts_at: cForm.starts_at || null,
+            ends_at: cForm.ends_at || null,
+            is_active: !!cForm.is_active,
+        };
+        const { error } = couponForm === 'new'
+            ? await supabase.from('coupon_codes').insert(payload)
+            : await supabase.from('coupon_codes').update(payload).eq('id', (couponForm as Coupon).id);
+        setCSaving(false);
+        if (error) return toast.error(`${mc.couponSaveFailed} ${error.message}`);
+        toast.success(mc.couponSaveSuccess);
+        setCouponForm(null);
+        onRefresh();
+    };
+
+    const deleteCoupon = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('coupon_codes').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.couponDeleteFailed} ${error.message}`);
+        toast.success(mc.couponDeleteSuccess);
+        onRefresh();
+    };
+
+    // ── Rules ──
+    const [ruleForm, setRuleForm] = useState<DiscountRule | 'new' | null>(null);
+    const [rSaving, setRSaving] = useState(false);
+    const ruleInit = (): Partial<DiscountRule> => ({ name: '', rule_type: 'threshold', threshold_amount: null, buy_quantity: null, get_quantity: null, discount_percent: null, is_active: true });
+    const [rForm, setRForm] = useState<Partial<DiscountRule>>(ruleInit());
+    const rSet = (k: keyof DiscountRule, v: string | number | boolean | null) => setRForm(prev => ({ ...prev, [k]: v }));
+
+    const openRule = (target: DiscountRule | 'new' | null) => {
+        if (!target) return;
+        setRForm(target === 'new' ? ruleInit() : { ...target });
+        setRuleForm(target);
+    };
+
+    const saveRule = async () => {
+        if (!rForm.name) return;
+        setRSaving(true);
+        const payload = {
+            name: rForm.name,
+            rule_type: rForm.rule_type || 'threshold',
+            threshold_amount: rForm.threshold_amount == null ? null : Number(rForm.threshold_amount),
+            buy_quantity: rForm.buy_quantity == null ? null : Number(rForm.buy_quantity),
+            get_quantity: rForm.get_quantity == null ? null : Number(rForm.get_quantity),
+            discount_percent: rForm.discount_percent == null ? null : Number(rForm.discount_percent),
+            is_active: !!rForm.is_active,
+        };
+        const { error } = ruleForm === 'new'
+            ? await supabase.from('discount_rules').insert(payload)
+            : await supabase.from('discount_rules').update(payload).eq('id', (ruleForm as DiscountRule).id);
+        setRSaving(false);
+        if (error) return toast.error(`${mc.ruleSaveFailed} ${error.message}`);
+        toast.success(mc.ruleSaveSuccess);
+        setRuleForm(null);
+        onRefresh();
+    };
+
+    const deleteRule = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('discount_rules').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.ruleDeleteFailed} ${error.message}`);
+        toast.success(mc.ruleDeleteSuccess);
+        onRefresh();
+    };
+
+    // ── Banners ──
+    const [bannerForm, setBannerForm] = useState<Banner | 'new' | null>(null);
+    const [bSaving, setBSaving] = useState(false);
+    const bannerInit = (): Partial<Banner> => ({ title: '', subtitle: '', image_url: '', link_url: '', position: 'home', sort_order: 0, is_active: true });
+    const [bForm, setBForm] = useState<Partial<Banner>>(bannerInit());
+    const bSet = (k: keyof Banner, v: string | number | boolean | null) => setBForm(prev => ({ ...prev, [k]: v }));
+
+    const openBanner = (target: Banner | 'new' | null) => {
+        if (!target) return;
+        setBForm(target === 'new' ? bannerInit() : { ...target });
+        setBannerForm(target);
+    };
+
+    const saveBanner = async () => {
+        setBSaving(true);
+        const payload = {
+            title: bForm.title || null,
+            subtitle: bForm.subtitle || null,
+            image_url: bForm.image_url || null,
+            link_url: bForm.link_url || null,
+            position: bForm.position || 'home',
+            sort_order: Number(bForm.sort_order) || 0,
+            is_active: !!bForm.is_active,
+        };
+        const { error } = bannerForm === 'new'
+            ? await supabase.from('banners').insert(payload)
+            : await supabase.from('banners').update(payload).eq('id', (bannerForm as Banner).id);
+        setBSaving(false);
+        if (error) return toast.error(`${mc.bannerSaveFailed} ${error.message}`);
+        toast.success(mc.bannerSaveSuccess);
+        setBannerForm(null);
+        onRefresh();
+    };
+
+    const deleteBanner = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('banners').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.bannerDeleteFailed} ${error.message}`);
+        toast.success(mc.bannerDeleteSuccess);
+        onRefresh();
+    };
+
+    const inputCls = "w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none";
+    const labelCls = "text-[10px] font-black text-zinc-500 uppercase";
+    const tabCls = (active: boolean) => `px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${active ? 'bg-gold-500 text-black' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white'}`;
+
+    return (
+        <div className="space-y-6">
+            <header className="flex flex-wrap justify-between items-end gap-3">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.marketingTitle}</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.marketingSubtitle}</p>
+                </div>
+            </header>
+
+            <div className="flex gap-2 flex-wrap">
+                <button onClick={() => setTab('coupons')} className={tabCls(tab === 'coupons')}>{mc.couponsTitle}</button>
+                <button onClick={() => setTab('rules')} className={tabCls(tab === 'rules')}>{mc.rulesTitle}</button>
+                <button onClick={() => setTab('banners')} className={tabCls(tab === 'banners')}>{mc.bannersTitle}</button>
+            </div>
+
+            {tab === 'coupons' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openCoupon('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.addCouponBtn}</button>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[760px]">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">{mc.couponCode}</th>
+                                        <th className="p-4">{mc.discountType}</th>
+                                        <th className="p-4">{mc.discountValue}</th>
+                                        <th className="p-4">{mc.minOrderAmount}</th>
+                                        <th className="p-4">{mc.maxUses}</th>
+                                        <th className="p-4">{mc.endsAt}</th>
+                                        <th className="p-4">{mc.statusCol}</th>
+                                        <th className="p-4">{mc.actionsCol}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.coupons.map(c => (
+                                        <tr key={c.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                            <td className="p-4"><span className="px-2 py-1 rounded bg-zinc-800 font-mono text-xs font-black text-gold-500">{c.code}</span></td>
+                                            <td className="p-4 text-xs text-zinc-300 font-bold">{discountTypeLabel(c.discount_type)}</td>
+                                            <td className="p-4 text-xs text-white font-bold">{c.discount_type === 'percentage' ? `${c.discount_value}%` : fmtCurrency(Number(c.discount_value), 'USD')}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{c.min_order_amount != null ? fmtCurrency(Number(c.min_order_amount), 'USD') : '—'}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{c.max_uses ?? '∞'}</td>
+                                            <td className="p-4 text-xs text-zinc-500">{c.ends_at ? new Date(c.ends_at).toLocaleDateString() : '—'}</td>
+                                            <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${c.is_active ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>{c.is_active ? mc.yesLabel : mc.noLabel}</span></td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openCoupon(c)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                                    <button onClick={() => deleteCoupon(c.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.coupons.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noCouponsFound}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tab === 'rules' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openRule('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.addRuleBtn}</button>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[720px]">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">{mc.ruleName}</th>
+                                        <th className="p-4">{mc.ruleType}</th>
+                                        <th className="p-4">{mc.thresholdAmount}</th>
+                                        <th className="p-4">{mc.buyQuantity}</th>
+                                        <th className="p-4">{mc.getQuantity}</th>
+                                        <th className="p-4">{mc.discountPercent}</th>
+                                        <th className="p-4">{mc.statusCol}</th>
+                                        <th className="p-4">{mc.actionsCol}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.discountRules.map(r => (
+                                        <tr key={r.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                            <td className="p-4 font-bold text-white">{r.name}</td>
+                                            <td className="p-4 text-xs text-zinc-300 font-bold">{r.rule_type === 'threshold' ? mc.ruleTypeThreshold : mc.ruleTypeBuyXY}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{r.threshold_amount != null ? fmtCurrency(Number(r.threshold_amount), 'USD') : '—'}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{r.buy_quantity ?? '—'}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{r.get_quantity ?? '—'}</td>
+                                            <td className="p-4 text-xs text-zinc-400">{r.discount_percent != null ? `${r.discount_percent}%` : '—'}</td>
+                                            <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${r.is_active ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>{r.is_active ? mc.yesLabel : mc.noLabel}</span></td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openRule(r)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                                    <button onClick={() => deleteRule(r.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.discountRules.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noRulesFound}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tab === 'banners' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openBanner('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.addBannerBtn}</button>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {data.banners.map(b => (
+                            <div key={b.id} className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                                {b.image_url ? <img src={b.image_url} alt={b.title || ''} className="w-full h-36 object-cover" /> : <div className="w-full h-36 bg-zinc-800 flex items-center justify-center text-zinc-600"><Megaphone className="w-8 h-8" /></div>}
+                                <div className="p-4 space-y-2">
+                                    <p className="font-black text-white">{b.title || '—'}</p>
+                                    <p className="text-xs text-zinc-500">{b.subtitle || ''}</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] px-2 py-1 rounded bg-zinc-800 text-zinc-300 font-black uppercase">{b.position === 'home' ? mc.positionHome : b.position === 'promo' ? mc.positionPromo : mc.positionCategory}</span>
+                                        <span className={`text-[10px] font-black uppercase ${b.is_active ? 'text-green-400' : 'text-zinc-600'}`}>{b.is_active ? mc.activeBadge : mc.noLabel}</span>
+                                    </div>
+                                    <div className="flex gap-2 pt-1">
+                                        <button onClick={() => openBanner(b)} className="flex-1 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                        <button onClick={() => deleteBanner(b.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {data.banners.length === 0 && <div className="col-span-full p-10 text-center text-zinc-600 font-bold text-sm">{mc.noBannersFound}</div>}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Coupon modal ── */}
+            {couponForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{couponForm === 'new' ? mc.couponAddTitle : mc.couponEditTitle}</h2>
+                            <button onClick={() => setCouponForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.couponCode}</label><input value={cForm.code || ''} onChange={e => cSet('code', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5">
+                                <label className={labelCls}>{mc.discountType}</label>
+                                <select value={cForm.discount_type || 'percentage'} onChange={e => cSet('discount_type', e.target.value)} className={inputCls}>
+                                    <option value="percentage">{mc.discountTypePercentage}</option>
+                                    <option value="fixed">{mc.discountTypeFixed}</option>
+                                    <option value="free_shipping">{mc.discountTypeFreeShipping}</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.discountValue}</label><input type="number" value={cForm.discount_value ?? 0} onChange={e => cSet('discount_value', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.minOrderAmount}</label><input type="number" value={cForm.min_order_amount ?? ''} onChange={e => cSet('min_order_amount', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.maxUses}</label><input type="number" value={cForm.max_uses ?? ''} onChange={e => cSet('max_uses', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.maxPerUser}</label><input type="number" value={cForm.max_per_user ?? ''} onChange={e => cSet('max_per_user', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.startsAt}</label><input type="date" value={cForm.starts_at ? cForm.starts_at.slice(0, 10) : ''} onChange={e => cSet('starts_at', e.target.value ? new Date(e.target.value).toISOString() : null)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.endsAt}</label><input type="date" value={cForm.ends_at ? cForm.ends_at.slice(0, 10) : ''} onChange={e => cSet('ends_at', e.target.value ? new Date(e.target.value).toISOString() : null)} className={inputCls} /></div>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm font-bold text-zinc-300">
+                            <input type="checkbox" checked={!!cForm.is_active} onChange={e => cSet('is_active', e.target.checked)} className="w-4 h-4 accent-gold-500" /> {mc.isActive}
+                        </label>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={saveCoupon} disabled={cSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{cSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveCouponBtn}</button>
+                            <button onClick={() => setCouponForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Rule modal ── */}
+            {ruleForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{ruleForm === 'new' ? mc.addRuleBtn : mc.editProductTitle}</h2>
+                            <button onClick={() => setRuleForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.ruleName}</label><input value={rForm.name || ''} onChange={e => rSet('name', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5 sm:col-span-2">
+                                <label className={labelCls}>{mc.ruleType}</label>
+                                <select value={rForm.rule_type || 'threshold'} onChange={e => rSet('rule_type', e.target.value)} className={inputCls}>
+                                    <option value="threshold">{mc.ruleTypeThreshold}</option>
+                                    <option value="buy_x_get_y">{mc.ruleTypeBuyXY}</option>
+                                </select>
+                            </div>
+                            {(rForm.rule_type || 'threshold') === 'threshold' ? (
+                                <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.thresholdAmount}</label><input type="number" value={rForm.threshold_amount ?? ''} onChange={e => rSet('threshold_amount', e.target.value)} className={inputCls} /></div>
+                            ) : (
+                                <>
+                                    <div className="space-y-1.5"><label className={labelCls}>{mc.buyQuantity}</label><input type="number" value={rForm.buy_quantity ?? ''} onChange={e => rSet('buy_quantity', e.target.value)} className={inputCls} /></div>
+                                    <div className="space-y-1.5"><label className={labelCls}>{mc.getQuantity}</label><input type="number" value={rForm.get_quantity ?? ''} onChange={e => rSet('get_quantity', e.target.value)} className={inputCls} /></div>
+                                </>
+                            )}
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.discountPercent}</label><input type="number" value={rForm.discount_percent ?? ''} onChange={e => rSet('discount_percent', e.target.value)} className={inputCls} /></div>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm font-bold text-zinc-300">
+                            <input type="checkbox" checked={!!rForm.is_active} onChange={e => rSet('is_active', e.target.checked)} className="w-4 h-4 accent-gold-500" /> {mc.isActive}
+                        </label>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={saveRule} disabled={rSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{rSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveBtnGeneric}</button>
+                            <button onClick={() => setRuleForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Banner modal ── */}
+            {bannerForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{bannerForm === 'new' ? mc.addBannerBtn : mc.editProductTitle}</h2>
+                            <button onClick={() => setBannerForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.bannerTitle}</label><input value={bForm.title || ''} onChange={e => bSet('title', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.bannerSubtitle}</label><input value={bForm.subtitle || ''} onChange={e => bSet('subtitle', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.bannerImageUrl}</label><input value={bForm.image_url || ''} onChange={e => bSet('image_url', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.bannerLinkUrl}</label><input value={bForm.link_url || ''} onChange={e => bSet('link_url', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5">
+                                <label className={labelCls}>{mc.bannerPosition}</label>
+                                <select value={bForm.position || 'home'} onChange={e => bSet('position', e.target.value)} className={inputCls}>
+                                    <option value="home">{mc.positionHome}</option>
+                                    <option value="promo">{mc.positionPromo}</option>
+                                    <option value="category">{mc.positionCategory}</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.bannerSortOrder}</label><input type="number" value={bForm.sort_order ?? 0} onChange={e => bSet('sort_order', e.target.value)} className={inputCls} /></div>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm font-bold text-zinc-300">
+                            <input type="checkbox" checked={!!bForm.is_active} onChange={e => bSet('is_active', e.target.checked)} className="w-4 h-4 accent-gold-500" /> {mc.isActive}
+                        </label>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={saveBanner} disabled={bSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{bSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveBtnGeneric}</button>
+                            <button onClick={() => setBannerForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
                         </div>
                     </div>
                 </div>

@@ -12,6 +12,9 @@ export type AdminSetting = Database['public']['Tables']['admin_settings']['Row']
 export type Category = Database['public']['Tables']['categories']['Row'];
 export type Product = Database['public']['Tables']['products']['Row'];
 export type ProductVariant = Database['public']['Tables']['product_variants']['Row'];
+export type Coupon = Database['public']['Tables']['coupon_codes']['Row'];
+export type DiscountRule = Database['public']['Tables']['discount_rules']['Row'];
+export type Banner = Database['public']['Tables']['banners']['Row'];
 
 export interface AdminData {
     invoices: Invoice[];
@@ -24,6 +27,9 @@ export interface AdminData {
     categories: Category[];
     products: Product[];
     variants: ProductVariant[];
+    coupons: Coupon[];
+    discountRules: DiscountRule[];
+    banners: Banner[];
     loading: boolean;
     refreshing: boolean;
     refresh: () => Promise<void>;
@@ -40,6 +46,9 @@ const empty: AdminData = {
     categories: [],
     products: [],
     variants: [],
+    coupons: [],
+    discountRules: [],
+    banners: [],
     loading: true,
     refreshing: false,
     refresh: async () => {},
@@ -57,6 +66,9 @@ export function useAdminData(): AdminData {
         categories: [],
         products: [],
         variants: [],
+        coupons: [],
+        discountRules: [],
+        banners: [],
     });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +77,7 @@ export function useAdminData(): AdminData {
         if (quiet) setRefreshing(true);
         else setLoading(true);
         try {
-            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_] = await Promise.all([
+            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_, cpn, rul, ban] = await Promise.all([
                 supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
@@ -76,6 +88,9 @@ export function useAdminData(): AdminData {
                 supabase.from('categories').select('*').order('sort_order', { ascending: true }),
                 supabase.from('products').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('product_variants').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('coupon_codes').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('discount_rules').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('banners').select('*').order('sort_order', { ascending: true }).limit(500),
             ]);
             setState({
                 invoices: (inv.data || []) as Invoice[],
@@ -88,6 +103,9 @@ export function useAdminData(): AdminData {
                 categories: (cat.data || []) as Category[],
                 products: (prod.data || []) as Product[],
                 variants: (var_.data || []) as ProductVariant[],
+                coupons: (cpn.data || []) as Coupon[],
+                discountRules: (rul.data || []) as DiscountRule[],
+                banners: (ban.data || []) as Banner[],
             });
             const warns: Array<{ name: string; e: { message?: string } | null }> = [
                 { name: 'invoices', e: inv.error },
@@ -100,6 +118,9 @@ export function useAdminData(): AdminData {
                 { name: 'categories', e: cat.error },
                 { name: 'products', e: prod.error },
                 { name: 'product_variants', e: var_.error },
+                { name: 'coupon_codes', e: cpn.error },
+                { name: 'discount_rules', e: rul.error },
+                { name: 'banners', e: ban.error },
             ];
             warns.forEach(({ name, e }) => {
                 if (e) console.warn(`[AdminData] ${name} error:`, e.message);
