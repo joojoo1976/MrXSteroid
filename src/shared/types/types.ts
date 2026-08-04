@@ -1383,6 +1383,7 @@ export interface ContentStrings {
     sections: {
       overview: string;
       orders: string;
+      catalog: string;
       customers: string;
       messages: string;
       logistics: string;
@@ -1495,6 +1496,59 @@ export interface ContentStrings {
     gatewayStripe: string;
     gatewayPaymob: string;
     gatewaySpaceRemit: string;
+    // ── Products & Inventory ──
+    catalogTitle: string;
+    catalogSubtitle: string;
+    addProductBtn: string;
+    productCol: string;
+    skuCol: string;
+    categoryCol: string;
+    priceCol: string;
+    stockCol: string;
+    outOfStock: string;
+    lowStock: string;
+    inStock: string;
+    addProductTitle: string;
+    editProductTitle: string;
+    productName: string;
+    productSlug: string;
+    productDescription: string;
+    basePrice: string;
+    salePrice: string;
+    taxRate: string;
+    initialStock: string;
+    lowStockThreshold: string;
+    productCategory: string;
+    productImageUrl: string;
+    seoTitle: string;
+    seoDescription: string;
+    variantsLabel: string;
+    variantName: string;
+    variantSku: string;
+    variantStock: string;
+    addVariantBtn: string;
+    removeBtn: string;
+    saveProductBtn: string;
+    cancelBtn: string;
+    productSaveSuccess: string;
+    productSaveFailed: string;
+    productDeleteSuccess: string;
+    productDeleteFailed: string;
+    statusActive: string;
+    statusInactive: string;
+    statusDraft: string;
+    noProductsFound: string;
+    categoryName: string;
+    categoriesLabel: string;
+    addCategoryBtn: string;
+    categorySaveSuccess: string;
+    categorySaveFailed: string;
+    noCategories: string;
+    categoryDeleteFailed: string;
+    startTyping: string;
+    productImageCol: string;
+    catalogFilterCategory: string;
+    catalogFilterStatus: string;
   };
 }
 

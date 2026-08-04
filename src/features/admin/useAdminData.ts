@@ -9,6 +9,9 @@ export type ContactMessage = Database['public']['Tables']['contact_messages']['R
 export type Delegate = Database['public']['Tables']['delegates']['Row'];
 export type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];
 export type AdminSetting = Database['public']['Tables']['admin_settings']['Row'];
+export type Category = Database['public']['Tables']['categories']['Row'];
+export type Product = Database['public']['Tables']['products']['Row'];
+export type ProductVariant = Database['public']['Tables']['product_variants']['Row'];
 
 export interface AdminData {
     invoices: Invoice[];
@@ -18,6 +21,9 @@ export interface AdminData {
     delegates: Delegate[];
     assignments: Assignment[];
     settings: AdminSetting[];
+    categories: Category[];
+    products: Product[];
+    variants: ProductVariant[];
     loading: boolean;
     refreshing: boolean;
     refresh: () => Promise<void>;
@@ -31,6 +37,9 @@ const empty: AdminData = {
     delegates: [],
     assignments: [],
     settings: [],
+    categories: [],
+    products: [],
+    variants: [],
     loading: true,
     refreshing: false,
     refresh: async () => {},
@@ -45,6 +54,9 @@ export function useAdminData(): AdminData {
         delegates: [],
         assignments: [],
         settings: [],
+        categories: [],
+        products: [],
+        variants: [],
     });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +65,7 @@ export function useAdminData(): AdminData {
         if (quiet) setRefreshing(true);
         else setLoading(true);
         try {
-            const [inv, prof, ord, msg, del, asg, stg] = await Promise.all([
+            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_] = await Promise.all([
                 supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
@@ -61,6 +73,9 @@ export function useAdminData(): AdminData {
                 supabase.from('delegates').select('*').order('created_at', { ascending: false }),
                 supabase.from('delivery_assignments').select('*').order('assigned_at', { ascending: false }),
                 supabase.from('admin_settings').select('*').order('key', { ascending: true }),
+                supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+                supabase.from('products').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('product_variants').select('*').order('created_at', { ascending: false }).limit(500),
             ]);
             setState({
                 invoices: (inv.data || []) as Invoice[],
@@ -70,6 +85,9 @@ export function useAdminData(): AdminData {
                 delegates: (del.data || []) as Delegate[],
                 assignments: (asg.data || []) as Assignment[],
                 settings: (stg.data || []) as AdminSetting[],
+                categories: (cat.data || []) as Category[],
+                products: (prod.data || []) as Product[],
+                variants: (var_.data || []) as ProductVariant[],
             });
             const warns: Array<{ name: string; e: { message?: string } | null }> = [
                 { name: 'invoices', e: inv.error },
@@ -79,6 +97,9 @@ export function useAdminData(): AdminData {
                 { name: 'delegates', e: del.error },
                 { name: 'delivery_assignments', e: asg.error },
                 { name: 'admin_settings', e: stg.error },
+                { name: 'categories', e: cat.error },
+                { name: 'products', e: prod.error },
+                { name: 'product_variants', e: var_.error },
             ];
             warns.forEach(({ name, e }) => {
                 if (e) console.warn(`[AdminData] ${name} error:`, e.message);

@@ -13,6 +13,7 @@ import {
     ChevronRight,
     Loader2,
     Package,
+    PackageSearch,
     Wallet,
     Clock,
     DollarSign,
@@ -34,12 +35,40 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import { supabase } from '../shared/lib/supabase';
-import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile } from '../features/admin/useAdminData';
+import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product } from '../features/admin/useAdminData';
 import { usePreferences } from '../context/PreferencesContext';
 import { ContentStrings } from '../shared/types/types';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
-type SectionKey = 'overview' | 'orders' | 'customers' | 'messages' | 'logistics' | 'settings';
+type SectionKey = 'overview' | 'orders' | 'catalog' | 'customers' | 'messages' | 'logistics' | 'settings';
+
+interface VariantForm {
+    id?: string;
+    name: string;
+    sku: string;
+    price: number;
+    sale_price: string;
+    stock: number;
+}
+
+interface ProductForm {
+    id?: string;
+    name: string;
+    slug: string;
+    sku: string;
+    category_id: string;
+    description: string;
+    price: number;
+    sale_price: string;
+    tax_rate: number;
+    stock: number;
+    low_stock_threshold: number;
+    status: string;
+    image_url: string;
+    seo_title: string;
+    seo_description: string;
+    variants: VariantForm[];
+}
 
 const GATEWAY_COLORS: Record<string, string> = {
     stripe: '#6366f1',
@@ -50,6 +79,7 @@ const GATEWAY_COLORS: Record<string, string> = {
 const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
     { key: 'overview', icon: LayoutDashboard },
     { key: 'orders', icon: ShoppingCart },
+    { key: 'catalog', icon: PackageSearch },
     { key: 'customers', icon: Users },
     { key: 'messages', icon: Mail },
     { key: 'logistics', icon: Map },
@@ -182,6 +212,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
     switch (section) {
         case 'overview': return <OverviewSection data={data} search={search} mc={mc} />;
         case 'orders': return <OrdersSection data={data} search={search} mc={mc} />;
+        case 'catalog': return <CatalogSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'customers': return <CustomersSection data={data} search={search} mc={mc} />;
         case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
@@ -359,6 +390,340 @@ const KpiCard: React.FC<{ icon: React.ElementType; label: string; value: string;
             </div>
             <p className="text-2xl font-black text-white">{value}</p>
             <p className="text-xs text-zinc-500 font-bold">{sub}</p>
+        </div>
+    );
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+   CATALOG & INVENTORY
+   ════════════════════════════════════════════════════════════════════════ */
+const CatalogSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; onRefresh: () => void; mc: MC }> = ({ data, search, onRefresh, mc }) => {
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [catFilter, setCatFilter] = useState('all');
+    const [editing, setEditing] = useState<Product | 'new' | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+    const [catBusy, setCatBusy] = useState(false);
+
+    const categories = data.categories;
+    const catName = (id: string | null) => id ? (categories.find(c => c.id === id)?.name || '—') : '—';
+    const variantsOf = (id: string) => data.variants.filter(v => v.product_id === id);
+
+    const filtered = useMemo(() => {
+        let list = data.products;
+        if (statusFilter !== 'all') list = list.filter(p => p.status === statusFilter);
+        if (catFilter !== 'all') list = list.filter(p => p.category_id === catFilter);
+        if (search) {
+            const q = search.toLowerCase();
+            list = list.filter(p =>
+                p.name?.toLowerCase().includes(q) ||
+                p.sku?.toLowerCase().includes(q) ||
+                p.slug?.toLowerCase().includes(q)
+            );
+        }
+        return list;
+    }, [data.products, statusFilter, catFilter, search]);
+
+    const stockBadge = (stock: number, threshold: number) => {
+        if (stock <= 0) return <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-red-500/10 text-red-400">{mc.outOfStock}</span>;
+        if (stock <= threshold) return <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-amber-500/10 text-amber-400">{mc.lowStock}</span>;
+        return <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-green-500/10 text-green-400">{mc.inStock}</span>;
+    };
+
+    const statusBadge = (status: string) => (
+        <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${status === 'active' ? 'bg-green-500/10 text-green-400' : status === 'draft' ? 'bg-zinc-800 text-zinc-400' : 'bg-rose-500/10 text-rose-400'}`}>
+            {status === 'active' ? mc.statusActive : status === 'draft' ? mc.statusDraft : mc.statusInactive}
+        </span>
+    );
+
+    const effectivePrice = (p: { price: number; sale_price: number | null }) => Number(p.sale_price || p.price);
+
+    const deleteProduct = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.productDeleteFailed} ${error.message}`);
+        toast.success(mc.productDeleteSuccess);
+        onRefresh();
+    };
+
+    const addCategory = async () => {
+        if (!newCategory.trim()) return;
+        setCatBusy(true);
+        const slug = newCategory.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const { error } = await supabase.from('categories').insert({ name: newCategory.trim(), slug });
+        setCatBusy(false);
+        if (error) return toast.error(`${mc.categorySaveFailed} ${error.message}`);
+        toast.success(mc.categorySaveSuccess);
+        setNewCategory('');
+        onRefresh();
+    };
+
+    const initForm = (): ProductForm => ({
+        name: '', slug: '', sku: '', category_id: '', description: '',
+        price: 0, sale_price: '', tax_rate: 0, stock: 0, low_stock_threshold: 5,
+        status: 'active', image_url: '', seo_title: '', seo_description: '',
+        variants: [],
+    });
+
+    const [form, setForm] = useState<ProductForm>(initForm());
+
+    const openForm = (target: Product | 'new' | null) => {
+        if (target === null) return;
+        if (target === 'new') {
+            setForm(initForm());
+        } else {
+            setForm({
+                id: target.id, name: target.name, slug: target.slug, sku: target.sku || '',
+                category_id: target.category_id || '', description: target.description || '',
+                price: target.price, sale_price: target.sale_price == null ? '' : String(target.sale_price), tax_rate: target.tax_rate,
+                stock: target.stock, low_stock_threshold: target.low_stock_threshold,
+                status: target.status, image_url: target.image_url || '',
+                seo_title: target.seo_title || '', seo_description: target.seo_description || '',
+                variants: variantsOf(target.id).map(v => ({ id: v.id, name: v.name, sku: v.sku || '', price: v.price, sale_price: v.sale_price == null ? '' : String(v.sale_price), stock: v.stock })),
+            });
+        }
+        setEditing(target);
+    };
+
+    const setF = (k: keyof ProductForm, v: string | number) => setForm(prev => ({ ...prev, [k]: v }));
+
+    const saveProduct = async () => {
+        if (!form.name || !form.slug) return toast.error('Missing name/slug');
+        setSaving(true);
+        const base = {
+            name: form.name, slug: form.slug, sku: form.sku || null,
+            category_id: form.category_id || null, description: form.description || null,
+            price: Number(form.price) || 0, sale_price: form.sale_price === '' ? null : Number(form.sale_price),
+            tax_rate: Number(form.tax_rate) || 0, stock: Number(form.stock) || 0,
+            low_stock_threshold: Number(form.low_stock_threshold) || 5,
+            status: form.status, image_url: form.image_url || null,
+            seo_title: form.seo_title || null, seo_description: form.seo_description || null,
+        };
+        if (editing === 'new') {
+            const { data: ins, error } = await supabase.from('products').insert(base).select('id').single();
+            setSaving(false);
+            if (error) return toast.error(`${mc.productSaveFailed} ${error.message}`);
+            const productId = (ins as { id: string }).id;
+            const vs = form.variants.filter(v => v.name.trim().length > 0);
+            if (vs.length) {
+                const { error: verr } = await supabase.from('product_variants').insert(vs.map(v => ({ product_id: productId, name: v.name, sku: v.sku || null, price: Number(v.price) || 0, sale_price: v.sale_price === '' ? null : Number(v.sale_price), stock: Number(v.stock) || 0 })));
+                if (verr) console.warn('[Catalog] variant insert:', verr.message);
+            }
+            toast.success(mc.productSaveSuccess);
+        } else {
+            const id = (editing as Product).id;
+            const { error } = await supabase.from('products').update(base).eq('id', id);
+            setSaving(false);
+            if (error) return toast.error(`${mc.productSaveFailed} ${error.message}`);
+            const vs = form.variants.filter(v => v.name.trim().length > 0);
+            const { error: vdel } = await supabase.from('product_variants').delete().eq('product_id', id);
+            if (vs.length) {
+                const { error: verr } = await supabase.from('product_variants').insert(vs.map(v => ({ product_id: id, name: v.name, sku: v.sku || null, price: Number(v.price) || 0, sale_price: v.sale_price === '' ? null : Number(v.sale_price), stock: Number(v.stock) || 0 })));
+                if (verr) console.warn('[Catalog] variant re-insert:', verr.message);
+            }
+            if (vdel) console.warn('[Catalog] variant delete:', vdel.message);
+            toast.success(mc.productSaveSuccess);
+        }
+        setEditing(null);
+        onRefresh();
+    };
+
+    const setVar = (i: number, k: keyof VariantForm, v: string | number) => {
+        const vs = [...form.variants];
+        vs[i] = { ...vs[i], [k]: v };
+        setForm(prev => ({ ...prev, variants: vs }));
+    };
+
+    const addVariant = () => setForm(prev => ({ ...prev, variants: [...prev.variants, { name: '', sku: '', price: 0, sale_price: '', stock: 0 }] }));
+    const removeVariant = (i: number) => setForm(prev => ({ ...prev, variants: prev.variants.filter((_, idx) => idx !== i) }));
+
+    const inputCls = "w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none";
+    const labelCls = "text-[10px] font-black text-zinc-500 uppercase";
+
+    return (
+        <div className="space-y-6">
+            <header className="flex flex-wrap justify-between items-end gap-3">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.catalogTitle}</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.catalogSubtitle}</p>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-white font-bold focus:border-gold-500 outline-none">
+                        <option value="all">{mc.catalogFilterStatus}</option>
+                        <option value="active">{mc.statusActive}</option>
+                        <option value="inactive">{mc.statusInactive}</option>
+                        <option value="draft">{mc.statusDraft}</option>
+                    </select>
+                    <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-white font-bold focus:border-gold-500 outline-none">
+                        <option value="all">{mc.catalogFilterCategory}</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <button onClick={() => openForm('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all flex items-center gap-2">
+                        <Package className="w-4 h-4" /> {mc.addProductBtn}
+                    </button>
+                </div>
+            </header>
+
+            {/* Categories quick-add */}
+            <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-[10px] font-black text-zinc-500 uppercase">{mc.categoriesLabel}:</span>
+                {categories.slice(0, 8).map(c => <span key={c.id} className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300">{c.name}</span>)}
+                {categories.length === 0 && <span className="text-xs text-zinc-600 font-bold">{mc.noCategories}</span>}
+                <input value={newCategory} onChange={e => setNewCategory(e.target.value)} placeholder={mc.categoryName} className="w-44 bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:border-gold-500 outline-none" />
+                <button onClick={addCategory} disabled={catBusy} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all disabled:opacity-50">{mc.addCategoryBtn}</button>
+            </div>
+
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[720px]">
+                        <thead>
+                            <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                <th className="p-4">{mc.productImageCol}</th>
+                                <th className="p-4">{mc.productCol}</th>
+                                <th className="p-4">{mc.skuCol}</th>
+                                <th className="p-4">{mc.categoryCol}</th>
+                                <th className="p-4">{mc.priceCol}</th>
+                                <th className="p-4">{mc.stockCol}</th>
+                                <th className="p-4">{mc.statusCol}</th>
+                                <th className="p-4">{mc.actionsCol}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.slice(0, 50).map(p => (
+                                <tr key={p.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                    <td className="p-4">
+                                        {p.image_url ? <img src={p.image_url} alt={p.name} className="w-11 h-11 rounded-lg object-cover border border-zinc-800" /> : <div className="w-11 h-11 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-600"><Package className="w-5 h-5" /></div>}
+                                    </td>
+                                    <td className="p-4">
+                                        <p className="font-bold text-white">{p.name}</p>
+                                        <p className="text-xs text-zinc-500">{variantsOf(p.id).length} {mc.variantsLabel.toLowerCase()}</p>
+                                    </td>
+                                    <td className="p-4 font-mono text-xs text-zinc-400">{p.sku || '—'}</td>
+                                    <td className="p-4 text-xs text-zinc-400 font-bold">{catName(p.category_id)}</td>
+                                    <td className="p-4">
+                                        <p className="text-xs text-white font-bold">{fmtCurrency(effectivePrice(p), 'USD')}</p>
+                                        {p.sale_price != null && Number(p.sale_price) < Number(p.price) && <p className="text-[10px] text-zinc-600 line-through">{fmtCurrency(Number(p.price), 'USD')}</p>}
+                                    </td>
+                                    <td className="p-4">{stockBadge(p.stock, p.low_stock_threshold)}</td>
+                                    <td className="p-4">{statusBadge(p.status)}</td>
+                                    <td className="p-4">
+                                        <div className="flex gap-2">
+                                            <button onClick={() => openForm(p)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                            <button onClick={() => deleteProduct(p.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filtered.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noProductsFound}</td></tr>}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Add / Edit drawer */}
+            {editing && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-end">
+                    <div className="w-full max-w-2xl h-full bg-zinc-950 border-s border-zinc-800 p-6 overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="font-black text-white uppercase text-lg">{editing === 'new' ? mc.addProductTitle : mc.editProductTitle}</h2>
+                            <button onClick={() => setEditing(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="space-y-5">
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.productName}</label>
+                                    <input value={form.name} onChange={e => setF('name', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.productSlug}</label>
+                                    <input value={form.slug} onChange={e => setF('slug', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.skuCol}</label>
+                                    <input value={form.sku} onChange={e => setF('sku', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.productCategory}</label>
+                                    <select value={form.category_id} onChange={e => setF('category_id', e.target.value)} className={inputCls}>
+                                        <option value="">—</option>
+                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <label className={labelCls}>{mc.productDescription}</label>
+                                    <textarea value={form.description} onChange={e => setF('description', e.target.value)} rows={3} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.basePrice}</label>
+                                    <input type="number" value={form.price} onChange={e => setF('price', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.salePrice}</label>
+                                    <input type="number" value={form.sale_price} onChange={e => setF('sale_price', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.taxRate}</label>
+                                    <input type="number" value={form.tax_rate} onChange={e => setF('tax_rate', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.productImageUrl}</label>
+                                    <input value={form.image_url} onChange={e => setF('image_url', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.initialStock}</label>
+                                    <input type="number" value={form.stock} onChange={e => setF('stock', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className={labelCls}>{mc.lowStockThreshold}</label>
+                                    <input type="number" value={form.low_stock_threshold} onChange={e => setF('low_stock_threshold', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <label className={labelCls}>{mc.statusCol}</label>
+                                    <select value={form.status} onChange={e => setF('status', e.target.value)} className={inputCls}>
+                                        <option value="active">{mc.statusActive}</option>
+                                        <option value="inactive">{mc.statusInactive}</option>
+                                        <option value="draft">{mc.statusDraft}</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <label className={labelCls}>{mc.seoTitle}</label>
+                                    <input value={form.seo_title} onChange={e => setF('seo_title', e.target.value)} className={inputCls} />
+                                </div>
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <label className={labelCls}>{mc.seoDescription}</label>
+                                    <input value={form.seo_description} onChange={e => setF('seo_description', e.target.value)} className={inputCls} />
+                                </div>
+                            </div>
+
+                            {/* Variants */}
+                            <div className="border-t border-zinc-800 pt-4 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-black text-white uppercase">{mc.variantsLabel}</h3>
+                                    <button onClick={addVariant} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.addVariantBtn}</button>
+                                </div>
+                                {(form.variants).map((v, i) => (
+                                    <div key={i} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 grid sm:grid-cols-5 gap-3 items-end">
+                                        <div className="sm:col-span-1 space-y-1"><label className={labelCls}>{mc.variantName}</label><input value={v.name} onChange={e => setVar(i, 'name', e.target.value)} className={inputCls} /></div>
+                                        <div className="space-y-1"><label className={labelCls}>{mc.variantSku}</label><input value={v.sku} onChange={e => setVar(i, 'sku', e.target.value)} className={inputCls} /></div>
+                                        <div className="space-y-1"><label className={labelCls}>{mc.priceCol}</label><input type="number" value={v.price} onChange={e => setVar(i, 'price', e.target.value)} className={inputCls} /></div>
+                                        <div className="space-y-1"><label className={labelCls}>{mc.variantStock}</label><input type="number" value={v.stock} onChange={e => setVar(i, 'stock', e.target.value)} className={inputCls} /></div>
+                                        <button onClick={() => removeVariant(i)} className="px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all">{mc.removeBtn}</button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3 pt-2 border-t border-zinc-800">
+                                <button onClick={saveProduct} disabled={saving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                    {saving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveProductBtn}
+                                </button>
+                                <button onClick={() => setEditing(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
