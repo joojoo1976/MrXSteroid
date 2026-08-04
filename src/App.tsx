@@ -78,7 +78,7 @@ const SuccessPage = React.lazy(() => import('./pages/SuccessPage'));
 const CancelPage = React.lazy(() => import('./pages/CancelPage'));
 const PaymentPendingPage = React.lazy(() => import('./pages/PaymentPendingPage'));
 const RepresentativePage = React.lazy(() => import('./pages/RepresentativePage'));
-const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const MissionControl = React.lazy(() => import('./pages/MissionControl'));
 const AdminAnalytics = React.lazy(() => import('./pages/AdminAnalytics'));
 const AuthCallbackPage = React.lazy(() => import('./pages/AuthCallbackPage'));
 const PaymentConfigDiagnostic = React.lazy(() => import('./pages/PaymentConfigDiagnostic'));
@@ -323,7 +323,7 @@ function AppContent({
                 />
               )}
               {currentPage === Page.REPRESENTATIVE && <AuthGuard><RepresentativePage /></AuthGuard>}
-              {currentPage === Page.ADMIN_DASHBOARD && <AuthGuard><AdminDashboard /></AuthGuard>}
+              {currentPage === Page.ADMIN_DASHBOARD && <AdminGuard navigateTo={navigateTo}><MissionControl /></AdminGuard>}
               {currentPage === Page.ADMIN_ANALYTICS && <AdminGuard navigateTo={navigateTo}><AdminAnalytics /></AdminGuard>}
               {currentPage === Page.AUTH_CALLBACK && <AuthCallbackPage />}
               {currentPage === Page.PAYMENT_CONFIG_DIAGNOSTIC && <PaymentConfigDiagnostic />}

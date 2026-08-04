@@ -226,6 +226,7 @@ export type Database = {
                     message: string
                     order_id: string | null
                     user_agent: string | null
+                    handled: boolean
                     created_at: string
                 }
                 Insert: {
@@ -237,6 +238,7 @@ export type Database = {
                     message: string
                     order_id?: string | null
                     user_agent?: string | null
+                    handled?: boolean
                     created_at?: string
                 }
                 Update: {
@@ -248,7 +250,32 @@ export type Database = {
                     message?: string
                     order_id?: string | null
                     user_agent?: string | null
+                    handled?: boolean
                     created_at?: string
+                }
+                Relationships: []
+            }
+            admin_settings: {
+                Row: {
+                    id: string
+                    key: string
+                    value: string
+                    section: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    key: string
+                    value?: string
+                    section?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    key?: string
+                    value?: string
+                    section?: string
+                    updated_at?: string
                 }
                 Relationships: []
             }
