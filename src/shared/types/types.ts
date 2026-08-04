@@ -1418,6 +1418,7 @@ export interface ContentStrings {
     orderCol: string;
     customerCol: string;
     tierCol: string;
+    itemsCol: string;
     amountCol: string;
     statusCol: string;
     dateCol: string;

@@ -269,7 +269,7 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
     const pieData = Object.entries(stats.gatewayStats).map(([k, v]) => ({ name: k, value: v.count, revenue: v.revenue }));
 
     const recentActivity = [
-        ...orders.slice(0, 5).map(o => ({ kind: 'order', title: `${mc.activityOrder} #${o.id.slice(0, 8)}`, sub: `${o.fullName} · ${fmtCurrency(Number(o.amount || 0), 'USD')}`, time: o.created_at })),
+        ...orders.slice(0, 5).map(o => ({ kind: 'order', title: `${mc.activityOrder} #${o.id.slice(0, 8)}`, sub: `${o.fullname || o.email || '—'} · ${fmtCurrency(Number(o.amount || 0), 'USD')}`, time: o.created_at || '' })),
         ...messages.slice(0, 5).map(m => ({ kind: 'message', title: `${mc.activityMessage}: ${m.operator_name}`, sub: m.subject, time: m.created_at })),
         ...profiles.slice(0, 4).map(p => ({ kind: 'user', title: `${mc.activityUser}: ${p.full_name || p.email || ''}`, sub: p.email || '', time: p.created_at })),
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
@@ -1140,10 +1140,10 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
         if (search) {
             const q = search.toLowerCase();
             list = list.filter(o =>
-                o.fullName?.toLowerCase().includes(q) ||
+                o.fullname?.toLowerCase().includes(q) ||
                 o.email?.toLowerCase().includes(q) ||
-                o.id?.toLowerCase().includes(q) ||
-                o.transaction_id?.toLowerCase().includes(q)
+                o.phone?.toLowerCase().includes(q) ||
+                o.id?.toLowerCase().includes(q)
             );
         }
         return list;
@@ -1180,7 +1180,7 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                             <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
                                 <th className="p-4">{mc.orderCol}</th>
                                 <th className="p-4">{mc.customerCol}</th>
-                                <th className="p-4">{mc.tierCol}</th>
+                                <th className="p-4">{mc.itemsCol}</th>
                                 <th className="p-4">{mc.amountCol}</th>
                                 <th className="p-4">{mc.statusCol}</th>
                                 <th className="p-4">{mc.dateCol}</th>
@@ -1192,10 +1192,10 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                                 <tr key={o.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
                                     <td className="p-4 font-mono text-xs text-zinc-400">#{o.id.slice(0, 8)}</td>
                                     <td className="p-4">
-                                        <p className="font-bold text-white">{o.fullName}</p>
+                                        <p className="font-bold text-white">{o.fullname || o.email || '—'}</p>
                                         <p className="text-xs text-zinc-500">{o.email}</p>
                                     </td>
-                                    <td className="p-4 text-xs text-zinc-400 font-bold uppercase">{o.tier}</td>
+                                    <td className="p-4 text-xs text-zinc-400 font-bold uppercase">{Array.isArray(o.items) ? o.items.length : '—'}</td>
                                     <td className="p-4 text-xs text-white font-bold">{fmtCurrency(Number(o.amount || 0), 'USD')}</td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${
@@ -1205,7 +1205,7 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                                             'bg-amber-500/10 text-amber-400'
                                         }`}>{o.status}</span>
                                     </td>
-                                    <td className="p-4 text-xs text-zinc-500">{new Date(o.created_at).toLocaleDateString()}</td>
+                                    <td className="p-4 text-xs text-zinc-500">{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
                                     <td className="p-4">
                                         <button
                                             onClick={() => setEditing(o)}
@@ -1232,34 +1232,28 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                         <div className="space-y-6">
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-2">
                                 <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.customerInfo}</p>
-                                <p className="text-white font-bold">{editing.fullName}</p>
+                                <p className="text-white font-bold">{editing.fullname || editing.email || '—'}</p>
                                 <p className="text-sm text-zinc-400">{editing.email}</p>
                                 <p className="text-xs text-zinc-500">{editing.address}, {editing.city}, {editing.country}</p>
                             </div>
 
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-2">
                                 <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.orderInfo}</p>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.tierCol}</span><span className="text-white font-bold uppercase">{editing.tier}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.phoneCol}</span><span className="text-zinc-400" dir="ltr">{editing.phone || '—'}</span></div>
                                 <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.amountCol}</span><span className="text-white font-bold">{fmtCurrency(Number(editing.amount || 0), 'USD')}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.transactionId}</span><span className="text-zinc-400 font-mono text-xs">{editing.transaction_id || '—'}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.shippingProvider}</span><span className="text-zinc-400 font-bold uppercase">{editing.shipping_provider || '—'}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.statusCol}</span><span className="text-white font-bold uppercase">{editing.status || '—'}</span></div>
                             </div>
 
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3">
                                 <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.updateStatus}</p>
                                 <select
-                                    value={editing.status}
+                                    value={editing.status || 'pending'}
                                     onChange={e => updateStatus(editing, e.target.value)}
                                     disabled={saving}
                                     className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold focus:border-gold-500 outline-none disabled:opacity-50"
                                 >
                                     {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
-                                <input
-                                    defaultValue={editing.shipping_provider || ''}
-                                    placeholder={mc.trackingPlaceholder}
-                                    className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none"
-                                />
                             </div>
 
                             <button onClick={() => setEditing(null)} className="w-full py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.closeBtn}</button>
@@ -1452,8 +1446,8 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                 {selectedOrders.map(o => (
                                     <div key={o.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 flex justify-between items-center">
                                         <div>
-                                            <p className="text-sm font-bold text-white">#{o.id.slice(0, 8)} · {o.tier}</p>
-                                            <p className="text-xs text-zinc-500">{new Date(o.created_at).toLocaleDateString()}</p>
+                                            <p className="text-sm font-bold text-white">#{o.id.slice(0, 8)} · {Array.isArray(o.items) ? o.items.length : o.status || '—'}</p>
+                                            <p className="text-xs text-zinc-500">{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</p>
                                         </div>
                                         <span className="text-xs font-bold">{fmtCurrency(Number(o.amount || 0), 'USD')}</span>
                                     </div>
@@ -1701,7 +1695,7 @@ const LogisticsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC
                         {unassigned.slice(0, 20).map(o => (
                             <div key={o.id} className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-3 space-y-2">
                                 <div className="flex justify-between text-sm"><span className="text-white font-black">#{o.id.slice(0, 8)}</span><span className="text-gold-500 font-bold">{fmtCurrency(Number(o.amount || 0), 'USD')}</span></div>
-                                <p className="text-xs text-zinc-500">{o.fullName} · {o.city}, {o.country}</p>
+                                <p className="text-xs text-zinc-500">{o.fullname || o.email || '—'} · {o.city}, {o.country}</p>
                                 <select
                                     title={mc.assignDelegate}
                                     onChange={e => assignOrder(o.id, e.target.value)}

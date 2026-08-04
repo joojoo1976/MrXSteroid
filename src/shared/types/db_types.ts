@@ -285,60 +285,51 @@ export type Database = {
             orders: {
                 Row: {
                     id: string
-                    email: string
-                    fullName: string
-                    tier: string
-                    language: string
-                    amount: number
-                    country: string
+                    user_id: string | null
+                    fullname: string | null
+                    email: string | null
+                    phone: string | null
                     address: string | null
                     city: string | null
-                    zip_code: string | null
-                    shipping_provider: string | null
-                    body_stats: Json | null
-                    status: string
-                    transaction_id: string | null
-                    error_log: string | null
-                    attempts: number
-                    created_at: string
+                    country: string | null
+                    postalcode: string | null
+                    amount: number | null
+                    status: string | null
+                    items: Json | null
+                    created_at: string | null
+                    updated_at: string | null
                 }
                 Insert: {
                     id?: string
-                    email: string
-                    fullName: string
-                    tier: string
-                    language: string
-                    amount: number
-                    country: string
+                    user_id?: string | null
+                    fullname?: string | null
+                    email?: string | null
+                    phone?: string | null
                     address?: string | null
                     city?: string | null
-                    zip_code?: string | null
-                    shipping_provider?: string | null
-                    body_stats?: Json | null
-                    status?: string
-                    transaction_id?: string | null
-                    error_log?: string | null
-                    attempts?: number
-                    created_at?: string
+                    country?: string | null
+                    postalcode?: string | null
+                    amount?: number | null
+                    status?: string | null
+                    items?: Json | null
+                    created_at?: string | null
+                    updated_at?: string | null
                 }
                 Update: {
                     id?: string
-                    email?: string
-                    fullName?: string
-                    tier?: string
-                    language?: string
-                    amount?: number
-                    country?: string
+                    user_id?: string | null
+                    fullname?: string | null
+                    email?: string | null
+                    phone?: string | null
                     address?: string | null
                     city?: string | null
-                    zip_code?: string | null
-                    shipping_provider?: string | null
-                    body_stats?: Json | null
-                    status?: string
-                    transaction_id?: string | null
-                    error_log?: string | null
-                    attempts?: number
-                    created_at?: string
+                    country?: string | null
+                    postalcode?: string | null
+                    amount?: number | null
+                    status?: string | null
+                    items?: Json | null
+                    created_at?: string | null
+                    updated_at?: string | null
                 }
                 Relationships: []
             }

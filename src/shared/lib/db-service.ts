@@ -13,10 +13,15 @@ export interface UserProfile {
 
 export interface OrderData {
     user_id: string;
-    total_amount: number;
-    currency: string;
-    shipping_address: string;
-    phone_number: string;
+    fullname?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    postalcode?: string;
+    amount: number;
+    items?: unknown[] | null;
     status?: string;
 }
 
@@ -66,7 +71,7 @@ export const dbService = {
      */
     async createOrder(orderData: OrderData): Promise<any> {
         if (!orderData || Object.keys(orderData).length === 0) throw new Error('Order data is required');
-        if (orderData.total_amount < 0) throw new Error('Order amount must be positive');
+        if (orderData.amount < 0) throw new Error('Order amount must be positive');
 
         const { data, error } = await supabase
             .from('orders')

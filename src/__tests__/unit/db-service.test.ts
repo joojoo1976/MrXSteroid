@@ -167,10 +167,10 @@ describe('Database Service Tests', () => {
         it('should create an order successfully', async () => {
             const orderData = {
                 user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
-                total_amount: 99.99,
-                currency: 'USD',
-                shipping_address: '123 Test St',
-                phone_number: '1234567890',
+                fullname: 'Test User',
+                email: 'test@example.com',
+                phone: '1234567890',
+                amount: 99.99,
                 status: 'pending'
             };
 
@@ -193,10 +193,10 @@ describe('Database Service Tests', () => {
         it('should handle order creation errors', async () => {
             const orderData = {
                 user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
-                total_amount: 99.99,
-                currency: 'USD',
-                shipping_address: '123 Test St',
-                phone_number: '1234567890',
+                fullname: 'Test User',
+                email: 'test@example.com',
+                phone: '1234567890',
+                amount: 99.99,
                 status: 'pending'
             };
             const mockError = new Error('Order creation failed');
@@ -218,10 +218,9 @@ describe('Database Service Tests', () => {
 
             await expect(dbService.createOrder({
                 user_id: '7be3039d-27b0-4f51-85e3-c392f44c77c6',
-                total_amount: -10,
-                currency: 'USD',
-                shipping_address: '123 Test St',
-                phone_number: '1234567890',
+                amount: -10,
+                email: 'test@example.com',
+                phone: '1234567890',
                 status: 'pending'
             }))
                 .rejects
@@ -233,8 +232,8 @@ describe('Database Service Tests', () => {
         it('should fetch user orders successfully', async () => {
             const userId = '7be3039d-27b0-4f51-85e3-c392f44c77c6';
             const mockOrders = [
-                { id: 'order1', user_id: userId, total_amount: 99.99, status: 'delivered' },
-                { id: 'order2', user_id: userId, total_amount: 149.99, status: 'pending' }
+                { id: 'order1', user_id: userId, amount: 99.99, status: 'delivered' },
+                { id: 'order2', user_id: userId, amount: 149.99, status: 'pending' }
             ];
 
             const mockResponse: { data: typeof mockOrders; error: null } = {

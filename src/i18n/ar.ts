@@ -2191,6 +2191,7 @@ export const arContent: ContentStrings = {
         orderCol: "الطلب",
         customerCol: "العميل",
         tierCol: "الفئة",
+        itemsCol: "المنتجات",
         amountCol: "المبلغ",
         statusCol: "الحالة",
         dateCol: "التاريخ",

@@ -2198,6 +2198,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         orderCol: "Order",
         customerCol: "Customer",
         tierCol: "Tier",
+        itemsCol: "Items",
         amountCol: "Amount",
         statusCol: "Status",
         dateCol: "Date",
