@@ -36,7 +36,9 @@ import { toast } from 'sonner';
 import { supabase } from '../shared/lib/supabase';
 import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile } from '../features/admin/useAdminData';
 import { usePreferences } from '../context/PreferencesContext';
+import { ContentStrings } from '../shared/types/types';
 
+type MC = NonNullable<ContentStrings['missionControl']>;
 type SectionKey = 'overview' | 'orders' | 'customers' | 'messages' | 'logistics' | 'settings';
 
 const GATEWAY_COLORS: Record<string, string> = {
@@ -45,21 +47,24 @@ const GATEWAY_COLORS: Record<string, string> = {
     spaceremit: '#0ea5e9',
 };
 
-const SECTIONS: { key: SectionKey; label: string; icon: React.ElementType }[] = [
-    { key: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { key: 'orders', label: 'Orders', icon: ShoppingCart },
-    { key: 'customers', label: 'Customers', icon: Users },
-    { key: 'messages', label: 'Messages', icon: Mail },
-    { key: 'logistics', label: 'Logistics', icon: Map },
-    { key: 'settings', label: 'Settings', icon: Settings },
+const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
+    { key: 'overview', icon: LayoutDashboard },
+    { key: 'orders', icon: ShoppingCart },
+    { key: 'customers', icon: Users },
+    { key: 'messages', icon: Mail },
+    { key: 'logistics', icon: Map },
+    { key: 'settings', icon: Settings },
 ];
 
 const MissionControl: React.FC = () => {
-    const { isRTL } = usePreferences();
+    const { isRTL, content } = usePreferences();
+    const mc = content.missionControl!;
     const [section, setSection] = useState<SectionKey>('overview');
     const [collapsed, setCollapsed] = useState(false);
     const [search, setSearch] = useState('');
     const data = useAdminData();
+
+    const sections = SECTIONS.map(s => ({ ...s, label: mc.sections[s.key] }));
 
     const navClass = (active: boolean) =>
         `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -76,14 +81,14 @@ const MissionControl: React.FC = () => {
                     </div>
                     {!collapsed && (
                         <div className="min-w-0">
-                            <p className="font-black text-sm tracking-tight text-white leading-none">MISSION CONTROL</p>
-                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Mr. X Steroid</p>
+                            <p className="font-black text-sm tracking-tight text-white leading-none">{mc.appName.toUpperCase()}</p>
+                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">{mc.tagline}</p>
                         </div>
                     )}
                 </div>
 
                 <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto">
-                    {SECTIONS.map(s => (
+                    {sections.map(s => (
                         <button
                             key={s.key}
                             onClick={() => setSection(s.key)}
@@ -102,7 +107,7 @@ const MissionControl: React.FC = () => {
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-500 hover:text-white hover:bg-zinc-800/60 border border-zinc-800 transition-all"
                     >
                         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                        {!collapsed && <span>Collapse</span>}
+                        {!collapsed && <span>{mc.collapse}</span>}
                     </button>
                 </div>
             </aside>
@@ -116,7 +121,7 @@ const MissionControl: React.FC = () => {
                         <input
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            placeholder="Omni-search orders, customers, messages..."
+                            placeholder={mc.searchPlaceholder}
                             className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl ps-10 pe-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-gold-500 focus:outline-none transition-all"
                         />
                     </div>
@@ -135,8 +140,8 @@ const MissionControl: React.FC = () => {
                     <div className="flex items-center gap-3 ps-3 border-s border-zinc-800">
                         <div className="w-9 h-9 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-500 text-sm font-black">A</div>
                         <div className="hidden sm:block">
-                            <p className="text-xs font-black text-white leading-none">Admin</p>
-                            <p className="text-[9px] text-zinc-500 font-bold mt-1">Root Clearance</p>
+                            <p className="text-xs font-black text-white leading-none">{mc.adminRole}</p>
+                            <p className="text-[9px] text-zinc-500 font-bold mt-1">{mc.clearance}</p>
                         </div>
                     </div>
                 </header>
@@ -145,7 +150,7 @@ const MissionControl: React.FC = () => {
                     {data.loading ? (
                         <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
                             <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
-                            <p className="text-sm font-black text-zinc-500 uppercase tracking-widest animate-pulse">Synchronizing Global Assets...</p>
+                            <p className="text-sm font-black text-zinc-500 uppercase tracking-widest animate-pulse">{mc.loading}</p>
                         </div>
                     ) : (
                         <SectionRenderer
@@ -172,13 +177,15 @@ interface SectionRendererProps {
 }
 
 const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data, onRefresh }) => {
+    const { content } = usePreferences();
+    const mc = content.missionControl!;
     switch (section) {
-        case 'overview': return <OverviewSection data={data} search={search} />;
-        case 'orders': return <OrdersSection data={data} search={search} />;
-        case 'customers': return <CustomersSection data={data} search={search} />;
-        case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} />;
-        case 'logistics': return <LogisticsSection data={data} />;
-        case 'settings': return <SettingsSection data={data} />;
+        case 'overview': return <OverviewSection data={data} search={search} mc={mc} />;
+        case 'orders': return <OrdersSection data={data} search={search} mc={mc} />;
+        case 'customers': return <CustomersSection data={data} search={search} mc={mc} />;
+        case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
+        case 'logistics': return <LogisticsSection data={data} mc={mc} />;
+        case 'settings': return <SettingsSection data={data} mc={mc} />;
         default: return null;
     }
 };
@@ -186,7 +193,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
 /* ════════════════════════════════════════════════════════════════════════
    OVERVIEW
    ════════════════════════════════════════════════════════════════════════ */
-const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string }> = ({ data }) => {
+const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; mc: MC }> = ({ data, mc }) => {
     const { invoices, orders, messages, profiles } = data;
 
     const stats = useMemo(() => {
@@ -227,33 +234,33 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
     const pieData = Object.entries(stats.gatewayStats).map(([k, v]) => ({ name: k, value: v.count, revenue: v.revenue }));
 
     const recentActivity = [
-        ...orders.slice(0, 5).map(o => ({ kind: 'order', title: `New order #${o.id.slice(0, 8)}`, sub: `${o.fullName} · ${fmtCurrency(Number(o.amount || 0), 'USD')}`, time: o.created_at })),
-        ...messages.slice(0, 5).map(m => ({ kind: 'message', title: `Message from ${m.operator_name}`, sub: m.subject, time: m.created_at })),
-        ...profiles.slice(0, 4).map(p => ({ kind: 'user', title: `New user ${p.full_name || p.email || ''}`, sub: p.email || '', time: p.created_at })),
+        ...orders.slice(0, 5).map(o => ({ kind: 'order', title: `${mc.activityOrder} #${o.id.slice(0, 8)}`, sub: `${o.fullName} · ${fmtCurrency(Number(o.amount || 0), 'USD')}`, time: o.created_at })),
+        ...messages.slice(0, 5).map(m => ({ kind: 'message', title: `${mc.activityMessage}: ${m.operator_name}`, sub: m.subject, time: m.created_at })),
+        ...profiles.slice(0, 4).map(p => ({ kind: 'user', title: `${mc.activityUser}: ${p.full_name || p.email || ''}`, sub: p.email || '', time: p.created_at })),
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
 
     return (
         <div className="space-y-6">
             <header className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Mission Overview</h1>
-                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">Real-time commerce intelligence</p>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.overviewTitle}</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.overviewSubtitle}</p>
                 </div>
             </header>
 
             {/* KPI Cards */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KpiCard icon={DollarSign} label="USD Revenue" value={fmtCurrency(stats.usdRevenue, 'USD')} sub={`${stats.success.length} sales`} tone="gold" />
-                <KpiCard icon={Wallet} label="EGP Revenue" value={fmtCurrency(stats.egpRevenue, 'EGP')} sub="Egypt volume" tone="emerald" />
-                <KpiCard icon={Clock} label="Pending" value={String(stats.pending.length)} sub={`${stats.failed.length} failed`} tone="amber" />
-                <KpiCard icon={Mail} label="Unread Messages" value={String(stats.unhandledMessages)} sub={`${stats.totalOrders} orders`} tone="rose" />
+                <KpiCard icon={DollarSign} label={mc.usdRevenue} value={fmtCurrency(stats.usdRevenue, 'USD')} sub={`${stats.success.length} ${mc.salesCount}`} tone="gold" />
+                <KpiCard icon={Wallet} label={mc.egpRevenue} value={fmtCurrency(stats.egpRevenue, 'EGP')} sub={mc.egyptVolume} tone="emerald" />
+                <KpiCard icon={Clock} label={mc.pending} value={String(stats.pending.length)} sub={`${stats.failed.length} ${mc.failedCount}`} tone="amber" />
+                <KpiCard icon={Mail} label={mc.unreadMessages} value={String(stats.unhandledMessages)} sub={`${stats.totalOrders} ${mc.ordersCount}`} tone="rose" />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
                 {/* Revenue chart */}
                 <div className="lg:col-span-2 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-black text-white uppercase text-sm tracking-wide">Revenue (30 days)</h3>
+                        <h3 className="font-black text-white uppercase text-sm tracking-wide">{mc.revenueChartTitle}</h3>
                         <TrendingUp className="w-4 h-4 text-gold-500" />
                     </div>
                     <ResponsiveContainer width="100%" height={260}>
@@ -275,7 +282,7 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
 
                 {/* Gateway donut */}
                 <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-4">
-                    <h3 className="font-black text-white uppercase text-sm tracking-wide">Sales by Gateway</h3>
+                    <h3 className="font-black text-white uppercase text-sm tracking-wide">{mc.salesByGateway}</h3>
                     <ResponsiveContainer width="100%" height={260}>
                         <PieChart>
                             <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={3}>
@@ -293,7 +300,7 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
             {/* Recent activity + status */}
             <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5">
-                    <h3 className="font-black text-white uppercase text-sm tracking-wide mb-4">Recent Activity</h3>
+                    <h3 className="font-black text-white uppercase text-sm tracking-wide mb-4">{mc.recentActivity}</h3>
                     <div className="space-y-2">
                         {recentActivity.map((a, i) => (
                             <div key={i} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/60">
@@ -305,13 +312,13 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                                 <span className="text-[10px] text-zinc-600 font-bold shrink-0">{timeAgo(a.time)}</span>
                             </div>
                         ))}
-                        {recentActivity.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-8">No recent activity</p>}
+                        {recentActivity.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-8">{mc.noRecentActivity}</p>}
                     </div>
                 </div>
 
                 <div className="space-y-6">
                     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5">
-                        <h3 className="font-black text-white uppercase text-sm tracking-wide mb-3">Order Status</h3>
+                        <h3 className="font-black text-white uppercase text-sm tracking-wide mb-3">{mc.orderStatus}</h3>
                         <div className="space-y-2">
                             {['pending', 'success', 'failed'].map(s => {
                                 const n = orders.filter(o => o.status === s).length;
@@ -328,8 +335,8 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                         </div>
                     </div>
                     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 grid grid-cols-2 gap-4">
-                        <div><p className="text-[10px] font-black text-zinc-500 uppercase">Total Users</p><p className="text-2xl font-black text-white">{stats.totalUsers}</p></div>
-                        <div><p className="text-[10px] font-black text-zinc-500 uppercase">Active Delegates</p><p className="text-2xl font-black text-white">{stats.activeDelegates}</p></div>
+                        <div><p className="text-[10px] font-black text-zinc-500 uppercase">{mc.totalUsers}</p><p className="text-2xl font-black text-white">{stats.totalUsers}</p></div>
+                        <div><p className="text-[10px] font-black text-zinc-500 uppercase">{mc.activeDelegates}</p><p className="text-2xl font-black text-white">{stats.activeDelegates}</p></div>
                     </div>
                 </div>
             </div>
@@ -361,7 +368,7 @@ const KpiCard: React.FC<{ icon: React.ElementType; label: string; value: string;
    ════════════════════════════════════════════════════════════════════════ */
 const ORDER_STATUSES = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled', 'refunded'];
 
-const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string }> = ({ data, search }) => {
+const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; mc: MC }> = ({ data, search, mc }) => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [editing, setEditing] = useState<Order | null>(null);
     const [saving, setSaving] = useState(false);
@@ -385,8 +392,8 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
         setSaving(true);
         const { error } = await supabase.from('orders').update({ status: nextStatus }).eq('id', order.id);
         setSaving(false);
-        if (error) return toast.error('Update failed: ' + error.message);
-        toast.success('Order updated');
+        if (error) return toast.error(`${mc.updateFailed} ${error.message}`);
+        toast.success(mc.orderUpdated);
         data.refresh();
     };
 
@@ -394,12 +401,12 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
         <div className="space-y-6">
             <header className="flex flex-wrap justify-between items-end gap-3">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Orders</h1>
-                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{filtered.length} orders</p>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.ordersTitle}</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{filtered.length} {mc.ordersCount}</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                     <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-white font-bold focus:border-gold-500 outline-none">
-                        <option value="all">All statuses</option>
+                        <option value="all">{mc.allStatuses}</option>
                         {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
@@ -410,13 +417,13 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
-                                <th className="p-4">Order</th>
-                                <th className="p-4">Customer</th>
-                                <th className="p-4">Tier</th>
-                                <th className="p-4">Amount</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4">Date</th>
-                                <th className="p-4">Actions</th>
+                                <th className="p-4">{mc.orderCol}</th>
+                                <th className="p-4">{mc.customerCol}</th>
+                                <th className="p-4">{mc.tierCol}</th>
+                                <th className="p-4">{mc.amountCol}</th>
+                                <th className="p-4">{mc.statusCol}</th>
+                                <th className="p-4">{mc.dateCol}</th>
+                                <th className="p-4">{mc.actionsCol}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -442,11 +449,11 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                                         <button
                                             onClick={() => setEditing(o)}
                                             className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all"
-                                        >Manage</button>
+                                        >{mc.manageBtn}</button>
                                     </td>
                                 </tr>
                             ))}
-                            {filtered.length === 0 && <tr><td colSpan={7} className="p-10 text-center text-zinc-600 text-sm font-bold">No orders found</td></tr>}
+                            {filtered.length === 0 && <tr><td colSpan={7} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noOrdersFound}</td></tr>}
                         </tbody>
                     </table>
                 </div>
@@ -457,28 +464,28 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                 <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-end">
                     <div className="w-full max-w-lg h-full bg-zinc-950 border-s border-zinc-800 p-6 overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="font-black text-white uppercase text-lg">Order #{editing.id.slice(0, 8)}</h2>
+                            <h2 className="font-black text-white uppercase text-lg">{mc.orderCol} #{editing.id.slice(0, 8)}</h2>
                             <button onClick={() => setEditing(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
                         </div>
 
                         <div className="space-y-6">
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-2">
-                                <p className="text-[10px] font-black text-zinc-500 uppercase">Customer</p>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.customerInfo}</p>
                                 <p className="text-white font-bold">{editing.fullName}</p>
                                 <p className="text-sm text-zinc-400">{editing.email}</p>
                                 <p className="text-xs text-zinc-500">{editing.address}, {editing.city}, {editing.country}</p>
                             </div>
 
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-2">
-                                <p className="text-[10px] font-black text-zinc-500 uppercase">Order</p>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">Tier</span><span className="text-white font-bold uppercase">{editing.tier}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">Amount</span><span className="text-white font-bold">{fmtCurrency(Number(editing.amount || 0), 'USD')}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">Transaction</span><span className="text-zinc-400 font-mono text-xs">{editing.transaction_id || '—'}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-zinc-400">Shipping</span><span className="text-zinc-400 font-bold uppercase">{editing.shipping_provider || '—'}</span></div>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.orderInfo}</p>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.tierCol}</span><span className="text-white font-bold uppercase">{editing.tier}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.amountCol}</span><span className="text-white font-bold">{fmtCurrency(Number(editing.amount || 0), 'USD')}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.transactionId}</span><span className="text-zinc-400 font-mono text-xs">{editing.transaction_id || '—'}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-zinc-400">{mc.shippingProvider}</span><span className="text-zinc-400 font-bold uppercase">{editing.shipping_provider || '—'}</span></div>
                             </div>
 
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3">
-                                <p className="text-[10px] font-black text-zinc-500 uppercase">Update Status</p>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase">{mc.updateStatus}</p>
                                 <select
                                     value={editing.status}
                                     onChange={e => updateStatus(editing, e.target.value)}
@@ -489,12 +496,12 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                                 </select>
                                 <input
                                     defaultValue={editing.shipping_provider || ''}
-                                    placeholder="Tracking number / shipping provider"
+                                    placeholder={mc.trackingPlaceholder}
                                     className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none"
                                 />
                             </div>
 
-                            <button onClick={() => setEditing(null)} className="w-full py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">Close</button>
+                            <button onClick={() => setEditing(null)} className="w-full py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.closeBtn}</button>
                         </div>
                     </div>
                 </div>
@@ -506,7 +513,7 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
 /* ════════════════════════════════════════════════════════════════════════
    CUSTOMERS (CRM)
    ════════════════════════════════════════════════════════════════════════ */
-const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string }> = ({ data, search }) => {
+const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; mc: MC }> = ({ data, search, mc }) => {
     const [selected, setSelected] = useState<Profile | null>(null);
 
     const enriched = useMemo(() => {
@@ -537,8 +544,8 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Customers</h1>
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{enriched.length} accounts</p>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.customersTitle}</h1>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{enriched.length} {mc.accountsCount}</p>
             </header>
 
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
@@ -546,12 +553,12 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
-                                <th className="p-4">Customer</th>
-                                <th className="p-4">Total Spent</th>
-                                <th className="p-4">Purchases</th>
-                                <th className="p-4">Orders</th>
-                                <th className="p-4">Joined</th>
-                                <th className="p-4">Actions</th>
+                                <th className="p-4">{mc.customerCol}</th>
+                                <th className="p-4">{mc.totalSpent}</th>
+                                <th className="p-4">{mc.purchasesCol}</th>
+                                <th className="p-4">{mc.ordersCol}</th>
+                                <th className="p-4">{mc.joinedCol}</th>
+                                <th className="p-4">{mc.actionsCol}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -566,11 +573,11 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                     <td className="p-4 text-xs text-zinc-400 font-bold">{p.orderCount}</td>
                                     <td className="p-4 text-xs text-zinc-500">{new Date(p.created_at).toLocaleDateString()}</td>
                                     <td className="p-4">
-                                        <button onClick={() => setSelected(p)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">Profile</button>
+                                        <button onClick={() => setSelected(p)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.profileBtn}</button>
                                     </td>
                                 </tr>
                             ))}
-                            {enriched.length === 0 && <tr><td colSpan={6} className="p-10 text-center text-zinc-600 text-sm font-bold">No customers found</td></tr>}
+                            {enriched.length === 0 && <tr><td colSpan={6} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noCustomersFound}</td></tr>}
                         </tbody>
                     </table>
                 </div>
@@ -580,20 +587,20 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                 <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-end">
                     <div className="w-full max-w-lg h-full bg-zinc-950 border-s border-zinc-800 p-6 overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="font-black text-white uppercase text-lg">Customer Profile</h2>
+                            <h2 className="font-black text-white uppercase text-lg">{mc.customerProfile}</h2>
                             <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
                         </div>
                         <div className="space-y-6">
                             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-1">
                                 <p className="text-white font-black text-lg">{selected.full_name || '—'}</p>
                                 <p className="text-sm text-zinc-400">{selected.email || '—'}</p>
-                                <p className="text-xs text-zinc-500">Role: <span className="text-gold-500 font-bold uppercase">{selected.role}</span></p>
-                                <p className="text-xs text-zinc-500">Sub: <span className="text-emerald-400 font-bold uppercase">{selected.subscription_status || 'none'}</span> · {selected.subscription_tier || '—'}</p>
-                                <p className="text-xs text-zinc-500">Premium: {selected.has_paid ? <span className="text-green-400 font-bold">Active</span> : <span className="text-zinc-600">Free</span>}</p>
+                                <p className="text-xs text-zinc-500">{mc.roleLabel}: <span className="text-gold-500 font-bold uppercase">{selected.role}</span></p>
+                                <p className="text-xs text-zinc-500">{mc.subLabel}: <span className="text-emerald-400 font-bold uppercase">{selected.subscription_status || 'none'}</span> · {selected.subscription_tier || '—'}</p>
+                                <p className="text-xs text-zinc-500">{mc.premiumLabel}: {selected.has_paid ? <span className="text-green-400 font-bold">{mc.activeBadge}</span> : <span className="text-zinc-600">{mc.freeBadge}</span>}</p>
                             </div>
 
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Order History ({selectedOrders.length})</p>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{mc.orderHistory} ({selectedOrders.length})</p>
                                 {selectedOrders.map(o => (
                                     <div key={o.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 flex justify-between items-center">
                                         <div>
@@ -603,7 +610,7 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
                                         <span className="text-xs font-bold">{fmtCurrency(Number(o.amount || 0), 'USD')}</span>
                                     </div>
                                 ))}
-                                {selectedOrders.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-6">No orders for this customer</p>}
+                                {selectedOrders.length === 0 && <p className="text-sm text-zinc-600 font-bold text-center py-6">{mc.noOrdersForCustomer}</p>}
                             </div>
                         </div>
                     </div>
@@ -616,7 +623,7 @@ const CustomersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search
 /* ════════════════════════════════════════════════════════════════════════
    MESSAGES (Contact Center)
    ════════════════════════════════════════════════════════════════════════ */
-const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; onRefresh: () => void }> = ({ data, search, onRefresh }) => {
+const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; onRefresh: () => void; mc: MC }> = ({ data, search, onRefresh, mc }) => {
     const [selected, setSelected] = useState<ContactMessage | null>(null);
     const [busy, setBusy] = useState(false);
 
@@ -638,9 +645,9 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
         setBusy(true);
         const { error } = await supabase.from('contact_messages').update({ handled: !m.handled }).eq('id', m.id);
         setBusy(false);
-        if (error) return toast.error('Update failed: ' + error.message);
+        if (error) return toast.error(`${mc.updateFailed} ${error.message}`);
         if (selected?.id === m.id) setSelected({ ...m, handled: !m.handled });
-        toast.success(m.handled ? 'Marked as unread' : 'Marked as handled');
+        toast.success(m.handled ? mc.markUnhandled : mc.markHandled);
         onRefresh();
     };
 
@@ -648,8 +655,8 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
         setBusy(true);
         const { error } = await supabase.from('contact_messages').delete().eq('id', id);
         setBusy(false);
-        if (error) return toast.error('Delete failed: ' + error.message);
-        toast.success('Message deleted');
+        if (error) return toast.error(`${mc.deleteFailed} ${error.message}`);
+        toast.success(mc.deletedSuccess);
         setSelected(null);
         onRefresh();
     };
@@ -657,8 +664,8 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Contact Center</h1>
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{filtered.filter(m => !m.handled).length} unread of {filtered.length}</p>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.messagesTitle}</h1>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{filtered.filter(m => !m.handled).length} {mc.unreadCount} · {filtered.length}</p>
             </header>
 
             <div className="grid lg:grid-cols-2 gap-6">
@@ -667,10 +674,10 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
-                                    <th className="p-4">From</th>
-                                    <th className="p-4">Type</th>
-                                    <th className="p-4">Subject</th>
-                                    <th className="p-4">Date</th>
+                                    <th className="p-4">{mc.fromCol}</th>
+                                    <th className="p-4">{mc.typeCol}</th>
+                                    <th className="p-4">{mc.subjectCol}</th>
+                                    <th className="p-4">{mc.dateCol}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -685,7 +692,7 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                                         <td className="p-4 text-xs text-zinc-500">{timeAgo(m.created_at)}</td>
                                     </tr>
                                 ))}
-                                {filtered.length === 0 && <tr><td colSpan={4} className="p-10 text-center text-zinc-600 text-sm font-bold">No messages found</td></tr>}
+                                {filtered.length === 0 && <tr><td colSpan={4} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noMessagesFound}</td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -700,37 +707,37 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                                     <p className="text-sm text-zinc-400">{selected.email}</p>
                                 </div>
                                 <div className={`px-2.5 py-1 rounded text-[10px] font-black uppercase ${selected.handled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                                    {selected.handled ? 'Handled' : 'Unhandled'}
+                                    {selected.handled ? mc.handled : mc.unhandled}
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase">
                                 <span className="px-2 py-1 rounded bg-zinc-800 text-zinc-300">{selected.mission_type}</span>
-                                {selected.order_id && <span className="px-2 py-1 rounded bg-sky-500/10 text-sky-400">Order: {selected.order_id}</span>}
+                                {selected.order_id && <span className="px-2 py-1 rounded bg-sky-500/10 text-sky-400">{mc.orderRef}: {selected.order_id}</span>}
                             </div>
                             <div className="bg-black/40 border border-zinc-800 rounded-xl p-4">
                                 <p className="text-[10px] font-black text-zinc-500 uppercase mb-2">{selected.subject}</p>
                                 <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{selected.message}</p>
                             </div>
-                            <p className="text-[10px] text-zinc-600 font-mono">Received {new Date(selected.created_at).toLocaleString()}</p>
+                            <p className="text-[10px] text-zinc-600 font-mono">{mc.receivedAt} {new Date(selected.created_at).toLocaleString()}</p>
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={() => toggleHandled(selected)}
                                     disabled={busy}
                                     className="flex-1 py-2.5 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50"
                                 >
-                                    {selected.handled ? 'Mark Unhandled' : 'Mark Handled'}
+                                    {selected.handled ? mc.markUnhandled : mc.markHandled}
                                 </button>
                                 <button
                                     onClick={() => deleteMessage(selected.id)}
                                     disabled={busy}
                                     className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-black text-sm hover:bg-red-500/20 transition-all disabled:opacity-50"
-                                >Delete</button>
+                                >{mc.deleteBtn}</button>
                             </div>
-                            <a href={`mailto:${selected.email}`} className="block w-full py-2.5 rounded-xl bg-zinc-800 text-white font-black text-sm text-center hover:bg-zinc-700 transition-all">Reply via Email</a>
+                            <a href={`mailto:${selected.email}`} className="block w-full py-2.5 rounded-xl bg-zinc-800 text-white font-black text-sm text-center hover:bg-zinc-700 transition-all">{mc.replyByEmail}</a>
                         </div>
                     ) : (
                         <div className="h-full min-h-[300px] flex items-center justify-center">
-                            <p className="text-zinc-600 font-bold text-sm">Select a message to inspect</p>
+                            <p className="text-zinc-600 font-bold text-sm">{mc.selectMessageHint}</p>
                         </div>
                     )}
                 </div>
@@ -742,7 +749,7 @@ const MessagesSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
 /* ════════════════════════════════════════════════════════════════════════
    LOGISTICS
    ════════════════════════════════════════════════════════════════════════ */
-const LogisticsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ data }) => {
+const LogisticsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC }> = ({ data, mc }) => {
     const [assigning, setAssigning] = useState(false);
 
     const activeDelegates = data.delegates.filter(d => d.status === 'active');
@@ -753,62 +760,62 @@ const LogisticsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({
         setAssigning(true);
         const { error } = await supabase.from('delivery_assignments').insert({ order_id: orderId, delegate_id: delegateId, status: 'assigned' });
         setAssigning(false);
-        if (error) return toast.error('Assignment failed: ' + error.message);
-        toast.success('Order assigned');
+        if (error) return toast.error(`${mc.assignmentFailed} ${error.message}`);
+        toast.success(mc.assignmentSuccess);
         data.refresh();
     };
 
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Logistics Command</h1>
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{activeDelegates.length} active units · {unassigned.length} unassigned orders</p>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.logisticsTitle}</h1>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.logisticsSubtitle} · {activeDelegates.length} {mc.activeUnits} · {unassigned.length} {mc.unassignedOrders}</p>
             </header>
 
             <div className="grid lg:grid-cols-3 gap-6">
                 {/* Delegates */}
                 <div className="lg:col-span-2 space-y-3">
-                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Users className="w-4 h-4 text-gold-500" /> Active Units</h2>
+                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Users className="w-4 h-4 text-gold-500" /> {mc.activeUnits}</h2>
                     <div className="grid sm:grid-cols-2 gap-4">
                         {data.delegates.map(d => (
                             <div key={d.id} className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs text-zinc-500 font-bold uppercase">{d.vehicle_type || 'UNIT'}</p>
+                                        <p className="text-xs text-zinc-500 font-bold uppercase">{d.vehicle_type || mc.unit}</p>
                                         <p className="text-white font-black">{d.id.slice(0, 8).toUpperCase()}</p>
                                     </div>
                                     <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${d.status === 'active' ? 'bg-green-500/10 text-green-400' : d.status === 'busy' ? 'bg-amber-500/10 text-amber-400' : 'bg-zinc-800 text-zinc-500'}`}>{d.status}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs">
-                                    <span className="text-zinc-500 font-bold">{data.assignments.filter(a => a.delegate_id === d.id).length} active runs</span>
+                                    <span className="text-zinc-500 font-bold">{data.assignments.filter(a => a.delegate_id === d.id).length} {mc.activeRuns}</span>
                                     <span className="text-zinc-600 font-mono">{d.id.slice(0, 8)}</span>
                                 </div>
                             </div>
                         ))}
-                        {data.delegates.length === 0 && <div className="col-span-2 p-10 text-center text-zinc-600 font-bold text-sm">No delegates registered</div>}
+                        {data.delegates.length === 0 && <div className="col-span-2 p-10 text-center text-zinc-600 font-bold text-sm">{mc.noDelegates}</div>}
                     </div>
                 </div>
 
                 {/* Unassigned orders */}
                 <div className="space-y-3">
-                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Package className="w-4 h-4 text-gold-500" /> Unassigned Orders</h2>
+                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Package className="w-4 h-4 text-gold-500" /> {mc.unassignedOrders}</h2>
                     <div className="space-y-2">
                         {unassigned.slice(0, 20).map(o => (
                             <div key={o.id} className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-3 space-y-2">
                                 <div className="flex justify-between text-sm"><span className="text-white font-black">#{o.id.slice(0, 8)}</span><span className="text-gold-500 font-bold">{fmtCurrency(Number(o.amount || 0), 'USD')}</span></div>
                                 <p className="text-xs text-zinc-500">{o.fullName} · {o.city}, {o.country}</p>
                                 <select
-                                    title="Assign to delegate"
+                                    title={mc.assignDelegate}
                                     onChange={e => assignOrder(o.id, e.target.value)}
                                     disabled={assigning}
                                     className="w-full bg-black border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white font-bold focus:border-gold-500 outline-none"
                                 >
-                                    <option value="">Assign delegate...</option>
+                                    <option value="">{mc.assignDelegate}...</option>
                                     {activeDelegates.map(d => <option key={d.id} value={d.id}>{d.id.slice(0, 6).toUpperCase()}</option>)}
                                 </select>
                             </div>
                         ))}
-                        {unassigned.length === 0 && <div className="p-10 text-center text-zinc-600 font-bold text-sm bg-zinc-900/40 border border-zinc-800 rounded-2xl">All orders assigned</div>}
+                        {unassigned.length === 0 && <div className="p-10 text-center text-zinc-600 font-bold text-sm bg-zinc-900/40 border border-zinc-800 rounded-2xl">{mc.allOrdersAssigned}</div>}
                     </div>
                 </div>
             </div>
@@ -819,7 +826,7 @@ const LogisticsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({
 /* ════════════════════════════════════════════════════════════════════════
    SETTINGS
    ════════════════════════════════════════════════════════════════════════ */
-const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ data }) => {
+const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC }> = ({ data, mc }) => {
     const [local, setLocal] = useState<Record<string, string>>({});
     const [saving, setSaving] = useState(false);
 
@@ -840,8 +847,8 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ 
         }));
         const { error } = await supabase.from('admin_settings').upsert(upserts, { onConflict: 'key' });
         setSaving(false);
-        if (error) return toast.error('Save failed: ' + error.message);
-        toast.success('Settings saved');
+        if (error) return toast.error(`${mc.saveFailed} ${error.message}`);
+        toast.success(mc.savedSuccess);
         data.refresh();
     };
 
@@ -851,9 +858,9 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ 
         <div className="flex items-center justify-between gap-4 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
             <span className="text-sm font-bold text-zinc-300">{label}</span>
             <select value={local[`gateway_${key}`] || 'disabled'} onChange={e => setVal(`gateway_${key}`, e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:border-gold-500 outline-none">
-                <option value="disabled">Disabled</option>
-                <option value="sandbox">Sandbox / Test</option>
-                <option value="live">Live</option>
+                <option value="disabled">{mc.disabledState}</option>
+                <option value="sandbox">{mc.sandboxState}</option>
+                <option value="live">{mc.liveState}</option>
             </select>
         </div>
     );
@@ -861,36 +868,36 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ 
     return (
         <div className="space-y-6 max-w-3xl">
             <header>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">Settings</h1>
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">Store & gateway configuration</p>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.settingsTitle}</h1>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.settingsSubtitle}</p>
             </header>
 
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-4">
-                <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Settings className="w-4 h-4 text-gold-500" /> General</h2>
+                <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Settings className="w-4 h-4 text-gold-500" /> {mc.generalSection}</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase">Store Name</label>
+                        <label className="text-[10px] font-black text-zinc-500 uppercase">{mc.storeName}</label>
                         <input value={local['store_name'] || ''} onChange={e => setVal('store_name', e.target.value)} className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none" placeholder="Mr. X Steroid" />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase">Base Currency</label>
+                        <label className="text-[10px] font-black text-zinc-500 uppercase">{mc.baseCurrency}</label>
                         <select value={local['currency'] || 'USD'} onChange={e => setVal('currency', e.target.value)} className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none">
                             <option value="USD">USD</option>
                             <option value="EGP">EGP</option>
                         </select>
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase">Support Email</label>
+                        <label className="text-[10px] font-black text-zinc-500 uppercase">{mc.supportEmail}</label>
                         <input value={local['support_email'] || ''} onChange={e => setVal('support_email', e.target.value)} className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none" placeholder="support@mrxsteroid.com" />
                     </div>
                 </div>
             </div>
 
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-3">
-                <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Wallet className="w-4 h-4 text-gold-500" /> Payment Gateways</h2>
-                {gatewayRow('stripe', 'Stripe (Global)')}
-                {gatewayRow('paymob', 'Paymob (Egypt)')}
-                {gatewayRow('spaceremit', 'SpaceRemit (Global)')}
+                <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Wallet className="w-4 h-4 text-gold-500" /> {mc.paymentGateways}</h2>
+                {gatewayRow('stripe', `${mc.gatewayStripe} (Global)`)}
+                {gatewayRow('paymob', `${mc.gatewayPaymob} (Egypt)`)}
+                {gatewayRow('spaceremit', `${mc.gatewaySpaceRemit} (Global)`)}
             </div>
 
             <button
@@ -898,7 +905,7 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData> }> = ({ 
                 disabled={saving}
                 className="px-6 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center gap-2"
             >
-                {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Settings
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveSettings}
             </button>
         </div>
     );
