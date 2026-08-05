@@ -153,6 +153,8 @@ export function useAdminData(): AdminData {
             warns.forEach(({ name, e }) => {
                 if (e) console.warn(`[AdminData] ${name} error:`, e.message);
             });
+        } catch (e) {
+            console.error('[AdminData] Failed to load admin data:', e);
         } finally {
             setLoading(false);
             setRefreshing(false);

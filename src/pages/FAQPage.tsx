@@ -14,9 +14,11 @@ interface FAQPageProps {
 
 const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
-    const [openIndex, setOpenIndex] = React.useState<number | null>(0);
+    const [openId, setOpenId] = React.useState<string | null>(null);
     const [searchTerm, setSearchTerm] = React.useState("");
     const [dbFaqs, setDbFaqs] = useState<FaqItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -27,48 +29,31 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             .order('sort_order', { ascending: true })
             .limit(100)
             .then(({ data, error }) => {
-                if (mounted) setDbFaqs(error ? [] : ((data || []) as FaqItem[]));
+                if (!mounted) return;
+                if (error) {
+                    setError(error.message);
+                } else {
+                    setDbFaqs((data || []) as FaqItem[]);
+                }
+                setLoading(false);
             });
         return () => { mounted = false; };
     }, []);
 
     const faqs = React.useMemo(() => {
-        const rawFaqs = dbFaqs.length > 0
+        const rawFaqs = !error && dbFaqs.length > 0
             ? dbFaqs.map(f => ({
+                id: f.id,
                 q: isRTL ? f.question_ar : f.question_en,
                 a: isRTL ? (f.answer_ar || f.answer_en || '') : (f.answer_en || f.answer_ar || ''),
                 category: isRTL ? f.category_ar : f.category_en,
             }))
-            : (content.faqsData || [
-                {
-                    q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
-                    a: isRTL
-                        ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
-                        : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
-                    category: "Safety"
-                },
-                {
-                    q: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
-                    a: isRTL
-                        ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
-                        : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
-                    category: "General"
-                },
-                {
-                    q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
-                    a: isRTL
-                        ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
-                        : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
-                    category: "Science"
-                },
-                {
-                    q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
-                    a: isRTL
-                        ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
-                        : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
-                    category: "Legal"
-                }
-            ]);
+            : (content.faqsData || []).map((f, i) => ({
+                id: `static-${i}`,
+                q: f.q,
+                a: f.a,
+                category: f.category,
+            }));
 
         return rawFaqs.map(faq => {
             // Map categories to icons
@@ -126,10 +111,16 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
             </header>
 
             <div className="space-y-4">
-                {filteredFaqs.map((faq, idx) => (
-                    <div key={idx} className="rounded-3xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-all hover:border-zinc-700">
+                {loading ? (
+                    <div className="p-10 text-center text-zinc-600 font-bold">{isRTL ? 'جارٍ التحميل…' : 'Loading…'}</div>
+                ) : filteredFaqs.length === 0 ? (
+                    <div className="p-10 text-center text-zinc-600 font-bold">
+                        {isRTL ? 'لا توجد أسئلة مطابقة.' : 'No matching questions found.'}
+                    </div>
+                ) : filteredFaqs.map((faq) => (
+                    <div key={faq.id} className="rounded-3xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-all hover:border-zinc-700">
                         <button
-                            onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                            onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
                             className="w-full p-6 flex items-center justify-between text-start"
                         >
                             <div className="flex items-center gap-4">
@@ -138,10 +129,10 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                                 </div>
                                 <h3 className="font-black text-lg uppercase tracking-tight text-white/90">{faq.qElement || faq.q}</h3>
                             </div>
-                            {openIndex === idx ? <Minus className="w-5 h-5 text-gold-500" /> : <Plus className="w-5 h-5 text-zinc-600" />}
+                            {openId === faq.id ? <Minus className="w-5 h-5 text-gold-500" /> : <Plus className="w-5 h-5 text-zinc-600" />}
                         </button>
                         <AnimatePresence>
-                            {openIndex === idx && (
+                            {openId === faq.id && (
                                 <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: "auto", opacity: 1 }}

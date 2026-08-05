@@ -12,9 +12,9 @@ const envSchema = z.object({
 
     // SpaceRemit Configuration
     SPACEREMIT_API_URL: z.string().url().default('https://spaceremit.com/api/v2'),
-    SPACEREMIT_PUBLIC_KEY: z.string().optional().default('***SPACEREMIT_PUBLIC_KEY_REDACTED***'),
+    SPACEREMIT_PUBLIC_KEY: z.string().optional(),
 
-    // Paymob Configuration
+    // Paymob Configuration (API key is server-only; never bundle VITE_PAYMOB_API_KEY)
     PAYMOB_API_KEY: z.string().optional(),
     PAYMOB_CARD_INTEGRATION_ID: z.string().optional().default('5573815'),
     PAYMOB_WALLET_INTEGRATION_ID: z.string().optional().default('5792309'),
@@ -32,7 +32,7 @@ const envSchema = z.object({
     // App Config
     MODE: z.enum(['development', 'production', 'test']).default('development'),
     SITE_URL: z.string().url().optional().default('https://mrxsteroid.vercel.app'),
-    ENCRYPTION_KEY: z.string().min(1, 'Encryption key is required'),
+    ENCRYPTION_KEY: z.string().min(1, 'Encryption key is required').optional(),
 
     // AI Configuration
     OPENAI_API_KEY: z.string().optional(),
@@ -56,7 +56,7 @@ const parseEnv = () => {
         PAYMENT_CANCEL_URL: import.meta.env.VITE_PAYMENT_CANCEL_URL,
         MODE: import.meta.env.MODE,
         SITE_URL: import.meta.env.VITE_SITE_URL || import.meta.env.NEXT_PUBLIC_SITE_URL,
-        ENCRYPTION_KEY: import.meta.env.VITE_ENCRYPTION_KEY || 'mrxsteroid_encryption_key_32_chars_minimum_for_aes256',
+        ENCRYPTION_KEY: import.meta.env.VITE_ENCRYPTION_KEY,
         OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY,
         GEMINI_API_KEY: import.meta.env.VITE_GEMINI_API_KEY,
     };

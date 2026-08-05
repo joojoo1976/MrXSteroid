@@ -2,6 +2,20 @@
 -- CMS: blog_posts, cms_pages, faq_items (bilingual en/ar)
 -- ============================================================
 
+-- handle_updated_at must exist before the triggers below reference it on a
+-- fresh `supabase db push` (this migration sorts before the RLS fixes file).
+-- `create or replace` is idempotent for already-applied databases.
+create or replace function public.handle_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $function$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$function$;
+
 -- Blog posts (bilingual)
 create table if not exists public.blog_posts (
     id uuid primary key default gen_random_uuid(),

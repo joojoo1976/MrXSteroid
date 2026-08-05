@@ -36,20 +36,28 @@ const fmtCurrency = (amount: number, currency: string) => {
 const AdminAnalytics: React.FC = () => {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [profiles, setProfiles] = useState<Profile[]>([]);
+    const [totalInvoices, setTotalInvoices] = useState(0);
+    const [totalProfiles, setTotalProfiles] = useState(0);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            const [invRes, profRes] = await Promise.all([
+            const [invRes, profRes, invoiceCount, profileCount] = await Promise.all([
                 supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(200),
                 supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(300),
+                supabase.from('invoices').select('id', { count: 'exact', head: true }),
+                supabase.from('profiles').select('id', { count: 'exact', head: true }),
             ]);
             if (invRes.error) console.warn('[AdminAnalytics] Invoices error:', invRes.error.message);
             if (profRes.error) console.warn('[AdminAnalytics] Profiles error:', profRes.error.message);
             setInvoices((invRes.data || []) as Invoice[]);
             setProfiles((profRes.data || []) as Profile[]);
+            setTotalInvoices(invoiceCount.count ?? 0);
+            setTotalProfiles(profileCount.count ?? 0);
+        } catch (e) {
+            console.error('[AdminAnalytics] Failed to load:', e);
         } finally {
             setLoading(false);
         }
@@ -86,13 +94,13 @@ const AdminAnalytics: React.FC = () => {
             successCount: success.length,
             pendingCount: pending.length,
             failedCount: failed.length,
-            totalInvoices: invoices.length,
+            totalInvoices: totalInvoices,
             usdRevenue,
             egpRevenue,
             gateways,
             tierCounts,
         };
-    }, [invoices]);
+    }, [invoices, totalInvoices]);
 
     const updateUser = async (id: string, patch: { role?: ProfileRole; has_paid?: boolean; subscription_status?: string; subscription_tier?: string }) => {
         setUpdating(id);
@@ -261,7 +269,7 @@ const AdminAnalytics: React.FC = () => {
                         <Users className="w-5 h-5 text-gold-500" />
                         <h2 className="text-xl font-black text-white uppercase">User Management</h2>
                     </div>
-                    <span className="text-xs text-zinc-500 font-bold">{profiles.length} accounts</span>
+                    <span className="text-xs text-zinc-500 font-bold">{totalProfiles} accounts</span>
                 </div>
 
                 <Card className="bg-zinc-900/80 border-zinc-800 overflow-hidden">

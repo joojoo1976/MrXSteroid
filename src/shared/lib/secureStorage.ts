@@ -22,6 +22,11 @@ export const SecureStorage = {
      */
     setItem: (key: string, value: string): void => {
         try {
+            if (!ENCRYPTION_KEY) {
+                console.warn('SecureStorage: Encryption key not configured; storing plaintext');
+                localStorage.setItem(`${PREFIX}${key}`, value);
+                return;
+            }
             const ciphertext = CryptoJS.AES.encrypt(value, ENCRYPTION_KEY).toString();
             localStorage.setItem(`${PREFIX}${key}`, ciphertext);
         } catch (error) {
@@ -36,10 +41,13 @@ export const SecureStorage = {
      */
     getItem: (key: string): string | null => {
         try {
-            const ciphertext = localStorage.getItem(`${PREFIX}${key}`);
-            if (!ciphertext) return null;
+            const stored = localStorage.getItem(`${PREFIX}${key}`);
+            if (!stored) return null;
 
-            const bytes = CryptoJS.AES.decrypt(ciphertext, ENCRYPTION_KEY);
+            // Plaintext fallback for values written when no key was configured
+            if (!ENCRYPTION_KEY) return stored;
+
+            const bytes = CryptoJS.AES.decrypt(stored, ENCRYPTION_KEY);
             const originalText = bytes.toString(CryptoJS.enc.Utf8);
 
             if (!originalText) {

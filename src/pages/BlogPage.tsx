@@ -15,6 +15,7 @@ const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -22,11 +23,17 @@ const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
             .from('blog_posts')
             .select('*')
             .eq('status', 'published')
-            .order('created_at', { ascending: false })
+            .lte('published_at', new Date().toISOString())
+            .order('published_at', { ascending: false })
             .limit(50)
             .then(({ data, error }) => {
                 if (!mounted) return;
-                setPosts(error ? [] : ((data || []) as BlogPost[]));
+                if (error) {
+                    setError(error.message);
+                    setPosts([]);
+                } else {
+                    setPosts((data || []) as BlogPost[]);
+                }
                 setLoading(false);
             });
         return () => { mounted = false; };
@@ -40,11 +47,19 @@ const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
         return Zap;
     };
 
+    const formatDate = (iso: string) => {
+        try {
+            return new Intl.DateTimeFormat(isRTL ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(iso));
+        } catch {
+            return (iso || '').slice(0, 10);
+        }
+    };
+
     const rendered = posts.map(p => ({
         title: isRTL ? p.title_ar : p.title_en,
         excerpt: isRTL ? (p.excerpt_ar || p.excerpt_en || '') : (p.excerpt_en || p.excerpt_ar || ''),
         category: isRTL ? p.category_ar : p.category_en,
-        date: (p.published_at || p.created_at).slice(0, 10),
+        date: formatDate(p.published_at || p.created_at),
         icon: iconFor(isRTL ? p.category_ar : p.category_en),
     }));
 
@@ -72,6 +87,8 @@ const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
             <div className="grid md:grid-cols-3 gap-8">
                 {loading ? (
                     <div className="col-span-full p-10 text-center text-zinc-600 font-bold">{isRTL ? 'جارٍ التحميل…' : 'Loading…'}</div>
+                ) : error ? (
+                    <div className="col-span-full p-10 text-center text-red-500 font-bold">{isRTL ? 'حدث خطأ أثناء تحميل المقالات. حاول لاحقاً.' : 'Failed to load posts. Please try again later.'}</div>
                 ) : rendered.length === 0 ? (
                     <div className="col-span-full p-10 text-center text-zinc-600 font-bold">{isRTL ? 'لا توجد مقالات منشورة بعد.' : 'No published posts yet.'}</div>
                 ) : rendered.map((post, idx) => (

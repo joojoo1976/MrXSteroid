@@ -358,14 +358,18 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5">
                         <h3 className="font-black text-white uppercase text-sm tracking-wide mb-3">{mc.orderStatus}</h3>
                         <div className="space-y-2">
-                            {['pending', 'success', 'failed'].map(s => {
+                            {ORDER_STATUSES.map(s => {
                                 const n = orders.filter(o => o.status === s).length;
                                 const pct = orders.length ? Math.round((n / orders.length) * 100) : 0;
+                                const barColor =
+                                    s === 'delivered' ? 'bg-emerald-500' :
+                                    s === 'shipped' || s === 'confirmed' || s === 'processing' ? 'bg-amber-500' :
+                                    s === 'cancelled' || s === 'refunded' ? 'bg-red-500' : 'bg-zinc-500';
                                 return (
                                     <div key={s}>
                                         <div className="flex justify-between text-xs font-bold text-zinc-400 mb-1 uppercase"><span>{s}</span><span>{n} · {pct}%</span></div>
                                         <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                                            <div className={`h-full rounded-full ${s === 'success' ? 'bg-emerald-500' : s === 'failed' ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${pct}%` }}></div>
+                                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }}></div>
                                         </div>
                                     </div>
                                 );

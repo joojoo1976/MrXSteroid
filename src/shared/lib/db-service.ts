@@ -109,7 +109,7 @@ export const dbService = {
     async updateOrderStatus(orderId: string, status: string): Promise<any> {
         if (!orderId) throw new Error('Order ID is required');
 
-        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+        const validStatuses = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled', 'refunded'];
         if (!validStatuses.includes(status)) throw new Error('Invalid order status');
 
         const { data, error } = await supabase
