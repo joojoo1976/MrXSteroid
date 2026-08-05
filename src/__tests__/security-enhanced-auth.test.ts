@@ -102,7 +102,7 @@ describe('Security-Enhanced Auth Service', () => {
   test('should validate email format during sign in', async () => {
     const result = await authService.signIn('invalid-email', 'password');
 
-    expect(result.error).toContain('Email format is invalid');
+    expect(result.error).toContain('Please enter a valid email address or phone number');
   });
 
   test('should require password during sign in', async () => {

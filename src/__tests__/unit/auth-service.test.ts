@@ -56,14 +56,16 @@ describe('Authentication Service Tests', () => {
             expect(supabase.auth.signUp).toHaveBeenCalledWith({
                 email: mockUserData.email,
                 password: mockUserData.password,
+                phone: undefined,
                 options: {
                     data: {
                         full_name: mockUserData.full_name,
                         user_name: mockUserData.user_name,
+                        phone_number: null,
                         currency: 'USD',
                         role: 'user'
                     },
-                    emailRedirectTo: expect.any(String)
+                    emailRedirectTo: 'http://localhost:5173/auth/callback'
                 }
             });
         });
@@ -168,7 +170,7 @@ describe('Authentication Service Tests', () => {
         it('should validate email format on sign in', async () => {
             const result = await authService.signIn('invalid-email', 'password');
 
-            expect(result.error).toContain('Email format is invalid');
+            expect(result.error).toContain('Please enter a valid email address or phone number');
         });
 
         it('should require password on sign in', async () => {
