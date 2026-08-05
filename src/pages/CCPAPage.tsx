@@ -10,7 +10,7 @@ interface CCPAPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const CCPAPage: React.FC<CCPAPageProps> = ({ content, navigateTo }) => {
+const CCPAPage: React.FC<CCPAPageProps> = ({ content }) => {
     const { isRTL } = usePreferences();
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-20">

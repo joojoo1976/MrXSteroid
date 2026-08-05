@@ -41,7 +41,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
-    const { isRTL, content } = usePreferences();
+    const { isRTL } = usePreferences();
     const { user, loading, signOut, profileData } = useAuth();
 
     const [history, setHistory] = useState<Array<{ id: string; tool: string; title: string | null; inputs: Record<string, unknown>; result: Record<string, unknown>; created_at: string }>>([]);

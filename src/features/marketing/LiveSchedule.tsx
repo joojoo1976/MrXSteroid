@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import EliteTable, { EliteTableColumn } from '../../shared/ui/EliteTable';
-import { Activity, Zap, Lock, Clock, Shield, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Activity, Zap, Lock, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
@@ -174,7 +174,6 @@ const LiveSchedule: React.FC<LiveScheduleProps> = ({ content }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-4xl mx-auto">
                         {scheduleData.map((item, idx) => {
                             const info = phaseInfo[idx] || phaseInfo[0];
-                            const intensity = intensityConfig[item.intensity || 'HIGH'];
                             return (
                                 <motion.div
                                     key={idx}

@@ -13,7 +13,6 @@ import {
     User,
     Mail,
     Phone,
-    Shield,
     ArrowLeft,
     Camera,
     Loader2,
@@ -111,9 +110,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
             setLocalAvatarUrl(publicUrl);
             await refreshUser();
             toast.success(isRTL ? '✅ تم تحديث الصورة الشخصية بنجاح!' : '✅ Profile picture updated successfully!');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Avatar upload error:', err);
-            toast.error(isRTL ? `فشل رفع الصورة: ${err.message}` : `Failed to upload avatar: ${err.message}`);
+            const errMessage = err instanceof Error ? err.message : String(err);
+            toast.error(isRTL ? `فشل رفع الصورة: ${errMessage}` : `Failed to upload avatar: ${errMessage}`);
         } finally {
             setIsUploadingAvatar(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -203,7 +203,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
 
     const profilePic = getAvatarUrl({
         email: email,
-        provider: (user as any).app_metadata?.provider,
+        provider: 'app_metadata' in user ? user.app_metadata?.provider : undefined,
         providerAvatarUrl: profileData?.avatar_url || userData.avatar_url || userData.picture,
     });
 

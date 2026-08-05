@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Map, Zap, ShieldAlert, ShoppingCart, Home, User, Info } from 'lucide-react';
+import { Map, Zap, ShieldAlert, Home, User } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';

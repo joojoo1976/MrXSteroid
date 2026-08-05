@@ -16,7 +16,7 @@ interface CheckoutModalProps {
     navigateTo: (page: Page) => void;
 }
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, formattedPrice, onSuccess, openLegal, navigateTo }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, onSuccess, openLegal }) => {
     const { language: lang } = usePreferences();
     const [step, setStep] = useState<'form' | 'success'>('form');
     const [isEgypt, setIsEgypt] = useState(false); // Used for location-specific logic

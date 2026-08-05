@@ -18,10 +18,6 @@ import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
 
-// Unit conversion helpers
-const MG_TO_LBS_DOSE_NOTE = (mg: number, unit: string) => unit === 'imperial' ? `${(mg / 453.592).toFixed(2)} oz` : `${mg} mg`;
-const DOSE_UNIT = (unit: string) => unit === 'imperial' ? 'oz' : 'mg';
-
 interface HalfLifeVisualizerProps {
   content: ContentStrings;
 }

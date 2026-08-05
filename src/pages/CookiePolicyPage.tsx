@@ -10,7 +10,7 @@ interface CookiePolicyPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({ content, navigateTo }) => {
+const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({ content }) => {
     const { isRTL } = usePreferences();
     const categories = [
         {

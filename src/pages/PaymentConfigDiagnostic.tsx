@@ -7,7 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Shield, Lock, Globe } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Shield, Lock } from 'lucide-react';
 import { Button } from '../shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../shared/ui/card';
 import { usePreferences } from '../context/PreferencesContext';
@@ -25,7 +25,6 @@ const PaymentConfigDiagnostic: React.FC = () => {
     const isAr = language === 'ar';
     const [results, setResults] = useState<DiagnosticResult[]>([]);
     const [isRunning, setIsRunning] = useState(true);
-    const [spaceremitLoaded, setSpaceremitLoaded] = useState(false);
 
     // Run diagnostics
     useEffect(() => {
@@ -73,7 +72,6 @@ const PaymentConfigDiagnostic: React.FC = () => {
                 script.crossOrigin = 'anonymous';
 
                 script.onload = () => {
-                    setSpaceremitLoaded(true);
                     diagnosticResults.push({
                         name: isAr ? 'تحميل SpaceRemit SDK' : 'SpaceRemit SDK Load',
                         status: 'pass',
@@ -84,7 +82,6 @@ const PaymentConfigDiagnostic: React.FC = () => {
                 };
 
                 script.onerror = () => {
-                    setSpaceremitLoaded(false);
                     diagnosticResults.push({
                         name: isAr ? 'تحميل SpaceRemit SDK' : 'SpaceRemit SDK Load',
                         status: 'fail',
@@ -101,7 +98,6 @@ const PaymentConfigDiagnostic: React.FC = () => {
                 // Timeout after 5 seconds
                 setTimeout(() => {
                     if (!window.SPACEREMIT) {
-                        setSpaceremitLoaded(false);
                         diagnosticResults.push({
                             name: isAr ? 'تحميل SpaceRemit SDK' : 'SpaceRemit SDK Load',
                             status: 'warning',

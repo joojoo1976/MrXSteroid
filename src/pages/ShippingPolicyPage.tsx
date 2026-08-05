@@ -9,7 +9,7 @@ interface ShippingPolicyPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const ShippingPolicyPage: React.FC<ShippingPolicyPageProps> = ({ content, navigateTo }) => {
+const ShippingPolicyPage: React.FC<ShippingPolicyPageProps> = ({ content }) => {
     const { isRTL } = usePreferences();
     const shippingDetails = [
         {

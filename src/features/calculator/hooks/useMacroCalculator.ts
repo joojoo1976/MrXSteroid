@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { ContentStrings, DailyMeal } from '@/shared/types/types';
 import { convertValue, toMetric } from '../../../shared/lib/logic';
@@ -32,6 +32,25 @@ export interface SimulationPoint {
     efficiency: number;
 }
 
+// مُولّد أرقام عشوائية حتمي (Seeded PRNG) لإبقاء الاشتقاق نقيّاً أثناء العرض
+const seededRandom = (seed: number) => {
+    let s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return () => {
+        s = (s * 16807) % 2147483647;
+        return (s - 1) / 2147483646;
+    };
+};
+
+const hashSeed = (input: string): number => {
+    let h = 2166136261;
+    for (let i = 0; i < input.length; i++) {
+        h ^= input.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+};
+
 interface UseMacroCalculatorOptions {
     content: ContentStrings;
     unitSystem: 'metric' | 'imperial';
@@ -50,11 +69,9 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
     const [goal, setGoal] = useState('maintain');
     const [trainingTime, setTrainingTime] = useState('afternoon');
     const [result, setResult] = useState<CalcResult | null>(null);
-    const [mealPlan, setMealPlan] = useState<DailyMeal[] | null>(null);
     const [isCalculating, setIsCalculating] = useState(false);
     const [chartData, setChartData] = useState<MacroDataPoint[] | null>(null);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
-    const [simulationData, setSimulationData] = useState<SimulationPoint[] | null>(null);
     const [ecosystemSynced, setEcosystemSynced] = useState(false);
     const [showMealPlan, setShowMealPlan] = useState(false);
 
@@ -64,11 +81,13 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
     const normalizeNum = (str: string) => {
         if (!str) return '';
         return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)])
-            .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶Typed".indexOf(d)]);
+            .replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
     };
 
-    // مزامنة وتحديث قيم المدخلات الحرة والنتائج عند تغيير نظام الوحدات (متري/إمبراطوري)
-    useEffect(() => {
+    // عند تغيير نظام الوحدات (متري/إمبراطوري): إعادة عرض قيم المدخلات الحرة بالوحدة الجديدة
+    const [prevUnitSystem, setPrevUnitSystem] = useState(unitSystem);
+    if (prevUnitSystem !== unitSystem) {
+        setPrevUnitSystem(unitSystem);
         if (baseWeight > 0) {
             const displayVal = convertValue(baseWeight, 'weight', unitSystem);
             // استخدام التقريب لأقرب رقم صحيح لإزالة كسر (.0) العائق وجعل الإدخال حراً ومريحاً
@@ -78,57 +97,67 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
             const displayVal = convertValue(baseHeight, 'height', unitSystem);
             setHeight(Math.round(displayVal).toString());
         }
+    }
 
-        // تحديث المخططات الحية والتوقعات وخطة الوجبات تلقائياً بناءً على النظام المحدد
-        if (result) {
-            const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;
-            let weightTrendKg = baseWeight || 80;
-            const simPoints: SimulationPoint[] = [];
-            for (let i = 0; i <= 12; i++) {
-                const variation = (Math.random() * 0.3 - 0.15);
-                weightTrendKg += weeklyChangeKg + variation;
-                const displayW = unitSystem === 'imperial' ? weightTrendKg * 2.20462262 : weightTrendKg;
-                simPoints.push({
-                    week: `W${i}`,
-                    weight: Math.round(displayW),
-                    efficiency: Math.round(85 + Math.random() * 10),
-                });
-            }
-            setSimulationData(simPoints);
-
-            const updatedMeals: DailyMeal[] = [];
-            const targetP = result.protein / 4;
-            const targetC = result.carbs / 4;
-            const targetF = result.fats / 4;
-            const unit = unitSystem === 'imperial' ? "oz" : "g";
-            const factor = unitSystem === 'imperial' ? 0.035274 : 1;
-
-            content.calcMealNames.forEach((name) => {
-                const pSource = foodDatabase.filter(f => f.type === 'protein')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'protein').length)];
-                const cSource = foodDatabase.filter(f => f.type === 'carb')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'carb').length)];
-                const fSource = foodDatabase.filter(f => f.type === 'fat')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'fat').length)];
-
-                const steps = [
-                    content.calcMealSteps.preheat,
-                    `${content.calcMealSteps.season} ${isAr ? pSource.nameAr : pSource.nameEn}`,
-                    `${content.calcMealSteps.cook} ${isAr ? pSource.nameAr : pSource.nameEn}`,
-                    `${content.calcMealSteps.prepare} ${isAr ? cSource.nameAr : cSource.nameEn}`,
-                    `${content.calcMealSteps.combine} ${isAr ? fSource.nameAr : fSource.nameEn}`
-                ];
-
-                updatedMeals.push({
-                    mealName: name,
-                    foods: [
-                        { item: isAr ? pSource.nameAr : pSource.nameEn, amount: `${Math.round((targetP / pSource.p) * 100 * factor)}${unit}` },
-                        { item: isAr ? cSource.nameAr : cSource.nameEn, amount: `${Math.round((targetC / cSource.c) * 100 * factor)}${unit}` },
-                        { item: isAr ? fSource.nameAr : fSource.nameEn, amount: `${Math.round((targetF / fSource.f) * 100 * factor)}${unit}` },
-                    ],
-                    steps
-                });
+    // المحاكاة الأسبوعية تُشتق من النتيجة والوحدة الحالية بدلاً من مزامنتها عبر effect
+    const simulationData = useMemo<SimulationPoint[] | null>(() => {
+        if (!result) return null;
+        const rand = seededRandom(hashSeed(`sim-${unitSystem}-${baseWeight}-${goal}-${result.calories}`));
+        const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;
+        let weightTrendKg = baseWeight || 80;
+        const simPoints: SimulationPoint[] = [];
+        for (let i = 0; i <= 12; i++) {
+            const variation = (rand() * 0.3 - 0.15);
+            weightTrendKg += weeklyChangeKg + variation;
+            const displayW = unitSystem === 'imperial' ? weightTrendKg * 2.20462262 : weightTrendKg;
+            simPoints.push({
+                week: `W${i}`,
+                weight: Math.round(displayW),
+                efficiency: Math.round(85 + rand() * 10),
             });
-            setMealPlan(updatedMeals);
         }
-    }, [unitSystem, baseWeight, baseHeight]);
+        return simPoints;
+    }, [result, unitSystem, baseWeight, goal]);
+
+    // خطة الوجبات تُشتق من النتيجة والوحدة الحالية بدلاً من مزامنتها عبر effect
+    const mealPlan = useMemo<DailyMeal[] | null>(() => {
+        if (!result) return null;
+        const rand = seededRandom(hashSeed(`meal-${unitSystem}-${isAr}-${result.protein}-${result.carbs}-${result.fats}`));
+        const updatedMeals: DailyMeal[] = [];
+        const targetP = result.protein / 4;
+        const targetC = result.carbs / 4;
+        const targetF = result.fats / 4;
+        const unit = unitSystem === 'imperial' ? "oz" : "g";
+        const factor = unitSystem === 'imperial' ? 0.035274 : 1;
+
+        content.calcMealNames.forEach(() => {
+            const proteinPool = foodDatabase.filter(f => f.type === 'protein');
+            const carbPool = foodDatabase.filter(f => f.type === 'carb');
+            const fatPool = foodDatabase.filter(f => f.type === 'fat');
+            const pSource = proteinPool[Math.floor(rand() * proteinPool.length)];
+            const cSource = carbPool[Math.floor(rand() * carbPool.length)];
+            const fSource = fatPool[Math.floor(rand() * fatPool.length)];
+
+            const steps = [
+                content.calcMealSteps.preheat,
+                `${content.calcMealSteps.season} ${isAr ? pSource.nameAr : pSource.nameEn}`,
+                `${content.calcMealSteps.cook} ${isAr ? pSource.nameAr : pSource.nameEn}`,
+                `${content.calcMealSteps.prepare} ${isAr ? cSource.nameAr : cSource.nameEn}`,
+                `${content.calcMealSteps.combine} ${isAr ? fSource.nameAr : fSource.nameEn}`
+            ];
+
+            updatedMeals.push({
+                mealName: content.calcMealNames[updatedMeals.length],
+                foods: [
+                    { item: isAr ? pSource.nameAr : pSource.nameEn, amount: `${Math.round((targetP / pSource.p) * 100 * factor)}${unit}` },
+                    { item: isAr ? cSource.nameAr : cSource.nameEn, amount: `${Math.round((targetC / cSource.c) * 100 * factor)}${unit}` },
+                    { item: isAr ? fSource.nameAr : fSource.nameEn, amount: `${Math.round((targetF / fSource.f) * 100 * factor)}${unit}` },
+                ],
+                steps
+            });
+        });
+        return updatedMeals;
+    }, [result, unitSystem, content, isAr]);
 
     const handleWeightChange = (val: string) => {
         setWeight(val);
@@ -159,24 +188,6 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
             setBaseHeight(0);
         }
     };
-
-    const generateSimulation = useCallback((calories: number, currentGoal: string, _currentWeight: string) => {
-        const weeklyChangeKg = currentGoal === 'cut' ? -0.5 : currentGoal === 'bulk' ? 0.25 : 0.05;
-        let weightTrendKg = baseWeight || 80;
-
-        const data = [];
-        for (let i = 0; i <= 12; i++) {
-            const variation = (Math.random() * 0.3 - 0.15);
-            weightTrendKg += weeklyChangeKg + variation;
-            const displayWeight = isImperial ? weightTrendKg * 2.20462262 : weightTrendKg;
-            data.push({
-                week: `W${i}`,
-                weight: Math.round(displayWeight),
-                efficiency: Math.round(85 + Math.random() * 10),
-            });
-        }
-        setSimulationData(data);
-    }, [baseWeight, isImperial]);
 
     const calculate = useCallback(() => {
         const w = baseWeight;
@@ -245,22 +256,6 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
                 result: newResult as unknown as Record<string, unknown>,
             });
             
-            // حساب وإعداد البيانات الأيضية للمحاكاة الأسبوعية
-            const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;
-            let weightTrendKg = calcW;
-            const simPoints = [];
-            for (let i = 0; i <= 12; i++) {
-                const variation = (Math.random() * 0.3 - 0.15);
-                weightTrendKg += weeklyChangeKg + variation;
-                const displayWeight = isImperial ? weightTrendKg * 2.20462262 : weightTrendKg;
-                simPoints.push({
-                    week: `W${i}`,
-                    weight: Math.round(displayWeight),
-                    efficiency: Math.round(85 + Math.random() * 10),
-                });
-            }
-            setSimulationData(simPoints);
-
             // إعداد وتوزيع الماكروز اليومي
             const mealData = content.calcMealNames.map((name, i) => {
                 const variances = [0.88, 1.12, 1.0, 1.0];
@@ -275,39 +270,6 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
             });
             setChartData(mealData);
 
-            // خطة الوجبات بمقادير الوحدة الحالية
-            const meals: DailyMeal[] = [];
-            const targetP = newResult.protein / 4;
-            const targetC = newResult.carbs / 4;
-            const targetF = newResult.fats / 4;
-            const unit = isImperial ? "oz" : "g";
-            const factor = isImperial ? 0.035274 : 1;
-
-            content.calcMealNames.forEach((name) => {
-                const pSource = foodDatabase.filter(f => f.type === 'protein')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'protein').length)];
-                const cSource = foodDatabase.filter(f => f.type === 'carb')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'carb').length)];
-                const fSource = foodDatabase.filter(f => f.type === 'fat')[Math.floor(Math.random() * foodDatabase.filter(f => f.type === 'fat').length)];
-
-                const steps = [
-                    content.calcMealSteps.preheat,
-                    `${content.calcMealSteps.season} ${isAr ? pSource.nameAr : pSource.nameEn}`,
-                    `${content.calcMealSteps.cook} ${isAr ? pSource.nameAr : pSource.nameEn}`,
-                    `${content.calcMealSteps.prepare} ${isAr ? cSource.nameAr : cSource.nameEn}`,
-                    `${content.calcMealSteps.combine} ${isAr ? fSource.nameAr : fSource.nameEn}`
-                ];
-
-                meals.push({
-                    mealName: name,
-                    foods: [
-                        { item: isAr ? pSource.nameAr : pSource.nameEn, amount: `${Math.round((targetP / pSource.p) * 100 * factor)}${unit}` },
-                        { item: isAr ? cSource.nameAr : cSource.nameEn, amount: `${Math.round((targetC / cSource.c) * 100 * factor)}${unit}` },
-                        { item: isAr ? fSource.nameAr : fSource.nameEn, amount: `${Math.round((targetF / fSource.f) * 100 * factor)}${unit}` },
-                    ],
-                    steps
-                });
-            });
-            setMealPlan(meals);
-
             setIsCalculating(false);
 
             window.dispatchEvent(new CustomEvent('macro_calculated', {
@@ -316,7 +278,7 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
 
             setTimeout(() => setEcosystemSynced(true), 1000);
         }, 2000);
-    }, [age, baseHeight, baseWeight, weight, activity, goal, gender, isAr, content, generateSimulation, isImperial]);
+    }, [age, baseHeight, baseWeight, activity, goal, gender, isAr, content]);
 
     const generatePlan = useCallback(() => {
         // يتم التوليد التلقائي داخل calculate أو useEffect

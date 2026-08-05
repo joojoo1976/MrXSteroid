@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Trophy, ShieldCheck, ChevronRight, Zap, Activity,
+    ShieldCheck, ChevronRight, Zap, Activity,
     Dumbbell, Copy, Check, ArrowDown, Lock, Unlock
 } from 'lucide-react';
 import { ContentStrings } from '@/shared/types/types';

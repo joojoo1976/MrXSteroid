@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { HelpCircle, MessageSquare, Mail, Clock, FileText, Search } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
-import { usePreferences } from '../context/PreferencesContext';
 
 interface SupportPageProps {
     content: ContentStrings;
@@ -10,7 +9,6 @@ interface SupportPageProps {
 }
 
 const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
-    const { isRTL } = usePreferences();
     const contactMethods = [
         {
             title: content.supportEmailTitle,

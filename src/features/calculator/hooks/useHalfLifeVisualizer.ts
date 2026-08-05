@@ -73,7 +73,7 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
     const [duration, setDuration] = useState(12);
     const [startWeek, setStartWeek] = useState(1);
 
-    const colors = ['#eab308', '#3b82f6', '#ef4444', '#10b981', '#8b5cf6'];
+    const colors = useMemo(() => ['#eab308', '#3b82f6', '#ef4444', '#10b981', '#8b5cf6'], []);
 
     useEffect(() => {
         localStorage.setItem('mrx_steroid_stack', JSON.stringify(stack));
@@ -346,7 +346,7 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
             peakTimelineLabel,
             weeklyPeakByCompound
         };
-    }, [stack, content, isRTL, unitSystem]);
+    }, [stack, content, isRTL, colors]);
 
     return {
         stack,

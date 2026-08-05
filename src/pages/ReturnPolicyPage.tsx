@@ -9,7 +9,7 @@ interface ReturnPolicyPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const ReturnPolicyPage: React.FC<ReturnPolicyPageProps> = ({ content, navigateTo }) => {
+const ReturnPolicyPage: React.FC<ReturnPolicyPageProps> = ({ content }) => {
     const { isRTL } = usePreferences();
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-20">

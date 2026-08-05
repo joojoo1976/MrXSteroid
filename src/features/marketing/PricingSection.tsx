@@ -5,7 +5,6 @@ import { usePreferences } from '../../context/PreferencesContext';
 import { useRegion } from '../../context/RegionContext';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { usePricing } from '../calculator/hooks/usePricing';
-import { COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../shared/lib/logic';
 
 interface PricingSectionProps {
     content: ContentStrings;
@@ -68,7 +67,6 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
         }).format(amount);
     };
 
-    const coachingAddonAmount = selectedLocation === 'EG' ? COACHING_ADDON_EGP : COACHING_ADDON_USD;
     const coachingAddonLabel = selectedLocation === 'EG'
         ? (isRTL ? `+ 9,999 ج.م / دورة` : `+ 9,999 EGP / Cycle`)
         : `+ $200.00 / Cycle`;

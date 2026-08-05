@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RealtimeSyncService } from '../shared/lib/RealtimeSyncService';
+import { RealtimeSyncService, type SupabaseRealtimePayload } from '../shared/lib/RealtimeSyncService';
 import { supabase } from '../shared/lib/supabase';
 import { Database } from '@/shared/types/db_types';
 import { Card, CardContent } from '../shared/ui/card';
@@ -11,6 +11,13 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 type Delegate = Database['public']['Tables']['delegates']['Row'];
 type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];
 type Order = Database['public']['Tables']['orders']['Row'];
+
+interface LocationPayloadNew {
+    delegate_id: string;
+    latitude: number;
+    longitude: number;
+    timestamp: string;
+}
 
 interface ExtendedDelegate extends Delegate {
     profile: Profile;
@@ -76,7 +83,7 @@ const AdminDashboard: React.FC = () => {
         loadInitialData();
 
         // Real-time Subscriptions
-        const locSub = RealtimeSyncService.subscribeToAllLocations((payload: any) => {
+        const locSub = RealtimeSyncService.subscribeToAllLocations((payload: SupabaseRealtimePayload<LocationPayloadNew>) => {
             setDelegates(prev => prev.map(d => d.id === payload.new.delegate_id ? {
                 ...d,
                 latest_location: {

@@ -2,15 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Eye, Lock, FileText } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
-import { usePreferences } from '../context/PreferencesContext';
 
 interface PrivacyPageProps {
     content: ContentStrings;
     navigateTo: (page: Page) => void;
 }
 
-const PrivacyPage: React.FC<PrivacyPageProps> = ({ content, navigateTo }) => {
-    const { isRTL } = usePreferences();
+const PrivacyPage: React.FC<PrivacyPageProps> = ({ content }) => {
     const sections = [
         {
             title: content.privacyCollectionTitle,

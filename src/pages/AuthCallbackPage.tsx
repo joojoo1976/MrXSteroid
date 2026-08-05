@@ -186,19 +186,22 @@ const AuthCallbackPage: React.FC = () => {
  * Syncs profile data after email confirmation.
  * Called after exchangeCodeForSession or setSession succeeds.
  */
-async function syncProfileAfterVerification(user: { id: string; email?: string | null; app_metadata?: any; user_metadata?: any }) {
+async function syncProfileAfterVerification(user: { id: string; email?: string | null; app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> }) {
     try {
+        const meta = user.user_metadata ?? {};
+        const provider = typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider : undefined;
+        const avatar = typeof meta.avatar_url === 'string' ? meta.avatar_url : (typeof meta.picture === 'string' ? meta.picture : undefined);
         const avatarUrl = getAvatarUrl({
             email: user.email || undefined,
-            provider: user.app_metadata?.provider,
-            providerAvatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+            provider,
+            providerAvatarUrl: avatar,
         });
 
         const { error } = await supabase.from('profiles').update({
             avatar_url: avatarUrl,
-            full_name: user.user_metadata?.full_name || user.user_metadata?.name,
-            user_name: user.user_metadata?.user_name || user.user_metadata?.username,
-            phone_number: user.user_metadata?.phone_number || null,
+            full_name: typeof meta.full_name === 'string' ? meta.full_name : (typeof meta.name === 'string' ? meta.name : undefined),
+            user_name: typeof meta.user_name === 'string' ? meta.user_name : (typeof meta.username === 'string' ? meta.username : undefined),
+            phone_number: typeof meta.phone_number === 'string' ? meta.phone_number : null,
             updated_at: new Date().toISOString(),
         }).eq('id', user.id);
 

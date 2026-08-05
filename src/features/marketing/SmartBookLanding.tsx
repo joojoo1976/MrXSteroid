@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, TrendingUp, Info, DollarSign, ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
-import { toast } from 'sonner';
 import { DisclaimerModal } from '../modal/DisclaimerModal';
 import {
     arContent, enContent

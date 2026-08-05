@@ -10,15 +10,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, Lock, ShieldCheck, AlertCircle } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 
-declare global {
-    interface Window {
-        SPACEREMIT?: any;
-        SP_SUCCESSFUL_PAYMENT?: (code: string) => void;
-        SP_FAILD_PAYMENT?: () => void;
-        SP_RECIVED_MESSAGE?: (msg: string) => void;
-    }
-}
-
 export interface SpaceRemitCardElementProps {
     publicKey: string;
     amount: number;
@@ -179,7 +170,6 @@ export const SpaceRemitCardElement: React.FC<SpaceRemitCardElementProps> = ({
                 throw new Error('Window.SPACEREMIT is undefined after script load');
             }
         } catch (error) {
-            const errorMsg = (error as Error).message;
             console.error('❌ [SpaceRemit] Initialization error:', error);
 
             // Retry logic

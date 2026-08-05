@@ -26,15 +26,15 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
 
     const { form, loading, success, usedMockAuth, onSubmit } = useSignup({
         content,
-        isRTL,
-        navigateTo
+        isRTL
     });
 
     // Set SP_FORM_ID only while the signup page (with the registration form) is mounted
     useEffect(() => {
-        (window as any).SP_FORM_ID = "registration-form";
+        const formWindow = window as Window & { SP_FORM_ID?: string };
+        formWindow.SP_FORM_ID = "registration-form";
         return () => {
-            delete (window as any).SP_FORM_ID;
+            delete formWindow.SP_FORM_ID;
         };
     }, []);
 

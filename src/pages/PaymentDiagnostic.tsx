@@ -37,14 +37,14 @@ const StatusIcon: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-    const variantMap: Record<string, string> = {
+    const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
         success: 'default',
         warning: 'secondary',
         error: 'destructive',
         healthy: 'default',
         critical: 'destructive'
     };
-    return <Badge variant={variantMap[status] as any}>{status.toUpperCase()}</Badge>;
+    return <Badge variant={variantMap[status] ?? 'default'}>{status.toUpperCase()}</Badge>;
 };
 
 const PaymentDiagnostic: React.FC = () => {

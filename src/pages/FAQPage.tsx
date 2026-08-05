@@ -82,7 +82,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                 aElement: processText(faq.a)
             };
         });
-    }, [content.faqsData, isRTL, dbFaqs]);
+    }, [content.faqsData, isRTL, dbFaqs, error]);
 
     const filteredFaqs = faqs.filter(faq =>
         faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||

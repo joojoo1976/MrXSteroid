@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
 import { Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
@@ -16,7 +15,7 @@ const createLoginSchema = (isRTL: boolean) => z.object({
         .refine((val) => {
             const clean = val.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const phoneRegex = /^\+?[0-9\s\-\(\)]{7,20}$/;
+            const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
             return emailRegex.test(clean) || phoneRegex.test(clean);
         }, {
             message: isRTL ? 'يرجى إدخال بريد إلكتروني صحيح أو رقم هاتف مغاير' : 'Please enter a valid email address or phone number'

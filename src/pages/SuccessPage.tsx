@@ -12,7 +12,7 @@ interface SuccessPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const SuccessPage: React.FC<SuccessPageProps> = ({ content, navigateTo }) => {
+const SuccessPage: React.FC<SuccessPageProps> = ({ navigateTo }) => {
     const { isRTL } = usePreferences();
     const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
 
@@ -88,8 +88,8 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ content, navigateTo }) => {
                             </h1>
                             <p className="text-zinc-400 font-medium leading-relaxed">
                                 {isRTL
-                                    ? "تم تفعيل اشتراكك في بروتوكول مستر إكس. ستصلك رسالة تأكيد عبر الواتساب فوراً."
-                                    : "Your subscription to the Mr. X protocols has been activated. A welcome WhatsApp message is on its way."}
+                                    ? `تم تفعيل اشتراكك في بروتوكول مستر إكس${subscriptionTier ? ` (${subscriptionTier})` : ''}. ستصلك رسالة تأكيد عبر الواتساب فوراً.`
+                                    : `Your subscription to the Mr. X protocols has been activated${subscriptionTier ? ` (${subscriptionTier})` : ''}. A welcome WhatsApp message is on its way.`}
                             </p>
                         </div>
 

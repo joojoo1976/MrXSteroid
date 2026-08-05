@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 import { supabase } from '../../../shared/lib/supabase';
 import { errorHandler } from '../../../shared/lib/error-handler';
-import { ContentStrings, Page } from '@/shared/types/types';
+import { ContentStrings } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 
 // Password validation helper - matches auth-service requirements
@@ -33,7 +33,7 @@ const createSignupSchema = (isRTL: boolean) => z.object({
     email: z.string().email(isRTL ? 'بريد إلكتروني غير صالح' : 'Invalid email address'),
     phoneNumber: z.string().optional().refine((val) => {
         if (!val || !val.trim()) return true;
-        const clean = val.replace(/[\s\-\(\)]/g, '');
+        const clean = val.replace(/[\s\-()]/g, '');
         return /^\+?[0-9]{7,15}$/.test(clean);
     }, {
         message: isRTL ? 'رقم الهاتف غير صحيح (مثال: +966500000000)' : 'Invalid phone format (e.g. +966500000000)'
@@ -57,10 +57,9 @@ type SignupFormValues = z.infer<ReturnType<typeof createSignupSchema>>;
 interface UseSignupOptions {
     content: ContentStrings;
     isRTL: boolean;
-    navigateTo: (page: Page) => void;
 }
 
-export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
+export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [usedMockAuth, setUsedMockAuth] = useState(false);
@@ -89,7 +88,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
             );
 
             const cleanEmail = values.email.trim().toLowerCase();
-            const cleanPhone = values.phoneNumber ? values.phoneNumber.replace(/[\s\-\(\)]/g, '').trim() : null;
+            const cleanPhone = values.phoneNumber ? values.phoneNumber.replace(/[\s\-()]/g, '').trim() : null;
             const cleanUsername = values.username.trim().toLowerCase();
 
             let isMock = false;
@@ -222,15 +221,16 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                         throw error;
                     }
 
-                } catch (supabaseError: any) {
+                } catch (supabaseError: unknown) {
                     // Fall back to mock auth ONLY if Supabase is unreachable (503/network)
+                    const err = supabaseError as { status?: number; message?: string };
                     const isNetworkError =
-                        supabaseError?.status === 503 ||
-                        supabaseError?.message?.includes('503') ||
-                        supabaseError?.message?.includes('fetch') ||
-                        supabaseError?.message?.includes('network') ||
-                        supabaseError?.message?.includes('Failed to fetch') ||
-                        supabaseError?.message?.includes('Service unavailable');
+                        err?.status === 503 ||
+                        err?.message?.includes('503') ||
+                        err?.message?.includes('fetch') ||
+                        err?.message?.includes('network') ||
+                        err?.message?.includes('Failed to fetch') ||
+                        err?.message?.includes('Service unavailable');
 
                     if (isNetworkError) {
                         console.warn('⚠️ Supabase unreachable — falling back to mock auth...');
@@ -331,7 +331,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
                     errorMessage = error.message;
                 }
             } else if (typeof error === 'object' && error !== null) {
-                const errObj = error as any;
+                const errObj = error as { status?: number; message?: string };
                 if (errObj.status === 503) {
                     errorMessage = isRTL ? 'الخدمة غير متوفرة حالياً. حاول مرة أخرى.' : 'Service unavailable. Please try again later.';
                 } else if (errObj.message) {
@@ -341,7 +341,7 @@ export const useSignup = ({ content, isRTL, navigateTo }: UseSignupOptions) => {
 
             toast.error(errorMessage);
             if (!errorMessage.includes('503') && !errorMessage.includes('Service unavailable') && !errorMessage.includes('unavailable')) {
-                try { await errorHandler.handle(error, 'Signup'); } catch (_) { /* silent */ }
+                try { await errorHandler.handle(error, 'Signup'); } catch { /* silent */ }
             }
         } finally {
             setLoading(false);

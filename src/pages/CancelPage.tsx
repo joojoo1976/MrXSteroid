@@ -11,7 +11,7 @@ interface CancelPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const CancelPage: React.FC<CancelPageProps> = ({ content, navigateTo }) => {
+const CancelPage: React.FC<CancelPageProps> = ({ navigateTo }) => {
     const { isRTL } = usePreferences();
 
     return (

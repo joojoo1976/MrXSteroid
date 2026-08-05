@@ -11,7 +11,7 @@ interface BlogPageProps {
     navigateTo: (page: Page) => void;
 }
 
-const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
+const BlogPage: React.FC<BlogPageProps> = ({ content }) => {
     const { isRTL } = usePreferences();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);

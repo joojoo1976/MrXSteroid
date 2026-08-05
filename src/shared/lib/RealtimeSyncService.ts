@@ -5,7 +5,7 @@ type Delegate = Database['public']['Tables']['delegates']['Row'];
 type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];
 
 // Define proper payload types for Supabase realtime events
-type SupabaseRealtimePayload<T> = {
+export type SupabaseRealtimePayload<T> = {
     commit_timestamp: string;
     eventType: 'INSERT' | 'UPDATE' | 'DELETE';
     new: T;
