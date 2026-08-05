@@ -21,6 +21,7 @@ import {
     TrendingUp,
     ShieldCheck,
     FileText,
+    Tag,
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -1751,6 +1752,28 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
         data.refresh();
     };
 
+    const savePricing = async () => {
+        setSaving(true);
+        const pricingKeys = [
+            'pricing_digital_usd', 'pricing_digital_egp',
+            'pricing_bundle_usd', 'pricing_bundle_egp',
+            'pricing_coaching_usd', 'pricing_coaching_egp',
+            'pricing_coaching_plus_usd', 'pricing_coaching_plus_egp',
+            'pricing_tolerance',
+        ];
+        const upserts = pricingKeys.map(key => ({
+            key,
+            value: local[key] ?? '',
+            section: 'pricing',
+            updated_at: new Date().toISOString(),
+        }));
+        const { error } = await supabase.from('admin_settings').upsert(upserts, { onConflict: 'key' });
+        setSaving(false);
+        if (error) return toast.error(`${mc.saveFailed} ${error.message}`);
+        toast.success(mc.savedSuccess);
+        data.refresh();
+    };
+
     const setVal = (key: string, value: string) => setLocal(prev => ({ ...prev, [key]: value }));
 
     const gatewayRow = (key: string, label: string) => (
@@ -1797,6 +1820,55 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
                 {gatewayRow('stripe', `${mc.gatewayStripe} (Global)`)}
                 {gatewayRow('paymob', `${mc.gatewayPaymob} (Egypt)`)}
                 {gatewayRow('spaceremit', `${mc.gatewaySpaceRemit} (Global)`)}
+            </div>
+
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-4">
+                <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Tag className="w-4 h-4 text-gold-500" /> {mc.pricingSection}</h2>
+                <p className="text-xs text-zinc-500 font-bold">{mc.pricingSubtitle}</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                    {(
+                        [
+                            ['pricing_digital_usd', mc.pricingDigitalUsd],
+                            ['pricing_digital_egp', mc.pricingDigitalEgp],
+                            ['pricing_bundle_usd', mc.pricingBundleUsd],
+                            ['pricing_bundle_egp', mc.pricingBundleEgp],
+                            ['pricing_coaching_usd', mc.pricingCoachingUsd],
+                            ['pricing_coaching_egp', mc.pricingCoachingEgp],
+                            ['pricing_coaching_plus_usd', mc.pricingCoachingPlusUsd],
+                            ['pricing_coaching_plus_egp', mc.pricingCoachingPlusEgp],
+                        ] as const
+                    ).map(([key, label]) => (
+                        <div key={key} className="space-y-1.5">
+                            <label className="text-[10px] font-black text-zinc-500 uppercase">{label}</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={local[key] ?? ''}
+                                onChange={e => setVal(key, e.target.value)}
+                                className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none"
+                            />
+                        </div>
+                    ))}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-zinc-500 uppercase">{mc.pricingTolerance}</label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={local['pricing_tolerance'] ?? ''}
+                            onChange={e => setVal('pricing_tolerance', e.target.value)}
+                            className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none"
+                        />
+                    </div>
+                </div>
+                <button
+                    onClick={savePricing}
+                    disabled={saving}
+                    className="px-4 py-2.5 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                    {saving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.pricingSave}
+                </button>
             </div>
 
             <button

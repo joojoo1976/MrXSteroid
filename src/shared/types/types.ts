@@ -1499,6 +1499,19 @@ export interface ContentStrings {
     gatewayStripe: string;
     gatewayPaymob: string;
     gatewaySpaceRemit: string;
+    // ── Pricing ──
+    pricingSection: string;
+    pricingSubtitle: string;
+    pricingDigitalUsd: string;
+    pricingDigitalEgp: string;
+    pricingBundleUsd: string;
+    pricingBundleEgp: string;
+    pricingCoachingUsd: string;
+    pricingCoachingEgp: string;
+    pricingCoachingPlusUsd: string;
+    pricingCoachingPlusEgp: string;
+    pricingTolerance: string;
+    pricingSave: string;
     // ── Products & Inventory ──
     catalogTitle: string;
     catalogSubtitle: string;

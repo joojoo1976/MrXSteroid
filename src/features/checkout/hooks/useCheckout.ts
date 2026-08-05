@@ -8,7 +8,6 @@ import {
     ShippingProvider, 
     validatePromoCode, 
     calculateShippingRates,
-    calculateBaseAmount 
 } from '../../../shared/lib/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
@@ -43,6 +42,7 @@ export interface useCheckoutOptions {
     isEg: boolean;
     onLocationChange: (isEg: boolean) => void;
     onDiscountChange?: (discountAmount: number) => void;
+    quantity?: number;
     userId?: string;
     userEmail?: string;
     userName?: string;
@@ -52,7 +52,7 @@ export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
-    const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, userId, userEmail, userName } = options;
+    const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, quantity, userId, userEmail, userName } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
     
     const [isProcessing, setIsProcessing] = useState(false);
@@ -206,7 +206,9 @@ export const useCheckout = (options: useCheckoutOptions) => {
     }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, regionOption, form]);
 
     const isEg = regionOption === 'EG' || selectedCountry === 'EG';
-    const { amount: baseAmount } = calculateBaseAmount(isEg ? 'EG' : 'US', productVariant, totalAmount);
+    // totalAmount already includes quantity × unit price + add-ons (passed from CheckoutPage).
+    // Use it directly so the sent total matches what the user sees and what the server recomputes.
+    const baseAmount = totalAmount;
 
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
     const subTotalWithShipping = baseAmount + (selectedShipping?.price || 0);
@@ -321,12 +323,16 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 paymentMethod: paymobMethod,
                 integrationId: activeIntegrationId,
                 phoneNumber: data.phoneNumber || '',
+                quantity: quantity ?? 1,
+                shippingCost: selectedShipping?.price || 0,
+                discount: discountAmount,
                 metadata: {
                     tierName: selectedTier.name as string,
                     isPhysical,
                     lang: selectedTier.selectedLanguage,
                     shippingCost: selectedShipping?.price || 0,
                     shippingProvider: selectedShipping?.name,
+                    shippingProviderId: selectedShipping?.id,
                     discount: discountAmount,
                     promoCode,
                     address: data.address,

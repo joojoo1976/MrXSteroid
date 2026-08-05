@@ -33,6 +33,9 @@ export interface CreateInvoiceRequest {
     paymentMethod?: string;
     integrationId?: number | string;
     phoneNumber?: string;
+    quantity?: number;
+    shippingCost?: number;
+    discount?: number;
     metadata?: Record<string, unknown>;
 }
 

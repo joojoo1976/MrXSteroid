@@ -51,6 +51,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     onShippingChange,
     onDiscountChange,
     totalAmount,
+    quantity,
     onSuccess,
     openLegal
 }) => {
@@ -97,6 +98,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         isEg: isEgProp,
         onLocationChange,
         onDiscountChange,
+        quantity,
         userId: user?.id,
         userEmail: user?.email,
         userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name

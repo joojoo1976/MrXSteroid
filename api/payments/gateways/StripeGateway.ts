@@ -76,6 +76,7 @@ export class StripeGateway implements IPaymentGateway {
         const stripe = getStripe();
 
         const priceId = STRIPE_CONFIG.PRICE_IDS[tierId];
+        const quantity = Math.max(1, Math.floor(Number(metadata.quantity) || 1));
 
         // Build the session configuration
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -90,14 +91,15 @@ export class StripeGateway implements IPaymentGateway {
                 tier_id: tierId,
                 user_id: params.userId,
                 full_name: metadata.fullName,
+                quantity: String(quantity),
             },
         };
 
         if (priceId) {
             // Use preconfigured Price ID (recommended)
-            sessionParams.line_items = [{ price: priceId, quantity: 1 }];
+            sessionParams.line_items = [{ price: priceId, quantity }];
         } else {
-            // Fallback: ad-hoc line item with amount
+            // Fallback: ad-hoc line item with amount (already includes qty × unit + add-on)
             sessionParams.line_items = [{
                 price_data: {
                     currency: currency.toLowerCase(),
@@ -107,9 +109,9 @@ export class StripeGateway implements IPaymentGateway {
                             ? 'Digital PDF copy of Mr. X Steroid guide'
                             : 'Physical paperback copy of Mr. X Steroid guide',
                     },
-                    unit_amount: Math.round(amount * 100), // Stripe expects cents
+                    unit_amount: Math.round((amount / quantity) * 100), // Stripe expects cents
                 },
-                quantity: 1,
+                quantity,
             }];
         }
 

@@ -18,6 +18,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { createClient } = await import('@supabase/supabase-js');
         const { z } = await import('zod');
         const { PaymentFactory } = await import('./gateways/PaymentFactory.js');
+        const { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } = await import('./pricing.js');
+        type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
 
         const CONFIG = {
             SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -31,16 +33,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE_ROLE_KEY, {
                 auth: { autoRefreshToken: false, persistSession: false },
             });
-        };
-
-        const TIER_PRICING: Record<string, { usd: number; egp: number }> = {
-            digital: { usd: 49.99, egp: 499 },
-            bundle: { usd: 72.00, egp: 750 },
-            coaching: { usd: 82.00, egp: 750 },
-            coaching_plus: { usd: 200.00, egp: 750 },
-            // Legacy mapping
-            pdf: { usd: 49.99, egp: 499 },
-            paperback: { usd: 72.00, egp: 750 },
         };
 
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -58,11 +50,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             paymentMethod: z.string().optional(),
             integrationId: z.union([z.number(), z.string()]).optional(),
             phoneNumber: z.string().optional(),
+            // ── Pricing breakdown (server recomputes the authoritative amount) ──
+            quantity: z.number().int().min(1).max(99).optional(),
+            shippingCost: z.number().min(0).optional(),
+            discount: z.number().min(0).optional(),
+            // Optional reference amount reported by the client, validated against server amount.
+            amount: z.number().min(0).optional(),
             metadata: z.record(z.string(), z.unknown()).optional().default({}),
         });
         type CreateInvoiceInput = {
             userId?: string;
-            tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
+            tierId: TierId;
             country: string;
             email: string;
             fullName: string;
@@ -70,6 +68,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             paymentMethod?: string;
             integrationId?: number | string;
             phoneNumber?: string;
+            quantity?: number;
+            shippingCost?: number;
+            discount?: number;
+            amount?: number;
             metadata?: Record<string, unknown>;
         };
 
@@ -150,11 +152,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Determine currency and amount based on gateway/region
         const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
         const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
-        const amount = isEgypt
-            ? TIER_PRICING[input.tierId].egp
-            : TIER_PRICING[input.tierId].usd;
 
-        console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Method: ${input.paymentMethod}, Integration: ${input.integrationId}, Tier: ${input.tierId}, Amount: ${amount} ${currency}`);
+        // ─── AUTHORITATIVE PRICING ────────────────────────────────────────
+        // Load the tunable pricing config (admin_settings > env > defaults) and
+        // recompute the amount server-side from quantity/add-ons/shipping/discount.
+        // The client-reported amount is only used as a tamper check.
+        const pricing = await loadPricing(async () => {
+            const { data } = await supabase.from('admin_settings').select('key, value');
+            return (data || []) as Array<{ key: string; value: string }>;
+        });
+
+        const quantity = input.quantity ?? 1;
+
+        // Authoritative shipping: resolve from a known provider id, else trust client value (0 for digital).
+        const shippingCost = resolveShippingCost(
+            pricing,
+            String(input.metadata?.shippingProviderId || ''),
+            input.shippingCost ?? 0,
+            currency
+        );
+
+        // Authoritative discount: recompute from the promo code server-side (mirrors storefront rules).
+        const subtotalForDiscount = computeAmount(pricing, {
+            tierId: input.tierId,
+            currency,
+            quantity,
+            shippingCost,
+            discount: 0,
+        });
+        const discount = computePromoDiscount(
+            String(input.metadata?.promoCode || ''),
+            subtotalForDiscount,
+            currency
+        );
+
+        const amount = computeAmount(pricing, {
+            tierId: input.tierId,
+            currency,
+            quantity,
+            shippingCost,
+            discount,
+        });
+
+        // Validate the client-reported amount (if provided) within the configured tolerance.
+        if (input.amount !== undefined && !isAmountValid(pricing, input.amount, amount)) {
+            console.warn(`⚠️ [CreateInvoice] Amount mismatch — client: ${input.amount}, server: ${amount} ${currency}`);
+            return res.status(400).json({
+                error: 'Amount mismatch — the displayed total is out of sync with server pricing. Please refresh and try again.',
+                details: { expected: amount, received: input.amount, currency },
+            });
+        }
+
+        console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Method: ${input.paymentMethod}, Integration: ${input.integrationId}, Tier: ${input.tierId}, Qty: ${input.quantity ?? 1}, Amount: ${amount} ${currency}`);
 
         // ─── CREATE INVOICE RECORD (Pending) ─────────────────────────────
         const { data: invoice, error: insertError } = await supabase
@@ -195,6 +244,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 paymentMethod: input.paymentMethod,
                 integrationId: input.integrationId,
                 phoneNumber: input.phoneNumber,
+                quantity,
+                shippingCost,
+                discount,
                 ...input.metadata,
             },
         };
