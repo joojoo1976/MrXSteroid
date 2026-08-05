@@ -36,7 +36,7 @@ export const authService = {
     isValidPhone(phone: string): boolean {
         if (!phone) return false;
         // Strip spaces, dashes, parentheses
-        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+        const cleanPhone = phone.replace(/[\s\-()]/g, '');
         // Must contain 7-15 digits, optional leading +
         const phoneRegex = /^\+?[0-9]{7,15}$/;
         return phoneRegex.test(cleanPhone);
@@ -112,7 +112,7 @@ export const authService = {
                 return { user: null, session: null, error: 'Username is too short' };
             }
 
-            const cleanPhone = phone_number ? phone_number.replace(/[\s\-\(\)]/g, '') : null;
+            const cleanPhone = phone_number ? phone_number.replace(/[\s\-()]/g, '') : null;
 
             // Check if phone number is already registered in profiles
             if (cleanPhone) {
@@ -184,7 +184,7 @@ export const authService = {
             let targetEmail = cleanInput;
 
             if (idType === 'phone') {
-                const cleanPhone = cleanInput.replace(/[\s\-\(\)]/g, '');
+                const cleanPhone = cleanInput.replace(/[\s\-()]/g, '');
                 const phoneVariants = Array.from(new Set([
                     cleanPhone,
                     cleanPhone.startsWith('+') ? cleanPhone.slice(1) : '+' + cleanPhone,
@@ -207,7 +207,7 @@ export const authService = {
                     try {
                         const { data: rpcEmail } = await supabase.rpc('get_email_by_phone', { p_phone: cleanPhone });
                         if (rpcEmail) foundEmail = rpcEmail;
-                    } catch (_) { /* ignore if RPC not present */ }
+                    } catch { /* ignore if RPC not present */ }
                 }
 
                 if (foundEmail) {

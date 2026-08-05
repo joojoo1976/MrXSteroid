@@ -27,7 +27,7 @@ export class SecurityManager {
     /**
      * Enhanced user registration with security validations
      */
-    async secureRegister(email: string, password: string, userData: any) {
+    async secureRegister(email: string, password: string, userData: Record<string, unknown>) {
         // Input validation
         if (!this.isValidEmail(email)) {
             throw new Error('Invalid email format');
@@ -140,6 +140,16 @@ export class SecurityManager {
 
             return data;
         } catch (error) {
+            // Increment failed login attempt
+            await this.incrementFailedLoginAttempt(email);
+
+            await this.logSecurityEvent('login_failure', {
+                email,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString(),
+                ip: await this.getClientIP()
+            });
+
             throw error;
         }
     }
@@ -205,7 +215,7 @@ export class SecurityManager {
     /**
      * Check account lock status
      */
-    private async checkAccountLockStatus(email: string): Promise<{ isLocked: boolean; unlockTime?: string }> {
+    private async checkAccountLockStatus(_email: string): Promise<{ isLocked: boolean; unlockTime?: string }> {
         // In a real implementation, this would check a cache/database for lock status
         return { isLocked: false }; // Placeholder
     }
@@ -213,7 +223,7 @@ export class SecurityManager {
     /**
      * Check rate limits
      */
-    private async checkRateLimit(identifier: string, action: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+    private async checkRateLimit(_identifier: string, _action: string): Promise<{ allowed: boolean; retryAfter?: number }> {
         // In a real implementation, this would check against a rate limiting service
         return { allowed: true }; // Placeholder
     }
@@ -237,7 +247,7 @@ export class SecurityManager {
     /**
      * Log security events
      */
-    private async logSecurityEvent(eventType: string, details: any) {
+    private async logSecurityEvent(eventType: string, details: Record<string, unknown>) {
         // In a real implementation, this would securely log to a security monitoring system
         console.log(`Security Event: ${eventType}`, details);
     }

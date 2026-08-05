@@ -47,7 +47,7 @@ describe('Payment Service Tests', () => {
                 insert: vi.fn().mockReturnThis(),
                 select: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: { id: 'db-record-id' }, error: null })
-            } as any);
+            } as never);
 
             // Mock window.location.href
             Object.defineProperty(window, 'location', {
@@ -82,13 +82,13 @@ describe('Payment Service Tests', () => {
                 insert: vi.fn().mockReturnThis(),
                 select: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: null, error: new Error('DB error') })
-            } as any);
+            } as never);
 
             const result = await paymentService.initiatePayment(paymentData);
 
             expect(result.success).toBe(false);
-            if (!result.success) {
-                expect((result as any).error.code).toBe('DB_INSERT_FAILED');
+            if (result.success === false) {
+                expect(result.error.code).toBe('DB_INSERT_FAILED');
             }
         });
     });
@@ -109,7 +109,7 @@ describe('Payment Service Tests', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: mockPaymentData, error: null })
-            } as any);
+            } as never);
 
             const result = await paymentService.checkTransactionStatus(transactionId);
 
@@ -127,13 +127,13 @@ describe('Payment Service Tests', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: null, error: new Error('Row not found') })
-            } as any);
+            } as never);
 
             const result = await paymentService.checkTransactionStatus(transactionId);
 
             expect(result.success).toBe(false);
-            if (!result.success) {
-                expect((result as any).error.code).toBe('STATUS_CHECK_FAILED');
+            if (result.success === false) {
+                expect(result.error.code).toBe('STATUS_CHECK_FAILED');
             }
         });
     });
@@ -160,7 +160,7 @@ describe('Payment Service Tests', () => {
                     redirectUrl: 'https://payment.example.com/pay/inv_12345',
                     gateway: 'spaceremit'
                 })
-            } as any);
+            } as never);
 
             const result = await paymentService.createInvoice(invoiceRequest);
 
@@ -185,7 +185,7 @@ describe('Payment Service Tests', () => {
                 status: 500,
                 clone: () => ({ text: () => Promise.resolve('Internal Server Error') }),
                 json: () => Promise.resolve({ success: false, error: 'Payment gateway unavailable' })
-            } as any);
+            } as never);
 
             const result = await paymentService.createInvoice(invoiceRequest);
 

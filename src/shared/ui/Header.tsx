@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TRANSITIONS } from '../../shared/lib/logic';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, CalendarCheck, Sun, Moon, Globe, LogOut, Settings2, GripHorizontal, Layout, Move, Scale } from 'lucide-react';
+import { Menu, X, ChevronDown, CalendarCheck, Globe, LogOut, Settings2, GripHorizontal, Layout, Move, Scale } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { MockUser } from '../lib/mock-auth-service';
 import { ContentStrings, Page, Language } from '@/shared/types/types';
@@ -45,17 +44,6 @@ const getProfilePic = (user: User | MockUser | null | undefined, dbAvatarUrl?: s
   return `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=100`;
 };
 
-const ThemeIcon = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => {
-  if (theme === 'system') return (
-    <div className="relative">
-      <Sun className="w-4 h-4 opacity-50" />
-      <Moon className="w-3 h-3 absolute -top-1 -end-1" />
-    </div>
-  );
-  if (theme === 'dark') return <Moon className="w-4 h-4" />;
-  return <Sun className="w-4 h-4" />;
-};
-
 const Header: React.FC<HeaderProps> = ({
   theme, resolvedTheme, setTheme, colorTheme: _colorTheme, changeColorTheme: _changeColorTheme, content, currentPage, navigateTo, user, onLogout, onOpenPreferences
 }) => {
@@ -64,7 +52,6 @@ const Header: React.FC<HeaderProps> = ({
   const { profileData } = useAuth();
   const profilePic = getProfilePic(user, profileData?.avatar_url);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   // Design Mode State
   const [isDesignMode, setIsDesignMode] = useState(false);

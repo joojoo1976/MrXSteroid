@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
     sanitizeInput,
     validateEmail,
@@ -71,8 +71,8 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle null/undefined', () => {
-            expect(sanitizeInput(null as any)).toBeNull();
-            expect(sanitizeInput(undefined as any)).toBeUndefined();
+            expect(sanitizeInput(null)).toBeNull();
+            expect(sanitizeInput(undefined)).toBeUndefined();
         });
     });
 
@@ -95,9 +95,9 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle special cases', () => {
-            expect(validateEmail(null as any)).toBe(false);
-            expect(validateEmail(undefined as any)).toBe(false);
-            expect(validateEmail(123 as any)).toBe(false);
+            expect(validateEmail(null)).toBe(false);
+            expect(validateEmail(undefined)).toBe(false);
+            expect(validateEmail(123)).toBe(false);
         });
     });
 
@@ -123,9 +123,9 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle special cases', () => {
-            expect(validatePassword(null as any)).toBe(false);
-            expect(validatePassword(undefined as any)).toBe(false);
-            expect(validatePassword(123 as any)).toBe(false);
+            expect(validatePassword(null)).toBe(false);
+            expect(validatePassword(undefined)).toBe(false);
+            expect(validatePassword(123)).toBe(false);
         });
     });
 
@@ -145,9 +145,9 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle special cases', () => {
-            expect(validateTransactionId(null as any)).toBe(false);
-            expect(validateTransactionId(undefined as any)).toBe(false);
-            expect(validateTransactionId(123 as any)).toBe(false);
+            expect(validateTransactionId(null)).toBe(false);
+            expect(validateTransactionId(undefined)).toBe(false);
+            expect(validateTransactionId(123)).toBe(false);
         });
     });
 
@@ -268,8 +268,8 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle special cases', async () => {
-            await expect(hashPassword(null as any)).rejects.toThrow();
-            await expect(hashPassword(undefined as any)).rejects.toThrow();
+            await expect(hashPassword(null)).rejects.toThrow();
+            await expect(hashPassword(undefined)).rejects.toThrow();
         });
     });
 
@@ -294,9 +294,9 @@ describe('Security Utilities Test Suite', () => {
         });
 
         it('should handle special cases', async () => {
-            expect(await verifyPassword('password', null as any)).toBe(false);
-            expect(await verifyPassword(null as any, 'hash')).toBe(false);
-            expect(await verifyPassword(undefined as any, 'hash')).toBe(false);
+            expect(await verifyPassword('password', null)).toBe(false);
+            expect(await verifyPassword(null, 'hash')).toBe(false);
+            expect(await verifyPassword(undefined, 'hash')).toBe(false);
         });
     });
 });

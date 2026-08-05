@@ -163,7 +163,7 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, wait: 
 /**
  * Validate email format
  */
-export function isValidEmail(email: any): boolean {
+export function isValidEmail(email: unknown): boolean {
   if (!email || typeof email !== 'string') return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);

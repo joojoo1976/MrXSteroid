@@ -84,7 +84,7 @@ describe('Security-Enhanced Auth Service', () => {
     // Mock Supabase signUp to return success
     const { supabase } = await import('@/shared/lib/supabase');
     vi.spyOn(supabase.auth, 'signUp').mockResolvedValue({
-      data: mockUserData as any,
+      data: mockUserData as never,
       error: null
     });
 

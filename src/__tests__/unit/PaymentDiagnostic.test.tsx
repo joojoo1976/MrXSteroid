@@ -177,7 +177,7 @@ describe('PaymentDiagnostic Component', () => {
             }, 100);
         });
 
-        (runPaymentDiagnostic as unknown as MockFn).mockReturnValue(mockPromise as any);
+        (runPaymentDiagnostic as unknown as MockFn).mockReturnValue(mockPromise as never);
         (getDiagnosticSummary as unknown as MockFn).mockImplementation(() => ({
             status: 'healthy',
             message: 'All checks passed',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { supabase } from '@/shared/lib/supabase';
@@ -93,7 +93,7 @@ describe('End-to-End User Flow Tests', () => {
                         })
                     })
                 })
-            } as any);
+            } as never);
 
             // Simulate signup
             const { data, error } = await supabase.auth.signUp({
@@ -201,7 +201,7 @@ describe('End-to-End User Flow Tests', () => {
                             id: 'mock-sub-id'
                         }
                     }
-                } as any;
+                } as never;
             });
 
             vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
@@ -223,7 +223,7 @@ describe('End-to-End User Flow Tests', () => {
                         })
                     })
                 })
-            } as any);
+            } as never);
 
             // Render AuthProvider and check context
             const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -280,7 +280,7 @@ describe('End-to-End User Flow Tests', () => {
                         })
                     })
                 })
-            } as any);
+            } as never);
 
             // Render AuthProvider
             const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -295,7 +295,7 @@ describe('End-to-End User Flow Tests', () => {
 
             // Verify user data is available for checkout auto-fill
             expect(result.current.user?.email).toBe('test@example.com');
-            expect((result.current.user as any)?.user_metadata?.full_name).toBe('Test User');
+            expect(result.current.user?.user_metadata?.full_name).toBe('Test User');
             expect(result.current.profileData?.full_name).toBe('Test User');
         });
     });

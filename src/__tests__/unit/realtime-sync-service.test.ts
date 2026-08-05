@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RealtimeSyncService } from '@/shared/lib/RealtimeSyncService';
 import { supabase } from '@/shared/lib/supabase';
 
@@ -32,7 +32,7 @@ describe('RealtimeSyncService Tests', () => {
                 subscribe: vi.fn()
             };
 
-            vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as any);
+            vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as never);
 
             const unsubscribe = realtimeService.subscribeToUserUpdates(userId, callback);
 
@@ -67,7 +67,6 @@ describe('RealtimeSyncService Tests', () => {
         });
 
         it('should handle unauthorized user access attempts', () => {
-            const validUserId = 'valid-user-id';
             const maliciousUserId = '../etc/passwd'; // Attempted path traversal
             const callback = vi.fn();
 
@@ -87,7 +86,7 @@ describe('RealtimeSyncService Tests', () => {
                 subscribe: vi.fn()
             };
 
-            vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as any);
+            vi.spyOn(supabase, 'channel').mockReturnValue(mockChannel as never);
 
             const unsubscribe = realtimeService.subscribeToOrderUpdates(orderId, callback);
 
@@ -124,14 +123,14 @@ describe('RealtimeSyncService Tests', () => {
                 currency: 'USD'
             };
 
-            const mockResponse: { data: any; error: any } = {
+            const mockResponse: { data: Array<typeof userData & { id: string }>; error: null } = {
                 data: [{ ...userData, id: userId }],
                 error: null
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 upsert: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await realtimeService.syncUserData(userId, userData);
 
@@ -144,7 +143,7 @@ describe('RealtimeSyncService Tests', () => {
                 .rejects
                 .toThrow('User ID is required');
 
-            await expect(realtimeService.syncUserData('test-user-id', null as any))
+            await expect(realtimeService.syncUserData('test-user-id', null!))
                 .rejects
                 .toThrow('User data is required');
 
@@ -167,7 +166,7 @@ describe('RealtimeSyncService Tests', () => {
                 // dangerous fields should be filtered out or sanitized
             };
 
-            const mockResponse: { data: any; error: any } = {
+            const mockResponse: { data: Array<typeof sanitizedData & { id: string }>; error: null } = {
                 data: [{ ...sanitizedData, id: userId }],
                 error: null
             };
@@ -177,7 +176,7 @@ describe('RealtimeSyncService Tests', () => {
             });
             vi.spyOn(supabase, 'from').mockImplementation(fromMock);
 
-            const result = await realtimeService.syncUserData(userId, unsafeUserData);
+            await realtimeService.syncUserData(userId, unsafeUserData);
 
             expect(fromMock).toHaveBeenCalledWith('profiles');
             // The actual implementation would need to include sanitization
@@ -190,7 +189,7 @@ describe('RealtimeSyncService Tests', () => {
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 upsert: vi.fn().mockResolvedValue({ data: null, error: mockError })
-            } as any);
+            } as never);
 
             await expect(realtimeService.syncUserData(userId, userData))
                 .rejects
@@ -207,14 +206,14 @@ describe('RealtimeSyncService Tests', () => {
                 currency: 'USD'
             };
 
-            const mockResponse: { data: any; error: any } = {
+            const mockResponse: { data: Array<typeof orderData & { id: string }>; error: null } = {
                 data: [{ ...orderData, id: orderId }],
                 error: null
             };
 
             vi.spyOn(supabase, 'from').mockReturnValue({
                 upsert: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await realtimeService.syncOrderData(orderId, orderData);
 
@@ -227,7 +226,7 @@ describe('RealtimeSyncService Tests', () => {
                 .rejects
                 .toThrow('Order ID is required');
 
-            await expect(realtimeService.syncOrderData('test-order-id', null as any))
+            await expect(realtimeService.syncOrderData('test-order-id', null!))
                 .rejects
                 .toThrow('Order data is required');
 
@@ -244,8 +243,8 @@ describe('RealtimeSyncService Tests', () => {
             const mockChannel2 = { unsubscribe: vi.fn(), on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
 
             vi.spyOn(supabase, 'channel')
-                .mockReturnValueOnce(mockChannel1 as any)
-                .mockReturnValueOnce(mockChannel2 as any);
+                .mockReturnValueOnce(mockChannel1 as never)
+                .mockReturnValueOnce(mockChannel2 as never);
 
             // Create subscriptions
             realtimeService.subscribeToUserUpdates('user1', vi.fn());
@@ -294,7 +293,12 @@ describe('RealtimeSyncService Tests', () => {
                 }
             };
 
-            const sanitized = realtimeService.sanitizeData(unsafeData);
+            const sanitized = realtimeService.sanitizeData(unsafeData) as {
+                safe_prop: string;
+                dangerous_html: string;
+                dangerous_url: string;
+                nested: { another_dangerous: string; safe_nested: string };
+            };
 
             // Safe properties should remain
             expect(sanitized.safe_prop).toBe('safe_value');

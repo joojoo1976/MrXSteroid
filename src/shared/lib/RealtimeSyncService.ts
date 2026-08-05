@@ -3,6 +3,9 @@ import { Database } from '@/shared/types/db_types';
 
 type Delegate = Database['public']['Tables']['delegates']['Row'];
 type Assignment = Database['public']['Tables']['delivery_assignments']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Order = Database['public']['Tables']['orders']['Row'];
+type Location = Database['public']['Tables']['realtime_locations']['Row'];
 
 // Define proper payload types for Supabase realtime events
 export type SupabaseRealtimePayload<T> = {
@@ -13,12 +16,12 @@ export type SupabaseRealtimePayload<T> = {
 };
 
 export class RealtimeSyncService {
-    private channels: Array<{ unsubscribe: () => void }> = [];
+    private channels: Array<{ unsubscribe: () => void | Promise<unknown> }> = [];
 
     /**
      * Validate input by type
      */
-    validateInput(value: any, type: 'string' | 'number' | 'id'): boolean {
+    validateInput(value: unknown, type: 'string' | 'number' | 'id'): boolean {
         if (type === 'string') {
             return typeof value === 'string';
         }
@@ -36,19 +39,19 @@ export class RealtimeSyncService {
     /**
      * Sanitize data object to remove dangerous properties
      */
-    sanitizeData(data: any): any {
+    sanitizeData(data: unknown): unknown {
         if (data === null || data === undefined) return data;
         if (typeof data !== 'object') return data;
         if (Array.isArray(data)) return data.map(item => this.sanitizeData(item));
 
-        const sanitized: Record<string, any> = {};
+        const sanitized: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(data)) {
             // Skip __proto__ and constructor
             if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
 
             if (typeof value === 'string') {
                 // Remove script tags, event handlers, javascript: protocol, and expression() 
-                let cleaned = value
+                const cleaned = value
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
                     .replace(/javascript\s*:/gi, '')
@@ -75,7 +78,7 @@ export class RealtimeSyncService {
     /**
      * Subscribe to user profile updates
      */
-    subscribeToUserUpdates(userId: string, callback: (payload: any) => void) {
+    subscribeToUserUpdates(userId: string, callback: (payload: SupabaseRealtimePayload<Profile>) => void) {
         if (!userId || userId.trim() === '') {
             throw new Error('User ID is required');
         }
@@ -94,14 +97,14 @@ export class RealtimeSyncService {
                     table: 'profiles',
                     filter: `id=eq.${userId}`
                 },
-                (payload: any) => callback(payload)
+                (payload) => callback(payload as unknown as SupabaseRealtimePayload<Profile>)
             )
             .subscribe();
 
-        this.channels.push(channel as any);
+        this.channels.push(channel);
         const unsubscribeFn = () => {
-            if (channel && typeof (channel as any).unsubscribe === 'function') {
-                (channel as any).unsubscribe();
+            if (channel && typeof channel.unsubscribe === 'function') {
+                channel.unsubscribe();
             }
         };
         return unsubscribeFn;
@@ -110,7 +113,7 @@ export class RealtimeSyncService {
     /**
      * Subscribe to order updates
      */
-    subscribeToOrderUpdates(orderId: string, callback: (payload: any) => void) {
+    subscribeToOrderUpdates(orderId: string, callback: (payload: SupabaseRealtimePayload<Order>) => void) {
         if (!orderId || orderId.trim() === '') {
             throw new Error('Order ID is required');
         }
@@ -129,14 +132,14 @@ export class RealtimeSyncService {
                     table: 'orders',
                     filter: `id=eq.${orderId}`
                 },
-                (payload: any) => callback(payload)
+                (payload) => callback(payload as unknown as SupabaseRealtimePayload<Order>)
             )
             .subscribe();
 
-        this.channels.push(channel as any);
+        this.channels.push(channel);
         const unsubscribeFn = () => {
-            if (channel && typeof (channel as any).unsubscribe === 'function') {
-                (channel as any).unsubscribe();
+            if (channel && typeof channel.unsubscribe === 'function') {
+                channel.unsubscribe();
             }
         };
         return unsubscribeFn;
@@ -145,7 +148,7 @@ export class RealtimeSyncService {
     /**
      * Sync user data with validation
      */
-    async syncUserData(userId: string, userData: any) {
+    async syncUserData(userId: string, userData: Record<string, unknown>) {
         if (!userId || userId.trim() === '') {
             throw new Error('User ID is required');
         }
@@ -158,19 +161,21 @@ export class RealtimeSyncService {
             throw new Error('User data is required');
         }
 
-        const sanitizedData = this.sanitizeData(userData);
+        const sanitizedData = this.sanitizeData(userData) as Record<string, unknown>;
 
-        const fromResult = supabase.from('profiles');
-        const { data, error } = await (fromResult as any).upsert({ id: userId, ...sanitizedData });
+        const { data, error } = await supabase
+            .from('profiles')
+            .upsert({ id: userId, ...sanitizedData } as unknown as Database['public']['Tables']['profiles']['Insert']);
 
         if (error) throw error;
-        return Array.isArray(data) ? data[0] : data;
+        const rows = data as unknown as Database['public']['Tables']['profiles']['Row'][] | null;
+        return Array.isArray(rows) && rows.length > 0 ? rows[0] : rows;
     }
 
     /**
      * Sync order data with validation
      */
-    async syncOrderData(orderId: string, orderData: any) {
+    async syncOrderData(orderId: string, orderData: Record<string, unknown>) {
         if (!orderId || orderId.trim() === '') {
             throw new Error('Order ID is required');
         }
@@ -183,13 +188,15 @@ export class RealtimeSyncService {
             throw new Error('Order data is required');
         }
 
-        const sanitizedData = this.sanitizeData(orderData);
+        const sanitizedData = this.sanitizeData(orderData) as Record<string, unknown>;
 
-        const fromResult = supabase.from('orders');
-        const { data, error } = await (fromResult as any).upsert({ id: orderId, ...sanitizedData });
+        const { data, error } = await supabase
+            .from('orders')
+            .upsert({ id: orderId, ...sanitizedData } as unknown as Database['public']['Tables']['orders']['Insert']);
 
         if (error) throw error;
-        return Array.isArray(data) ? data[0] : data;
+        const rows = data as unknown as Database['public']['Tables']['orders']['Row'][] | null;
+        return Array.isArray(rows) && rows.length > 0 ? rows[0] : rows;
     }
 
     /**
@@ -215,7 +222,7 @@ export class RealtimeSyncService {
                     table: 'delivery_assignments',
                     filter: `delegate_id=eq.${delegateId}`
                 },
-                (payload) => onUpdate(payload as any)
+                (payload) => onUpdate(payload as unknown as SupabaseRealtimePayload<Assignment>)
             )
             .subscribe();
     }
@@ -251,7 +258,7 @@ export class RealtimeSyncService {
         return !error;
     }
 
-    static subscribeToAllLocations(onUpdate: (payload: SupabaseRealtimePayload<any>) => void) {
+    static subscribeToAllLocations(onUpdate: (payload: SupabaseRealtimePayload<Location>) => void) {
         return supabase
             .channel('admin-all-locations')
             .on(
@@ -261,7 +268,7 @@ export class RealtimeSyncService {
                     schema: 'public',
                     table: 'realtime_locations'
                 },
-                (payload) => onUpdate(payload as any)
+                (payload) => onUpdate(payload as unknown as SupabaseRealtimePayload<Location>)
             )
             .subscribe();
     }
@@ -276,7 +283,7 @@ export class RealtimeSyncService {
                     schema: 'public',
                     table: 'delivery_assignments'
                 },
-                (payload) => onUpdate(payload as any)
+                (payload) => onUpdate(payload as unknown as SupabaseRealtimePayload<Assignment>)
             )
             .subscribe();
     }

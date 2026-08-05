@@ -13,64 +13,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getContrastRatio } from '../../shared/lib/theme-qa';
 
 // ══════════════════════════════════════════════════════════════════════
-// Helpers: DOM Mocking
-// ══════════════════════════════════════════════════════════════════════
-
-/** إعداد DOM محاكي بسيط لـ useTheme */
-function setupDOM(
-  options: {
-    storedTheme?: string;
-    systemPrefersDark?: boolean;
-    domClass?: string;
-  } = {}
-) {
-  const { storedTheme = 'dark', systemPrefersDark = true, domClass = 'dark' } = options;
-
-  // Mock document.documentElement
-  const root = {
-    classList: {
-      _classes: new Set<string>(domClass ? [domClass] : []),
-      add: vi.fn(function (this: { _classes: Set<string> }, ...c: string[]) {
-        c.forEach(cls => this._classes.add(cls));
-      }),
-      remove: vi.fn(function (this: { _classes: Set<string> }, ...c: string[]) {
-        c.forEach(cls => this._classes.delete(cls));
-      }),
-      contains: vi.fn(function (this: { _classes: Set<string> }, c: string) {
-        return this._classes.has(c);
-      }),
-    },
-    setAttribute: vi.fn(),
-    getAttribute: vi.fn((attr: string) => {
-      if (attr === 'data-theme-mode') return storedTheme;
-      if (attr === 'data-resolved-theme') return domClass;
-      return null;
-    }),
-    hasAttribute: vi.fn(() => true),
-  };
-
-  // Mock localStorage
-  const store: Record<string, string> = { mrx_ui_theme: storedTheme };
-  const localStorageMock = {
-    getItem: vi.fn((k: string) => store[k] ?? null),
-    setItem: vi.fn((k: string, v: string) => { store[k] = v; }),
-    removeItem: vi.fn((k: string) => { delete store[k]; }),
-    clear: vi.fn(() => { Object.keys(store).forEach(k => delete store[k]); }),
-  };
-
-  // Mock matchMedia
-  const mediaQueryMock = {
-    matches: systemPrefersDark,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-  };
-
-  return { root, localStorageMock, mediaQueryMock, store };
-}
-
-// ══════════════════════════════════════════════════════════════════════
 // Suite 1: WCAG Color Contrast
 // ══════════════════════════════════════════════════════════════════════
 describe('WCAG Color Contrast — getContrastRatio()', () => {
@@ -117,16 +59,18 @@ describe('WCAG Color Contrast — getContrastRatio()', () => {
 describe('Anti-FOUC Logic', () => {
   it('should resolve "dark" stored mode to class "dark"', () => {
     const stored = 'dark' as 'light' | 'dark' | 'system';
+    const systemPrefersDark = true;
     const resolved = stored === 'system'
-      ? (true /* systemPrefersDark */ ? 'dark' : 'light')
+      ? (systemPrefersDark ? 'dark' : 'light')
       : (stored === 'light' ? 'light' : 'dark');
     expect(resolved).toBe('dark');
   });
 
   it('should resolve "light" stored mode to class "light"', () => {
     const stored = 'light' as 'light' | 'dark' | 'system';
+    const systemPrefersDark = true;
     const resolved = stored === 'system'
-      ? (true ? 'dark' : 'light')
+      ? (systemPrefersDark ? 'dark' : 'light')
       : (stored === 'light' ? 'light' : 'dark');
     expect(resolved).toBe('light');
   });

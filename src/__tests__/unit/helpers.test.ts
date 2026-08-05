@@ -104,8 +104,8 @@ describe('Helper Functions Test Suite', () => {
         });
 
         it('should handle invalid units', () => {
-            expect(() => convertWeight(1, 'invalid' as any, 'kg')).toThrow();
-            expect(() => convertWeight(1, 'kg', 'invalid' as any)).toThrow();
+            expect(() => convertWeight(1, 'invalid' as never, 'kg')).toThrow();
+            expect(() => convertWeight(1, 'kg', 'invalid' as never)).toThrow();
         });
     });
 
@@ -205,8 +205,8 @@ describe('Helper Functions Test Suite', () => {
             expect(isValidEmail('invalid@')).toBe(false);
             expect(isValidEmail('@invalid')).toBe(false);
             expect(isValidEmail('')).toBe(false);
-            expect(isValidEmail(null as any)).toBe(false);
-            expect(isValidEmail(undefined as any)).toBe(false);
+            expect(isValidEmail(null)).toBe(false);
+            expect(isValidEmail(undefined)).toBe(false);
         });
     });
 
@@ -223,8 +223,8 @@ describe('Helper Functions Test Suite', () => {
             expect(isStrongPassword('NoNumbers!')).toBe(false); // No numbers
             expect(isStrongPassword('NoSpecialChars123')).toBe(false); // No special chars
             expect(isStrongPassword('')).toBe(false);
-            expect(isStrongPassword(null as any)).toBe(false);
-            expect(isStrongPassword(undefined as any)).toBe(false);
+            expect(isStrongPassword(null as never)).toBe(false);
+            expect(isStrongPassword(undefined as never)).toBe(false);
         });
 
         it('should validate password length', () => {

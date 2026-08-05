@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import {
-  ArrowLeft, Globe
+  ArrowLeft
 } from 'lucide-react';
 import { LazyMotion, domAnimation } from "framer-motion";
 import { toast } from 'sonner';
@@ -129,7 +129,7 @@ function AppContent({
   selectedTier, setSelectedTier,
   legalState, setLegalState, setHasPurchased
 }: AppContentProps) {
-  const { language: lang, content, isRTL, isAutoDetected } = usePreferences();
+  const { language: lang, content, isRTL } = usePreferences();
   const { user, signOut } = useAuth();
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 

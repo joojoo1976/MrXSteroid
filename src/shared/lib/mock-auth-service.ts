@@ -20,7 +20,7 @@ export interface MockUser {
         full_name?: string;
         name?: string;
         phone_number?: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 

@@ -54,22 +54,25 @@ function applyThemeToDOM(mode: ThemeMode): ResolvedTheme {
 
 // ── Main Hook ────────────────────────────────────────────────────────
 export function useTheme(): UseThemeReturn {
-  const [theme, setThemeState]           = useState<ThemeMode>('dark');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('dark');
-  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
+  const [theme, setThemeState]           = useState<ThemeMode>(readStoredTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
+    const stored = readStoredTheme();
+    return stored === 'system' ? resolveSystemTheme() : stored;
+  });
+  const [isThemeLoaded] = useState(true);
 
   // Ref يتتبع الوضع الحالي بدون إعادة تسجيل الـ listener
-  const currentModeRef = useRef<ThemeMode>('dark');
-  currentModeRef.current = theme;
+  const currentModeRef = useRef<ThemeMode>(theme);
 
-  // ── الإعداد الأولي (يتزامن مع Anti-FOUC script) ─────────────────
+  // ── مزامنة DOM مع الوضع الحالي (يتزامن مع Anti-FOUC script) ───
   useEffect(() => {
-    const stored   = readStoredTheme();
-    const resolved = applyThemeToDOM(stored);
-    setThemeState(stored);
-    setResolvedTheme(resolved);
-    setIsThemeLoaded(true);
-  }, []);
+    applyThemeToDOM(theme);
+  }, [theme]);
+
+  // ── مزامنة الـ ref بعد كل تغيير للوضع ──────────────────────────
+  useEffect(() => {
+    currentModeRef.current = theme;
+  }, [theme]);
 
   // ── System Mode Listener — مزامنة حية مع OS ──────────────────────
   useEffect(() => {

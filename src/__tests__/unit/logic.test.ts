@@ -44,9 +44,7 @@ describe('Logic Functions Test Suite', () => {
         });
 
         it('should handle null/undefined', () => {
-            // @ts-ignore - Testing invalid input
             expect(replaceBrandWithHtml(null)).toBeNull();
-            // @ts-ignore - Testing invalid input
             expect(replaceBrandWithHtml(undefined)).toBeUndefined();
         });
     });

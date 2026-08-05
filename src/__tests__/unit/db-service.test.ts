@@ -38,7 +38,7 @@ describe('Database Service Tests', () => {
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.fetchUserData(userId);
 
@@ -56,7 +56,7 @@ describe('Database Service Tests', () => {
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.fetchUserData(userId);
 
@@ -70,7 +70,7 @@ describe('Database Service Tests', () => {
             vi.spyOn(supabase, 'from').mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockResolvedValue({ data: null, error: mockError })
-            } as any);
+            } as never);
 
             await expect(dbService.fetchUserData(userId))
                 .rejects
@@ -105,7 +105,7 @@ describe('Database Service Tests', () => {
                 update: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 select: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.updateUserProfile(userId, updateData);
 
@@ -122,7 +122,7 @@ describe('Database Service Tests', () => {
                 update: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 select: vi.fn().mockResolvedValue({ data: null, error: mockError })
-            } as any);
+            } as never);
 
             await expect(dbService.updateUserProfile(userId, updateData))
                 .rejects
@@ -182,7 +182,7 @@ describe('Database Service Tests', () => {
             vi.spyOn(supabase, 'from').mockReturnValue({
                 insert: vi.fn().mockReturnThis(),
                 select: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.createOrder(orderData);
 
@@ -204,7 +204,7 @@ describe('Database Service Tests', () => {
             vi.spyOn(supabase, 'from').mockReturnValue({
                 insert: vi.fn().mockReturnThis(),
                 select: vi.fn().mockResolvedValue({ data: null, error: mockError })
-            } as any);
+            } as never);
 
             await expect(dbService.createOrder(orderData))
                 .rejects
@@ -212,7 +212,7 @@ describe('Database Service Tests', () => {
         });
 
         it('should validate order data', async () => {
-            await expect(dbService.createOrder({} as any))
+            await expect(dbService.createOrder({} as never))
                 .rejects
                 .toThrow('Order data is required');
 
@@ -245,7 +245,7 @@ describe('Database Service Tests', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 order: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.fetchUserOrders(userId);
 
@@ -264,7 +264,7 @@ describe('Database Service Tests', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 order: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.fetchUserOrders(userId);
 
@@ -301,7 +301,7 @@ describe('Database Service Tests', () => {
                 update: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 select: vi.fn().mockResolvedValue(mockResponse)
-            } as any);
+            } as never);
 
             const result = await dbService.updateOrderStatus(orderId, newStatus);
 
@@ -319,7 +319,7 @@ describe('Database Service Tests', () => {
                     update: vi.fn().mockReturnThis(),
                     eq: vi.fn().mockReturnThis(),
                     select: vi.fn().mockResolvedValue({ data: [{ status }], error: null })
-                } as any);
+                } as never);
 
                 await expect(dbService.updateOrderStatus('order-id', status))
                     .resolves

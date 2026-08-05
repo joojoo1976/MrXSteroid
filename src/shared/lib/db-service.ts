@@ -1,4 +1,7 @@
 import { supabase } from './supabase';
+import { Database } from '@/shared/types/db_types';
+
+type OrderRow = Database['public']['Tables']['orders']['Row'];
 
 export interface UserProfile {
     id: string;
@@ -69,7 +72,7 @@ export const dbService = {
     /**
      * Creates a new order
      */
-    async createOrder(orderData: OrderData): Promise<any> {
+    async createOrder(orderData: OrderData): Promise<OrderRow> {
         if (!orderData || Object.keys(orderData).length === 0) throw new Error('Order data is required');
         if (orderData.amount < 0) throw new Error('Order amount must be positive');
 
@@ -89,7 +92,7 @@ export const dbService = {
     /**
      * Fetches all orders for a specific user
      */
-    async fetchUserOrders(userId: string): Promise<any[]> {
+    async fetchUserOrders(userId: string): Promise<OrderRow[]> {
         if (!userId) throw new Error('User ID is required');
         if (!this.validateInputs.isValidId(userId)) throw new Error('Invalid user ID format');
 
@@ -106,7 +109,7 @@ export const dbService = {
     /**
      * Updates an order status (Admin/System use)
      */
-    async updateOrderStatus(orderId: string, status: string): Promise<any> {
+    async updateOrderStatus(orderId: string, status: string): Promise<OrderRow> {
         if (!orderId) throw new Error('Order ID is required');
 
         const validStatuses = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled', 'refunded'];

@@ -5,16 +5,13 @@ import { Language, ContentStrings, Theme } from '@/shared/types/types';
 import { arContent, enContent } from '../i18n';
 import {
     UnitSystem,
-    getSystemFromRegion,
     initializeLocalization,
-    detectCountryFromBrowser,
     CURRENCY_RATES,
     formatCurrencyWithLocale
 } from '../shared/lib/logic';
 import { Currency } from '@/shared/types/types';
 import { PreferencesContext, PreferenceStatus } from './PreferencesContext';
 
-const DEFAULT_LANG = Language.EN;
 const DEFAULT_THEME = Theme.DARK;
 
 const resolveContent = (lang: Language): ContentStrings => {
@@ -110,7 +107,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         } else {
             setStatus('IDLE');
         }
-    }, [isAutoDetected]);
+    }, [isAutoDetected, language]);
 
     // Asynchronous Deep Detection (IP Based)
     useEffect(() => {

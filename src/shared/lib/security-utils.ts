@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js';
 /**
  * Sanitize input string to prevent XSS attacks
  */
-export function sanitizeInput(input: any): any {
+export function sanitizeInput(input: unknown): unknown {
     if (input === null || input === undefined) return input;
     if (typeof input !== 'string') return input;
 
@@ -25,7 +25,7 @@ export function sanitizeInput(input: any): any {
 /**
  * Validate email format
  */
-export function validateEmail(email: any): boolean {
+export function validateEmail(email: unknown): boolean {
     if (!email || typeof email !== 'string') return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -34,7 +34,7 @@ export function validateEmail(email: any): boolean {
 /**
  * Validate password strength
  */
-export function validatePassword(password: any): boolean {
+export function validatePassword(password: unknown): boolean {
     if (!password || typeof password !== 'string') return false;
     const minLength = /.{8,}/;
     const hasUpper = /[A-Z]/;
@@ -54,7 +54,7 @@ export function validatePassword(password: any): boolean {
 /**
  * Validate transaction ID format
  */
-export function validateTransactionId(id: any): boolean {
+export function validateTransactionId(id: unknown): boolean {
     if (!id || typeof id !== 'string') return false;
     // Allow alphanumeric with underscores and hyphens, must start with a letter prefix
     const txnRegex = /^[a-zA-Z][a-zA-Z0-9_-]+$/;
@@ -109,7 +109,7 @@ export function generateSecureToken(length: number = 32): string {
 /**
  * Hash a password using SHA256
  */
-export async function hashPassword(password: any): Promise<string> {
+export async function hashPassword(password: unknown): Promise<string> {
     if (password === null || password === undefined || typeof password !== 'string') {
         throw new Error('Password must be a non-empty string');
     }
@@ -122,7 +122,7 @@ export async function hashPassword(password: any): Promise<string> {
 /**
  * Verify a password against a hash
  */
-export async function verifyPassword(password: any, hashedPassword: any): Promise<boolean> {
+export async function verifyPassword(password: unknown, hashedPassword: unknown): Promise<boolean> {
     if (!password || typeof password !== 'string') return false;
     if (!hashedPassword || typeof hashedPassword !== 'string') return false;
 

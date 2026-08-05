@@ -31,6 +31,11 @@ describe('Authentication Service Tests', () => {
         vi.clearAllMocks();
     });
 
+    type MockAuthResponse = {
+        data: { user: unknown; session: unknown };
+        error: unknown;
+    };
+
     describe('signUp', () => {
         it('should register a new user successfully', async () => {
             const mockUserData = {
@@ -40,7 +45,7 @@ describe('Authentication Service Tests', () => {
                 user_name: 'testuser'
             };
 
-            const mockResponse: { data: { user: any; session: any }; error: any } = {
+            const mockResponse: MockAuthResponse = {
                 data: {
                     user: { id: 'test-user-id', email: 'test@example.com', app_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() },
                     session: null
@@ -48,7 +53,7 @@ describe('Authentication Service Tests', () => {
                 error: null
             };
 
-            vi.spyOn(supabase.auth, 'signUp').mockResolvedValue(mockResponse as any);
+            vi.spyOn(supabase.auth, 'signUp').mockResolvedValue(mockResponse as never);
 
             const result = await authService.signUp(mockUserData);
 
@@ -81,7 +86,7 @@ describe('Authentication Service Tests', () => {
             vi.spyOn(supabase.auth, 'signUp').mockResolvedValue({
                 data: { user: null, session: null },
                 error: mockAuthError('User already registered', 400)
-            } as any);
+            } as never);
 
             const result = await authService.signUp(mockUserData);
 
@@ -133,7 +138,7 @@ describe('Authentication Service Tests', () => {
             const email = 'test@example.com';
             const password = 'TestPass123!';
 
-            const mockResponse: { data: { user: any; session: any }; error: any } = {
+            const mockResponse: MockAuthResponse = {
                 data: {
                     user: { id: 'test-user-id', email: 'test@example.com', app_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() },
                     session: { access_token: 'test-token', refresh_token: 'refresh', token_type: 'bearer', user: {} }
@@ -141,7 +146,7 @@ describe('Authentication Service Tests', () => {
                 error: null
             };
 
-            vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue(mockResponse as any);
+            vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue(mockResponse as never);
 
             const result = await authService.signIn(email, password);
 
@@ -156,7 +161,7 @@ describe('Authentication Service Tests', () => {
             vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue({
                 data: { user: null, session: null },
                 error: mockAuthError('Invalid login credentials', 400)
-            } as any);
+            } as never);
 
             const result = await authService.signIn(email, password);
 
@@ -192,7 +197,7 @@ describe('Authentication Service Tests', () => {
         it('should handle sign out errors gracefully', async () => {
             vi.spyOn(supabase.auth, 'signOut').mockResolvedValue({
                 error: mockAuthError('Sign out failed')
-            } as any);
+            } as never);
 
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

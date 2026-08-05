@@ -121,8 +121,6 @@ export const URFlag = () => (
 
 export const IconRenderer = ({ iconKey, className }: { iconKey: string, className?: string }) => {
     // If className is provided, use it. Otherwise default to "w-8 h-8 text-..."
-    const cls = className || "w-8 h-8";
-    const colorCls = className ? "" : "text-gold-500"; // If custom class, trust it handles color or inherit. If not, separate handling? 
     // Actually, simpler logic:
     // If className is provided, pass it to the icon.
     // BUT the original code had specific colors per iconKey (e.g. text-pink-500).

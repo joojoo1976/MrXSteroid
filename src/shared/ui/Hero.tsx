@@ -42,7 +42,7 @@ const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({
             </div>
             <div className={`absolute inset-0 ms-4 bg-zinc-900 ${isRTL ? 'rounded-s-xl' : 'rounded-e-xl'} overflow-hidden relative z-20 ${isRTL ? 'border-e' : 'border-s'} border-zinc-800 h-full p-1`}>
               {/* High-priority LCP image */}
-              <img loading="eager" {...{ fetchPriority: "high" } as any} key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
+              <img loading="eager" {...{ fetchPriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>} key={imgSrc} src={imgSrc} alt="Mr. X Steroid Book Cover" className={`w-full h-full object-fill ${isRTL ? 'rounded-s-lg' : 'rounded-e-lg'}`} onError={handleError} />
             </div>
             <div className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isRTL ? 'rounded-s-xl me-4' : 'rounded-e-xl ms-4'} z-30`}></div>
           </div>
@@ -115,7 +115,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             src="/MrXSteroid_Hero_Section.webp"
             alt="Mr. X Steroid"
             loading="eager"
-            {...{ fetchPriority: "high" } as any}
+            {...{ fetchPriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>}
             className="w-1/2 h-auto object-contain drop-shadow-[0_0_40px_rgba(234,179,8,0.2)] group-hover:drop-shadow-[0_20px_80px_rgba(234,179,8,0.45)] transition-all duration-700 group-hover:scale-[1.03]"
           />
         </motion.div>
