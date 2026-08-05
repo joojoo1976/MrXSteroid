@@ -400,7 +400,7 @@ class PaymentService {
                     status: data.status as PaymentStatus['status'],
                     amount: data.amount,
                     currency: data.currency,
-                    paidAt: data.paid_at,
+                    paidAt: data.updated_at,
                     failureReason: data.error_message
                 }
             };

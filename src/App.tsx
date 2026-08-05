@@ -91,6 +91,73 @@ const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 
 // End of imports cleanup
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔗 SINGLE SOURCE OF TRUTH FOR ROUTING PATHS
+// Used by: URL deep-link resolution (initLoc), back/forward (handlePopState),
+// and programmatic navigation (navigateTo). Keeps path maps in sync.
+// ═══════════════════════════════════════════════════════════════════════════
+const PAGE_TO_PATH: Record<Page, string> = {
+  [Page.HOME]: '/',
+  [Page.DASHBOARD]: '/dashboard',
+  [Page.DIAGNOSTIC]: '/diagnostic',
+  [Page.LOGIN]: '/login',
+  [Page.SIGNUP]: '/signup',
+  [Page.PROFILE]: '/profile',
+  [Page.ABOUT]: '/about',
+  [Page.SITEMAP]: '/sitemap',
+  [Page.ACCESSIBILITY]: '/accessibility',
+  [Page.GDPR]: '/gdpr',
+  [Page.CCPA]: '/ccpa',
+  [Page.BLOG]: '/blog',
+  [Page.SHIPPING_POLICY]: '/shipping',
+  [Page.RETURN_POLICY]: '/returns',
+  [Page.COOKIE_POLICY]: '/cookies',
+  [Page.SUPPORT]: '/support',
+  [Page.CAREERS]: '/careers',
+  [Page.FAQ]: '/faq',
+  [Page.CONTACT]: '/contact',
+  [Page.PRIVACY]: '/privacy',
+  [Page.TERMS]: '/terms',
+  [Page.REFUND]: '/refund',
+  [Page.LEGAL_DISCLAIMER_PAGE]: '/disclaimer',
+  [Page.PAYMENT_SUCCESS]: '/success',
+  [Page.PAYMENT_CANCEL]: '/cancel',
+  [Page.PAYMENT_PENDING]: '/payment-pending',
+  [Page.REPRESENTATIVE]: '/representative',
+  [Page.ADMIN_DASHBOARD]: '/admin',
+  [Page.ADMIN_ANALYTICS]: '/admin-analytics',
+  [Page.AUTH_CALLBACK]: '/auth/callback',
+  [Page.MACRO]: '/macro',
+  [Page.BODYFAT]: '/bodyfat',
+  [Page.INJECTION]: '/injection',
+  [Page.HALFLIFE]: '/halflife',
+  [Page.LAB]: '/lab',
+  [Page.GENETIC]: '/genetic',
+  [Page.CYCLE_ARCHITECT]: '/cycle',
+  [Page.MASTER_CALCULATOR]: '/master-calculator',
+  [Page.SMART_LANDING]: '/smart-landing',
+  [Page.MEDICAL_DISCLAIMER]: '/medical-disclaimer',
+  [Page.RESET_PASSWORD]: '/reset-password',
+  [Page.CHECKOUT]: '/checkout',
+  [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
+};
+
+/** Path → Page lookup built from PAGE_TO_PATH (canonical paths + legacy aliases). */
+const PATH_TO_PAGE: Record<string, Page> = {
+  '': Page.HOME,
+  ...Object.fromEntries(Object.entries(PAGE_TO_PATH).map(([page, path]) => [path.replace(/^\//, '').toLowerCase(), page as Page])),
+  // Legacy aliases kept for backward compatibility with old deep links
+  'callback': Page.AUTH_CALLBACK,
+  'payment-success': Page.PAYMENT_SUCCESS,
+  'payment-cancel': Page.PAYMENT_CANCEL,
+};
+
+/** Resolve a URL pathname to a Page (lowercased, no leading slash). */
+const getPageFromPath = (path: string): Page | null => {
+  const p = path.replace(/^\//, '').toLowerCase();
+  return PATH_TO_PAGE[p] || null;
+};
+
 // Lazy Loaded Below-the-fold Components - Fixed paths (actual location: src/features/)
 const TransformationTimeline = React.lazy(() => import('./features/calculator/TransformationTimeline'));
 const SteroidReadinessQuiz = React.lazy(() => import('./features/calculator/SteroidReadinessQuiz'));
@@ -377,58 +444,8 @@ export default function App() {
       setCurrencyState(state.currency);
 
       // Map paths to Page enum for robust routing
-      const getPageFromPath = (path: string): Page | null => {
-        const p = path.replace(/^\//, '');
-        if (!p) return Page.HOME;
-
-        const pathMap: Record<string, Page> = {
-          'dashboard': Page.DASHBOARD,
-          'diagnostic': Page.DIAGNOSTIC,
-          'login': Page.LOGIN,
-          'signup': Page.SIGNUP,
-          'profile': Page.PROFILE,
-          'about': Page.ABOUT,
-          'sitemap': Page.SITEMAP,
-          'accessibility': Page.ACCESSIBILITY,
-          'gdpr': Page.GDPR,
-          'ccpa': Page.CCPA,
-          'blog': Page.BLOG,
-          'shipping': Page.SHIPPING_POLICY,
-          'returns': Page.RETURN_POLICY,
-          'cookies': Page.COOKIE_POLICY,
-          'support': Page.SUPPORT,
-          'careers': Page.CAREERS,
-          'faq': Page.FAQ,
-          'contact': Page.CONTACT,
-          'privacy': Page.PRIVACY,
-          'terms': Page.TERMS,
-          'refund': Page.REFUND,
-          'disclaimer': Page.LEGAL_DISCLAIMER_PAGE,
-          'success': Page.PAYMENT_SUCCESS,
-          'payment-success': Page.PAYMENT_SUCCESS,
-          'cancel': Page.PAYMENT_CANCEL,
-          'payment-cancel': Page.PAYMENT_CANCEL,
-          'payment-pending': Page.PAYMENT_PENDING,
-          'representative': Page.REPRESENTATIVE,
-          'admin': Page.ADMIN_DASHBOARD,
-          'admin-analytics': Page.ADMIN_ANALYTICS,
-          'auth/callback': Page.AUTH_CALLBACK,
-          'callback': Page.AUTH_CALLBACK,
-          'macro': Page.MACRO,
-          'bodyfat': Page.BODYFAT,
-          'injection': Page.INJECTION,
-          'halflife': Page.HALFLIFE,
-          'lab': Page.LAB,
-          'genetic': Page.GENETIC,
-          'cycle': Page.CYCLE_ARCHITECT,
-          'payment-diagnostic': Page.PAYMENT_CONFIG_DIAGNOSTIC
-        };
-        return pathMap[p] || null;
-      };
-
-      // Simple URL Router (Deep Linking)
-      const path = window.location.pathname.toLowerCase();
-      const initialPage = getPageFromPath(path);
+      const initialPath = window.location.pathname.toLowerCase();
+      const initialPage = getPageFromPath(initialPath);
       if (initialPage) setCurrentPage(initialPage);
 
       // Check for reset_password flow
@@ -443,51 +460,8 @@ export default function App() {
 
     // Browser back/forward support
     const handlePopState = () => {
-      const path = window.location.pathname.toLowerCase().replace(/^\//, '');
-      const pathMap: Record<string, Page> = {
-        '': Page.HOME,
-        'dashboard': Page.DASHBOARD,
-        'diagnostic': Page.DIAGNOSTIC,
-        'login': Page.LOGIN,
-        'signup': Page.SIGNUP,
-        'profile': Page.PROFILE,
-        'about': Page.ABOUT,
-        'sitemap': Page.SITEMAP,
-        'accessibility': Page.ACCESSIBILITY,
-        'gdpr': Page.GDPR,
-        'ccpa': Page.CCPA,
-        'blog': Page.BLOG,
-        'shipping': Page.SHIPPING_POLICY,
-        'returns': Page.RETURN_POLICY,
-        'cookies': Page.COOKIE_POLICY,
-        'support': Page.SUPPORT,
-        'careers': Page.CAREERS,
-        'faq': Page.FAQ,
-        'contact': Page.CONTACT,
-        'privacy': Page.PRIVACY,
-        'terms': Page.TERMS,
-        'refund': Page.REFUND,
-        'disclaimer': Page.LEGAL_DISCLAIMER_PAGE,
-        'success': Page.PAYMENT_SUCCESS,
-        'payment-success': Page.PAYMENT_SUCCESS,
-        'cancel': Page.PAYMENT_CANCEL,
-        'payment-cancel': Page.PAYMENT_CANCEL,
-        'payment-pending': Page.PAYMENT_PENDING,
-        'representative': Page.REPRESENTATIVE,
-        'admin': Page.ADMIN_DASHBOARD,
-        'admin-analytics': Page.ADMIN_ANALYTICS,
-        'auth/callback': Page.AUTH_CALLBACK,
-        'callback': Page.AUTH_CALLBACK,
-        'macro': Page.MACRO,
-        'bodyfat': Page.BODYFAT,
-        'injection': Page.INJECTION,
-        'halflife': Page.HALFLIFE,
-        'lab': Page.LAB,
-        'genetic': Page.GENETIC,
-        'cycle': Page.CYCLE_ARCHITECT,
-        'payment-diagnostic': Page.PAYMENT_CONFIG_DIAGNOSTIC
-      };
-      setCurrentPage(pathMap[path] || Page.HOME);
+      const path = window.location.pathname.toLowerCase();
+      setCurrentPage(getPageFromPath(path) || Page.HOME);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -508,53 +482,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Update URL without reload
-    const pathMap: Record<Page, string> = {
-      [Page.HOME]: '/',
-      [Page.DASHBOARD]: '/dashboard',
-      [Page.DIAGNOSTIC]: '/diagnostic',
-      [Page.LOGIN]: '/login',
-      [Page.SIGNUP]: '/signup',
-      [Page.PROFILE]: '/profile',
-      [Page.ABOUT]: '/about',
-      [Page.SITEMAP]: '/sitemap',
-      [Page.ACCESSIBILITY]: '/accessibility',
-      [Page.GDPR]: '/gdpr',
-      [Page.CCPA]: '/ccpa',
-      [Page.BLOG]: '/blog',
-      [Page.SHIPPING_POLICY]: '/shipping',
-      [Page.RETURN_POLICY]: '/returns',
-      [Page.COOKIE_POLICY]: '/cookies',
-      [Page.SUPPORT]: '/support',
-      [Page.CAREERS]: '/careers',
-      [Page.FAQ]: '/faq',
-      [Page.CONTACT]: '/contact',
-      [Page.PRIVACY]: '/privacy',
-      [Page.TERMS]: '/terms',
-      [Page.REFUND]: '/refund',
-      [Page.LEGAL_DISCLAIMER_PAGE]: '/disclaimer',
-      [Page.PAYMENT_SUCCESS]: '/success',
-      [Page.PAYMENT_CANCEL]: '/cancel',
-      [Page.PAYMENT_PENDING]: '/payment-pending',
-      [Page.REPRESENTATIVE]: '/representative',
-      [Page.ADMIN_DASHBOARD]: '/admin',
-      [Page.ADMIN_ANALYTICS]: '/admin-analytics',
-      [Page.AUTH_CALLBACK]: '/auth/callback',
-      [Page.MACRO]: '/macro',
-      [Page.BODYFAT]: '/bodyfat',
-      [Page.INJECTION]: '/injection',
-      [Page.HALFLIFE]: '/halflife',
-      [Page.LAB]: '/lab',
-      [Page.GENETIC]: '/genetic',
-      [Page.CYCLE_ARCHITECT]: '/cycle',
-      [Page.MASTER_CALCULATOR]: '/master-calculator',
-      [Page.SMART_LANDING]: '/smart-landing',
-      [Page.MEDICAL_DISCLAIMER]: '/medical-disclaimer',
-      [Page.RESET_PASSWORD]: '/reset-password',
-      [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
-      [Page.CHECKOUT]: '/checkout',
-    };
-
-    const targetPath = pathMap[page] || '/';
+    const targetPath = PAGE_TO_PATH[page] || '/';
     if (window.location.pathname !== targetPath) {
       window.history.pushState({ page }, '', targetPath);
     }
