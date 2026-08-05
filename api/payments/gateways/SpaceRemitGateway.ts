@@ -114,10 +114,15 @@ export class SpaceRemitGateway implements IPaymentGateway {
             .update(rawBody)
             .digest('hex');
 
-        const isValid = crypto.timingSafeEqual(
-            Buffer.from(signature),
-            Buffer.from(expectedSignature)
-        );
+        // timingSafeEqual throws on length mismatch — guard before comparing so a
+        // malformed signature fails verification cleanly instead of crashing.
+        const received = Buffer.from(signature);
+        const expected = Buffer.from(expectedSignature);
+        if (received.length !== expected.length) {
+            return { valid: false, errorMessage: 'Invalid HMAC signature' };
+        }
+
+        const isValid = crypto.timingSafeEqual(received, expected);
 
         if (!isValid) {
             return { valid: false, errorMessage: 'Invalid HMAC signature' };

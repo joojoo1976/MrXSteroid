@@ -40,15 +40,14 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
             }
 
             if (requireSubscription) {
-                // Check subscription status in Supabase Database with Strict Typing
+                // Check subscription status on profiles (source of truth written by payment webhook)
                 const { data: sub, error } = await supabase
-                    .from('subscriptions')
-                    .select('status, product_id')
-                    .eq('user_id', user.id)
-                    .eq('product_id', 'steroid_book')
+                    .from('profiles')
+                    .select('subscription_status, has_paid')
+                    .eq('id', user.id)
                     .maybeSingle(); // Use maybeSingle to avoid 406 error if not found
 
-                if (error || !sub || sub.status !== 'active') {
+                if (error || !sub || sub.subscription_status !== 'active' || sub.has_paid !== true) {
                     toast.error("Active subscription required for this content.");
                     if (navigateTo) {
                         navigateTo(Page.LOGIN);

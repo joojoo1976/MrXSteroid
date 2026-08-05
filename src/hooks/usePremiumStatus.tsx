@@ -45,6 +45,7 @@ export type PremiumFeature =
 // Premium features by product tier
 const FEATURE_ACCESS: Record<string, PremiumFeature[]> = {
     digital: ['training_plans', 'nutrition_plans'],
+    pdf: ['training_plans', 'nutrition_plans'], // 'pdf' tier_id written by payment webhook
     paperback: ['training_plans', 'nutrition_plans', 'cycle_architect'],
     hardcover: ['training_plans', 'nutrition_plans', 'cycle_architect', 'lab_analyzer', 'genetic_calculator', 'export_features'],
     coaching: ['training_plans', 'nutrition_plans', 'cycle_architect', 'lab_analyzer', 'genetic_calculator', 'export_features', 'coaching_access'],
@@ -93,24 +94,10 @@ export function usePremiumStatus(): PremiumStatus {
                 const subscriptionStatus = (profile?.subscription_status || 'inactive') as SubscriptionStatus;
                 const isPremium = subscriptionStatus === 'active';
 
-                // Get subscription details for expiry
-                let expiresAt: string | undefined;
-                if (isPremium) {
-                    const { data: subscription } = await supabase
-                        .from('subscriptions')
-                        .select('current_period_end')
-                        .eq('user_id', user.id)
-                        .eq('status', 'active')
-                        .single();
-
-                    expiresAt = subscription?.current_period_end;
-                }
-
                 if (isMounted) {
                     setStatus({
                         isPremium,
                         status: subscriptionStatus,
-                        expiresAt,
                         loading: false
                     });
                 }
@@ -171,15 +158,15 @@ export function useFeatureAccess(feature: PremiumFeature): {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data: subscription } = await supabase
-                .from('subscriptions')
-                .select('product_id')
-                .eq('user_id', user.id)
-                .eq('status', 'active')
-                .single();
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('subscription_tier, plan_tier')
+                .eq('id', user.id)
+                .maybeSingle();
 
-            if (subscription?.product_id) {
-                setProductId(subscription.product_id);
+            const tier = profile?.subscription_tier || profile?.plan_tier;
+            if (tier) {
+                setProductId(tier);
             }
         };
 
@@ -225,27 +212,32 @@ export async function checkPremiumAccess(userId: string): Promise<{
             return { isPremium: false };
         }
 
-        // Get full subscription details
-        const { data: subscription } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('status', 'active')
-            .single();
+        // Get full subscription details from profile (source of truth)
+        const { data: profileDetails, error: profileError } = await supabase
+            .from('profiles')
+            .select('subscription_status, subscription_tier, plan_tier')
+            .eq('id', userId)
+            .maybeSingle();
 
-        if (!subscription) {
+        if (profileError) {
+            return { isPremium: false };
+        }
+
+        if (!profileDetails) {
             return { isPremium: true };
         }
+
+        const tier = profileDetails.subscription_tier || profileDetails.plan_tier || 'premium';
 
         return {
             isPremium: true,
             subscriptionDetails: {
                 userId,
-                status: subscription.status as SubscriptionStatus,
-                productId: subscription.product_id,
-                currentPeriodStart: subscription.current_period_start,
-                currentPeriodEnd: subscription.current_period_end,
-                features: FEATURE_ACCESS[subscription.product_id] || FEATURE_ACCESS['premium']
+                status: profileDetails.subscription_status as SubscriptionStatus,
+                productId: tier,
+                currentPeriodStart: '',
+                currentPeriodEnd: '',
+                features: FEATURE_ACCESS[tier] || FEATURE_ACCESS['premium']
             }
         };
     } catch (error) {
