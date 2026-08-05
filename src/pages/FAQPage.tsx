@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Plus, Minus, Search, ShieldCheck, Zap, FlaskConical, Dna } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import DynamicBrandLogo from '../shared/ui/DynamicBrandLogo';
+import { supabase } from '../shared/lib/supabase';
+import type { FaqItem } from '../features/admin/useAdminData';
 
 interface FAQPageProps {
     content: ContentStrings;
@@ -14,38 +16,59 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
     const [openIndex, setOpenIndex] = React.useState<number | null>(0);
     const [searchTerm, setSearchTerm] = React.useState("");
+    const [dbFaqs, setDbFaqs] = useState<FaqItem[]>([]);
+
+    useEffect(() => {
+        let mounted = true;
+        supabase
+            .from('faq_items')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true })
+            .limit(100)
+            .then(({ data, error }) => {
+                if (mounted) setDbFaqs(error ? [] : ((data || []) as FaqItem[]));
+            });
+        return () => { mounted = false; };
+    }, []);
 
     const faqs = React.useMemo(() => {
-        const rawFaqs = content.faqsData || [
-            {
-                q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
-                a: isRTL
-                    ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
-                    : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
-                category: "Safety"
-            },
-            {
-                q: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
-                a: isRTL
-                    ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
-                    : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
-                category: "General"
-            },
-            {
-                q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
-                a: isRTL
-                    ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
-                    : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
-                category: "Science"
-            },
-            {
-                q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
-                a: isRTL
-                    ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
-                    : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
-                category: "Legal"
-            }
-        ];
+        const rawFaqs = dbFaqs.length > 0
+            ? dbFaqs.map(f => ({
+                q: isRTL ? f.question_ar : f.question_en,
+                a: isRTL ? (f.answer_ar || f.answer_en || '') : (f.answer_en || f.answer_ar || ''),
+                category: isRTL ? f.category_ar : f.category_en,
+            }))
+            : (content.faqsData || [
+                {
+                    q: isRTL ? "هل استخدام الهرمونات آمن بنسبة 100%؟" : "Is hormone use 100% safe?",
+                    a: isRTL
+                        ? "لا يوجد تدخل طبي خارجي آمن بنسبة محلقة؛ لكننا نركز في بروتوكولاتنا على أقصى درجات تقليل المخاطر عبر المتابعة الدقيقة والتحاليل الدورية."
+                        : "No external medical intervention is completely safe; but in our protocols we focus on maximum risk mitigation through careful monitoring and periodic testing.",
+                    category: "Safety"
+                },
+                {
+                    q: isRTL ? "كيف أبدأ مع Mr. X-Steroid؟" : "How do I start with Mr. X-Steroid?",
+                    a: isRTL
+                        ? "ابدأ بإنشاء حساب ثم اختر الخطة المناسبة لأهدافك. ستحتاج لتقديم بياناتك الجينية وتاريخك الرياضي لبناء البروتوكول."
+                        : "Start by creating an account then choose the plan suitable for your goals. You will need to provide your genetic data and sports history to build the protocol.",
+                    category: "General"
+                },
+                {
+                    q: isRTL ? "ما هو الجهد الجيني؟" : "What is genetic potential?",
+                    a: isRTL
+                        ? "هو الحد الأقصى الذي يمكن لجسمك الوصول إليه طبيعياً. نحن نستخدم خوارزميات لتحليل هذا الجهد وتحديد أين يمكن للمنشطات أن تتخطى هذا الحد."
+                        : "It is the maximum your body can reach naturally. We use algorithms to analyze this potential and determine where steroids can exceed this limit.",
+                    category: "Science"
+                },
+                {
+                    q: isRTL ? "ما هي سياسة الخصوصية للمشتركين؟" : "What is the privacy policy for subscribers?",
+                    a: isRTL
+                        ? "بياناتك مشفرة تماماً تحت إشراف George Mourice ولا يمكن الوصول إليها من أي طرف ثالث تحت أي ظرف."
+                        : "Your data is fully encrypted under George Mourice's supervision and cannot be accessed by any third party under any circumstances.",
+                    category: "Legal"
+                }
+            ]);
 
         return rawFaqs.map(faq => {
             // Map categories to icons
@@ -74,7 +97,7 @@ const FAQPage: React.FC<FAQPageProps> = ({ content, navigateTo }) => {
                 aElement: processText(faq.a)
             };
         });
-    }, [content.faqsData, isRTL]);
+    }, [content.faqsData, isRTL, dbFaqs]);
 
     const filteredFaqs = faqs.filter(faq =>
         faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -1389,6 +1389,7 @@ export interface ContentStrings {
       messages: string;
       logistics: string;
       settings: string;
+      cms: string;
     };
     loading: string;
     // Overview
@@ -1634,6 +1635,53 @@ export interface ContentStrings {
     noLabel: string;
     saveBtnGeneric: string;
     missingRequired: string;
+    // CMS
+    cmsTitle: string;
+    cmsSubtitle: string;
+    blogTab: string;
+    pagesTab: string;
+    faqTab: string;
+    blogAddTitle: string;
+    blogEditTitle: string;
+    pageAddTitle: string;
+    pageEditTitle: string;
+    faqAddTitle: string;
+    faqEditTitle: string;
+    blogSlug: string;
+    pageSlug: string;
+    titleEn: string;
+    titleAr: string;
+    excerptEn: string;
+    excerptAr: string;
+    contentEn: string;
+    contentAr: string;
+    postCategoryEn: string;
+    postCategoryAr: string;
+    faqCategoryEn: string;
+    faqCategoryAr: string;
+    coverImageUrl: string;
+    authorLabel: string;
+    publishedAt: string;
+    draftLabel: string;
+    publishedLabel: string;
+    questionEn: string;
+    questionAr: string;
+    answerEn: string;
+    answerAr: string;
+    sortOrderCol: string;
+    activeCol: string;
+    saveBlogBtn: string;
+    savePageBtn: string;
+    saveFaqBtn: string;
+    cmsSaveSuccess: string;
+    cmsSaveFailed: string;
+    cmsDeleteSuccess: string;
+    cmsDeleteFailed: string;
+    noBlogPosts: string;
+    noCmsPages: string;
+    noFaqItems: string;
+    langEn: string;
+    langAr: string;
   };
 }
 

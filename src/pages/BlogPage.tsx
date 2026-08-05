@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, ArrowRight, Zap, FlaskConical, Dna } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
+import { supabase } from '../shared/lib/supabase';
+import type { BlogPost } from '../features/admin/useAdminData';
 
 interface BlogPageProps {
     content: ContentStrings;
@@ -11,29 +13,40 @@ interface BlogPageProps {
 
 const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
     const { isRTL } = usePreferences();
-    const posts = [
-        {
-            title: isRTL ? "مستقبل الأداء: كيف سيغير الذكاء الاصطناعي تصميم الدورات؟" : "The Future of Performance: How AI Will Change Cycle Design?",
-            excerpt: isRTL ? "تحليل عميق لكيفية استخدام النماذج الحسابية لتوقع استجابة الجسم للمركبات المختلفة وتقليل الآثار الجانبية." : "A deep analysis of how computational models predict body response to different compounds and minimize side effects.",
-            category: isRTL ? "تكنولوجيا حيوية" : "Biotech",
-            date: "2026-01-20",
-            icon: Zap
-        },
-        {
-            title: isRTL ? "العلم وراء الاستشفاء السريع: بروتوكولات جديدة لعام 2026" : "The Science of Rapid Recovery: New Protocols for 2026",
-            excerpt: isRTL ? "اكتشف أحدث الأبحاث في مجال تحفيز الأنسجة العضلية والتعافي العصبي بعد التدريبات المكثفة." : "Discover the latest research in muscle tissue stimulation and neurological recovery after intense training.",
-            category: isRTL ? "علم وظائف الأعضاء" : "Physiology",
-            date: "2026-01-15",
-            icon: FlaskConical
-        },
-        {
-            title: isRTL ? "الجهد الجيني والمنشطات: أين تقف الحدود الحقيقية؟" : "Genetic Potential & Steroids: Where Do the Real Limits Stand?",
-            excerpt: isRTL ? "دراسة مقارنة بين الحدود الطبيعية والحدود المعززة وكيفية الحفاظ على الصحة على المدى الطويل." : "A comparative study between natural and enhanced limits and how to maintain health in the long term.",
-            category: isRTL ? "علم الوراثة" : "Genetics",
-            date: "2026-01-10",
-            icon: Dna
-        }
-    ];
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+        supabase
+            .from('blog_posts')
+            .select('*')
+            .eq('status', 'published')
+            .order('created_at', { ascending: false })
+            .limit(50)
+            .then(({ data, error }) => {
+                if (!mounted) return;
+                setPosts(error ? [] : ((data || []) as BlogPost[]));
+                setLoading(false);
+            });
+        return () => { mounted = false; };
+    }, []);
+
+    const iconFor = (category: string) => {
+        const cat = (category || '').toLowerCase();
+        if (cat.includes('bio') || cat.includes('تكنولوجيا') || cat.includes('تكنلوجيا')) return FlaskConical;
+        if (cat.includes('physio') || cat.includes('وظائف')) return Zap;
+        if (cat.includes('gen') || cat.includes('وراث')) return Dna;
+        return Zap;
+    };
+
+    const rendered = posts.map(p => ({
+        title: isRTL ? p.title_ar : p.title_en,
+        excerpt: isRTL ? (p.excerpt_ar || p.excerpt_en || '') : (p.excerpt_en || p.excerpt_ar || ''),
+        category: isRTL ? p.category_ar : p.category_en,
+        date: (p.published_at || p.created_at).slice(0, 10),
+        icon: iconFor(isRTL ? p.category_ar : p.category_en),
+    }));
 
     return (
         <div className="space-y-16 pb-20">
@@ -57,7 +70,11 @@ const BlogPage: React.FC<BlogPageProps> = ({ content, navigateTo }) => {
 
             {/* Featured Post Grid */}
             <div className="grid md:grid-cols-3 gap-8">
-                {posts.map((post, idx) => (
+                {loading ? (
+                    <div className="col-span-full p-10 text-center text-zinc-600 font-bold">{isRTL ? 'جارٍ التحميل…' : 'Loading…'}</div>
+                ) : rendered.length === 0 ? (
+                    <div className="col-span-full p-10 text-center text-zinc-600 font-bold">{isRTL ? 'لا توجد مقالات منشورة بعد.' : 'No published posts yet.'}</div>
+                ) : rendered.map((post, idx) => (
                     <motion.article
                         key={idx}
                         initial={{ opacity: 0, y: 30 }}

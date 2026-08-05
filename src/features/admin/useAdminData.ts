@@ -16,6 +16,9 @@ export type Coupon = Database['public']['Tables']['coupon_codes']['Row'];
 export type DiscountRule = Database['public']['Tables']['discount_rules']['Row'];
 export type Banner = Database['public']['Tables']['banners']['Row'];
 export type CustomerNote = Database['public']['Tables']['customer_notes']['Row'];
+export type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
+export type CmsPage = Database['public']['Tables']['cms_pages']['Row'];
+export type FaqItem = Database['public']['Tables']['faq_items']['Row'];
 
 export interface AdminData {
     invoices: Invoice[];
@@ -32,6 +35,9 @@ export interface AdminData {
     discountRules: DiscountRule[];
     banners: Banner[];
     customerNotes: CustomerNote[];
+    blogPosts: BlogPost[];
+    cmsPages: CmsPage[];
+    faqItems: FaqItem[];
     loading: boolean;
     refreshing: boolean;
     refresh: () => Promise<void>;
@@ -52,6 +58,9 @@ const empty: AdminData = {
     discountRules: [],
     banners: [],
     customerNotes: [],
+    blogPosts: [],
+    cmsPages: [],
+    faqItems: [],
     loading: true,
     refreshing: false,
     refresh: async () => {},
@@ -73,6 +82,9 @@ export function useAdminData(): AdminData {
         discountRules: [],
         banners: [],
         customerNotes: [],
+        blogPosts: [],
+        cmsPages: [],
+        faqItems: [],
     });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -81,7 +93,7 @@ export function useAdminData(): AdminData {
         if (quiet) setRefreshing(true);
         else setLoading(true);
         try {
-            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_, cpn, rul, ban, cnote] = await Promise.all([
+            const [inv, prof, ord, msg, del, asg, stg, cat, prod, var_, cpn, rul, ban, cnote, bposts, cpg, faq] = await Promise.all([
                 supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
@@ -96,6 +108,9 @@ export function useAdminData(): AdminData {
                 supabase.from('discount_rules').select('*').order('created_at', { ascending: false }).limit(500),
                 supabase.from('banners').select('*').order('sort_order', { ascending: true }).limit(500),
                 supabase.from('customer_notes').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('blog_posts').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('cms_pages').select('*').order('created_at', { ascending: false }).limit(500),
+                supabase.from('faq_items').select('*').order('sort_order', { ascending: true }).limit(500),
             ]);
             setState({
                 invoices: (inv.data || []) as Invoice[],
@@ -112,6 +127,9 @@ export function useAdminData(): AdminData {
                 discountRules: (rul.data || []) as DiscountRule[],
                 banners: (ban.data || []) as Banner[],
                 customerNotes: (cnote.data || []) as CustomerNote[],
+                blogPosts: (bposts.data || []) as BlogPost[],
+                cmsPages: (cpg.data || []) as CmsPage[],
+                faqItems: (faq.data || []) as FaqItem[],
             });
             const warns: Array<{ name: string; e: { message?: string } | null }> = [
                 { name: 'invoices', e: inv.error },
@@ -128,6 +146,9 @@ export function useAdminData(): AdminData {
                 { name: 'discount_rules', e: rul.error },
                 { name: 'banners', e: ban.error },
                 { name: 'customer_notes', e: cnote.error },
+                { name: 'blog_posts', e: bposts.error },
+                { name: 'cms_pages', e: cpg.error },
+                { name: 'faq_items', e: faq.error },
             ];
             warns.forEach(({ name, e }) => {
                 if (e) console.warn(`[AdminData] ${name} error:`, e.message);

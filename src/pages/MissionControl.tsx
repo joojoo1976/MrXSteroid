@@ -20,6 +20,7 @@ import {
     DollarSign,
     TrendingUp,
     ShieldCheck,
+    FileText,
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -36,13 +37,13 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import { supabase } from '../shared/lib/supabase';
-import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product, Coupon, DiscountRule, Banner, CustomerNote } from '../features/admin/useAdminData';
+import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Product, Coupon, DiscountRule, Banner, CustomerNote, BlogPost, CmsPage, FaqItem } from '../features/admin/useAdminData';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { ContentStrings } from '../shared/types/types';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
-type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings';
+type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms';
 
 interface VariantForm {
     id?: string;
@@ -83,6 +84,7 @@ const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
     { key: 'orders', icon: ShoppingCart },
     { key: 'catalog', icon: PackageSearch },
     { key: 'marketing', icon: Megaphone },
+    { key: 'cms', icon: FileText },
     { key: 'customers', icon: Users },
     { key: 'messages', icon: Mail },
     { key: 'logistics', icon: Map },
@@ -217,6 +219,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
         case 'orders': return <OrdersSection data={data} search={search} mc={mc} />;
         case 'catalog': return <CatalogSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'marketing': return <MarketingSection data={data} onRefresh={onRefresh} mc={mc} />;
+        case 'cms': return <CmsSection data={data} onRefresh={onRefresh} mc={mc} />;
         case 'customers': return <CustomersSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
@@ -1799,6 +1802,393 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
             >
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveSettings}
             </button>
+        </div>
+    );
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+   CMS (Blog / Pages / FAQ)
+   ════════════════════════════════════════════════════════════════════════ */
+const CmsSection: React.FC<{ data: ReturnType<typeof useAdminData>; onRefresh: () => void; mc: MC }> = ({ data, onRefresh, mc }) => {
+    const [tab, setTab] = useState<'blog' | 'pages' | 'faq'>('blog');
+    const [busy, setBusy] = useState(false);
+
+    const inputCls = "w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none";
+    const labelCls = "text-[10px] font-black text-zinc-500 uppercase";
+    const tabCls = (active: boolean) => `px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${active ? 'bg-gold-500 text-black' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white'}`;
+    const statusBadge = (status: string) => status === 'published'
+        ? <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-green-500/10 text-green-400">{mc.publishedLabel}</span>
+        : <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-zinc-800 text-zinc-500">{mc.draftLabel}</span>;
+
+    // ── Blog ──
+    const [postForm, setPostForm] = useState<BlogPost | 'new' | null>(null);
+    const [pSaving, setPSaving] = useState(false);
+    const postInit = (): Partial<BlogPost> => ({ slug: '', title_en: '', title_ar: '', excerpt_en: '', excerpt_ar: '', content_en: '', content_ar: '', category_en: 'Blog', category_ar: 'مدونة', cover_image_url: '', author: '', status: 'draft', published_at: null });
+    const [pForm, setPForm] = useState<Partial<BlogPost>>(postInit());
+    const pSet = (k: keyof BlogPost, v: string | number | boolean | null) => setPForm(prev => ({ ...prev, [k]: v }));
+
+    const openPost = (target: BlogPost | 'new' | null) => {
+        if (!target) return;
+        setPForm(target === 'new' ? postInit() : { ...target });
+        setPostForm(target);
+    };
+
+    const savePost = async () => {
+        if (!pForm.slug || !pForm.title_en || !pForm.title_ar) return toast.error(mc.missingRequired);
+        setPSaving(true);
+        const payload = {
+            slug: String(pForm.slug).toLowerCase().replace(/\s+/g, '-'),
+            title_en: pForm.title_en,
+            title_ar: pForm.title_ar,
+            excerpt_en: pForm.excerpt_en || null,
+            excerpt_ar: pForm.excerpt_ar || null,
+            content_en: pForm.content_en || null,
+            content_ar: pForm.content_ar || null,
+            category_en: pForm.category_en || 'Blog',
+            category_ar: pForm.category_ar || 'مدونة',
+            cover_image_url: pForm.cover_image_url || null,
+            author: pForm.author || null,
+            status: pForm.status || 'draft',
+            published_at: pForm.status === 'published' ? (pForm.published_at || new Date().toISOString()) : null,
+        };
+        const { error } = postForm === 'new'
+            ? await supabase.from('blog_posts').insert(payload)
+            : await supabase.from('blog_posts').update(payload).eq('id', (postForm as BlogPost).id);
+        setPSaving(false);
+        if (error) return toast.error(`${mc.cmsSaveFailed} ${error.message}`);
+        toast.success(mc.cmsSaveSuccess);
+        setPostForm(null);
+        onRefresh();
+    };
+
+    const deletePost = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.cmsDeleteFailed} ${error.message}`);
+        toast.success(mc.cmsDeleteSuccess);
+        onRefresh();
+    };
+
+    // ── Pages ──
+    const [pageForm, setPageForm] = useState<CmsPage | 'new' | null>(null);
+    const [gSaving, setGSaving] = useState(false);
+    const pageInit = (): Partial<CmsPage> => ({ slug: '', title_en: '', title_ar: '', content_en: '', content_ar: '', status: 'draft' });
+    const [gForm, setGForm] = useState<Partial<CmsPage>>(pageInit());
+    const gSet = (k: keyof CmsPage, v: string | number | boolean | null) => setGForm(prev => ({ ...prev, [k]: v }));
+
+    const openPage = (target: CmsPage | 'new' | null) => {
+        if (!target) return;
+        setGForm(target === 'new' ? pageInit() : { ...target });
+        setPageForm(target);
+    };
+
+    const savePage = async () => {
+        if (!gForm.slug || !gForm.title_en || !gForm.title_ar) return toast.error(mc.missingRequired);
+        setGSaving(true);
+        const payload = {
+            slug: String(gForm.slug).toLowerCase().replace(/\s+/g, '-'),
+            title_en: gForm.title_en,
+            title_ar: gForm.title_ar,
+            content_en: gForm.content_en || null,
+            content_ar: gForm.content_ar || null,
+            status: gForm.status || 'draft',
+        };
+        const { error } = pageForm === 'new'
+            ? await supabase.from('cms_pages').insert(payload)
+            : await supabase.from('cms_pages').update(payload).eq('id', (pageForm as CmsPage).id);
+        setGSaving(false);
+        if (error) return toast.error(`${mc.cmsSaveFailed} ${error.message}`);
+        toast.success(mc.cmsSaveSuccess);
+        setPageForm(null);
+        onRefresh();
+    };
+
+    const deletePage = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('cms_pages').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.cmsDeleteFailed} ${error.message}`);
+        toast.success(mc.cmsDeleteSuccess);
+        onRefresh();
+    };
+
+    // ── FAQ ──
+    const [faqForm, setFaqForm] = useState<FaqItem | 'new' | null>(null);
+    const [fSaving, setFSaving] = useState(false);
+    const faqInit = (): Partial<FaqItem> => ({ question_en: '', question_ar: '', answer_en: '', answer_ar: '', category_en: 'General', category_ar: 'عام', sort_order: 0, is_active: true });
+    const [fForm, setFForm] = useState<Partial<FaqItem>>(faqInit());
+    const fSet = (k: keyof FaqItem, v: string | number | boolean | null) => setFForm(prev => ({ ...prev, [k]: v }));
+
+    const openFaq = (target: FaqItem | 'new' | null) => {
+        if (!target) return;
+        setFForm(target === 'new' ? faqInit() : { ...target });
+        setFaqForm(target);
+    };
+
+    const saveFaq = async () => {
+        if (!fForm.question_en || !fForm.question_ar) return toast.error(mc.missingRequired);
+        setFSaving(true);
+        const payload = {
+            question_en: fForm.question_en,
+            question_ar: fForm.question_ar,
+            answer_en: fForm.answer_en || null,
+            answer_ar: fForm.answer_ar || null,
+            category_en: fForm.category_en || 'General',
+            category_ar: fForm.category_ar || 'عام',
+            sort_order: Number(fForm.sort_order) || 0,
+            is_active: !!fForm.is_active,
+        };
+        const { error } = faqForm === 'new'
+            ? await supabase.from('faq_items').insert(payload)
+            : await supabase.from('faq_items').update(payload).eq('id', (faqForm as FaqItem).id);
+        setFSaving(false);
+        if (error) return toast.error(`${mc.cmsSaveFailed} ${error.message}`);
+        toast.success(mc.cmsSaveSuccess);
+        setFaqForm(null);
+        onRefresh();
+    };
+
+    const deleteFaq = async (id: string) => {
+        setBusy(true);
+        const { error } = await supabase.from('faq_items').delete().eq('id', id);
+        setBusy(false);
+        if (error) return toast.error(`${mc.cmsDeleteFailed} ${error.message}`);
+        toast.success(mc.cmsDeleteSuccess);
+        onRefresh();
+    };
+
+    return (
+        <div className="space-y-6">
+            <header>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase">{mc.cmsTitle}</h1>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{mc.cmsSubtitle}</p>
+            </header>
+
+            <div className="flex gap-2 flex-wrap">
+                <button onClick={() => setTab('blog')} className={tabCls(tab === 'blog')}>{mc.blogTab}</button>
+                <button onClick={() => setTab('pages')} className={tabCls(tab === 'pages')}>{mc.pagesTab}</button>
+                <button onClick={() => setTab('faq')} className={tabCls(tab === 'faq')}>{mc.faqTab}</button>
+            </div>
+
+            {tab === 'blog' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openPost('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.blogAddTitle}</button>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[760px]">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">{mc.blogTab}</th>
+                                        <th className="p-4">{mc.postCategoryEn}</th>
+                                        <th className="p-4">{mc.statusCol}</th>
+                                        <th className="p-4">{mc.dateCol}</th>
+                                        <th className="p-4">{mc.actionsCol}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.blogPosts.map(p => (
+                                        <tr key={p.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                            <td className="p-4">
+                                                <p className="font-bold text-white">{p.title_en}</p>
+                                                <p className="text-xs text-zinc-500 font-mono">{p.slug}</p>
+                                            </td>
+                                            <td className="p-4 text-xs text-zinc-400 font-bold">{p.category_en}</td>
+                                            <td className="p-4">{statusBadge(p.status)}</td>
+                                            <td className="p-4 text-xs text-zinc-500">{(p.published_at || p.created_at).slice(0, 10)}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openPost(p)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                                    <button onClick={() => deletePost(p.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.blogPosts.length === 0 && <tr><td colSpan={5} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noBlogPosts}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tab === 'pages' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openPage('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.pageAddTitle}</button>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[640px]">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">{mc.pagesTab}</th>
+                                        <th className="p-4">{mc.statusCol}</th>
+                                        <th className="p-4">{mc.dateCol}</th>
+                                        <th className="p-4">{mc.actionsCol}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.cmsPages.map(p => (
+                                        <tr key={p.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                            <td className="p-4">
+                                                <p className="font-bold text-white">{p.title_en}</p>
+                                                <p className="text-xs text-zinc-500 font-mono">{p.slug}</p>
+                                            </td>
+                                            <td className="p-4">{statusBadge(p.status)}</td>
+                                            <td className="p-4 text-xs text-zinc-500">{p.created_at.slice(0, 10)}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openPage(p)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                                    <button onClick={() => deletePage(p.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.cmsPages.length === 0 && <tr><td colSpan={4} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noCmsPages}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tab === 'faq' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <button onClick={() => openFaq('new')} className="px-4 py-2 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all">{mc.faqAddTitle}</button>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[720px]">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">{mc.faqTab}</th>
+                                        <th className="p-4">{mc.faqCategoryEn}</th>
+                                        <th className="p-4">{mc.sortOrderCol}</th>
+                                        <th className="p-4">{mc.activeCol}</th>
+                                        <th className="p-4">{mc.actionsCol}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.faqItems.map(f => (
+                                        <tr key={f.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                            <td className="p-4 font-bold text-white">{f.question_en}</td>
+                                            <td className="p-4 text-xs text-zinc-400 font-bold">{f.category_en}</td>
+                                            <td className="p-4 text-xs text-zinc-400 font-bold">{f.sort_order}</td>
+                                            <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${f.is_active ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>{f.is_active ? mc.yesLabel : mc.noLabel}</span></td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openFaq(f)} className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[11px] font-black uppercase hover:bg-gold-500 hover:text-black transition-all">{mc.editProductTitle}</button>
+                                                    <button onClick={() => deleteFaq(f.id)} disabled={busy} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black uppercase hover:bg-red-500/20 transition-all disabled:opacity-50">{mc.removeBtn}</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.faqItems.length === 0 && <tr><td colSpan={5} className="p-10 text-center text-zinc-600 text-sm font-bold">{mc.noFaqItems}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Blog modal ── */}
+            {postForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{postForm === 'new' ? mc.blogAddTitle : mc.blogEditTitle}</h2>
+                            <button onClick={() => setPostForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.blogSlug}</label><input value={pForm.slug || ''} onChange={e => pSet('slug', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.titleEn}</label><input value={pForm.title_en || ''} onChange={e => pSet('title_en', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.titleAr}</label><input value={pForm.title_ar || ''} onChange={e => pSet('title_ar', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.excerptEn}</label><textarea value={pForm.excerpt_en || ''} onChange={e => pSet('excerpt_en', e.target.value)} rows={2} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.excerptAr}</label><textarea value={pForm.excerpt_ar || ''} onChange={e => pSet('excerpt_ar', e.target.value)} rows={2} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.contentEn}</label><textarea value={pForm.content_en || ''} onChange={e => pSet('content_en', e.target.value)} rows={4} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.contentAr}</label><textarea value={pForm.content_ar || ''} onChange={e => pSet('content_ar', e.target.value)} rows={4} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.postCategoryEn}</label><input value={pForm.category_en || ''} onChange={e => pSet('category_en', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.postCategoryAr}</label><input value={pForm.category_ar || ''} onChange={e => pSet('category_ar', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.coverImageUrl}</label><input value={pForm.cover_image_url || ''} onChange={e => pSet('cover_image_url', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.authorLabel}</label><input value={pForm.author || ''} onChange={e => pSet('author', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5">
+                                <label className={labelCls}>{mc.statusCol}</label>
+                                <select value={pForm.status || 'draft'} onChange={e => pSet('status', e.target.value)} className={inputCls}>
+                                    <option value="draft">{mc.draftLabel}</option>
+                                    <option value="published">{mc.publishedLabel}</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.publishedAt}</label><input type="date" value={pForm.published_at ? pForm.published_at.slice(0, 10) : ''} onChange={e => pSet('published_at', e.target.value ? new Date(e.target.value).toISOString() : null)} className={inputCls} /></div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={savePost} disabled={pSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{pSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveBlogBtn}</button>
+                            <button onClick={() => setPostForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Page modal ── */}
+            {pageForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{pageForm === 'new' ? mc.pageAddTitle : mc.pageEditTitle}</h2>
+                            <button onClick={() => setPageForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5 sm:col-span-2"><label className={labelCls}>{mc.pageSlug}</label><input value={gForm.slug || ''} onChange={e => gSet('slug', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.titleEn}</label><input value={gForm.title_en || ''} onChange={e => gSet('title_en', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.titleAr}</label><input value={gForm.title_ar || ''} onChange={e => gSet('title_ar', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.contentEn}</label><textarea value={gForm.content_en || ''} onChange={e => gSet('content_en', e.target.value)} rows={5} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.contentAr}</label><textarea value={gForm.content_ar || ''} onChange={e => gSet('content_ar', e.target.value)} rows={5} className={inputCls} /></div>
+                            <div className="space-y-1.5 sm:col-span-2">
+                                <label className={labelCls}>{mc.statusCol}</label>
+                                <select value={gForm.status || 'draft'} onChange={e => gSet('status', e.target.value)} className={inputCls}>
+                                    <option value="draft">{mc.draftLabel}</option>
+                                    <option value="published">{mc.publishedLabel}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={savePage} disabled={gSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{gSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.savePageBtn}</button>
+                            <button onClick={() => setPageForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── FAQ modal ── */}
+            {faqForm && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center">
+                            <h2 className="font-black text-white uppercase text-lg">{faqForm === 'new' ? mc.faqAddTitle : mc.faqEditTitle}</h2>
+                            <button onClick={() => setFaqForm(null)} className="text-zinc-500 hover:text-white text-xl">✕</button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.questionEn}</label><input value={fForm.question_en || ''} onChange={e => fSet('question_en', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.questionAr}</label><input value={fForm.question_ar || ''} onChange={e => fSet('question_ar', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.answerEn}</label><textarea value={fForm.answer_en || ''} onChange={e => fSet('answer_en', e.target.value)} rows={3} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.answerAr}</label><textarea value={fForm.answer_ar || ''} onChange={e => fSet('answer_ar', e.target.value)} rows={3} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.faqCategoryEn}</label><input value={fForm.category_en || ''} onChange={e => fSet('category_en', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.faqCategoryAr}</label><input value={fForm.category_ar || ''} onChange={e => fSet('category_ar', e.target.value)} className={inputCls} /></div>
+                            <div className="space-y-1.5"><label className={labelCls}>{mc.sortOrderCol}</label><input type="number" value={fForm.sort_order ?? 0} onChange={e => fSet('sort_order', e.target.value)} className={inputCls} /></div>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm font-bold text-zinc-300">
+                            <input type="checkbox" checked={!!fForm.is_active} onChange={e => fSet('is_active', e.target.checked)} className="w-4 h-4 accent-gold-500" /> {mc.isActive}
+                        </label>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={saveFaq} disabled={fSaving} className="flex-1 py-3 rounded-xl bg-gold-500 text-black font-black text-sm hover:bg-gold-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">{fSaving && <Loader2 className="w-4 h-4 animate-spin" />} {mc.saveFaqBtn}</button>
+                            <button onClick={() => setFaqForm(null)} className="px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-sm hover:bg-zinc-700 transition-all">{mc.cancelBtn}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -836,6 +836,141 @@ export type Database = {
                     }
                 ]
             }
+            blog_posts: {
+                Row: {
+                    id: string
+                    slug: string
+                    title_en: string
+                    title_ar: string
+                    excerpt_en: string | null
+                    excerpt_ar: string | null
+                    content_en: string | null
+                    content_ar: string | null
+                    category_en: string
+                    category_ar: string
+                    cover_image_url: string | null
+                    author: string | null
+                    status: string
+                    published_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    title_en: string
+                    title_ar: string
+                    excerpt_en?: string | null
+                    excerpt_ar?: string | null
+                    content_en?: string | null
+                    content_ar?: string | null
+                    category_en?: string
+                    category_ar?: string
+                    cover_image_url?: string | null
+                    author?: string | null
+                    status?: string
+                    published_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    slug?: string
+                    title_en?: string
+                    title_ar?: string
+                    excerpt_en?: string | null
+                    excerpt_ar?: string | null
+                    content_en?: string | null
+                    content_ar?: string | null
+                    category_en?: string
+                    category_ar?: string
+                    cover_image_url?: string | null
+                    author?: string | null
+                    status?: string
+                    published_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            cms_pages: {
+                Row: {
+                    id: string
+                    slug: string
+                    title_en: string
+                    title_ar: string
+                    content_en: string | null
+                    content_ar: string | null
+                    status: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    title_en: string
+                    title_ar: string
+                    content_en?: string | null
+                    content_ar?: string | null
+                    status?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    slug?: string
+                    title_en?: string
+                    title_ar?: string
+                    content_en?: string | null
+                    content_ar?: string | null
+                    status?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            faq_items: {
+                Row: {
+                    id: string
+                    question_en: string
+                    question_ar: string
+                    answer_en: string | null
+                    answer_ar: string | null
+                    category_en: string
+                    category_ar: string
+                    sort_order: number
+                    is_active: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    question_en: string
+                    question_ar: string
+                    answer_en?: string | null
+                    answer_ar?: string | null
+                    category_en?: string
+                    category_ar?: string
+                    sort_order?: number
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    question_en?: string
+                    question_ar?: string
+                    answer_en?: string | null
+                    answer_ar?: string | null
+                    category_en?: string
+                    category_ar?: string
+                    sort_order?: number
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
         }
         Views: {
             [_ in never]: never
