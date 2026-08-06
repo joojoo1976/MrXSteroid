@@ -28,6 +28,7 @@ import SEO from './shared/ui/SEO';
 import BlockingDisclaimerModal from './features/modal/BlockingDisclaimerModal';
 import LegalModal from './features/modal/LegalModal';
 import CheckoutModal from './features/modal/CheckoutModal';
+import PaymobProductModal from './features/modal/PaymobProductModal';
 import SalesToast from './shared/ui/SalesToast';
 import WhatsAppButton from './shared/ui/WhatsAppButton';
 import FloatingSideIcon from './shared/ui/FloatingSideIcon';
@@ -186,6 +187,10 @@ interface AppContentProps {
   legalState: { isOpen: boolean; title: string; content: string };
   setLegalState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; title: string; content: string }>>;
   setHasPurchased: (purchased: boolean) => void;
+  isPaymobModalOpen: boolean;
+  setIsPaymobModalOpen: (open: boolean) => void;
+  paymobDefaultProductId: number | undefined;
+  setPaymobDefaultProductId: (id: number | undefined) => void;
 }
 
 
@@ -194,11 +199,24 @@ function AppContent({
   theme, resolvedTheme, setTheme, colorTheme, changeColorTheme,
   currencyState, currentPage, navigateTo, isCheckoutOpen, setIsCheckoutOpen,
   selectedTier, setSelectedTier,
-  legalState, setLegalState, setHasPurchased
+  legalState, setLegalState, setHasPurchased,
+  isPaymobModalOpen, setIsPaymobModalOpen,
+  paymobDefaultProductId, setPaymobDefaultProductId,
 }: AppContentProps) {
   const { language: lang, content, isRTL } = usePreferences();
   const { user, signOut } = useAuth();
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+
+  // Global event: open Paymob product modal from anywhere
+  useEffect(() => {
+    const handleOpenPaymob = (e: Event) => {
+      const customEvent = e as CustomEvent<{ productId?: number }>;
+      setPaymobDefaultProductId(customEvent.detail?.productId);
+      setIsPaymobModalOpen(true);
+    };
+    window.addEventListener('mrx_open_paymob', handleOpenPaymob);
+    return () => window.removeEventListener('mrx_open_paymob', handleOpenPaymob);
+  }, [setIsPaymobModalOpen, setPaymobDefaultProductId]);
 
   // Global navigation custom event listener (e.g. from Toast notifications)
   useEffect(() => {
@@ -409,6 +427,13 @@ function AppContent({
         content={content} navigateTo={navigateTo} onSuccess={() => setHasPurchased(true)} openLegal={openLegal}
         formattedPrice={selectedTier ? (currencyState.symbol + (selectedTier.price * currencyState.rate).toFixed(2)) : ''}
       />
+      {/* Paymob Product Quick-Buy Modal */}
+      <PaymobProductModal
+        isOpen={isPaymobModalOpen}
+        onClose={() => setIsPaymobModalOpen(false)}
+        defaultProductId={paymobDefaultProductId}
+        lang={lang as 'ar' | 'en'}
+      />
       <Toaster
         position={isRTL ? 'top-left' : 'top-right'}
       />
@@ -434,6 +459,9 @@ export default function App() {
   const [, setHasPurchased] = useState(false);
   const [legalState, setLegalState] = useState<{ isOpen: boolean, title: string, content: string }>({ isOpen: false, title: '', content: '' });
   const [currentPage, setCurrentPage] = useState<Page>(Page.HOME);
+  // Paymob Product Modal state
+  const [isPaymobModalOpen, setIsPaymobModalOpen] = useState(false);
+  const [paymobDefaultProductId, setPaymobDefaultProductId] = useState<number | undefined>(undefined);
 
   // Initialize Advanced Localization on Mount
   useEffect(() => {
@@ -519,6 +547,8 @@ export default function App() {
             isCheckoutOpen={isCheckoutOpen} setIsCheckoutOpen={setIsCheckoutOpen}
             selectedTier={selectedTier} setSelectedTier={setSelectedTier}
             legalState={legalState} setLegalState={setLegalState} setHasPurchased={setHasPurchased}
+            isPaymobModalOpen={isPaymobModalOpen} setIsPaymobModalOpen={setIsPaymobModalOpen}
+            paymobDefaultProductId={paymobDefaultProductId} setPaymobDefaultProductId={setPaymobDefaultProductId}
           />
         </LazyMotion>
       </PreferencesProvider>

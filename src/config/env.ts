@@ -16,6 +16,8 @@ const envSchema = z.object({
 
     // Paymob Configuration (API key is server-only; never bundle VITE_PAYMOB_API_KEY)
     PAYMOB_API_KEY: z.string().optional(),
+    // Client-safe public key (Paymob Intention API / v2)
+    PAYMOB_PUBLIC_KEY: z.string().optional(),
     PAYMOB_CARD_INTEGRATION_ID: z.string().optional().default('5573815'),
     PAYMOB_WALLET_INTEGRATION_ID: z.string().optional().default('5792309'),
     PAYMOB_KIOSK_INTEGRATION_ID: z.string().optional().default('5792311'),
@@ -46,6 +48,7 @@ const parseEnv = () => {
         SPACEREMIT_API_URL: 'https://spaceremit.com/api/v2',
         SPACEREMIT_PUBLIC_KEY: import.meta.env.VITE_SPACEREMIT_PUBLIC_KEY,
         PAYMOB_API_KEY: import.meta.env.VITE_PAYMOB_API_KEY || import.meta.env.PAYMOB_API_KEY,
+        PAYMOB_PUBLIC_KEY: import.meta.env.VITE_PAYMOB_PUBLIC_KEY || '',
         PAYMOB_CARD_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_CARD_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_CARD_INTEGRATION_ID || '5573815',
         PAYMOB_WALLET_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_WALLET_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_WALLET_INTEGRATION_ID || '5792309',
         PAYMOB_KIOSK_INTEGRATION_ID: import.meta.env.VITE_PAYMOB_KIOSK_INTEGRATION_ID || import.meta.env.NEXT_PUBLIC_PAYMOB_KIOSK_INTEGRATION_ID || '5792311',

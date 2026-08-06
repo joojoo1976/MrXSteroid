@@ -21,8 +21,11 @@ import type {
 
 const getPaymobConfig = () => {
     return {
-        API_KEY: process.env.PAYMOB_API_KEY || process.env.VITE_PAYMOB_API_KEY || '',
+        // PAYMOB_API_TOKEN is the v1 API key (legacy name), PAYMOB_API_KEY is the same credential
+        API_KEY: process.env.PAYMOB_API_TOKEN || process.env.PAYMOB_API_KEY || process.env.VITE_PAYMOB_API_KEY || '',
         HMAC_SECRET: process.env.PAYMOB_HMAC_SECRET || process.env.VITE_PAYMOB_HMAC_SECRET || '',
+        // Client-safe public key (Paymob Intention API v2)
+        PUBLIC_KEY: process.env.PAYMOB_PUBLIC_KEY || process.env.VITE_PAYMOB_PUBLIC_KEY || '',
 
         // Paymob Integration IDs
         INTEGRATION_IDS: {
@@ -32,7 +35,16 @@ const getPaymobConfig = () => {
             paypal: Number(process.env.NEXT_PUBLIC_PAYMOB_PAYPAL_INTEGRATION_ID || process.env.VITE_PAYMOB_PAYPAL_INTEGRATION_ID || 5792310),
         },
 
+        // Iframe IDs per payment method (provided by Paymob dashboard)
+        IFRAME_IDS: {
+            card:   Number(process.env.PAYMOB_CARD_IFRAME_ID   || 5573815),
+            wallet: Number(process.env.PAYMOB_WALLET_IFRAME_ID || 5792309),
+            kiosk:  Number(process.env.PAYMOB_KIOSK_IFRAME_ID  || 5792311),
+            paypal: Number(process.env.PAYMOB_PAYPAL_IFRAME_ID || 5792310),
+        },
+
         PAYMOB_BASE_URL: 'https://accept.paymob.com/api',
+        PAYMOB_STANDALONE_BASE: 'https://accept.paymobsolutions.com',
     };
 };
 
@@ -58,8 +70,19 @@ export class PaymobGateway implements IPaymentGateway {
         const { invoiceId, amount, currency, metadata } = params;
 
         if (!config.API_KEY) {
-            console.error('❌ [Paymob] Missing PAYMOB_API_KEY in environment variables');
+            console.error('❌ [Paymob] Missing PAYMOB_API_KEY / PAYMOB_API_TOKEN in environment variables');
             throw new Error('Paymob API key is not configured');
+        }
+
+        // ── FAST PATH: If a pre-built standaloneUrl is provided, redirect immediately ──
+        // This is used by the PaymobProductModal for catalog products with hosted pages.
+        // No 3-step API flow needed — Paymob's hosted page handles auth internally.
+        if (metadata.standaloneUrl && typeof metadata.standaloneUrl === 'string') {
+            console.log(`⚡ [Paymob] Fast-path redirect via standaloneUrl for invoice: ${invoiceId}`);
+            return {
+                redirectUrl: metadata.standaloneUrl as string,
+                externalReferenceId: invoiceId,
+            };
         }
 
         // Determine payment sub-method (card, wallet, kiosk, paypal)
@@ -176,7 +199,8 @@ export class PaymobGateway implements IPaymentGateway {
             if (!paymentToken) throw new Error('No payment token returned from Paymob');
 
             // ── STEP 4: EXECUTE PAYMENT METHOD SPECIFIC REDIRECT ─────────────
-            let redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/888888?payment_token=${paymentToken}`;
+            // Build correct iFrame URL using the real integration ID (not a static placeholder)
+            let redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/${integrationId}?payment_token=${paymentToken}`;
 
             if (method === 'wallet') {
                 // Execute Paymob Wallet API
