@@ -164,11 +164,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const quantity = input.quantity ?? 1;
 
+        // Digital products never have shipping — ignore any provider id in metadata.
+        const DIGITAL_TIERS = ['digital', 'digital_plus', 'pdf'];
+        const isDigital = DIGITAL_TIERS.includes(input.tierId);
+        const resolvedProviderId = isDigital ? '' : String(input.metadata?.shippingProviderId || '');
+        const resolvedClientShipping = isDigital ? 0 : (input.shippingCost ?? 0);
+
         // Authoritative shipping: resolve from a known provider id, else trust client value (0 for digital).
         const shippingCost = resolveShippingCost(
             pricing,
-            String(input.metadata?.shippingProviderId || ''),
-            input.shippingCost ?? 0,
+            resolvedProviderId,
+            resolvedClientShipping,
             currency
         );
 
