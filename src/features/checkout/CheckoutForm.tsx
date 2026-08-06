@@ -706,20 +706,28 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         </div>
                                     </div>
 
-                                    {/* Optional Wallet Phone Number Input */}
+                                    {/* Required Wallet Phone Number Input */}
                                     {paymobMethod === 'wallet' && (
-                                        <div className="pt-2 border-t border-gold-500/20">
+                                        <div className="pt-2 border-t border-gold-500/20 space-y-2">
                                             <Label className="text-xs text-gold-400 font-bold mb-1 block">
-                                                {isAr ? "رقم المحفظة الإلكترونية (اختياري)" : "Wallet Phone Number (Optional)"}
+                                                {isAr ? '⚡ رقم المحفظة الإلكترونية (مطلوب)' : '⚡ Wallet Phone Number (Required)'}
                                             </Label>
                                             <div className="relative">
                                                 <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
                                                 <Input
                                                     {...register("phoneNumber")}
+                                                    id="checkout-wallet-phone"
                                                     className="ps-10 bg-black/60 border-zinc-700 text-sm focus:border-gold-500"
-                                                    placeholder="010xxxxxxx"
+                                                    placeholder={isAr ? '01010101010' : '01010101010'}
+                                                    maxLength={12}
+                                                    dir="ltr"
                                                 />
                                             </div>
+                                            <p className="text-[10px] text-zinc-600 font-mono">
+                                                {isAr
+                                                    ? 'اختبار: 01010101010 | MPin: 123456 | OTP: 123456'
+                                                    : 'Test: 01010101010 · MPin: 123456 · OTP: 123456'}
+                                            </p>
                                         </div>
                                     )}
                                 </motion.div>

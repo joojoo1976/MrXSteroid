@@ -49,6 +49,27 @@ const getPaymobConfig = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+//                            HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Normalise a phone number to E.164 (+2XXXXXXXXXX for Egyptian numbers).
+ * Paymob billing_data requires a valid phone_number starting with country code.
+ * Accepts: "01010101010", "201010101010", "+201010101010"
+ */
+const sanitizePhone = (raw: string): string => {
+    const digits = raw.replace(/\D/g, '');
+    // Already has country code 20
+    if (digits.startsWith('20') && digits.length === 12) return `+${digits}`;
+    // Local Egyptian format: 01XXXXXXXX (11 digits)
+    if (digits.startsWith('01') && digits.length === 11) return `+2${digits}`;
+    // Fallback: return as-is if already has + prefix
+    if (raw.startsWith('+')) return raw;
+    // Last resort: prepend +2
+    return `+2${digits}`;
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 //                          GATEWAY IMPLEMENTATION
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -131,14 +152,15 @@ export class PaymobGateway implements IPaymentGateway {
 
             // ── STEP 2: ORDER REGISTRATION ─────────────────────────────────
             const amountCents = Math.round(amount * 100);
+            const orderCurrency = currency || (method === 'paypal' ? 'USD' : 'EGP');
             const orderRes = await fetch(`${config.PAYMOB_BASE_URL}/ecommerce/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     auth_token: authToken,
-                    delivery_needed: 'false',
-                    amount_cents: amountCents.toString(),
-                    currency: currency || (method === 'paypal' ? 'USD' : 'EGP'),
+                    delivery_needed: false,
+                    amount_cents: amountCents,
+                    currency: orderCurrency,
                     merchant_order_id: invoiceId,
                     items: [],
                 }),
@@ -164,9 +186,9 @@ export class PaymobGateway implements IPaymentGateway {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     auth_token: authToken,
-                    amount_cents: amountCents.toString(),
+                    amount_cents: amountCents,
                     expiration: 3600,
-                    order_id: paymobOrderId.toString(),
+                    order_id: paymobOrderId,
                     billing_data: {
                         apartment: 'NA',
                         email: metadata.email || 'customer@mrxsteroid.com',
@@ -174,7 +196,7 @@ export class PaymobGateway implements IPaymentGateway {
                         first_name: firstName,
                         street: 'NA',
                         building: 'NA',
-                        phone_number: (metadata.phoneNumber as string) || '+201000000000',
+                        phone_number: sanitizePhone((metadata.phoneNumber as string) || '+201000000000'),
                         shipping_method: 'PKG',
                         postal_code: 'NA',
                         city: (metadata.city as string) || 'Cairo',
@@ -182,7 +204,7 @@ export class PaymobGateway implements IPaymentGateway {
                         last_name: lastName,
                         state: 'NA',
                     },
-                    currency: currency || (method === 'paypal' ? 'USD' : 'EGP'),
+                    currency: orderCurrency,
                     integration_id: integrationId,
                     lock_order_when_paid: 'true',
                 }),
@@ -209,7 +231,7 @@ export class PaymobGateway implements IPaymentGateway {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         source: {
-                            identifier: (metadata.phoneNumber as string) || '01000000000',
+                            identifier: sanitizePhone((metadata.phoneNumber as string) || '01010101010'),
                             subtype: 'WALLET',
                         },
                         payment_token: paymentToken,
@@ -240,7 +262,8 @@ export class PaymobGateway implements IPaymentGateway {
                     const kioskData = await kioskRes.json() as { pending?: boolean; data?: { bill_reference?: number } };
                     if (kioskData.data?.bill_reference) {
                         // Pass bill reference as URL parameter for clear display to user
-                        redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/888888?payment_token=${paymentToken}&bill_reference=${kioskData.data.bill_reference}`;
+                        // Use real kiosk integration ID (not static placeholder)
+                        redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/${config.INTEGRATION_IDS.kiosk}?payment_token=${paymentToken}&bill_reference=${kioskData.data.bill_reference}`;
                     }
                 }
             }
