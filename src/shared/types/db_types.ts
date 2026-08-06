@@ -337,7 +337,7 @@ export type Database = {
                 Row: {
                     id: string
                     transaction_id: string
-                    spaceremit_code: string | null
+                    spaceremit_id: string | null
                     order_id: string | null
                     user_id: string | null
                     amount: number
@@ -351,12 +351,11 @@ export type Database = {
                     error_message: string | null
                     created_at: string
                     updated_at: string
-                    paid_at: string | null
                 }
                 Insert: {
                     id?: string
                     transaction_id: string
-                    spaceremit_code?: string | null
+                    spaceremit_id?: string | null
                     order_id?: string | null
                     user_id?: string | null
                     amount: number
@@ -370,12 +369,11 @@ export type Database = {
                     error_message?: string | null
                     created_at?: string
                     updated_at?: string
-                    paid_at?: string | null
                 }
                 Update: {
                     id?: string
                     transaction_id?: string
-                    spaceremit_code?: string | null
+                    spaceremit_id?: string | null
                     order_id?: string | null
                     user_id?: string | null
                     amount?: number
@@ -389,7 +387,6 @@ export type Database = {
                     error_message?: string | null
                     created_at?: string
                     updated_at?: string
-                    paid_at?: string | null
                 }
                 Relationships: [
                     {

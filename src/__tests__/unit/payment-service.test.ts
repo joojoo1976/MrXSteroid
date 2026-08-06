@@ -101,7 +101,7 @@ describe('Payment Service Tests', () => {
                 status: 'completed',
                 amount: 99.99,
                 currency: 'USD',
-                paid_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
                 error_message: null as string | null
             };
 
