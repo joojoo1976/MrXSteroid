@@ -65,7 +65,7 @@ export enum Page {
   PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic'
 }
 
-export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus';
+export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';
 export type ShippingZone = 'egypt' | 'global';
 
 export interface CheckoutState {

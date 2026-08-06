@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { z } = await import('zod');
         const { PaymentFactory } = await import('./gateways/PaymentFactory.js');
         const { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } = await import('./pricing.js');
-        type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
+        type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
 
         const CONFIG = {
             SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 val => !val || val === '' || uuidRegex.test(val),
                 { message: 'Invalid user ID format' }
             ),
-            tierId: z.enum(['digital', 'bundle', 'coaching', 'coaching_plus', 'pdf', 'paperback']),
+            tierId: z.enum(['digital', 'bundle', 'coaching', 'coaching_plus', 'bundle_plus', 'digital_plus', 'pdf', 'paperback']),
             country: z.string().min(1, 'Country is required'),
             email: z.string().email('Invalid email address'),
             fullName: z.string().min(2, 'Full name is required'),

@@ -183,13 +183,13 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                     description: '',
                                     features: [],
                                     buttonText: '',
-                                    requiresShipping: variant !== 'digital',
-                                    requiresBodyStats: variant === 'coaching_plus',
+                                    requiresShipping: variant !== 'digital' && variant !== 'digital_plus',
+                                    requiresBodyStats: variant === 'coaching_plus' || variant === 'bundle_plus',
                                     selectedLanguage: isAr ? 'ar' : 'en',
                                     selectedLocation: isEg ? 'EG' : 'GLOBAL',
                                     includesEbook: true,
-                                    includesAudiobook: variant === 'bundle' || variant === 'coaching' || variant === 'coaching_plus',
-                                    includesCoaching: variant === 'coaching_plus',
+                                    includesAudiobook: variant === 'bundle' || variant === 'bundle_plus' || variant === 'coaching' || variant === 'coaching_plus',
+                                    includesCoaching: variant === 'coaching_plus' || variant === 'bundle_plus',
                                 } as NewPricingTier}
                                 onSuccess={onSuccess}
                                 productVariant={variant}

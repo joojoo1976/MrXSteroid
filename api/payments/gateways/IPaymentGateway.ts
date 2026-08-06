@@ -16,7 +16,7 @@ export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE';
 export interface CreateInvoiceParams {
     userId: string | null;
     invoiceId: string;
-    tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
+    tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
     amount: number;
     currency: string;
     metadata: {

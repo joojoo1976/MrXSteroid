@@ -11,7 +11,7 @@
 //                              DEFAULTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'pdf' | 'paperback';
+export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
 
 /** Base unit prices per tier (currency keyed). `_plus` tiers use base + addon. */
 export interface TierPrice {
@@ -35,11 +35,15 @@ export const DEFAULT_PRICING: PricingConfig = {
         bundle:        { usd: 72.00, egp: 749 },
         coaching:      { usd: 82.00, egp: 849 },
         coaching_plus: { usd: 82.00, egp: 849 }, // base; addon added below
+        bundle_plus:   { usd: 72.00, egp: 749 }, // bundle base; addon added below
+        digital_plus:  { usd: 49.99, egp: 499 }, // digital base; addon added below
         pdf:           { usd: 49.99, egp: 499 },
         paperback:     { usd: 72.00, egp: 749 },
     },
     addons: {
         coaching_plus: { usd: 200.00, egp: 9999 },
+        bundle_plus:   { usd: 200.00, egp: 9999 },
+        digital_plus:  { usd: 200.00, egp: 9999 },
     },
     shipping: {
         eg_standard: { egp: 239 },
@@ -237,10 +241,22 @@ export function computePromoDiscount(
  */
 export function computeAmount(cfg: PricingConfig, input: ComputeAmountInput): number {
     const cur = toCurrencyKey(input.currency);
-    const tier = cfg.tiers[input.tierId] || cfg.tiers.bundle;
+
+    // For *_plus variants (e.g. bundle_plus, coaching_plus, digital_plus):
+    // resolve the base tier and its coaching add-on separately.
+    // This ensures any _plus tier works even if it's not explicitly in the tiers map.
+    let baseTierId = input.tierId as string;
+    let addonTierId = input.tierId;
+
+    if (baseTierId.endsWith('_plus')) {
+        baseTierId = baseTierId.replace('_plus', '') as string;
+    }
+
+    const baseTierKey = (cfg.tiers[baseTierId as TierId] ? baseTierId : 'bundle') as TierId;
+    const tier = cfg.tiers[baseTierKey];
     const baseUnit = tier[cur] || 0;
 
-    const addon = cfg.addons[input.tierId]?.[cur] || 0;
+    const addon = cfg.addons[addonTierId]?.[cur] || 0;
     const quantity = Math.max(1, Math.floor(input.quantity || 1));
 
     const shipping = round2(input.shippingCost || 0);
