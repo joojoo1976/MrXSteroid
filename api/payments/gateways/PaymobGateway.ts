@@ -221,8 +221,10 @@ export class PaymobGateway implements IPaymentGateway {
             if (!paymentToken) throw new Error('No payment token returned from Paymob');
 
             // ── STEP 4: EXECUTE PAYMENT METHOD SPECIFIC REDIRECT ─────────────
-            // Build correct iFrame URL using the real integration ID (not a static placeholder)
-            let redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/${integrationId}?payment_token=${paymentToken}`;
+            // Use Paymob Unified Checkout — works with payment_token only, no iframe_id needed.
+            // The old iframes/{id} endpoint requires a separate iFrame ID from the dashboard,
+            // which is different from the integration ID.
+            let redirectUrl = `https://accept.paymob.com/unifiedcheckout/?payment_token=${paymentToken}`;
 
             if (method === 'wallet') {
                 // Execute Paymob Wallet API
@@ -263,7 +265,7 @@ export class PaymobGateway implements IPaymentGateway {
                     if (kioskData.data?.bill_reference) {
                         // Pass bill reference as URL parameter for clear display to user
                         // Use real kiosk integration ID (not static placeholder)
-                        redirectUrl = `https://accept.paymob.com/api/acceptance/iframes/${config.INTEGRATION_IDS.kiosk}?payment_token=${paymentToken}&bill_reference=${kioskData.data.bill_reference}`;
+                        redirectUrl = `https://accept.paymob.com/unifiedcheckout/?payment_token=${paymentToken}&bill_reference=${kioskData.data.bill_reference}`;
                     }
                 }
             }
