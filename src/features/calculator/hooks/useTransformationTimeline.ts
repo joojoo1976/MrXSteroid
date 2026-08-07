@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback, useDeferredValue, useEffect } from 'react';
 import { ContentStrings } from '@/shared/types/types';
+import { UnitSystem } from '@/shared/lib/logic';
+import { saveCalculatorResult } from '@/shared/lib/calculator-history';
 import {
     projectBodyComposition,
     aggregatePhases,
@@ -59,6 +61,10 @@ const readPersistedInputs = (): PersistedInputs => {
 
 interface UseTransformationTimelineOptions {
     content: ContentStrings;
+    /** Active interface language (drives the localized snapshot title). */
+    isAr: boolean;
+    /** Active measurement system — included in the persisted snapshot. */
+    unitSystem: UnitSystem;
 }
 
 /**
@@ -66,7 +72,7 @@ interface UseTransformationTimelineOptions {
  * Owns the computation inputs (start weight, body-fat %, training age)
  * and derives per-phase projections + chart series deterministically.
  */
-export const useTransformationTimeline = ({ content }: UseTransformationTimelineOptions) => {
+export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTransformationTimelineOptions) => {
     const [activePhase, setActivePhase] = useState(0);
 
     // ── Live engine inputs (editable, metric base values) ──────────────
@@ -145,6 +151,45 @@ export const useTransformationTimeline = ({ content }: UseTransformationTimeline
         () => estimateCycleSummary(engineInput, deferredHeightCm),
         [engineInput, deferredHeightCm],
     );
+
+    // ── Supabase sync — debounced snapshot of the live engine ─────────
+    // Mirrors the other calculators' auto-save pattern so the latest plan
+    // surfaces in the user's calculator history / admin dashboard without
+    // spamming the DB while a slider is being dragged.
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void saveCalculatorResult({
+                tool: 'transformation',
+                title: isAr ? 'محرك التوقع الحي' : 'Live Prediction Engine',
+                inputs: {
+                    startWeightKg,
+                    startBodyFatPct,
+                    heightCm,
+                    trainingAge,
+                    unitSystem,
+                },
+                result: {
+                    endWeightKg: summary.endWeightKg,
+                    endBfPct: summary.endBfPct,
+                    totalFatLossKg: summary.totalFatLossKg,
+                    totalMuscleGainKg: summary.totalMuscleGainKg,
+                    weeklyFatLossKg: summary.avgWeeklyFatLossKg,
+                    dailyDeficitKcal: summary.energy.dailyDeficitKcal,
+                    goalProgressPct: summary.goalProgressPct,
+                    weeksToIdeal: summary.weeksToIdeal,
+                    milestones: summary.milestones,
+                    projections: projections.map((p) => ({
+                        week: p.week,
+                        weightKg: p.weightKg,
+                        bodyFatPct: p.bodyFatPct,
+                        fatLossKg: p.fatLossKg,
+                        cumulativeMuscleGainKg: p.cumulativeMuscleGainKg,
+                    })),
+                },
+            });
+        }, 800);
+        return () => window.clearTimeout(timer);
+    }, [isAr, unitSystem, startWeightKg, startBodyFatPct, heightCm, trainingAge, projections, summary]);
 
     const activeData = useMemo(() => {
         return content.timelinePhases[activePhase];

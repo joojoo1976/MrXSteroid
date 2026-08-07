@@ -143,7 +143,7 @@ const EngineTile: React.FC<{
             initial={{ opacity: 0, y: 6, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono tabular-nums"
+            className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums"
         >
             {value}
         </motion.span>
@@ -264,7 +264,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         isRecalculating,
         projections,
         summary,
-    } = useTransformationTimeline({ content });
+    } = useTransformationTimeline({ content, isAr, unitSystem });
 
     const [navDirection, setNavDirection] = useState<'next' | 'prev'>('next');
 
@@ -644,9 +644,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     )}
                 </AnimatePresence>
 
-                <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
+                <div className="flex flex-col xl:flex-row gap-6 xl:items-start">
                     {/* Header + inputs */}
-                    <div className="flex-1 space-y-5">
+                    <div className="flex-1 min-w-0 space-y-5">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white flex items-center gap-2">
                                 <Gauge className="w-5 h-5 text-gold-500 animate-pulse" />
@@ -718,7 +718,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <AnimatedNumber
                                     value={startWeightKg}
                                     format={(n) => formatWeight(n, unitSystem, isAr)}
-                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
                             <input
@@ -742,7 +742,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <AnimatedNumber
                                     value={startBodyFatPct}
                                     format={(n) => `${Math.round(n)}%`}
-                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
                             <input
@@ -766,7 +766,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <AnimatedNumber
                                     value={heightCm}
                                     format={(n) => formatHeight(n, unitSystem, isAr)}
-                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
                             <input
@@ -811,17 +811,31 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </div>
 
                     {/* Kinetic silhouette + live numbers */}
-                    <div className="flex-1 grid grid-cols-2 gap-3">
-                        <div className="col-span-2 flex justify-center">
-                            <KineticSilhouette
-                                musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
-                                fatPct={startBodyFatPct}
-                                isAr={isAr}
-                            />
-                        </div>
+                    <div className="flex-1 min-w-0 space-y-4">
 
-                        {/* Goal gauge + time-to-ideal-weight summary */}
-                        <div className="col-span-2 flex items-center gap-4 flex-wrap justify-center">
+                        {/* Unified visual block — composition circle × goal progress */}
+                        <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg">
+                            <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-gold-500 via-cyan-400 to-transparent opacity-60" />
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-gold-500/15 text-gold-600 dark:text-gold-400">
+                                    <Target className="w-3.5 h-3.5" />
+                                </span>
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+                                    {L.goalProgress}
+                                </h4>
+                                <span className="ms-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/25 text-gold-600 dark:text-gold-400 text-[10px] font-black tabular-nums">
+                                    {L.idealWeightLabel}: {idealWeightStr}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                                <div className="flex justify-center">
+                                    <KineticSilhouette
+                                        musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
+                                        fatPct={startBodyFatPct}
+                                        isAr={isAr}
+                                    />
+                                </div>
+                                <div className="flex flex-col items-center gap-3 min-w-0">
                             <GoalRing
                                 progress={summary.goalProgressPct}
                                 label={L.goalProgress}
@@ -845,7 +859,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             initial={{ opacity: 0, y: 6, scale: 0.94 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                                            className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono tabular-nums"
+                                            className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums"
                                         >
                                             {summary.weeksToIdeal}
                                             <span className="text-sm text-zinc-500 dark:text-zinc-400 font-black ms-1">
@@ -877,58 +891,65 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <span>{L.maintenanceCalories}</span>
                                     <span className="font-black text-zinc-900 dark:text-white tabular-nums">{tdeeStr}</span>
                                 </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <EngineTile
-                            icon={<Flame className="w-3.5 h-3.5" />}
-                            label={L.weeklyFatLoss}
-                            value={activeWeeklyFatLoss}
-                            accentClass="text-orange-500"
-                            trend="down"
-                            hint={weeklyFatLossHint}
-                        />
-                        <EngineTile
-                            icon={<Droplet className="w-3.5 h-3.5" />}
-                            label={L.projectedFatPct}
-                            value={activeFatPctEnd}
-                            accentClass="text-blue-500"
-                            trend="down"
-                            hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
-                        />
-                        <EngineTile
-                            icon={<BicepsFlexed className="w-3.5 h-3.5" />}
-                            label={L.totalMuscleGain}
-                            value={totalMuscleStr}
-                            accentClass="text-purple-500"
-                            trend="up"
-                        />
-                        <EngineTile
-                            icon={<TrendingUp className="w-3.5 h-3.5" />}
-                            label={L.cumulativeMuscle}
-                            value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
-                            accentClass="text-gold-500"
-                            trend="up"
-                        />
-                        <EngineTile
-                            icon={<Target className="w-3.5 h-3.5" />}
-                            label={L.projectedEndWeight}
-                            value={endWeightStr}
-                            accentClass="text-cyan-500"
-                            trend="down"
-                            hint={L.bmiLabel}
-                        />
-                        <EngineTile
-                            icon={<Flame className="w-3.5 h-3.5" />}
-                            label={L.dailyDeficit}
-                            value={dailyDeficitStr}
-                            accentClass="text-rose-500"
-                            trend="down"
-                            hint={`${L.currentBmi} ${bmiStr}`}
-                        />
+                            {/* Live engine stat tiles */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <EngineTile
+                                    icon={<Flame className="w-3.5 h-3.5" />}
+                                    label={L.weeklyFatLoss}
+                                    value={activeWeeklyFatLoss}
+                                    accentClass="text-orange-500"
+                                    trend="down"
+                                    hint={weeklyFatLossHint}
+                                />
+                                <EngineTile
+                                    icon={<Droplet className="w-3.5 h-3.5" />}
+                                    label={L.projectedFatPct}
+                                    value={activeFatPctEnd}
+                                    accentClass="text-blue-500"
+                                    trend="down"
+                                    hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
+                                />
+                                <EngineTile
+                                    icon={<BicepsFlexed className="w-3.5 h-3.5" />}
+                                    label={L.totalMuscleGain}
+                                    value={totalMuscleStr}
+                                    accentClass="text-purple-500"
+                                    trend="up"
+                                />
+                                <EngineTile
+                                    icon={<TrendingUp className="w-3.5 h-3.5" />}
+                                    label={L.cumulativeMuscle}
+                                    value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
+                                    accentClass="text-gold-500"
+                                    trend="up"
+                                />
+                                <EngineTile
+                                    icon={<Target className="w-3.5 h-3.5" />}
+                                    label={L.projectedEndWeight}
+                                    value={endWeightStr}
+                                    accentClass="text-cyan-500"
+                                    trend="down"
+                                    hint={L.bmiLabel}
+                                />
+                                <EngineTile
+                                    icon={<Flame className="w-3.5 h-3.5" />}
+                                    label={L.dailyDeficit}
+                                    value={dailyDeficitStr}
+                                    accentClass="text-rose-500"
+                                    trend="down"
+                                    hint={`${L.currentBmi} ${bmiStr}`}
+                                />
+                            </div>
+                        </div>
+                    </div>
 
-                        {/* Smart Coach — live verdicts */}
-                        <div className="col-span-2 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                        {/* Smart Coach — live verdicts (full-width strip) */}
+                        <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
                             <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
@@ -956,7 +977,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
                                 </motion.button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
                                 {coachTips.map((tip, i) => (
                                     <motion.div
                                         key={i}
@@ -974,8 +995,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 ))}
                             </div>
                         </div>
-                    </div>
-                </div>
 
                 <p className="mt-5 text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex items-center gap-1.5">
                     <ShieldCheck className="w-3 h-3 text-green-500 shrink-0" />
