@@ -11,6 +11,7 @@ import {
     estimateIdealWeight,
     estimateCycleSummary,
     deriveCoachFacts,
+    deriveBodyQuality,
     formatHeight,
     FAT_LOSS_RATE,
     type CycleSummary,
@@ -406,5 +407,42 @@ describe('transformationEngine — goalState classification', () => {
         expect(f.goalState).toBe('beyond-cycle');
         expect(f.reachesGoalInCycle).toBe(false);
         expect(f.weeksBeyondCycle).toBe(8);
+    });
+});
+
+describe('transformationEngine — deriveBodyQuality (live twin-card)', () => {
+    const input = { startWeightKg: 90, startBodyFatPct: 25, trainingAge: 'intermediate' as const, heightCm: 180 };
+
+    it('decomposes weight into lean + fat masses that sum back up', () => {
+        const q = deriveBodyQuality(input);
+        expect(q.leanKg + q.fatKg).toBeCloseTo(90, 1);
+        expect(q.fatKg).toBeCloseTo(22.5, 1);
+        expect(q.leanKg).toBeCloseTo(67.5, 1);
+    });
+
+    it('reports a muscle:fat ratio strictly greater than 1 for realistic bodies', () => {
+        const q = deriveBodyQuality(input);
+        expect(q.muscleFatRatio).toBeCloseTo(3, 0);
+    });
+
+    it('maps lower body fat to a higher quality zone', () => {
+        const lean = deriveBodyQuality({ ...input, startBodyFatPct: 12 });
+        const fat = deriveBodyQuality({ ...input, startBodyFatPct: 38 });
+        expect(lean.qualityScore).toBeGreaterThan(fat.qualityScore);
+        expect(lean.zone === 'excellent' || lean.zone === 'good').toBe(true);
+        expect(fat.zone).toBe('improve');
+    });
+
+    it('always projects a finite end-state quality', () => {
+        const q = deriveBodyQuality({ ...input, startWeightKg: 40, startBodyFatPct: 8 });
+        expect(Number.isFinite(q.projectedQualityScore)).toBe(true);
+        expect(Number.isFinite(q.projectedLeanKg)).toBe(true);
+        expect(Number.isFinite(q.projectedFatKg)).toBe(true);
+    });
+
+    it('is edge-safe for NaN inputs', () => {
+        const q = deriveBodyQuality({ startWeightKg: NaN, startBodyFatPct: NaN, trainingAge: 'advanced', heightCm: NaN });
+        expect(Number.isFinite(q.qualityScore)).toBe(true);
+        expect(Number.isFinite(q.muscleFatRatio)).toBe(true);
     });
 });

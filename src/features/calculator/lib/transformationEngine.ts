@@ -793,3 +793,89 @@ export const deriveCoachFacts = (
         bfMilestoneCount: bfMilestones.length,
     };
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  BODY COMPOSITION QUALITY — LIVE TWIN-CARD ENGINE
+//  Pure derivation of the muscular × fat balance that powers the dynamic twin
+//  card under the composition silhouette. Recomputed on every slider change;
+//  the engine stays i18n-free (returns zones/bands the UI localizes).
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type QualityZone = 'excellent' | 'good' | 'fair' | 'improve';
+export type MetabolicBand = 'efficient' | 'balanced' | 'sluggish';
+
+export interface BodyQuality {
+    /** Absolute fat mass right now (kg, metric base). */
+    fatKg: number;
+    /** Absolute lean mass right now (kg, metric base). */
+    leanKg: number;
+    /** Lean fraction of total bodyweight (%). */
+    leanMassPct: number;
+    /** Muscle : fat ratio (leanKg / fatKg). */
+    muscleFatRatio: number;
+    /** Composite 0–100 body-composition quality index. */
+    qualityScore: number;
+    zone: QualityZone;
+    /** Resting-metabolic band inferred from the lean fraction. */
+    metabolicBand: MetabolicBand;
+    /** Katch–McArdle basal metabolic rate (kcal). */
+    bmrKcal: number;
+    /** Projected fat mass at the cycle end (kg). */
+    projectedFatKg: number;
+    /** Projected lean mass at the cycle end (kg). */
+    projectedLeanKg: number;
+    /** Quality index projected at the cycle end (0–100). */
+    projectedQualityScore: number;
+}
+
+/**
+ * Derives the body-composition quality profile for the live engine inputs.
+ * The index is anchored at 10% BF ≈ 100 and falls ~2 points per BF point — a
+ * transparent, standard health-classification gradient (clamped 5–100).
+ */
+export const deriveBodyQuality = (
+    input: BodyCompositionInput,
+): BodyQuality => {
+    const weight = clamp(input.startWeightKg, 30, 400);
+    const bf = clamp(input.startBodyFatPct, 3, 60);
+    const { fatKg, leanKg } = decomposeBody(weight, bf);
+
+    const qualityScore = roundTo(clamp(105 - (bf - 10) * 2, 5, 100), 0);
+    const zone: QualityZone =
+        qualityScore >= 85
+            ? 'excellent'
+            : qualityScore >= 70
+                ? 'good'
+                : qualityScore >= 50
+                    ? 'fair'
+                    : 'improve';
+
+    const leanRatio = leanKg / Math.max(weight, 0.1);
+    const metabolicBand: MetabolicBand =
+        leanRatio >= 0.85
+            ? 'efficient'
+            : leanRatio >= 0.75
+                ? 'balanced'
+                : 'sluggish';
+
+    const projections = projectBodyComposition(input);
+    const end = projections[CYCLE_TOTAL_WEEKS - 1];
+    const totalFatLost = projections.reduce((sum, p) => sum + p.fatLossKg, 0);
+
+    return {
+        fatKg: roundTo(fatKg, 1),
+        leanKg: roundTo(leanKg, 1),
+        leanMassPct: roundTo(leanRatio * 100, 1),
+        muscleFatRatio: roundTo(leanKg / Math.max(fatKg, 0.1), 1),
+        qualityScore,
+        zone,
+        metabolicBand,
+        bmrKcal: estimateEnergy(input).bmrKcal,
+        projectedFatKg: roundTo(Math.max(0, fatKg - totalFatLost), 1),
+        projectedLeanKg: roundTo(leanKg + end.cumulativeMuscleGainKg, 1),
+        projectedQualityScore: roundTo(
+            clamp(105 - (end.bodyFatPct - 10) * 2, 5, 100),
+            0,
+        ),
+    };
+};

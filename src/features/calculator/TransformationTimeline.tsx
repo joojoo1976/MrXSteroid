@@ -19,11 +19,14 @@ import {
     buildTimelineCopyContext,
     renderTimelineCopy,
     deriveCoachFacts,
+    deriveBodyQuality,
+    type BodyQuality,
     type TimelineCopyContext,
     type TrainingAge,
     type CoachFacts,
     type MilestonePoint,
 } from './lib/transformationEngine';
+import { UnitSystem } from '@/shared/lib/logic';
 import { buildPlanSnapshot } from './lib/planSnapshot';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -74,9 +77,27 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
 ));
 
 /** Neon silhouette — SVG kinetic micro-graphic representing muscle vs fat. */
-const KineticSilhouette: React.FC<{ musclePct: number; fatPct: number; isAr: boolean }> = ({ musclePct, fatPct, isAr }) => {
+const KineticSilhouette: React.FC<{
+    musclePct: number;
+    fatPct: number;
+    muscleKg: number;
+    fatKg: number;
+    unitSystem: UnitSystem;
+    isAr: boolean;
+}> = ({ musclePct, fatPct, muscleKg, fatKg, unitSystem, isAr }) => {
     const muscle = clamp(musclePct, 5, 100);
     const fat = clamp(fatPct, 5, 100);
+    const [hover, setHover] = useState<'muscle' | 'fat' | null>(null);
+
+    const muscleStr = formatWeight(muscleKg, unitSystem, isAr);
+    const fatStr = formatWeight(fatKg, unitSystem, isAr);
+    const activeTooltip =
+        hover === 'muscle'
+            ? { title: isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass', value: muscleStr, pct: `${Math.round(muscle)}%` }
+            : hover === 'fat'
+                ? { title: isAr ? 'كتلة الدهون' : 'Fat Mass', value: fatStr, pct: `${Math.round(fat)}%` }
+                : null;
+
     return (
         <div className="relative w-full max-w-[240px] mx-auto aspect-square" aria-hidden="true">
             {/* Pulsing halo */}
@@ -93,25 +114,42 @@ const KineticSilhouette: React.FC<{ musclePct: number; fatPct: number; isAr: boo
                     </linearGradient>
                 </defs>
 
-                {/* Fat ring (shrinks as fat drops) */}
-                <circle
-                    cx="100" cy="100" r={30 + fat * 0.5}
-                    fill="none" stroke="url(#fatGrad)" strokeWidth="10"
-                    strokeDasharray={`${(100 - fat) * 1.9} 600`}
-                    strokeLinecap="round"
-                    className="transition-all duration-700"
-                />
+                {/* Fat ring (shrinks as fat drops) — hover reveals its layer tooltip */}
+                <g
+                    className="cursor-pointer transition-all duration-300 hover:opacity-80"
+                    style={{ transformOrigin: '100px 100px' }}
+                    onMouseEnter={() => setHover('fat')}
+                    onMouseLeave={() => setHover(null)}
+                >
+                    <circle
+                        cx="100" cy="100" r={30 + fat * 0.5}
+                        fill="none" stroke="url(#fatGrad)" strokeWidth="10"
+                        strokeDasharray={`${(100 - fat) * 1.9} 600`}
+                        strokeLinecap="round"
+                        className="transition-all duration-700 hover:drop-shadow-[0_0_14px_rgba(59,130,246,0.6)]"
+                    />
+                    <title>{isAr ? 'كتلة الدهون' : 'Fat Mass'} — {fatStr} · {Math.round(fat)}%</title>
+                </g>
 
-                {/* Muscle core (grows with hypertrophy) */}
-                <motion.circle
-                    cx="100" cy="100"
-                    r={18 + muscle * 0.22}
-                    fill="url(#muscleGrad)"
-                    initial={{ r: 20 }}
-                    animate={{ r: 18 + muscle * 0.22 }}
-                    transition={{ type: 'spring', stiffness: 60, damping: 14 }}
-                    className="opacity-90"
-                />
+                {/* Muscle core (grows with hypertrophy) — hover reveals its layer tooltip */}
+                <g
+                    className="cursor-pointer transition-all duration-300 hover:opacity-90"
+                    style={{ transformOrigin: '100px 100px' }}
+                    onMouseEnter={() => setHover('muscle')}
+                    onMouseLeave={() => setHover(null)}
+                >
+                    <motion.circle
+                        cx="100" cy="100"
+                        r={18 + muscle * 0.22}
+                        fill="url(#muscleGrad)"
+                        initial={{ r: 20 }}
+                        animate={{ r: 18 + muscle * 0.22 }}
+                        transition={{ type: 'spring', stiffness: 60, damping: 14 }}
+                        className="opacity-90 transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(234,179,8,0.7)] hover:scale-[1.02]"
+                        style={{ transformOrigin: '100px 100px' }}
+                    />
+                    <title>{isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass'} — {muscleStr} · {Math.round(muscle)}%</title>
+                </g>
 
                 {/* Atomic nucleus */}
                 <circle cx="100" cy="100" r="6" fill="#fff" className="animate-pulse" />
@@ -119,6 +157,26 @@ const KineticSilhouette: React.FC<{ musclePct: number; fatPct: number; isAr: boo
                     {isAr ? 'كتلة عضلية × نسبة دهون' : 'Muscle × Fat'}
                 </text>
             </svg>
+
+            {/* Interactive hover tooltip — exact value + layer % */}
+            <AnimatePresence>
+                {activeTooltip && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.9 }}
+                        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                        className="absolute bottom-3 inset-x-4 flex justify-center pointer-events-none z-10"
+                    >
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/95 border border-gold-500/30 text-white shadow-2xl backdrop-blur-xl whitespace-nowrap">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gold-400">{activeTooltip.title}</span>
+                            <span className="w-px h-3 bg-white/15" />
+                            <span className="text-[10px] font-black tabular-nums">{activeTooltip.value}</span>
+                            <span className="text-[10px] font-black text-cyan-400 tabular-nums">{activeTooltip.pct}</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -132,7 +190,7 @@ const EngineTile: React.FC<{
     trend?: 'up' | 'down';
     hint?: string;
 }> = memo(({ icon, label, value, accentClass = 'text-gold-500', trend, hint }) => (
-    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:border-gold-500/30">
+    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:scale-[1.02] hover:border-gold-500/30">
         <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
         <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
             <span className={`flex items-center justify-center w-7 h-7 rounded-lg bg-white/70 dark:bg-white/10 ${accentClass}`}>{icon}</span>
@@ -150,6 +208,164 @@ const EngineTile: React.FC<{
         {hint && <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{hint}</span>}
     </div>
 ));
+
+/** Neon-glow range slider — border + glow while the thumb is being dragged. */
+const NeonSlider: React.FC<{
+    min: number;
+    max: number;
+    step?: number;
+    value: number;
+    onChange: (value: number) => void;
+    ariaLabel: string;
+}> = memo(({ min, max, step, value, onChange, ariaLabel }) => {
+    const [dragging, setDragging] = useState(false);
+    return (
+        <div
+            className={`relative rounded-xl p-1 transition-all duration-300 ${
+                dragging
+                    ? 'shadow-[0_0_20px_rgba(234,179,8,0.35)] ring-1 ring-gold-500/50 bg-gold-500/5'
+                    : 'hover:shadow-[0_0_12px_rgba(234,179,8,0.15)]'
+            }`}
+        >
+            <input
+                type="range"
+                min={min}
+                max={max}
+                step={step}
+                value={value}
+                onChange={(e) => onChange(Number(e.target.value))}
+                onPointerDown={() => setDragging(true)}
+                onPointerUp={() => setDragging(false)}
+                onPointerLeave={() => setDragging(false)}
+                aria-label={ariaLabel}
+                className="w-full accent-gold-500 cursor-pointer"
+            />
+        </div>
+    );
+});
+
+/** Glassmorphism twin card — live muscular × fat analysis under the silhouette. */
+const CompositionInsightCard: React.FC<{
+    quality: BodyQuality;
+    content: ContentStrings;
+    unitSystem: UnitSystem;
+    isAr: boolean;
+}> = memo(({ quality, content, unitSystem, isAr }) => {
+    const L = content.timelineLabels;
+    const zoneLabel =
+        quality.zone === 'excellent'
+            ? (L.compositionZoneExcellent ?? '')
+            : quality.zone === 'good'
+                ? (L.compositionZoneGood ?? '')
+                : quality.zone === 'fair'
+                    ? (L.compositionZoneFair ?? '')
+                    : (L.compositionZoneImprove ?? '');
+    const metabLabel =
+        quality.metabolicBand === 'efficient'
+            ? (L.metabolicEfficient ?? '')
+            : quality.metabolicBand === 'balanced'
+                ? (L.metabolicBalanced ?? '')
+                : (L.metabolicSluggish ?? '');
+    const zoneColor =
+        quality.zone === 'excellent'
+            ? 'text-emerald-500'
+            : quality.zone === 'good'
+                ? 'text-gold-500'
+                : quality.zone === 'fair'
+                    ? 'text-amber-500'
+                    : 'text-rose-500';
+    const barGradient =
+        quality.zone === 'excellent'
+            ? 'from-emerald-500 to-cyan-400'
+            : quality.zone === 'good'
+                ? 'from-gold-500 to-amber-400'
+                : quality.zone === 'fair'
+                    ? 'from-amber-500 to-orange-400'
+                    : 'from-rose-500 to-orange-500';
+
+    return (
+        <div
+            className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg hover:shadow-gold-500/10 hover:border-gold-500/30 transition-all hover:-translate-y-0.5 group/card"
+            data-testid="composition-insight-card"
+        >
+            <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-emerald-500 via-gold-500 to-transparent opacity-60" />
+            <div className="flex items-center gap-1.5 mb-1">
+                <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-500">
+                    <HeartPulse className="w-3 h-3" />
+                </span>
+                <div className="min-w-0">
+                    <span className="block text-[9px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+                        {L.compositionCardTitle ?? 'Body Composition Quality'}
+                    </span>
+                    <span className="block text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                        {L.compositionCardSubtitle ?? 'Live muscular × fat balance'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Quality index — live score + animated bar */}
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                    <Gauge className="w-3 h-3 text-gold-500" />
+                    {L.compositionQuality ?? 'Quality Index'}
+                </span>
+                <motion.span
+                    key={quality.qualityScore}
+                    initial={{ opacity: 0, y: 6, scale: 0.94 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                    className={`text-lg font-black tracking-tighter tabular-nums ${zoneColor}`}
+                >
+                    {quality.qualityScore}
+                    <span className="text-[9px] text-zinc-400 font-black ms-0.5">/100</span>
+                </motion.span>
+            </div>
+            <div className="h-1.5 w-full bg-zinc-200/70 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <motion.div
+                    animate={{ width: `${clamp(quality.qualityScore, 0, 100)}%` }}
+                    transition={{ type: 'spring', stiffness: 80, damping: 20 }}
+                    className={`h-full rounded-full bg-gradient-to-r ${barGradient}`}
+                />
+            </div>
+
+            {/* Muscle / fat / ratio mini-stats */}
+            <div className="grid grid-cols-3 gap-1.5 mt-1">
+                <div className="rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5 p-2">
+                    <span className="block text-[7px] font-black uppercase tracking-widest text-zinc-400">{L.compositionMuscle ?? 'Lean Mass'}</span>
+                    <span className="block text-[11px] font-black text-zinc-900 dark:text-white tabular-nums truncate">{formatWeight(quality.leanKg, unitSystem, isAr)}</span>
+                </div>
+                <div className="rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5 p-2">
+                    <span className="block text-[7px] font-black uppercase tracking-widest text-zinc-400">{L.compositionFat ?? 'Fat Mass'}</span>
+                    <span className="block text-[11px] font-black text-zinc-900 dark:text-white tabular-nums truncate">{formatWeight(quality.fatKg, unitSystem, isAr)}</span>
+                </div>
+                <div className="rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5 p-2">
+                    <span className="block text-[7px] font-black uppercase tracking-widest text-zinc-400">{L.compositionRatio ?? 'Muscle : Fat'}</span>
+                    <span className="block text-[11px] font-black text-gold-600 dark:text-gold-400 tabular-nums">{quality.muscleFatRatio}:1</span>
+                </div>
+            </div>
+
+            {/* Metabolic band + zone verdict */}
+            <span className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-500 dark:text-zinc-400">
+                <Flame className="w-3 h-3 text-orange-500" />
+                {L.compositionMetabolism ?? 'Metabolic State'}
+                <span className="font-black text-zinc-900 dark:text-white ms-auto tabular-nums">{quality.bmrKcal} kcal</span>
+            </span>
+            <p className="text-[10px] leading-relaxed font-bold text-zinc-600 dark:text-zinc-300">{metabLabel}</p>
+            <p className={`text-[10px] leading-relaxed font-black ${zoneColor}`}>{zoneLabel}</p>
+
+            {/* Projected end-state — mirrors the twin card's footer */}
+            <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1.5 border-t border-white/10 dark:border-white/10">
+                <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3 text-emerald-500" />
+                    {L.compositionProjected ?? 'Projected · Week 12'}
+                </span>
+                <span className="font-black text-zinc-900 dark:text-white tabular-nums whitespace-nowrap">
+                    {formatWeight(quality.projectedLeanKg, unitSystem, isAr)} · {formatWeight(quality.projectedFatKg, unitSystem, isAr)}
+                </span>
+            </div>
+        </div>
+    );
+});
 
 /** Circular goal gauge — live progress toward the ideal (healthy) weight. */
 const GoalRing: React.FC<{
@@ -262,6 +478,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
         resetToDefaults,
         isRecalculating,
+        engineInput,
         projections,
         summary,
     } = useTransformationTimeline({ content, isAr, unitSystem });
@@ -358,6 +575,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const coachFacts = useMemo<CoachFacts>(
         () => deriveCoachFacts(summary, activeAggregate?.weekStart ?? 1),
         [summary, activeAggregate?.weekStart],
+    );
+
+    // ── Body-composition quality — live twin-card analysis ──────────────
+    const bodyQuality = useMemo<BodyQuality>(
+        () => deriveBodyQuality(engineInput),
+        [engineInput],
     );
 
     const C = content.timelineCoach;
@@ -721,14 +944,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
-                            <input
-                                type="range"
+                            <NeonSlider
                                 min={40}
                                 max={160}
                                 value={startWeightKg}
-                                onChange={(e) => setStartWeightKg(Number(e.target.value))}
-                                aria-label={L.startWeightLabel}
-                                className="w-full accent-gold-500"
+                                onChange={setStartWeightKg}
+                                ariaLabel={L.startWeightLabel}
                             />
                         </div>
 
@@ -745,14 +966,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
-                            <input
-                                type="range"
+                            <NeonSlider
                                 min={8}
                                 max={40}
                                 value={startBodyFatPct}
-                                onChange={(e) => setStartBodyFatPct(Number(e.target.value))}
-                                aria-label={L.bodyFatLabel}
-                                className="w-full accent-gold-500"
+                                onChange={setStartBodyFatPct}
+                                ariaLabel={L.bodyFatLabel}
                             />
                         </div>
 
@@ -769,14 +988,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
                                 />
                             </div>
-                            <input
-                                type="range"
+                            <NeonSlider
                                 min={140}
                                 max={210}
                                 value={heightCm}
-                                onChange={(e) => setHeightCm(Number(e.target.value))}
-                                aria-label={L.heightLabel}
-                                className="w-full accent-gold-500"
+                                onChange={setHeightCm}
+                                ariaLabel={L.heightLabel}
                             />
                         </div>
 
@@ -828,10 +1045,21 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                                <div className="flex justify-center">
-                                    <KineticSilhouette
-                                        musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
-                                        fatPct={startBodyFatPct}
+                                <div className="flex flex-col gap-3 min-w-0">
+                                    <div className="flex justify-center">
+                                        <KineticSilhouette
+                                            musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
+                                            fatPct={startBodyFatPct}
+                                            muscleKg={bodyQuality.leanKg}
+                                            fatKg={bodyQuality.fatKg}
+                                            unitSystem={unitSystem}
+                                            isAr={isAr}
+                                        />
+                                    </div>
+                                    <CompositionInsightCard
+                                        quality={bodyQuality}
+                                        content={content}
+                                        unitSystem={unitSystem}
                                         isAr={isAr}
                                     />
                                 </div>
@@ -896,8 +1124,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
                     </div>
 
-                            {/* Live engine stat tiles */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {/* Live engine stat tiles — even 3×2 grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
                                 <EngineTile
                                     icon={<Flame className="w-3.5 h-3.5" />}
                                     label={L.weeklyFatLoss}
@@ -949,7 +1177,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </div>
 
                         {/* Smart Coach — live verdicts (full-width strip) */}
-                        <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                        <div className="mt-4 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
                             <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
@@ -977,7 +1205,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
                                 </motion.button>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 {coachTips.map((tip, i) => (
                                     <motion.div
                                         key={i}

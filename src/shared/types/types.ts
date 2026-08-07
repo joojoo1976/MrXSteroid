@@ -1314,6 +1314,22 @@ export interface ContentStrings {
     colBodyFat: string;
     colFatLoss: string;
     colLean: string;
+    // Body-composition quality twin card (live muscular × fat analysis)
+    compositionCardTitle: string;
+    compositionCardSubtitle: string;
+    compositionMuscle: string;
+    compositionFat: string;
+    compositionRatio: string;
+    compositionQuality: string;
+    compositionMetabolism: string;
+    compositionProjected: string;
+    compositionZoneExcellent: string;
+    compositionZoneGood: string;
+    compositionZoneFair: string;
+    compositionZoneImprove: string;
+    metabolicEfficient: string;
+    metabolicBalanced: string;
+    metabolicSluggish: string;
   };
   timeUnits: {
     days: string;
