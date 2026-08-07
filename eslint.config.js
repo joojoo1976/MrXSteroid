@@ -21,7 +21,23 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
         "warn",
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          allowExportNames: [
+            "useAuth",
+            "useRegion",
+            "useSidebar",
+            "usePremiumStatus",
+            "useFeatureAccess",
+            "checkPremiumAccess",
+            "badgeVariants",
+            "buttonVariants",
+            "toggleVariants",
+            "THEME_OPTIONS",
+            "formatNational",
+            "normalizePhone",
+          ],
+        },
       ],
       "@typescript-eslint/no-unused-vars": ["warn", {
         "argsIgnorePattern": "^_",
