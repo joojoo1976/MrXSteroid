@@ -262,6 +262,24 @@ describe('transformationEngine — advanced live predictions', () => {
         expect(formatHeight(180, 'imperial', false)).toBe("5' 11\"");
     });
 
+    it('carries a rounded remainder into the feet column (no 12-inch rollover)', () => {
+        // Regression: rounding `inches % 12` produced invalid "5' 12\"" for
+        // heights whose rounded remainder hit 12 (e.g. 182 cm ≈ 71.65 in).
+        expect(formatHeight(182, 'imperial', false)).toBe("6' 0\"");
+        expect(formatHeight(121, 'imperial', false)).toBe("4' 0\"");
+        expect(formatHeight(183, 'imperial', false)).toBe("6' 0\"");
+        expect(formatHeight(71, 'imperial', false)).toBe("2' 4\"");
+        // Near-boundary heights keep correct totals.
+        expect(formatHeight(70, 'imperial', false)).toBe("2' 4\"");
+        expect(formatHeight(119, 'imperial', false)).toBe("3' 11\"");
+        expect(formatHeight(120, 'imperial', false)).toBe("3' 11\"");
+    });
+
+    it('applies the same carry fix to Arabic imperial heights', () => {
+        expect(formatHeight(182, 'imperial', true)).toBe('6′ 0″');
+        expect(formatHeight(121, 'imperial', true)).toBe('4′ 0″');
+    });
+
     it('recomputes the full cycle summary instantly (stress / latency guard)', () => {
         // Simulates 10 000 consecutive slider drags, each re-running the whole
         // 12-week simulation + ideal-weight + energy model. Must stay snappy.

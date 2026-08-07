@@ -752,6 +752,7 @@ export const enContent: ContentStrings = {
     unlockText: "Buy the book to unlock the full table and dosages",
     buyNow: "Buy the Book",
     contact: "Contact Us",
+    copyright: "All rights reserved © 2025 George Mourice",
     forgotPassword: "Forgot Password?",
     resetPassword: "Reset Password",
     sendResetLink: "Send Reset Link",

@@ -246,7 +246,7 @@ export function computeAmount(cfg: PricingConfig, input: ComputeAmountInput): nu
     // resolve the base tier and its coaching add-on separately.
     // This ensures any _plus tier works even if it's not explicitly in the tiers map.
     let baseTierId = input.tierId as string;
-    let addonTierId = input.tierId;
+    const addonTierId = input.tierId;
 
     if (baseTierId.endsWith('_plus')) {
         baseTierId = baseTierId.replace('_plus', '') as string;

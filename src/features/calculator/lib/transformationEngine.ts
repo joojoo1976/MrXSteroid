@@ -699,9 +699,9 @@ export const formatHeight = (
     isAr: boolean,
 ): string => {
     if (system === 'imperial') {
-        const inches = cm * CONVERSIONS.CM_TO_INCHES;
-        const feet = Math.floor(inches / 12);
-        const rem = Math.round(inches % 12);
+        const totalInches = Math.round(cm * CONVERSIONS.CM_TO_INCHES);
+        const feet = Math.floor(totalInches / 12);
+        const rem = totalInches % 12;
         return isAr
             ? `${feet}′ ${rem}″`
             : `${feet}' ${rem}"`;
