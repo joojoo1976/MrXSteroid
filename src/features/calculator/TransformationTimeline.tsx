@@ -690,8 +690,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </div>
                             </div>
 
-                            {/* Narrative Section */}
-                            <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start overflow-y-auto max-h-[520px] hide-scrollbar">
+                            {/* Narrative Section — full content always visible (no hidden scroll) */}
+                            <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start" data-testid="timeline-narrative">
 
                                 {/* Biological block */}
                                 <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="relative group/item">
@@ -760,7 +760,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         <StyledBrandName text={renderCopy(activeData.details.medical)} />
                                     </p>
 
-                                    <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-500 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
+                                    <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
                                         <ShieldCheck className="w-2.5 h-2.5" />
                                         {isAr ? 'إشراف طبي' : 'Medical Supervision'}
                                     </div>
