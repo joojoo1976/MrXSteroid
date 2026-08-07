@@ -1,11 +1,11 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
@@ -14,6 +14,9 @@ import {
     formatWeight,
     clamp,
     roundTo,
+    buildTimelineCopyContext,
+    renderTimelineCopy,
+    type TimelineCopyContext,
     type TrainingAge,
 } from './lib/transformationEngine';
 
@@ -21,27 +24,44 @@ import {
 //  Small presentational primitives
 // ═══════════════════════════════════════════════════════════════════════════
 
-const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = ({ label, value, colorClass, icon }) => (
-    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50">
+/**
+ * Spring-animated numeric readout — glides to each new value instead of
+ * snapping, driven by framer-motion (no rAF loops, GPU-friendly).
+ */
+const AnimatedNumber: React.FC<{
+    value: number;
+    format?: (n: number) => string;
+    className?: string;
+}> = memo(({ value, format, className }) => {
+    const spring = useSpring(value, { stiffness: 90, damping: 22, mass: 0.5 });
+    const display = useTransform(spring, (v) => (format ? format(v) : String(Math.round(v))));
+    return <motion.span className={className} aria-hidden="true">{display}</motion.span>;
+});
+
+const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = memo(({ label, value, colorClass, icon }) => (
+    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50 hover:border-gold-500/30 hover:shadow-lg hover:shadow-gold-500/5">
         <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-500/10 rounded-lg text-zinc-500 group-hover/metric:scale-110 transition-all">
             {icon}
         </div>
         <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-black uppercase tracking-tight text-zinc-500 truncate">{label}</span>
-                <span className="text-[10px] font-black text-zinc-900 dark:text-zinc-100">{value}%</span>
+                <AnimatedNumber
+                    value={value}
+                    format={(n) => `${Math.round(n)}%`}
+                    className="text-[10px] font-black text-zinc-900 dark:text-zinc-100 tabular-nums"
+                />
             </div>
             <div className="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${value}%` }}
-                    viewport={{ once: true }}
+                    animate={{ width: `${clamp(value, 0, 100)}%` }}
+                    transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                     className={`h-full ${colorClass} rounded-full`}
                 />
             </div>
         </div>
     </div>
-);
+));
 
 /** Neon silhouette — SVG kinetic micro-graphic representing muscle vs fat. */
 const KineticSilhouette: React.FC<{ musclePct: number; fatPct: number; isAr: boolean }> = ({ musclePct, fatPct, isAr }) => {
@@ -101,17 +121,25 @@ const EngineTile: React.FC<{
     accentClass?: string;
     trend?: 'up' | 'down';
     hint?: string;
-}> = ({ icon, label, value, accentClass = 'text-gold-500', trend, hint }) => (
-    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5">
+}> = memo(({ icon, label, value, accentClass = 'text-gold-500', trend, hint }) => (
+    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:border-gold-500/30">
         <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
         <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
             <span className={`flex items-center justify-center w-7 h-7 rounded-lg bg-white/70 dark:bg-white/10 ${accentClass}`}>{icon}</span>
             <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>
         </div>
-        <span className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono">{value}</span>
+        <motion.span
+            key={value}
+            initial={{ opacity: 0, y: 6, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono tabular-nums"
+        >
+            {value}
+        </motion.span>
         {hint && <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{hint}</span>}
     </div>
-);
+));
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Main component
@@ -141,6 +169,49 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         projections,
     } = useTransformationTimeline({ content });
 
+    const [navDirection, setNavDirection] = useState<'next' | 'prev'>('next');
+
+    const goNext = useCallback(() => {
+        setNavDirection('next');
+        nextPhase();
+    }, [nextPhase]);
+
+    const goPrev = useCallback(() => {
+        setNavDirection('prev');
+        prevPhase();
+    }, [prevPhase]);
+
+    const goTo = useCallback((idx: number) => {
+        setNavDirection(idx > activePhase ? 'next' : 'prev');
+        setPhase(idx);
+    }, [activePhase, setPhase]);
+
+    // Keyboard navigation (Arrow keys) — skips interactive form controls.
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            const tag = target?.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (isRTL) goPrev(); else goNext();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (isRTL) goNext(); else goPrev();
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [isRTL, goNext, goPrev]);
+
+    // Unit-aware narrative context — recomputed only when inputs/units change.
+    const copyCtx = useMemo<TimelineCopyContext>(
+        () => buildTimelineCopyContext({ startWeightKg, trainingAge, unitSystem, isAr }),
+        [startWeightKg, trainingAge, unitSystem, isAr],
+    );
+
+    const renderCopy = useCallback((template: string) => renderTimelineCopy(template, copyCtx), [copyCtx]);
+
     const getPhaseIcon = (key: string) => {
         switch (key) {
             case 'spark': return <Zap className="w-6 h-6" />;
@@ -152,7 +223,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     };
 
     // Live engine values formatted in the active unit system.
-    const startWeightDisplay = formatWeight(startWeightKg, unitSystem, isAr);
     const activeMuscleGain = formatWeight(activeAggregate?.muscleGainKg ?? 0, unitSystem, isAr);
     const activeFatPctEnd = `${roundTo(activeAggregate?.bodyFatPctEnd ?? startBodyFatPct, 1)}%`;
     const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
@@ -161,6 +231,21 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const activeWeeklyFatLossKg = projections[Math.max((activeAggregate?.weekStart ?? 1) - 1, 0)]?.fatLossKg ?? 0;
     const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${isAr ? 'أسبوع' : 'wk'}`;
     const weeklyFatLossHint = `${isAr ? `~${activeFatLossRate} من وزن الجسم` : `${activeFatLossRate} of body weight`}`;
+
+    const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
+
+    // Direction-aware slide variants (RTL-aware).
+    const slideVariants = {
+        enter: (dir: 'next' | 'prev') => ({
+            x: isRTL ? (dir === 'next' ? -64 : 64) : (dir === 'next' ? 64 : -64),
+            opacity: 0,
+        }),
+        center: { x: 0, opacity: 1 },
+        exit: (dir: 'next' | 'prev') => ({
+            x: isRTL ? (dir === 'next' ? 64 : -64) : (dir === 'next' ? -64 : 64),
+            opacity: 0,
+        }),
+    };
 
     const trainingAgeOptions: { id: TrainingAge; label: string }[] = [
         { id: 'novice', label: L.trainingNovice },
@@ -211,10 +296,17 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         { icon: <LineChart className="w-4 h-4" />, label: isAr ? 'توقعات حية' : 'Live Projections' },
                         { icon: <ShieldCheck className="w-4 h-4" />, label: isAr ? 'نصائح الخبراء' : 'Expert Tips' },
                     ].map((stat, i) => (
-                        <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-black text-zinc-600 dark:text-zinc-300">
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 * i }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-black text-zinc-600 dark:text-zinc-300"
+                        >
                             <span className="text-gold-500">{stat.icon}</span>
                             {stat.label}
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
@@ -241,7 +333,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
 
                         {/* Unit toggle */}
-                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800">
+                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800" role="group" aria-label={isAr ? 'نظام القياس' : 'Unit system'}>
                             <button
                                 type="button"
                                 onClick={() => setUnitSystem('metric')}
@@ -269,7 +361,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <Dumbbell className="w-3 h-3 text-gold-500" />
                                     {L.startWeightLabel}
                                 </span>
-                                <span className="text-sm font-black text-zinc-900 dark:text-white font-mono">{startWeightDisplay}</span>
+                                <AnimatedNumber
+                                    value={startWeightKg}
+                                    format={(n) => formatWeight(n, unitSystem, isAr)}
+                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                />
                             </div>
                             <input
                                 type="range"
@@ -289,7 +385,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <Percent className="w-3 h-3 text-gold-500" />
                                     {L.bodyFatLabel}
                                 </span>
-                                <span className="text-sm font-black text-zinc-900 dark:text-white font-mono">{startBodyFatPct}%</span>
+                                <AnimatedNumber
+                                    value={startBodyFatPct}
+                                    format={(n) => `${Math.round(n)}%`}
+                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                />
                             </div>
                             <input
                                 type="range"
@@ -312,9 +412,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 {trainingAgeOptions.map((opt) => {
                                     const selected = trainingAge === opt.id;
                                     return (
-                                        <button
+                                        <motion.button
                                             key={opt.id}
                                             type="button"
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={() => setTrainingAge(opt.id)}
                                             aria-pressed={selected}
                                             className={`px-3.5 py-2 rounded-xl text-[11px] font-black transition-all border ${
@@ -324,7 +425,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             }`}
                                         >
                                             {opt.label}
-                                        </button>
+                                        </motion.button>
                                     );
                                 })}
                             </div>
@@ -408,11 +509,16 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             <motion.div
                                 key={idx}
                                 className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group/phase"
-                                onClick={() => setPhase(idx)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                onClick={() => goTo(idx)}
+                                whileHover={{ scale: 1.06 }}
+                                whileTap={{ scale: 0.92 }}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={phase.title}
+                                aria-current={isActive ? 'step' : undefined}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(idx); } }}
                             >
-                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl relative overflow-hidden ${
+                                <div className={`relative w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl overflow-hidden ${
                                     isActive
                                         ? 'bg-zinc-900 dark:bg-white text-gold-500 scale-110 ring-4 ring-gold-500/20 shadow-[0_0_25px_-5px_rgba(234,179,8,0.6)]'
                                         : isCompleted
@@ -522,6 +628,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             fontWeight: 'bold'
                                         }}
                                     />
+                                    <ReferenceLine
+                                        x={activeData.week}
+                                        stroke="#f59e0b"
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 4"
+                                        ifOverflow="extendDomain"
+                                    />
                                     <Area name={L.strength} type="monotone" dataKey="strength" stackId="1" stroke="#ef4444" fillOpacity={1} fill="url(#colorStrength)" strokeWidth={2} />
                                     <Area name={L.hypertrophy} type="monotone" dataKey="hypertrophy" stackId="1" stroke="#a855f7" fillOpacity={1} fill="url(#colorHypertrophy)" strokeWidth={2} />
                                     <Area name={L.water} type="monotone" dataKey="waterRetention" stackId="1" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2} />
@@ -532,140 +645,170 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
                     </motion.div>
 
-                    {/* Content Card */}
-                    <motion.div
-                        key={activePhase}
-                        initial={{ opacity: 0, x: isRTL ? -30 : 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                        className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[500px]"
-                    >
-                        {/* Stats Header */}
-                        <div className="w-full bg-zinc-50/50 dark:bg-background/40 p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col relative text-start">
-                            <div className="absolute top-0 inset-inline-start-0 w-full h-1.5 bg-gradient-to-r from-gold-600 to-gold-400"></div>
+                    {/* Content Card — animated phase transitions */}
+                    <AnimatePresence mode="wait" custom={navDirection} initial={false}>
+                        <motion.div
+                            key={activePhase}
+                            custom={navDirection}
+                            variants={slideVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+                            className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[520px]"
+                        >
+                            {/* Stats Header */}
+                            <div className="w-full bg-zinc-50/50 dark:bg-background/40 p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col relative text-start">
+                                <div className="absolute top-0 inset-inline-start-0 w-full h-1.5 bg-gradient-to-r from-gold-600 to-gold-400"></div>
 
-                            <div className="flex items-center gap-3 mb-4">
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="w-10 h-10 flex items-center justify-center bg-gold-500/10 text-gold-600 dark:text-gold-500 rounded-lg shadow-lg ring-1 ring-gold-500/20"
-                                >
-                                    {getPhaseIcon(activeData.iconKey)}
+                                <div className="flex items-center gap-3 mb-3">
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="w-10 h-10 flex items-center justify-center bg-gold-500/10 text-gold-600 dark:text-gold-500 rounded-lg shadow-lg ring-1 ring-gold-500/20"
+                                    >
+                                        {getPhaseIcon(activeData.iconKey)}
+                                    </motion.div>
+                                    <div>
+                                        <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight tracking-tighter uppercase">{activeData.title}</h3>
+                                        <p className="text-xs text-gold-600 dark:text-gold-500 font-black tracking-[0.2em] uppercase mt-1">{activeData.shortDesc}</p>
+                                    </div>
+                                </div>
+
+                                {/* Tagline — premium strip */}
+                                <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-500/10 border border-gold-500/20">
+                                    <Star className="w-3 h-3 text-gold-500 shrink-0" />
+                                    <span className="text-[11px] md:text-xs font-black text-gold-700 dark:text-gold-400 italic leading-tight">{activeData.tagline}</span>
+                                </div>
+
+                                <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
+                                    <MetricBar label={L.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
+                                    <MetricBar label={L.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
+                                    <MetricBar label={L.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
+                                    <MetricBar label={L.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-2.5 h-2.5" />} />
+                                    <MetricBar label={L.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-2.5 h-2.5" />} />
+                                </div>
+                            </div>
+
+                            {/* Narrative Section */}
+                            <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start overflow-y-auto max-h-[520px] hide-scrollbar">
+
+                                {/* Biological block */}
+                                <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="relative group/item">
+                                    <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
+                                    <div className="ps-6 group-hover/item:ps-8 transition-all">
+                                        <h4 className="text-xs md:text-sm font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                            <Activity className="w-4 h-4" />
+                                            {L.biologicalTitle}
+                                        </h4>
+                                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
+                                            <StyledBrandName text={renderCopy(activeData.details.biological)} />
+                                        </p>
+                                    </div>
                                 </motion.div>
-                                <div>
-                                    <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight tracking-tighter uppercase">{activeData.title}</h3>
-                                    <p className="text-xs text-gold-600 dark:text-gold-500 font-black tracking-[0.2em] uppercase mt-1">{activeData.shortDesc}</p>
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
-                                <MetricBar label={L.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
-                                <MetricBar label={L.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
-                                <MetricBar label={L.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
-                                <MetricBar label={L.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-2.5 h-2.5" />} />
-                                <MetricBar label={L.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-2.5 h-2.5" />} />
-                            </div>
-                        </div>
+                                {/* Feeling block */}
+                                <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="relative group/item">
+                                    <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
+                                    <div className="ps-6 group-hover/item:ps-8 transition-all">
+                                        <h4 className="text-xs md:text-sm font-black text-purple-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                            <Brain className="w-4 h-4" />
+                                            {L.feelingTitle}
+                                        </h4>
+                                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
+                                            <StyledBrandName text={renderCopy(activeData.details.feeling)} />
+                                        </p>
+                                    </div>
+                                </motion.div>
 
-                        {/* Narrative Section */}
-                        <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start overflow-y-auto max-h-[500px] hide-scrollbar">
+                                {/* Expert action block */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-50 text-white dark:text-black p-5 md:p-7 rounded-2xl shadow-2xl relative overflow-hidden ring-2 ring-gold-500/30 group/action"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover/action:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                    <h4 className="text-xs md:text-sm font-black text-gold-400 dark:text-gold-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                        <Zap className="w-4 h-4 fill-gold-400" />
+                                        {L.actionTitle}
+                                    </h4>
+                                    <p className="text-base md:text-lg font-black leading-tight italic text-white dark:text-black">
+                                        <StyledBrandName text={renderCopy(activeData.details.action)} />
+                                    </p>
 
-                            {/* Biological block */}
-                            <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="relative group/item">
-                                <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
-                                <div className="ps-6 group-hover/item:ps-8 transition-all">
-                                    <h4 className="text-xs md:text-sm font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                        <Activity className="w-4 h-4" />
-                                        {L.biologicalTitle}
+                                    <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
+                                        <ShieldCheck className="w-2.5 h-2.5" />
+                                        {isAr ? 'نصيحة الخبير' : 'Expert Tip'}
+                                    </div>
+                                </motion.div>
+
+                                {/* Medical advice block */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="relative rounded-2xl border border-rose-500/25 dark:border-rose-400/25 bg-gradient-to-br from-rose-500/[0.06] to-transparent p-5 md:p-7 shadow-xl overflow-hidden group/medical"
+                                >
+                                    <div className="absolute top-0 inset-inline-start-0 w-full h-1 bg-gradient-to-r from-rose-600 via-rose-400 to-transparent" />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent opacity-0 group-hover/medical:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                    <h4 className="text-xs md:text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                        <HeartPulse className="w-4 h-4" />
+                                        {L.medicalTitle}
                                     </h4>
                                     <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
-                                        <StyledBrandName text={activeData.details.biological} />
+                                        <StyledBrandName text={renderCopy(activeData.details.medical)} />
                                     </p>
-                                </div>
-                            </motion.div>
 
-                            {/* Feeling block */}
-                            <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="relative group/item">
-                                <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
-                                <div className="ps-6 group-hover/item:ps-8 transition-all">
-                                    <h4 className="text-xs md:text-sm font-black text-purple-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                        <Brain className="w-4 h-4" />
-                                        {L.feelingTitle}
-                                    </h4>
-                                    <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
-                                        <StyledBrandName text={activeData.details.feeling} />
-                                    </p>
-                                </div>
-                            </motion.div>
-
-                            {/* Expert action block */}
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.3 }}
-                                className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-50 text-white dark:text-black p-5 md:p-7 rounded-2xl shadow-2xl relative overflow-hidden ring-2 ring-gold-500/30 group/action"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover/action:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                                <h4 className="text-xs md:text-sm font-black text-gold-400 dark:text-gold-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                    <Zap className="w-4 h-4 fill-gold-400" />
-                                    {L.actionTitle}
-                                </h4>
-                                <p className="text-base md:text-lg font-black leading-tight italic text-white dark:text-black">
-                                    <StyledBrandName text={activeData.details.action} />
-                                </p>
-
-                                <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
-                                    <ShieldCheck className="w-2.5 h-2.5" />
-                                    {isAr ? 'نصيحة الخبير' : 'Expert Tip'}
-                                </div>
-                            </motion.div>
-
-                            {/* Medical advice block */}
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.4 }}
-                                className="relative rounded-2xl border border-rose-500/25 dark:border-rose-400/25 bg-gradient-to-br from-rose-500/[0.06] to-transparent p-5 md:p-7 shadow-xl overflow-hidden group/medical"
-                            >
-                                <div className="absolute top-0 inset-inline-start-0 w-full h-1 bg-gradient-to-r from-rose-600 via-rose-400 to-transparent" />
-                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent opacity-0 group-hover/medical:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                                <h4 className="text-xs md:text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                    <HeartPulse className="w-4 h-4" />
-                                    {L.medicalTitle}
-                                </h4>
-                                <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
-                                    <StyledBrandName text={activeData.details.medical} />
-                                </p>
-
-                                <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-500 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
-                                    <ShieldCheck className="w-2.5 h-2.5" />
-                                    {isAr ? 'إشراف طبي' : 'Medical Supervision'}
-                                </div>
-                            </motion.div>
-                        </div>
-
-                        <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between mt-auto">
-                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{L.phaseLabel} {activePhase + 1} / {totalPhases}</span>
-                            <div className="flex gap-2">
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
-                                    disabled={activePhase === 0}
-                                    onClick={prevPhase}
-                                    className="p-2.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 disabled:opacity-20 transition-all shadow-md"
-                                >
-                                    <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-                                </motion.button>
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
-                                    disabled={activePhase === totalPhases - 1}
-                                    onClick={nextPhase}
-                                    className="p-2.5 rounded-xl bg-gold-500 text-black disabled:opacity-20 transition-all shadow-md"
-                                >
-                                    <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-                                </motion.button>
+                                    <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-500 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
+                                        <ShieldCheck className="w-2.5 h-2.5" />
+                                        {isAr ? 'إشراف طبي' : 'Medical Supervision'}
+                                    </div>
+                                </motion.div>
                             </div>
-                        </div>
-                    </motion.div>
+
+                            {/* Footer — progress + navigation */}
+                            <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-4 mt-auto">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                            {L.phaseLabel} {activePhase + 1} / {totalPhases}
+                                        </span>
+                                        <span className="text-[10px] font-black text-gold-600 dark:text-gold-500 tabular-nums">{Math.round(phaseProgress)}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                        <motion.div
+                                            className="h-full bg-gradient-to-r from-gold-600 via-gold-500 to-gold-400 rounded-full"
+                                            animate={{ width: `${phaseProgress}%` }}
+                                            transition={{ type: 'spring', stiffness: 120, damping: 24 }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 flex-shrink-0">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        disabled={activePhase === 0}
+                                        onClick={goPrev}
+                                        aria-label={isAr ? 'المرحلة السابقة' : 'Previous phase'}
+                                        className="p-2.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 disabled:opacity-20 transition-all shadow-md hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                                    >
+                                        <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        disabled={activePhase === totalPhases - 1}
+                                        onClick={goNext}
+                                        aria-label={isAr ? 'المرحلة التالية' : 'Next phase'}
+                                        className="p-2.5 rounded-xl bg-gold-500 text-black disabled:opacity-20 transition-all shadow-md hover:bg-gold-400"
+                                    >
+                                        <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </div>
         </section>

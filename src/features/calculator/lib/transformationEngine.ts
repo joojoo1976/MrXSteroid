@@ -122,6 +122,28 @@ export const decomposeBody = (weightKg: number, bodyFatPct: number) => {
 };
 
 /**
+ * Adaptive weekly fat-loss rate — a piecewise-linear physiological model:
+ * anchored at 18% body fat where the evidence-based 0.75% default applies.
+ * Leaner bodies lose more slowly (down to 0.5%, preserving muscle); fatter
+ * bodies may lose slightly faster (up to 1%). An explicit override wins.
+ */
+export const adaptiveFatLossRate = (
+    startBodyFatPct: number,
+    override?: number,
+): number => {
+    if (override != null) {
+        return clamp(override, FAT_LOSS_RATE.MIN, FAT_LOSS_RATE.MAX);
+    }
+    const bf = clamp(startBodyFatPct, 3, 60);
+    const t = (bf - 18) / 18; // -1 @ 0% BF, 0 @ 18% BF, +1 @ 36% BF
+    return clamp(
+        FAT_LOSS_RATE.DEFAULT + t * 0.0025,
+        FAT_LOSS_RATE.MIN,
+        FAT_LOSS_RATE.MAX,
+    );
+};
+
+/**
  * Weekly muscle-gain rate (kg) — decays as training age rises and as the
  * adaptation window shrinks later in the cycle.
  */
@@ -158,11 +180,7 @@ export const projectBodyComposition = (
 ): WeeklyProjection[] => {
     const startW = clamp(input.startWeightKg, 30, 400);
     const startBf = clamp(input.startBodyFatPct, 3, 60);
-    const weeklyLoss = clamp(
-        input.weeklyFatLossRate ?? FAT_LOSS_RATE.DEFAULT,
-        FAT_LOSS_RATE.MIN,
-        FAT_LOSS_RATE.MAX,
-    );
+    const weeklyLoss = adaptiveFatLossRate(startBf, input.weeklyFatLossRate);
 
     let weightKg = startW;
     let fatKg = startW * (startBf / 100);
@@ -261,3 +279,125 @@ export const aggregatePhases = (
         };
     });
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SMART NUTRITION & HYDRATION TARGETS
+//  Dynamic recommendations computed from the user's own inputs, then rendered
+//  in the active unit system (metric kg/litres — imperial lbs/oz).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Recommended daily water intake (ml per kg of bodyweight). */
+export const HYDRATION_ML_PER_KG = 40;
+
+/** Daily protein target (g per kg) — rises with training age. */
+export const PROTEIN_G_PER_KG: Record<TrainingAge, number> = {
+    novice: 2.2,
+    intermediate: 2.5,
+    advanced: 2.8,
+};
+
+/** Training-day carbohydrate range (g per kg). */
+export const CARBS_G_PER_KG = { MIN: 4, MAX: 6 } as const;
+
+/** Bulking surplus range (kcal per kg). */
+export const KCAL_PER_KG = { MIN: 16, MAX: 18 } as const;
+
+export interface NutritionTargets {
+    /** Daily water intake, litres. */
+    waterLiters: number;
+    /** Daily protein target, g per kg. */
+    proteinGPerKg: number;
+    /** Daily carb midpoint, g per kg. */
+    carbsGPerKg: number;
+    /** Daily kcal midpoint per kg. */
+    kcalPerKg: number;
+}
+
+/**
+ * Computes personalized nutrition targets from the user's starting weight and
+ * training age. Pure + deterministic + edge-safe.
+ */
+export const nutritionTargets = (
+    input: { startWeightKg: number; trainingAge: TrainingAge },
+): NutritionTargets => {
+    const weight = clamp(input.startWeightKg, 30, 400);
+    return {
+        waterLiters: roundTo(clamp(weight * (HYDRATION_ML_PER_KG / 1000), 3.2, 5.5), 1),
+        proteinGPerKg: PROTEIN_G_PER_KG[input.trainingAge],
+        carbsGPerKg: (CARBS_G_PER_KG.MIN + CARBS_G_PER_KG.MAX) / 2,
+        kcalPerKg: (KCAL_PER_KG.MIN + KCAL_PER_KG.MAX) / 2,
+    };
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UNIT-AWARE NARRATIVE CONTEXT
+//  The phase narrative uses `{token}` placeholders (weight, water, protein,
+//  carbs, kcal). At render time they are substituted with fully localized,
+//  unit-system-aware phrases so the same Arabic/English copy adapts
+//  Metric → Imperial (kg ↔ lbs, litres ↔ oz) on the fly.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface TimelineCopyContext {
+    /** e.g. "80 kg" / "176 lbs" / "٨٠ كجم". */
+    weight: string;
+    /** e.g. "3.2 liters" / "108 oz (≈ 0.8 gal)". */
+    water: string;
+    /** e.g. "2.5g per kg" / "1.1g per lb". */
+    protein: string;
+    /** e.g. "4–6g per kg" / "1.8–2.7g per lb". */
+    carbs: string;
+    /** e.g. "16–18 kcal/kg" / "7–8 kcal/lb". */
+    kcal: string;
+}
+
+const formatNum = (value: number, decimals: number, isAr: boolean): string =>
+    roundTo(value, decimals).toLocaleString(isAr ? 'ar-EG' : 'en-US');
+
+const perLb = (perKg: number): number => perKg / CONVERSIONS.KG_TO_LBS;
+
+/**
+ * Builds the localized placeholder map for the active unit system.
+ * Pure + deterministic — fully testable.
+ */
+export const buildTimelineCopyContext = (input: {
+    startWeightKg: number;
+    trainingAge: TrainingAge;
+    unitSystem: UnitSystem;
+    isAr: boolean;
+}): TimelineCopyContext => {
+    const targets = nutritionTargets(input);
+    const weightKg = clamp(input.startWeightKg, 30, 400);
+
+    if (input.unitSystem === 'imperial') {
+        const weightLbs = weightKg * CONVERSIONS.KG_TO_LBS;
+        const waterOz = Math.round(targets.waterLiters * 33.814);
+        return {
+            weight: `${formatNum(weightLbs, 0, input.isAr)} ${input.isAr ? 'رطل' : 'lbs'}`,
+            water: `${formatNum(waterOz, 0, input.isAr)} ${input.isAr ? 'أونصة' : 'oz'} (≈ ${formatNum(waterOz / 128, 1, input.isAr)} ${input.isAr ? 'غالون' : 'gal'})`,
+            protein: `${formatNum(perLb(targets.proteinGPerKg), 1, input.isAr)}g/${input.isAr ? 'رطل' : 'lb'}`,
+            carbs: `${formatNum(perLb(CARBS_G_PER_KG.MIN), 1, input.isAr)}–${formatNum(perLb(CARBS_G_PER_KG.MAX), 1, input.isAr)}g/${input.isAr ? 'رطل' : 'lb'}`,
+            kcal: `${Math.round(perLb(KCAL_PER_KG.MIN))}–${Math.round(perLb(KCAL_PER_KG.MAX))} ${input.isAr ? 'سعرة/رطل' : 'kcal/lb'}`,
+        };
+    }
+
+    return {
+        weight: `${formatNum(weightKg, 0, input.isAr)} ${input.isAr ? 'كجم' : 'kg'}`,
+        water: `${formatNum(targets.waterLiters, 1, input.isAr)} ${input.isAr ? 'لتر' : 'liters'}`,
+        protein: `${formatNum(targets.proteinGPerKg, 1, input.isAr)}g/${input.isAr ? 'كغ' : 'kg'}`,
+        carbs: `${CARBS_G_PER_KG.MIN}–${CARBS_G_PER_KG.MAX}g/${input.isAr ? 'كغ' : 'kg'}`,
+        kcal: `${KCAL_PER_KG.MIN}–${KCAL_PER_KG.MAX} ${input.isAr ? 'سعرة/كغ' : 'kcal/kg'}`,
+    };
+};
+
+/**
+ * Substitutes `{token}` placeholders in a phase template with the resolved,
+ * unit-aware phrases. Unknown tokens are left untouched.
+ */
+export const renderTimelineCopy = (
+    template: string,
+    ctx: TimelineCopyContext,
+): string =>
+    template.replace(/\{(\w+)\}/g, (match, key) => {
+        const k = key as keyof TimelineCopyContext;
+        return k in ctx ? ctx[k] : match;
+    });
