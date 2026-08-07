@@ -10,6 +10,7 @@ import {
     estimateEnergy,
     estimateIdealWeight,
     estimateCycleSummary,
+    deriveCoachFacts,
     formatHeight,
     FAT_LOSS_RATE,
 } from '../../features/calculator/lib/transformationEngine';
@@ -272,5 +273,42 @@ describe('transformationEngine — advanced live predictions', () => {
         }
         const elapsed = performance.now() - t0;
         expect(elapsed).toBeLessThan(1000);
+    });
+});
+
+describe('transformationEngine — deriveCoachFacts', () => {
+    it('flags aggressive deficit for a heavy body-fat start', () => {
+        const s = estimateCycleSummary({ startWeightKg: 110, startBodyFatPct: 32, heightCm: 180, trainingAge: 'advanced' }, 180);
+        const f = deriveCoachFacts(s);
+        expect(f.bfZone).toBe('high');
+        expect(f.bmiStatus).toBe('obese');
+        expect(f.deficitLevel).toBe('aggressive');
+        expect(f.reachesGoalInCycle).toBe(false);
+        expect(f.weeksBeyondCycle).not.toBeNull();
+    });
+
+    it('classifies a moderate start as normal composition', () => {
+        const s = estimateCycleSummary({ startWeightKg: 75, startBodyFatPct: 20, heightCm: 175, trainingAge: 'intermediate' }, 175);
+        const f = deriveCoachFacts(s);
+        expect(f.bfZone).toBe('moderate');
+        expect(f.bmiStatus).toBe('normal');
+        expect(f.bfMilestoneCount).toBeGreaterThanOrEqual(1);
+    });
+
+    it('anchors the next milestone to the active week', () => {
+        const s = estimateCycleSummary({ startWeightKg: 85, startBodyFatPct: 25, heightCm: 178, trainingAge: 'intermediate' }, 178);
+        const early = deriveCoachFacts(s, 1);
+        const late = deriveCoachFacts(s, 11);
+        // Early view should see the first milestone; a late view may have none left.
+        expect(early.nextMilestone).not.toBeNull();
+        expect(early.nextMilestone!.week).toBeGreaterThanOrEqual(1);
+        if (late.nextMilestone) {
+            expect(late.nextMilestone!.week).toBeGreaterThanOrEqual(11);
+        }
+    });
+
+    it('is deterministic', () => {
+        const s = estimateCycleSummary({ startWeightKg: 80, startBodyFatPct: 18, heightCm: 178, trainingAge: 'intermediate' }, 178);
+        expect(deriveCoachFacts(s, 3)).toEqual(deriveCoachFacts(s, 3));
     });
 });

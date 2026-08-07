@@ -1304,6 +1304,29 @@ export interface ContentStrings {
     minutes: string;
     seconds: string;
   };
+  // Smart Coach — live verdicts derived from the prediction engine
+  timelineCoach?: {
+    title: string;
+    subtitle: string;
+    goalTitle: string;
+    deficitTitle: string;
+    compositionTitle: string;
+    nutritionTitle: string;
+    verdictInCycle: string;
+    verdictBeyond: string;
+    deficitMild: string;
+    deficitModerate: string;
+    deficitAggressive: string;
+    bfLean: string;
+    bfModerate: string;
+    bfHigh: string;
+    proteinNovice: string;
+    proteinIntermediate: string;
+    proteinAdvanced: string;
+    milestoneNext: string;
+    milestoneDone: string;
+    noMilestone: string;
+  };
   offerExpired: string;
   heroEditions: Record<Language, string>;
 

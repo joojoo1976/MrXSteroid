@@ -708,3 +708,65 @@ export const formatHeight = (
     }
     return `${Math.round(cm)} ${isAr ? 'سم' : 'cm'}`;
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SMART COACH FACTS
+//  Pure classification of the live CycleSummary into actionable verdicts.
+//  The component localizes these facts; the engine stays i18n-free and testable.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type BfZone = 'lean' | 'moderate' | 'high';
+export type DeficitLevel = 'mild' | 'moderate' | 'aggressive';
+export type BmiStatus = 'underweight' | 'normal' | 'overweight' | 'obese';
+
+export interface CoachFacts {
+    /** Starting body-fat zone (drives fat-loss expectations). */
+    bfZone: BfZone;
+    /** Implied daily kcal deficit band. */
+    deficitLevel: DeficitLevel;
+    /** WHO BMI classification of the starting point. */
+    bmiStatus: BmiStatus;
+    /** Whether the ideal weight is reachable inside the 12-week cycle. */
+    reachesGoalInCycle: boolean;
+    /** Extra weeks needed after the cycle when the target sits beyond it. */
+    weeksBeyondCycle: number | null;
+    /** The next (future) body-fat milestone relative to the active week. */
+    nextMilestone: MilestonePoint | null;
+    /** How many body-fat milestones (bf20/bf18/bf15) the cycle reaches. */
+    bfMilestoneCount: number;
+}
+
+/**
+ * Classifies a live cycle summary into coaching verdicts. Pure + deterministic.
+ * `activeWeek` anchors the "next milestone" to the phase the user is viewing.
+ */
+export const deriveCoachFacts = (
+    summary: CycleSummary,
+    activeWeek = 1,
+): CoachFacts => {
+    const bf = summary.startBfPct;
+    const bfZone: BfZone = bf < 15 ? 'lean' : bf <= 25 ? 'moderate' : 'high';
+
+    const deficit = summary.energy.dailyDeficitKcal;
+    const deficitLevel: DeficitLevel =
+        deficit < 300 ? 'mild' : deficit <= 650 ? 'moderate' : 'aggressive';
+
+    const bmi = summary.bmiStart;
+    const bmiStatus: BmiStatus =
+        bmi < 18.5 ? 'underweight' : bmi < 25 ? 'normal' : bmi < 30 ? 'overweight' : 'obese';
+
+    const bfMilestones = summary.milestones.filter((m) => m.kind !== 'midIdeal');
+
+    return {
+        bfZone,
+        deficitLevel,
+        bmiStatus,
+        reachesGoalInCycle: summary.withinCycle,
+        weeksBeyondCycle:
+            summary.weeksToIdeal != null && summary.weeksToIdeal > CYCLE_TOTAL_WEEKS
+                ? summary.weeksToIdeal - CYCLE_TOTAL_WEEKS
+                : null,
+        nextMilestone: bfMilestones.find((m) => m.week >= activeWeek) ?? null,
+        bfMilestoneCount: bfMilestones.length,
+    };
+};

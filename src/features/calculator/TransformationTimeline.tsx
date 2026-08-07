@@ -4,9 +4,9 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
-    Target, CalendarDays,
+    Target, CalendarDays, CheckCircle2, Sparkles,
 } from 'lucide-react';
-import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
@@ -18,8 +18,10 @@ import {
     roundTo,
     buildTimelineCopyContext,
     renderTimelineCopy,
+    deriveCoachFacts,
     type TimelineCopyContext,
     type TrainingAge,
+    type CoachFacts,
 } from './lib/transformationEngine';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -343,6 +345,98 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         const hi = Math.max(...vals);
         return [Math.floor(lo - 2), Math.ceil(hi + 2)];
     }, [chartData]);
+
+    // ── Smart Coach — live verdicts from the engine summary ─────────────
+    const coachFacts = useMemo<CoachFacts>(
+        () => deriveCoachFacts(summary, activeAggregate?.weekStart ?? 1),
+        [summary, activeAggregate?.weekStart],
+    );
+
+    const C = content.timelineCoach;
+    const fillCoach = useCallback(
+        (template: string, vars: Record<string, string>) =>
+            template.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m),
+        [],
+    );
+
+    const milestoneDots = useMemo(() => {
+        return summary.milestones
+            .filter((m) => m.kind !== 'midIdeal')
+            .map((m) => {
+                const idx = content.timelinePhases.findIndex(
+                    (p) => m.week >= p.weekStart && m.week <= p.weekEnd,
+                );
+                const row = chartData[idx];
+                if (!row) return null;
+                const pct = m.kind === 'bf15' ? 15 : m.kind === 'bf18' ? 18 : 20;
+                return { x: row.week, y: row.bodyFatPct, pct, week: m.week, kind: m.kind };
+            })
+            .filter((d): d is Exclude<typeof d, null> => d !== null);
+    }, [summary.milestones, chartData, content.timelinePhases]);
+
+    const coachTips = useMemo(() => {
+        const kcal = summary.energy.dailyDeficitKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US');
+        const vars: Record<string, string> = {
+            ideal: idealWeightStr,
+            weeks: String(coachFacts.weeksBeyondCycle ?? 0),
+            kcal,
+            bf: String(roundTo(summary.startBfPct, 0)),
+            pct: '18',
+            week: '1',
+        };
+        const tips: Array<{ icon: React.ReactNode; accent: string; title: string; text: string }> = [];
+
+        // 1 — Goal trajectory
+        tips.push({
+            icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+            accent: coachFacts.reachesGoalInCycle ? 'text-emerald-500' : 'text-gold-500',
+            title: C?.goalTitle ?? '',
+            text: fillCoach(
+                coachFacts.reachesGoalInCycle ? C?.verdictInCycle ?? '' : C?.verdictBeyond ?? '',
+                vars,
+            ),
+        });
+
+        // 2 — Calorie economy
+        const deficitKey = coachFacts.deficitLevel === 'mild'
+            ? C?.deficitMild
+            : coachFacts.deficitLevel === 'aggressive' ? C?.deficitAggressive : C?.deficitModerate;
+        tips.push({
+            icon: <Flame className="w-3.5 h-3.5" />,
+            accent: coachFacts.deficitLevel === 'aggressive'
+                ? 'text-rose-500'
+                : coachFacts.deficitLevel === 'mild' ? 'text-sky-500' : 'text-orange-500',
+            title: C?.deficitTitle ?? '',
+            text: fillCoach(deficitKey ?? '', vars),
+        });
+
+        // 3 — Starting composition
+        const bfKey = coachFacts.bfZone === 'lean' ? C?.bfLean : coachFacts.bfZone === 'high' ? C?.bfHigh : C?.bfModerate;
+        tips.push({
+            icon: <Droplet className="w-3.5 h-3.5" />,
+            accent: coachFacts.bfZone === 'high' ? 'text-orange-500' : coachFacts.bfZone === 'lean' ? 'text-blue-500' : 'text-cyan-500',
+            title: C?.compositionTitle ?? '',
+            text: fillCoach(bfKey ?? '', vars),
+        });
+
+        // 4 — Nutrition + next milestone
+        const proteinKey = trainingAge === 'novice' ? C?.proteinNovice : trainingAge === 'advanced' ? C?.proteinAdvanced : C?.proteinIntermediate;
+        const milestoneText = coachFacts.nextMilestone
+            ? fillCoach(C?.milestoneNext ?? '', {
+                ...vars,
+                pct: coachFacts.nextMilestone.kind === 'bf15' ? '15' : coachFacts.nextMilestone.kind === 'bf18' ? '18' : '20',
+                week: String(coachFacts.nextMilestone.week),
+            })
+            : coachFacts.bfMilestoneCount > 0 ? C?.milestoneDone : C?.noMilestone;
+        tips.push({
+            icon: <Brain className="w-3.5 h-3.5" />,
+            accent: 'text-purple-500',
+            title: C?.nutritionTitle ?? '',
+            text: `${fillCoach(proteinKey ?? '', vars)} ${milestoneText ?? ''}`,
+        });
+
+        return tips;
+    }, [C, coachFacts, summary, idealWeightStr, isAr, trainingAge, fillCoach]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -712,6 +806,39 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             trend="down"
                             hint={`${L.currentBmi} ${bmiStr}`}
                         />
+
+                        {/* Smart Coach — live verdicts */}
+                        <div className="col-span-2 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                </span>
+                                <div>
+                                    <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                        {C?.title ?? ''}
+                                    </h4>
+                                    <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {coachTips.map((tip, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.06 * i }}
+                                        className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5"
+                                    >
+                                        <span className={`${tip.accent} mt-0.5 flex-shrink-0`}>{tip.icon}</span>
+                                        <div className="min-w-0">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">{tip.title}</p>
+                                            <p className="text-[11px] leading-relaxed font-bold text-zinc-700 dark:text-zinc-300">{tip.text}</p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -817,9 +944,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.projectedFatPct, color: 'cyan-500', dashed: true },
                                     { label: L.cumulativeMuscle, color: 'gold-500', dashed: true },
                                     { label: L.projectedEndWeight, color: 'emerald-500', dashed: true },
+                                    { label: isAr ? 'معالم الدهون' : 'BF Milestones', color: 'cyan-400', marker: true },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
-                                        {item.dashed ? (
+                                        {item.marker ? (
+                                            <span className={`w-2 h-2 rotate-45 rounded-[2px] ${item.color.replace('text-', 'bg-')}`}></span>
+                                        ) : item.dashed ? (
                                             <span className="flex items-center w-3.5">
                                                 <span className={`h-[2px] w-3.5 ${item.color.replace('text-', 'bg-')} opacity-80`}></span>
                                             </span>
@@ -890,6 +1020,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <Line yAxisId="liveBodyFat" type="monotone" dataKey="bodyFatPct" stroke="#22d3ee" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.projectedFatPct} />
                                     <Line yAxisId="liveMuscle" type="monotone" dataKey="cumulativeMuscleKg" stroke="#f59e0b" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.cumulativeMuscle} />
                                     <Line yAxisId="liveWeight" type="monotone" dataKey="weightKg" stroke="#10b981" strokeWidth={2.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} name={L.projectedEndWeight} />
+                                    {/* BF milestone markers — diamond markers on the fat-% line */}
+                                    {milestoneDots.map((dot) => (
+                                        <ReferenceDot
+                                            key={`${dot.kind}-${dot.week}`}
+                                            x={dot.x}
+                                            y={dot.y}
+                                            yAxisId="liveBodyFat"
+                                            r={4.5}
+                                            fill="#22d3ee"
+                                            stroke="#0e7490"
+                                            strokeWidth={1.5}
+                                        />
+                                    ))}
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
