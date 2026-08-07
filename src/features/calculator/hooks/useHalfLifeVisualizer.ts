@@ -2,6 +2,15 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ContentStrings } from '@/shared/types/types';
 import { UnitSystem } from '@/shared/lib/logic';
 import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
+import {
+    simulateSerum,
+    stabilityScore,
+    assessRisks,
+    clearanceDaysFromHalfLife,
+    pctWaitDays,
+    roundTo,
+    type SerumProfile,
+} from '../lib/pharmaEngine';
 
 export interface StackItem {
     id: string;
@@ -23,6 +32,7 @@ export interface SimulationResult {
     }[];
     compoundNames: string[];
     maxLevel: number;
+    troughLevel: number;
     stabilityScore: number;
     saturationDay: number;
     clearanceDay: number;
@@ -125,114 +135,65 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
     const simulationData = useMemo<SimulationResult | null>(() => {
         if (stack.length === 0) return null;
 
-        // Sub-day resolution (0.25-day = 6h steps) for accurate short-ester peak detection
-        const STEP = 0.25;
-        const activePhaseEnd = Math.max(...stack.map(s => (s.startWeek - 1) * 7 + s.duration * 7));
-        const daysToSimulate = activePhaseEnd + 60;
-        const totalSteps = Math.ceil(daysToSimulate / STEP);
-
-        // Build float-timestep accumulator
-        const dataByStep: Array<Record<string, number>> = Array.from({ length: totalSteps }, () => ({ total: 0 }));
-        const compoundNames: string[] = [];
-        const halfLifeSummary: SimulationResult['halfLifeSummary'] = [];
-
-        stack.forEach((item) => {
-            const compound = content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId);
-            if (!compound) return;
-
-            const key = `${item.compoundId}_${item.id}`;
-            compoundNames.push(key);
-            halfLifeSummary.push({
-                name: isRTL && compound.nameAr ? compound.nameAr : compound.name,
-                halfLifeDays: compound.halfLife,
-                clearanceDays: Math.round(compound.halfLife * 5.32),
-            });
-
-            const startDay = (item.startWeek - 1) * 7;
-            const totalDurationDays = item.duration * 7;
-            const h = compound.halfLife;
-            const k = Math.LN2 / h;
-
-            let ka = h < 1.0 ? 12.0 : h <= 3.0 ? 3.0 : 1.0;
-            if (Math.abs(ka - k) < 0.0001) ka += 0.001;
-            const batemanMultiplier = ka / (ka - k);
-
-            const intervalMap: Record<string, number> = { ed: 1, eod: 2, e3d: 3, e7d: 7 };
-            const interval = intervalMap[item.frequency] || 7;
-            const activeDosage = item.dosage * (compound.esterWeight || 1.0);
-
-            const injectionDays: number[] = [];
-            for (let d = startDay; d < startDay + totalDurationDays; d += interval) {
-                injectionDays.push(d);
-            }
-
-            for (let si = 0; si < totalSteps; si++) {
-                const t = si * STEP;
-                if (t < startDay) { dataByStep[si][key] = 0; continue; }
-
-                let serumLevel = 0;
-                for (const injDay of injectionDays) {
-                    if (injDay > t) break;
-                    const deltaT = t - injDay;
-                    // Bateman Equation: C(t) = D·(ka/(ka−ke))·(e^(−ke·Δt) − e^(−ka·Δt))
-                    const level = activeDosage * batemanMultiplier *
-                        (Math.exp(-k * deltaT) - Math.exp(-ka * deltaT));
-                    serumLevel += Math.max(0, level);
-                }
-                dataByStep[si][key] = serumLevel;
-                dataByStep[si]['total'] = (dataByStep[si]['total'] || 0) + serumLevel;
-            }
+        // ── Core pharmacokinetic simulation (pure engine) ──────────────
+        const profile: SerumProfile = simulateSerum({
+            stack,
+            compounds: content.halfLifeVisualizer.compounds,
         });
 
-        // Downsample to daily resolution for chart rendering
-        const dataByDay: ({ [key: string]: number; day: number; total: number })[] = [];
-        for (let day = 0; day < daysToSimulate; day++) {
-            const si = Math.min(Math.round(day / STEP), totalSteps - 1);
-            const entry: { [key: string]: number; day: number; total: number } = {
-                day,
-                total: dataByStep[si]['total'] || 0
+        const {
+            series: chartData,
+            compoundNames,
+            maxLevel,
+            troughLevel,
+            lastInjectionDay,
+            activePhaseEndDay: activePhaseEnd,
+            saturationDay: saturationPoint,
+        } = profile;
+
+        const daysToSimulate = chartData.length;
+        const totalActiveDays = activePhaseEnd;
+
+        // Longest half-life in the stack drives clearance & PCT scheduling.
+        const longestHL = Math.max(...stack.map(s =>
+            content.halfLifeVisualizer.compounds.find(c => c.id === s.compoundId)?.halfLife || 0,
+        ));
+
+        const halfLifeSummary: SimulationResult['halfLifeSummary'] = stack.map((item) => {
+            const compound = content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId);
+            return {
+                name: compound ? (isRTL && compound.nameAr ? compound.nameAr : compound.name) : item.compoundId,
+                halfLifeDays: roundTo(compound?.halfLife ?? 0, 1),
+                clearanceDays: clearanceDaysFromHalfLife(compound?.halfLife ?? 0),
             };
-            for (const key of compoundNames) {
-                entry[key] = dataByStep[si][key] || 0;
-            }
-            dataByDay.push(entry);
-        }
+        });
 
-        const maxLevel = Math.max(...dataByDay.map(d => d.total), 0);
-        const saturationPoint = dataByDay.findIndex(d => d.total >= maxLevel * 0.9);
+        // ── PCT & clearance timing (pharmacokinetically corrected) ─────
+        const pctStartDay = lastInjectionDay + pctWaitDays(longestHL);
+        const clearanceDay = Math.round(lastInjectionDay + clearanceDaysFromHalfLife(longestHL));
 
-        // Stability: overlapping active window only (from saturation to earliest compound's end)
+        // ── Stability over the overlap window ──────────────────────────
         const earliestEnd = Math.min(...stack.map(s => (s.startWeek - 1) * 7 + s.duration * 7));
         const stabilityStart = Math.max(saturationPoint, 0);
         const stabilityEnd = Math.min(earliestEnd, activePhaseEnd);
-        const peakWindowLevels = dataByDay.slice(stabilityStart, stabilityEnd).map(d => d.total).filter(v => v > 0);
-        const mean = peakWindowLevels.length > 0 ? peakWindowLevels.reduce((a, b) => a + b, 0) / peakWindowLevels.length : 0;
-        const stdDev = peakWindowLevels.length > 0 ? Math.sqrt(peakWindowLevels.reduce((sq, n) => sq + Math.pow(n - mean, 2), 0) / peakWindowLevels.length) : 0;
-        const stabilityScore = mean > 0 ? Math.max(0, Math.min(100, 100 - (stdDev / mean * 100))) : 0;
+        const peakWindowLevels = chartData
+            .slice(stabilityStart, stabilityEnd)
+            .map(d => d.total)
+            .filter(v => v > 0);
+        const mean = peakWindowLevels.length > 0
+            ? peakWindowLevels.reduce((a, b) => a + b, 0) / peakWindowLevels.length
+            : 0;
+        const stability = stabilityScore(peakWindowLevels);
         const weeklyAveragePeak = Math.round(mean);
 
-        const has19Nor = stack.some(s => ['deca', 'tren_a', 'tren_e', 'npp'].includes(s.compoundId));
-        const oralCount = stack.filter(s => ['anavar', 'dbol', 'anadrol', 'win_o', 'tbol', 'sdrol'].includes(s.compoundId)).length;
-        const aromatizationRisk = stack.filter(s => ['test_e', 'test_p', 'test_c', 'dbol', 'anadrol'].includes(s.compoundId)).length;
-        const hasAI = stack.some(s => ['arimidex', 'proviron'].includes(s.compoundId));
+        // ── Risk profile ───────────────────────────────────────────────
+        const risks = assessRisks(stack);
+        const aromatizationRisk = risks.aromatizationRisk;
 
-        // PCT start: serum drops below 5% of peak (pharmacokinetic 95% clearance standard)
-        const clearanceThreshold = Math.max(maxLevel * 0.05, 5);
-        const postCycleData = dataByDay.slice(activePhaseEnd);
-        const dropIndex = postCycleData.findIndex(d => d.total < clearanceThreshold);
-        let pctStartDay: number;
-        if (dropIndex !== -1) {
-            pctStartDay = activePhaseEnd + dropIndex;
-        } else {
-            const longestHL = Math.max(...stack.map(s => content.halfLifeVisualizer.compounds.find(c => c.id === s.compoundId)?.halfLife || 0));
-            pctStartDay = activePhaseEnd + Math.ceil(longestHL * 5.32);
-        }
-        const clearanceDay = pctStartDay;
-        const totalActiveDays = activePhaseEnd;
-
+        // PCT protocol table
         let pctIntensity = 1;
-        if (oralCount > 1) pctIntensity++;
-        if (has19Nor) pctIntensity++;
+        if (risks.oralCount > 1) pctIntensity++;
+        if (risks.has19Nor) pctIntensity++;
         if (maxLevel > 800) pctIntensity++;
         if (stack.length > 3) pctIntensity++;
         pctIntensity = Math.min(5, pctIntensity); // clamp
@@ -266,14 +227,15 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
             });
         }
 
+        // ── Localized guidance tiers ───────────────────────────────────
         let stabilityTips = content.halfLifeVisualizer.analysis?.stabilityExcellent ||
             (isRTL ? 'استقرار هرموني ممتاز — منحنى ثابت ومنتظم.' : 'Excellent hormonal stability — smooth, consistent serum curve.');
-        if (stabilityScore < 50) {
+        if (stability < 50) {
             stabilityTips = content.halfLifeVisualizer.analysis?.stabilityFluctuation ||
                 (isRTL
                     ? '⚠️ تذبذب حاد! زد تكرار الحقن (يومياً أو يوم بعد يوم) لتقليل التقلبات بشكل ملحوظ.'
                     : '⚠️ Severe fluctuations — switch to daily or EOD for a smoother pharmacokinetic curve.');
-        } else if (stabilityScore < 75) {
+        } else if (stability < 75) {
             stabilityTips = isRTL
                 ? '⚡ استقرار متوسط — يمكن تحسينه بزيادة تكرار الحقن قليلاً.'
                 : '⚡ Moderate stability — slightly more frequent injections will improve the curve.';
@@ -281,12 +243,12 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
 
         let safetyTips = content.halfLifeVisualizer.analysis?.safetySafe ||
             (isRTL ? 'المؤشرات ضمن النطاق الآمن.' : 'Safety parameters within clinical tolerances.');
-        if (has19Nor) {
+        if (risks.has19Nor) {
             safetyTips = content.halfLifeVisualizer.analysis?.safety19nor ||
                 (isRTL
                     ? '⚠️ 19-nor مكتشف (ترين/ديكا): احتفظ بكابيرجولين 0.25–0.5ملجم لمراقبة البرولاكتين.'
                     : '⚠️ 19-nor detected (Tren/Deca): Keep Cabergoline 0.25–0.5mg on hand for Prolactin control.');
-        } else if (aromatizationRisk > 2 && !hasAI) {
+        } else if (aromatizationRisk > 2 && !risks.hasAI) {
             safetyTips = content.halfLifeVisualizer.analysis?.safetyAromatization ||
                 (isRTL
                     ? '⚠️ خطر أروماتة مرتفع: استخدم مثبط أروماتاز (أريميدكس/أروماسين) للسيطرة على الاستراديول.'
@@ -302,7 +264,7 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
                 (isRTL
                     ? '🚨 دورة عالية الكثافة: hCG إلزامي. راقب LH/FSH بالتحاليل بعد انتهاء PCT.'
                     : '🚨 Ultra-Heavy Cycle: hCG is mandatory. Monitor LH/FSH via blood work post-PCT.');
-        } else if (has19Nor) {
+        } else if (risks.has19Nor) {
             pctTips = content.halfLifeVisualizer.analysis?.pct19nor ||
                 (isRTL
                     ? '⚠️ تنبيه 19-nor: التعافي أبطأ — أطل PCT لـ 6 أسابيع بدل 4.'
@@ -312,7 +274,7 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
         const weeklyPeakByCompound: SimulationResult['weeklyPeakByCompound'] = stack.map((item, idx) => {
             const compound = content.halfLifeVisualizer.compounds.find(c => c.id === item.compoundId);
             const key = `${item.compoundId}_${item.id}`;
-            const peak = Math.max(...dataByDay.map(d => d[key] || 0), 0);
+            const peak = Math.max(...chartData.map(d => d[key] || 0), 0);
             return {
                 name: (isRTL && compound?.nameAr ? compound.nameAr : compound?.name) || item.compoundId,
                 peak: Math.round(peak),
@@ -325,15 +287,16 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
             : `Peak Day ${Math.round(saturationPoint)} → Full Clearance Day ${Math.round(clearanceDay)}`;
 
         return {
-            chartData: dataByDay,
+            chartData,
             compoundNames,
             maxLevel,
-            stabilityScore: Math.round(stabilityScore),
+            troughLevel,
+            stabilityScore: Math.round(stability),
             saturationDay: saturationPoint,
             clearanceDay,
             totalActiveDays,
             weeklyAveragePeak,
-            risks: { has19Nor, oralCount, aromatizationRisk, hasAI },
+            risks,
             pctStartDay,
             daysToSimulate,
             pctProtocol,

@@ -200,13 +200,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             discount,
         });
 
-        // Validate the client-reported amount (if provided) within the configured tolerance.
+        // Log any client/server amount divergence for auditing, but always use the
+        // server-computed authoritative amount. Never block the user with a mismatch error —
+        // the server owns the canonical price and the gateway will be charged the correct amount.
         if (input.amount !== undefined && !isAmountValid(pricing, input.amount, amount)) {
-            console.warn(`⚠️ [CreateInvoice] Amount mismatch — client: ${input.amount}, server: ${amount} ${currency}`);
-            return res.status(400).json({
-                error: 'Amount mismatch — the displayed total is out of sync with server pricing. Please refresh and try again.',
-                details: { expected: amount, received: input.amount, currency },
-            });
+            console.warn(`⚠️ [CreateInvoice] Amount drift — client: ${input.amount}, server: ${amount} ${currency} (diff: ${Math.abs(input.amount - amount)}). Using server amount.`);
         }
 
         console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Method: ${input.paymentMethod}, Integration: ${input.integrationId}, Tier: ${input.tierId}, Qty: ${input.quantity ?? 1}, Amount: ${amount} ${currency}`);

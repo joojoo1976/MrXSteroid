@@ -742,6 +742,7 @@ export interface ContentStrings {
   hlClearanceLabel?: string;
   hlActiveDays?: string;
   hlAvgPeak?: string;
+  hlTroughLabel?: string;
   hlClearStack?: string;
   hlClearStackConfirm?: string;
   hlUnitToggleLabel?: string;
@@ -1126,6 +1127,16 @@ export interface ContentStrings {
       pctNolvadex: string;
       pctClomid: string;
       pctHcg: string;
+    };
+    metaTitle?: string;
+    metaDescription?: string;
+    seoContent?: {
+      badge: string;
+      h2: string;
+      intro: string;
+      blocks: { h3: string; p: string }[];
+      faqTitle: string;
+      faq: { q: string; a: string }[];
     };
     consistencyLabel: string;
     mgSerumLabel: string;

@@ -100,7 +100,8 @@ const EngineTile: React.FC<{
     value: string;
     accentClass?: string;
     trend?: 'up' | 'down';
-}> = ({ icon, label, value, accentClass = 'text-gold-500', trend }) => (
+    hint?: string;
+}> = ({ icon, label, value, accentClass = 'text-gold-500', trend, hint }) => (
     <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5">
         <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
         <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
@@ -108,6 +109,7 @@ const EngineTile: React.FC<{
             <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>
         </div>
         <span className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono">{value}</span>
+        {hint && <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{hint}</span>}
     </div>
 );
 
@@ -136,6 +138,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         setStartBodyFatPct,
         trainingAge,
         setTrainingAge,
+        projections,
     } = useTransformationTimeline({ content });
 
     const getPhaseIcon = (key: string) => {
@@ -153,6 +156,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const activeMuscleGain = formatWeight(activeAggregate?.muscleGainKg ?? 0, unitSystem, isAr);
     const activeFatPctEnd = `${roundTo(activeAggregate?.bodyFatPctEnd ?? startBodyFatPct, 1)}%`;
     const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
+
+    // Real weekly fat loss: actual mass shed in the active phase's first week.
+    const activeWeeklyFatLossKg = projections[Math.max((activeAggregate?.weekStart ?? 1) - 1, 0)]?.fatLossKg ?? 0;
+    const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${isAr ? 'أسبوع' : 'wk'}`;
+    const weeklyFatLossHint = `${isAr ? `~${activeFatLossRate} من وزن الجسم` : `${activeFatLossRate} of body weight`}`;
 
     const trainingAgeOptions: { id: TrainingAge; label: string }[] = [
         { id: 'novice', label: L.trainingNovice },
@@ -335,9 +343,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         <EngineTile
                             icon={<Flame className="w-3.5 h-3.5" />}
                             label={L.weeklyFatLoss}
-                            value={activeFatLossRate}
+                            value={activeWeeklyFatLoss}
                             accentClass="text-orange-500"
                             trend="down"
+                            hint={weeklyFatLossHint}
                         />
                         <EngineTile
                             icon={<Droplet className="w-3.5 h-3.5" />}

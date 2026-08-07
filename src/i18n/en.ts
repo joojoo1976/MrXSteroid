@@ -923,6 +923,7 @@ export const enContent: ContentStrings = {
     hlClearanceLabel: "Full Clearance",
     hlActiveDays: "Active Protocol Days",
     hlAvgPeak: "Avg. Serum Peak",
+    hlTroughLabel: "Trough Serum Level (Cmin)",
     hlClearStack: "Reset Stack",
     hlClearStackConfirm: "Clear all compounds from the simulator?",
     hlUnitToggleLabel: "Measurement System",
@@ -1349,8 +1350,8 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         }
     },
     halfLifeVisualizer: {
-        title: "PharmaSim™ — Interactive Pharmacokinetics, Half-Life & Real-Time Cycle Blood Level Simulator",
-        subtitle: "The world’s most advanced pharmacokinetics simulator for tracking blood compound levels. Calculate time-decay rates, half-lives, and dosage accumulation with real-time dynamic charts supporting Metric and Imperial units.",
+        title: "PharmaSim™ — Real-Time Pharmacokinetic Engine: Half-Life, Clearance & Serum Level Simulator",
+        subtitle: "The world's most advanced anabolic pharmacokinetic simulator. Model the Bateman absorption–elimination curve of every compound in your stack with 6-hour resolution, predict peak (Cmax) and trough (Cmin) serum levels, and schedule full-clearance timing and post-cycle therapy from real kinetic data — in Metric or Imperial units.",
         compoundLabel: "Select Compound / Ester",
         dosageLabel: "Dose (mg/wk)",
         durationLabel: "Duration (Weeks)",
@@ -1423,6 +1424,50 @@ These Terms shall be governed and construed in accordance with the laws of <stro
             pctNolvadex: "Nolvadex (Tamoxifen)",
             pctClomid: "Clomid (Clomiphene)",
             pctHcg: "Epifasi / hCG"
+        },
+        metaTitle: "Half-Life Simulator — PharmaSim™ Pharmacokinetic Engine | Mr. X-Steroid",
+        metaDescription: "Model anabolic half-life, serum accumulation, and clearance in real time with PharmaSim™. Bateman-equation blood-level curves, per-ester PCT scheduling, and a 0–100 Stability Index. Metric and Imperial units, bilingual EN/AR.",
+        seoContent: {
+            badge: "Pharmacokinetic Science, Decoded",
+            h2: "What Half-Life Really Tells You About Your Cycle",
+            intro: "Every ester clears at its own rate. PharmaSim™ turns the Bateman equation into an interactive blood-level curve so you can time injections, predict accumulation, and schedule post-cycle therapy from data — not guesswork.",
+            blocks: [
+                {
+                    h3: "How Biological Half-Life Works",
+                    p: "Half-life (t½) is the time required for the active compound in your bloodstream to fall to 50% of its current concentration. With each additional half-life, another 50% of the remaining amount is eliminated. After roughly 5.3 half-lives, about 95% of the compound has cleared — the threshold PharmaSim™ uses to compute your full clearance window."
+                },
+                {
+                    h3: "Short vs. Long Esters: Why Timing Is Everything",
+                    p: "Short esters such as Testosterone Propionate (t½ ≈ 0.8 days) and Trenbolone Acetate (t½ ≈ 1 day) reach steady state quickly but demand frequent injections. Long esters like Testosterone Enanthate (t½ ≈ 4.5 days), Deca (t½ ≈ 7 days) or Equipoise (t½ ≈ 14 days) accumulate over weeks and wash out far more slowly. PharmaSim™ models both classes with 6-hour resolution."
+                },
+                {
+                    h3: "Steady State, Peaks and Troughs",
+                    p: "Repeated dosing raises serum levels until steady state is reached — typically after 4–5 half-lives of consistent administration. The gap between your peak (Cmax) and trough (Cmin) determines hormonal stability. High-frequency protocols shrink that gap; low-frequency long-ester protocols widen it. The Stability Index scores your curve 0–100."
+                },
+                {
+                    h3: "Clearance Timing and Post-Cycle Therapy",
+                    p: "Full biological clearance is approximated at 5.32 × t½. PCT should begin once the longest-acting ester in your stack has sufficiently cleared. PharmaSim™ schedules this per-ester, 3 to 21 days after the final injection, so you never start SERMs too early or too late."
+                }
+            ],
+            faqTitle: "Half-Life Simulator — Frequently Asked Questions",
+            faq: [
+                {
+                    q: "How is half-life calculated in PharmaSim™?",
+                    a: "PharmaSim™ applies the Bateman absorption–elimination equation with a 6-hour sub-daily time step, keeping peak detection accurate even for very short esters. Clearance is derived at the 5.32 × t½ threshold (~95% elimination)."
+                },
+                {
+                    q: "Why does a long ester require different PCT timing?",
+                    a: "Long esters persist in circulation for weeks. Starting PCT while the compound is still active wastes the SERM effect; starting too late risks a deep hormonal trough. PharmaSim™ keys PCT to the longest half-life in your stack."
+                },
+                {
+                    q: "What is steady state?",
+                    a: "Steady state is the balance point reached after 4–5 half-lives where the amount entering your bloodstream each week equals the amount cleared. At steady state, your Cmax and Cmin stop rising."
+                },
+                {
+                    q: "Can I simulate multiple compounds together?",
+                    a: "Yes. Build a full protocol stack and PharmaSim™ overlays every compound's curve, computes combined Cmax/Cmin, a global Stability Index, aromatization and prolactin risk flags, and a personalized PCT table."
+                }
+            ]
         }
     },
     timeUnits: {

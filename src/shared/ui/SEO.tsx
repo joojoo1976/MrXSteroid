@@ -43,8 +43,8 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
                 title = `${content.navToolNames.injection} | Mr. X-Steroid`;
                 break;
             case Page.HALFLIFE:
-                title = `${content.halfLifeVisualizer.title} | Mr. X-Steroid`;
-                description = content.halfLifeVisualizer.subtitle;
+                title = `${content.halfLifeVisualizer.metaTitle || content.halfLifeVisualizer.title} | Mr. X-Steroid`;
+                description = content.halfLifeVisualizer.metaDescription || content.halfLifeVisualizer.subtitle;
                 break;
             case Page.LAB:
                 title = `${content.navToolNames.lab} | Mr. X-Steroid`;

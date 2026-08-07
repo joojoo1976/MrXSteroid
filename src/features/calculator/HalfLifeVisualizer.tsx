@@ -4,7 +4,7 @@ import {
   ShieldAlert, Calendar, ChevronDown, Clock,
   Info, Gauge, FlaskConical, Droplet, RotateCcw,
   Zap, Plus, Trash2, TrendingUp, LineChart, Activity,
-  Target, Beaker, Sparkles
+  Target, Beaker, Sparkles, Scale, Ruler, BookOpen, HelpCircle
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +17,7 @@ import KineticCounter from '../../shared/ui/KineticCounter';
 import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
+import { clearanceDaysFromHalfLife } from './lib/pharmaEngine';
 
 interface HalfLifeVisualizerProps {
   content: ContentStrings;
@@ -84,7 +85,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
   } = useHalfLifeVisualizer({ content, isRTL: isRTL || false, unitSystem });
 
   const hlViz = content?.halfLifeVisualizer;
-  const clearanceDays = selectedCompound ? Math.round(selectedCompound.halfLife * 5.32) : 0;
+  const clearanceDays = selectedCompound ? clearanceDaysFromHalfLife(selectedCompound.halfLife) : 0;
 
   const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
@@ -193,15 +194,19 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                 <Target size={14} className="text-gold-500" />
                 <span className="text-[11px] font-black uppercase tracking-wider text-zinc-500">{content.hlUnitToggleLabel ?? 'Measurement'}</span>
               </div>
-              <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-900 gap-1">
-                <button type="button" onClick={() => setUnitSystem('metric')}
-                  className={`px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
+              <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-900 gap-1" role="group" aria-label={content.hlUnitToggleLabel ?? 'Measurement System'}>
+                <button type="button" onClick={() => setUnitSystem('metric')} aria-pressed={unitSystem === 'metric'}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
                     unitSystem === 'metric' ? 'bg-gold-500 text-black shadow-md shadow-gold-500/30' : 'text-zinc-400 hover:text-white'
-                  }`}>{content.hlMetric ?? 'METRIC'}</button>
-                <button type="button" onClick={() => setUnitSystem('imperial')}
-                  className={`px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
+                  }`}>
+                  <Scale size={12} className={unitSystem === 'metric' ? 'text-black' : 'text-gold-500'} />{content.hlMetric ?? 'METRIC'}
+                </button>
+                <button type="button" onClick={() => setUnitSystem('imperial')} aria-pressed={unitSystem === 'imperial'}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
                     unitSystem === 'imperial' ? 'bg-gold-500 text-black shadow-md shadow-gold-500/30' : 'text-zinc-400 hover:text-white'
-                  }`}>{content.hlImperial ?? 'IMPERIAL'}</button>
+                  }`}>
+                  <Ruler size={12} className={unitSystem === 'imperial' ? 'text-black' : 'text-gold-500'} />{content.hlImperial ?? 'IMPERIAL'}
+                </button>
               </div>
             </div>
 
@@ -223,13 +228,13 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-2 gap-3">
                   <div className="bg-gradient-to-br from-gold-500/10 to-transparent border border-gold-500/30 rounded-2xl p-4 text-center">
                     <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">{content.hlHalfLifeLabel ?? 'Half-Life'}</div>
-                    <div className="text-3xl font-black text-gold-400 font-mono leading-tight">{selectedCompound.halfLife}</div>
+                    <KineticCounter value={selectedCompound.halfLife} decimals={1} className="text-3xl font-black text-gold-400 font-mono leading-tight" />
                     <div className="text-[10px] text-zinc-500 font-bold mt-1">{isRTL ? 'أيام' : 'Days'}</div>
                   </div>
                   <div className="bg-gradient-to-br from-green-500/10 to-transparent border border-green-500/30 rounded-2xl p-4 text-center">
                     <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">{content.hlClearanceLabel ?? 'Clearance'}</div>
-                    <div className="text-3xl font-black text-green-400 font-mono leading-tight">{clearanceDays}</div>
-                    <div className="text-[10px] text-zinc-500 font-bold mt-1">{isRTL ? 'أيام' : 'Days'}</div>
+                    <KineticCounter value={clearanceDays} decimals={1} className="text-3xl font-black text-green-400 font-mono leading-tight" />
+                    <div className="text-[10px] text-zinc-500 font-bold mt-1">{isRTL ? 'أيام ~95%' : 'Days · ~95%'}</div>
                   </div>
                 </motion.div>
               )}
@@ -281,8 +286,8 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   </div>
                 </div>
               ) : (
-                <input id="dosage-input" type="number" min={0} value={dosage}
-                  onChange={e => setDosage(Math.max(0, Number(e.target.value)))}
+                <input id="dosage-input" type="number" min={0} max={1000} step={25} inputMode="numeric" value={dosage}
+                  onChange={e => setDosage(Math.max(0, Math.min(1000, Number(e.target.value))))}
                   placeholder="250" title={hlViz?.dosageLabel}
                   className={`w-full bg-zinc-900 text-white border-2 focus:border-gold-500 rounded-2xl p-4 text-xl font-black text-center outline-none shadow-inner transition-colors ${
                     dosage > 1000 ? 'border-red-500 text-red-400' : 'border-zinc-800'
@@ -307,14 +312,14 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="duration-input" className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block">{hlViz?.durationLabel}</label>
-                <input id="duration-input" type="number" min={1} value={duration}
-                  onChange={e => setDuration(Math.max(1, Number(e.target.value)))}
+                <input id="duration-input" type="number" min={1} max={52} step={1} inputMode="numeric" value={duration}
+                  onChange={e => setDuration(Math.max(1, Math.min(52, Number(e.target.value))))}
                   className="w-full bg-zinc-900 border-2 border-zinc-800 text-white focus:border-gold-500 rounded-2xl p-4 text-xl font-black text-center outline-none shadow-inner" />
               </div>
               <div className="space-y-2">
                 <label htmlFor="start-week-input" className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block">{hlViz?.startWeekLabel}</label>
-                <input id="start-week-input" type="number" min={1} value={startWeek}
-                  onChange={e => setStartWeek(Math.max(1, Number(e.target.value)))}
+                <input id="start-week-input" type="number" min={1} max={52} step={1} inputMode="numeric" value={startWeek}
+                  onChange={e => setStartWeek(Math.max(1, Math.min(52, Number(e.target.value))))}
                   className="w-full bg-zinc-900 border-2 border-zinc-800 text-white focus:border-gold-500 rounded-2xl p-4 text-xl font-black text-center outline-none shadow-inner" />
               </div>
             </div>
@@ -432,12 +437,12 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-center">
-                        <div className="font-mono font-black text-gold-400 text-2xl">{hs.halfLifeDays}</div>
+                        <KineticCounter value={hs.halfLifeDays} decimals={1} className="font-mono font-black text-gold-400 text-2xl" />
                         <div className="text-[10px] text-zinc-600 font-bold">{isRTL ? 'أيام' : 'Days'}</div>
                       </div>
                       <div className="w-px h-8 bg-white/10" />
                       <div className="text-center">
-                        <div className="font-mono font-black text-green-400 text-2xl">{hs.clearanceDays}</div>
+                        <KineticCounter value={hs.clearanceDays} decimals={1} className="font-mono font-black text-green-400 text-2xl" />
                         <div className="text-[10px] text-zinc-600 font-bold">{isRTL ? 'تخليص' : 'Clear'}</div>
                       </div>
                     </div>
@@ -506,6 +511,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                       { label: content.hlActiveDays ?? 'Active Days', val: simulationData.totalActiveDays, color: 'text-white', unit: isRTL ? 'يوم' : 'Days' },
                       { label: content.hlStartsDay ?? 'PCT Day', val: Math.round(simulationData.pctStartDay), color: 'text-green-400', unit: isRTL ? 'يوم' : 'Days' },
                       { label: content.hlClearanceLabel ?? 'Full Clearance', val: Math.round(simulationData.clearanceDay), color: 'text-yellow-400', unit: isRTL ? 'يوم' : 'Days' },
+                      { label: content.hlTroughLabel ?? 'Trough (Cmin)', val: Math.round(simulationData.troughLevel), color: 'text-blue-400', unit: content.units?.mg ?? 'mg' },
                       { label: content.hlAvgPeak ?? 'Avg. Peak', val: simulationData.weeklyAveragePeak, color: 'text-gold-500', unit: content.units?.mg ?? 'mg' },
                     ].map((row, i) => (
                       <div key={i} className="flex justify-between items-center border-b border-white/5 pb-3 last:border-0 last:pb-0">
@@ -674,6 +680,55 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
           )}
         </motion.div>
       </div>
+
+      {/* ── SEO / Educational Content Section ── */}
+      {hlViz?.seoContent && (
+        <div className="mt-24 space-y-12">
+          <div className="text-center max-w-4xl mx-auto space-y-5">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-500 text-xs font-black uppercase tracking-widest">
+              <BookOpen className="w-3.5 h-3.5" /> {hlViz.seoContent.badge}
+            </span>
+            <h2 id="halflife-seo-h2" className="text-3xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-gold-600 to-zinc-900 dark:from-white dark:via-gold-400 dark:to-white leading-tight">
+              {hlViz.seoContent.h2}
+            </h2>
+            <p className="text-zinc-500 dark:text-zinc-400 text-lg font-semibold leading-relaxed">{hlViz.seoContent.intro}</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {hlViz.seoContent.blocks.map((block, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="group bg-white dark:bg-zinc-950/60 border border-zinc-100 dark:border-zinc-800/60 rounded-[2rem] p-6 hover:border-gold-500/30 transition-all shadow-xl card-shine">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-500 font-black text-sm group-hover:scale-110 transition-transform">
+                    {String(i + 1).padStart(2, '0')}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black mb-2 dark:text-white">{block.h3}</h3>
+                    <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 leading-relaxed">{block.p}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div>
+            <h3 className="text-2xl md:text-3xl font-black mb-6 flex items-center gap-3 dark:text-white">
+              <HelpCircle className="w-6 h-6 text-gold-500" /> {hlViz.seoContent.faqTitle}
+            </h3>
+            <div className="space-y-3">
+              {hlViz.seoContent.faq.map((item, i) => (
+                <details key={i} className="group bg-white dark:bg-zinc-950/60 border border-zinc-100 dark:border-zinc-800/60 rounded-2xl overflow-hidden open:border-gold-500/30 transition-all">
+                  <summary className="flex items-center justify-between gap-4 cursor-pointer p-5 list-none font-black text-sm md:text-base dark:text-white [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <ChevronDown className="w-4 h-4 text-gold-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <p className="px-5 pb-5 text-sm font-semibold text-zinc-500 dark:text-zinc-400 leading-relaxed">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
