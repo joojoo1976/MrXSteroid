@@ -4,7 +4,7 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
-    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check, Table2, ChevronDown, Diamond,
+    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check, Table2, ChevronDown, Diamond, RefreshCcw,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -408,14 +408,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         const tips: Array<{ icon: React.ReactNode; accent: string; title: string; text: string }> = [];
 
         // 1 — Goal trajectory
+        const verdictKey =
+            coachFacts.goalState === 'reached' ? C?.verdictReached
+                : coachFacts.goalState === 'unreachable' ? C?.verdictMaintain
+                    : coachFacts.reachesGoalInCycle ? C?.verdictInCycle
+                        : C?.verdictBeyond;
         tips.push({
             icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-            accent: coachFacts.reachesGoalInCycle ? 'text-emerald-500' : 'text-gold-500',
+            accent:
+                coachFacts.goalState === 'reached' ? 'text-emerald-500'
+                    : coachFacts.goalState === 'unreachable' ? 'text-amber-500'
+                        : coachFacts.reachesGoalInCycle ? 'text-emerald-500' : 'text-gold-500',
             title: C?.goalTitle ?? '',
-            text: fillCoach(
-                coachFacts.reachesGoalInCycle ? C?.verdictInCycle ?? '' : C?.verdictBeyond ?? '',
-                vars,
-            ),
+            text: fillCoach(verdictKey ?? '', vars),
         });
 
         // 2 — Calorie economy
@@ -471,7 +476,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             { label: L.maintenanceCalories, value: tdeeStr },
             { label: L.currentBmi, value: bmiStr },
             { label: L.goalProgress, value: `${Math.round(summary.goalProgressPct)}%` },
-            { label: L.timeToIdeal, value: summary.weeksToIdeal != null ? `${summary.weeksToIdeal} ${L.weeksShort}` : '—' },
+            {
+                label: L.timeToIdeal,
+                value:
+                    summary.weeksToIdeal === 0 ? L.idealWeightReached
+                        : summary.weeksToIdeal != null ? `${summary.weeksToIdeal} ${L.weeksShort}`
+                            : L.maintenanceMode,
+            },
             ...coachTips.map((t) => ({ label: t.title, value: t.text })),
         ];
         return buildPlanSnapshot(L.engineTitle, rows);
@@ -821,7 +832,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <CalendarDays className="w-3 h-3 text-gold-500" />
                                     {L.timeToIdeal}
                                 </span>
-                                {summary.weeksToIdeal != null ? (
+                                {summary.weeksToIdeal === 0 ? (
+                                    <span className="text-xl font-black text-emerald-500 inline-flex items-center gap-1.5">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        {L.idealWeightReached}
+                                    </span>
+                                ) : summary.weeksToIdeal != null ? (
                                     <>
                                         <motion.span
                                             key={summary.weeksToIdeal}
@@ -851,8 +867,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         </span>
                                     </>
                                 ) : (
-                                    <span className="text-xl font-black text-emerald-500">
-                                        {L.idealWeightReached} ✓
+                                    <span className="text-sm font-black text-amber-500 inline-flex items-center gap-1.5">
+                                        <RefreshCcw className="w-4 h-4" />
+                                        {L.maintenanceMode}
                                     </span>
                                 )}
                                 <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1 border-t border-white/10 dark:border-white/10">

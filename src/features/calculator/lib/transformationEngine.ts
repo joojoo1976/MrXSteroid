@@ -719,6 +719,16 @@ export type BfZone = 'lean' | 'moderate' | 'high';
 export type DeficitLevel = 'mild' | 'moderate' | 'aggressive';
 export type BmiStatus = 'underweight' | 'normal' | 'overweight' | 'obese';
 
+/**
+ * Goal status of the projected cycle:
+ * - `reached`      — already at/below the ideal weight (weeksToIdeal === 0)
+ * - `within-cycle` — target reachable inside the 12 weeks
+ * - `beyond-cycle` — target sits past week 12 (needs an extension)
+ * - `unreachable`  — flat model (no net weight change) so the scale target is
+ *                    not reachable; treat the cycle as recomposition
+ */
+export type GoalState = 'reached' | 'within-cycle' | 'beyond-cycle' | 'unreachable';
+
 export interface CoachFacts {
     /** Starting body-fat zone (drives fat-loss expectations). */
     bfZone: BfZone;
@@ -726,6 +736,8 @@ export interface CoachFacts {
     deficitLevel: DeficitLevel;
     /** WHO BMI classification of the starting point. */
     bmiStatus: BmiStatus;
+    /** Distinct goal state — avoids conflating "reached" with "unreachable". */
+    goalState: GoalState;
     /** Whether the ideal weight is reachable inside the 12-week cycle. */
     reachesGoalInCycle: boolean;
     /** Extra weeks needed after the cycle when the target sits beyond it. */
@@ -757,13 +769,20 @@ export const deriveCoachFacts = (
 
     const bfMilestones = summary.milestones.filter((m) => m.kind !== 'midIdeal');
 
+    let goalState: GoalState;
+    if (summary.weeksToIdeal === 0) goalState = 'reached';
+    else if (summary.weeksToIdeal == null) goalState = 'unreachable';
+    else if (summary.weeksToIdeal <= CYCLE_TOTAL_WEEKS) goalState = 'within-cycle';
+    else goalState = 'beyond-cycle';
+
     return {
         bfZone,
         deficitLevel,
         bmiStatus,
-        reachesGoalInCycle: summary.withinCycle,
+        goalState,
+        reachesGoalInCycle: goalState === 'within-cycle',
         weeksBeyondCycle:
-            summary.weeksToIdeal != null && summary.weeksToIdeal > CYCLE_TOTAL_WEEKS
+            goalState === 'beyond-cycle' && summary.weeksToIdeal != null
                 ? summary.weeksToIdeal - CYCLE_TOTAL_WEEKS
                 : null,
         nextMilestone: bfMilestones.find((m) => m.week >= activeWeek) ?? null,

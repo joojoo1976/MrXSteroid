@@ -1300,6 +1300,7 @@ export interface ContentStrings {
     resetDefaults: string;
     copyPlan: string;
     planCopied: string;
+    maintenanceMode: string;
     weeklyTitle: string;
     weeklySubtitle: string;
     colWeek: string;
@@ -1324,6 +1325,8 @@ export interface ContentStrings {
     nutritionTitle: string;
     verdictInCycle: string;
     verdictBeyond: string;
+    verdictReached: string;
+    verdictMaintain: string;
     deficitMild: string;
     deficitModerate: string;
     deficitAggressive: string;

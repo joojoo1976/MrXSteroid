@@ -70,6 +70,8 @@ const buildContent = (): ContentStrings => ({
         weeklyTitle: 'Week-by-Week Projection',
         weeklySubtitle: '12-week numbers',
         colWeek: 'Week', colWeight: 'Weight', colBodyFat: 'Body Fat', colFatLoss: 'Fat Lost', colLean: 'Lean Gained',
+        maintenanceMode: 'Maintenance — recomposition mode',
+        idealWeightReached: 'Ideal weight reached',
     },
     timelineCoach: {
         title: 'Smart Coach',
@@ -80,6 +82,8 @@ const buildContent = (): ContentStrings => ({
         nutritionTitle: 'Nutrition Plan',
         verdictInCycle: 'You can reach your ideal weight ({ideal}) inside this 12-week cycle. Keep the deficit consistent and the trajectory holds.',
         verdictBeyond: 'Your ideal weight ({ideal}) sits about {weeks} weeks beyond this cycle — plan a short follow-up cut after week 12.',
+        verdictReached: 'You are already at or below your ideal weight ({ideal}) — this cycle is about recomposition and holding the target.',
+        verdictMaintain: 'You are inside your ideal weight band — the model projects recomposition with no net weight change.',
         deficitMild: 'Your daily deficit (~{kcal} kcal) is gentle — results will come, just slower. Consider tightening your intake slightly.',
         deficitModerate: 'A solid ~{kcal} kcal daily deficit — the sweet spot that balances muscle preservation with steady fat loss.',
         deficitAggressive: 'Your daily deficit (~{kcal} kcal) is aggressive. Keep protein high and prioritize sleep to protect lean mass.',
@@ -220,6 +224,14 @@ describe('TransformationTimeline — full content visibility', () => {
         const table = screen.getByTestId('weekly-table');
         expect(table.textContent).toMatch(/lbs/);
         expect(table.textContent).not.toMatch(/g\/kg/);
+        cleanup();
+    });
+
+    it('shows the reached state when inputs sit at/below the ideal weight', async () => {
+        renderTimeline();
+        fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '40' } });
+        fireEvent.change(screen.getByLabelText('Height'), { target: { value: '210' } });
+        await waitFor(() => expect(screen.getByText('Ideal weight reached')).toBeInTheDocument());
         cleanup();
     });
 });

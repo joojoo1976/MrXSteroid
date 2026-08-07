@@ -13,6 +13,7 @@ import {
     deriveCoachFacts,
     formatHeight,
     FAT_LOSS_RATE,
+    type CycleSummary,
 } from '../../features/calculator/lib/transformationEngine';
 
 describe('transformationEngine — adaptive fat-loss', () => {
@@ -310,5 +311,65 @@ describe('transformationEngine — deriveCoachFacts', () => {
     it('is deterministic', () => {
         const s = estimateCycleSummary({ startWeightKg: 80, startBodyFatPct: 18, heightCm: 178, trainingAge: 'intermediate' }, 178);
         expect(deriveCoachFacts(s, 3)).toEqual(deriveCoachFacts(s, 3));
+    });
+});
+
+describe('transformationEngine — goalState classification', () => {
+    const makeSummary = (overrides: Partial<CycleSummary>): CycleSummary => ({
+        startWeightKg: 80,
+        endWeightKg: 75,
+        weightChangeKg: -5,
+        weightChangePct: -6.25,
+        startBfPct: 20,
+        endBfPct: 15,
+        bfChangePct: -5,
+        totalFatLossKg: 6,
+        totalMuscleGainKg: 1,
+        avgWeeklyFatLossKg: 0.5,
+        avgWeeklyMuscleKg: 0.08,
+        netWeeklyWeightChangeKg: -0.4,
+        bmiStart: 25.3,
+        bmiEnd: 23.7,
+        idealWeightKg: 70,
+        idealWeightMidKg: 74.5,
+        weightToLoseKg: 10,
+        weeksToIdeal: 12,
+        withinCycle: true,
+        goalProgressPct: 60,
+        milestones: [],
+        energy: {
+            bmrKcal: 1800,
+            tdeeKcal: 2700,
+            dailyDeficitKcal: 600,
+            weeklyBurnKcal: 4200,
+        },
+        ...overrides,
+    });
+
+    it('classifies an already-reached target as "reached"', () => {
+        const f = deriveCoachFacts(makeSummary({ weeksToIdeal: 0, withinCycle: true }));
+        expect(f.goalState).toBe('reached');
+        expect(f.reachesGoalInCycle).toBe(false);
+        expect(f.weeksBeyondCycle).toBeNull();
+    });
+
+    it('classifies a flat (no net change) model as "unreachable"', () => {
+        const f = deriveCoachFacts(makeSummary({ weeksToIdeal: null, withinCycle: false }));
+        expect(f.goalState).toBe('unreachable');
+        expect(f.weeksBeyondCycle).toBeNull();
+    });
+
+    it('classifies a target inside 12 weeks as "within-cycle"', () => {
+        const f = deriveCoachFacts(makeSummary({ weeksToIdeal: 8, withinCycle: true }));
+        expect(f.goalState).toBe('within-cycle');
+        expect(f.reachesGoalInCycle).toBe(true);
+        expect(f.weeksBeyondCycle).toBeNull();
+    });
+
+    it('classifies a target past week 12 as "beyond-cycle" with weeksBeyond', () => {
+        const f = deriveCoachFacts(makeSummary({ weeksToIdeal: 20, withinCycle: false }));
+        expect(f.goalState).toBe('beyond-cycle');
+        expect(f.reachesGoalInCycle).toBe(false);
+        expect(f.weeksBeyondCycle).toBe(8);
     });
 });
