@@ -22,6 +22,7 @@ import {
     type TimelineCopyContext,
     type TrainingAge,
     type CoachFacts,
+    type MilestonePoint,
 } from './lib/transformationEngine';
 import { buildPlanSnapshot } from './lib/planSnapshot';
 
@@ -529,7 +530,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     // ── Week-by-week breakdown — milestone badges per projection week ───
     const [showWeekly, setShowWeekly] = useState(false);
     const milestoneByWeek = useMemo(() => {
-        const map: Record<number, typeof summary.milestones> = {};
+        const map: Record<number, MilestonePoint[]> = {};
         for (const m of summary.milestones) {
             (map[m.week] ??= []).push(m);
         }
