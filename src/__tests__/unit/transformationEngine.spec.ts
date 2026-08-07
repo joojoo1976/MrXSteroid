@@ -7,6 +7,10 @@ import {
     projectBodyComposition,
     aggregatePhases,
     buildChartSeries,
+    estimateEnergy,
+    estimateIdealWeight,
+    estimateCycleSummary,
+    formatHeight,
     FAT_LOSS_RATE,
 } from '../../features/calculator/lib/transformationEngine';
 
@@ -187,5 +191,86 @@ describe('transformationEngine — buildChartSeries', () => {
             buildChartSeries(phases, projections, aggregates),
         );
         expect(buildChartSeries([], projections, aggregates)).toEqual([]);
+    });
+});
+
+describe('transformationEngine — advanced live predictions', () => {
+    const base = { startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' as const };
+
+    it('estimates energy economics (Katch–McArdle) deterministically', () => {
+        const a = estimateEnergy(base);
+        const b = estimateEnergy(base);
+        expect(a).toEqual(b);
+        // 80kg @ 18% BF → LBM 65.6kg → BMR = 370 + 21.6 × 65.6 ≈ 1787.
+        expect(a.bmrKcal).toBeGreaterThan(1700);
+        expect(a.bmrKcal).toBeLessThan(1900);
+        expect(a.tdeeKcal).toBeGreaterThan(a.bmrKcal);
+        expect(a.dailyDeficitKcal).toBeGreaterThan(0);
+        expect(a.dailyDeficitKcal).toBeLessThan(1200);
+    });
+
+    it('derives a healthy BMI-ideal weight and a positive time-to-target', () => {
+        const ideal = estimateIdealWeight(base, 178);
+        // 178 cm → 1.78 m; BMI 22 target ≈ 69.7 kg.
+        expect(ideal.bmiStart).toBeCloseTo(25.2, 1);
+        expect(ideal.idealWeightKg).toBeGreaterThan(65);
+        expect(ideal.idealWeightKg).toBeLessThan(80);
+        expect(ideal.weightToLoseKg).toBeGreaterThan(0);
+        expect(ideal.weeksToIdeal).not.toBeNull();
+        expect(ideal.weeksToIdeal as number).toBeGreaterThan(0);
+    });
+
+    it('reports the ideal weight as already reached when under the target', () => {
+        const lean = estimateIdealWeight({ ...base, startWeightKg: 60, startBodyFatPct: 10 }, 178);
+        expect(lean.weeksToIdeal).toBe(0);
+        expect(lean.weightToLoseKg).toBe(0);
+    });
+
+    it('builds a coherent cycle summary with sane invariants', () => {
+        const s = estimateCycleSummary(base, 178);
+        // End state must be strictly lighter and leaner than start.
+        expect(s.endWeightKg).toBeLessThan(s.startWeightKg);
+        expect(s.endBfPct).toBeLessThan(s.startBfPct);
+        // Fat lost exceeds muscle gained in a cut.
+        expect(s.totalFatLossKg).toBeGreaterThan(s.totalMuscleGainKg);
+        // Weight change ≈ muscle gained − fat lost (within rounding).
+        expect(Math.abs(s.weightChangeKg - (s.totalMuscleGainKg - s.totalFatLossKg))).toBeLessThan(1.5);
+        // Goal progress bounded 0–100.
+        expect(s.goalProgressPct).toBeGreaterThan(0);
+        expect(s.goalProgressPct).toBeLessThanOrEqual(100);
+        // Energy block present.
+        expect(s.energy.dailyDeficitKcal).toBeGreaterThan(0);
+        // Deterministic.
+        expect(estimateCycleSummary(base, 178)).toEqual(s);
+    });
+
+    it('tracks body-fat milestones across the cycle', () => {
+        const s = estimateCycleSummary({ ...base, startBodyFatPct: 25 }, 178);
+        expect(s.milestones.some((m) => m.kind === 'bf20')).toBe(true);
+        expect(s.milestones.some((m) => m.kind === 'bf18')).toBe(true);
+        // Milestone weeks are increasing.
+        const weeks = s.milestones.map((m) => m.week);
+        expect(weeks).toEqual([...weeks].sort((x, y) => x - y));
+    });
+
+    it('formats height in metric and imperial systems', () => {
+        expect(formatHeight(178, 'metric', false)).toBe('178 cm');
+        expect(formatHeight(178, 'metric', true)).toContain('سم');
+        expect(formatHeight(178, 'imperial', false)).toBe("5' 10\"");
+        expect(formatHeight(180, 'imperial', false)).toBe("5' 11\"");
+    });
+
+    it('recomputes the full cycle summary instantly (stress / latency guard)', () => {
+        // Simulates 10 000 consecutive slider drags, each re-running the whole
+        // 12-week simulation + ideal-weight + energy model. Must stay snappy.
+        const t0 = performance.now();
+        for (let i = 0; i < 10000; i++) {
+            estimateCycleSummary(
+                { startWeightKg: 40 + (i % 120), startBodyFatPct: 8 + (i % 32), heightCm: 165 + (i % 40), trainingAge: 'intermediate' },
+                178,
+            );
+        }
+        const elapsed = performance.now() - t0;
+        expect(elapsed).toBeLessThan(1000);
     });
 });

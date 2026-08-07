@@ -1277,6 +1277,26 @@ export interface ContentStrings {
     imperial: string;
     perWeek: string;
     disclaimer: string;
+    // Advanced live predictions (v2)
+    heightLabel: string;
+    goalProgress: string;
+    idealWeightLabel: string;
+    timeToIdeal: string;
+    projectedEndWeight: string;
+    totalFatLoss: string;
+    totalMuscleGain: string;
+    dailyDeficit: string;
+    maintenanceCalories: string;
+    bmiLabel: string;
+    currentBmi: string;
+    projectedBmi: string;
+    weeksShort: string;
+    targetDate: string;
+    withinCycle: string;
+    beyondCycle: string;
+    liveBadge: string;
+    recalculating: string;
+    idealWeightReached: string;
   };
   timeUnits: {
     days: string;

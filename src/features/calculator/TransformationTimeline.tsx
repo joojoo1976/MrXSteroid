@@ -4,6 +4,7 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
+    Target, CalendarDays,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -12,6 +13,7 @@ import { usePreferences } from '../../context/PreferencesContext';
 import { useTransformationTimeline } from './hooks/useTransformationTimeline';
 import {
     formatWeight,
+    formatHeight,
     clamp,
     roundTo,
     buildTimelineCopyContext,
@@ -141,6 +143,87 @@ const EngineTile: React.FC<{
     </div>
 ));
 
+/** Circular goal gauge — live progress toward the ideal (healthy) weight. */
+const GoalRing: React.FC<{
+    progress: number;
+    label: string;
+    value: string;
+}> = memo(({ progress, label, value }) => {
+    const pct = clamp(progress, 0, 100);
+    const r = 52;
+    const c = 2 * Math.PI * r;
+    return (
+        <div className="relative w-36 h-36 flex-shrink-0" role="img" aria-label={`${label}: ${Math.round(pct)}%`}>
+            <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90">
+                <defs>
+                    <linearGradient id="goalGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#22d3ee" />
+                    </linearGradient>
+                </defs>
+                <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+                <motion.circle
+                    cx="64" cy="64" r={r}
+                    fill="none"
+                    stroke="url(#goalGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray={c}
+                    initial={{ strokeDashoffset: c }}
+                    animate={{ strokeDashoffset: c - (pct / 100) * c }}
+                    transition={{ type: 'spring', stiffness: 55, damping: 16 }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-2xl md:text-3xl font-black text-white tabular-nums drop-shadow-[0_0_12px_rgba(234,179,8,0.5)]">
+                    {Math.round(pct)}%
+                </span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300 max-w-[70%] leading-tight">{label}</span>
+            </div>
+            <span className="absolute -bottom-1 inset-x-0 text-center text-[9px] font-black text-gold-400 tabular-nums">{value}</span>
+        </div>
+    );
+});
+
+/** Unit-aware chart tooltip — formats live engine series in the active system. */
+const ChartTooltip: React.FC<{
+    active?: boolean;
+    payload?: Array<{
+        name?: string;
+        value?: number | string;
+        dataKey?: string | number;
+        stroke?: string;
+    }>;
+    label?: string;
+    unitSystem: 'metric' | 'imperial';
+    isAr: boolean;
+}> = memo(({ active, payload, label, unitSystem, isAr }) => {
+    if (!active || !payload?.length) return null;
+    return (
+        <div className="rounded-xl bg-zinc-900/95 border border-gold-500/20 backdrop-blur-xl px-3 py-2 text-[10px] text-white shadow-2xl min-w-[160px]">
+            <p className="font-black text-gold-400 uppercase tracking-widest mb-1">{label}</p>
+            {payload.map((entry) => {
+                const key = String(entry.dataKey ?? '');
+                const numeric = Number(entry.value) || 0;
+                let shown: string;
+                if (key === 'bodyFatPct') shown = `${roundTo(numeric, 1)}%`;
+                else if (key === 'weightKg') shown = formatWeight(numeric, unitSystem, isAr);
+                else if (key === 'cumulativeMuscleKg') shown = formatWeight(numeric, unitSystem, isAr);
+                else shown = `${roundTo(numeric, 0)}%`;
+                return (
+                    <div key={key} className="flex items-center justify-between gap-4 py-0.5">
+                        <span className="flex items-center gap-1.5 font-bold text-zinc-300">
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: entry.stroke ?? '#f59e0b' }} />
+                            {entry.name}
+                        </span>
+                        <span className="font-black tabular-nums text-white">{shown}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+});
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  Main component
 // ═══════════════════════════════════════════════════════════════════════════
@@ -164,9 +247,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         setStartWeightKg,
         startBodyFatPct,
         setStartBodyFatPct,
+        heightCm,
+        setHeightCm,
         trainingAge,
         setTrainingAge,
+        isRecalculating,
         projections,
+        summary,
     } = useTransformationTimeline({ content });
 
     const [navDirection, setNavDirection] = useState<'next' | 'prev'>('next');
@@ -223,7 +310,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     };
 
     // Live engine values formatted in the active unit system.
-    const activeMuscleGain = formatWeight(activeAggregate?.muscleGainKg ?? 0, unitSystem, isAr);
     const activeFatPctEnd = `${roundTo(activeAggregate?.bodyFatPctEnd ?? startBodyFatPct, 1)}%`;
     const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
 
@@ -231,6 +317,32 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const activeWeeklyFatLossKg = projections[Math.max((activeAggregate?.weekStart ?? 1) - 1, 0)]?.fatLossKg ?? 0;
     const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${isAr ? 'أسبوع' : 'wk'}`;
     const weeklyFatLossHint = `${isAr ? `~${activeFatLossRate} من وزن الجسم` : `${activeFatLossRate} of body weight`}`;
+
+    // ── Advanced live predictions (formatted in the active unit system) ──
+    const idealWeightStr = formatWeight(summary.idealWeightKg, unitSystem, isAr);
+    const endWeightStr = formatWeight(summary.endWeightKg, unitSystem, isAr);
+    const totalFatLossStr = formatWeight(summary.totalFatLossKg, unitSystem, isAr);
+    const totalMuscleStr = formatWeight(summary.totalMuscleGainKg, unitSystem, isAr);
+    const dailyDeficitStr = `${summary.energy.dailyDeficitKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US')} kcal`;
+    const tdeeStr = `${summary.energy.tdeeKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US')} kcal`;
+    const bmiStr = `${summary.bmiStart.toLocaleString(isAr ? 'ar-EG' : 'en-US')} → ${summary.bmiEnd.toLocaleString(isAr ? 'ar-EG' : 'en-US')}`;
+
+    // Countdown to the ideal weight — with a human "target date".
+    const timeToIdealWeeks = summary.weeksToIdeal;
+    const targetDate = useMemo(() => {
+        if (timeToIdealWeeks == null) return null;
+        const d = new Date();
+        d.setDate(d.getDate() + timeToIdealWeeks * 7);
+        return d;
+    }, [timeToIdealWeeks]);
+
+    // Weight axis domain for the live chart line (metric base → same shape).
+    const weightDomain = useMemo(() => {
+        const vals = chartData.map((d) => d.weightKg);
+        const lo = Math.min(...vals);
+        const hi = Math.max(...vals);
+        return [Math.floor(lo - 2), Math.ceil(hi + 2)];
+    }, [chartData]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -321,15 +433,49 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 {/* Neon top edge */}
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-500/70 to-transparent" />
 
+                {/* Recalculating pulse bar — sweeps while deferred math catches up */}
+                <AnimatePresence>
+                    {isRecalculating && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute top-0 inset-x-0 h-0.5 bg-cyan-400/30 overflow-hidden z-20"
+                        >
+                            <motion.div
+                                className="absolute inset-y-0 w-1/3 bg-cyan-300/80 blur-sm"
+                                animate={{ left: ['-30%', '130%'] }}
+                                transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
                     {/* Header + inputs */}
                     <div className="flex-1 space-y-5">
-                        <div>
+                        <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white flex items-center gap-2">
                                 <Gauge className="w-5 h-5 text-gold-500 animate-pulse" />
                                 {L.engineTitle}
                             </h3>
-                            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">{L.engineSubtitle}</p>
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-500 text-[9px] font-black tracking-widest">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                {L.liveBadge}
+                            </span>
+                            <AnimatePresence>
+                                {isRecalculating && (
+                                    <motion.span
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.8 }}
+                                        className="text-[9px] font-black uppercase tracking-widest text-cyan-500"
+                                    >
+                                        {L.recalculating}…
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+                            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 basis-full">{L.engineSubtitle}</p>
                         </div>
 
                         {/* Unit toggle */}
@@ -402,6 +548,30 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             />
                         </div>
 
+                        {/* Height slider */}
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                    <Ruler className="w-3 h-3 text-gold-500" />
+                                    {L.heightLabel}
+                                </span>
+                                <AnimatedNumber
+                                    value={heightCm}
+                                    format={(n) => formatHeight(n, unitSystem, isAr)}
+                                    className="text-sm font-black text-zinc-900 dark:text-white font-mono tabular-nums"
+                                />
+                            </div>
+                            <input
+                                type="range"
+                                min={140}
+                                max={210}
+                                value={heightCm}
+                                onChange={(e) => setHeightCm(Number(e.target.value))}
+                                aria-label={L.heightLabel}
+                                className="w-full accent-gold-500"
+                            />
+                        </div>
+
                         {/* Training age selector */}
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mb-2">
@@ -441,6 +611,61 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 isAr={isAr}
                             />
                         </div>
+
+                        {/* Goal gauge + time-to-ideal-weight summary */}
+                        <div className="col-span-2 flex items-center gap-4 flex-wrap justify-center">
+                            <GoalRing
+                                progress={summary.goalProgressPct}
+                                label={L.goalProgress}
+                                value={idealWeightStr}
+                            />
+                            <div className="flex-1 min-w-[200px] rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg relative overflow-hidden">
+                                <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-cyan-500 via-gold-500 to-transparent opacity-60" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                    <CalendarDays className="w-3 h-3 text-gold-500" />
+                                    {L.timeToIdeal}
+                                </span>
+                                {summary.weeksToIdeal != null ? (
+                                    <>
+                                        <motion.span
+                                            key={summary.weeksToIdeal}
+                                            initial={{ opacity: 0, y: 6, scale: 0.94 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                                            className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white font-mono tabular-nums"
+                                        >
+                                            {summary.weeksToIdeal}
+                                            <span className="text-sm text-zinc-500 dark:text-zinc-400 font-black ms-1">
+                                                {L.weeksShort}
+                                            </span>
+                                        </motion.span>
+                                        {targetDate && (
+                                            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                                                {L.targetDate}: <span className="text-gold-600 dark:text-gold-400 font-black">
+                                                    {targetDate.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </span>
+                                        )}
+                                        <span className={`self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                            summary.withinCycle
+                                                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500'
+                                                : 'bg-gold-500/15 border border-gold-500/30 text-gold-600 dark:text-gold-400'
+                                        }`}>
+                                            {summary.withinCycle ? L.withinCycle : L.beyondCycle}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-xl font-black text-emerald-500">
+                                        {L.idealWeightReached} ✓
+                                    </span>
+                                )}
+                                <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1 border-t border-white/10 dark:border-white/10">
+                                    <span>{L.maintenanceCalories}</span>
+                                    <span className="font-black text-zinc-900 dark:text-white tabular-nums">{tdeeStr}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <EngineTile
                             icon={<Flame className="w-3.5 h-3.5" />}
                             label={L.weeklyFatLoss}
@@ -455,11 +680,12 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             value={activeFatPctEnd}
                             accentClass="text-blue-500"
                             trend="down"
+                            hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
                         />
                         <EngineTile
                             icon={<BicepsFlexed className="w-3.5 h-3.5" />}
-                            label={L.weeklyMuscleGain}
-                            value={activeMuscleGain}
+                            label={L.totalMuscleGain}
+                            value={totalMuscleStr}
                             accentClass="text-purple-500"
                             trend="up"
                         />
@@ -469,6 +695,22 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
                             accentClass="text-gold-500"
                             trend="up"
+                        />
+                        <EngineTile
+                            icon={<Target className="w-3.5 h-3.5" />}
+                            label={L.projectedEndWeight}
+                            value={endWeightStr}
+                            accentClass="text-cyan-500"
+                            trend="down"
+                            hint={L.bmiLabel}
+                        />
+                        <EngineTile
+                            icon={<Flame className="w-3.5 h-3.5" />}
+                            label={L.dailyDeficit}
+                            value={dailyDeficitStr}
+                            accentClass="text-rose-500"
+                            trend="down"
+                            hint={`${L.currentBmi} ${bmiStr}`}
                         />
                     </div>
                 </div>
@@ -574,6 +816,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.mood, color: 'green-500' },
                                     { label: L.projectedFatPct, color: 'cyan-500', dashed: true },
                                     { label: L.cumulativeMuscle, color: 'gold-500', dashed: true },
+                                    { label: L.projectedEndWeight, color: 'emerald-500', dashed: true },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
                                         {item.dashed ? (
@@ -627,16 +870,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <YAxis hide domain={[0, 'auto']} />
                                     <YAxis yAxisId="liveBodyFat" hide domain={[0, 40]} orientation={isRTL ? 'left' : 'right'} />
                                     <YAxis yAxisId="liveMuscle" hide domain={[0, 8]} orientation={isRTL ? 'left' : 'right'} />
+                                    <YAxis yAxisId="liveWeight" hide domain={weightDomain} orientation={isRTL ? 'left' : 'right'} />
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: 'rgba(9, 9, 11, 0.95)',
-                                            border: '1px solid rgba(234, 179, 8, 0.2)',
-                                            borderRadius: '1rem',
-                                            backdropFilter: 'blur(10px)',
-                                            color: '#fff',
-                                            fontSize: '10px',
-                                            fontWeight: 'bold'
-                                        }}
+                                        content={<ChartTooltip unitSystem={unitSystem} isAr={isAr} />}
                                     />
                                     <ReferenceLine
                                         x={activeData.week}
@@ -653,6 +889,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     {/* Live engine overlays — react to the sliders in real time */}
                                     <Line yAxisId="liveBodyFat" type="monotone" dataKey="bodyFatPct" stroke="#22d3ee" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.projectedFatPct} />
                                     <Line yAxisId="liveMuscle" type="monotone" dataKey="cumulativeMuscleKg" stroke="#f59e0b" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.cumulativeMuscle} />
+                                    <Line yAxisId="liveWeight" type="monotone" dataKey="weightKg" stroke="#10b981" strokeWidth={2.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} name={L.projectedEndWeight} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>

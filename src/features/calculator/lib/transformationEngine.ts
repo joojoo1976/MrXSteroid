@@ -93,6 +93,8 @@ export interface BodyCompositionInput {
     trainingAge: TrainingAge;
     /** Weekly fat-loss rate as a fraction of bodyweight (0.005–0.01). */
     weeklyFatLossRate?: number;
+    /** Optional height in cm — unlocks BMI / ideal-weight predictions. */
+    heightCm?: number;
 }
 
 export interface WeeklyProjection {
@@ -247,16 +249,19 @@ export interface PhaseAggregate {
 
 /**
  * Groups weekly projections into the 4 phase windows and computes aggregates.
+ * Accepts an optional precomputed projection list so the hook avoids running
+ * the full simulation twice per render.
  */
 export const aggregatePhases = (
     input: BodyCompositionInput,
+    projections?: WeeklyProjection[],
 ): PhaseAggregate[] => {
-    const projections = projectBodyComposition(input);
+    const computed = projections ?? projectBodyComposition(input);
     const boundaries = CYCLE_BOUNDARIES;
 
     return boundaries.map((endWeek, idx) => {
         const startWeek = idx === 0 ? 1 : boundaries[idx - 1] + 1;
-        const slice = projections.filter(
+        const slice = computed.filter(
             (p) => p.week >= startWeek && p.week <= endWeek,
         );
         const last = slice[slice.length - 1];
@@ -429,6 +434,8 @@ export interface ChartSeriesRow {
     mood: number;
     /** Projected body-fat % at the end of the phase. */
     bodyFatPct: number;
+    /** Projected bodyweight at the end of the phase (kg, metric base). */
+    weightKg: number;
     /** Cumulative lean mass gained up to the end of the phase (kg). */
     cumulativeMuscleKg: number;
     /** Lean mass gained within the phase (kg). */
@@ -460,8 +467,244 @@ export const buildChartSeries = (
             fatLoss: phase.stats.fatLoss,
             mood: phase.stats.mood,
             bodyFatPct: aggregate.bodyFatPctEnd,
+            weightKg: aggregate.weightKgEnd,
             cumulativeMuscleKg: roundTo(cumulativeMuscleKg, 2),
             muscleGainKg: aggregate.muscleGainKg,
             fatLossKg: aggregate.fatLossKg,
         };
     });
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ADVANCED LIVE PREDICTIONS
+//  Height-based ideal weight (BMI), energy economics (Katch–McArdle), and a
+//  full cycle summary — all pure, deterministic, unit-system-agnostic (metric
+//  base), recomputed live as the user drags any slider.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Healthy BMI band (WHO). */
+export const BMI_RANGE = { LOWER: 18.5, UPPER: 24.9, MID: 22 } as const;
+
+/** Body-fat milestones tracked during the cycle (%). */
+export const BF_MILESTONES = [20, 18, 15] as const;
+
+/** kcal stored per kg of adipose tissue. */
+export const KCAL_PER_KG_FAT = 7700 as const;
+
+/** Moderate-training activity multiplier (Mifflin-adjacent lifestyle factor). */
+export const ACTIVITY_FACTOR = 1.55 as const;
+
+/** Fallback height when the caller does not supply one. */
+export const DEFAULT_HEIGHT_CM = 175 as const;
+
+/**
+ * Energy economics — Katch–McArdle BMR derived purely from lean body mass
+ * (no age/gender assumptions), scaled to TDEE, plus the daily kcal deficit the
+ * user's chosen fat-loss rate implies (7 700 kcal ≈ 1 kg fat).
+ */
+export const estimateEnergy = (
+    input: BodyCompositionInput,
+): {
+    bmrKcal: number;
+    tdeeKcal: number;
+    dailyDeficitKcal: number;
+    weeklyBurnKcal: number;
+} => {
+    const weightKg = clamp(input.startWeightKg, 30, 400);
+    const bf = clamp(input.startBodyFatPct, 3, 60);
+    const leanKg = weightKg * (1 - bf / 100);
+
+    const bmrKcal = 370 + 21.6 * leanKg; // Katch–McArdle
+    const tdeeKcal = bmrKcal * ACTIVITY_FACTOR;
+
+    const rate = adaptiveFatLossRate(bf, input.weeklyFatLossRate);
+    const avgWeeklyFatLossKg = weightKg * rate;
+    const weeklyBurnKcal = avgWeeklyFatLossKg * KCAL_PER_KG_FAT;
+    const dailyDeficitKcal = weeklyBurnKcal / 7;
+
+    return {
+        bmrKcal: roundTo(bmrKcal, 0),
+        tdeeKcal: roundTo(tdeeKcal, 0),
+        dailyDeficitKcal: roundTo(dailyDeficitKcal, 0),
+        weeklyBurnKcal: roundTo(weeklyBurnKcal, 0),
+    };
+};
+
+/**
+ * Height-based ideal-weight estimate (healthy BMI band) and the projected
+ * time — in weeks — to reach it given the model's average net weekly weight
+ * change. `null` weeks mean the target is unreachable within the model.
+ */
+export const estimateIdealWeight = (
+    input: BodyCompositionInput,
+    heightCm?: number,
+): {
+    bmiStart: number;
+    idealWeightKg: number;
+    idealWeightMidKg: number;
+    weightToLoseKg: number;
+    weightToMidLoseKg: number;
+    weeksToIdeal: number | null;
+    weeksToMidIdeal: number | null;
+} => {
+    const hM = clamp(heightCm ?? DEFAULT_HEIGHT_CM, 120, 250) / 100;
+    const weightKg = clamp(input.startWeightKg, 30, 400);
+
+    const bmiStart = weightKg / (hM * hM);
+    const idealWeightKg = roundTo(BMI_RANGE.UPPER * hM * hM, 1);
+    const idealWeightMidKg = roundTo(BMI_RANGE.MID * hM * hM, 1);
+
+    const projections = projectBodyComposition(input);
+    const startW = clamp(input.startWeightKg, 30, 400);
+    const netChange = projections[CYCLE_TOTAL_WEEKS - 1].weightKg - startW;
+    const netWeekly = netChange / CYCLE_TOTAL_WEEKS;
+
+    const weightToLoseKg = Math.max(0, weightKg - idealWeightKg);
+    const weightToMidLoseKg = Math.max(0, weightKg - idealWeightMidKg);
+
+    // A cut produces a *negative* net weekly change — use its magnitude as the
+    // rate of descent; a non-positive (flat/gaining) model means unreachable.
+    const rate = Math.abs(netWeekly);
+
+    return {
+        bmiStart: roundTo(bmiStart, 1),
+        idealWeightKg,
+        idealWeightMidKg,
+        weightToLoseKg: roundTo(weightToLoseKg, 1),
+        weightToMidLoseKg: roundTo(weightToMidLoseKg, 1),
+        weeksToIdeal:
+            weightToLoseKg <= 0 ? 0 : rate <= 0 ? null : Math.round(weightToLoseKg / rate),
+        weeksToMidIdeal:
+            weightToMidLoseKg <= 0 ? 0 : rate <= 0 ? null : Math.round(weightToMidLoseKg / rate),
+    };
+};
+
+export interface MilestonePoint {
+    week: number;
+    bodyFatPct: number;
+    kind: 'bf20' | 'bf18' | 'bf15' | 'midIdeal';
+}
+
+export interface CycleSummary {
+    startWeightKg: number;
+    endWeightKg: number;
+    weightChangeKg: number;
+    weightChangePct: number;
+    startBfPct: number;
+    endBfPct: number;
+    bfChangePct: number;
+    totalFatLossKg: number;
+    totalMuscleGainKg: number;
+    avgWeeklyFatLossKg: number;
+    avgWeeklyMuscleKg: number;
+    netWeeklyWeightChangeKg: number;
+    bmiStart: number;
+    bmiEnd: number;
+    idealWeightKg: number;
+    idealWeightMidKg: number;
+    weightToLoseKg: number;
+    weeksToIdeal: number | null;
+    withinCycle: boolean;
+    goalProgressPct: number;
+    milestones: MilestonePoint[];
+    energy: ReturnType<typeof estimateEnergy>;
+}
+
+/**
+ * One-shot, deterministic summary of the entire predicted cycle. Powers the
+ * live "goal progress" gauge, time-to-ideal-weight countdown, deficit
+ * readouts and milestone markers — all recomputed on every input change.
+ */
+export const estimateCycleSummary = (
+    input: BodyCompositionInput,
+    heightCm?: number,
+): CycleSummary => {
+    const projections = projectBodyComposition(input);
+    const startW = clamp(input.startWeightKg, 30, 400);
+    const startBf = clamp(input.startBodyFatPct, 3, 60);
+
+    const endWeightKg = projections[CYCLE_TOTAL_WEEKS - 1].weightKg;
+    const endBfPct = projections[CYCLE_TOTAL_WEEKS - 1].bodyFatPct;
+    const totalFatLossKg = roundTo(
+        projections.reduce((sum, p) => sum + p.fatLossKg, 0),
+        2,
+    );
+    const totalMuscleGainKg = projections[CYCLE_TOTAL_WEEKS - 1].cumulativeMuscleGainKg;
+
+    const weightChangeKg = roundTo(endWeightKg - startW, 2);
+    const netWeeklyWeightChangeKg = roundTo(weightChangeKg / CYCLE_TOTAL_WEEKS, 3);
+
+    const ideal = estimateIdealWeight(input, heightCm);
+
+    // Goal progress toward the healthy upper bound (BMI 24.9).
+    const goalProgressPct =
+        ideal.weightToLoseKg <= 0
+            ? 100
+            : clamp((totalFatLossKg / ideal.weightToLoseKg) * 100, 0, 100);
+
+    // Body-fat milestones: the first week each threshold is crossed.
+    const milestones: MilestonePoint[] = [];
+    let seenMidIdeal = false;
+    for (let i = 0; i < projections.length; i++) {
+        const p = projections[i];
+        if (p.bodyFatPct < 20 && !milestones.some((m) => m.kind === 'bf20')) {
+            milestones.push({ week: p.week, bodyFatPct: p.bodyFatPct, kind: 'bf20' });
+        }
+        if (p.bodyFatPct < 18 && !milestones.some((m) => m.kind === 'bf18')) {
+            milestones.push({ week: p.week, bodyFatPct: p.bodyFatPct, kind: 'bf18' });
+        }
+        if (p.bodyFatPct < 15 && !milestones.some((m) => m.kind === 'bf15')) {
+            milestones.push({ week: p.week, bodyFatPct: p.bodyFatPct, kind: 'bf15' });
+        }
+        if (!seenMidIdeal && p.weightKg <= ideal.idealWeightMidKg) {
+            milestones.push({ week: p.week, bodyFatPct: p.bodyFatPct, kind: 'midIdeal' });
+            seenMidIdeal = true;
+        }
+    }
+
+    const weeksToIdeal = ideal.weeksToIdeal;
+
+    return {
+        startWeightKg: roundTo(startW, 1),
+        endWeightKg,
+        weightChangeKg,
+        weightChangePct: roundTo((weightChangeKg / startW) * 100, 1),
+        startBfPct: startBf,
+        endBfPct,
+        bfChangePct: roundTo(startBf - endBfPct, 1),
+        totalFatLossKg,
+        totalMuscleGainKg: roundTo(totalMuscleGainKg, 2),
+        avgWeeklyFatLossKg: roundTo(totalFatLossKg / CYCLE_TOTAL_WEEKS, 2),
+        avgWeeklyMuscleKg: roundTo(totalMuscleGainKg / CYCLE_TOTAL_WEEKS, 2),
+        netWeeklyWeightChangeKg,
+        bmiStart: ideal.bmiStart,
+        bmiEnd: roundTo(endWeightKg / Math.pow(clamp(heightCm ?? DEFAULT_HEIGHT_CM, 120, 250) / 100, 2), 1),
+        idealWeightKg: ideal.idealWeightKg,
+        idealWeightMidKg: ideal.idealWeightMidKg,
+        weightToLoseKg: ideal.weightToLoseKg,
+        weeksToIdeal,
+        withinCycle: weeksToIdeal != null && weeksToIdeal <= CYCLE_TOTAL_WEEKS,
+        goalProgressPct: roundTo(goalProgressPct, 0),
+        milestones,
+        energy: estimateEnergy(input),
+    };
+};
+
+/**
+ * Formats a metric height (cm) into the active system — "178 cm" / "5' 10\""
+ * — with Arabic/English labels.
+ */
+export const formatHeight = (
+    cm: number,
+    system: UnitSystem,
+    isAr: boolean,
+): string => {
+    if (system === 'imperial') {
+        const inches = cm * CONVERSIONS.CM_TO_INCHES;
+        const feet = Math.floor(inches / 12);
+        const rem = Math.round(inches % 12);
+        return isAr
+            ? `${feet}′ ${rem}″`
+            : `${feet}' ${rem}"`;
+    }
+    return `${Math.round(cm)} ${isAr ? 'سم' : 'cm'}`;
+};
