@@ -151,6 +151,7 @@ export class SpaceRemitGateway implements IPaymentGateway {
             invoiceId,
             status: (event === 'payment.success' || event === 'transaction.success') ? 'success' : 'failed',
             externalReferenceId: payload.data?.transaction_id,
+            paidAmount: payload.data?.amount != null ? Number(payload.data.amount) : undefined,
         };
     }
 

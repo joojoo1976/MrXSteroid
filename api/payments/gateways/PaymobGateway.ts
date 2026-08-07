@@ -295,17 +295,10 @@ export class PaymobGateway implements IPaymentGateway {
         }
 
         if (!config.HMAC_SECRET) {
-            console.warn('⚠️ Paymob HMAC secret not configured. Skipping HMAC check in test mode.');
-            // Allow callback in test mode if HMAC secret is not set
-            const queryObj = req.query || {};
-            const merchantOrderId = queryObj.merchant_order_id as string || queryObj.order as string;
-            const success = String(queryObj.success) === 'true';
-            return {
-                valid: true,
-                invoiceId: merchantOrderId,
-                status: success ? 'success' : 'failed',
-                externalReferenceId: String(queryObj.id || ''),
-            };
+            // Fail-closed: never accept a webhook when the HMAC secret is missing.
+            // Auto-accepting in "test mode" would let unauthenticated callers mark payments as successful.
+            console.error('❌ [Paymob] HMAC secret not configured — refusing to verify webhook (fail-closed).');
+            return { valid: false, errorMessage: 'Paymob HMAC secret not configured' };
         }
 
         // Parse callback body
@@ -366,6 +359,7 @@ export class PaymobGateway implements IPaymentGateway {
             invoiceId: merchantOrderId,
             status: isSuccess ? 'success' : 'failed',
             externalReferenceId: String(obj.id),
+            paidAmount: obj.amount_cents != null ? Number(obj.amount_cents) / 100 : undefined,
             errorMessage: isSuccess ? undefined : String(obj.data_message || 'Payment failed'),
         };
     }

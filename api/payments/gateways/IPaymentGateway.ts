@@ -40,6 +40,8 @@ export interface WebhookVerificationResult {
     status?: 'success' | 'failed';
     externalReferenceId?: string;
     errorMessage?: string;
+    /** Amount actually paid in major units, when reported by the gateway. Used for defense-in-depth amount verification. */
+    paidAmount?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

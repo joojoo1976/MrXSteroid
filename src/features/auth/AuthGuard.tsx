@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../shared/lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
@@ -24,10 +24,33 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
     const { user, loading } = useAuth();
     const [isChecking, setIsChecking] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
+    // Guards against re-running the redirect/deny logic on every App re-render
+    // (navigateTo changes identity on each render), which previously caused
+    // repeated navigation and stacked toasts.
+    const decidedForRef = useRef<string | null>(null);
+
+    // The pricing section lives on the Home page. Authenticated users without an
+    // active subscription are sent there (never to the login page) and scrolled
+    // to the pricing block.
+    const redirectToPricing = (returnUrl: string) => {
+        if (navigateTo) {
+            navigateTo(Page.HOME);
+            setTimeout(() => {
+                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                window.history.replaceState(null, '', '#pricing');
+            }, 150);
+        } else {
+            window.location.href = `/#pricing?returnUrl=${encodeURIComponent(returnUrl)}`;
+        }
+    };
 
     useEffect(() => {
         const checkAccess = async () => {
             if (loading) return; // Wait for AuthContext
+
+            const decisionKey = `${user?.id ?? 'anon'}-${requireSubscription ? 'sub' : 'none'}`;
+            if (decidedForRef.current === decisionKey) return; // Already handled this session state
+            decidedForRef.current = decisionKey;
 
             if (!user) {
                 // User is not logged in - use SPA navigation if available
@@ -49,11 +72,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
 
                 if (error || !sub || sub.subscription_status !== 'active' || sub.has_paid !== true) {
                     toast.error("Active subscription required for this content.");
-                    if (navigateTo) {
-                        navigateTo(Page.LOGIN);
-                    } else {
-                        window.location.href = `/pricing?returnUrl=${encodeURIComponent(window.location.pathname)}`;
-                    }
+                    redirectToPricing(window.location.pathname);
                     return;
                 }
             }
@@ -64,7 +83,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireSubscription = f
         };
 
         checkAccess();
-    }, [user, loading, requireSubscription, navigateTo]);
+        // navigateTo is intentionally excluded: its identity changes on every App
+        // render and it is captured via closure. Deps are the actual guard inputs.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, loading, requireSubscription]);
 
     if (loading || isChecking) {
         return (

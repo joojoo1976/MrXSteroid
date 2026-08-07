@@ -189,42 +189,50 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
 
             {/* Payment Options */}
             <div className="px-6 space-y-4 pb-2">
-                {/* PayPal */}
-                <button
-                    type="button"
-                    onClick={() => selectPaymentMethod('paypal')}
-                    className="w-full py-3.5 rounded-2xl bg-[#FFC439] hover:bg-[#ffcd57] active:scale-[0.99] text-[#003087] font-black text-base italic tracking-tight transition-all shadow-lg shadow-black/20 flex items-center justify-center gap-2"
-                >
-                    <span className="not-italic text-lg leading-none font-black">P</span>
-                    <span>Pay</span><span className="not-italic font-black">Pal</span>
-                </button>
+                {/* PayPal — only offered on the Global region (Paymob handles Egypt) */}
+                {!isEg && (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => selectPaymentMethod('paypal')}
+                            className="w-full py-3.5 rounded-2xl bg-[#FFC439] hover:bg-[#ffcd57] active:scale-[0.99] text-[#003087] font-black text-base italic tracking-tight transition-all shadow-lg shadow-black/20 flex items-center justify-center gap-2"
+                        >
+                            <span className="not-italic text-lg leading-none font-black">P</span>
+                            <span>Pay</span><span className="not-italic font-black">Pal</span>
+                        </button>
 
-                {/* Divider: أو */}
-                <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-zinc-700/60" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{isAr ? 'أو' : 'or'}</span>
-                    <div className="flex-1 h-px bg-zinc-700/60" />
-                </div>
+                        {/* Divider: أو */}
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 h-px bg-zinc-700/60" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{isAr ? 'أو' : 'or'}</span>
+                            <div className="flex-1 h-px bg-zinc-700/60" />
+                        </div>
+                    </>
+                )}
 
-                {/* Link card */}
+                {/* Pay by card shortcut */}
                 <div className="rounded-2xl bg-white p-4 shadow-2xl shadow-black/30">
                     <div className="flex items-center justify-between gap-3 mb-3">
-                        <span className="text-[#625FF5] font-black text-lg italic tracking-tighter leading-none">Link</span>
-                        <span className="text-[10px] text-zinc-500 font-bold truncate" dir="ltr">foryoutalk@hotmail.com</span>
+                        <span className="text-[#635BFF] font-black text-lg italic tracking-tighter leading-none">Card</span>
+                        <span className="text-[10px] text-zinc-500 font-bold truncate">
+                            {isAr ? 'بطاقة ائتمان / خصم' : 'Credit / debit card'}
+                        </span>
                     </div>
                     <div className="rounded-xl bg-zinc-100 p-3 space-y-1.5">
                         <div className="flex items-center gap-2">
-                            <span className="w-9 h-6 rounded-md bg-gradient-to-br from-[#EB001B] to-[#F79E1B] flex items-center justify-center text-white text-[8px] font-black shrink-0">mc</span>
-                            <span className="text-sm font-black text-zinc-800">Mastercard Debit</span>
+                            <span className="w-9 h-6 rounded-md bg-gradient-to-br from-[#635BFF] to-[#00D4FF] flex items-center justify-center text-white text-[8px] font-black shrink-0">VISA</span>
+                            <span className="text-sm font-black text-zinc-800">{isAr ? 'الدفع بالبطاقة' : 'Card payment'}</span>
                         </div>
-                        <p className="text-[10px] text-zinc-500 font-bold">{isAr ? 'بطاقة ماستركارد خصم مباشر 1316••••' : 'Mastercard debit card ending 1316••••'}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold">
+                            {isAr ? 'ادفع بأمان مباشرة عبر أي بطاقة' : 'Pay securely with any card'}
+                        </p>
                     </div>
                     <button
                         type="button"
                         onClick={() => selectPaymentMethod('card')}
                         className="w-full mt-3 py-3 rounded-xl bg-black hover:bg-zinc-900 text-white font-black text-sm transition-colors"
                     >
-                        Use this card
+                        {isAr ? 'الدفع بالبطاقة' : 'Pay by card'}
                     </button>
                 </div>
             </div>

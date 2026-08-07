@@ -31,13 +31,34 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children, navigateTo }) => {
                 return;
             }
 
-            const role = profileData?.role || (user as unknown as { user_metadata?: { role?: string } })?.user_metadata?.role || 'user';
+            const metadataRole = (user as unknown as { user_metadata?: { role?: string } })?.user_metadata?.role;
+            const role = profileData?.role || metadataRole || 'user';
+
+            // Admins provisioned directly in the profiles table (role stored in DB
+            // only, metadata role is still 'user') need profileData to be resolved
+            // before we can authorize them. If it hasn't arrived yet, keep waiting
+            // instead of flashing a false "Access Denied".
+            if (profileData === null && metadataRole !== 'admin') {
+                return;
+            }
 
             setIsAuthorized(role === 'admin');
             setIsChecking(false);
         }, 0);
 
-        return () => clearTimeout(timer);
+        // Hard fallback: if the profile fetch never resolves (DB/network outage),
+        // fall back to the session metadata role after a bounded delay so the
+        // admin route doesn't hang on a spinner forever.
+        const fallbackTimer = setTimeout(() => {
+            const metadataRole = (user as unknown as { user_metadata?: { role?: string } })?.user_metadata?.role;
+            setIsAuthorized(profileData?.role === 'admin' || metadataRole === 'admin');
+            setIsChecking(false);
+        }, 4000);
+
+        return () => {
+            clearTimeout(timer);
+            clearTimeout(fallbackTimer);
+        };
     }, [user, loading, profileData, navigateTo]);
 
     if (loading || isChecking) {

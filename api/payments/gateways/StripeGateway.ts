@@ -206,6 +206,7 @@ export class StripeGateway implements IPaymentGateway {
                 invoiceId: readInvoiceId(session as unknown as Record<string, unknown>) || session.client_reference_id || session.metadata?.invoice_id || undefined,
                 status: session.payment_status === 'paid' ? 'success' : 'failed',
                 externalReferenceId: session.id,
+                paidAmount: session.amount_total != null ? session.amount_total / 100 : undefined,
             };
         }
 
@@ -216,6 +217,7 @@ export class StripeGateway implements IPaymentGateway {
                 invoiceId: readInvoiceId(pi as unknown as Record<string, unknown>) || pi.metadata?.invoice_id || undefined,
                 status: 'success',
                 externalReferenceId: pi.id,
+                paidAmount: pi.amount_received != null ? pi.amount_received / 100 : undefined,
             };
         }
 

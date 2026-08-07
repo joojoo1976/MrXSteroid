@@ -107,31 +107,17 @@ export class PaymentFactory {
      * Detect the gateway from a webhook/callback request.
      * 
      * Detection order:
-     *   0. Explicit `x-gateway-name` header (e.g., 'stripe', 'paymob', 'spaceremit')
      *   1. `stripe-signature` header → Stripe
      *   2. `hmac` header/query → Paymob
      *   3. SpaceRemit-specific headers/query params
      *   4. Fallback → SpaceRemit
+     * 
+     * Note: Detection is driven ONLY by gateway-authenticated signals (signature
+     * headers / verified callbacks). A caller-supplied `x-gateway-name` header is
+     * deliberately ignored so an attacker cannot steer the request to a weaker
+     * gateway before signature verification.
      */
     static detectGatewayFromRequest(req: { headers: Record<string, string | string[] | undefined>; query: Record<string, string | string[] | undefined> }): IPaymentGateway {
-        // 0. Explicit gateway header (from the caller or a proxy)
-        const explicitGateway = (req.headers['x-gateway-name'] as string)?.toLowerCase?.();
-        if (explicitGateway) {
-            switch (explicitGateway) {
-                case 'stripe':
-                    console.log('🏭 [PaymentFactory] Explicit header → Stripe');
-                    return PaymentFactory.getStripe();
-                case 'paymob':
-                    console.log('🏭 [PaymentFactory] Explicit header → Paymob');
-                    return PaymentFactory.getPaymob();
-                case 'spaceremit':
-                    console.log('🏭 [PaymentFactory] Explicit header → SpaceRemit');
-                    return PaymentFactory.getSpaceRemit();
-                default:
-                    console.warn(`⚠️ [PaymentFactory] Unknown x-gateway-name: "${explicitGateway}", falling through to auto-detection`);
-            }
-        }
-
         // 1. Stripe signature header
         if (req.headers['stripe-signature']) {
             return PaymentFactory.getStripe();

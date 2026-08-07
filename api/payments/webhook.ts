@@ -17,6 +17,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory.js';
+import { verifyPaidAmount } from './verifyPaidAmount.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                         CONFIGURATION
@@ -154,6 +155,21 @@ async function processWebhook(
 
         // ─── PROCESS PAYMENT RESULT ──────────────────────────────────────
         if (verification.status === 'success') {
+            // Defense-in-depth: never activate on a mismatched charge.
+            const amountCheck = await verifyPaidAmount(invoiceId, verification.paidAmount);
+            if (!amountCheck.ok) {
+                console.error(`❌ [Webhook] Amount verification failed for ${invoiceId} — not activating.`);
+                await supabase
+                    .from('invoices')
+                    .update({
+                        status: 'failed',
+                        gateway_reference_id: verification.externalReferenceId || undefined,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', invoiceId);
+                return respond(200, { status: 'ok', message: 'Amount mismatch — not activated' });
+            }
+
             // 1. Update invoice
             await supabase
                 .from('invoices')

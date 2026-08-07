@@ -224,6 +224,15 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const discountPct = promoStatus?.codeType === 'pct' ? (promoStatus.discountPct ?? 0) : 0;
     const finalTotal = Math.max(0, subTotalWithShipping - discountAmount);
 
+    // Keep the parent's discountAmount in sync whenever the recomputed value
+    // changes. Without this, a percentage promo applied before a shipping
+    // selection would leave OrderSummary's grand total stale relative to the
+    // amount actually charged (finalTotal).
+    useEffect(() => {
+        if (onDiscountChange) onDiscountChange(discountAmount);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [discountAmount]);
+
     const currentCurrency = isEg ? 'EGP' : currency;
     const prefCurrency = {
         code: currentCurrency,
@@ -260,17 +269,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 };
                 setPromoStatus(newStatus);
                 toast.success(result.message);
-                // Notify parent of discount change
-                if (onDiscountChange) {
-                    const computedDiscount = result.codeType === 'pct' && result.discountPct
-                        ? Math.round(subTotalWithShipping * (result.discountPct / 100) * 100) / 100
-                        : (result.discount || 0);
-                    onDiscountChange(computedDiscount);
-                }
+                // Parent discountAmount is synced by the discountAmount effect above.
             } else {
                 setPromoStatus({ valid: false, message: result.message, discount: 0 });
                 toast.error(result.message);
-                if (onDiscountChange) onDiscountChange(0);
             }
         } catch {
             toast.error(isAr ? "خطأ في التحقق من الكود" : "Error validating code");

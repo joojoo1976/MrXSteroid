@@ -9,6 +9,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory.js';
+import { verifyPaidAmount } from './verifyPaidAmount.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                         ENVIRONMENT CONFIGURATION
@@ -225,6 +226,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             // Process based on status
             if (verification.status === 'success') {
+                // Defense-in-depth: never activate on a mismatched charge.
+                const amountCheck = await verifyPaidAmount(invoiceId, verification.paidAmount);
+                if (!amountCheck.ok) {
+                    console.error(`❌ [Callback] Amount verification failed for ${invoiceId} — not activating.`);
+                    await markInvoiceFailed(invoiceId, `Amount mismatch — paid ${amountCheck.paid} vs expected ${amountCheck.expected}`);
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Amount mismatch — payment not activated',
+                        invoiceId,
+                    });
+                }
+
                 const activated = await activateSubscription(invoiceId, verification.externalReferenceId);
                 return res.status(200).json({
                     success: true,

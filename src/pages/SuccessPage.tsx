@@ -32,7 +32,13 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ navigateTo }) => {
         }
 
         // ─── FETCH FRESH PROFILE FROM SUPABASE ───────────────────────────
-        // This ensures the UI immediately reflects the activated subscription
+        // The payment webhook may land a moment after the redirect, so poll a few
+        // times before giving up. This ensures the UI reflects the activation.
+        let pollAttempts = 0;
+        const MAX_POLL_ATTEMPTS = 6;
+        const POLL_INTERVAL_MS = 1500;
+        let stopPolling = false;
+
         const fetchFreshProfile = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -51,6 +57,11 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ navigateTo }) => {
                         hasPaid: profile.has_paid,
                         status: profile.subscription_status,
                     });
+
+                    // Stop polling once the subscription is confirmed active.
+                    if (profile.subscription_status === 'active' || profile.has_paid === true) {
+                        stopPolling = true;
+                    }
                 }
             } catch (error) {
                 console.warn('⚠️ [SuccessPage] Could not fetch fresh profile:', error);
@@ -58,6 +69,19 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ navigateTo }) => {
         };
 
         fetchFreshProfile();
+        const pollTimer = setInterval(() => {
+            pollAttempts += 1;
+            if (stopPolling || pollAttempts >= MAX_POLL_ATTEMPTS) {
+                clearInterval(pollTimer);
+                return;
+            }
+            fetchFreshProfile();
+        }, POLL_INTERVAL_MS);
+
+        return () => {
+            stopPolling = true;
+            clearInterval(pollTimer);
+        };
     }, []);
 
     return (
