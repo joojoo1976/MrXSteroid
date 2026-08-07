@@ -889,6 +889,10 @@ export interface ContentStrings {
     cut: string;
     maintain: string;
     bulk: string;
+    bulking: string;
+    cutting: string;
+    trt: string;
+    sports: string;
   };
   calcMealNames: string[];
   calcActivityLevels: {
@@ -954,12 +958,14 @@ export interface ContentStrings {
     male: {
       essential: string;
       athletes: string;
+      fitness: string;
       average: string;
       obese: string;
     };
     female: {
       essential: string;
       athletes: string;
+      fitness: string;
       average: string;
       obese: string;
     };

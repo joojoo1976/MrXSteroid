@@ -1256,7 +1256,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         maintain: "Dramatic surge in lean muscle density with sustained low body fat. A symmetrical, powerful physique built for dominance and longevity.",
         bulk: "Exponential increase in raw muscle mass and maximal strength output. Full, round muscle bellies with visible thickness across the upper body."
     },
-    calcSelectGoal: { cut: "Cutting (Fat Loss)", maintain: "Maintenance", bulk: "Bulking (Muscle Gain)" },
+    calcSelectGoal: { cut: "Cutting (Fat Loss)", maintain: "Maintenance", bulk: "Bulking (Muscle Gain)", bulking: "Bulking", cutting: "Cutting", trt: "TRT", sports: "Sports" },
     calcMealNames: ["Breakfast", "Lunch", "Pre-Workout", "Dinner"],
     calcActivityLevels: { sedentary: "Sedentary (No exercise)", light: "Light (1-3 days/week)", moderate: "Moderate (3-5 days/week)", active: "Active (6-7 days/week)", veryActive: "Very Active (2x daily)" },
     calcTrainingStyles: { hypertrophy: "Hypertrophy", strength: "Strength", endurance: "Endurance" },
@@ -1645,12 +1645,14 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         male: {
             essential: "Essential Fat (2–5%): The absolute physiological minimum for organ protection and neurological function. Typically achieved only by elite competitive bodybuilders at peak stage conditioning.",
             athletes: "Athletic Range (6–13%): Maximum muscular definition, pronounced vascularity, and accelerated basal metabolic rate. The gold standard for competitive physique sports.",
+            fitness: "Fitness Range (14–17%): Clean muscle definition with visible abs and a balanced, athletic look. The sweet spot for most serious lifters.",
             average: "General Population (18–24%): A healthy and sustainable range for non-athletes. Below peak athletic capacity but carries no significant metabolic risk.",
             obese: "Elevated Risk Zone (25%+): Associated with elevated risk of metabolic syndrome and estrogen aromatization."
         },
         female: {
             essential: "Essential Fat (10–13%): The lower limit compatible with female hormonal health. Falling below this threshold risks endocrine disruption.",
             athletes: "Athletic Range (14–20%): Visible muscular definition and athletic performance.",
+            fitness: "Fitness Range (21–24%): Toned, healthy and comfortable. Maintained easily with steady habits and strength training.",
             average: "General Population (25–31%): Normal healthy range for women.",
             obese: "Elevated Risk Zone (32%+): Increased health risks and reduced metabolic efficiency."
         }

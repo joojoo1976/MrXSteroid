@@ -130,8 +130,7 @@ const MasterCalculator: React.FC<MasterCalculatorProps> = ({ navigateTo }) => {
                                     onClick={() => setState(prev => ({ ...prev, goal: g }))}
                                     className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all border-2 ${state.goal === g ? 'bg-gold-500/10 border-gold-500 text-gold-500' : 'bg-zinc-50 dark:bg-zinc-900 border-transparent text-zinc-500 hover:border-zinc-700'}`}
                                 >
-                                    {content.calcSelectGoal ? (content.calcSelectGoal[g as keyof typeof content.calcSelectGoal] || g) : g}
-                                </button>
+                                    {content.calcSelectGoal ? (content.calcSelectGoal[g as keyof typeof content.calcSelectGoal] || g) : g}                                </button>
                             ))}
                         </div>
                     </div>
@@ -198,7 +197,7 @@ const MasterCalculator: React.FC<MasterCalculatorProps> = ({ navigateTo }) => {
                                 type="number"
                                 title="Enter weight"
                                 value={state.weight}
-                                onChange={(e) => setState(prev => ({ ...prev, weight: parseInt(e.target.value) || 0 }))}
+                                onChange={(e) => setState(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
                                 className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center font-mono font-black text-lg focus:border-gold-500 outline-none"
                             />
                         </div>

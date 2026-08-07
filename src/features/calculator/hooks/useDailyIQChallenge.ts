@@ -29,7 +29,9 @@ export const useDailyIQChallenge = ({ content, onWin }: UseDailyIQChallengeOptio
     }, []);
 
     const copyToClipboard = useCallback((text: string) => {
-        navigator.clipboard.writeText(text);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+        }
         toast.success(content.dailyIQ.copySuccess);
     }, [content.dailyIQ.copySuccess]);
 

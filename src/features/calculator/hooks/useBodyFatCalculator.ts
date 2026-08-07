@@ -4,6 +4,7 @@ import { ContentStrings } from '@/shared/types/types';
 import { convertValue, toMetric, toDisplayUnit, getWeightUnitLabel, getLengthUnitLabel } from '../../../shared/lib/logic';
 import { usePreferences } from '../../../context/PreferencesContext';
 import { saveCalculatorResult } from '../../../shared/lib/calculator-history';
+import { navyBodyFatPct } from '../lib/navyFormula';
 
 export interface BodyFatResult {
   bodyFatPercentage: number;
@@ -103,27 +104,27 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
   const handleWeightChange = (val: string) => {
     setWeight(val);
     const num = parseFloat(normalizeNum(val));
-    if (!isNaN(num)) setBaseWeight(isImperial ? toMetric(num, 'weight') : num);
+    setBaseWeight(!isNaN(num) ? (isImperial ? toMetric(num, 'weight') : num) : 0);
   };
   const handleHeightChange = (val: string) => {
     setHeight(val);
     const num = parseFloat(normalizeNum(val));
-    if (!isNaN(num)) setBaseHeight(isImperial ? toMetric(num, 'height') : num);
+    setBaseHeight(!isNaN(num) ? (isImperial ? toMetric(num, 'height') : num) : 0);
   };
   const handleWaistChange = (val: string) => {
     setWaist(val);
     const num = parseFloat(normalizeNum(val));
-    if (!isNaN(num)) setBaseWaist(isImperial ? toMetric(num, 'length') : num);
+    setBaseWaist(!isNaN(num) ? (isImperial ? toMetric(num, 'length') : num) : 0);
   };
   const handleHipChange = (val: string) => {
     setHip(val);
     const num = parseFloat(normalizeNum(val));
-    if (!isNaN(num)) setBaseHip(isImperial ? toMetric(num, 'length') : num);
+    setBaseHip(!isNaN(num) ? (isImperial ? toMetric(num, 'length') : num) : 0);
   };
   const handleNeckChange = (val: string) => {
     setNeck(val);
     const num = parseFloat(normalizeNum(val));
-    if (!isNaN(num)) setBaseNeck(isImperial ? toMetric(num, 'length') : num);
+    setBaseNeck(!isNaN(num) ? (isImperial ? toMetric(num, 'length') : num) : 0);
   };
 
   // Validate step 1
@@ -183,18 +184,8 @@ export const useBodyFatCalculator = ({ content, unitSystem }: UseBodyFatCalculat
     setResult(null);
 
     setTimeout(() => {
-      // ── US Navy Body Fat Formula ──
-      let bodyFatPercentage = 0;
-      if (gender === 'male') {
-        bodyFatPercentage =
-          86.01 * Math.log10(Math.max(1, wi - n)) - 70.041 * Math.log10(h) + 36.76;
-      } else {
-        bodyFatPercentage =
-          163.205 * Math.log10(Math.max(1, wi + hi - n)) -
-          97.684 * Math.log10(h) -
-          78.387;
-      }
-      bodyFatPercentage = Math.max(2, Math.min(60, bodyFatPercentage));
+      // ── US Navy Body Fat Formula (metric inputs converted internally) ──
+      const bodyFatPercentage = navyBodyFatPct(gender, wi, n, hi, h);
 
       const bodyFatMass = (w * bodyFatPercentage) / 100;
       const leanBodyMass = w - bodyFatMass;

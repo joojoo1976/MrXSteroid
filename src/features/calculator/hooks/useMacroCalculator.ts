@@ -104,15 +104,21 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
         if (!result) return null;
         const rand = seededRandom(hashSeed(`sim-${unitSystem}-${baseWeight}-${goal}-${result.calories}`));
         const weeklyChangeKg = goal === 'cut' ? -0.5 : goal === 'bulk' ? 0.25 : 0.05;
+        const displayW = (kg: number) => unitSystem === 'imperial' ? kg * 2.20462262 : kg;
         let weightTrendKg = baseWeight || 80;
         const simPoints: SimulationPoint[] = [];
-        for (let i = 0; i <= 12; i++) {
+        // W0 هو الوزن الحالي؛ ثم 12 خطوة أسبوعية بعدها (W1..W12)
+        simPoints.push({
+            week: 'W0',
+            weight: Math.round(displayW(weightTrendKg)),
+            efficiency: Math.round(85 + rand() * 10),
+        });
+        for (let i = 1; i <= 12; i++) {
             const variation = (rand() * 0.3 - 0.15);
             weightTrendKg += weeklyChangeKg + variation;
-            const displayW = unitSystem === 'imperial' ? weightTrendKg * 2.20462262 : weightTrendKg;
             simPoints.push({
                 week: `W${i}`,
-                weight: Math.round(displayW),
+                weight: Math.round(displayW(weightTrendKg)),
                 efficiency: Math.round(85 + rand() * 10),
             });
         }
@@ -230,7 +236,7 @@ export const useMacroCalculator = ({ content, unitSystem }: UseMacroCalculatorOp
             else if (bmi < 30) bmiStatus = content.calcBmiStatuses.overweight;
             else bmiStatus = content.calcBmiStatuses.obese;
 
-            const potential = 50 + (goal === 'bulk' ? 30 : 0) + (activity.includes('Active') ? 15 : 0);
+            const potential = 50 + (goal === 'bulk' ? 30 : 0) + (activity === 'active' || activity === 'veryActive' ? 15 : 0);
 
             const newResult = {
                 calories: isNaN(targetCalories) ? 0 : targetCalories,

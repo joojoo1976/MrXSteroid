@@ -175,7 +175,14 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
         // ── Stability over the overlap window ──────────────────────────
         const earliestEnd = Math.min(...stack.map(s => (s.startWeek - 1) * 7 + s.duration * 7));
         const stabilityStart = Math.max(saturationPoint, 0);
-        const stabilityEnd = Math.min(earliestEnd, activePhaseEnd);
+        // If a short compound ends before the longest ester reaches 90% Cmax the
+        // overlap window is empty — fall back to the steady-state phase so the
+        // stability score never collapses to 0 (and the "severe fluctuation"
+        // warning doesn't fire spuriously).
+        let stabilityEnd = Math.min(earliestEnd, activePhaseEnd);
+        if (stabilityEnd <= stabilityStart) {
+            stabilityEnd = Math.max(stabilityStart + 1, activePhaseEnd);
+        }
         const peakWindowLevels = chartData
             .slice(stabilityStart, stabilityEnd)
             .map(d => d.total)

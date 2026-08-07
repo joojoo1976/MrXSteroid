@@ -255,6 +255,23 @@ describe('transformationEngine — advanced live predictions', () => {
         expect(weeks).toEqual([...weeks].sort((x, y) => x - y));
     });
 
+    it('keeps goal progress consistent with weeks-to-ideal (scale-weight, not fat-only)', () => {
+        // Goal reachable within the 12-week cycle → gauge reads 100%.
+        const reachable = estimateCycleSummary(base, 175);
+        expect(reachable.withinCycle).toBe(true);
+        expect(reachable.goalProgressPct).toBe(100);
+        // Unreachable within the cycle → gauge must stay below 100% instead of
+        // clamping early while the countdown still shows many weeks remaining.
+        const heavy = estimateCycleSummary(
+            { startWeightKg: 130, startBodyFatPct: 32, trainingAge: 'novice' as const },
+            175,
+        );
+        expect(heavy.withinCycle).toBe(false);
+        expect(heavy.weeksToIdeal as number).toBeGreaterThan(12);
+        expect(heavy.goalProgressPct).toBeLessThan(100);
+        expect(heavy.goalProgressPct).toBeGreaterThan(0);
+    });
+
     it('formats height in metric and imperial systems', () => {
         expect(formatHeight(178, 'metric', false)).toBe('178 cm');
         expect(formatHeight(178, 'metric', true)).toContain('سم');

@@ -30,14 +30,16 @@ const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: stri
     const end = value;
     const duration = 1400;
     const startTime = performance.now();
+    let raf = 0;
     const tick = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       setDisplayed(start + (end - start) * eased);
-      if (progress < 1) requestAnimationFrame(tick);
+      if (progress < 1) raf = requestAnimationFrame(tick);
       else ref.current = end;
     };
-    requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [value]);
   return <span className={className}>{displayed.toFixed(decimals)}{suffix}</span>;
 };
@@ -859,8 +861,8 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
               </h3>
               <p className="text-sm font-medium text-zinc-400 leading-relaxed">
                 {gender === 'male'
-                  ? content.bfCategoryDescriptions.male[result.categoryKey === 'fitness' ? 'athletes' : result.categoryKey === 'essential' ? 'essential' : result.categoryKey === 'athletes' ? 'athletes' : result.categoryKey === 'obese' ? 'obese' : 'average']
-                  : content.bfCategoryDescriptions.female[result.categoryKey === 'fitness' ? 'athletes' : result.categoryKey === 'essential' ? 'essential' : result.categoryKey === 'athletes' ? 'athletes' : result.categoryKey === 'obese' ? 'obese' : 'average']
+                  ? content.bfCategoryDescriptions.male[result.categoryKey]
+                  : content.bfCategoryDescriptions.female[result.categoryKey]
                 }
               </p>
             </motion.div>

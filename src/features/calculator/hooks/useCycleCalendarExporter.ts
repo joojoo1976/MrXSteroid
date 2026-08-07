@@ -21,9 +21,17 @@ interface UseCycleCalendarExporterOptions {
     content: ContentStrings;
 }
 
+/** Local calendar date as `YYYY-MM-DD` (avoids the UTC shift of toISOString). */
+const toISOLocal = (d: Date): string =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Local calendar date as `YYYYMMDD` for the ICS format. */
+const toICSDate = (d: Date): string =>
+    `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+
 export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOptions) => {
     const [isUnlocked, setIsUnlocked] = useState(false);
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+    const [startDate, setStartDate] = useState(() => toISOLocal(new Date()));
     const [stealthMode, setStealthMode] = useState(false);
     const [autoRotate, setAutoRotate] = useState(true);
     const [autoPCT, setAutoPCT] = useState(true);
@@ -77,6 +85,9 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
     const generateICS = useCallback(() => {
         const events: ICSEvent[] = [];
         const start = new Date(startDate);
+        // Guard against a cleared/invalid date input — `new Date("")` is an
+        // Invalid Date whose toISOString() throws RangeError.
+        if (!startDate || isNaN(start.getTime())) return;
         let maxCycleEndDate = new Date(start);
         let maxHalfLife = 0;
 
@@ -111,7 +122,7 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
 
                 if (currentDate >= endDate) break;
 
-                const dateString = currentDate.toISOString().replace(/-|:|\.\d+/g, "");
+                const dateString = toICSDate(currentDate);
 
                 let summary = `${comp.name} (${comp.dosage}mg)`;
                 if (stealthMode) {
@@ -126,11 +137,11 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
 
                 const eventEndDate = new Date(currentDate);
                 eventEndDate.setDate(currentDate.getDate() + 1);
-                const endDateString = eventEndDate.toISOString().replace(/-|:|\.\d+/g, "");
+                const endDateString = toICSDate(eventEndDate);
 
                 events.push({
-                    start: dateString.substring(0, 8),
-                    end: endDateString.substring(0, 8),
+                    start: dateString,
+                    end: endDateString,
                     summary: summary.replace(/[,;]/g, '\\$&'),
                     description: description
                 });
@@ -141,11 +152,11 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
         if (autoPCT) {
             const pctStartDate = new Date(maxCycleEndDate);
             pctStartDate.setDate(pctStartDate.getDate() + Math.round(5 * maxHalfLife));
-            const startString = pctStartDate.toISOString().replace(/-|:|\.\d+/g, "").substring(0, 8);
+            const startString = toICSDate(pctStartDate);
 
             const pctEndDate = new Date(pctStartDate);
             pctEndDate.setDate(pctStartDate.getDate() + 1);
-            const endString = pctEndDate.toISOString().replace(/-|:|\.\d+/g, "").substring(0, 8);
+            const endString = toICSDate(pctEndDate);
 
             events.push({
                 start: startString,

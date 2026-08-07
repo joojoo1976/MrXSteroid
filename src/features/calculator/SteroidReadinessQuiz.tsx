@@ -9,7 +9,7 @@ import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useReadinessQuiz } from './hooks/useReadinessQuiz';
 import { usePreferences } from '../../context/PreferencesContext';
 
-const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () => void }> = ({ content }) => {
+const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () => void }> = ({ content, onComplete }) => {
     const { isRTL: isAr } = usePreferences();
 
 
@@ -29,7 +29,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () 
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
-        if (discountCode) {
+        if (discountCode && navigator.clipboard) {
             navigator.clipboard.writeText(discountCode).then(() => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2500);
@@ -42,6 +42,15 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () 
         const el = document.getElementById('pricing');
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    /** Completion flow: parent (signup navigation) wins when provided, else scroll to pricing */
+    const handleComplete = () => {
+        if (onComplete) {
+            onComplete();
+        } else {
+            scrollToPricing();
         }
     };
 
@@ -275,7 +284,7 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () 
                                                 <motion.button
                                                     whileHover={{ scale: 1.07, boxShadow: "0 0 60px rgba(234, 179, 8, 0.5)" }}
                                                     whileTap={{ scale: 0.93 }}
-                                                    onClick={scrollToPricing}
+                                                    onClick={handleComplete}
                                                     className="w-full md:w-auto px-12 py-6 bg-gradient-to-r from-gold-600 to-gold-400 hover:from-gold-500 hover:to-gold-300 text-black font-black text-xl rounded-[2rem] shadow-2xl transition-all flex items-center justify-center gap-4 mx-auto relative overflow-hidden group"
                                                 >
                                                     <span className="relative z-10">{result.cta}</span>

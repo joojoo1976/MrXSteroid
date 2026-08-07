@@ -120,13 +120,19 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
         };
 
         const potentialLeanMassKg = (isImperial ? maxWeightPounds / 2.20462 : naturalWeight) * (1 - bf / 100);
-        const ffmi = potentialLeanMassKg / (hM * hM);
-        const normalizedFfmi = ffmi + 6.1 * (1.8 - hM);
+        const rawFfmi = potentialLeanMassKg / (hM * hM);
+        const normalizedFfmi = rawFfmi + 6.1 * (1.8 - hM);
 
-        const potentialShoulderWaist = naturalPotentials.shoulders / naturalPotentials.waist;
+        // Shoulder-to-waist ratio: prefer the user's real measurements so the
+        // "golden ratio" and structure score reflect their actual build; fall
+        // back to the skeletal-predicted proportions when measurements are missing.
+        const potentialShoulderWaist =
+            curShoulders > 0 && curWaist > 0
+                ? curShoulders / curWaist
+                : naturalPotentials.shoulders / naturalPotentials.waist;
 
         const ffmiScore = Math.min((normalizedFfmi / 25) * 100, 100);
-        const structureScore = 100 - (Math.abs(1.618 - potentialShoulderWaist) * 100);
+        const structureScore = Math.max(0, Math.min(100, 100 - (Math.abs(1.618 - potentialShoulderWaist) * 100)));
         const physiqueScore = (ffmiScore * 0.6) + (structureScore * 0.4);
 
         let type = content.geneticCalculator.bodyTypes.meso;
@@ -146,10 +152,10 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
             natural: Math.round(naturalWeight),
             enhanced: Math.round(enhancedWeight),
             type,
-            ffmi: normalizedFfmi,
-            normalizedFfmi: normalizedFfmi,
+            ffmi: parseFloat(rawFfmi.toFixed(2)),
+            normalizedFfmi: parseFloat(normalizedFfmi.toFixed(2)),
             goldenRatio: potentialShoulderWaist,
-            physiqueScore: Math.round(physiqueScore),
+            physiqueScore: Math.round(Math.min(100, physiqueScore)),
             potentials: [
                 { name: content.geneticCalculator.labels.chest, current: toDisplay(curChest), potential: naturalPotentials.chest, unit: isImperial ? 'in' : 'cm' },
                 { name: content.geneticCalculator.labels.shoulders, current: toDisplay(curShoulders), potential: naturalPotentials.shoulders, unit: isImperial ? 'in' : 'cm' },
@@ -172,6 +178,7 @@ export const useGeneticPotential = ({ content, unitSystem, isRTL }: UseGeneticPo
 
     const reset = useCallback(() => {
         setFormData({ height: '', wrist: '', ankle: '', bodyFat: '12', shoulders: '', chest: '', waist: '', thigh: '', calf: '' });
+        setBaseMeasurements({});
         setResult(null);
     }, []);
 

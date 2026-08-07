@@ -108,18 +108,18 @@ export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
 
   const setUnitSystem = useCallback(
     (system: LabUnitSystem) => {
-      setUnitSystemState(prev => {
-        if (prev === system || !selectedTest) return system;
+      if (system === unitSystem) return system;
+      if (selectedTest) {
         const val = parseFloat(value);
         if (!Number.isNaN(val)) {
-          const converted = convertLabValueSystem(val, prev, system, selectedTest.range);
+          const converted = convertLabValueSystem(val, unitSystem, system, selectedTest.range);
           setValueState(String(roundTo(converted, 6)));
         }
-        return system;
-      });
+      }
+      setUnitSystemState(system);
       return system;
     },
-    [selectedTest, value]
+    [unitSystem, selectedTest, value]
   );
 
   const setSearch = useCallback((val: string) => {

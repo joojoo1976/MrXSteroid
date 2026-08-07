@@ -35,16 +35,18 @@ const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: stri
     const end = value;
     const duration = 1500;
     const startTime = performance.now();
+    let raf = 0;
     const tick = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       const current = start + (end - start) * eased;
       setDisplayed(current);
-      if (progress < 1) requestAnimationFrame(tick);
+      if (progress < 1) raf = requestAnimationFrame(tick);
       else ref.current = end;
     };
-    requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [value]);
   return (
     <span className={className}>

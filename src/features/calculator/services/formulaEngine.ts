@@ -7,6 +7,7 @@ export interface CalculationWeights {
     baseValue: number;
     intensityFactor: number;
     profileModifier: number;
+    budgetModifier: number;
 }
 
 export interface FormulaResult {
@@ -20,10 +21,10 @@ export class FormulaEngine {
      * Core Formula: Result = ((BaseValue * IntensityFactor) + ProfileModifier) * BudgetModifier
      */
     static calculate(weights: CalculationWeights, safetyCap: number): FormulaResult {
-        const { baseValue, intensityFactor, profileModifier } = weights;
+        const { baseValue, intensityFactor, profileModifier, budgetModifier } = weights;
 
-        // Apply weights: Result = (BaseValue * IntensityFactor) + ProfileModifier
-        const result = (baseValue * intensityFactor) + profileModifier;
+        // Apply weights: Result = ((BaseValue * IntensityFactor) + ProfileModifier) * BudgetModifier
+        const result = ((baseValue * intensityFactor) + profileModifier) * budgetModifier;
 
         // Sanity Check: No zero or negative results
         if (result <= 0) {
@@ -56,7 +57,7 @@ export class FormulaEngine {
         goal: string,
         experience: string,
         weightKg: number,
-        _budget: 'low' | 'medium' | 'high'
+        budget: 'low' | 'medium' | 'high'
     ): CalculationWeights {
         const baseValues: Record<string, number> = {
             'bulking': 400,
@@ -72,8 +73,15 @@ export class FormulaEngine {
             'pro': 2.0
         };
 
+        const budgetModifiers: Record<string, number> = {
+            'low': 0.85,
+            'medium': 1.0,
+            'high': 1.2
+        };
+
         const base = baseValues[goal] || 250;
         const intensity = intensityFactors[experience] || 1.0;
+        const budgetModifier = budgetModifiers[budget] || 1.0;
 
         // Profile Modifier: Weight-based adjustment (80kg baseline)
         const profileMod = (weightKg - 80) * 2;
@@ -81,7 +89,8 @@ export class FormulaEngine {
         return {
             baseValue: base,
             intensityFactor: intensity,
-            profileModifier: profileMod
+            profileModifier: profileMod,
+            budgetModifier
         };
     }
 }

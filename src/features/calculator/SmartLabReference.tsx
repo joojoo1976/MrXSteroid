@@ -31,6 +31,7 @@ import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { LabTestData, BilingualText } from '@/data/labReference';
+import { LAB_CATEGORIES } from '@/data/labReference';
 import { LabUnitSystem, formatLabNumber } from '@/shared/lib/lab';
 import { useSmartLabReference, LAB_UI } from './hooks/useSmartLabReference';
 
@@ -49,6 +50,12 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   Flame,
   Bone,
 };
+
+// Category cards use `cat.icon` (an icon *name*); test cards key off the
+// category *id* — build the id→icon lookup from the category metadata.
+const CATEGORY_ICONS_BY_ID: Record<string, React.ElementType> = Object.fromEntries(
+  LAB_CATEGORIES.map((cat) => [cat.id, CATEGORY_ICONS[cat.icon] ?? FlaskConical]),
+);
 
 const DIRECTION_META = {
   high: {
@@ -292,7 +299,7 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AnimatePresence mode="popLayout">
           {filteredTests.map((test, idx) => {
-            const CategoryIcon = CATEGORY_ICONS[test.category] || FlaskConical;
+            const CategoryIcon = CATEGORY_ICONS_BY_ID[test.category] || FlaskConical;
             const highHint = t(test.high.causes[0]);
             const lowHint = t(test.low.causes[0]);
             return (
@@ -488,7 +495,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
   closeDetails,
   t,
 }) => {
-  const CategoryIcon = CATEGORY_ICONS[test.category] || FlaskConical;
+  const CategoryIcon = CATEGORY_ICONS_BY_ID[test.category] || FlaskConical;
   const statusMeta = analysis ? STATUS_META[analysis.status] : null;
 
   return (

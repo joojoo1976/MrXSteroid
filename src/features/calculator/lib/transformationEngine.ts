@@ -636,10 +636,14 @@ export const estimateCycleSummary = (
     const ideal = estimateIdealWeight(input, heightCm);
 
     // Goal progress toward the healthy upper bound (BMI 24.9).
+    // Measured on scale weight lost by the cycle's end vs. the scale weight
+    // that must be lost — using fat-only loss here would overshoot the gauge
+    // (muscle gained offsets the scale), contradicting `weeksToIdeal`.
+    const scaleLossKg = Math.max(0, startW - endWeightKg);
     const goalProgressPct =
         ideal.weightToLoseKg <= 0
             ? 100
-            : clamp((totalFatLossKg / ideal.weightToLoseKg) * 100, 0, 100);
+            : clamp((scaleLossKg / ideal.weightToLoseKg) * 100, 0, 100);
 
     // Body-fat milestones: the first week each threshold is crossed.
     const milestones: MilestonePoint[] = [];

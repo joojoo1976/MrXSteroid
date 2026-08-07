@@ -164,7 +164,9 @@ describe('TransformationTimeline — full content visibility', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Next phase' }));
         // AnimatePresence popLayout overlaps the exit/enter cards (no blank gap),
         // so the new card appears while the old one still exits.
-        expect(await screen.findByText('Phase Two')).toBeInTheDocument();
+        // 15s timeout: this suite renders heavy charts + motion; under parallel
+        // load jsdom can exceed the default 5s window (flaky otherwise).
+        expect(await screen.findByText('Phase Two', {}, { timeout: 15000 })).toBeInTheDocument();
         // Medical block persists across phases.
         expect(screen.getAllByText('MEDICAL').length).toBeGreaterThan(0);
         cleanup();

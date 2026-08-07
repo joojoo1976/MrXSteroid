@@ -19,6 +19,11 @@ import { usePreferences } from '../../context/PreferencesContext';
 import { useHalfLifeVisualizer } from './hooks/useHalfLifeVisualizer';
 import { clearanceDaysFromHalfLife } from './lib/pharmaEngine';
 
+// 1 oz = 28.3495 g = 28 349.5 mg — the mg→oz factor used across the UI.
+const MG_PER_OZ = 28349.523125;
+/** Formats a mg dosage as ounces for the imperial display. */
+const mgToOz = (mg: number): string => (mg / MG_PER_OZ).toFixed(3).replace(/\.?0+$/, '');
+
 interface HalfLifeVisualizerProps {
   content: ContentStrings;
 }
@@ -49,9 +54,10 @@ const CustomTooltip = ({ active, payload, label, content }: {
       </p>
       <div className="space-y-2">
         {payload.map((entry, index: number) => {
-          const compoundKey = entry.name.split('_')[0];
-          const comp = hlViz.compounds?.find(c => c.id === compoundKey);
-          const dispName = comp ? (isRTL && comp.nameAr ? comp.nameAr : comp.name) : compoundKey;
+          // Serum series keys are `<compoundId>_<stackItemId>` — match by id prefix
+          // so compound ids containing underscores (test_e, tren_a, win_o …) resolve.
+          const comp = hlViz.compounds?.find(c => entry.name.startsWith(c.id + '_')) ?? hlViz.compounds?.find(c => c.id === entry.name);
+          const dispName = comp ? (isRTL && comp.nameAr ? comp.nameAr : comp.name) : entry.name;
           return (
             <div key={index} className="flex justify-between items-center gap-6">
               <div className="flex items-center gap-2">
@@ -282,12 +288,12 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                     onChange={e => setDosage(Number(e.target.value))}
                     className="w-full h-2 rounded-full appearance-none cursor-pointer accent-gold-500 bg-zinc-800" />
                   <div className="flex justify-between text-[10px] font-black text-zinc-600">
-                    <span>{unitSystem === 'imperial' ? '0.05oz' : '25mg'}</span><span className="text-gold-500 text-sm">{unitSystem === 'imperial' ? (dosage / 28.35).toFixed(1) + 'oz' : dosage + 'mg'}</span><span>{unitSystem === 'imperial' ? '2.20oz' : '1000mg'}</span>
+                    <span>{unitSystem === 'imperial' ? `${mgToOz(25)}oz` : '25mg'}</span><span className="text-gold-500 text-sm">{unitSystem === 'imperial' ? mgToOz(dosage) + 'oz' : dosage + 'mg'}</span><span>{unitSystem === 'imperial' ? `${mgToOz(1000)}oz` : '1000mg'}</span>
                   </div>
                 </div>
               ) : (
-                <input id="dosage-input" type="number" min={0} max={1000} step={25} inputMode="numeric" value={dosage}
-                  onChange={e => setDosage(Math.max(0, Math.min(1000, Number(e.target.value))))}
+                <input id="dosage-input" type="number" min={0} max={9999} step={25} inputMode="numeric" value={dosage}
+                  onChange={e => setDosage(Math.max(0, Number(e.target.value)))}
                   placeholder="250" title={hlViz?.dosageLabel}
                   className={`w-full bg-zinc-900 text-white border-2 focus:border-gold-500 rounded-2xl p-4 text-xl font-black text-center outline-none shadow-inner transition-colors ${
                     dosage > 1000 ? 'border-red-500 text-red-400' : 'border-zinc-800'
@@ -361,7 +367,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                           <div>
                             <div className="text-sm font-black truncate max-w-[120px] dark:text-white">{dispName}</div>
-                            <div className="text-[10px] text-zinc-500">{unitSystem === 'imperial' ? (item.dosage / 28.35).toFixed(1) + 'oz' : item.dosage + 'mg'} · {item.duration}{isRTL ? 'أسبوع' : 'w'}</div>
+                            <div className="text-[10px] text-zinc-500">{unitSystem === 'imperial' ? mgToOz(item.dosage) + 'oz' : item.dosage + 'mg'} · {item.duration}{isRTL ? 'أسبوع' : 'w'}</div>
                           </div>
                         </div>
                         <button onClick={() => removeFromStack(item.id)} className="text-zinc-500 hover:text-red-500 p-2 rounded-lg hover:bg-red-500/10 transition-all" title={content.labClose}>
@@ -393,7 +399,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   {
                     icon: TrendingUp, color: 'text-gold-500',
                     label: hlViz?.peakLabel ?? 'Cmax Peak', sub: unitSystem === 'imperial' ? (isRTL ? 'أوقية / مصل' : 'oz active / serum') : hlViz?.mgSerumLabel,
-                    animVal: unitSystem === 'imperial' ? Math.round(simulationData.maxLevel / 28.35 * 100) / 100 : Math.round(simulationData.maxLevel), suffix: unitSystem === 'imperial' ? 'oz' : 'mg', badge: 'PEAK'
+                    animVal: unitSystem === 'imperial' ? Math.round(simulationData.maxLevel / MG_PER_OZ * 10000) / 10000 : Math.round(simulationData.maxLevel), suffix: unitSystem === 'imperial' ? 'oz' : 'mg', badge: 'PEAK'
                   },
                   {
                     icon: ShieldAlert,
@@ -424,7 +430,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
               </div>
 
               {/* Half-Life Summary Row */}
-              <div className={`grid gap-4 ${simulationData.halfLifeSummary.length > 2 ? 'md:grid-cols-2' : `md:grid-cols-${Math.min(simulationData.halfLifeSummary.length, 2)}`}`}>
+              <div className={`grid gap-4 ${simulationData.halfLifeSummary.length > 2 ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
                 {simulationData.halfLifeSummary.map((hs, idx) => (
                   <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
                     className="flex items-center justify-between bg-zinc-900/50 border border-white/5 hover:border-gold-500/15 rounded-2xl p-5 transition-all">
@@ -459,7 +465,7 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
                   <div className="flex gap-3">
                     <div className="bg-gold-500/10 px-3 py-1.5 rounded-xl flex items-center gap-2 border border-gold-500/20">
                       <TrendingUp className="w-3.5 h-3.5 text-gold-500" />
-                      <span className="text-sm font-black text-gold-400">Cmax: {unitSystem === 'imperial' ? (simulationData.maxLevel / 28.35).toFixed(1) + 'oz' : Math.round(simulationData.maxLevel) + (content.units?.mg ?? 'mg')}</span>
+                      <span className="text-sm font-black text-gold-400">Cmax: {unitSystem === 'imperial' ? mgToOz(simulationData.maxLevel) + 'oz' : Math.round(simulationData.maxLevel) + (content.units?.mg ?? 'mg')}</span>
                     </div>
                     <div className="bg-green-500/10 px-3 py-1.5 rounded-xl flex items-center gap-2 border border-green-500/20">
                       <Clock className="w-3.5 h-3.5 text-green-400" />

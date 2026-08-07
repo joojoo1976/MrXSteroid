@@ -49,23 +49,20 @@ export const useReadinessQuiz = ({ content }: UseReadinessQuizOptions) => {
     const [discountValue, setDiscountValue] = useState<'0.5' | '1' | null>(null);
 
     const handleAnswer = useCallback((points: number) => {
-        setScore(s => {
-            const newScore = s + points;
-            if (currentQ < sessionQuestions.length - 1) {
-                setCurrentQ(q => q + 1);
-            } else {
-                // Quiz complete — evaluate
-                const isReady = newScore >= 3;
-                setFinished(true);
-                if (isReady) {
-                    const tier = pickDiscount();
-                    setDiscountValue(tier);
-                    setDiscountCode(generateDiscountCode(tier));
-                }
+        const newScore = score + points;
+        setScore(newScore);
+        const isLast = currentQ >= sessionQuestions.length - 1;
+        if (isLast) {
+            setFinished(true);
+            if (newScore >= 3) {
+                const tier = pickDiscount();
+                setDiscountValue(tier);
+                setDiscountCode(generateDiscountCode(tier));
             }
-            return newScore;
-        });
-    }, [currentQ, sessionQuestions.length]);
+        } else {
+            setCurrentQ(q => q + 1);
+        }
+    }, [score, currentQ, sessionQuestions.length]);
 
     const result = finished
         ? (score >= 3 ? content.quiz.results.enhanced : content.quiz.results.natural)
