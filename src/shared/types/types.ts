@@ -1297,6 +1297,7 @@ export interface ContentStrings {
     liveBadge: string;
     recalculating: string;
     idealWeightReached: string;
+    resetDefaults: string;
   };
   timeUnits: {
     days: string;

@@ -4,7 +4,7 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
-    Target, CalendarDays, CheckCircle2, Sparkles,
+    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -253,6 +253,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         setHeightCm,
         trainingAge,
         setTrainingAge,
+
+        resetToDefaults,
         isRecalculating,
         projections,
         summary,
@@ -381,6 +383,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             weeks: String(coachFacts.weeksBeyondCycle ?? 0),
             kcal,
             bf: String(roundTo(summary.startBfPct, 0)),
+            protein: copyCtx.protein,
             pct: '18',
             week: '1',
         };
@@ -436,7 +439,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         });
 
         return tips;
-    }, [C, coachFacts, summary, idealWeightStr, isAr, trainingAge, fillCoach]);
+    }, [C, coachFacts, summary, idealWeightStr, copyCtx, isAr, trainingAge, fillCoach]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -592,6 +595,21 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <Ruler className="w-3.5 h-3.5" />
                                 {L.imperial} · lbs
                             </button>
+                        </div>
+
+                        {/* Reset inputs */}
+                        <div className="flex items-center">
+                            <motion.button
+                                type="button"
+                                whileTap={{ scale: 0.94 }}
+                                onClick={resetToDefaults}
+                                aria-label={L.resetDefaults}
+                                title={L.resetDefaults}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-rose-500 border border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-rose-500/40 transition-all"
+                            >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{L.resetDefaults}</span>
+                            </motion.button>
                         </div>
 
                         {/* Start weight slider */}

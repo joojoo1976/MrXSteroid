@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useDeferredValue } from 'react';
+import { useState, useMemo, useCallback, useDeferredValue, useEffect } from 'react';
 import { ContentStrings } from '@/shared/types/types';
 import {
     projectBodyComposition,
@@ -6,12 +6,56 @@ import {
     buildChartSeries,
     estimateCycleSummary,
     DEFAULT_HEIGHT_CM,
+    clamp,
     type TrainingAge,
     type BodyCompositionInput,
     type WeeklyProjection,
     type PhaseAggregate,
     type CycleSummary,
 } from '../lib/transformationEngine';
+
+const STORAGE_KEY = 'mrx.timeline.v1';
+
+interface PersistedInputs {
+    weightKg: number;
+    bodyFatPct: number;
+    heightCm: number;
+    trainingAge: TrainingAge;
+}
+
+/** Defaults the live engine boots with (also used by "Reset inputs"). */
+export const DEFAULT_ENGINE_INPUTS: PersistedInputs = {
+    weightKg: 80,
+    bodyFatPct: 18,
+    heightCm: DEFAULT_HEIGHT_CM,
+    trainingAge: 'intermediate',
+};
+
+const TRAINING_AGES: TrainingAge[] = ['novice', 'intermediate', 'advanced'];
+
+/**
+ * Safely hydrates persisted inputs, clamping every value to the slider ranges
+ * so stale/corrupt storage can never break the UI.
+ */
+const readPersistedInputs = (): PersistedInputs => {
+    const fallback = DEFAULT_ENGINE_INPUTS;
+    try {
+        if (typeof window === 'undefined') return fallback;
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return fallback;
+        const parsed = JSON.parse(raw) as Partial<PersistedInputs>;
+        return {
+            weightKg: clamp(Number(parsed.weightKg) || fallback.weightKg, 40, 160),
+            bodyFatPct: clamp(Number(parsed.bodyFatPct) || fallback.bodyFatPct, 8, 40),
+            heightCm: clamp(Number(parsed.heightCm) || fallback.heightCm, 140, 210),
+            trainingAge: TRAINING_AGES.includes(parsed.trainingAge as TrainingAge)
+                ? (parsed.trainingAge as TrainingAge)
+                : fallback.trainingAge,
+        };
+    } catch {
+        return fallback;
+    }
+};
 
 interface UseTransformationTimelineOptions {
     content: ContentStrings;
@@ -26,10 +70,12 @@ export const useTransformationTimeline = ({ content }: UseTransformationTimeline
     const [activePhase, setActivePhase] = useState(0);
 
     // ── Live engine inputs (editable, metric base values) ──────────────
-    const [startWeightKg, setStartWeightKg] = useState(80);
-    const [startBodyFatPct, setStartBodyFatPct] = useState(18);
-    const [heightCm, setHeightCm] = useState<number>(DEFAULT_HEIGHT_CM);
-    const [trainingAge, setTrainingAge] = useState<TrainingAge>('intermediate');
+    // Hydrated once from localStorage so the user's plan survives reloads.
+    const initial = useMemo(() => readPersistedInputs(), []);
+    const [startWeightKg, setStartWeightKg] = useState(initial.weightKg);
+    const [startBodyFatPct, setStartBodyFatPct] = useState(initial.bodyFatPct);
+    const [heightCm, setHeightCm] = useState<number>(initial.heightCm);
+    const [trainingAge, setTrainingAge] = useState<TrainingAge>(initial.trainingAge);
 
     // Deferred copies — the sliders stay buttery-smooth (60fps) while the
     // heavier derived math (simulation, summary, chart) lags a single frame.
@@ -52,6 +98,29 @@ export const useTransformationTimeline = ({ content }: UseTransformationTimeline
         deferredWeightKg !== startWeightKg ||
         deferredBodyFatPct !== startBodyFatPct ||
         deferredHeightCm !== heightCm;
+
+    // ── Persistence — writes every input change to localStorage ─────────
+    useEffect(() => {
+        try {
+            if (typeof window === 'undefined') return;
+            const snapshot: PersistedInputs = {
+                weightKg: startWeightKg,
+                bodyFatPct: startBodyFatPct,
+                heightCm,
+                trainingAge,
+            };
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        } catch {
+            // Storage unavailable (private mode / quota) → run stateless.
+        }
+    }, [startWeightKg, startBodyFatPct, heightCm, trainingAge]);
+
+    const resetToDefaults = useCallback(() => {
+        setStartWeightKg(DEFAULT_ENGINE_INPUTS.weightKg);
+        setStartBodyFatPct(DEFAULT_ENGINE_INPUTS.bodyFatPct);
+        setHeightCm(DEFAULT_ENGINE_INPUTS.heightCm);
+        setTrainingAge(DEFAULT_ENGINE_INPUTS.trainingAge);
+    }, []);
 
     // ── Deterministic projections (pure math) ───────────────────────────
     const projections = useMemo<WeeklyProjection[]>(
@@ -122,5 +191,6 @@ export const useTransformationTimeline = ({ content }: UseTransformationTimeline
         projections,
         phaseAggregates,
         summary,
+        resetToDefaults,
     };
 };

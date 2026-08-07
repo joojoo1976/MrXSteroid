@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import TransformationTimeline from '../../features/calculator/TransformationTimeline';
 import { PreferencesContext } from '../../context/PreferencesContext';
@@ -63,6 +63,30 @@ const buildContent = (): ContentStrings => ({
         trainingAdvanced: 'Advanced', weeklyFatLoss: 'Weekly Fat Loss', weeklyMuscleGain: 'Weekly Muscle Gain',
         cumulativeMuscle: 'Cumulative Muscle', projectedFatPct: 'Projected Body Fat', metric: 'Metric',
         imperial: 'Imperial', perWeek: 'per week', disclaimer: 'Disclaimer',
+        heightLabel: 'Height',
+        resetDefaults: 'Reset inputs',
+    },
+    timelineCoach: {
+        title: 'Smart Coach',
+        subtitle: 'Live verdicts recomputed from your engine inputs',
+        goalTitle: 'Goal Trajectory',
+        deficitTitle: 'Calorie Economy',
+        compositionTitle: 'Starting Composition',
+        nutritionTitle: 'Nutrition Plan',
+        verdictInCycle: 'You can reach your ideal weight ({ideal}) inside this 12-week cycle. Keep the deficit consistent and the trajectory holds.',
+        verdictBeyond: 'Your ideal weight ({ideal}) sits about {weeks} weeks beyond this cycle — plan a short follow-up cut after week 12.',
+        deficitMild: 'Your daily deficit (~{kcal} kcal) is gentle — results will come, just slower. Consider tightening your intake slightly.',
+        deficitModerate: 'A solid ~{kcal} kcal daily deficit — the sweet spot that balances muscle preservation with steady fat loss.',
+        deficitAggressive: 'Your daily deficit (~{kcal} kcal) is aggressive. Keep protein high and prioritize sleep to protect lean mass.',
+        bfLean: 'At {bf}% body fat you are already lean — expect slower fat loss and guard muscle aggressively.',
+        bfModerate: 'Starting at {bf}% body fat gives you a wide, safe runway for steady weekly fat loss.',
+        bfHigh: 'At {bf}% body fat, early weeks shed water and fat quickly — bank the momentum but don\'t push the deficit too far.',
+        proteinNovice: 'As a beginner your adaptation window is wide — lock in {protein} of protein daily to ride it.',
+        proteinIntermediate: 'At intermediate level, {protein} of protein keeps anabolic signaling at its peak.',
+        proteinAdvanced: 'Near your genetic ceiling — {protein} of protein with disciplined recovery separates stalls from progress.',
+        milestoneNext: 'Next milestone: under {pct}% body fat around week {week}.',
+        milestoneDone: 'Every body-fat milestone in this cycle is projected to be reached.',
+        noMilestone: 'No body-fat milestone is projected within this cycle.',
     },
 } as unknown as ContentStrings);
 
@@ -141,6 +165,89 @@ describe('TransformationTimeline — full content visibility', () => {
         renderTimeline('metric');
         const imperialBtn = screen.getByRole('button', { name: /imperial/i });
         expect(imperialBtn).toBeInTheDocument();
+        cleanup();
+    });
+
+    it('renders the Smart Coach panel with all four live verdict cards', () => {
+        renderTimeline();
+        // Panel header + card titles must be present.
+        expect(screen.getByText('Smart Coach')).toBeInTheDocument();
+        expect(screen.getByText('Goal Trajectory')).toBeInTheDocument();
+        expect(screen.getByText('Calorie Economy')).toBeInTheDocument();
+        expect(screen.getByText('Starting Composition')).toBeInTheDocument();
+        expect(screen.getByText('Nutrition Plan')).toBeInTheDocument();
+        // Dynamic verdict copy is wired up (selector 'p' avoids the ancestor
+        // wrapper matching the same normalized text).
+        expect(screen.getByText(/inside this 12-week cycle/, { selector: 'p' })).toBeInTheDocument();
+        expect(screen.getByText(/2\.5g\/kg of protein/, { selector: 'p' })).toBeInTheDocument();
+        expect(screen.getByText(/Next milestone: under \d+% body fat around week \d+\./, { selector: 'p' })).toBeInTheDocument();
+        cleanup();
+    });
+});
+
+describe('TransformationTimeline — live engine persistence', () => {
+    // The shared vitest.setup ships a no-op localStorage mock (vi.fn() that
+    // stores nothing), so install a real in-memory store for this suite.
+    let store = new Map<string, string>();
+    const memoryStorage: Storage = {
+        getItem: (k) => (store.has(k) ? store.get(k) as string : null),
+        setItem: (k, v) => { store.set(k, String(v)); },
+        removeItem: (k) => { store.delete(k); },
+        clear: () => { store.clear(); },
+        key: (i) => Array.from(store.keys())[i] ?? null,
+        get length() { return store.size; },
+    };
+
+    beforeAll(() => {
+        Object.defineProperty(window, 'localStorage', { value: memoryStorage, writable: true });
+    });
+
+    beforeEach(() => {
+        store = new Map<string, string>();
+        Object.defineProperty(window, 'localStorage', { value: memoryStorage, writable: true });
+        window.localStorage.clear();
+    });
+
+    it('persists slider changes to localStorage', () => {
+        renderTimeline();
+        fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '100' } });
+        const stored = window.localStorage.getItem('mrx.timeline.v1');
+        expect(stored).not.toBeNull();
+        expect(JSON.parse(stored as string)).toMatchObject({ weightKg: 100 });
+        cleanup();
+    });
+
+    it('hydrates the engine inputs from localStorage on reload', () => {
+        window.localStorage.setItem(
+            'mrx.timeline.v1',
+            JSON.stringify({ weightKg: 120, bodyFatPct: 28, heightCm: 185, trainingAge: 'advanced' }),
+        );
+        renderTimeline();
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('120');
+        expect((screen.getByLabelText('Body Fat') as HTMLInputElement).value).toBe('28');
+        expect((screen.getByLabelText('Height') as HTMLInputElement).value).toBe('185');
+        cleanup();
+    });
+
+    it('clamps corrupt persisted values into the slider ranges', () => {
+        window.localStorage.setItem(
+            'mrx.timeline.v1',
+            JSON.stringify({ weightKg: 9999, bodyFatPct: -5, heightCm: 30, trainingAge: 'expert' }),
+        );
+        renderTimeline();
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('160');
+        expect((screen.getByLabelText('Body Fat') as HTMLInputElement).value).toBe('8');
+        expect((screen.getByLabelText('Height') as HTMLInputElement).value).toBe('140');
+        cleanup();
+    });
+
+    it('resets inputs back to defaults via the reset button', () => {
+        renderTimeline();
+        fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '110' } });
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('110');
+        fireEvent.click(screen.getByRole('button', { name: /reset inputs/i }));
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('80');
+        expect(JSON.parse(window.localStorage.getItem('mrx.timeline.v1') as string)).toMatchObject({ weightKg: 80 });
         cleanup();
     });
 });
