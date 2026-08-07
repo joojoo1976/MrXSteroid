@@ -265,6 +265,8 @@ export const EGP_PRICES: Record<string, number> = {
     'bundle': 749,
     'coaching': 849,
     'coaching_plus': 10848, // 849 + 9999
+    'bundle_plus':  10748, // 749 + 9999
+    'digital_plus': 10498, // 499 + 9999
     'pdf': 499,
     'paperback': 749
 };
@@ -274,6 +276,8 @@ export const EGP_ORIGINAL_PRICES: Record<string, number> = {
     'bundle': 849,
     'coaching': 949,
     'coaching_plus': 11848,
+    'bundle_plus':  11748,
+    'digital_plus': 11498,
 };
 
 export const COACHING_ADDON_EGP = 9999;

@@ -91,7 +91,8 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isStripeReady, setIsStripeReady] = useState(false);
 
     const isAr = lang === 'ar';
-    const isPhysical = productVariant !== 'digital';
+    const DIGITAL_VARIANTS: ProductVariant[] = ['digital', 'digital_plus'];
+    const isPhysical = !DIGITAL_VARIANTS.includes(productVariant);
 
     // Validation Schema
     const schema = z.object({
@@ -279,7 +280,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     };
 
     const onSubmit = async (data: CheckoutFormData) => {
-        if (submissionCount >= 3) {
+        if (submissionCount >= 5) {
             setPaymentError(isAr ? "لقد تجاوزت عدد محاولات الدفع المسموح بها. يرجى المحاولة لاحقاً." : "Too many payment attempts. Please try again later.");
             return;
         }

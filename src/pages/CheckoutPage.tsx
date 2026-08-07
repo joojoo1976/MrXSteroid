@@ -22,12 +22,14 @@ interface CheckoutPageProps {
 }
 
 const USD_PRICES: Record<string, number> = {
-    digital: 49.99,
-    bundle: 72.00,
-    coaching: 82.00,
-    coaching_plus: 282.00,
-    paperback: 72.00,
-    hardcover: 82.00,
+    digital:       49.99,
+    bundle:        72.00,
+    coaching:      82.00,
+    coaching_plus: 82.00, // base only — COACHING_ADDON_USD added by totals useMemo
+    bundle_plus:   72.00, // base only — COACHING_ADDON_USD added by totals useMemo
+    digital_plus:  49.99, // base only — COACHING_ADDON_USD added by totals useMemo
+    paperback:     72.00,
+    hardcover:     82.00,
 };
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navigateTo, onSuccess, openLegal }) => {
