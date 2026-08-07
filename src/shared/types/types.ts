@@ -1300,6 +1300,13 @@ export interface ContentStrings {
     resetDefaults: string;
     copyPlan: string;
     planCopied: string;
+    weeklyTitle: string;
+    weeklySubtitle: string;
+    colWeek: string;
+    colWeight: string;
+    colBodyFat: string;
+    colFatLoss: string;
+    colLean: string;
   };
   timeUnits: {
     days: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, within } from '@testing-library/react';
 import TransformationTimeline from '../../features/calculator/TransformationTimeline';
 import { PreferencesContext } from '../../context/PreferencesContext';
 import { Language, Theme, type ContentStrings } from '../../shared/types/types';
@@ -67,6 +67,9 @@ const buildContent = (): ContentStrings => ({
         resetDefaults: 'Reset inputs',
         copyPlan: 'Copy plan',
         planCopied: 'Plan copied to clipboard',
+        weeklyTitle: 'Week-by-Week Projection',
+        weeklySubtitle: '12-week numbers',
+        colWeek: 'Week', colWeight: 'Weight', colBodyFat: 'Body Fat', colFatLoss: 'Fat Lost', colLean: 'Lean Gained',
     },
     timelineCoach: {
         title: 'Smart Coach',
@@ -197,6 +200,26 @@ describe('TransformationTimeline — full content visibility', () => {
         expect(text).toContain('80 kg');
         expect(text).toContain('Goal Trajectory');
         expect(text).toContain('│');
+        cleanup();
+    });
+
+    it('expands the week-by-week table with all 12 projection rows', () => {
+        renderTimeline();
+        fireEvent.click(screen.getByRole('button', { name: /week-by-week projection/i }));
+        const table = screen.getByTestId('weekly-table');
+        expect(table.querySelectorAll('tbody tr').length).toBe(12);
+        // Column headers present.
+        expect(within(table).getByText('Body Fat')).toBeInTheDocument();
+        expect(within(table).getByText('Lean Gained')).toBeInTheDocument();
+        cleanup();
+    });
+
+    it('renders week-by-week weights in imperial units', () => {
+        renderTimeline('imperial');
+        fireEvent.click(screen.getByRole('button', { name: /week-by-week projection/i }));
+        const table = screen.getByTestId('weekly-table');
+        expect(table.textContent).toMatch(/lbs/);
+        expect(table.textContent).not.toMatch(/g\/kg/);
         cleanup();
     });
 });

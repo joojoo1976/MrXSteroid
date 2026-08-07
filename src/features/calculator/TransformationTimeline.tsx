@@ -4,7 +4,7 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
-    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check,
+    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check, Table2, ChevronDown, Diamond,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -514,6 +514,16 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             // Clipboard unavailable — silently no-op.
         }
     }, [planSnapshot]);
+
+    // ── Week-by-week breakdown — milestone badges per projection week ───
+    const [showWeekly, setShowWeekly] = useState(false);
+    const milestoneByWeek = useMemo(() => {
+        const map: Record<number, typeof summary.milestones> = {};
+        for (const m of summary.milestones) {
+            (map[m.week] ??= []).push(m);
+        }
+        return map;
+    }, [summary.milestones]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -1328,6 +1338,106 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </div>
                             </div>
                         </motion.div>
+                    </AnimatePresence>
+                </div>
+
+                {/* Week-by-week projection breakdown */}
+                <div className="w-full mt-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg overflow-hidden">
+                    <button
+                        type="button"
+                        onClick={() => setShowWeekly((v) => !v)}
+                        aria-expanded={showWeekly}
+                        aria-label={L.weeklyTitle}
+                        className="w-full flex items-center justify-between gap-3 p-4 text-start hover:bg-white/40 dark:hover:bg-white/[0.03] transition-colors"
+                    >
+                        <div className="flex items-center gap-3 min-w-0">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex-shrink-0">
+                                <Table2 className="w-4 h-4" />
+                            </span>
+                            <div className="min-w-0">
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{L.weeklyTitle}</h4>
+                                <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{L.weeklySubtitle}</p>
+                            </div>
+                        </div>
+                        <motion.span
+                            animate={{ rotate: showWeekly ? 180 : 0 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                            className="text-zinc-400 flex-shrink-0"
+                        >
+                            <ChevronDown className="w-4 h-4" />
+                        </motion.span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                        {showWeekly && (
+                            <motion.div
+                                key="weekly-table"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="px-4 pb-4 overflow-x-auto hide-scrollbar" data-testid="weekly-table">
+                                    <table className="w-full min-w-[540px] border-separate border-spacing-y-1 text-[11px] font-bold">
+                                        <thead>
+                                            <tr className="text-[9px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                <th className="text-start px-3 py-1.5">{L.colWeek}</th>
+                                                <th className="text-start px-3 py-1.5">{L.colWeight}</th>
+                                                <th className="text-start px-3 py-1.5">{L.colBodyFat}</th>
+                                                <th className="text-start px-3 py-1.5">{L.colFatLoss}</th>
+                                                <th className="text-start px-3 py-1.5">{L.colLean}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {projections.map((p) => {
+                                                const isActiveWeek = p.week === (activeAggregate?.weekStart ?? 1);
+                                                const badges = milestoneByWeek[p.week];
+                                                return (
+                                                    <tr
+                                                        key={p.week}
+                                                        className={
+                                                            isActiveWeek
+                                                                ? 'bg-gold-500/10 ring-1 ring-inset ring-gold-500/20'
+                                                                : 'bg-zinc-100/70 dark:bg-white/[0.03]'
+                                                        }
+                                                    >
+                                                        <td className="px-3 py-1.5 rounded-s-xl whitespace-nowrap text-zinc-900 dark:text-white tabular-nums">
+                                                            <span className="inline-flex items-center gap-1.5">
+                                                                {L.colWeek} {p.week}
+                                                                {badges?.map((m) =>
+                                                                    m.kind === 'midIdeal' ? (
+                                                                        <span key={m.kind} className="text-emerald-500" title={L.idealWeightLabel}>
+                                                                            <Star className="w-3 h-3" />
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span key={m.kind} className="text-cyan-400" title={`BF ${m.kind === 'bf15' ? 15 : m.kind === 'bf18' ? 18 : 20}%`}>
+                                                                            <Diamond className="w-2.5 h-2.5" />
+                                                                        </span>
+                                                                    ),
+                                                                )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.weightKg, unitSystem, isAr)}</td>
+                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{p.bodyFatPct.toLocaleString(isAr ? 'ar-EG' : 'en-US', { maximumFractionDigits: 1 })}%</td>
+                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.fatLossKg, unitSystem, isAr)}</td>
+                                                        <td className="px-3 py-1.5 rounded-e-xl text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.cumulativeMuscleGainKg, unitSystem, isAr)}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                    <div className="flex flex-wrap gap-2 mt-2.5">
+                                        <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            {L.totalFatLoss} · {totalFatLossStr}
+                                        </span>
+                                        <span className="px-3 py-1.5 rounded-full bg-gold-500/10 text-gold-600 dark:text-gold-400 text-[10px] font-black uppercase tracking-widest">
+                                            {L.totalMuscleGain} · {totalMuscleStr}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
                     </AnimatePresence>
                 </div>
             </div>
