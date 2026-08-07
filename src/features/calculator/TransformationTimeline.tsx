@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
-    ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart,
+    ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -617,6 +617,29 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
                                     <ShieldCheck className="w-2.5 h-2.5" />
                                     {isAr ? 'نصيحة الخبير' : 'Expert Tip'}
+                                </div>
+                            </motion.div>
+
+                            {/* Medical advice block */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="relative rounded-2xl border border-rose-500/25 dark:border-rose-400/25 bg-gradient-to-br from-rose-500/[0.06] to-transparent p-5 md:p-7 shadow-xl overflow-hidden group/medical"
+                            >
+                                <div className="absolute top-0 inset-inline-start-0 w-full h-1 bg-gradient-to-r from-rose-600 via-rose-400 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent opacity-0 group-hover/medical:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                <h4 className="text-xs md:text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                    <HeartPulse className="w-4 h-4" />
+                                    {L.medicalTitle}
+                                </h4>
+                                <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-semibold">
+                                    <StyledBrandName text={activeData.details.medical} />
+                                </p>
+
+                                <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-500 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
+                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                    {isAr ? 'إشراف طبي' : 'Medical Supervision'}
                                 </div>
                             </motion.div>
                         </div>

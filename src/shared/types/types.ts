@@ -154,6 +154,7 @@ export interface TimelinePhase {
     biological: string; // What happens inside
     feeling: string; // What user feels
     action: string; // What user should do
+    medical: string; // Medical safety & supervision advice
   };
 }
 
@@ -1255,6 +1256,7 @@ export interface ContentStrings {
     biologicalTitle: string;
     feelingTitle: string;
     actionTitle: string;
+    medicalTitle: string;
     phaseLabel: string;
     chartTitle: string;
     chartSubtitle: string;
