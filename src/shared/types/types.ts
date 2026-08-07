@@ -1298,6 +1298,8 @@ export interface ContentStrings {
     recalculating: string;
     idealWeightReached: string;
     resetDefaults: string;
+    copyPlan: string;
+    planCopied: string;
   };
   timeUnits: {
     days: string;

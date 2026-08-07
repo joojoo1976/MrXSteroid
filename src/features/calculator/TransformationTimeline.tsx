@@ -4,7 +4,7 @@ import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
-    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw,
+    Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
@@ -23,10 +23,15 @@ import {
     type TrainingAge,
     type CoachFacts,
 } from './lib/transformationEngine';
+import { buildPlanSnapshot } from './lib/planSnapshot';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Small presentational primitives
 // ═══════════════════════════════════════════════════════════════════════════
+
+/** 10-point star path centered on (0,0) — ideal-weight chart marker. */
+const STAR_PATH =
+    'M 0 -7 L 2.1 -2.2 L 7 -2.2 L 3.4 0.8 L 4.9 6.4 L 0 3.2 L -4.9 6.4 L -3.4 0.8 L -7 -2.2 L -2.1 -2.2 Z';
 
 /**
  * Spring-animated numeric readout — glides to each new value instead of
@@ -376,6 +381,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             .filter((d): d is Exclude<typeof d, null> => d !== null);
     }, [summary.milestones, chartData, content.timelinePhases]);
 
+    // Ideal-weight milestone — plotted on the weight line where the mid-ideal
+    // target is first crossed (may not exist if it's beyond the cycle).
+    const idealDot = useMemo(() => {
+        const m = summary.milestones.find((x) => x.kind === 'midIdeal');
+        if (!m) return null;
+        const idx = content.timelinePhases.findIndex(
+            (p) => m.week >= p.weekStart && m.week <= p.weekEnd,
+        );
+        const row = chartData[idx];
+        if (!row) return null;
+        return { x: row.week, y: summary.idealWeightMidKg, week: m.week };
+    }, [summary.milestones, summary.idealWeightMidKg, chartData, content.timelinePhases]);
+
     const coachTips = useMemo(() => {
         const kcal = summary.energy.dailyDeficitKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US');
         const vars: Record<string, string> = {
@@ -440,6 +458,62 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
         return tips;
     }, [C, coachFacts, summary, idealWeightStr, copyCtx, isAr, trainingAge, fillCoach]);
+
+    // ── Shareable plan snapshot — a compact bilingual text summary ──────
+    const planSnapshot = useMemo(() => {
+        const rows: Array<{ label: string; value: string }> = [
+            { label: L.startWeightLabel, value: formatWeight(startWeightKg, unitSystem, isAr) },
+            { label: L.idealWeightLabel, value: idealWeightStr },
+            { label: L.projectedEndWeight, value: endWeightStr },
+            { label: L.totalFatLoss, value: totalFatLossStr },
+            { label: L.totalMuscleGain, value: totalMuscleStr },
+            { label: L.dailyDeficit, value: dailyDeficitStr },
+            { label: L.maintenanceCalories, value: tdeeStr },
+            { label: L.currentBmi, value: bmiStr },
+            { label: L.goalProgress, value: `${Math.round(summary.goalProgressPct)}%` },
+            { label: L.timeToIdeal, value: summary.weeksToIdeal != null ? `${summary.weeksToIdeal} ${L.weeksShort}` : '—' },
+            ...coachTips.map((t) => ({ label: t.title, value: t.text })),
+        ];
+        return buildPlanSnapshot(L.engineTitle, rows);
+    }, [
+        L,
+        startWeightKg,
+        unitSystem,
+        isAr,
+        idealWeightStr,
+        endWeightStr,
+        totalFatLossStr,
+        totalMuscleStr,
+        dailyDeficitStr,
+        tdeeStr,
+        bmiStr,
+        summary.goalProgressPct,
+        summary.weeksToIdeal,
+        coachTips,
+    ]);
+
+    const [planCopied, setPlanCopied] = useState(false);
+    const copyPlan = useCallback(async () => {
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(planSnapshot);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = planSnapshot;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            setPlanCopied(true);
+            window.setTimeout(() => setPlanCopied(false), 2200);
+        } catch {
+            // Clipboard unavailable — silently no-op.
+        }
+    }, [planSnapshot]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -832,12 +906,27 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
                                     <Sparkles className="w-3.5 h-3.5" />
                                 </span>
-                                <div>
+                                <div className="flex-1">
                                     <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
                                         {C?.title ?? ''}
                                     </h4>
                                     <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
                                 </div>
+                                <motion.button
+                                    type="button"
+                                    whileTap={{ scale: 0.94 }}
+                                    onClick={copyPlan}
+                                    aria-label={L.copyPlan}
+                                    title={L.copyPlan}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                                        planCopied
+                                            ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/10'
+                                            : 'text-zinc-500 hover:text-purple-500 border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-purple-500/40'
+                                    }`}
+                                >
+                                    {planCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                    <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
+                                </motion.button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {coachTips.map((tip, i) => (
@@ -963,10 +1052,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.cumulativeMuscle, color: 'gold-500', dashed: true },
                                     { label: L.projectedEndWeight, color: 'emerald-500', dashed: true },
                                     { label: isAr ? 'معالم الدهون' : 'BF Milestones', color: 'cyan-400', marker: true },
+                                    { label: L.idealWeightLabel, color: 'emerald-500', star: true },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
                                         {item.marker ? (
                                             <span className={`w-2 h-2 rotate-45 rounded-[2px] ${item.color.replace('text-', 'bg-')}`}></span>
+                                        ) : item.star ? (
+                                            <span className={`w-2 h-2 ${item.color.replace('text-', 'bg-')}`} style={{ clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' }}></span>
                                         ) : item.dashed ? (
                                             <span className="flex items-center w-3.5">
                                                 <span className={`h-[2px] w-3.5 ${item.color.replace('text-', 'bg-')} opacity-80`}></span>
@@ -1051,6 +1143,23 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             strokeWidth={1.5}
                                         />
                                     ))}
+                                    {/* Ideal-weight milestone — star marker on the weight line */}
+                                    {idealDot && (
+                                        <ReferenceDot
+                                            x={idealDot.x}
+                                            y={idealDot.y}
+                                            yAxisId="liveWeight"
+                                            shape={(p: { cx?: number; cy?: number; x?: number; y?: number }) => (
+                                                <path
+                                                    d={STAR_PATH}
+                                                    fill="#10b981"
+                                                    stroke="#065f46"
+                                                    strokeWidth={1.5}
+                                                    transform={`translate(${p.cx ?? p.x ?? 0}, ${p.cy ?? p.y ?? 0})`}
+                                                />
+                                            )}
+                                        />
+                                    )}
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>

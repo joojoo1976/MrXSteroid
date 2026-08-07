@@ -1,6 +1,6 @@
 import React from 'react';
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import TransformationTimeline from '../../features/calculator/TransformationTimeline';
 import { PreferencesContext } from '../../context/PreferencesContext';
 import { Language, Theme, type ContentStrings } from '../../shared/types/types';
@@ -65,6 +65,8 @@ const buildContent = (): ContentStrings => ({
         imperial: 'Imperial', perWeek: 'per week', disclaimer: 'Disclaimer',
         heightLabel: 'Height',
         resetDefaults: 'Reset inputs',
+        copyPlan: 'Copy plan',
+        planCopied: 'Plan copied to clipboard',
     },
     timelineCoach: {
         title: 'Smart Coach',
@@ -181,6 +183,20 @@ describe('TransformationTimeline — full content visibility', () => {
         expect(screen.getByText(/inside this 12-week cycle/, { selector: 'p' })).toBeInTheDocument();
         expect(screen.getByText(/2\.5g\/kg of protein/, { selector: 'p' })).toBeInTheDocument();
         expect(screen.getByText(/Next milestone: under \d+% body fat around week \d+\./, { selector: 'p' })).toBeInTheDocument();
+        cleanup();
+    });
+
+    it('copies the plan snapshot to the clipboard on demand', async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+        renderTimeline();
+        fireEvent.click(screen.getByRole('button', { name: /copy plan/i }));
+        await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+        const text = writeText.mock.calls[0][0] as string;
+        // Inputs, predictions and coach verdicts all make it into the snapshot.
+        expect(text).toContain('80 kg');
+        expect(text).toContain('Goal Trajectory');
+        expect(text).toContain('│');
         cleanup();
     });
 });
