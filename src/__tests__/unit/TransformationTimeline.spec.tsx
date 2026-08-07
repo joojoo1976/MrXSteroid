@@ -129,10 +129,11 @@ describe('TransformationTimeline — full content visibility', () => {
         renderTimeline();
         expect(screen.getByText('Phase One')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Next phase' }));
-        // AnimatePresence "wait" runs an exit animation before the next card mounts.
+        // AnimatePresence popLayout overlaps the exit/enter cards (no blank gap),
+        // so the new card appears while the old one still exits.
         expect(await screen.findByText('Phase Two')).toBeInTheDocument();
         // Medical block persists across phases.
-        expect(screen.getByText('MEDICAL')).toBeInTheDocument();
+        expect(screen.getAllByText('MEDICAL').length).toBeGreaterThan(0);
         cleanup();
     });
 

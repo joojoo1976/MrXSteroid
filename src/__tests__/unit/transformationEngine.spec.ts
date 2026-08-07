@@ -5,6 +5,8 @@ import {
     buildTimelineCopyContext,
     renderTimelineCopy,
     projectBodyComposition,
+    aggregatePhases,
+    buildChartSeries,
     FAT_LOSS_RATE,
 } from '../../features/calculator/lib/transformationEngine';
 
@@ -111,5 +113,79 @@ describe('transformationEngine — projection sanity', () => {
         expect(a).toEqual(b);
         expect(a).toHaveLength(12);
         expect(a[11].weightKg).toBeLessThan(80);
+    });
+});
+
+describe('transformationEngine — buildChartSeries', () => {
+    const phases = [
+        { week: '1-2', stats: { strength: 20, hypertrophy: 10, waterRetention: 30, fatLoss: 5, mood: 80 } },
+        { week: '3-6', stats: { strength: 60, hypertrophy: 70, waterRetention: 50, fatLoss: 10, mood: 90 } },
+        { week: '7-10', stats: { strength: 90, hypertrophy: 90, waterRetention: 40, fatLoss: 40, mood: 70 } },
+        { week: '11-12', stats: { strength: 100, hypertrophy: 100, waterRetention: 20, fatLoss: 60, mood: 60 } },
+    ];
+
+    it('produces one row per phase, mirroring classic stats', () => {
+        const series = buildChartSeries(
+            phases,
+            projectBodyComposition({ startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' }),
+            aggregatePhases({ startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' }),
+        );
+        expect(series).toHaveLength(4);
+        expect(series[0]).toMatchObject({
+            week: '1-2',
+            strength: 20,
+            hypertrophy: 10,
+            waterRetention: 30,
+            fatLoss: 5,
+            mood: 80,
+        });
+        expect(series[3]).toMatchObject({
+            week: '11-12',
+            strength: 100,
+            hypertrophy: 100,
+            waterRetention: 20,
+            fatLoss: 60,
+            mood: 60,
+        });
+    });
+
+    it('uses end-of-phase cumulative muscle (not a sum of cumulative values)', () => {
+        const projections = projectBodyComposition({ startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' });
+        const aggregates = aggregatePhases({ startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' });
+        const series = buildChartSeries(phases, projections, aggregates);
+
+        // Phase 1 spans weeks 1–2 → the cumulative value must be the projection
+        // at the final week (index 1), NOT the sum of weeks 1 AND 2 which would
+        // over-count already-cumulative values.
+        expect(series[0].cumulativeMuscleKg).toBe(projections[1].cumulativeMuscleGainKg);
+        expect(series[0].cumulativeMuscleKg).toBeLessThan(
+            projections[0].cumulativeMuscleGainKg + projections[1].cumulativeMuscleGainKg,
+        );
+
+        // Last phase spans weeks 11–12 → final cumulative equals the cycle total.
+        expect(series[3].cumulativeMuscleKg).toBe(projections[11].cumulativeMuscleGainKg);
+        expect(series[3].cumulativeMuscleKg).toBeGreaterThan(series[2].cumulativeMuscleKg);
+    });
+
+    it('exposes the live projection series (body fat %, gains) per phase', () => {
+        const input = { startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'intermediate' as const };
+        const aggregates = aggregatePhases(input);
+        const series = buildChartSeries(phases, projectBodyComposition(input), aggregates);
+
+        expect(series[3].bodyFatPct).toBeCloseTo(aggregates[3].bodyFatPctEnd, 6);
+        expect(series[3].muscleGainKg).toBeCloseTo(aggregates[3].muscleGainKg, 6);
+        expect(series[3].fatLossKg).toBeCloseTo(aggregates[3].fatLossKg, 6);
+        // Body fat % must fall across the phases.
+        expect(series[3].bodyFatPct).toBeLessThan(series[0].bodyFatPct);
+    });
+
+    it('is deterministic and handles empty phase lists', () => {
+        const input = { startWeightKg: 80, startBodyFatPct: 18, trainingAge: 'novice' as const };
+        const projections = projectBodyComposition(input);
+        const aggregates = aggregatePhases(input);
+        expect(buildChartSeries(phases, projections, aggregates)).toEqual(
+            buildChartSeries(phases, projections, aggregates),
+        );
+        expect(buildChartSeries([], projections, aggregates)).toEqual([]);
     });
 });

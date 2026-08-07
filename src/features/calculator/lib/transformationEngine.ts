@@ -401,3 +401,67 @@ export const renderTimelineCopy = (
         const k = key as keyof TimelineCopyContext;
         return k in ctx ? ctx[k] : match;
     });
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CHART SERIES
+//  Merges the classic phase stat bars (0–100) with the live projection series
+//  (body-fat %, cumulative lean mass) so the evolution chart reacts to the
+//  engine sliders. Pure + deterministic.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface ChartPhaseInput {
+    week: string;
+    stats: {
+        strength: number;
+        hypertrophy: number;
+        waterRetention: number;
+        fatLoss: number;
+        mood: number;
+    };
+}
+
+export interface ChartSeriesRow {
+    week: string;
+    strength: number;
+    hypertrophy: number;
+    waterRetention: number;
+    fatLoss: number;
+    mood: number;
+    /** Projected body-fat % at the end of the phase. */
+    bodyFatPct: number;
+    /** Cumulative lean mass gained up to the end of the phase (kg). */
+    cumulativeMuscleKg: number;
+    /** Lean mass gained within the phase (kg). */
+    muscleGainKg: number;
+    /** Fat mass lost within the phase (kg). */
+    fatLossKg: number;
+}
+
+/**
+ * Builds one chart row per phase. The cumulative muscle value uses the
+ * projection at the phase's final week (NOT a sum of already-cumulative
+ * values, which would over-count).
+ */
+export const buildChartSeries = (
+    phases: ChartPhaseInput[],
+    projections: WeeklyProjection[],
+    aggregates: PhaseAggregate[],
+): ChartSeriesRow[] =>
+    phases.map((phase, idx) => {
+        const aggregate = aggregates[idx];
+        const lastWeek = clamp(aggregate.weekEnd, 1, CYCLE_TOTAL_WEEKS);
+        const cumulativeMuscleKg =
+            projections[lastWeek - 1]?.cumulativeMuscleGainKg ?? 0;
+        return {
+            week: phase.week,
+            strength: phase.stats.strength,
+            hypertrophy: phase.stats.hypertrophy,
+            waterRetention: phase.stats.waterRetention,
+            fatLoss: phase.stats.fatLoss,
+            mood: phase.stats.mood,
+            bodyFatPct: aggregate.bodyFatPctEnd,
+            cumulativeMuscleKg: roundTo(cumulativeMuscleKg, 2),
+            muscleGainKg: aggregate.muscleGainKg,
+            fatLossKg: aggregate.fatLossKg,
+        };
+    });

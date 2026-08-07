@@ -5,7 +5,7 @@ import {
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
     ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
@@ -572,9 +572,17 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.water, color: 'blue-500' },
                                     { label: L.fatLoss, color: 'orange-500' },
                                     { label: L.mood, color: 'green-500' },
+                                    { label: L.projectedFatPct, color: 'cyan-500', dashed: true },
+                                    { label: L.cumulativeMuscle, color: 'gold-500', dashed: true },
                                 ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase">
-                                        <div className={`w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
+                                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
+                                        {item.dashed ? (
+                                            <span className="flex items-center w-3.5">
+                                                <span className={`h-[2px] w-3.5 ${item.color.replace('text-', 'bg-')} opacity-80`}></span>
+                                            </span>
+                                        ) : (
+                                            <div className={`w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
+                                        )}
                                         {item.label}
                                     </div>
                                 ))}
@@ -617,6 +625,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         reversed={isRTL}
                                     />
                                     <YAxis hide domain={[0, 'auto']} />
+                                    <YAxis yAxisId="liveBodyFat" hide domain={[0, 40]} orientation={isRTL ? 'left' : 'right'} />
+                                    <YAxis yAxisId="liveMuscle" hide domain={[0, 8]} orientation={isRTL ? 'left' : 'right'} />
                                     <Tooltip
                                         contentStyle={{
                                             backgroundColor: 'rgba(9, 9, 11, 0.95)',
@@ -640,13 +650,16 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <Area name={L.water} type="monotone" dataKey="waterRetention" stackId="1" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2} />
                                     <Area name={L.fatLoss} type="monotone" dataKey="fatLoss" stackId="1" stroke="#f97316" fillOpacity={1} fill="url(#colorFat)" strokeWidth={2} />
                                     <Area name={L.mood} type="monotone" dataKey="mood" stackId="1" stroke="#22c55e" fillOpacity={1} fill="url(#colorMood)" strokeWidth={2} />
+                                    {/* Live engine overlays — react to the sliders in real time */}
+                                    <Line yAxisId="liveBodyFat" type="monotone" dataKey="bodyFatPct" stroke="#22d3ee" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.projectedFatPct} />
+                                    <Line yAxisId="liveMuscle" type="monotone" dataKey="cumulativeMuscleKg" stroke="#f59e0b" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.cumulativeMuscle} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </motion.div>
 
-                    {/* Content Card — animated phase transitions */}
-                    <AnimatePresence mode="wait" custom={navDirection} initial={false}>
+                    {/* Content Card — animated phase transitions (overlapping, no layout jump) */}
+                    <AnimatePresence mode="popLayout" custom={navDirection} initial={false}>
                         <motion.div
                             key={activePhase}
                             custom={navDirection}
@@ -654,7 +667,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             initial="enter"
                             animate="center"
                             exit="exit"
-                            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+                            transition={{ type: 'spring', damping: 30, stiffness: 260 }}
                             className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[520px]"
                         >
                             {/* Stats Header */}

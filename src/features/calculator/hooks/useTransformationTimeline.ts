@@ -3,6 +3,7 @@ import { ContentStrings } from '@/shared/types/types';
 import {
     projectBodyComposition,
     aggregatePhases,
+    buildChartSeries,
     type TrainingAge,
     type BodyCompositionInput,
     type WeeklyProjection,
@@ -44,28 +45,10 @@ export const useTransformationTimeline = ({ content }: UseTransformationTimeline
     );
 
     // Chart series — merges the classic stat bars with live projections.
-    const chartData = useMemo(() => {
-        return content.timelinePhases.map((phase, idx) => {
-            const aggregate = phaseAggregates[idx];
-            const sliceStart = aggregate.weekStart - 1;
-            const sliceEnd = aggregate.weekEnd;
-            const slice = projections.slice(sliceStart, sliceEnd);
-
-            return {
-                week: phase.week,
-                strength: phase.stats.strength,
-                hypertrophy: phase.stats.hypertrophy,
-                waterRetention: phase.stats.waterRetention,
-                fatLoss: phase.stats.fatLoss,
-                mood: phase.stats.mood,
-                // Live engine series
-                bodyFatPct: aggregate.bodyFatPctEnd,
-                muscleGainKg: aggregate.muscleGainKg,
-                fatLossKg: aggregate.fatLossKg,
-                cumulativeMuscleKg: slice.reduce((sum, p) => sum + p.cumulativeMuscleGainKg, 0),
-            };
-        });
-    }, [content.timelinePhases, projections, phaseAggregates]);
+    const chartData = useMemo(
+        () => buildChartSeries(content.timelinePhases, projections, phaseAggregates),
+        [content.timelinePhases, projections, phaseAggregates],
+    );
 
     const activeData = useMemo(() => {
         return content.timelinePhases[activePhase];
