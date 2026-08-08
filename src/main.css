@@ -253,6 +253,7 @@
   html {
     zoom: 0.9;
     transition: direction 0.3s ease;
+    overflow-x: clip;
   }
 
   /* unicode-bidi: plaintext removed — was causing English input issues in RTL mode */

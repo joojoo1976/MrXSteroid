@@ -1117,8 +1117,63 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </div>
                 </div>
 
-                {/* ── REDESIGNED 6 TILES ROW (SINGLE ROW ON DESKTOP, RTL/LTR SUPPORTED) ── */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full" dir={isAr ? 'rtl' : 'ltr'}>
+                {/* Smart Coach Strip */}
+                <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
+                            <Sparkles className="w-3.5 h-3.5" />
+                        </span>
+                        <div className="flex-1">
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                {C?.title ?? ''}
+                            </h4>
+                            <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
+                        </div>
+                        <motion.button
+                            type="button"
+                            whileTap={{ scale: 0.94 }}
+                            onClick={copyPlan}
+                            aria-label={L.copyPlan}
+                            title={L.copyPlan}
+                            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                                planCopied
+                                    ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/10'
+                                    : 'text-zinc-500 hover:text-purple-500 border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-purple-500/40'
+                            }`}
+                        >
+                            {planCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
+                        </motion.button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {coachTips.map((tip, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.06 * i }}
+                                className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5"
+                            >
+                                <span className={`${tip.accent} mt-0.5 flex-shrink-0`}>{tip.icon}</span>
+                                <div className="min-w-0">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">{tip.title}</p>
+                                    <p className="text-[11px] leading-relaxed font-bold text-zinc-700 dark:text-zinc-300">{tip.text}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                <p className="mt-5 text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex items-center gap-1.5">
+                    <ShieldCheck className="w-3 h-3 text-green-500 shrink-0" />
+                    {L.disclaimer}
+                </p>
+            </motion.div>
+
+            {/* ── FULL-BLEED 6 TILES ROW — spans the entire viewport width ── */}
+            <div className="relative w-[calc(100vw/0.9)] mx-[calc(50%-50vw/0.9)] px-4 md:px-6 mb-6 md:mb-8" dir={isAr ? 'rtl' : 'ltr'}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full">
                     <EngineTile
                         icon={<Flame className="w-4 h-4" />}
                         label={L.weeklyFatLoss}
@@ -1178,60 +1233,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         hint={`${L.currentBmi} ${bmiStr}`}
                     />
                 </div>
-
-                {/* Smart Coach Strip */}
-                <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
-                            <Sparkles className="w-3.5 h-3.5" />
-                        </span>
-                        <div className="flex-1">
-                            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                {C?.title ?? ''}
-                            </h4>
-                            <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
-                        </div>
-                        <motion.button
-                            type="button"
-                            whileTap={{ scale: 0.94 }}
-                            onClick={copyPlan}
-                            aria-label={L.copyPlan}
-                            title={L.copyPlan}
-                            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                                planCopied
-                                    ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/10'
-                                    : 'text-zinc-500 hover:text-purple-500 border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-purple-500/40'
-                            }`}
-                        >
-                            {planCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
-                        </motion.button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        {coachTips.map((tip, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.06 * i }}
-                                className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5"
-                            >
-                                <span className={`${tip.accent} mt-0.5 flex-shrink-0`}>{tip.icon}</span>
-                                <div className="min-w-0">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">{tip.title}</p>
-                                    <p className="text-[11px] leading-relaxed font-bold text-zinc-700 dark:text-zinc-300">{tip.text}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-
-                <p className="mt-5 text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex items-center gap-1.5">
-                    <ShieldCheck className="w-3 h-3 text-green-500 shrink-0" />
-                    {L.disclaimer}
-                </p>
-            </motion.div>
+            </div>
 
             {/* ── Dashboard Container ── */}
             <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
