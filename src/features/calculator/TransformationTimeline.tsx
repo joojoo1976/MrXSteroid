@@ -62,10 +62,10 @@ const AnimatedNumber: React.FC<{
     );
 });
 
-const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = memo(({ label, value, colorClass, icon }) => (
+const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ElementType }> = memo(({ label, value, colorClass, icon: Icon }) => (
     <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-700/30 group/metric transition-all hover:bg-white/80 dark:hover:bg-zinc-800/50 hover:border-gold-500/30 hover:shadow-lg hover:shadow-gold-500/5">
         <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-500/10 rounded-lg text-zinc-500 group-hover/metric:scale-110 transition-all">
-            {icon}
+            <Icon className="w-2.5 h-2.5" />
         </div>
         <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-1">
@@ -212,7 +212,7 @@ const KineticSilhouette: React.FC<{
 
 /** Fully reactive Engine Tile Component */
 const EngineTile: React.FC<{
-    icon: React.ReactNode;
+    icon: React.ElementType;
     label: string;
     value: string;
     accentClass?: string;
@@ -220,13 +220,13 @@ const EngineTile: React.FC<{
     trend?: 'up' | 'down';
     trendColor?: string;
     hint?: string;
-}> = memo(({ icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, trendColor, hint }) => (
+}> = memo(({ icon: Icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, trendColor, hint }) => (
     <div className="relative rounded-xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 p-3 flex flex-col justify-between gap-1.5 shadow-sm hover:shadow-md hover:shadow-gold-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500/40 min-w-0 group/tile">
         <div className={`absolute top-0 inset-x-0 h-0.5 rounded-t-xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 via-cyan-400 to-blue-500' : trend === 'up' ? 'from-gold-500 via-amber-400 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-80`} />
         
         <div className="flex items-center justify-between gap-1">
             <span className={`flex items-center justify-center w-7 h-7 shrink-0 rounded-lg ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-105 shadow-xs`}>
-                {icon}
+                <Icon className="w-4 h-4" />
             </span>
             {trend && (
                 <span className={`inline-flex items-center text-[9px] font-black tabular-nums shrink-0 px-1.5 py-0.5 rounded-full ${trendColor ?? (trend === 'up' ? 'text-emerald-500 bg-emerald-500/10' : 'text-cyan-500 bg-cyan-500/10')}`}>
@@ -1188,7 +1188,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full" dir={isAr ? 'rtl' : 'ltr'}>
                         <EngineTile
-                            icon={<Flame className="w-4 h-4" />}
+                            icon={Flame}
                             label={L.weeklyFatLoss}
                             value={activeWeeklyFatLoss}
                             accentClass="text-orange-500"
@@ -1198,7 +1198,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             hint={weeklyFatLossHint}
                         />
                         <EngineTile
-                            icon={<Droplet className="w-4 h-4" />}
+                            icon={Droplet}
                             label={L.projectedFatPct}
                             value={activeFatPctEnd}
                             accentClass="text-blue-500"
@@ -1208,7 +1208,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
                         />
                         <EngineTile
-                            icon={<BicepsFlexed className="w-4 h-4" />}
+                            icon={BicepsFlexed}
                             label={L.totalMuscleGain}
                             value={totalMuscleStr}
                             accentClass="text-purple-500"
@@ -1217,7 +1217,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             trendColor="text-emerald-500 bg-emerald-500/10"
                         />
                         <EngineTile
-                            icon={<TrendingUp className="w-4 h-4" />}
+                            icon={TrendingUp}
                             label={L.cumulativeMuscle}
                             value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
                             accentClass="text-gold-500"
@@ -1226,7 +1226,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             trendColor="text-emerald-500 bg-emerald-500/10"
                         />
                         <EngineTile
-                            icon={<Target className="w-4 h-4" />}
+                            icon={Target}
                             label={L.projectedEndWeight}
                             value={endWeightStr}
                             accentClass="text-cyan-500"
@@ -1236,7 +1236,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             hint={L.bmiLabel}
                         />
                         <EngineTile
-                            icon={<Flame className="w-4 h-4" />}
+                            icon={Flame}
                             label={L.dailyDeficit}
                             value={dailyDeficitStr}
                             accentClass="text-rose-500"
@@ -1542,11 +1542,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </div>
 
                                 <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
-                                    <MetricBar label={L.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={<Dumbbell className="w-2.5 h-2.5" />} />
-                                    <MetricBar label={L.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={<BicepsFlexed className="w-2.5 h-2.5" />} />
-                                    <MetricBar label={L.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={<Droplet className="w-2.5 h-2.5" />} />
-                                    <MetricBar label={L.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={<Flame className="w-2.5 h-2.5" />} />
-                                    <MetricBar label={L.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={<Brain className="w-2.5 h-2.5" />} />
+                                    <MetricBar label={L.strength} value={activeData.stats.strength} colorClass="bg-red-500" icon={Dumbbell} />
+                                    <MetricBar label={L.hypertrophy} value={activeData.stats.hypertrophy} colorClass="bg-purple-500" icon={BicepsFlexed} />
+                                    <MetricBar label={L.water} value={activeData.stats.waterRetention} colorClass="bg-blue-500" icon={Droplet} />
+                                    <MetricBar label={L.fatLoss} value={activeData.stats.fatLoss} colorClass="bg-orange-500" icon={Flame} />
+                                    <MetricBar label={L.mood} value={activeData.stats.mood} colorClass="bg-green-500" icon={Brain} />
                                 </div>
                             </div>
 
