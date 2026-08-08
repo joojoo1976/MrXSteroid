@@ -1330,6 +1330,21 @@ export interface ContentStrings {
     metabolicEfficient: string;
     metabolicBalanced: string;
     metabolicSluggish: string;
+    // UI chrome / badges — localized instead of inline ternaries
+    appliedBiologyBadge: string;
+    statDetailedPhases: string;
+    statLiveProjections: string;
+    statExpertTips: string;
+    unitSystemLabel: string;
+    bfMilestones: string;
+    expertTipBadge: string;
+    medicalSupervisionBadge: string;
+    prevPhaseAria: string;
+    nextPhaseAria: string;
+    muscleFatTitle: string;
+    leanMassLabel: string;
+    fatMassLabel: string;
+    weeklyUnitShort: string;
   };
   timeUnits: {
     days: string;

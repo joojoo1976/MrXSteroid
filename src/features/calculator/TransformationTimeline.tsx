@@ -95,7 +95,10 @@ const KineticSilhouette: React.FC<{
     fatKg: number;
     unitSystem: UnitSystem;
     isAr: boolean;
-}> = memo(({ musclePct, fatPct, muscleKg, fatKg, unitSystem, isAr }) => {
+    leanLabel: string;
+    fatLabel: string;
+    muscleFatTitle: string;
+}> = memo(({ musclePct, fatPct, muscleKg, fatKg, unitSystem, isAr, leanLabel, fatLabel, muscleFatTitle }) => {
     const muscle = clamp(musclePct, 5, 100);
     const fat = clamp(fatPct, 5, 100);
     const [hover, setHover] = useState<'muscle' | 'fat' | null>(null);
@@ -104,13 +107,13 @@ const KineticSilhouette: React.FC<{
     const fatStr = formatWeight(fatKg, unitSystem, isAr);
     const activeTooltip =
         hover === 'muscle'
-            ? { title: isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass', value: muscleStr, pct: `${Math.round(muscle)}%` }
+            ? { title: leanLabel, value: muscleStr, pct: `${Math.round(muscle)}%` }
             : hover === 'fat'
-                ? { title: isAr ? 'كتلة الدهون' : 'Fat Mass', value: fatStr, pct: `${Math.round(fat)}%` }
+                ? { title: fatLabel, value: fatStr, pct: `${Math.round(fat)}%` }
                 : null;
 
     return (
-        <div className="relative w-full max-w-[240px] mx-auto aspect-square" role="img" aria-label={`${isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass'}: ${muscleStr} (${Math.round(muscle)}%) · ${isAr ? 'كتلة الدهون' : 'Fat Mass'}: ${fatStr} (${Math.round(fat)}%)`}>
+        <div className="relative w-full max-w-[240px] mx-auto aspect-square" role="img" aria-label={`${leanLabel}: ${muscleStr} (${Math.round(muscle)}%) · ${fatLabel}: ${fatStr} (${Math.round(fat)}%)`}>
             <div className="absolute inset-0 rounded-full bg-gold-500/5 blur-2xl animate-pulse" />
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_0_18px_rgba(234,179,8,0.25)]">
                 <defs>
@@ -130,7 +133,7 @@ const KineticSilhouette: React.FC<{
                     style={{ transformOrigin: '100px 100px' }}
                     role="button"
                     tabIndex={0}
-                    aria-label={isAr ? `كتلة الدهون: ${fatStr} (${Math.round(fat)}%)` : `Fat Mass: ${fatStr} (${Math.round(fat)}%)`}
+                    aria-label={`${fatLabel}: ${fatStr} (${Math.round(fat)}%)`}
                     onMouseEnter={() => setHover('fat')}
                     onMouseLeave={() => setHover(null)}
                     onFocus={() => setHover('fat')}
@@ -149,7 +152,7 @@ const KineticSilhouette: React.FC<{
                         strokeLinecap="round"
                         className="transition-all duration-700 hover:drop-shadow-[0_0_14px_rgba(59,130,246,0.6)]"
                     />
-                    <title>{isAr ? 'كتلة الدهون' : 'Fat Mass'} — {fatStr} · {Math.round(fat)}%</title>
+                    <title>{fatLabel} — {fatStr} · {Math.round(fat)}%</title>
                 </g>
 
                 {/* Muscle core (grows with hypertrophy) */}
@@ -158,7 +161,7 @@ const KineticSilhouette: React.FC<{
                     style={{ transformOrigin: '100px 100px' }}
                     role="button"
                     tabIndex={0}
-                    aria-label={isAr ? `الكتلة العضلية الصافية: ${muscleStr} (${Math.round(muscle)}%)` : `Lean Mass: ${muscleStr} (${Math.round(muscle)}%)`}
+                    aria-label={`${leanLabel}: ${muscleStr} (${Math.round(muscle)}%)`}
                     onMouseEnter={() => setHover('muscle')}
                     onMouseLeave={() => setHover(null)}
                     onFocus={() => setHover('muscle')}
@@ -179,12 +182,12 @@ const KineticSilhouette: React.FC<{
                         className="opacity-90 transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(234,179,8,0.7)] hover:scale-[1.02]"
                         style={{ transformOrigin: '100px 100px' }}
                     />
-                    <title>{isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass'} — {muscleStr} · {Math.round(muscle)}%</title>
+                    <title>{leanLabel} — {muscleStr} · {Math.round(muscle)}%</title>
                 </g>
 
                 <circle cx="100" cy="100" r="6" fill="#fff" className="animate-pulse" />
                 <text x="100" y="196" textAnchor="middle" fontSize="9" fontWeight="800" fill="currentColor" className="text-zinc-400 dark:text-zinc-500">
-                    {isAr ? 'كتلة عضلية × نسبة دهون' : 'Muscle × Fat'}
+                    {muscleFatTitle}
                 </text>
             </svg>
 
@@ -582,7 +585,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
 
     const activeWeeklyFatLossKg = projections[Math.max((activeAggregate?.weekStart ?? 1) - 1, 0)]?.fatLossKg ?? 0;
-    const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${isAr ? 'أسبوع' : 'wk'}`;
+    const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${L.weeklyUnitShort}`;
     const weeklyFatLossHint = `${isAr ? `~${activeFatLossRate} من وزن الجسم` : `${activeFatLossRate} of body weight`}`;
 
     const idealWeightStr = formatWeight(summary.idealWeightKg, unitSystem, isAr);
@@ -865,7 +868,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-widest mb-6"
                 >
                     <Activity className="w-3.5 h-3.5" />
-                    {isAr ? 'علم البيولوجيا التطبيقي' : 'Applied Biology Science'}
+                    {L.appliedBiologyBadge}
                 </motion.div>
 
                 <motion.h2
@@ -885,9 +888,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 {/* Quick stats row */}
                 <div className="flex flex-wrap justify-center gap-3 md:gap-6 mt-8">
                     {[
-                        { icon: <BookOpen className="w-4 h-4" />, label: isAr ? '4 مراحل مفصلة' : '4 Detailed Phases' },
-                        { icon: <LineChart className="w-4 h-4" />, label: isAr ? 'توقعات حية' : 'Live Projections' },
-                        { icon: <ShieldCheck className="w-4 h-4" />, label: isAr ? 'نصائح الخبراء' : 'Expert Tips' },
+                        { icon: <BookOpen className="w-4 h-4" />, label: L.statDetailedPhases },
+                        { icon: <LineChart className="w-4 h-4" />, label: L.statLiveProjections },
+                        { icon: <ShieldCheck className="w-4 h-4" />, label: L.statExpertTips },
                     ].map((stat, i) => (
                         <motion.div
                             key={i}
@@ -959,7 +962,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
 
                         {/* Unit toggle */}
-                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800" role="group" aria-label={isAr ? 'نظام القياس' : 'Unit system'}>
+                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800" role="group" aria-label={L.unitSystemLabel}>
                             <button
                                 type="button"
                                 onClick={() => setUnitSystem('metric')}
@@ -1110,6 +1113,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             fatKg={bodyQuality.fatKg}
                                             unitSystem={unitSystem}
                                             isAr={isAr}
+                                            leanLabel={L.leanMassLabel}
+                                            fatLabel={L.fatMassLabel}
+                                            muscleFatTitle={L.muscleFatTitle}
                                         />
                                     </div>
                                     <CompositionInsightCard
@@ -1395,7 +1401,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.projectedFatPct, color: 'cyan-500', dashed: true },
                                     { label: L.cumulativeMuscle, color: 'gold-500', dashed: true },
                                     { label: L.projectedEndWeight, color: 'emerald-500', dashed: true },
-                                    { label: isAr ? 'معالم الدهون' : 'BF Milestones', color: 'cyan-400', marker: true },
+                                    { label: L.bfMilestones, color: 'cyan-400', marker: true },
                                     { label: L.idealWeightLabel, color: 'emerald-500', star: true },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
@@ -1596,7 +1602,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
                                     <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[9px] font-black uppercase tracking-wider">
                                         <ShieldCheck className="w-2.5 h-2.5" />
-                                        {isAr ? 'نصيحة الخبير' : 'Expert Tip'}
+                                        {L.expertTipBadge}
                                     </div>
                                 </motion.div>
 
@@ -1618,7 +1624,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
                                     <div className="absolute top-3 end-3 flex items-center gap-1 px-2 py-1 rounded-full bg-rose-500/15 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-[9px] font-black uppercase tracking-wider">
                                         <ShieldCheck className="w-2.5 h-2.5" />
-                                        {isAr ? 'إشراف طبي' : 'Medical Supervision'}
+                                        {L.medicalSupervisionBadge}
                                     </div>
                                 </motion.div>
                             </div>
@@ -1646,7 +1652,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         whileTap={{ scale: 0.9 }}
                                         disabled={activePhase === 0}
                                         onClick={goPrev}
-                                        aria-label={isAr ? 'المرحلة السابقة' : 'Previous phase'}
+                                        aria-label={L.prevPhaseAria}
                                         className="p-2.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 disabled:opacity-20 transition-all shadow-md hover:bg-zinc-300 dark:hover:bg-zinc-700"
                                     >
                                         <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
@@ -1656,7 +1662,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         whileTap={{ scale: 0.9 }}
                                         disabled={activePhase === totalPhases - 1}
                                         onClick={goNext}
-                                        aria-label={isAr ? 'المرحلة التالية' : 'Next phase'}
+                                        aria-label={L.nextPhaseAria}
                                         className="p-2.5 rounded-xl bg-gold-500 text-black disabled:opacity-20 transition-all shadow-md hover:bg-gold-400"
                                     >
                                         <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
