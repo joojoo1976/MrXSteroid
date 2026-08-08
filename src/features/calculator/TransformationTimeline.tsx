@@ -114,7 +114,7 @@ const KineticSilhouette: React.FC<{
                     </linearGradient>
                 </defs>
 
-                {/* Fat ring (shrinks as fat drops) — hover reveals its layer tooltip */}
+                {/* Fat ring (shrinks as fat drops) */}
                 <g
                     className="cursor-pointer transition-all duration-300 hover:opacity-80"
                     style={{ transformOrigin: '100px 100px' }}
@@ -131,7 +131,7 @@ const KineticSilhouette: React.FC<{
                     <title>{isAr ? 'كتلة الدهون' : 'Fat Mass'} — {fatStr} · {Math.round(fat)}%</title>
                 </g>
 
-                {/* Muscle core (grows with hypertrophy) — hover reveals its layer tooltip */}
+                {/* Muscle core (grows with hypertrophy) */}
                 <g
                     className="cursor-pointer transition-all duration-300 hover:opacity-90"
                     style={{ transformOrigin: '100px 100px' }}
@@ -151,14 +151,12 @@ const KineticSilhouette: React.FC<{
                     <title>{isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass'} — {muscleStr} · {Math.round(muscle)}%</title>
                 </g>
 
-                {/* Atomic nucleus */}
                 <circle cx="100" cy="100" r="6" fill="#fff" className="animate-pulse" />
                 <text x="100" y="196" textAnchor="middle" fontSize="9" fontWeight="800" fill="currentColor" className="text-zinc-400 dark:text-zinc-500">
                     {isAr ? 'كتلة عضلية × نسبة دهون' : 'Muscle × Fat'}
                 </text>
             </svg>
 
-            {/* Interactive hover tooltip — exact value + layer % */}
             <AnimatePresence>
                 {activeTooltip && (
                     <motion.div
@@ -181,7 +179,7 @@ const KineticSilhouette: React.FC<{
     );
 };
 
-/** Glassmorphism stat tile — colored icon circle, primary metric, sub-label. */
+/** Re-designed Glassmorphism Engine Tile — Optimized for single-row 6-column layout */
 const EngineTile: React.FC<{
     icon: React.ReactNode;
     label: string;
@@ -189,33 +187,50 @@ const EngineTile: React.FC<{
     accentClass?: string;
     bgClass?: string;
     trend?: 'up' | 'down';
+    trendColor?: string;
     hint?: string;
-}> = memo(({ icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, hint }) => (
-    <div className="relative rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-3 md:p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:scale-[1.02] hover:border-gold-500/30 min-w-0">
-        <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full rounded-t-2xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
+}> = memo(({ icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, trendColor, hint }) => (
+    <div className="relative rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 p-3.5 md:p-4 flex flex-col justify-between gap-2 shadow-md hover:shadow-xl hover:shadow-gold-500/10 transition-all duration-300 hover:-translate-y-1 hover:border-gold-500/40 min-w-0 group/tile">
+        {/* Accent Bar */}
+        <div className={`absolute top-0 inset-x-0 h-1 rounded-t-2xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 via-cyan-400 to-blue-500' : trend === 'up' ? 'from-gold-500 via-amber-400 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-80`} />
+        
+        {/* Top Section: Icon & Trend */}
         <div className="flex items-center justify-between gap-1">
-            <span className={`flex items-center justify-center w-8 h-8 shrink-0 rounded-xl ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-110`}>{icon}</span>
+            <span className={`flex items-center justify-center w-8 h-8 shrink-0 rounded-xl ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-110 shadow-sm`}>
+                {icon}
+            </span>
             {trend && (
-                <span className={`text-[9px] font-black tabular-nums shrink-0 ${trend === 'up' ? 'text-emerald-500' : 'text-cyan-500'}`}>
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-black tabular-nums shrink-0 px-1.5 py-0.5 rounded-full ${trendColor ?? (trend === 'up' ? 'text-emerald-500 bg-emerald-500/10' : 'text-cyan-500 bg-cyan-500/10')}`}>
                     {trend === 'up' ? '▲' : '▼'}
                 </span>
             )}
         </div>
-        <motion.span
-            key={value}
-            initial={{ opacity: 0, y: 6, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="text-base md:text-lg xl:text-xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums leading-tight break-words whitespace-nowrap"
-        >
-            {value}
-        </motion.span>
-        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 break-words leading-tight">{label}</span>
-        {hint && <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest break-words leading-tight">{hint}</span>}
+
+        {/* Bottom Section: Main Metric & Labels */}
+        <div className="flex flex-col gap-0.5 min-w-0">
+            <motion.span
+                key={value}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                className="text-base sm:text-lg xl:text-xl font-black tracking-tight text-zinc-900 dark:text-white tabular-nums leading-snug truncate"
+                title={value}
+            >
+                {value}
+            </motion.span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400 truncate leading-tight" title={label}>
+                {label}
+            </span>
+            {hint && (
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 truncate leading-tight mt-0.5" title={hint}>
+                    {hint}
+                </span>
+            )}
+        </div>
     </div>
 ));
 
-/** Neon-glow range slider — border + glow while the thumb is being dragged. */
+/** Neon-glow range slider */
 const NeonSlider: React.FC<{
     min: number;
     max: number;
@@ -250,7 +265,7 @@ const NeonSlider: React.FC<{
     );
 });
 
-/** Glassmorphism twin card — live muscular × fat analysis under the silhouette. */
+/** Glassmorphism twin card */
 const CompositionInsightCard: React.FC<{
     quality: BodyQuality;
     content: ContentStrings;
@@ -309,7 +324,6 @@ const CompositionInsightCard: React.FC<{
                 </div>
             </div>
 
-            {/* Quality index — live score + animated bar */}
             <div className="flex items-center justify-between gap-2">
                 <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                     <Gauge className="w-3 h-3 text-gold-500" />
@@ -334,7 +348,6 @@ const CompositionInsightCard: React.FC<{
                 />
             </div>
 
-            {/* Muscle / fat / ratio mini-stats */}
             <div className="grid grid-cols-3 gap-1.5 mt-1">
                 <div className="rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5 p-2">
                     <span className="block text-[7px] font-black uppercase tracking-widest text-zinc-400">{L.compositionMuscle ?? 'Lean Mass'}</span>
@@ -350,7 +363,6 @@ const CompositionInsightCard: React.FC<{
                 </div>
             </div>
 
-            {/* Metabolic band + zone verdict */}
             <span className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-500 dark:text-zinc-400">
                 <Flame className="w-3 h-3 text-orange-500" />
                 {L.compositionMetabolism ?? 'Metabolic State'}
@@ -359,7 +371,6 @@ const CompositionInsightCard: React.FC<{
             <p className="text-[10px] leading-relaxed font-bold text-zinc-600 dark:text-zinc-300">{metabLabel}</p>
             <p className={`text-[10px] leading-relaxed font-black ${zoneColor}`}>{zoneLabel}</p>
 
-            {/* Projected end-state — mirrors the twin card's footer */}
             <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1.5 border-t border-white/10 dark:border-white/10">
                 <span className="flex items-center gap-1">
                     <TrendingUp className="w-3 h-3 text-emerald-500" />
@@ -373,7 +384,7 @@ const CompositionInsightCard: React.FC<{
     );
 });
 
-/** Circular goal gauge — live progress toward the ideal (healthy) weight. */
+/** Circular goal gauge */
 const GoalRing: React.FC<{
     progress: number;
     label: string;
@@ -415,7 +426,7 @@ const GoalRing: React.FC<{
     );
 });
 
-/** Unit-aware chart tooltip — formats live engine series in the active system. */
+/** Chart tooltip */
 const ChartTooltip: React.FC<{
     active?: boolean;
     payload?: Array<{
@@ -507,7 +518,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         setPhase(idx);
     }, [activePhase, setPhase]);
 
-    // Keyboard navigation (Arrow keys) — skips interactive form controls.
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null;
@@ -525,7 +535,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         return () => window.removeEventListener('keydown', handler);
     }, [isRTL, goNext, goPrev]);
 
-    // Unit-aware narrative context — recomputed only when inputs/units change.
     const copyCtx = useMemo<TimelineCopyContext>(
         () => buildTimelineCopyContext({ startWeightKg, trainingAge, unitSystem, isAr }),
         [startWeightKg, trainingAge, unitSystem, isAr],
@@ -543,16 +552,13 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         }
     };
 
-    // Live engine values formatted in the active unit system.
     const activeFatPctEnd = `${roundTo(activeAggregate?.bodyFatPctEnd ?? startBodyFatPct, 1)}%`;
     const activeFatLossRate = `${roundTo(activeAggregate?.fatLossRatePct ?? 0.75, 1)}%`;
 
-    // Real weekly fat loss: actual mass shed in the active phase's first week.
     const activeWeeklyFatLossKg = projections[Math.max((activeAggregate?.weekStart ?? 1) - 1, 0)]?.fatLossKg ?? 0;
     const activeWeeklyFatLoss = `${formatWeight(activeWeeklyFatLossKg, unitSystem, isAr)}/${isAr ? 'أسبوع' : 'wk'}`;
     const weeklyFatLossHint = `${isAr ? `~${activeFatLossRate} من وزن الجسم` : `${activeFatLossRate} of body weight`}`;
 
-    // ── Advanced live predictions (formatted in the active unit system) ──
     const idealWeightStr = formatWeight(summary.idealWeightKg, unitSystem, isAr);
     const endWeightStr = formatWeight(summary.endWeightKg, unitSystem, isAr);
     const totalFatLossStr = formatWeight(summary.totalFatLossKg, unitSystem, isAr);
@@ -561,7 +567,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     const tdeeStr = `${summary.energy.tdeeKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US')} kcal`;
     const bmiStr = `${summary.bmiStart.toLocaleString(isAr ? 'ar-EG' : 'en-US')} → ${summary.bmiEnd.toLocaleString(isAr ? 'ar-EG' : 'en-US')}`;
 
-    // Countdown to the ideal weight — with a human "target date".
     const timeToIdealWeeks = summary.weeksToIdeal;
     const targetDate = useMemo(() => {
         if (timeToIdealWeeks == null) return null;
@@ -570,7 +575,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         return d;
     }, [timeToIdealWeeks]);
 
-    // Weight axis domain for the live chart line (metric base → same shape).
     const weightDomain = useMemo(() => {
         const vals = chartData.map((d) => d.weightKg);
         const lo = Math.min(...vals);
@@ -578,13 +582,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         return [Math.floor(lo - 2), Math.ceil(hi + 2)];
     }, [chartData]);
 
-    // ── Smart Coach — live verdicts from the engine summary ─────────────
     const coachFacts = useMemo<CoachFacts>(
         () => deriveCoachFacts(summary, activeAggregate?.weekStart ?? 1),
         [summary, activeAggregate?.weekStart],
     );
 
-    // ── Body-composition quality — live twin-card analysis ──────────────
     const bodyQuality = useMemo<BodyQuality>(
         () => deriveBodyQuality(engineInput),
         [engineInput],
@@ -612,8 +614,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             .filter((d): d is Exclude<typeof d, null> => d !== null);
     }, [summary.milestones, chartData, content.timelinePhases]);
 
-    // Ideal-weight milestone — plotted on the weight line where the mid-ideal
-    // target is first crossed (may not exist if it's beyond the cycle).
     const idealDot = useMemo(() => {
         const m = summary.milestones.find((x) => x.kind === 'midIdeal');
         if (!m) return null;
@@ -638,7 +638,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         };
         const tips: Array<{ icon: React.ReactNode; accent: string; title: string; text: string }> = [];
 
-        // 1 — Goal trajectory
         const verdictKey =
             coachFacts.goalState === 'reached' ? C?.verdictReached
                 : coachFacts.goalState === 'unreachable' ? C?.verdictMaintain
@@ -654,7 +653,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             text: fillCoach(verdictKey ?? '', vars),
         });
 
-        // 2 — Calorie economy
         const deficitKey = coachFacts.deficitLevel === 'mild'
             ? C?.deficitMild
             : coachFacts.deficitLevel === 'aggressive' ? C?.deficitAggressive : C?.deficitModerate;
@@ -667,7 +665,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             text: fillCoach(deficitKey ?? '', vars),
         });
 
-        // 3 — Starting composition
         const bfKey = coachFacts.bfZone === 'lean' ? C?.bfLean : coachFacts.bfZone === 'high' ? C?.bfHigh : C?.bfModerate;
         tips.push({
             icon: <Droplet className="w-3.5 h-3.5" />,
@@ -676,7 +673,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             text: fillCoach(bfKey ?? '', vars),
         });
 
-        // 4 — Nutrition + next milestone
         const proteinKey = trainingAge === 'novice' ? C?.proteinNovice : trainingAge === 'advanced' ? C?.proteinAdvanced : C?.proteinIntermediate;
         const milestoneText = coachFacts.nextMilestone
             ? fillCoach(C?.milestoneNext ?? '', {
@@ -695,7 +691,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         return tips;
     }, [C, coachFacts, summary, idealWeightStr, copyCtx, isAr, trainingAge, fillCoach]);
 
-    // ── Shareable plan snapshot — a compact bilingual text summary ──────
     const planSnapshot = useMemo(() => {
         const rows: Array<{ label: string; value: string }> = [
             { label: L.startWeightLabel, value: formatWeight(startWeightKg, unitSystem, isAr) },
@@ -753,11 +748,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             setPlanCopied(true);
             window.setTimeout(() => setPlanCopied(false), 2200);
         } catch {
-            // Clipboard unavailable — silently no-op.
+            // Silently no-op.
         }
     }, [planSnapshot]);
 
-    // ── Week-by-week breakdown — milestone badges per projection week ───
     const [showWeekly, setShowWeekly] = useState(false);
     const milestoneByWeek = useMemo(() => {
         const map: Record<number, MilestonePoint[]> = {};
@@ -769,7 +763,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
-    // Direction-aware slide variants (RTL-aware).
     const slideVariants = {
         enter: (dir: 'next' | 'prev') => ({
             x: isRTL ? (dir === 'next' ? -64 : 64) : (dir === 'next' ? 64 : -64),
@@ -856,7 +849,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 {/* Neon top edge */}
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-500/70 to-transparent" />
 
-                {/* Recalculating pulse bar — sweeps while deferred math catches up */}
                 <AnimatePresence>
                     {isRecalculating && (
                         <motion.div
@@ -874,7 +866,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     )}
                 </AnimatePresence>
 
-                <div className="flex flex-col xl:flex-row gap-6 xl:items-start">
+                <div className="flex flex-col xl:flex-row gap-6 xl:items-start mb-6">
                     {/* Header + inputs */}
                     <div className="flex-1 min-w-0 space-y-5">
                         <div className="flex flex-wrap items-center gap-2">
@@ -938,7 +930,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             </motion.button>
                         </div>
 
-                        {/* Start weight slider — live readout synced 1:1 with the thumb */}
+                        {/* Sliders */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
@@ -959,7 +951,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             />
                         </div>
 
-                        {/* Body fat slider — live readout synced 1:1 with the thumb */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
@@ -980,7 +971,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             />
                         </div>
 
-                        {/* Height slider — live readout synced 1:1 with the thumb */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
@@ -1001,7 +991,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             />
                         </div>
 
-                        {/* Training age selector */}
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mb-2">
                                 <Timer className="w-3 h-3 text-gold-500" />
@@ -1031,10 +1020,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
                     </div>
 
-                    {/* Kinetic silhouette + live numbers */}
+                    {/* Visual block */}
                     <div className="flex-1 min-w-0 space-y-4">
-
-                        {/* Unified visual block — composition circle × goal progress */}
                         <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg">
                             <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-gold-500 via-cyan-400 to-transparent opacity-60" />
                             <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -1068,171 +1055,177 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     />
                                 </div>
                                 <div className="flex flex-col items-center gap-3 min-w-0">
-                            <GoalRing
-                                progress={summary.goalProgressPct}
-                                label={L.goalProgress}
-                                value={idealWeightStr}
-                            />
-                            <div className="flex-1 min-w-[200px] rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg relative overflow-hidden">
-                                <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-cyan-500 via-gold-500 to-transparent opacity-60" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-                                    <CalendarDays className="w-3 h-3 text-gold-500" />
-                                    {L.timeToIdeal}
-                                </span>
-                                {summary.weeksToIdeal === 0 ? (
-                                    <span className="text-xl font-black text-emerald-500 inline-flex items-center gap-1.5">
-                                        <CheckCircle2 className="w-5 h-5" />
-                                        {L.idealWeightReached}
-                                    </span>
-                                ) : summary.weeksToIdeal != null ? (
-                                    <>
-                                        <motion.span
-                                            key={summary.weeksToIdeal}
-                                            initial={{ opacity: 0, y: 6, scale: 0.94 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                                            className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums"
-                                        >
-                                            {summary.weeksToIdeal}
-                                            <span className="text-sm text-zinc-500 dark:text-zinc-400 font-black ms-1">
-                                                {L.weeksShort}
+                                    <GoalRing
+                                        progress={summary.goalProgressPct}
+                                        label={L.goalProgress}
+                                        value={idealWeightStr}
+                                    />
+                                    <div className="flex-1 min-w-[200px] rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-cyan-500 via-gold-500 to-transparent opacity-60" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                            <CalendarDays className="w-3 h-3 text-gold-500" />
+                                            {L.timeToIdeal}
+                                        </span>
+                                        {summary.weeksToIdeal === 0 ? (
+                                            <span className="text-xl font-black text-emerald-500 inline-flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                {L.idealWeightReached}
                                             </span>
-                                        </motion.span>
-                                        {targetDate && (
-                                            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                                                {L.targetDate}: <span className="text-gold-600 dark:text-gold-400 font-black">
-                                                    {targetDate.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                                        ) : summary.weeksToIdeal != null ? (
+                                            <>
+                                                <motion.span
+                                                    key={summary.weeksToIdeal}
+                                                    initial={{ opacity: 0, y: 6, scale: 0.94 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                                                    className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums"
+                                                >
+                                                    {summary.weeksToIdeal}
+                                                    <span className="text-sm text-zinc-500 dark:text-zinc-400 font-black ms-1">
+                                                        {L.weeksShort}
+                                                    </span>
+                                                </motion.span>
+                                                {targetDate && (
+                                                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                                                        {L.targetDate}: <span className="text-gold-600 dark:text-gold-400 font-black">
+                                                            {targetDate.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                                <span className={`self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                    summary.withinCycle
+                                                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500'
+                                                        : 'bg-gold-500/15 border border-gold-500/30 text-gold-600 dark:text-gold-400'
+                                                }`}>
+                                                    {summary.withinCycle ? L.withinCycle : L.beyondCycle}
                                                 </span>
+                                            </>
+                                        ) : (
+                                            <span className="text-sm font-black text-amber-500 inline-flex items-center gap-1.5">
+                                                <RefreshCcw className="w-4 h-4" />
+                                                {L.maintenanceMode}
                                             </span>
                                         )}
-                                        <span className={`self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                            summary.withinCycle
-                                                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500'
-                                                : 'bg-gold-500/15 border border-gold-500/30 text-gold-600 dark:text-gold-400'
-                                        }`}>
-                                            {summary.withinCycle ? L.withinCycle : L.beyondCycle}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <span className="text-sm font-black text-amber-500 inline-flex items-center gap-1.5">
-                                        <RefreshCcw className="w-4 h-4" />
-                                        {L.maintenanceMode}
-                                    </span>
-                                )}
-                                <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1 border-t border-white/10 dark:border-white/10">
-                                    <span>{L.maintenanceCalories}</span>
-                                    <span className="font-black text-zinc-900 dark:text-white tabular-nums">{tdeeStr}</span>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                            {/* Live engine stat tiles — responsive 6-up row (RTL-aware) */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 w-full">
-                                <EngineTile
-                                    icon={<Flame className="w-4 h-4" />}
-                                    label={L.weeklyFatLoss}
-                                    value={activeWeeklyFatLoss}
-                                    accentClass="text-orange-500"
-                                    bgClass="bg-orange-500/15"
-                                    trend="down"
-                                    hint={weeklyFatLossHint}
-                                />
-                                <EngineTile
-                                    icon={<Droplet className="w-4 h-4" />}
-                                    label={L.projectedFatPct}
-                                    value={activeFatPctEnd}
-                                    accentClass="text-blue-500"
-                                    bgClass="bg-blue-500/15"
-                                    trend="down"
-                                    hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
-                                />
-                                <EngineTile
-                                    icon={<BicepsFlexed className="w-4 h-4" />}
-                                    label={L.totalMuscleGain}
-                                    value={totalMuscleStr}
-                                    accentClass="text-purple-500"
-                                    bgClass="bg-purple-500/15"
-                                    trend="up"
-                                />
-                                <EngineTile
-                                    icon={<TrendingUp className="w-4 h-4" />}
-                                    label={L.cumulativeMuscle}
-                                    value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
-                                    accentClass="text-gold-500"
-                                    bgClass="bg-gold-500/15"
-                                    trend="up"
-                                />
-                                <EngineTile
-                                    icon={<Target className="w-4 h-4" />}
-                                    label={L.projectedEndWeight}
-                                    value={endWeightStr}
-                                    accentClass="text-cyan-500"
-                                    bgClass="bg-cyan-500/15"
-                                    trend="down"
-                                    hint={L.bmiLabel}
-                                />
-                                <EngineTile
-                                    icon={<Flame className="w-4 h-4" />}
-                                    label={L.dailyDeficit}
-                                    value={dailyDeficitStr}
-                                    accentClass="text-rose-500"
-                                    bgClass="bg-rose-500/15"
-                                    trend="down"
-                                    hint={`${L.currentBmi} ${bmiStr}`}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                        {/* Smart Coach — live verdicts (full-width strip) */}
-                        <div className="mt-4 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
-                            <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
-                                    <Sparkles className="w-3.5 h-3.5" />
-                                </span>
-                                <div className="flex-1">
-                                    <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                        {C?.title ?? ''}
-                                    </h4>
-                                    <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
-                                </div>
-                                <motion.button
-                                    type="button"
-                                    whileTap={{ scale: 0.94 }}
-                                    onClick={copyPlan}
-                                    aria-label={L.copyPlan}
-                                    title={L.copyPlan}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                                        planCopied
-                                            ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/10'
-                                            : 'text-zinc-500 hover:text-purple-500 border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-purple-500/40'
-                                    }`}
-                                >
-                                    {planCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                                    <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
-                                </motion.button>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                {coachTips.map((tip, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, y: 8 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.06 * i }}
-                                        className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5"
-                                    >
-                                        <span className={`${tip.accent} mt-0.5 flex-shrink-0`}>{tip.icon}</span>
-                                        <div className="min-w-0">
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">{tip.title}</p>
-                                            <p className="text-[11px] leading-relaxed font-bold text-zinc-700 dark:text-zinc-300">{tip.text}</p>
+                                        <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mt-auto pt-1 border-t border-white/10 dark:border-white/10">
+                                            <span>{L.maintenanceCalories}</span>
+                                            <span className="font-black text-zinc-900 dark:text-white tabular-nums">{tdeeStr}</span>
                                         </div>
-                                    </motion.div>
-                                ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* ── REDESIGNED 6 TILES ROW (SINGLE ROW ON DESKTOP, RTL/LTR SUPPORTED) ── */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full" dir={isAr ? 'rtl' : 'ltr'}>
+                    <EngineTile
+                        icon={<Flame className="w-4 h-4" />}
+                        label={L.weeklyFatLoss}
+                        value={activeWeeklyFatLoss}
+                        accentClass="text-orange-500"
+                        bgClass="bg-orange-500/15"
+                        trend="down"
+                        trendColor="text-rose-500 bg-rose-500/10"
+                        hint={weeklyFatLossHint}
+                    />
+                    <EngineTile
+                        icon={<Droplet className="w-4 h-4" />}
+                        label={L.projectedFatPct}
+                        value={activeFatPctEnd}
+                        accentClass="text-blue-500"
+                        bgClass="bg-blue-500/15"
+                        trend="down"
+                        trendColor="text-cyan-500 bg-cyan-500/10"
+                        hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
+                    />
+                    <EngineTile
+                        icon={<BicepsFlexed className="w-4 h-4" />}
+                        label={L.totalMuscleGain}
+                        value={totalMuscleStr}
+                        accentClass="text-purple-500"
+                        bgClass="bg-purple-500/15"
+                        trend="up"
+                        trendColor="text-emerald-500 bg-emerald-500/10"
+                    />
+                    <EngineTile
+                        icon={<TrendingUp className="w-4 h-4" />}
+                        label={L.cumulativeMuscle}
+                        value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
+                        accentClass="text-gold-500"
+                        bgClass="bg-gold-500/15"
+                        trend="up"
+                        trendColor="text-emerald-500 bg-emerald-500/10"
+                    />
+                    <EngineTile
+                        icon={<Target className="w-4 h-4" />}
+                        label={L.projectedEndWeight}
+                        value={endWeightStr}
+                        accentClass="text-cyan-500"
+                        bgClass="bg-cyan-500/15"
+                        trend="down"
+                        trendColor="text-cyan-500 bg-cyan-500/10"
+                        hint={L.bmiLabel}
+                    />
+                    <EngineTile
+                        icon={<Flame className="w-4 h-4" />}
+                        label={L.dailyDeficit}
+                        value={dailyDeficitStr}
+                        accentClass="text-rose-500"
+                        bgClass="bg-rose-500/15"
+                        trend="down"
+                        trendColor="text-rose-500 bg-rose-500/10"
+                        hint={`${L.currentBmi} ${bmiStr}`}
+                    />
+                </div>
+
+                {/* Smart Coach Strip */}
+                <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
+                            <Sparkles className="w-3.5 h-3.5" />
+                        </span>
+                        <div className="flex-1">
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                {C?.title ?? ''}
+                            </h4>
+                            <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{C?.subtitle ?? ''}</p>
+                        </div>
+                        <motion.button
+                            type="button"
+                            whileTap={{ scale: 0.94 }}
+                            onClick={copyPlan}
+                            aria-label={L.copyPlan}
+                            title={L.copyPlan}
+                            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                                planCopied
+                                    ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/10'
+                                    : 'text-zinc-500 hover:text-purple-500 border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-purple-500/40'
+                            }`}
+                        >
+                            {planCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span className="hidden sm:inline">{planCopied ? L.planCopied : L.copyPlan}</span>
+                        </motion.button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {coachTips.map((tip, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.06 * i }}
+                                className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-white/[0.03] border border-zinc-200/60 dark:border-white/5"
+                            >
+                                <span className={`${tip.accent} mt-0.5 flex-shrink-0`}>{tip.icon}</span>
+                                <div className="min-w-0">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">{tip.title}</p>
+                                    <p className="text-[11px] leading-relaxed font-bold text-zinc-700 dark:text-zinc-300">{tip.text}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
 
                 <p className="mt-5 text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex items-center gap-1.5">
                     <ShieldCheck className="w-3 h-3 text-green-500 shrink-0" />
@@ -1243,20 +1236,17 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             {/* ── Dashboard Container ── */}
             <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
 
-                {/* Vertical Sidebar (Weeks Selection) */}
+                {/* Vertical Sidebar */}
                 <div className="w-full lg:w-32 flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 hide-scrollbar lg:sticky lg:top-24 relative">
-                    {/* Luminous Connector Strip */}
                     <div className="absolute top-1/2 inset-inline-start-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent lg:w-1 lg:h-full lg:inset-inline-start-1/2 lg:top-0 lg:bg-gradient-to-b -z-10 blur-sm"></div>
                     <div className="absolute top-1/2 inset-inline-start-0 w-full h-0.5 bg-gold-500/30 lg:w-0.5 lg:h-full lg:inset-inline-start-1/2 lg:top-0 -z-10"></div>
 
-                    {/* Pulsing Line Effect (Mobile Horizontal) */}
                     <motion.div
                         className="absolute block lg:hidden top-1/2 -translate-y-1/2 h-1 w-24 bg-gradient-to-r from-transparent via-white to-transparent blur-md z-0"
                         animate={{ left: ['-20%', '120%'] }}
                         transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                     />
 
-                    {/* Pulsing Line Effect (Desktop Vertical) */}
                     <motion.div
                         className="absolute hidden lg:block left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-transparent via-white to-transparent blur-md z-0"
                         animate={{ top: ['-20%', '120%'] }}
@@ -1411,11 +1401,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     <Area name={L.water} type="monotone" dataKey="waterRetention" stackId="1" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2} />
                                     <Area name={L.fatLoss} type="monotone" dataKey="fatLoss" stackId="1" stroke="#f97316" fillOpacity={1} fill="url(#colorFat)" strokeWidth={2} />
                                     <Area name={L.mood} type="monotone" dataKey="mood" stackId="1" stroke="#22c55e" fillOpacity={1} fill="url(#colorMood)" strokeWidth={2} />
-                                    {/* Live engine overlays — react to the sliders in real time */}
                                     <Line yAxisId="liveBodyFat" type="monotone" dataKey="bodyFatPct" stroke="#22d3ee" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.projectedFatPct} />
                                     <Line yAxisId="liveMuscle" type="monotone" dataKey="cumulativeMuscleKg" stroke="#f59e0b" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} name={L.cumulativeMuscle} />
                                     <Line yAxisId="liveWeight" type="monotone" dataKey="weightKg" stroke="#10b981" strokeWidth={2.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} name={L.projectedEndWeight} />
-                                    {/* BF milestone markers — diamond markers on the fat-% line */}
                                     {milestoneDots.map((dot) => (
                                         <ReferenceDot
                                             key={`${dot.kind}-${dot.week}`}
@@ -1428,7 +1416,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                             strokeWidth={1.5}
                                         />
                                     ))}
-                                    {/* Ideal-weight milestone — star marker on the weight line */}
                                     {idealDot && (
                                         <ReferenceDot
                                             x={idealDot.x}
@@ -1450,7 +1437,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
                     </motion.div>
 
-                    {/* Content Card — animated phase transitions (overlapping, no layout jump) */}
+                    {/* Content Card */}
                     <AnimatePresence mode="popLayout" custom={navDirection} initial={false}>
                         <motion.div
                             key={activePhase}
@@ -1480,7 +1467,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     </div>
                                 </div>
 
-                                {/* Tagline — premium strip */}
                                 <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-500/10 border border-gold-500/20">
                                     <Star className="w-3 h-3 text-gold-500 shrink-0" />
                                     <span className="text-[11px] md:text-xs font-black text-gold-700 dark:text-gold-400 italic leading-tight">{activeData.tagline}</span>
@@ -1495,10 +1481,9 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </div>
                             </div>
 
-                            {/* Narrative Section — full content always visible (no hidden scroll) */}
+                            {/* Narrative Section */}
                             <div className="w-full p-6 md:p-10 space-y-5 flex-grow flex flex-col justify-start text-start" data-testid="timeline-narrative">
 
-                                {/* Biological block */}
                                 <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="relative group/item">
                                     <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
                                     <div className="ps-6 group-hover/item:ps-8 transition-all">
@@ -1512,7 +1497,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     </div>
                                 </motion.div>
 
-                                {/* Feeling block */}
                                 <motion.div initial={{ opacity: 0, x: isRTL ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="relative group/item">
                                     <div className="absolute inline-start-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-purple-500 via-purple-400 to-transparent rounded-full"></div>
                                     <div className="ps-6 group-hover/item:ps-8 transition-all">
@@ -1526,7 +1510,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     </div>
                                 </motion.div>
 
-                                {/* Expert action block */}
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.98 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -1548,7 +1531,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     </div>
                                 </motion.div>
 
-                                {/* Medical advice block */}
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.98 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -1572,7 +1554,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </motion.div>
                             </div>
 
-                            {/* Footer — progress + navigation */}
+                            {/* Footer */}
                             <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-4 mt-auto">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1">
