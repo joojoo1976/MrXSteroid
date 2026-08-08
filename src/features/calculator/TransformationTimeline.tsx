@@ -30,7 +30,7 @@ import { UnitSystem } from '@/shared/lib/logic';
 import { buildPlanSnapshot } from './lib/planSnapshot';
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  Small presentational primitives
+//  Small Presentational Primitives
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** 10-point star path centered on (0,0) — ideal-weight chart marker. */
@@ -39,7 +39,7 @@ const STAR_PATH =
 
 /**
  * Spring-animated numeric readout — glides to each new value instead of
- * snapping, driven by framer-motion (no rAF loops, GPU-friendly).
+ * snapping, driven by framer-motion.
  */
 const AnimatedNumber: React.FC<{
     value: number;
@@ -48,7 +48,18 @@ const AnimatedNumber: React.FC<{
 }> = memo(({ value, format, className }) => {
     const spring = useSpring(value, { stiffness: 90, damping: 22, mass: 0.5 });
     const display = useTransform(spring, (v) => (format ? format(v) : String(Math.round(v))));
-    return <motion.span className={className} aria-hidden="true">{display}</motion.span>;
+    // framer-motion v12: `useSpring(number)` does NOT follow plain-number
+    // changes (attachFollow only tracks MotionValue sources), so the spring
+    // never moves and the readout freezes. Drive it manually per update.
+    useEffect(() => {
+        if (Number.isFinite(value)) spring.set(value);
+    }, [value, spring]);
+    return (
+        <>
+            <motion.span className={className} aria-hidden="true">{display}</motion.span>
+            <motion.span className="sr-only">{display}</motion.span>
+        </>
+    );
 });
 
 const MetricBar: React.FC<{ label: string; value: number; colorClass: string; icon: React.ReactNode }> = memo(({ label, value, colorClass, icon }) => (
@@ -76,7 +87,7 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
     </div>
 ));
 
-/** Neon silhouette — SVG kinetic micro-graphic representing muscle vs fat. */
+/** Kinetic silhouette — SVG micro-graphic representing muscle vs fat linked 1:1 to live inputs. */
 const KineticSilhouette: React.FC<{
     musclePct: number;
     fatPct: number;
@@ -84,7 +95,7 @@ const KineticSilhouette: React.FC<{
     fatKg: number;
     unitSystem: UnitSystem;
     isAr: boolean;
-}> = ({ musclePct, fatPct, muscleKg, fatKg, unitSystem, isAr }) => {
+}> = memo(({ musclePct, fatPct, muscleKg, fatKg, unitSystem, isAr }) => {
     const muscle = clamp(musclePct, 5, 100);
     const fat = clamp(fatPct, 5, 100);
     const [hover, setHover] = useState<'muscle' | 'fat' | null>(null);
@@ -99,8 +110,7 @@ const KineticSilhouette: React.FC<{
                 : null;
 
     return (
-        <div className="relative w-full max-w-[240px] mx-auto aspect-square" aria-hidden="true">
-            {/* Pulsing halo */}
+        <div className="relative w-full max-w-[240px] mx-auto aspect-square" role="img" aria-label={`${isAr ? 'الكتلة العضلية الصافية' : 'Lean Mass'}: ${muscleStr} (${Math.round(muscle)}%) · ${isAr ? 'كتلة الدهون' : 'Fat Mass'}: ${fatStr} (${Math.round(fat)}%)`}>
             <div className="absolute inset-0 rounded-full bg-gold-500/5 blur-2xl animate-pulse" />
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_0_18px_rgba(234,179,8,0.25)]">
                 <defs>
@@ -118,8 +128,19 @@ const KineticSilhouette: React.FC<{
                 <g
                     className="cursor-pointer transition-all duration-300 hover:opacity-80"
                     style={{ transformOrigin: '100px 100px' }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={isAr ? `كتلة الدهون: ${fatStr} (${Math.round(fat)}%)` : `Fat Mass: ${fatStr} (${Math.round(fat)}%)`}
                     onMouseEnter={() => setHover('fat')}
                     onMouseLeave={() => setHover(null)}
+                    onFocus={() => setHover('fat')}
+                    onBlur={() => setHover(null)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setHover((h) => (h === 'fat' ? null : 'fat'));
+                        }
+                    }}
                 >
                     <circle
                         cx="100" cy="100" r={30 + fat * 0.5}
@@ -135,14 +156,24 @@ const KineticSilhouette: React.FC<{
                 <g
                     className="cursor-pointer transition-all duration-300 hover:opacity-90"
                     style={{ transformOrigin: '100px 100px' }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={isAr ? `الكتلة العضلية الصافية: ${muscleStr} (${Math.round(muscle)}%)` : `Lean Mass: ${muscleStr} (${Math.round(muscle)}%)`}
                     onMouseEnter={() => setHover('muscle')}
                     onMouseLeave={() => setHover(null)}
+                    onFocus={() => setHover('muscle')}
+                    onBlur={() => setHover(null)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setHover((h) => (h === 'muscle' ? null : 'muscle'));
+                        }
+                    }}
                 >
                     <motion.circle
                         cx="100" cy="100"
                         r={18 + muscle * 0.22}
                         fill="url(#muscleGrad)"
-                        initial={{ r: 20 }}
                         animate={{ r: 18 + muscle * 0.22 }}
                         transition={{ type: 'spring', stiffness: 60, damping: 14 }}
                         className="opacity-90 transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(234,179,8,0.7)] hover:scale-[1.02]"
@@ -177,9 +208,9 @@ const KineticSilhouette: React.FC<{
             </AnimatePresence>
         </div>
     );
-};
+});
 
-/** Re-designed Glassmorphism Engine Tile — Optimized for single-row 6-column layout */
+/** Fully reactive Engine Tile Component */
 const EngineTile: React.FC<{
     icon: React.ReactNode;
     label: string;
@@ -190,39 +221,36 @@ const EngineTile: React.FC<{
     trendColor?: string;
     hint?: string;
 }> = memo(({ icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, trendColor, hint }) => (
-    <div className="relative rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 p-3.5 md:p-4 flex flex-col justify-between gap-2 shadow-md hover:shadow-xl hover:shadow-gold-500/10 transition-all duration-300 hover:-translate-y-1 hover:border-gold-500/40 min-w-0 group/tile">
-        {/* Accent Bar */}
-        <div className={`absolute top-0 inset-x-0 h-1 rounded-t-2xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 via-cyan-400 to-blue-500' : trend === 'up' ? 'from-gold-500 via-amber-400 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-80`} />
+    <div className="relative rounded-xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 p-3 flex flex-col justify-between gap-1.5 shadow-sm hover:shadow-md hover:shadow-gold-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500/40 min-w-0 group/tile">
+        <div className={`absolute top-0 inset-x-0 h-0.5 rounded-t-xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 via-cyan-400 to-blue-500' : trend === 'up' ? 'from-gold-500 via-amber-400 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-80`} />
         
-        {/* Top Section: Icon & Trend */}
         <div className="flex items-center justify-between gap-1">
-            <span className={`flex items-center justify-center w-8 h-8 shrink-0 rounded-xl ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-110 shadow-sm`}>
+            <span className={`flex items-center justify-center w-7 h-7 shrink-0 rounded-lg ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-105 shadow-xs`}>
                 {icon}
             </span>
             {trend && (
-                <span className={`inline-flex items-center gap-0.5 text-[10px] font-black tabular-nums shrink-0 px-1.5 py-0.5 rounded-full ${trendColor ?? (trend === 'up' ? 'text-emerald-500 bg-emerald-500/10' : 'text-cyan-500 bg-cyan-500/10')}`}>
+                <span className={`inline-flex items-center text-[9px] font-black tabular-nums shrink-0 px-1.5 py-0.5 rounded-full ${trendColor ?? (trend === 'up' ? 'text-emerald-500 bg-emerald-500/10' : 'text-cyan-500 bg-cyan-500/10')}`}>
                     {trend === 'up' ? '▲' : '▼'}
                 </span>
             )}
         </div>
 
-        {/* Bottom Section: Main Metric & Labels */}
         <div className="flex flex-col gap-0.5 min-w-0">
             <motion.span
                 key={value}
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                className="text-base sm:text-lg xl:text-xl font-black tracking-tight text-zinc-900 dark:text-white tabular-nums leading-snug truncate"
+                className="text-sm sm:text-base xl:text-lg font-black tracking-tight text-zinc-900 dark:text-white tabular-nums leading-snug truncate"
                 title={value}
             >
                 {value}
             </motion.span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400 truncate leading-tight" title={label}>
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400 truncate leading-tight" title={label}>
                 {label}
             </span>
             {hint && (
-                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 truncate leading-tight mt-0.5" title={hint}>
+                <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 truncate leading-tight mt-0.5" title={hint}>
                     {hint}
                 </span>
             )}
@@ -273,36 +301,33 @@ const CompositionInsightCard: React.FC<{
     isAr: boolean;
 }> = memo(({ quality, content, unitSystem, isAr }) => {
     const L = content.timelineLabels;
-    const zoneLabel =
-        quality.zone === 'excellent'
-            ? (L.compositionZoneExcellent ?? '')
-            : quality.zone === 'good'
-                ? (L.compositionZoneGood ?? '')
-                : quality.zone === 'fair'
-                    ? (L.compositionZoneFair ?? '')
-                    : (L.compositionZoneImprove ?? '');
-    const metabLabel =
-        quality.metabolicBand === 'efficient'
-            ? (L.metabolicEfficient ?? '')
-            : quality.metabolicBand === 'balanced'
-                ? (L.metabolicBalanced ?? '')
-                : (L.metabolicSluggish ?? '');
-    const zoneColor =
-        quality.zone === 'excellent'
-            ? 'text-emerald-500'
-            : quality.zone === 'good'
-                ? 'text-gold-500'
-                : quality.zone === 'fair'
-                    ? 'text-amber-500'
-                    : 'text-rose-500';
-    const barGradient =
-        quality.zone === 'excellent'
-            ? 'from-emerald-500 to-cyan-400'
-            : quality.zone === 'good'
-                ? 'from-gold-500 to-amber-400'
-                : quality.zone === 'fair'
-                    ? 'from-amber-500 to-orange-400'
-                    : 'from-rose-500 to-orange-500';
+    const zoneLabels: Record<BodyQuality['zone'], string> = {
+        excellent: L.compositionZoneExcellent ?? '',
+        good: L.compositionZoneGood ?? '',
+        fair: L.compositionZoneFair ?? '',
+        improve: L.compositionZoneImprove ?? '',
+    };
+    const metabLabels: Record<BodyQuality['metabolicBand'], string> = {
+        efficient: L.metabolicEfficient ?? '',
+        balanced: L.metabolicBalanced ?? '',
+        sluggish: L.metabolicSluggish ?? '',
+    };
+    const zoneColors: Record<BodyQuality['zone'], string> = {
+        excellent: 'text-emerald-500',
+        good: 'text-gold-500',
+        fair: 'text-amber-500',
+        improve: 'text-rose-500',
+    };
+    const barGradients: Record<BodyQuality['zone'], string> = {
+        excellent: 'from-emerald-500 to-cyan-400',
+        good: 'from-gold-500 to-amber-400',
+        fair: 'from-amber-500 to-orange-400',
+        improve: 'from-rose-500 to-orange-500',
+    };
+    const zoneLabel = zoneLabels[quality.zone];
+    const metabLabel = metabLabels[quality.metabolicBand];
+    const zoneColor = zoneColors[quality.zone];
+    const barGradient = barGradients[quality.zone];
 
     return (
         <div
@@ -466,7 +491,7 @@ const ChartTooltip: React.FC<{
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  Main component
+//  Main Component
 // ═══════════════════════════════════════════════════════════════════════════
 
 const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content }) => {
@@ -523,6 +548,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             const target = e.target as HTMLElement | null;
             const tag = target?.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+            if (tag === 'BUTTON' || tag === 'A' || target?.closest('[role="slider"]')) return;
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
                 if (isRTL) goPrev(); else goNext();
@@ -592,10 +618,16 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         [engineInput],
     );
 
+    // Live Lean-Mass % calculation bound directly to slider values for KineticSilhouette SVG
+    const liveLeanMassPct = useMemo(() => {
+        if (!startWeightKg || startWeightKg <= 0) return 75;
+        return roundTo((bodyQuality.leanKg / startWeightKg) * 100, 1);
+    }, [bodyQuality.leanKg, startWeightKg]);
+
     const C = content.timelineCoach;
     const fillCoach = useCallback(
         (template: string, vars: Record<string, string>) =>
-            template.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m),
+            template?.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m) ?? '',
         [],
     );
 
@@ -625,59 +657,92 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         return { x: row.week, y: summary.idealWeightMidKg, week: m.week };
     }, [summary.milestones, summary.idealWeightMidKg, chartData, content.timelinePhases]);
 
+    // Enhanced Coach Tips generator with complete variable dictionary alias matching
     const coachTips = useMemo(() => {
         const kcal = summary.energy.dailyDeficitKcal.toLocaleString(isAr ? 'ar-EG' : 'en-US');
         const vars: Record<string, string> = {
             ideal: idealWeightStr,
+            idealWeight: idealWeightStr,
             weeks: String(coachFacts.weeksBeyondCycle ?? 0),
+            weeksToGoal: String(coachFacts.weeksBeyondCycle ?? 0),
             kcal,
             bf: String(roundTo(summary.startBfPct, 0)),
+            startBf: String(roundTo(summary.startBfPct, 0)),
             protein: copyCtx.protein,
+            proteinGrams: copyCtx.protein,
+            fatLossRate: activeFatLossRate,
             pct: '18',
             week: '1',
         };
         const tips: Array<{ icon: React.ReactNode; accent: string; title: string; text: string }> = [];
 
-        const verdictKey =
-            coachFacts.goalState === 'reached' ? C?.verdictReached
-                : coachFacts.goalState === 'unreachable' ? C?.verdictMaintain
-                    : coachFacts.reachesGoalInCycle ? C?.verdictInCycle
-                        : C?.verdictBeyond;
+        const verdictKeyByState: Record<string, string | undefined> = {
+            reached: C?.verdictReached,
+            unreachable: C?.verdictMaintain,
+            'within-cycle': C?.verdictInCycle,
+            'beyond-cycle': C?.verdictBeyond,
+        };
+        const verdictAccentByState: Record<string, string> = {
+            reached: 'text-emerald-500',
+            unreachable: 'text-amber-500',
+            'within-cycle': 'text-emerald-500',
+            'beyond-cycle': 'text-gold-500',
+        };
         tips.push({
             icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-            accent:
-                coachFacts.goalState === 'reached' ? 'text-emerald-500'
-                    : coachFacts.goalState === 'unreachable' ? 'text-amber-500'
-                        : coachFacts.reachesGoalInCycle ? 'text-emerald-500' : 'text-gold-500',
+            accent: verdictAccentByState[coachFacts.goalState] ?? 'text-gold-500',
             title: C?.goalTitle ?? '',
-            text: fillCoach(verdictKey ?? '', vars),
+            text: fillCoach(verdictKeyByState[coachFacts.goalState] ?? '', vars),
         });
 
-        const deficitKey = coachFacts.deficitLevel === 'mild'
-            ? C?.deficitMild
-            : coachFacts.deficitLevel === 'aggressive' ? C?.deficitAggressive : C?.deficitModerate;
+        const deficitKeyByLevel: Record<string, string | undefined> = {
+            mild: C?.deficitMild,
+            moderate: C?.deficitModerate,
+            aggressive: C?.deficitAggressive,
+        };
+        const deficitAccentByLevel: Record<string, string> = {
+            mild: 'text-sky-500',
+            moderate: 'text-orange-500',
+            aggressive: 'text-rose-500',
+        };
         tips.push({
             icon: <Flame className="w-3.5 h-3.5" />,
-            accent: coachFacts.deficitLevel === 'aggressive'
-                ? 'text-rose-500'
-                : coachFacts.deficitLevel === 'mild' ? 'text-sky-500' : 'text-orange-500',
+            accent: deficitAccentByLevel[coachFacts.deficitLevel] ?? 'text-orange-500',
             title: C?.deficitTitle ?? '',
-            text: fillCoach(deficitKey ?? '', vars),
+            text: fillCoach(deficitKeyByLevel[coachFacts.deficitLevel] ?? '', vars),
         });
 
-        const bfKey = coachFacts.bfZone === 'lean' ? C?.bfLean : coachFacts.bfZone === 'high' ? C?.bfHigh : C?.bfModerate;
+        const bfKeyByZone: Record<string, string | undefined> = {
+            lean: C?.bfLean,
+            moderate: C?.bfModerate,
+            high: C?.bfHigh,
+        };
+        const bfAccentByZone: Record<string, string> = {
+            lean: 'text-blue-500',
+            moderate: 'text-cyan-500',
+            high: 'text-orange-500',
+        };
         tips.push({
             icon: <Droplet className="w-3.5 h-3.5" />,
-            accent: coachFacts.bfZone === 'high' ? 'text-orange-500' : coachFacts.bfZone === 'lean' ? 'text-blue-500' : 'text-cyan-500',
+            accent: bfAccentByZone[coachFacts.bfZone] ?? 'text-cyan-500',
             title: C?.compositionTitle ?? '',
-            text: fillCoach(bfKey ?? '', vars),
+            text: fillCoach(bfKeyByZone[coachFacts.bfZone] ?? '', vars),
         });
 
-        const proteinKey = trainingAge === 'novice' ? C?.proteinNovice : trainingAge === 'advanced' ? C?.proteinAdvanced : C?.proteinIntermediate;
+        const proteinKeyByAge: Record<string, string | undefined> = {
+            novice: C?.proteinNovice,
+            intermediate: C?.proteinIntermediate,
+            advanced: C?.proteinAdvanced,
+        };
+        const milestonePctByKind: Record<string, string> = {
+            bf15: '15',
+            bf18: '18',
+            bf20: '20',
+        };
         const milestoneText = coachFacts.nextMilestone
             ? fillCoach(C?.milestoneNext ?? '', {
                 ...vars,
-                pct: coachFacts.nextMilestone.kind === 'bf15' ? '15' : coachFacts.nextMilestone.kind === 'bf18' ? '18' : '20',
+                pct: milestonePctByKind[coachFacts.nextMilestone.kind] ?? '20',
                 week: String(coachFacts.nextMilestone.week),
             })
             : coachFacts.bfMilestoneCount > 0 ? C?.milestoneDone : C?.noMilestone;
@@ -685,11 +750,11 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
             icon: <Brain className="w-3.5 h-3.5" />,
             accent: 'text-purple-500',
             title: C?.nutritionTitle ?? '',
-            text: `${fillCoach(proteinKey ?? '', vars)} ${milestoneText ?? ''}`,
+            text: `${fillCoach(proteinKeyByAge[trainingAge] ?? '', vars)} ${milestoneText ?? ''}`,
         });
 
         return tips;
-    }, [C, coachFacts, summary, idealWeightStr, copyCtx, isAr, trainingAge, fillCoach]);
+    }, [C, coachFacts, summary, idealWeightStr, copyCtx, activeFatLossRate, isAr, trainingAge, startWeightKg, startBodyFatPct, heightCm, fillCoach]);
 
     const planSnapshot = useMemo(() => {
         const rows: Array<{ label: string; value: string }> = [
@@ -1039,7 +1104,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <div className="flex flex-col gap-3 min-w-0">
                                     <div className="flex justify-center">
                                         <KineticSilhouette
-                                            musclePct={activeAggregate?.muscleGainKg ? Math.min(100, 20 + activeAggregate.muscleGainKg * 12) : 22}
+                                            musclePct={liveLeanMassPct}
                                             fatPct={startBodyFatPct}
                                             muscleKg={bodyQuality.leanKg}
                                             fatKg={bodyQuality.fatKg}
@@ -1117,8 +1182,74 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     </div>
                 </div>
 
-                {/* Smart Coach Strip */}
-                <div className="mt-6 w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
+                {/* ── 6 ENGINE TILES IN MATCHING OUTER FRAME DIRECTLY ABOVE SMART COACH ── */}
+                <div className="w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden mb-4 md:mb-6">
+                    <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-gold-500 via-cyan-400 to-transparent opacity-60" />
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full" dir={isAr ? 'rtl' : 'ltr'}>
+                        <EngineTile
+                            icon={<Flame className="w-4 h-4" />}
+                            label={L.weeklyFatLoss}
+                            value={activeWeeklyFatLoss}
+                            accentClass="text-orange-500"
+                            bgClass="bg-orange-500/15"
+                            trend="down"
+                            trendColor="text-rose-500 bg-rose-500/10"
+                            hint={weeklyFatLossHint}
+                        />
+                        <EngineTile
+                            icon={<Droplet className="w-4 h-4" />}
+                            label={L.projectedFatPct}
+                            value={activeFatPctEnd}
+                            accentClass="text-blue-500"
+                            bgClass="bg-blue-500/15"
+                            trend="down"
+                            trendColor="text-cyan-500 bg-cyan-500/10"
+                            hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
+                        />
+                        <EngineTile
+                            icon={<BicepsFlexed className="w-4 h-4" />}
+                            label={L.totalMuscleGain}
+                            value={totalMuscleStr}
+                            accentClass="text-purple-500"
+                            bgClass="bg-purple-500/15"
+                            trend="up"
+                            trendColor="text-emerald-500 bg-emerald-500/10"
+                        />
+                        <EngineTile
+                            icon={<TrendingUp className="w-4 h-4" />}
+                            label={L.cumulativeMuscle}
+                            value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
+                            accentClass="text-gold-500"
+                            bgClass="bg-gold-500/15"
+                            trend="up"
+                            trendColor="text-emerald-500 bg-emerald-500/10"
+                        />
+                        <EngineTile
+                            icon={<Target className="w-4 h-4" />}
+                            label={L.projectedEndWeight}
+                            value={endWeightStr}
+                            accentClass="text-cyan-500"
+                            bgClass="bg-cyan-500/15"
+                            trend={summary.endWeightKg < startWeightKg ? 'down' : 'up'}
+                            trendColor={summary.endWeightKg < startWeightKg ? 'text-cyan-500 bg-cyan-500/10' : 'text-emerald-500 bg-emerald-500/10'}
+                            hint={L.bmiLabel}
+                        />
+                        <EngineTile
+                            icon={<Flame className="w-4 h-4" />}
+                            label={L.dailyDeficit}
+                            value={dailyDeficitStr}
+                            accentClass="text-rose-500"
+                            bgClass="bg-rose-500/15"
+                            trend={summary.energy.dailyDeficitKcal > 0 ? 'down' : 'up'}
+                            trendColor={summary.energy.dailyDeficitKcal > 0 ? 'text-rose-500 bg-rose-500/10' : 'text-emerald-500 bg-emerald-500/10'}
+                            hint={`${L.currentBmi} ${bmiStr}`}
+                        />
+                    </div>
+                </div>
+
+                {/* ── SMART COACH STRIP (POSITIONED DIRECTLY UNDER THE 6-TILES CONTAINER) ── */}
+                <div className="w-full rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 md:p-5 shadow-lg relative overflow-hidden">
                     <div className="absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent opacity-60" />
                     <div className="flex items-center gap-2 mb-3">
                         <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500">
@@ -1170,70 +1301,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     {L.disclaimer}
                 </p>
             </motion.div>
-
-            {/* ── FULL-BLEED 6 TILES ROW — spans the entire viewport width ── */}
-            <div className="relative w-[calc(100vw/0.9)] mx-[calc(50%-50vw/0.9)] px-4 md:px-6 mb-6 md:mb-8" dir={isAr ? 'rtl' : 'ltr'}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 w-full">
-                    <EngineTile
-                        icon={<Flame className="w-4 h-4" />}
-                        label={L.weeklyFatLoss}
-                        value={activeWeeklyFatLoss}
-                        accentClass="text-orange-500"
-                        bgClass="bg-orange-500/15"
-                        trend="down"
-                        trendColor="text-rose-500 bg-rose-500/10"
-                        hint={weeklyFatLossHint}
-                    />
-                    <EngineTile
-                        icon={<Droplet className="w-4 h-4" />}
-                        label={L.projectedFatPct}
-                        value={activeFatPctEnd}
-                        accentClass="text-blue-500"
-                        bgClass="bg-blue-500/15"
-                        trend="down"
-                        trendColor="text-cyan-500 bg-cyan-500/10"
-                        hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
-                    />
-                    <EngineTile
-                        icon={<BicepsFlexed className="w-4 h-4" />}
-                        label={L.totalMuscleGain}
-                        value={totalMuscleStr}
-                        accentClass="text-purple-500"
-                        bgClass="bg-purple-500/15"
-                        trend="up"
-                        trendColor="text-emerald-500 bg-emerald-500/10"
-                    />
-                    <EngineTile
-                        icon={<TrendingUp className="w-4 h-4" />}
-                        label={L.cumulativeMuscle}
-                        value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
-                        accentClass="text-gold-500"
-                        bgClass="bg-gold-500/15"
-                        trend="up"
-                        trendColor="text-emerald-500 bg-emerald-500/10"
-                    />
-                    <EngineTile
-                        icon={<Target className="w-4 h-4" />}
-                        label={L.projectedEndWeight}
-                        value={endWeightStr}
-                        accentClass="text-cyan-500"
-                        bgClass="bg-cyan-500/15"
-                        trend="down"
-                        trendColor="text-cyan-500 bg-cyan-500/10"
-                        hint={L.bmiLabel}
-                    />
-                    <EngineTile
-                        icon={<Flame className="w-4 h-4" />}
-                        label={L.dailyDeficit}
-                        value={dailyDeficitStr}
-                        accentClass="text-rose-500"
-                        bgClass="bg-rose-500/15"
-                        trend="down"
-                        trendColor="text-rose-500 bg-rose-500/10"
-                        hint={`${L.currentBmi} ${bmiStr}`}
-                    />
-                </div>
-            </div>
 
             {/* ── Dashboard Container ── */}
             <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
