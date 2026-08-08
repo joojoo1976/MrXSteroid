@@ -236,6 +236,38 @@ describe('TransformationTimeline — full content visibility', () => {
         await waitFor(() => expect(screen.getByText('Ideal weight reached')).toBeInTheDocument());
         cleanup();
     });
+
+    it('updates the live slider readouts in real time (no frozen numbers)', () => {
+        renderTimeline();
+        // Weight readout follows the thumb instantly.
+        fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '95' } });
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('95');
+        expect(screen.getByText('95 kg')).toBeInTheDocument();
+        // Body-fat readout follows the thumb instantly.
+        fireEvent.change(screen.getByLabelText('Body Fat'), { target: { value: '22' } });
+        expect((screen.getByLabelText('Body Fat') as HTMLInputElement).value).toBe('22');
+        expect(screen.getByText('22%')).toBeInTheDocument();
+        // Height readout follows the thumb instantly.
+        fireEvent.change(screen.getByLabelText('Height'), { target: { value: '180' } });
+        expect((screen.getByLabelText('Height') as HTMLInputElement).value).toBe('180');
+        expect(screen.getByText('180 cm')).toBeInTheDocument();
+        cleanup();
+    });
+
+    it('converts the slider ranges and readouts to imperial units', () => {
+        renderTimeline('imperial');
+        const weight = screen.getByLabelText('Weight') as HTMLInputElement;
+        const height = screen.getByLabelText('Height') as HTMLInputElement;
+        // Default 80 kg → 176 lbs, 175 cm → 69 in within converted ranges.
+        expect(Number(weight.min)).toBe(88);
+        expect(Number(weight.max)).toBe(353);
+        expect(Number(height.min)).toBe(55);
+        expect(Number(height.max)).toBe(83);
+        fireEvent.change(weight, { target: { value: '200' } });
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('200');
+        expect(screen.getByText('200 lbs')).toBeInTheDocument();
+        cleanup();
+    });
 });
 
 describe('TransformationTimeline — live engine persistence', () => {
@@ -294,13 +326,14 @@ describe('TransformationTimeline — live engine persistence', () => {
         cleanup();
     });
 
-    it('resets inputs back to defaults via the reset button', () => {
+    it('resets inputs to the ideal body standards via the reset button', () => {
         renderTimeline();
         fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '110' } });
         expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('110');
         fireEvent.click(screen.getByRole('button', { name: /reset inputs/i }));
-        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('80');
-        expect(JSON.parse(window.localStorage.getItem('mrx.timeline.v1') as string)).toMatchObject({ weightKg: 80 });
+        // Ideal weight for the default 175 cm height = BMI 22 × (1.75 m)² = 67.4 kg.
+        expect((screen.getByLabelText('Weight') as HTMLInputElement).value).toBe('67');
+        expect(JSON.parse(window.localStorage.getItem('mrx.timeline.v1') as string)).toMatchObject({ weightKg: 67.4 });
         cleanup();
     });
 });

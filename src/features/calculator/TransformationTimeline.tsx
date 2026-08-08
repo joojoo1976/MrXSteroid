@@ -10,7 +10,7 @@ import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Responsive
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
-import { useTransformationTimeline } from './hooks/useTransformationTimeline';
+import { useTransformationCalculator } from './hooks/useTransformationCalculator';
 import {
     formatWeight,
     formatHeight,
@@ -181,31 +181,37 @@ const KineticSilhouette: React.FC<{
     );
 };
 
-/** Glassmorphism stat tile for the live engine panel. */
+/** Glassmorphism stat tile — colored icon circle, primary metric, sub-label. */
 const EngineTile: React.FC<{
     icon: React.ReactNode;
     label: string;
     value: string;
     accentClass?: string;
+    bgClass?: string;
     trend?: 'up' | 'down';
     hint?: string;
-}> = memo(({ icon, label, value, accentClass = 'text-gold-500', trend, hint }) => (
-    <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:scale-[1.02] hover:border-gold-500/30">
-        <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
-        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
-            <span className={`flex items-center justify-center w-7 h-7 rounded-lg bg-white/70 dark:bg-white/10 ${accentClass}`}>{icon}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>
+}> = memo(({ icon, label, value, accentClass = 'text-gold-500', bgClass = 'bg-white/70 dark:bg-white/10', trend, hint }) => (
+    <div className="relative rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 p-3 md:p-4 flex flex-col gap-1.5 shadow-lg group/tile hover:shadow-gold-500/10 transition-all hover:-translate-y-0.5 hover:scale-[1.02] hover:border-gold-500/30 min-w-0">
+        <div className={`absolute top-0 inset-inline-start-0 h-0.5 w-full rounded-t-2xl bg-gradient-to-r ${trend === 'down' ? 'from-emerald-500 to-cyan-400' : trend === 'up' ? 'from-gold-500 to-rose-500' : 'from-zinc-400 to-transparent'} opacity-60`} />
+        <div className="flex items-center justify-between gap-1">
+            <span className={`flex items-center justify-center w-8 h-8 shrink-0 rounded-xl ${bgClass} ${accentClass} transition-transform duration-300 group-hover/tile:scale-110`}>{icon}</span>
+            {trend && (
+                <span className={`text-[9px] font-black tabular-nums shrink-0 ${trend === 'up' ? 'text-emerald-500' : 'text-cyan-500'}`}>
+                    {trend === 'up' ? '▲' : '▼'}
+                </span>
+            )}
         </div>
         <motion.span
             key={value}
             initial={{ opacity: 0, y: 6, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="text-xl md:text-2xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums"
+            className="text-base md:text-lg xl:text-xl font-black tracking-tighter text-zinc-900 dark:text-white tabular-nums leading-tight break-words whitespace-nowrap"
         >
             {value}
         </motion.span>
-        {hint && <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{hint}</span>}
+        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 break-words leading-tight">{label}</span>
+        {hint && <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest break-words leading-tight">{hint}</span>}
     </div>
 ));
 
@@ -468,20 +474,21 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         setPhase,
         totalPhases,
         startWeightKg,
-        setStartWeightKg,
         startBodyFatPct,
-        setStartBodyFatPct,
         heightCm,
-        setHeightCm,
         trainingAge,
         setTrainingAge,
 
-        resetToDefaults,
+        weightSlider,
+        bodyFatSlider,
+        heightSlider,
+
+        resetToIdeal,
         isRecalculating,
         engineInput,
         projections,
         summary,
-    } = useTransformationTimeline({ content, isAr, unitSystem });
+    } = useTransformationCalculator({ content, isAr, unitSystem });
 
     const [navDirection, setNavDirection] = useState<'next' | 'prev'>('next');
 
@@ -921,7 +928,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             <motion.button
                                 type="button"
                                 whileTap={{ scale: 0.94 }}
-                                onClick={resetToDefaults}
+                                onClick={resetToIdeal}
                                 aria-label={L.resetDefaults}
                                 title={L.resetDefaults}
                                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-rose-500 border border-zinc-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:border-rose-500/40 transition-all"
@@ -931,68 +938,65 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             </motion.button>
                         </div>
 
-                        {/* Start weight slider */}
+                        {/* Start weight slider — live readout synced 1:1 with the thumb */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                                     <Dumbbell className="w-3 h-3 text-gold-500" />
                                     {L.startWeightLabel}
                                 </span>
-                                <AnimatedNumber
-                                    value={startWeightKg}
-                                    format={(n) => formatWeight(n, unitSystem, isAr)}
-                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
-                                />
+                                <span className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight">
+                                    {formatWeight(startWeightKg, unitSystem, isAr)}
+                                </span>
                             </div>
                             <NeonSlider
-                                min={40}
-                                max={160}
-                                value={startWeightKg}
-                                onChange={setStartWeightKg}
+                                min={weightSlider.min}
+                                max={weightSlider.max}
+                                step={weightSlider.step}
+                                value={weightSlider.value}
+                                onChange={weightSlider.onChange}
                                 ariaLabel={L.startWeightLabel}
                             />
                         </div>
 
-                        {/* Body fat slider */}
+                        {/* Body fat slider — live readout synced 1:1 with the thumb */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                                     <Percent className="w-3 h-3 text-gold-500" />
                                     {L.bodyFatLabel}
                                 </span>
-                                <AnimatedNumber
-                                    value={startBodyFatPct}
-                                    format={(n) => `${Math.round(n)}%`}
-                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
-                                />
+                                <span className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight">
+                                    {Math.round(startBodyFatPct)}%
+                                </span>
                             </div>
                             <NeonSlider
-                                min={8}
-                                max={40}
-                                value={startBodyFatPct}
-                                onChange={setStartBodyFatPct}
+                                min={bodyFatSlider.min}
+                                max={bodyFatSlider.max}
+                                step={bodyFatSlider.step}
+                                value={bodyFatSlider.value}
+                                onChange={bodyFatSlider.onChange}
                                 ariaLabel={L.bodyFatLabel}
                             />
                         </div>
 
-                        {/* Height slider */}
+                        {/* Height slider — live readout synced 1:1 with the thumb */}
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                                     <Ruler className="w-3 h-3 text-gold-500" />
                                     {L.heightLabel}
                                 </span>
-                                <AnimatedNumber
-                                    value={heightCm}
-                                    format={(n) => formatHeight(n, unitSystem, isAr)}
-                                    className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight"
-                                />
+                                <span className="text-sm font-black text-zinc-900 dark:text-white tabular-nums tracking-tight">
+                                    {formatHeight(heightCm, unitSystem, isAr)}
+                                </span>
                             </div>
                             <NeonSlider
-                                min={140}
-                                max={210}
-                                value={heightCm}
-                                onChange={setHeightCm}
+                                min={heightSlider.min}
+                                max={heightSlider.max}
+                                step={heightSlider.step}
+                                value={heightSlider.value}
+                                onChange={heightSlider.onChange}
                                 ariaLabel={L.heightLabel}
                             />
                         </div>
@@ -1124,51 +1128,57 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </div>
                     </div>
 
-                            {/* Live engine stat tiles — even 3×2 grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+                            {/* Live engine stat tiles — responsive 6-up row (RTL-aware) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 w-full">
                                 <EngineTile
-                                    icon={<Flame className="w-3.5 h-3.5" />}
+                                    icon={<Flame className="w-4 h-4" />}
                                     label={L.weeklyFatLoss}
                                     value={activeWeeklyFatLoss}
                                     accentClass="text-orange-500"
+                                    bgClass="bg-orange-500/15"
                                     trend="down"
                                     hint={weeklyFatLossHint}
                                 />
                                 <EngineTile
-                                    icon={<Droplet className="w-3.5 h-3.5" />}
+                                    icon={<Droplet className="w-4 h-4" />}
                                     label={L.projectedFatPct}
                                     value={activeFatPctEnd}
                                     accentClass="text-blue-500"
+                                    bgClass="bg-blue-500/15"
                                     trend="down"
                                     hint={`${L.totalFatLoss}: ${totalFatLossStr}`}
                                 />
                                 <EngineTile
-                                    icon={<BicepsFlexed className="w-3.5 h-3.5" />}
+                                    icon={<BicepsFlexed className="w-4 h-4" />}
                                     label={L.totalMuscleGain}
                                     value={totalMuscleStr}
                                     accentClass="text-purple-500"
+                                    bgClass="bg-purple-500/15"
                                     trend="up"
                                 />
                                 <EngineTile
-                                    icon={<TrendingUp className="w-3.5 h-3.5" />}
+                                    icon={<TrendingUp className="w-4 h-4" />}
                                     label={L.cumulativeMuscle}
                                     value={formatWeight((chartData[activePhase]?.cumulativeMuscleKg ?? 0), unitSystem, isAr)}
                                     accentClass="text-gold-500"
+                                    bgClass="bg-gold-500/15"
                                     trend="up"
                                 />
                                 <EngineTile
-                                    icon={<Target className="w-3.5 h-3.5" />}
+                                    icon={<Target className="w-4 h-4" />}
                                     label={L.projectedEndWeight}
                                     value={endWeightStr}
                                     accentClass="text-cyan-500"
+                                    bgClass="bg-cyan-500/15"
                                     trend="down"
                                     hint={L.bmiLabel}
                                 />
                                 <EngineTile
-                                    icon={<Flame className="w-3.5 h-3.5" />}
+                                    icon={<Flame className="w-4 h-4" />}
                                     label={L.dailyDeficit}
                                     value={dailyDeficitStr}
                                     accentClass="text-rose-500"
+                                    bgClass="bg-rose-500/15"
                                     trend="down"
                                     hint={`${L.currentBmi} ${bmiStr}`}
                                 />

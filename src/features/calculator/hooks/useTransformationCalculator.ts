@@ -1,12 +1,13 @@
 import { useState, useMemo, useCallback, useDeferredValue, useEffect } from 'react';
 import { ContentStrings } from '@/shared/types/types';
-import { UnitSystem } from '@/shared/lib/logic';
+import { CONVERSIONS, UnitSystem } from '@/shared/lib/logic';
 import { saveCalculatorResult } from '@/shared/lib/calculator-history';
 import {
     projectBodyComposition,
     aggregatePhases,
     buildChartSeries,
     estimateCycleSummary,
+    idealBodyStandards,
     DEFAULT_HEIGHT_CM,
     clamp,
     type TrainingAge,
@@ -18,6 +19,19 @@ import {
 
 const STORAGE_KEY = 'mrx.timeline.v1';
 
+/**
+ * Slider ranges expressed in BOTH unit systems. Values are supplied as
+ * `{min, max, step}` per system and the hook converts the live value +
+ * onChange so the thumb stays 1:1 with the displayed readout.
+ */
+export const SLIDER_RANGES = {
+    weightKg: { min: 40, max: 160, step: 1 },
+    weightLbs: { min: 88, max: 353, step: 1 },
+    bodyFatPct: { min: 8, max: 40, step: 1 },
+    heightCm: { min: 140, max: 210, step: 1 },
+    heightIn: { min: 55, max: 83, step: 1 },
+} as const;
+
 interface PersistedInputs {
     weightKg: number;
     bodyFatPct: number;
@@ -25,7 +39,7 @@ interface PersistedInputs {
     trainingAge: TrainingAge;
 }
 
-/** Defaults the live engine boots with (also used by "Reset inputs"). */
+/** Defaults the live engine boots with (also used by "Reset defaults"). */
 export const DEFAULT_ENGINE_INPUTS: PersistedInputs = {
     weightKg: 80,
     bodyFatPct: 18,
@@ -59,7 +73,20 @@ const readPersistedInputs = (): PersistedInputs => {
     }
 };
 
-interface UseTransformationTimelineOptions {
+export interface TransformationSliderConfig {
+    /** Display-unit minimum for the <input type="range">. */
+    min: number;
+    /** Display-unit maximum for the <input type="range">. */
+    max: number;
+    /** Display-unit step for the <input type="range">. */
+    step: number;
+    /** Live value in display units — drives the thumb position. */
+    value: number;
+    /** Receives display-unit values and stores them in metric base. */
+    onChange: (value: number) => void;
+}
+
+interface UseTransformationCalculatorOptions {
     content: ContentStrings;
     /** Active interface language (drives the localized snapshot title). */
     isAr: boolean;
@@ -68,11 +95,20 @@ interface UseTransformationTimelineOptions {
 }
 
 /**
- * Powers the Transformation Timeline with a live prediction engine.
- * Owns the computation inputs (start weight, body-fat %, training age)
- * and derives per-phase projections + chart series deterministically.
+ * Unifies ALL Transformation Timeline state + logic:
+ * - Metric-base React state (weight kg / body-fat % / height cm / training age)
+ * - Metric ↔ Imperial converters + unit-aware slider configs
+ * - Pure derivation of projections / aggregates / chart / summary (live math)
+ * - Reset-to-defaults AND reset-to-ideal-body-standards actions
+ * - localStorage hydration + debounced Supabase snapshot sync
+ *
+ * The component stays purely presentational — no logic, no raw setState.
  */
-export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTransformationTimelineOptions) => {
+export const useTransformationCalculator = ({
+    content,
+    isAr,
+    unitSystem,
+}: UseTransformationCalculatorOptions) => {
     const [activePhase, setActivePhase] = useState(0);
 
     // ── Live engine inputs (editable, metric base values) ──────────────
@@ -85,7 +121,6 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
 
     // Deferred copies — the sliders stay buttery-smooth (60fps) while the
     // heavier derived math (simulation, summary, chart) lags a single frame.
-    // This is the debounce/backpressure layer for the live engine.
     const deferredWeightKg = useDeferredValue(startWeightKg);
     const deferredBodyFatPct = useDeferredValue(startBodyFatPct);
     const deferredHeightCm = useDeferredValue(heightCm);
@@ -98,8 +133,7 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
         trainingAge: deferredTrainingAge,
     }), [deferredWeightKg, deferredBodyFatPct, deferredHeightCm, deferredTrainingAge]);
 
-    // True while a deferred recompute is still catching up → drives the
-    // "recalculating" live indicator on the panel.
+    // True while a deferred recompute is still catching up.
     const isRecalculating =
         deferredWeightKg !== startWeightKg ||
         deferredBodyFatPct !== startBodyFatPct ||
@@ -128,6 +162,17 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
         setTrainingAge(DEFAULT_ENGINE_INPUTS.trainingAge);
     }, []);
 
+    /**
+     * Resets the engine to the physiological "ideal body" — weight = BMI 22 ×
+     * height² (derived from the user's own height), body fat = training-age
+     * target. Height/training-age are preserved: they anchor the ideal profile.
+     */
+    const resetToIdeal = useCallback(() => {
+        const standards = idealBodyStandards(heightCm, trainingAge);
+        setStartWeightKg(standards.idealWeightKg);
+        setStartBodyFatPct(standards.idealBodyFatPct);
+    }, [heightCm, trainingAge]);
+
     // ── Deterministic projections (pure math) ───────────────────────────
     const projections = useMemo<WeeklyProjection[]>(
         () => projectBodyComposition(engineInput),
@@ -139,23 +184,17 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
         [engineInput, projections],
     );
 
-    // Chart series — merges the classic stat bars with live projections.
     const chartData = useMemo(
         () => buildChartSeries(content.timelinePhases, projections, phaseAggregates),
         [content.timelinePhases, projections, phaseAggregates],
     );
 
-    // Advanced live predictions — time to ideal weight, energy economics,
-    // milestones and goal progress, recomputed on every input change.
     const summary = useMemo<CycleSummary>(
         () => estimateCycleSummary(engineInput, deferredHeightCm),
         [engineInput, deferredHeightCm],
     );
 
     // ── Supabase sync — debounced snapshot of the live engine ─────────
-    // Mirrors the other calculators' auto-save pattern so the latest plan
-    // surfaces in the user's calculator history / admin dashboard without
-    // spamming the DB while a slider is being dragged.
     useEffect(() => {
         const timer = window.setTimeout(() => {
             void saveCalculatorResult({
@@ -211,6 +250,41 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
         setActivePhase(idx);
     }, []);
 
+    // ── Unit-aware slider configs (display unit ⇄ metric base) ──────────
+    const isImperial = unitSystem === 'imperial';
+
+    const weightSlider = useMemo<TransformationSliderConfig>(() => {
+        const range = isImperial ? SLIDER_RANGES.weightLbs : SLIDER_RANGES.weightKg;
+        return {
+            min: range.min,
+            max: range.max,
+            step: range.step,
+            value: Math.round(isImperial ? startWeightKg * CONVERSIONS.KG_TO_LBS : startWeightKg),
+            onChange: (v: number) =>
+                setStartWeightKg(isImperial ? v / CONVERSIONS.KG_TO_LBS : v),
+        };
+    }, [isImperial, startWeightKg]);
+
+    const bodyFatSlider = useMemo<TransformationSliderConfig>(() => ({
+        min: SLIDER_RANGES.bodyFatPct.min,
+        max: SLIDER_RANGES.bodyFatPct.max,
+        step: SLIDER_RANGES.bodyFatPct.step,
+        value: Math.round(startBodyFatPct),
+        onChange: setStartBodyFatPct,
+    }), [startBodyFatPct]);
+
+    const heightSlider = useMemo<TransformationSliderConfig>(() => {
+        const range = isImperial ? SLIDER_RANGES.heightIn : SLIDER_RANGES.heightCm;
+        return {
+            min: range.min,
+            max: range.max,
+            step: range.step,
+            value: Math.round(isImperial ? heightCm * CONVERSIONS.CM_TO_INCHES : heightCm),
+            onChange: (v: number) =>
+                setHeightCm(isImperial ? v / CONVERSIONS.CM_TO_INCHES : v),
+        };
+    }, [isImperial, heightCm]);
+
     return {
         // Phase navigation
         activePhase,
@@ -222,20 +296,25 @@ export const useTransformationTimeline = ({ content, isAr, unitSystem }: UseTran
         setPhase,
         totalPhases: content.timelinePhases.length,
 
-        // Live engine state + setters
+        // Live engine state (metric base) + derived
         startWeightKg,
-        setStartWeightKg,
         startBodyFatPct,
-        setStartBodyFatPct,
         heightCm,
-        setHeightCm,
         trainingAge,
         setTrainingAge,
-        isRecalculating,
         engineInput,
         projections,
         phaseAggregates,
         summary,
+        isRecalculating,
+
+        // Unit-aware slider configs (value + onChange in display units)
+        weightSlider,
+        bodyFatSlider,
+        heightSlider,
+
+        // Actions
         resetToDefaults,
+        resetToIdeal,
     };
 };

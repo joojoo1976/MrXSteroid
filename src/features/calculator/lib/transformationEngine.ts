@@ -578,6 +578,43 @@ export const estimateIdealWeight = (
     };
 };
 
+/**
+ * Evidence-based ideal body-fat targets by training age (%). Powers the
+ * "Reset to ideal body standards" action so the ideal profile adapts to the
+ * user's adaptation window (novice → higher safe target, advanced → leaner).
+ */
+export const IDEAL_BF_BY_TRAINING_AGE: Record<TrainingAge, number> = {
+    novice: 18,
+    intermediate: 15,
+    advanced: 12,
+};
+
+export interface IdealBodyStandards {
+    /** BMI-22 ideal bodyweight derived from the user's own height (kg). */
+    idealWeightKg: number;
+    /** Ideal body-fat target for the user's training age (%). */
+    idealBodyFatPct: number;
+    /** The healthy BMI midpoint used for the ideal-weight estimate. */
+    idealBmi: number;
+}
+
+/**
+ * Computes the physiological "ideal body" standards for a user:
+ * weight = BMI 22 × height² (the healthy band midpoint), body fat = training-age
+ * target. Pure, deterministic, edge-safe — the reset-to-ideal engine action.
+ */
+export const idealBodyStandards = (
+    heightCm: number,
+    trainingAge: TrainingAge,
+): IdealBodyStandards => {
+    const hM = clamp(heightCm ?? DEFAULT_HEIGHT_CM, 120, 250) / 100;
+    return {
+        idealWeightKg: roundTo(BMI_RANGE.MID * hM * hM, 1),
+        idealBodyFatPct: IDEAL_BF_BY_TRAINING_AGE[trainingAge],
+        idealBmi: BMI_RANGE.MID,
+    };
+};
+
 export interface MilestonePoint {
     week: number;
     bodyFatPct: number;

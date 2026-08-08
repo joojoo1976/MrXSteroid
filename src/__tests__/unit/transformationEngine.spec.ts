@@ -12,6 +12,7 @@ import {
     estimateCycleSummary,
     deriveCoachFacts,
     deriveBodyQuality,
+    idealBodyStandards,
     formatHeight,
     FAT_LOSS_RATE,
     type CycleSummary,
@@ -444,5 +445,34 @@ describe('transformationEngine — deriveBodyQuality (live twin-card)', () => {
         const q = deriveBodyQuality({ startWeightKg: NaN, startBodyFatPct: NaN, trainingAge: 'advanced', heightCm: NaN });
         expect(Number.isFinite(q.qualityScore)).toBe(true);
         expect(Number.isFinite(q.muscleFatRatio)).toBe(true);
+    });
+});
+
+describe('transformationEngine — ideal body standards (reset-to-ideal)', () => {
+    it('computes the BMI-22 ideal weight from the user height', () => {
+        expect(idealBodyStandards(175, 'intermediate')).toEqual({
+            idealWeightKg: 67.4,
+            idealBodyFatPct: 15,
+            idealBmi: 22,
+        });
+        expect(idealBodyStandards(180, 'intermediate')).toEqual({
+            idealWeightKg: 71.3,
+            idealBodyFatPct: 15,
+            idealBmi: 22,
+        });
+    });
+
+    it('keys the ideal body-fat target off the training age', () => {
+        expect(idealBodyStandards(175, 'novice').idealBodyFatPct).toBe(18);
+        expect(idealBodyStandards(175, 'intermediate').idealBodyFatPct).toBe(15);
+        expect(idealBodyStandards(175, 'advanced').idealBodyFatPct).toBe(12);
+    });
+
+    it('clamps pathological heights so the ideal weight stays finite', () => {
+        const short = idealBodyStandards(0, 'intermediate');
+        const tall = idealBodyStandards(9999, 'intermediate');
+        expect(short.idealWeightKg).toBeGreaterThan(0);
+        expect(tall.idealWeightKg).toBeLessThan(200);
+        expect(Number.isFinite(short.idealWeightKg)).toBe(true);
     });
 });
