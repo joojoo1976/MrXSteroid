@@ -1,29 +1,14 @@
 /**
- * ╔══════════════════════════════════════════════════════════════════════════╗
- * ║  📨 CONTACT / TRANSMISSION PROTOCOL — Vercel Serverless Function         ║
- * ║  Route: POST /api/contact                                                ║
- * ║  1) Persists the message into public.contact_messages (service role).    ║
- * ║  2) Dispatches an immediate email notification with all details to       ║
- * ║     the destination inbox (default: foryoutalk@gmail.com).               ║
- * ║  Email transport: Nodemailer via Gmail SMTP (reliable Inbox delivery).   ║
- * ╚══════════════════════════════════════════════════════════════════════════╝
+ * Route Handler — /api/contact
+ * Contact/transmission endpoint: persists the message to Supabase
+ * (contact_messages) and dispatches an email notification via SMTP.
+ * Adapted from the legacy Vercel serverless function to the App Router.
  */
-
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 import { createTransport } from 'nodemailer';
 
-const ALLOWED_ORIGINS = [
-    'https://mrxsteroid.vercel.app',
-    'https://mrxsteroid.com',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:4173',
-];
-
-// Destination inbox for contact form notifications.
 const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
 
-// Gmail SMTP configuration (fallback chain keeps .env / Vercel env agnostic).
 const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
 const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
@@ -46,50 +31,49 @@ const mapMissionType = (topic: string): string => {
     return map[topic] || topic;
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export async function OPTIONS() {
+    return new Response(null, {
+        status: 204,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+    });
+}
+
+export async function POST(req: Request) {
     try {
-        // ─── CORS ─────────────────────────────────────────────────────────
-        const origin = req.headers.origin || '';
-        const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-        res.setHeader('Access-Control-Allow-Origin', corsOrigin);
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-
-        if (req.method === 'OPTIONS') {
-            return res.status(204).end();
-        }
-        if (req.method !== 'POST') {
-            return res.status(405).json({ error: 'Method not allowed' });
+        let body: Record<string, unknown>;
+        try {
+            body = await req.json();
+        } catch {
+            return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
         }
 
-        // ─── PAYLOAD ──────────────────────────────────────────────────────
-        const body = req.body ?? {};
         const operatorName = String(body.name ?? body.operator_name ?? '').trim();
         const email = String(body.email ?? '').trim();
         const missionTypeRaw = String(body.topic ?? body.mission_type ?? 'general').trim();
         const subject = String(body.subject ?? '').trim();
         const message = String(body.message ?? '').trim();
         const orderId = body.orderId ? String(body.orderId).trim() : null;
-        const userAgent = String(body.userAgent || req.headers['user-agent'] || '').trim();
+        const userAgent = String(body.userAgent || req.headers.get('user-agent') || '').trim();
 
         if (!operatorName || operatorName.length < 2) {
-            return res.status(400).json({ error: 'Name must be at least 2 characters' });
+            return Response.json({ error: 'Name must be at least 2 characters' }, { status: 400 });
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return res.status(400).json({ error: 'Invalid email address' });
+            return Response.json({ error: 'Invalid email address' }, { status: 400 });
         }
         if (subject.length < 5) {
-            return res.status(400).json({ error: 'Subject must be at least 5 characters' });
+            return Response.json({ error: 'Subject must be at least 5 characters' }, { status: 400 });
         }
         if (message.length < 10) {
-            return res.status(400).json({ error: 'Message must be at least 10 characters' });
+            return Response.json({ error: 'Message must be at least 10 characters' }, { status: 400 });
         }
 
         const missionType = mapMissionType(missionTypeRaw);
 
-        // ─── 1) PERSIST TO SUPABASE ───────────────────────────────────────
-        const { createClient } = await import('@supabase/supabase-js');
         const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
         const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
@@ -114,14 +98,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (error) {
                 console.error('❌ [Contact] Supabase insert error:', error.message);
-                return res.status(500).json({ error: 'Failed to store message' });
+                return Response.json({ error: 'Failed to store message' }, { status: 500 });
             }
             savedId = data?.id ?? null;
         } else {
             console.warn('⚠️ [Contact] Supabase not configured — skipping persistence.');
         }
 
-        // ─── 2) DISPATCH EMAIL ────────────────────────────────────────────
         let emailSent = false;
         if (SMTP_PASS) {
             try {
@@ -162,13 +145,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             console.warn('⚠️ [Contact] SMTP password not configured — email NOT sent.');
         }
 
-        // ─── RESPONSE ──────────────────────────────────────────────────────
         const saved = savedId !== null;
         if (!saved && !emailSent) {
-            return res.status(500).json({ error: 'Message could not be processed' });
+            return Response.json({ error: 'Message could not be processed' }, { status: 500 });
         }
 
-        return res.status(200).json({
+        return Response.json({
             ok: true,
             message: 'Transmission received',
             saved,
@@ -178,6 +160,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
         console.error('💥 [Contact] TOP-LEVEL CRASH:', msg);
-        return res.status(500).json({ error: 'Server initialization error', message: msg });
+        return Response.json({ error: 'Server initialization error', message: msg }, { status: 500 });
     }
 }

@@ -82,7 +82,6 @@ htmlcov/
 
 # Legacy archive (kept on disk for reference, excluded from git)
 _legacy_src/
-api/
 
 # Next.js
 .next/
