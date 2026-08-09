@@ -14,7 +14,7 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './gateways/vercel-types';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
 import { verifyPaidAmount } from './verifyPaidAmount';

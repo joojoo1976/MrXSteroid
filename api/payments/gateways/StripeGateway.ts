@@ -5,7 +5,7 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import type { VercelRequest } from '@vercel/node';
+import type { VercelRequest } from './vercel-types';
 import Stripe from 'stripe';
 import type {
     IPaymentGateway,

@@ -150,7 +150,7 @@ export async function GET(req: Request) {
 
         const rawBody = '';
         const verification = await gateway.verifyWebhook(
-            { headers: normalized.headers, query: normalized.query } as unknown as import('@vercel/node').VercelRequest,
+            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../api/payments/gateways/vercel-types').VercelRequest,
             rawBody,
         );
 
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
         console.log(`📥 [Callback:POST] ${gatewayName} webhook, body length: ${rawBody.length}`);
 
         const verification = await gateway.verifyWebhook(
-            { headers: normalized.headers, query: normalized.query } as unknown as import('@vercel/node').VercelRequest,
+            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../api/payments/gateways/vercel-types').VercelRequest,
             rawBody,
         );
 
