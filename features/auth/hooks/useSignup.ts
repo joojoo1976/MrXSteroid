@@ -10,6 +10,7 @@ import { readEnv } from '../../../shared/lib/env-reader';
 import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
+import { isPasswordLeaked } from '../../../shared/lib/pwned-password';
 
 // Password validation helper - matches auth-service requirements
 const isSecurePassword = (password: string): boolean => {
@@ -85,6 +86,27 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
         setLoading(true);
 
         try {
+            // ─────────────────────────────────────────────────────────────────
+            // PRE-CHECK 0: Password appeared in a known data breach (HaveIBeenPwned)
+            // k-anonymity check — only the first 5 chars of the SHA-1 hash leave
+            // the browser. Fail-open: never blocks signup on API outage.
+            // ─────────────────────────────────────────────────────────────────
+            const leakedCheck = await isPasswordLeaked(values.password);
+            if (leakedCheck.leaked) {
+                toast.error(
+                    isRTL
+                        ? '⚠️ كلمة المرور هذه ظهرت في اختراقات سابقة! اختر كلمة مرور قوية وفريدة.'
+                        : '⚠️ This password has appeared in known data breaches! Choose a strong, unique password.'
+                );
+                form.setError('password', {
+                    type: 'manual',
+                    message: isRTL
+                        ? 'كلمة المرور مسرّبة في اختراقات سابقة — اختر أخرى'
+                        : 'Password found in previous breaches — pick another one'
+                });
+                return;
+            }
+
             const isSupabaseConfigured = !!(
                 (readEnv('VITE_SUPABASE_URL') || readEnv('NEXT_PUBLIC_SUPABASE_URL')) &&
                 (readEnv('VITE_SUPABASE_ANON_KEY') || readEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
