@@ -1,0 +1,669 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════
+   MR. X — THEME SYSTEM v2.0
+   Dark Identity: Background #100444  │  Accent/Text #FFFFA3
+   Light: Clean whites with deep navy accents
+   ═══════════════════════════════════════════════════════════════════ */
+@layer base {
+
+  /* ── LIGHT MODE ──────────────────────────────────────────────── */
+  :root,
+  .light {
+    /* Tailwind semantic tokens */
+    --background: 0 0% 98%;
+    --foreground: 249 87% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 249 87% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 249 87% 14%;
+    --primary: 46 85% 55%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 249 30% 93%;
+    --secondary-foreground: 249 87% 14%;
+    --muted: 249 20% 94%;
+    --muted-foreground: 249 40% 40%;
+    --accent: 125 100% 40%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 249 30% 88%;
+    --input: 249 20% 94%;
+    --ring: 46 85% 55%;
+    --radius: 0.75rem;
+    --gold-500: 46 85% 55%;
+    --gold-400: 46 90% 65%;
+    --gold-600: 46 80% 45%;
+
+    /* Mr. X Design Tokens — Light */
+    --mrx-bg-primary:      #fafafa;
+    --mrx-bg-secondary:    #f0eeff;
+    --mrx-bg-card:         rgba(255,255,255,0.9);
+    --mrx-bg-glass:        rgba(255,255,255,0.6);
+    --mrx-text-primary:    #100444;
+    --mrx-text-secondary:  rgba(16,4,68,0.65);
+    --mrx-text-muted:      rgba(16,4,68,0.45);
+    --mrx-border:          rgba(16,4,68,0.12);
+    --mrx-border-strong:   rgba(16,4,68,0.25);
+    --mrx-highlight:       #100444;
+    --mrx-highlight-glow:  rgba(16,4,68,0.2);
+    --mrx-gold:            #d4a017;
+    --mrx-switcher-bg:     rgba(16,4,68,0.06);
+    --mrx-switcher-active: #ffffff;
+    --mrx-switcher-shadow: 0 2px 8px rgba(16,4,68,0.18);
+
+    /* Sidebar */
+    --sidebar-background: 249 30% 97%;
+    --sidebar-foreground: 249 87% 14%;
+    --sidebar-primary: 46 85% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 249 30% 92%;
+    --sidebar-accent-foreground: 249 87% 14%;
+    --sidebar-border: 249 30% 88%;
+    --sidebar-ring: 46 85% 55%;
+    --sidebar-width: 17rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem;
+  }
+
+  /* ── DARK MODE — هوية ثنائية صارمة: #100444 / #FFFFA3 ────────── */
+  .dark {
+    /* Tailwind semantic tokens — mapped to brand identity */
+    --background: 249 87% 14%;         /* #100444 */
+    --foreground: 60 100% 82%;         /* #FFFFA3 */
+    --card: 249 80% 17%;
+    --card-foreground: 60 100% 82%;
+    --popover: 249 87% 12%;
+    --popover-foreground: 60 100% 82%;
+    --primary: 46 85% 55%;             /* Gold accent يظل نشطاً */
+    --primary-foreground: 249 87% 10%;
+    --secondary: 249 70% 20%;
+    --secondary-foreground: 60 100% 82%;
+    --muted: 249 60% 18%;
+    --muted-foreground: 60 60% 65%;
+    --accent: 125 100% 54%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 249 60% 25%;
+    --input: 249 70% 18%;
+    --ring: 60 100% 82%;
+    --gold-500: 46 85% 55%;
+    --gold-400: 46 90% 65%;
+    --gold-600: 46 80% 45%;
+
+    /* Mr. X Design Tokens — Dark (Strict Identity) */
+    --mrx-bg-primary:      #100444;
+    --mrx-bg-secondary:    #1a0a5c;
+    --mrx-bg-tertiary:     #0d0336;
+    --mrx-bg-card:         rgba(26,10,92,0.7);
+    --mrx-bg-glass:        rgba(16,4,68,0.5);
+    --mrx-text-primary:    #FFFFA3;
+    --mrx-text-secondary:  rgba(255,255,163,0.75);
+    --mrx-text-muted:      rgba(255,255,163,0.45);
+    --mrx-border:          rgba(255,255,163,0.12);
+    --mrx-border-strong:   rgba(255,255,163,0.28);
+    --mrx-highlight:       #FFFFA3;
+    --mrx-highlight-glow:  rgba(255,255,163,0.35);
+    --mrx-gold:            #f4c430;
+    --mrx-switcher-bg:     rgba(255,255,163,0.07);
+    --mrx-switcher-active: rgba(255,255,163,0.14);
+    --mrx-switcher-shadow: 0 2px 14px rgba(255,255,163,0.22);
+
+    /* Sidebar */
+    --sidebar-background: 249 87% 11%;
+    --sidebar-foreground: 60 100% 82%;
+    --sidebar-primary: 46 85% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 249 70% 18%;
+    --sidebar-accent-foreground: 60 100% 82%;
+    --sidebar-border: 249 60% 22%;
+    --sidebar-ring: 60 100% 82%;
+    --sidebar-width: 17rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem;
+  }
+
+  /* ── DARK GLASSMORPHISM — مستمد من #100444/#FFFFA3 حصراً ──────── */
+  .dark .glass-morphism {
+    background: rgba(16,4,68,0.5);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255,255,163,0.08);
+  }
+
+  .dark .glass-morphism-premium {
+    --glass-bg: 16, 4, 68;
+    --glass-opacity: 0.75;
+    --glass-border: 255, 255, 163;
+    background: rgba(16,4,68,0.75);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(255,255,163,0.1);
+  }
+
+  /* ── COLOR ACCENT OVERRIDES (للتوافق مع نظام الألوان الحالي) ─── */
+  .theme-blue   { --gold-500: 221 83% 53%; --primary: 221 83% 53%; --ring: 221 83% 53%; }
+  .dark.theme-blue  { --gold-500: 217 91% 60%; --primary: 217 91% 60%; --ring: 217 91% 60%; }
+  .theme-red    { --gold-500: 350 89% 60%; --primary: 350 89% 60%; --ring: 350 89% 60%; }
+  .dark.theme-red   { --gold-500: 345 96% 65%; --primary: 345 96% 65%; --ring: 345 96% 65%; }
+  .theme-green  { --gold-500: 142 71% 45%; --primary: 142 71% 45%; --ring: 142 71% 45%; }
+  .dark.theme-green { --gold-500: 142 76% 56%; --primary: 142 76% 56%; --ring: 142 76% 56%; }
+  .theme-purple { --gold-500: 262 83% 58%; --primary: 262 83% 58%; --ring: 262 83% 58%; }
+  .dark.theme-purple{ --gold-500: 270 95% 65%; --primary: 270 95% 65%; --ring: 270 95% 65%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL BASE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+@layer base {
+
+  /* ── Smooth theme transitions (250ms — sweet spot) ──────────── */
+  * {
+    @apply border-border;
+    transition:
+      background-color 250ms cubic-bezier(0.4,0,0.2,1),
+      border-color     250ms cubic-bezier(0.4,0,0.2,1),
+      color            250ms cubic-bezier(0.4,0,0.2,1),
+      box-shadow       250ms cubic-bezier(0.4,0,0.2,1),
+      opacity          250ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── prefers-reduced-motion — احترام إعدادات المستخدم ──────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration:  0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    transition: background-color 250ms cubic-bezier(0.4,0,0.2,1),
+                color 250ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Font Enforcement */
+  html,
+  body,
+  button,
+  input,
+  textarea,
+  select,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', 'Cairo', 'Assistant', sans-serif !important;
+  }
+
+  html[lang='ar'],
+  html[lang='ar'] * {
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+  }
+
+  html[lang='en'],
+  html[lang='en'] * {
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  /* Global Justify */
+  * {
+    text-align: justify;
+  }
+
+  /* Resets for centered elements or elements that shouldn't be justified */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  .text-center,
+  .text-center *,
+  nav *,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    text-align: inherit;
+    /* Allow classes to override */
+  }
+
+  .text-center {
+    text-align: center !important;
+  }
+
+  .text-start {
+    text-align: start !important;
+  }
+
+  .text-end {
+    text-align: end !important;
+  }
+
+  html {
+    zoom: 0.9;
+    transition: direction 0.3s ease;
+    overflow-x: clip;
+  }
+
+  /* unicode-bidi: plaintext removed — was causing English input issues in RTL mode */
+
+  /* ── إصلاح حقول الإدخال في وضع RTL — Force LTR for latin inputs ── */
+  input[dir="ltr"],
+  input[type="email"],
+  input[type="password"],
+  input[type="text"][dir="ltr"] {
+    direction: ltr !important;
+    unicode-bidi: normal !important;
+    text-align: left !important;
+  }
+
+  /* Ensure all form inputs are never restricted by global RTL settings */
+  input:not([dir="rtl"]),
+  textarea:not([dir="rtl"]) {
+    unicode-bidi: normal;
+  }
+}
+
+/* --- UTILITY CLASSES --- */
+@layer utilities {
+  .dynamic-width {
+    width: var(--dynamic-width, 0%);
+  }
+
+  .dynamic-bg {
+    background-color: var(--dynamic-bg, transparent);
+  }
+
+  .bg-stack-0 {
+    background-color: #eab308;
+  }
+
+  .bg-stack-1 {
+    background-color: #3b82f6;
+  }
+
+  .bg-stack-2 {
+    background-color: #ef4444;
+  }
+
+  .bg-stack-3 {
+    background-color: #10b981;
+  }
+
+  .bg-stack-4 {
+    background-color: #8b5cf6;
+  }
+
+  .perspective-2000 {
+    perspective: 2000px;
+  }
+
+  /* RTL Specific Helpers */
+  .force-ltr {
+    direction: ltr !important;
+    unicode-bidi: isolate;
+  }
+
+  /* Selection Color */
+  ::selection {
+    background-color: var(--lemon-yellow);
+    color: black;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+                        MR. X CARD SYSTEM (Horizontal Layout)
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* Horizontal Card Layout */
+  .mrx-card {
+    @apply flex flex-row items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 relative overflow-hidden;
+  }
+
+  .mrx-card:hover {
+    @apply scale-105 shadow-lg;
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+  }
+
+  /* Card Icon Container (Compact) */
+  .mrx-card-icon {
+    @apply flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-gold-500/10 to-transparent border border-gold-500/20 flex items-center justify-center text-gold-500 transition-all duration-300;
+  }
+
+  .mrx-card:hover .mrx-card-icon {
+    @apply scale-110 bg-gold-500 text-white;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+  }
+
+  /* RTL Icon Rotation Support */
+  [dir="rtl"] .mrx-card:hover .mrx-card-icon {
+    transform: scale(1.1) rotate(-6deg);
+  }
+
+  [dir="ltr"] .mrx-card:hover .mrx-card-icon {
+    transform: scale(1.1) rotate(6deg);
+  }
+
+  /* Neon Glow Effects */
+  .neon-glow-gold {
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.2),
+      0 0 20px rgba(234, 179, 8, 0.1),
+      0 0 30px rgba(234, 179, 8, 0.05);
+  }
+
+  .neon-glow-gold:hover {
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.3),
+      0 0 30px rgba(234, 179, 8, 0.2),
+      0 0 45px rgba(234, 179, 8, 0.1);
+  }
+
+  /* Compact Feature Card */
+  .feature-card-compact {
+    @apply flex flex-row items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/50 hover:border-gold-500/50 transition-all shadow-lg hover:shadow-xl;
+  }
+
+  .feature-card-compact:hover {
+    @apply scale-[1.02];
+    box-shadow: 0 0 25px rgba(234, 179, 8, 0.12);
+  }
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-background {
+
+  0%,
+  100% {
+    background-color: rgb(24, 24, 27);
+  }
+
+  50% {
+    background-color: rgb(39, 39, 42);
+  }
+}
+
+@keyframes float-refined {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes blob {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(255, 255, 160, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 160, 0.5);
+  }
+}
+
+@keyframes glint {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.animate-pulse-background {
+  animation: pulse-background 3s infinite;
+}
+
+.animate-float-refined {
+  animation: float-refined 6s ease-in-out infinite;
+}
+
+.animate-blob {
+  animation: blob 3s infinite ease-in-out;
+}
+
+.animate-glow {
+  animation: glow 3s infinite ease-in-out;
+}
+
+/* --- BRAND & LOGO STYLES (from index.css) --- */
+.logo-c-m,
+.logo-c-s,
+.logo-c-i {
+  color: var(--lemon-yellow);
+}
+
+.logo-c-r-cyan {
+  color: var(--sky-blue);
+  font-weight: bold;
+}
+
+.logo-c-dot,
+.logo-c-dash,
+.logo-c-r-black {
+  color: black;
+}
+
+.logo-c-x-wrapper {
+  background-color: var(--lemon-yellow);
+  padding: 0 0.5rem;
+  margin: 0 0.2rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-c-x {
+  color: var(--navy-blue);
+  line-height: 1;
+}
+
+.logo-c-t {
+  color: var(--green-color);
+  line-height: 1;
+}
+
+.logo-c-e {
+  color: var(--red-color);
+  line-height: 1;
+}
+
+.logo-c-o {
+  color: var(--med-blue);
+  line-height: 1;
+}
+
+.logo-c-d {
+  color: var(--dark-red);
+  line-height: 1;
+}
+
+.logo-glow {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.logo-glow-intense {
+  filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));
+}
+
+.font-chiller {
+  font-family: 'Chiller', 'Permanent Marker', cursive !important;
+  letter-spacing: 0.05em;
+}
+
+.brand-cartoon {
+  -webkit-text-stroke: 1.5px black;
+  filter: drop-shadow(6px 6px 0px rgba(0, 0, 0, 0.9));
+}
+
+.brand-cartoon-sm {
+  -webkit-text-stroke: 0.5px black;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.6));
+}
+
+.brand-glint {
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: glint 4s infinite linear;
+  display: inline-block;
+}
+
+/* --- PREMIUM UI COMPONENTS --- */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-morphism-premium {
+  background: rgba(var(--glass-bg, 255, 255, 255), var(--glass-opacity, 0.7));
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(var(--glass-border, 255, 255, 255), 0.125);
+}
+
+.dark .glass-morphism-premium {
+  --glass-bg: 24, 24, 27;
+  --glass-opacity: 0.8;
+  --glass-border: 255, 255, 255;
+}
+
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 4px;
+  z-index: 100;
+  background: linear-gradient(90deg, var(--sky-blue), var(--lemon-yellow));
+  transition: width 0.1s ease-out;
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 10px hsl(var(--gold-500) / 0.5);
+}
+
+.text-glow-white {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.border-glow-cyan {
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+}
+
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: "";
+  position: absolute;
+  top: -110%;
+  left: -210%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0) 100%);
+  transform: rotate(-45deg);
+  transition: all 0.75s;
+  pointer-events: none;
+}
+
+.card-shine:hover::after {
+  top: -30%;
+  left: -30%;
+}

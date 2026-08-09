@@ -6,6 +6,14 @@ export default {
         "./components/**/*.{ts,tsx}",
         "./lib/**/*.{ts,tsx}",
         "./hooks/**/*.{ts,tsx}",
+        "./shared/**/*.{ts,tsx}",
+        "./context/**/*.{ts,tsx}",
+        "./features/**/*.{ts,tsx}",
+        "./i18n/**/*.{ts,tsx}",
+        "./data/**/*.{ts,tsx}",
+        "./config/**/*.{ts,tsx}",
+        "./utils/**/*.{ts,tsx}",
+        "./legacy-pages/**/*.{ts,tsx}",
     ],
     prefix: "",
     theme: {
@@ -59,6 +67,8 @@ export default {
             },
             fontFamily: {
                 chiller: ["ChillerBrand", "cursive", "system-ui"],
+                sans: ["Inter", "Cairo", "Tajawal", "system-ui", "sans-serif"],
+                arabic: ["Cairo", "Tajawal", "system-ui", "sans-serif"],
             },
             borderRadius: {
                 lg: "var(--radius)",

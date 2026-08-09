@@ -1,0 +1,149 @@
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Page, ContentStrings } from '@/shared/types/types';
+import { usePreferences } from '../context/PreferencesContext';
+import { useAuth } from '../context/AuthContext';
+import { useLogin } from '../features/auth/hooks/useLogin';
+
+// Design System
+import { Button } from '../shared/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../shared/ui/form';
+import { Input } from '../shared/ui/input';
+
+interface LoginPageProps {
+  content: ContentStrings;
+  navigateTo: (page: Page) => void;
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
+  const { isRTL } = usePreferences();
+  const { refreshUser } = useAuth();
+
+  const { form, loading, isLocked, lockoutTimer, onSubmit } = useLogin({
+    isRTL,
+    navigateTo,
+    refreshUser
+  });
+
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center bg-black p-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-sm bg-zinc-900/90 backdrop-blur-md border border-gold-500/20 rounded-2xl p-5 shadow-[0_0_40px_rgba(0,0,0,0.6)] relative overflow-hidden"
+      >
+        {/* Decorative Top Bar */}
+        <div className="absolute top-0 start-0 w-full h-0.5 bg-gradient-to-r from-transparent via-gold-500 to-transparent opacity-70"></div>
+
+        <div className="flex flex-row items-center justify-center gap-2 mb-4 mt-1">
+          <div className="w-7 h-7 rounded-lg bg-gold-500/10 flex items-center justify-center border border-gold-500/20">
+            <Lock className="w-3.5 h-3.5 text-gold-500" />
+          </div>
+          <div>
+            <h1 className="text-lg font-black text-white tracking-tight leading-none mb-0.5">{content.gatekeeperTitle || 'Gatekeeper'}</h1>
+            <p className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest leading-none">{content.gatekeeperSubtitle || 'Create your legacy or identify yourself.'}</p>
+          </div>
+        </div>
+
+        {/* Locked State Warning */}
+        {isLocked && (
+          <div className="mb-3 p-2 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-500">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <p className="text-[10px] font-bold">
+              {content.loginLockoutMessage
+                ? content.loginLockoutMessage.replace('{seconds}', lockoutTimer.toString())
+                : (isRTL
+                  ? `تم قفل الحساب مؤقتاً. حاول بعد ${lockoutTimer} ثانية.`
+                  : `Account locked. Retry in ${lockoutTimer}s.`)}
+            </p>
+          </div>
+        )}
+
+        {/* Dual Identifier Login Form (Email OR Phone) */}
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="space-y-2 mb-1">
+            <FormField
+              control={form.control}
+              name="identifier"
+              render={({ field }) => (
+                <FormItem className="space-y-0.5">
+                  <FormLabel className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ms-1">
+                    {isRTL ? 'البريد الإلكتروني أو رقم الهاتف' : 'Email or Phone Number'}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-3.5 h-3.5 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
+                      <Input
+                        {...field}
+                        dir="ltr"
+                        inputMode="text"
+                        lang="en"
+                        disabled={loading || isLocked}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
+                        placeholder={isRTL ? "example@domain.com أو +966500000000" : "john@example.com or +1234567890"}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-[10px]" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="space-y-0.5">
+                  <FormLabel className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ms-1">
+                    {content.passwordLabel || (isRTL ? 'كلمة المرور' : 'Password')}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-4' : 'start-4'} w-3.5 h-3.5 text-zinc-500 group-focus-within:text-gold-500 transition-colors`} />
+                      <Input
+                        {...field}
+                        type="password"
+                        dir="ltr"
+                        inputMode="text"
+                        lang="en"
+                        disabled={loading || isLocked}
+                        className={`bg-zinc-950/50 border-zinc-700/50 focus-visible:ring-gold-500 h-9 text-xs ${isRTL ? 'pe-9' : 'ps-9'} transition-all text-left`}
+                        placeholder={content.passwordPlaceholder || "••••••••"}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-[10px]" />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              disabled={loading || isLocked}
+              className="w-full h-10 bg-gold-500 hover:bg-gold-400 text-black font-black text-xs rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center gap-2 group mt-2"
+            >
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
+                <>
+                  {content.gatekeeperBtn || (isRTL ? 'الدخول للنظام' : 'Access Terminal')}
+                  <ArrowRight className={`w-3 h-3 ${isRTL ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LoginPage;

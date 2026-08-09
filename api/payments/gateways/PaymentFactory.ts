@@ -6,10 +6,10 @@
  */
 
 import { z } from 'zod';
-import type { IPaymentGateway } from './IPaymentGateway.js';
-import { SpaceRemitGateway } from './SpaceRemitGateway.js';
-import { PaymobGateway } from './PaymobGateway.js';
-import { StripeGateway } from './StripeGateway.js';
+import type { IPaymentGateway } from './IPaymentGateway';
+import { SpaceRemitGateway } from './SpaceRemitGateway';
+import { PaymobGateway } from './PaymobGateway';
+import { StripeGateway } from './StripeGateway';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          COUNTRY ROUTING SCHEMA

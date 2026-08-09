@@ -16,8 +16,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { PaymentFactory } from './gateways/PaymentFactory.js';
-import { verifyPaidAmount } from './verifyPaidAmount.js';
+import { PaymentFactory } from './gateways/PaymentFactory';
+import { verifyPaidAmount } from './verifyPaidAmount';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                         CONFIGURATION

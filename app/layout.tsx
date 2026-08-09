@@ -1,10 +1,14 @@
 /**
  * Root layout — Server Component.
- * Static shell: HTML, metadata, global styles. No client providers here so the
- * entire tree above the client boundaries stays renderable on the server.
+ * Static shell: HTML, metadata, global styles. Client providers (auth,
+ * preferences, theme) mount below via <RootProviders> so the tree above the
+ * client boundary stays renderable on the server.
  */
 import type { Metadata } from 'next';
 import '../styles/globals.css';
+import '../styles/legacy-theme.css';
+import '../styles/chiller-font.css';
+import RootProviders from './providers';
 
 /* eslint-disable react-refresh/only-export-components -- metadata export is the sanctioned Next.js pattern */
 export const metadata: Metadata = {
@@ -23,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" suppressHydrationWarning>
             <body className="min-h-screen bg-background font-sans antialiased">
-                {children}
+                <RootProviders>{children}</RootProviders>
             </body>
         </html>
     );

@@ -7,6 +7,7 @@
 'use client';
 
 import { LazyMotion, domAnimation, motion, AnimatePresence, type Variants } from 'framer-motion';
+import { useLayoutEffect, useEffect, type DependencyList } from 'react';
 
 export { LazyMotion, domAnimation, motion, AnimatePresence };
 export type { Variants };
@@ -20,16 +21,12 @@ export function useIsomorphicLayoutEffect(
     effect: () => void | (() => void),
     deps: readonly unknown[] = [],
 ) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     if (typeof window !== 'undefined') {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const { useLayoutEffect } = require('react') as typeof import('react');
-        return useLayoutEffect(effect, deps as React.DependencyList);
+        return useLayoutEffect(effect, deps as DependencyList);
     }
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { useEffect } = require('react') as typeof import('react');
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useEffect(effect, deps as React.DependencyList);
+    return useEffect(effect, deps as DependencyList);
 }
 
 export const fadeUp: Variants = {
