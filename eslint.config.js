@@ -27,7 +27,6 @@ export default tseslint.config(
             "useAuth",
             "useRegion",
             "useSidebar",
-            "usePremiumStatus",
             "useFeatureAccess",
             "checkPremiumAccess",
             "badgeVariants",
