@@ -18,18 +18,45 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     },
     "allowImportingTsExtensions": true,
     "strict": true,
-    "strictNullChecks": false,
-    "noEmit": true
+    "strictNullChecks": true,
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "hooks/**/*.ts",
+    "motion-client.ts",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
+    "node_modules",
+    "src",
+    "api",
+    "_legacy_src",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
     "supabase/functions/**/*"
   ]
 }

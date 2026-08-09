@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Design tokens — CSS Variables for the Home re-architecture.
+   All visual theming flows from these; Tailwind maps to them.
+   ───────────────────────────────────────────────────────────── */
+:root {
+    --neon-primary: 234 179 8;          /* gold — CTA accent          */
+    --neon-primary-soft: 250 204 21;    /* amber-400 hover            */
+    --glass-border: 255 255 255;        /* glass stroke               */
+    --background: 0 0% 7%;              /* near-black stage           */
+    --foreground: 0 0% 96%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 62%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 38 92% 50%;
+    --radius: 0.75rem;
+    --gold-400: 44 92% 55%;
+    --gold-500: 38 92% 50%;
+    --gold-600: 38 92% 40%;
+}
+
+* {
+    border-color: hsl(var(--border));
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Glassmorphism primitives ──────────────────────────────── */
+@layer utilities {
+    .glass {
+        background: rgb(0 0 0 / 0.6);
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgb(var(--glass-border) / 0.12);
+    }
+
+    .glass-strong {
+        background: rgb(0 0 0 / 0.75);
+        backdrop-filter: blur(22px) saturate(180%);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
+        border: 1px solid rgb(var(--glass-border) / 0.16);
+    }
+
+    .neon-text {
+        color: rgb(var(--neon-primary));
+        text-shadow: 0 0 24px rgb(var(--neon-primary) / 0.45);
+    }
+
+    .neon-border {
+        border-color: rgb(var(--neon-primary) / 0.4);
+        box-shadow: 0 0 0 1px rgb(var(--neon-primary) / 0.15), 0 8px 40px -12px rgb(var(--neon-primary) / 0.35);
+    }
+
+    .bg-grid {
+        background-image:
+            linear-gradient(rgb(var(--foreground) / 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgb(var(--foreground) / 0.04) 1px, transparent 1px);
+        background-size: 44px 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}

@@ -79,3 +79,16 @@ htmlcov/
 .vercel
 .env*
 !.env.example
+
+# Legacy archive (kept on disk for reference, excluded from git)
+_legacy_src/
+api/
+
+# Next.js
+.next/
+*.tsbuildinfo
+
+# Test artifacts
+home-test.cjs
+probe.cjs
+probe2.cjs
