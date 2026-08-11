@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const NAV_LINKS: { label: string; page: Page }[] = [
     { label: 'Calculators', page: Page.MACRO },
+    { label: 'Timeline', page: Page.TIMELINE },
     { label: 'Lab', page: Page.LAB },
     { label: 'About', page: Page.ABOUT },
     { label: 'FAQ', page: Page.FAQ },
