@@ -28,6 +28,7 @@ export enum Page {
   LAB = 'lab',
   GENETIC = 'genetic',
   CYCLE_ARCHITECT = 'cycle',
+  TIMELINE = 'timeline',
   MASTER_CALCULATOR = 'master-calculator',
   SMART_LANDING = 'smart-landing',
   LOGIN = 'login',

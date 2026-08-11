@@ -43,6 +43,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.LAB]: '/lab',
     [Page.GENETIC]: '/genetic',
     [Page.CYCLE_ARCHITECT]: '/cycle',
+    [Page.TIMELINE]: '/timeline',
     [Page.MASTER_CALCULATOR]: '/master-calculator',
     [Page.SMART_LANDING]: '/smart-landing',
     [Page.MEDICAL_DISCLAIMER]: '/medical-disclaimer',

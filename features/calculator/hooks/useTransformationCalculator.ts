@@ -121,25 +121,14 @@ export const useTransformationCalculator = ({
     const [heightCm, setHeightCm] = useState<number>(initial.heightCm);
     const [trainingAge, setTrainingAge] = useState<TrainingAge>(initial.trainingAge);
 
-    // Deferred copies — the sliders stay buttery-smooth (60fps) while the
-    // heavier derived math (simulation, summary, chart) lags a single frame.
-    const deferredWeightKg = useDeferredValue(startWeightKg);
-    const deferredBodyFatPct = useDeferredValue(startBodyFatPct);
-    const deferredHeightCm = useDeferredValue(heightCm);
-    const deferredTrainingAge = useDeferredValue(trainingAge);
-
     const engineInput = useMemo<BodyCompositionInput>(() => ({
-        startWeightKg: deferredWeightKg,
-        startBodyFatPct: deferredBodyFatPct,
-        heightCm: deferredHeightCm,
-        trainingAge: deferredTrainingAge,
-    }), [deferredWeightKg, deferredBodyFatPct, deferredHeightCm, deferredTrainingAge]);
+        startWeightKg,
+        startBodyFatPct,
+        heightCm,
+        trainingAge,
+    }), [startWeightKg, startBodyFatPct, heightCm, trainingAge]);
 
-    // True while a deferred recompute is still catching up.
-    const isRecalculating =
-        deferredWeightKg !== startWeightKg ||
-        deferredBodyFatPct !== startBodyFatPct ||
-        deferredHeightCm !== heightCm;
+    const isRecalculating = false;
 
     // ── Persistence — writes every input change to localStorage ─────────
     useEffect(() => {
@@ -192,8 +181,8 @@ export const useTransformationCalculator = ({
     );
 
     const summary = useMemo<CycleSummary>(
-        () => estimateCycleSummary(engineInput, deferredHeightCm),
-        [engineInput, deferredHeightCm],
+        () => estimateCycleSummary(engineInput, heightCm),
+        [engineInput, heightCm],
     );
 
     // ── Supabase sync — debounced snapshot of the live engine ─────────
