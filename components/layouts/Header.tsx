@@ -44,8 +44,11 @@ export default function Header() {
                     </a>
 
                     <div className="hidden items-center gap-6 text-sm font-bold text-zinc-300 md:flex">
+                        <a href="/" className="transition-colors hover:text-[rgb(var(--neon-primary))]">الرئيسية</a>
                         <a href="#calculator" className="transition-colors hover:text-[rgb(var(--neon-primary))]">BioCalc</a>
-                        <a href="#protocol" className="transition-colors hover:text-[rgb(var(--neon-primary))]">Protocol</a>
+                        <a href="/TransformationTimeline" className="transition-colors hover:text-[rgb(var(--neon-primary))] flex items-center gap-1">
+                            <span>الموارد الحصرية (الجدول الزمني)</span>
+                        </a>
                         <a href="#pricing" className="transition-colors hover:text-[rgb(var(--neon-primary))]">Pricing</a>
                     </div>
 
