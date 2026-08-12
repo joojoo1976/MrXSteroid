@@ -25,7 +25,7 @@ export function useIsomorphicLayoutEffect(
         // eslint-disable-next-line react-hooks/rules-of-hooks
         return useLayoutEffect(effect, deps as DependencyList);
     }
-    // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useEffect(effect, deps as DependencyList);
 }
 
