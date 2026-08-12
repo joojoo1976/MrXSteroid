@@ -1,11 +1,11 @@
 /**
  * Header.tsx — Client Component.
- * Sticky glass header with Supabase session toggle and a cart indicator.
- * The cart count is a minimal local signal (no biometric data — ever).
+ * Sticky glass header with Supabase session toggle, Exclusive Resources dropdown menu, and a cart indicator.
  */
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ChevronDown, Trophy, Activity, Syringe, Microchip, Flame } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 interface SessionUser {
@@ -35,8 +35,8 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-40">
-            <div className="glass-strong">
+        <header className="sticky top-0 z-50">
+            <div className="glass-strong border-b border-white/10 bg-black/80 backdrop-blur-xl">
                 <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
                     <a href="/" className="flex items-center gap-2 text-lg font-black tracking-tight">
                         <span className="neon-text">MR</span>
@@ -44,23 +44,73 @@ export default function Header() {
                     </a>
 
                     <div className="hidden items-center gap-6 text-sm font-bold text-zinc-300 md:flex">
-                        <a href="/" className="transition-colors hover:text-[rgb(var(--neon-primary))]">الرئيسية</a>
-                        <a href="#calculator" className="transition-colors hover:text-[rgb(var(--neon-primary))]">BioCalc</a>
-                        <a href="/TransformationTimeline" className="transition-colors hover:text-[rgb(var(--neon-primary))] flex items-center gap-1">
-                            <span>الموارد الحصرية (الجدول الزمني)</span>
+                        <a href="/" className="transition-colors hover:text-[rgb(var(--neon-primary))]">
+                            الرئيسية
                         </a>
-                        <a href="#pricing" className="transition-colors hover:text-[rgb(var(--neon-primary))]">Pricing</a>
+
+                        {/* Exclusive Resources Dropdown Menu */}
+                        <div className="relative group py-2">
+                            <button
+                                type="button"
+                                className="flex items-center gap-1.5 transition-colors hover:text-[rgb(var(--neon-primary))] text-gold-400 font-black cursor-pointer"
+                            >
+                                <span>الموارد الحصرية (Exclusive Resources)</span>
+                                <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gold-400" />
+                            </button>
+
+                            {/* Dropdown Menu Card */}
+                            <div className="absolute top-full right-0 mt-1 w-64 rounded-2xl bg-zinc-950/95 border border-gold-500/30 p-2 shadow-2xl backdrop-blur-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <a
+                                    href="/TransformationTimeline"
+                                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gold-500/10 hover:border-gold-500/30 text-white transition-all group/item border border-transparent"
+                                >
+                                    <div className="w-8 h-8 rounded-lg bg-gold-500/15 text-gold-400 flex items-center justify-center shrink-0">
+                                        <Trophy className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-xs font-black text-white group-hover/item:text-gold-400">
+                                            Transformation Timeline
+                                        </span>
+                                        <span className="block text-[10px] text-zinc-400 font-bold">
+                                            الجدول الزمني للتحول الجسدي
+                                        </span>
+                                    </div>
+                                </a>
+
+                                <a
+                                    href="/macro"
+                                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-white/5 text-zinc-300 transition-all border border-transparent"
+                                >
+                                    <div className="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0">
+                                        <Flame className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-xs font-black text-white">Macro Calculator</span>
+                                        <span className="block text-[10px] text-zinc-400 font-bold">حاسبة الماكروز المتطورة</span>
+                                    </div>
+                                </a>
+
+                                <a
+                                    href="/lab"
+                                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-white/5 text-zinc-300 transition-all border border-transparent"
+                                >
+                                    <div className="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center shrink-0">
+                                        <Activity className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-xs font-black text-white">Smart Lab Reference</span>
+                                        <span className="block text-[10px] text-zinc-400 font-bold">المرجع الذكي للتحاليل</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <a href="#pricing" className="transition-colors hover:text-[rgb(var(--neon-primary))]">
+                            الأسعار والخطط
+                        </a>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            aria-label="Cart"
-                            className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-300 transition-colors hover:border-[rgb(var(--neon-primary))] hover:text-[rgb(var(--neon-primary))]"
-                        >
-                            🛒
-                        </button>
-
                         {user ? (
                             <div className="flex items-center gap-2">
                                 <span className="hidden max-w-[140px] truncate text-xs font-bold text-zinc-400 sm:block">
