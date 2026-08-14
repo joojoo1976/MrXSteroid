@@ -5,7 +5,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronDown, Trophy, Activity, Syringe, Microchip, Flame } from 'lucide-react';
+import { ChevronDown, Trophy, Activity, Flame } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 interface SessionUser {

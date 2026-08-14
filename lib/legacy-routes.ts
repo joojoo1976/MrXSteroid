@@ -49,6 +49,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.RESET_PASSWORD]: '/reset-password',
     [Page.CHECKOUT]: '/checkout',
     [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
+    [Page.TIMELINE]: '/TransformationTimeline',
 };
 
 export function pageToPath(page: Page): string {
