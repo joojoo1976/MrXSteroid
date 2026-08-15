@@ -8,6 +8,18 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
+    async rewrites() {
+        return [
+            {
+                source: '/transformationtimeline',
+                destination: '/TransformationTimeline',
+            },
+            {
+                source: '/transformation-timeline',
+                destination: '/TransformationTimeline',
+            },
+        ];
+    },
     async headers() {
         return [
             {
