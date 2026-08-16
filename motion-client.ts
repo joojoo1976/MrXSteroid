@@ -7,7 +7,7 @@
 'use client';
 
 import { LazyMotion, domAnimation, motion, AnimatePresence, type Variants } from 'framer-motion';
-import { useLayoutEffect, useEffect, type DependencyList } from 'react';
+import { useLayoutEffect, useEffect } from 'react';
 
 export { LazyMotion, domAnimation, motion, AnimatePresence };
 export type { Variants };
@@ -17,17 +17,8 @@ export type { Variants };
  * useEffect on the server, so animated layout reads never fire during SSR
  * (the classic framer-motion hydration-mismatch trigger).
  */
-export function useIsomorphicLayoutEffect(
-    effect: () => void | (() => void),
-    deps: readonly unknown[] = [],
-) {
-    if (typeof window !== 'undefined') {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useLayoutEffect(effect, deps as DependencyList);
-    }
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useEffect(effect, deps as DependencyList);
-}
+export const useIsomorphicLayoutEffect =
+    typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const fadeUp: Variants = {
     hidden: { opacity: 0, y: 24 },
