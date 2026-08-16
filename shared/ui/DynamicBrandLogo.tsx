@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { motion } from 'framer-motion';

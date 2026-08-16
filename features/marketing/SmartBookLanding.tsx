@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, TrendingUp, Info, DollarSign, ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
@@ -158,17 +156,16 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         const amount = isEg ? 499 : (BASE_PRICE_USD * loc.rate);
         const currency = isEg ? 'EGP' : loc.currency;
 
-        const origin = typeof window !== 'undefined' ? window.location.origin : '';
         const checkoutParams = new URLSearchParams({
-            k: env.SPACEREMIT_PUBLIC_KEY ?? '',
+            k: env.SPACEREMIT_PUBLIC_KEY || '',
             amount: amount.toFixed(2),
             currency: currency,
             way: 'card', 
             notes: 'Mr. X-Steroid Complete Guide (Landing)',
             reference_id: `LND-${Date.now()}`,
             product_name: 'Mr. X-Steroid Complete Guide',
-            success_url: `${origin}/success`,
-            cancel_url: `${origin}/cancel`,
+            success_url: env.PAYMENT_SUCCESS_URL || '',
+            cancel_url: env.PAYMENT_CANCEL_URL || '',
         });
 
         const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
@@ -218,7 +215,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             animate={{ opacity: 1, y: 0 }}
                             className="text-6xl md:text-8xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-zinc-200 to-zinc-500 animate-text-flash tracking-tighter text-balance"
                         >
-                            <StyledBrandName text={content.landingSubtitle ?? ''} />
+                            <StyledBrandName text={content.landingSubtitle || ''} />
                         </motion.h1>
 
                         <motion.p
@@ -227,7 +224,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                             transition={{ delay: 0.3 }}
                             className="text-2xl text-zinc-400 leading-relaxed max-w-2xl font-medium italic"
                         >
-                            <StyledBrandName text={content.landingDescription ?? ''} />
+                            <StyledBrandName text={content.landingDescription || ''} />
                         </motion.p>
 
                         <motion.div
@@ -314,7 +311,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
                                 <div className="mt-10 pt-10 border-t border-white/5 flex items-start gap-6">
                                     <Info className="w-8 h-8 text-zinc-600 mt-1" />
                                     <p className="text-base text-zinc-500 leading-relaxed italic font-medium">
-                                        <StyledBrandName text={content.landingTrendsDisclaimer ?? ''} />
+                                        <StyledBrandName text={content.landingTrendsDisclaimer || ''} />
                                     </p>
                                 </div>
                             </div>

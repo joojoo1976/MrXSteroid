@@ -1,6 +1,7 @@
 // Cookie management utility for persistent preferences across client and SSR/edge routes
 
 export const setPreferenceCookie = (name: string, value: string, days = 365) => {
+    if (typeof document === 'undefined') return;
     try {
         const date = new Date();
         date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
@@ -12,6 +13,7 @@ export const setPreferenceCookie = (name: string, value: string, days = 365) => 
 };
 
 export const getPreferenceCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null;
     try {
         const nameEQ = `${name}=`;
         const ca = document.cookie.split(';');

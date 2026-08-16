@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import BrandLogo from './BrandLogo';
 import { replaceBrandWithStructuredData } from '../lib/logic';

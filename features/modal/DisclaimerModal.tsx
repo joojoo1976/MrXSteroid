@@ -1,5 +1,3 @@
-'use client';
-
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,7 +57,7 @@ export const DisclaimerModal: React.FC<DisclaimerModalProps> = ({ content, onAgr
 
                     {/* Scrollable Content */}
                     <div className="p-6 overflow-y-auto custom-scrollbar flex-1 text-zinc-300 text-base leading-relaxed whitespace-pre-line bg-zinc-950/50">
-                        <StyledBrandName text={content.disclaimerContent ?? ''} />
+                        <StyledBrandName text={content.disclaimerContent || ''} />
                     </div>
 
                     {/* Footer */}

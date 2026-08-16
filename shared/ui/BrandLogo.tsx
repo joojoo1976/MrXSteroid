@@ -1,8 +1,5 @@
-'use client';
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { usePreferences } from '../../context/PreferencesContext';
 
 interface BrandLogoProps {
@@ -15,7 +12,6 @@ interface BrandLogoProps {
 
 const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = false, onClick, isHero = false, variant = 'full' }) => {
     const { isRTL } = usePreferences();
-    const router = useRouter();
     // Spacing logic: Hero gets negative margins for tight cluster, Small (default) gets slightly relaxed spacing
     const spacingClass = isHero ? "mx-[-1px]" : "mx-[0.5px]";
     const brandClass = isHero ? "brand-cartoon logo-glow-intense" : "brand-cartoon-sm";
@@ -107,7 +103,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = "text-4xl", isLink = 
                     if (onClick) {
                         onClick();
                     } else if (isLink) {
-                        router.push('/');
+                        window.dispatchEvent(new CustomEvent('mrx_navigate', { detail: 'home' }));
                     }
                 }}
                 className="focus:outline-none focus:ring-2 focus:ring-gold-500/50 rounded-lg p-1 transition-all"
