@@ -154,7 +154,7 @@ const KineticSilhouette: React.FC<{
                         strokeLinecap="round"
                         className="transition-all duration-700 hover:drop-shadow-[0_0_14px_rgba(59,130,246,0.6)]"
                     />
-                    <title>{fatLabel} — {fatStr} · {Math.round(fat)}%</title>
+                    <title>{`${fatLabel} — ${fatStr} · ${Math.round(fat)}%`}</title>
                 </g>
 
                 {/* Muscle core (grows with hypertrophy) */}
@@ -184,7 +184,7 @@ const KineticSilhouette: React.FC<{
                         className="opacity-90 transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(234,179,8,0.7)] hover:scale-[1.02]"
                         style={{ transformOrigin: '100px 100px' }}
                     />
-                    <title>{leanLabel} — {muscleStr} · {Math.round(muscle)}%</title>
+                    <title>{`${leanLabel} — ${muscleStr} · ${Math.round(muscle)}%`}</title>
                 </g>
 
                 <circle cx="100" cy="100" r="6" fill="#fff" className="animate-pulse cursor-pointer" onMouseEnter={() => setHover('muscle')} onMouseLeave={() => setHover(null)} />
