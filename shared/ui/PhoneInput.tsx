@@ -313,14 +313,14 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         <PopoverContent
           align={popoverAlign}
           sideOffset={6}
-          className="w-[320px] max-w-[calc(100vw-2rem)] rounded-lg border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-0 shadow-lg"
+          className="w-[320px] max-w-[calc(100vw-2rem)] rounded-xl border border-zinc-700 bg-zinc-950 p-0 shadow-2xl z-[99999] text-white"
         >
-          <Command>
+          <Command className="bg-transparent text-white">
             <CommandInput
               placeholder={locale === "ar" ? "ابحث عن دولة أو رمز…" : "Search country or code…"}
-              className="border-zinc-100 dark:border-zinc-800"
+              className="border-zinc-800 text-white placeholder:text-zinc-500"
             />
-            <CommandList className="max-h-72 overflow-y-auto overscroll-contain px-1 pb-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600 [&::-webkit-scrollbar-track]:bg-transparent">
+            <CommandList className="max-h-72 overflow-y-auto overscroll-contain px-1 pb-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-track]:bg-transparent">
               <CommandEmpty className="py-6 text-sm text-zinc-400">
                 {locale === "ar" ? "لا توجد نتائج مطابقة" : "No results found"}
               </CommandEmpty>
@@ -335,18 +335,18 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                       onMouseEnter={() => setHighlighted(country.code)}
                       onMouseLeave={() => setHighlighted(prev => (prev === country.code ? null : prev))}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2.5 cursor-pointer",
-                        "data-[selected=true]:bg-zinc-100 dark:data-[selected=true]:bg-zinc-800",
-                        (isActive || highlighted === country.code) && "bg-zinc-100 dark:bg-zinc-800"
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer transition-colors text-white",
+                        "data-[selected=true]:bg-zinc-800",
+                        (isActive || highlighted === country.code) && "bg-zinc-800"
                       )}
                     >
                       <span className="text-lg leading-none" aria-hidden>
                         {country.flag}
                       </span>
-                      <span className="flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                      <span className="flex-1 truncate text-sm font-medium text-zinc-100">
                         {locale === "ar" ? country.nameAr : country.nameEn}
                       </span>
-                      <span className="text-xs font-medium tabular-nums text-zinc-400 dark:text-zinc-500">
+                      <span className="text-xs font-mono font-bold text-gold-400">
                         {country.dialCode}
                       </span>
                     </CommandItem>
