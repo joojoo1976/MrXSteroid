@@ -158,9 +158,9 @@ class PaymentService {
                 body: JSON.stringify(request),
             });
 
-            // Safe JSON parsing — handle non-JSON error responses (e.g., "A server error occurred")
+            // Safe JSON parsing — handle non-JSON error responses (e.g., HTML 500 error pages)
             let data: Record<string, unknown>;
-            const responseClone = response.clone(); // Clone to read text if json fails
+            const responseClone = response.clone();
             try {
                 data = await response.json();
             } catch {
@@ -168,7 +168,9 @@ class PaymentService {
                 loggers.payment.error('Server returned non-JSON response', { status: response.status, rawText });
                 return {
                     success: false,
-                    error: `Server error (${response.status}): ${rawText.substring(0, 100)}`,
+                    error: response.status >= 500 
+                        ? 'حدث خطأ مؤقت في الاتصال ببوابة الدفع. يرجى المحاولة مرة أخرى أو اختيار وسيلة دفع أخرى.'
+                        : `حدث خطأ أثناء معالجة الطلب (${response.status})`,
                 };
             }
 
