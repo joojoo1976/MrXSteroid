@@ -256,7 +256,7 @@ export async function POST(req: Request) {
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             console.error('❌ [CreateInvoice] Unhandled error:', message);
-            return json({ error: 'Internal server error', message }, 500);
+            return json({ success: false, error: 'Internal server error', message }, 500);
         }
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);

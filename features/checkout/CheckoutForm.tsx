@@ -729,8 +729,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                             <div className="relative">
                                                 <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
                                                 <Input
-                                                    {...register("phoneNumber")}
                                                     id="checkout-wallet-phone"
+                                                    value={watch("phoneNumber") || ""}
+                                                    onChange={(e) => setValue("phoneNumber", e.target.value, { shouldValidate: true })}
                                                     className="ps-10 bg-black/60 border-zinc-700 text-sm focus:border-gold-500"
                                                     placeholder={isAr ? '01010101010' : '01010101010'}
                                                     maxLength={12}

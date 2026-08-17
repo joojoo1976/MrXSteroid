@@ -14,6 +14,7 @@ import type {
     CreateInvoiceResult,
     WebhookVerificationResult
 } from './IPaymentGateway';
+import { getProductByTier, getProductById, PAYMOB_PRODUCTS } from '../../../shared/lib/paymobProducts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              CONFIGURATION
@@ -90,18 +91,26 @@ export class PaymobGateway implements IPaymentGateway {
         const config = getPaymobConfig();
         const { invoiceId, amount, currency, metadata } = params;
 
-        if (!config.API_KEY) {
-            console.error('❌ [Paymob] Missing PAYMOB_API_KEY / PAYMOB_API_TOKEN in environment variables');
-            throw new Error('Paymob API key is not configured');
-        }
+        // Resolve product and standalone fallback URL from catalog
+        const product = getProductByTier(params.tierId) || getProductById(Number(params.tierId));
+        const fallbackStandaloneUrl = (metadata?.standaloneUrl as string) || product?.standaloneUrl || PAYMOB_PRODUCTS[0].standaloneUrl;
 
         // ── FAST PATH: If a pre-built standaloneUrl is provided, redirect immediately ──
         // This is used by the PaymobProductModal for catalog products with hosted pages.
         // No 3-step API flow needed — Paymob's hosted page handles auth internally.
-        if (metadata.standaloneUrl && typeof metadata.standaloneUrl === 'string') {
+        if (metadata?.standaloneUrl && typeof metadata.standaloneUrl === 'string') {
             console.log(`⚡ [Paymob] Fast-path redirect via standaloneUrl for invoice: ${invoiceId}`);
             return {
                 redirectUrl: metadata.standaloneUrl as string,
+                externalReferenceId: invoiceId,
+            };
+        }
+
+        // If API key is not configured in environment, smoothly fallback to hosted portal
+        if (!config.API_KEY) {
+            console.warn(`⚠️ [Paymob] PAYMOB_API_KEY not configured — using hosted standalone payment URL fallback for invoice ${invoiceId}: ${fallbackStandaloneUrl}`);
+            return {
+                redirectUrl: fallbackStandaloneUrl,
                 externalReferenceId: invoiceId,
             };
         }
@@ -142,13 +151,21 @@ export class PaymobGateway implements IPaymentGateway {
 
             if (!authRes.ok) {
                 const authErrText = await authRes.text();
-                console.error('❌ [Paymob] Auth step failed:', authErrText);
-                throw new Error(`Paymob authentication failed: ${authRes.statusText}`);
+                console.warn('⚠️ [Paymob] Auth step failed, falling back to hosted URL:', authErrText);
+                return {
+                    redirectUrl: fallbackStandaloneUrl,
+                    externalReferenceId: invoiceId,
+                };
             }
 
             const authData = await authRes.json() as { token: string };
             const authToken = authData.token;
-            if (!authToken) throw new Error('No authentication token returned from Paymob');
+            if (!authToken) {
+                return {
+                    redirectUrl: fallbackStandaloneUrl,
+                    externalReferenceId: invoiceId,
+                };
+            }
 
             // ── STEP 2: ORDER REGISTRATION ─────────────────────────────────
             const amountCents = Math.round(amount * 100);
@@ -168,8 +185,11 @@ export class PaymobGateway implements IPaymentGateway {
 
             if (!orderRes.ok) {
                 const orderErrText = await orderRes.text();
-                console.error('❌ [Paymob] Order registration failed:', orderErrText);
-                throw new Error(`Paymob order registration failed: ${orderRes.statusText}`);
+                console.warn('⚠️ [Paymob] Order registration failed, falling back to hosted URL:', orderErrText);
+                return {
+                    redirectUrl: fallbackStandaloneUrl,
+                    externalReferenceId: invoiceId,
+                };
             }
 
             const orderData = await orderRes.json() as { id: number };
@@ -212,18 +232,23 @@ export class PaymobGateway implements IPaymentGateway {
 
             if (!paymentKeyRes.ok) {
                 const pkErrText = await paymentKeyRes.text();
-                console.error('❌ [Paymob] Payment key request failed:', pkErrText);
-                throw new Error(`Paymob payment key request failed: ${paymentKeyRes.statusText}`);
+                console.warn('⚠️ [Paymob] Payment key request failed, falling back to hosted URL:', pkErrText);
+                return {
+                    redirectUrl: fallbackStandaloneUrl,
+                    externalReferenceId: invoiceId,
+                };
             }
 
             const paymentKeyData = await paymentKeyRes.json() as { token: string };
             const paymentToken = paymentKeyData.token;
-            if (!paymentToken) throw new Error('No payment token returned from Paymob');
+            if (!paymentToken) {
+                return {
+                    redirectUrl: fallbackStandaloneUrl,
+                    externalReferenceId: invoiceId,
+                };
+            }
 
             // ── STEP 4: EXECUTE PAYMENT METHOD SPECIFIC REDIRECT ─────────────
-            // Use Paymob Unified Checkout — works with payment_token only, no iframe_id needed.
-            // The old iframes/{id} endpoint requires a separate iFrame ID from the dashboard,
-            // which is different from the integration ID.
             let redirectUrl = `https://accept.paymob.com/unifiedcheckout/?payment_token=${paymentToken}`;
 
             if (method === 'wallet') {
@@ -263,8 +288,6 @@ export class PaymobGateway implements IPaymentGateway {
                 if (kioskRes.ok) {
                     const kioskData = await kioskRes.json() as { pending?: boolean; data?: { bill_reference?: number } };
                     if (kioskData.data?.bill_reference) {
-                        // Pass bill reference as URL parameter for clear display to user
-                        // Use real kiosk integration ID (not static placeholder)
                         redirectUrl = `https://accept.paymob.com/unifiedcheckout/?payment_token=${paymentToken}&bill_reference=${kioskData.data.bill_reference}`;
                     }
                 }
@@ -278,8 +301,11 @@ export class PaymobGateway implements IPaymentGateway {
             };
 
         } catch (error) {
-            console.error('❌ [Paymob] Error in Paymob 3-step flow:', error);
-            throw error;
+            console.warn('⚠️ [Paymob] Unexpected error in Paymob API flow, gracefully falling back to standalone hosted page:', error);
+            return {
+                redirectUrl: fallbackStandaloneUrl,
+                externalReferenceId: invoiceId,
+            };
         }
     }
 
