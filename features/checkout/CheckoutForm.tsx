@@ -1069,8 +1069,12 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                 }
                             }}
                             className={cn(
-                                "w-full py-8 text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.25)] transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70",
-                                isStripeSelected ? "bg-[#635bff] hover:bg-[#7a73ff] shadow-[0_0_30px_rgba(99,91,255,0.35)]" : "bg-gold-500 hover:bg-gold-400"
+                                "w-full py-8 text-black font-black text-xl rounded-2xl transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70",
+                                isStripeSelected
+                                    ? "bg-[#635bff] hover:bg-[#7a73ff] text-white shadow-[0_0_30px_rgba(99,91,255,0.35)]"
+                                    : paymobMethod === 'instapay'
+                                        ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+                                        : "bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.25)]"
                             )}
                         >
                             <span className="flex items-center justify-center gap-2">
@@ -1087,12 +1091,30 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                                 ? (isAr ? "جاري معالجة الدفع..." : "Processing Payment...")
                                                 : isStripeReady
                                                     ? `${content.payNow} ${formattedTotal}`
-                                                    : (isAr ? "تجهيز جلسة دفع آمنة..." : "Start Secure Checkout"))
-                                        : isRedirecting
-                                            ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting to Paymob...")
-                                            : isProcessing
-                                                ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
-                                                : `${content.payNow} ${formattedTotal}`}
+                                                    : (isAr ? `تجهيز الدفع الآمن (${formattedTotal})` : `Start Secure Checkout (${formattedTotal})`))
+                                        : paymobMethod === 'instapay'
+                                            ? (isRedirecting
+                                                ? (isAr ? "جاري تجهيز التأكيد..." : "Preparing Confirmation...")
+                                                : isProcessing
+                                                    ? (isAr ? "جاري تسجيل الطلب..." : "Recording Order...")
+                                                    : (isAr ? `تأكيد طلب إنستاباي (${formattedTotal})` : `Confirm InstaPay Order (${formattedTotal})`))
+                                            : paymobMethod === 'wallet'
+                                                ? (isRedirecting
+                                                    ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting...")
+                                                    : isProcessing
+                                                        ? (isAr ? "جاري معالجة المحفظة..." : "Processing Wallet...")
+                                                        : (isAr ? `دفع بالمحفظة الإلكترونية (${formattedTotal})` : `Pay with Mobile Wallet (${formattedTotal})`))
+                                                : paymobMethod === 'kiosk'
+                                                    ? (isRedirecting
+                                                        ? (isAr ? "جاري إصدار الكود..." : "Generating Code...")
+                                                        : isProcessing
+                                                            ? (isAr ? "جاري إصدار كود الدفع..." : "Generating Code...")
+                                                            : (isAr ? `إصدار كود أمان ومصاري (${formattedTotal})` : `Generate Kiosk Code (${formattedTotal})`))
+                                                    : (isRedirecting
+                                                        ? (isAr ? "جاري التحويل لبوابة الدفع..." : "Redirecting...")
+                                                        : isProcessing
+                                                            ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
+                                                            : `${content.payNow} ${formattedTotal}`)}
                                 </span>
                             </span>
                         </Button>

@@ -51,6 +51,20 @@ export default function Footer() {
                 </div>
             </div>
 
+            {/* Verified Payment Gateways Bar */}
+            <div className="border-t border-white/10 py-4 bg-zinc-950/40">
+                <div className="mx-auto max-w-7xl px-6 flex flex-wrap items-center justify-between gap-4 text-[11px] text-zinc-400">
+                    <div className="flex items-center gap-2 font-bold">
+                        <span className="text-gold-400">⚡ Accepted Gateways:</span>
+                        <span className="text-zinc-300">InstaPay (IPN) · Vodafone Cash · Visa · Mastercard · Meeza · Stripe (Apple Pay) · PayPal · Aman</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-zinc-500 font-mono text-[10px]">
+                        <span>🔒 256-BIT SSL ENCRYPTED</span>
+                        <span>🛡️ PCI-DSS COMPLIANT</span>
+                    </div>
+                </div>
+            </div>
+
             <div className="border-t border-white/10 py-5">
                 <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 text-[10px] text-zinc-600 sm:flex-row">
                     <p>© {new Date().getFullYear()} Mr. X Steroid. For educational purposes only — not medical advice.</p>

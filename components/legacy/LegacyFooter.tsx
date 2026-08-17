@@ -48,7 +48,19 @@ export default function LegacyFooter({ navigateTo }: LegacyFooterProps) {
                         ))}
                     </nav>
                 </div>
-                <p className="mt-8 text-[11px] leading-relaxed text-zinc-600">
+
+                <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4 text-[10px] text-zinc-500">
+                    <div className="flex items-center gap-2">
+                        <span className="text-gold-400 font-bold">⚡ Payment Options:</span>
+                        <span className="text-zinc-400">InstaPay · Vodafone Cash · Visa · Mastercard · Meeza · Stripe · PayPal · Aman</span>
+                    </div>
+                    <div className="flex items-center gap-3 font-mono">
+                        <span>🔒 256-BIT SSL</span>
+                        <span>🛡️ PCI-DSS COMPLIANT</span>
+                    </div>
+                </div>
+
+                <p className="mt-4 text-[11px] leading-relaxed text-zinc-600">
                     © {new Date().getFullYear()} Mr. X Steroid — The Protocol. All rights reserved.
                 </p>
             </div>
