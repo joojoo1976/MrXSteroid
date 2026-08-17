@@ -37,6 +37,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BillingHistoryTable } from '../features/billing';
 
 interface DashboardProps {
     navigateTo: (page: Page) => void;
@@ -593,6 +594,14 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                         )}
                     </details>
                 </div>
+
+                {/* ── Billing & Invoices Section ───────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <BillingHistoryTable userId={user?.id} isRTL={isRTL} />
+                </motion.div>
 
                 {/* ── Assessment & Calculator History ──────────────────────── */}
                 <motion.div
