@@ -150,16 +150,16 @@ export const PAYMENT_METHODS: PaymentMethodOption[] = [
     },
     {
         id: 'instapay',
-        gateway: 'paymob',
-        nameAr: 'شبكة المدفوعات اللحظية (InstaPay / Kiosk)',
-        nameEn: 'InstaPay & Kiosk Outlets (Aman / Masary)',
-        descriptionAr: 'إصدار كود دفع فوري يمكن سداده من أي منفذ أمان/مصاري أو عبر InstaPay.',
-        descriptionEn: 'Generate instant reference code payable at any kiosk or InstaPay.',
+        gateway: 'instapay',
+        nameAr: 'تحويل إنستاباي الفوري (InstaPay IPN)',
+        nameEn: 'InstaPay Instant Transfer (jan.ghattas@instapay)',
+        descriptionAr: 'تحويل بنكي فوري ومباشر إلى عنوان الدفع jan.ghattas@instapay أو مسح الـ QR بدون رسوم إضافية.',
+        descriptionEn: 'Direct instant bank transfer to jan.ghattas@instapay or via QR scan with 0% extra fees.',
         icon: 'QrCode',
-        badge: 'نقدي وفوري',
+        badge: 'فوري ومباشر ⚡',
         supportedCurrencies: ['EGP'],
         supportedRegions: ['EG'],
-        isInstant: false
+        isInstant: true
     },
 
     // --- خارج مصر (GLOBAL) ---

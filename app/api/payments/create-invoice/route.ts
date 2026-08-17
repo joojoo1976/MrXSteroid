@@ -86,13 +86,16 @@ export async function POST(req: Request) {
             const vcalCountry = req.headers.get('x-vercel-ip-country') || '';
             const secureCountryCode = vcalCountry.trim() !== '' ? vcalCountry : input.country;
 
+            const isInstaPay = input.paymentMethod === 'instapay';
             const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
             const isStripeEmbedded = input.paymentMethod === 'stripe';
 
-            let gateway: import('../../../../api/payments/gateways/IPaymentGateway').IPaymentGateway;
+            let gateway: import('../../../../api/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
             let gatewayName: string;
-            if (isStripeEmbedded) {
+            if (isInstaPay) {
+                gatewayName = 'INSTAPAY';
+            } else if (isStripeEmbedded) {
                 const { StripeGateway } = await import('../../../../api/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
                 gatewayName = 'STRIPE';
@@ -107,7 +110,7 @@ export async function POST(req: Request) {
 
             input.country = secureCountryCode;
 
-            const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
+            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY';
             const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
 
             const pricing = await loadPricing(async () => {
@@ -177,6 +180,29 @@ export async function POST(req: Request) {
             const invoiceId = invoice.id;
             console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}`);
 
+            if (isInstaPay) {
+                const refText = String(input.metadata?.instapayReference || input.phoneNumber || '');
+                const waText = encodeURIComponent(
+                    `مرحباً كابتن، لقد قمت بطلب الاشتراك عبر إنستاباي:\n- رقم الفاتورة: #${invoiceId.slice(0, 8)}\n- الباقة: ${input.tierId}\n- المبلغ: ${amount} ج.م\n- الاسم: ${input.fullName}\n- البريد: ${input.email}\n- رقم التحويل/المرجع: ${refText}`
+                );
+
+                await supabase
+                    .from('invoices')
+                    .update({
+                        gateway_reference_id: `INSTAPAY-${refText || invoiceId.slice(0, 8)}`,
+                        metadata: { ...input.metadata, instapayAddress: 'jan.ghattas@instapay' },
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', invoiceId);
+
+                return json({
+                    success: true,
+                    invoiceId,
+                    gateway: 'instapay',
+                    redirectUrl: `/payment-pending?gateway=instapay&txn=${invoiceId}&wa=${waText}`,
+                });
+            }
+
             const gatewayParams = {
                 userId: effectiveUserId,
                 invoiceId,
@@ -196,6 +222,10 @@ export async function POST(req: Request) {
                     ...input.metadata,
                 },
             };
+
+            if (!gateway) {
+                return json({ error: 'No payment gateway available for this request' }, 400);
+            }
 
             const result = typeof gateway.createPaymentIntent === 'function'
                 ? await gateway.createPaymentIntent(gatewayParams)

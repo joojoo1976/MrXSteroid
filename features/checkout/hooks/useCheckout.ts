@@ -50,7 +50,7 @@ export interface useCheckoutOptions {
     userName?: string;
 }
 
-export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe';
+export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe' | 'instapay';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
@@ -301,6 +301,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 kiosk: 5792311,
                 paypal: 5792310,
                 stripe: 0,
+                instapay: 0,
             };
 
             const isStripeFlow = paymobMethod === 'stripe';
