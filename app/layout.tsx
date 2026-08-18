@@ -12,14 +12,37 @@ import RootProviders from './providers';
 
 /* eslint-disable react-refresh/only-export-components -- metadata export is the sanctioned Next.js pattern */
 export const metadata: Metadata = {
-    title: 'Mr. X Steroid — Precision Metabolic BioCalc & The Protocol',
+    title: {
+        default: 'Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide',
+        template: '%s | Mr. X-Steroid',
+    },
     description:
-        'Body-composition modeling, adaptive macro targets and week-by-week projections. Run your bio-signal calculator, then lock the 12-week protocol.',
-    keywords: ['metabolic rate', 'TDEE', 'BMR', 'body fat projection', 'nutrition protocol', 'physique engineering'],
+        'Discover the ultimate muscle-building guide and hormonal cycle book: a comprehensive, scientifically-backed roadmap designed with detailed tables and simple, easy-to-understand charts.',
+    keywords: ['metabolic rate', 'TDEE', 'BMR', 'body fat projection', 'nutrition protocol', 'physique engineering', 'Mr. X-Steroid'],
+    icons: {
+        icon: [
+            { url: '/favicon.ico', sizes: 'any' },
+            { url: '/mrx-sticky-logo.png', type: 'image/png' },
+            { url: '/icon.webp', type: 'image/webp' },
+        ],
+        shortcut: '/favicon.ico',
+        apple: [
+            { url: '/mrx-sticky-logo.png', sizes: '180x180', type: 'image/png' },
+        ],
+    },
+    manifest: '/manifest.json',
     openGraph: {
-        title: 'Mr. X Steroid — The Protocol',
-        description: 'Engineer your physique with precision metabolism.',
+        title: 'Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide',
+        description: 'Discover the ultimate muscle-building guide and hormonal cycle book: a comprehensive, scientifically-backed roadmap.',
         type: 'website',
+        images: [
+            {
+                url: '/mrx-sticky-logo.png',
+                width: 512,
+                height: 512,
+                alt: 'Mr. X-Steroid Logo',
+            },
+        ],
     },
 };
 

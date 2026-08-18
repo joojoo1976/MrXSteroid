@@ -13,11 +13,21 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
         if (!content) return;
 
         // Default values from i18n
-        let title = content.seoTitle || 'Mr. X-Steroid | The Scientific Bodybuilding Encyclopedia';
-        let description = content.seoDescription || 'The definitive guide to performance enhancement. Scientific protocols, safety guidelines, and complete cycle plans.';
+        const isAr = language === Language.AR;
+        let title = content.seoTitle || (isAr
+            ? 'مستر إكس ستيرويد | الدليل النهائي لكمال الأجسام والهرمونات'
+            : 'Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide');
+        let description = content.seoDescription || (isAr
+            ? 'اكتشف الدليل النهائي لبناء العضلات وخطة الدورات الهرمونية الشاملة والمدعومة علمياً مع جداول تفصيلية ورسوم بيانية دقيقة.'
+            : 'The definitive guide to performance enhancement. Scientific protocols, safety guidelines, and complete cycle plans.');
 
         // Page-specific overrides
         switch (currentPage) {
+            case Page.HOME:
+                title = content.seoTitle || (isAr
+                    ? 'مستر إكس ستيرويد | الدليل النهائي لكمال الأجسام والهرمونات'
+                    : 'Mr. X-Steroid | The Ultimate Bodybuilding & Steroid Guide');
+                break;
             case Page.LOGIN:
                 title = `${content.loginBtn} | Mr. X-Steroid`;
                 break;
@@ -34,32 +44,32 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
                 title = `Checkout | Mr. X-Steroid`;
                 break;
             case Page.MACRO:
-                title = `${content.navToolNames.macro} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.macro || 'Macro Calculator'} | Mr. X-Steroid`;
                 break;
             case Page.BODYFAT:
-                title = `${content.navToolNames.bodyfat} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.bodyfat || 'Body Fat Calculator'} | Mr. X-Steroid`;
                 break;
             case Page.INJECTION:
-                title = `${content.navToolNames.injection} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.injection || 'Injection Map'} | Mr. X-Steroid`;
                 break;
             case Page.HALFLIFE:
-                title = `${content.halfLifeVisualizer.metaTitle || content.halfLifeVisualizer.title} | Mr. X-Steroid`;
-                description = content.halfLifeVisualizer.metaDescription || content.halfLifeVisualizer.subtitle;
+                title = `${content.halfLifeVisualizer?.metaTitle || content.halfLifeVisualizer?.title || 'Half-Life Simulator'} | Mr. X-Steroid`;
+                description = content.halfLifeVisualizer?.metaDescription || content.halfLifeVisualizer?.subtitle || description;
                 break;
             case Page.LAB:
-                title = `${content.navToolNames.lab} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.lab || 'Lab Reference'} | Mr. X-Steroid`;
                 break;
             case Page.GENETIC:
-                title = `${content.navToolNames.genetic} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.genetic || 'Genetic Potential'} | Mr. X-Steroid`;
                 break;
             case Page.CYCLE_ARCHITECT:
-                title = `${content.navToolNames.cycleArchitect} | Mr. X-Steroid`;
+                title = `${content.navToolNames?.cycleArchitect || 'Cycle Architect'} | Mr. X-Steroid`;
                 break;
             case Page.BLOG:
-                title = `${content.blogTitle} | Mr. X-Steroid`;
+                title = `${content.blogTitle || 'Blog'} | Mr. X-Steroid`;
                 break;
             case Page.FAQ:
-                title = `${content.faqPageTitle} | Mr. X-Steroid`;
+                title = `${content.faqPageTitle || 'FAQ'} | Mr. X-Steroid`;
                 break;
             default:
                 break;
@@ -67,6 +77,26 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
 
         // Update Document Title
         document.title = title;
+
+        // Update Favicon Link Tags in Head
+        const ensureFavicon = () => {
+            let iconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+            if (!iconLink) {
+                iconLink = document.createElement('link');
+                iconLink.setAttribute('rel', 'icon');
+                document.head.appendChild(iconLink);
+            }
+            iconLink.setAttribute('href', '/favicon.ico');
+
+            let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+            if (!appleIcon) {
+                appleIcon = document.createElement('link');
+                appleIcon.setAttribute('rel', 'apple-touch-icon');
+                document.head.appendChild(appleIcon);
+            }
+            appleIcon.setAttribute('href', '/mrx-sticky-logo.png');
+        };
+        ensureFavicon();
 
         // Update Meta Description
         let metaDesc = document.querySelector('meta[name="description"]');
