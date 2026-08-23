@@ -8,8 +8,17 @@ import { usePreferences } from '../../context/PreferencesContext';
 
 const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ content }) => {
     const { isRTL } = usePreferences();
-    const [show, setShow] = useState(() => !getCookie('disclaimer-agreed'));
+    const [mounted, setMounted] = useState(false);
+    const [show, setShow] = useState(false);
     const [step, setStep] = useState(1);
+
+    useEffect(() => {
+        setMounted(true);
+        const agreed = getCookie('disclaimer-agreed');
+        if (!agreed) {
+            setShow(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (show) { document.body.style.overflow = 'hidden'; }
@@ -23,7 +32,7 @@ const BlockingDisclaimerModal: React.FC<{ content: ContentStrings }> = ({ conten
         document.body.style.overflow = 'auto';
     };
 
-    if (!show) return null;
+    if (!mounted || !show) return null;
 
     const steps = [
         {

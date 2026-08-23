@@ -30,48 +30,46 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [isAutoDetected, setIsAutoDetected] = useState(false);
     const [status, setStatus] = useState<PreferenceStatus>('BOOT');
 
-    // Initial Sync Detection for Zero-Latency First Interaction
-    const [language, setLanguageState] = useState<Language>(() => {
-        if (typeof window === 'undefined') return detectBrowserLocale().language;
-        // Priority 1: Explicit user override (localStorage or Cookie)
-        const explicit = localStorage.getItem('mrx_explicit_language');
-        if (explicit) return explicit as Language;
-
-        // Priority 2: Previously detected auto-language
-        const storedAuto = SecureStorage.getItem('language');
-        if (storedAuto) return storedAuto as Language;
-
-        // Priority 3: Accept-Language Browser Detection
-        const detected = detectBrowserLocale();
-        return detected.language;
-    });
-
-    const [unitSystem, setUnitSystemState] = useState<UnitSystem>(() => {
-        if (typeof window === 'undefined') return detectBrowserLocale().unitSystem;
-        // Priority 1: Explicit user override
-        const explicit = localStorage.getItem('mrx_explicit_units');
-        if (explicit) return explicit as UnitSystem;
-
-        // Priority 2: Stored unit system
-        const storedAuto = localStorage.getItem('mrx_unit_system');
-        if (storedAuto) return storedAuto as UnitSystem;
-
-        // Priority 3: Smart Default tied to initial detected language
-        const detected = detectBrowserLocale();
-        return detected.unitSystem;
-    });
-
-    const [theme, setThemeState] = useState<Theme>(() => {
-        if (typeof window === 'undefined') return DEFAULT_THEME;
-        const stored = localStorage.getItem('mrx_theme');
-        if (stored && Object.values(Theme).includes(stored as Theme)) return stored as Theme;
-        return DEFAULT_THEME;
-    });
-
-    const [locale, setLocale] = useState<string>(() => {
-        return language === Language.AR ? 'ar-EG' : 'en-US';
-    });
+    // Initial state matching SSR default to guarantee zero-hydration-mismatch
+    const [language, setLanguageState] = useState<Language>(Language.AR);
+    const [unitSystem, setUnitSystemState] = useState<UnitSystem>('metric');
+    const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+    const [locale, setLocale] = useState<string>('ar-EG');
     const [currency, setCurrency] = useState<string>('USD');
+
+    // Hydration Sync: safely read local preferences upon client mount
+    useEffect(() => {
+        try {
+            const explicit = localStorage.getItem('mrx_explicit_language');
+            if (explicit && (explicit === Language.AR || explicit === Language.EN)) {
+                setLanguageState(explicit as Language);
+                setLocale(explicit === Language.AR ? 'ar-EG' : 'en-US');
+            } else {
+                const storedAuto = SecureStorage.getItem('language');
+                if (storedAuto && (storedAuto === Language.AR || storedAuto === Language.EN)) {
+                    setLanguageState(storedAuto as Language);
+                    setLocale(storedAuto === Language.AR ? 'ar-EG' : 'en-US');
+                } else {
+                    const detected = detectBrowserLocale();
+                    setLanguageState(detected.language);
+                    setLocale(detected.locale);
+                }
+            }
+
+            const explicitUnits = localStorage.getItem('mrx_explicit_units');
+            const storedUnits = localStorage.getItem('mrx_unit_system');
+            if (explicitUnits || storedUnits) {
+                setUnitSystemState((explicitUnits || storedUnits) as UnitSystem);
+            }
+
+            const storedTheme = localStorage.getItem('mrx_theme');
+            if (storedTheme && Object.values(Theme).includes(storedTheme as Theme)) {
+                setThemeState(storedTheme as Theme);
+            }
+        } catch (e) {
+            console.warn('Preferences hydration sync warning:', e);
+        }
+    }, []);
 
     const initPreferences = useCallback(async (force = false) => {
         const hasExplicitLang = !!localStorage.getItem('mrx_explicit_language');
