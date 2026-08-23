@@ -145,8 +145,9 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
             // Reset success state after few seconds
             setTimeout(() => setIsSubmitted(false), 5000);
         } catch (error) {
-            errorHandler.handle(error, 'ContactForm');
-            toast.error(content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again.");
+            console.error('[ContactForm Error]:', error);
+            const errorMessage = error instanceof Error ? error.message : (content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again.");
+            toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -270,11 +271,11 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                             <div className="flex items-center justify-between mb-4 pb-4 border-b border-zinc-800">
                                 <div className="flex items-center gap-3">
                                     <div className="w-2.5 h-2.5 rounded-full bg-gold-500 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
-                                    <h3 className="text-white font-black uppercase tracking-[0.2em] text-xs">Transmission Protocol</h3>
+                                    <h3 className="text-white font-black uppercase tracking-[0.2em] text-xs">{content.contactTransmissionProtocolLabel || "Transmission Protocol"}</h3>
                                 </div>
                                 <div className="flex items-center gap-2 text-zinc-500 text-[9px] font-black uppercase tracking-widest">
                                     <ShieldCheck className="w-3.5 h-3.5 text-gold-500/50" />
-                                    E2E Encrypted
+                                    {content.contactEncryptedLabel || "E2E Encrypted"}
                                 </div>
                             </div>
 
@@ -379,7 +380,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         <div className="space-y-1.5">
                                             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactTransmissionHeaderLabel}</label>
                                             <Input
-                                                placeholder="Purpose of signal..."
+                                                placeholder={content.contactFormSubjectPlaceholder || "Purpose of signal..."}
                                                 className={`bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 focus:border-gold-500 transition-all rounded-xl h-11 text-sm ${errors.subject ? 'border-red-500/50' : ''}`}
                                                 {...register('subject')}
                                             />

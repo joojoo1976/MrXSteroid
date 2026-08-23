@@ -1,32 +1,20 @@
 /**
  * Route Handler — /api/contact
- * Contact/transmission endpoint: persists the message to Supabase
- * (contact_messages) and dispatches an email notification via SMTP.
- * Adapted from the legacy Vercel serverless function to the App Router.
+ * Contact / Customer Support Endpoint:
+ * 1. Stores inbound message in Supabase database (`contact_messages` table).
+ * 2. Dispatches an immediate rich email notification to admin email (`foryoutalk@gmail.com`).
+ * 3. Handles reply-to routing directly to the visitor's email.
  */
 import { createClient } from '@supabase/supabase-js';
 import { createTransport } from 'nodemailer';
 
-const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
-
-const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
-const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
-const SMTP_PASS =
-    process.env.SMTP_PASS ||
-    process.env.GMAIL_APP_PASSWORD ||
-    process.env.SUPABASE_SMTP_PASSWORD ||
-    '';
-
-const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'Mr. X Steroid';
-
 const mapMissionType = (topic: string): string => {
     const map: Record<string, string> = {
-        general: 'General Inquiry',
-        order: 'Order Issue/Status',
-        technical: 'Technical Assistance',
-        wholesale: 'Business/Partnership',
-        consultation: 'Cycle Consultation',
+        general: 'استفسار عام / General Inquiry',
+        order: 'متابعة طلب / Order Issue & Status',
+        technical: 'دعم فني واستشارات / Technical Assistance',
+        wholesale: 'شراكة وأعمال / Business & Partnership',
+        consultation: 'استشارة خاصة / Cycle Consultation',
     };
     return map[topic] || topic;
 };
@@ -48,7 +36,7 @@ export async function POST(req: Request) {
         try {
             body = await req.json();
         } catch {
-            return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+            return Response.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
         }
 
         const operatorName = String(body.name ?? body.operator_name ?? '').trim();
@@ -59,53 +47,81 @@ export async function POST(req: Request) {
         const orderId = body.orderId ? String(body.orderId).trim() : null;
         const userAgent = String(body.userAgent || req.headers.get('user-agent') || '').trim();
 
+        // Validation
         if (!operatorName || operatorName.length < 2) {
-            return Response.json({ error: 'Name must be at least 2 characters' }, { status: 400 });
+            return Response.json({ ok: false, error: 'Name must be at least 2 characters' }, { status: 400 });
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return Response.json({ error: 'Invalid email address' }, { status: 400 });
+            return Response.json({ ok: false, error: 'Invalid email address' }, { status: 400 });
         }
-        if (subject.length < 5) {
-            return Response.json({ error: 'Subject must be at least 5 characters' }, { status: 400 });
+        if (subject.length < 3) {
+            return Response.json({ ok: false, error: 'Subject must be at least 3 characters' }, { status: 400 });
         }
-        if (message.length < 10) {
-            return Response.json({ error: 'Message must be at least 10 characters' }, { status: 400 });
+        if (message.length < 5) {
+            return Response.json({ ok: false, error: 'Message must be at least 5 characters' }, { status: 400 });
         }
 
         const missionType = mapMissionType(missionTypeRaw);
 
+        // Dynamic Environment Config
+        const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
+        const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
+        const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
+        const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
+        const SMTP_PASS =
+            process.env.SMTP_PASS ||
+            process.env.GMAIL_APP_PASSWORD ||
+            process.env.SUPABASE_SMTP_PASSWORD ||
+            '';
+        const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'Mr. X Steroid Support';
+
         const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+        const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
 
+        // 1. Supabase Persistence
         let savedId: string | null = null;
-        if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-            const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-                auth: { autoRefreshToken: false, persistSession: false },
-            });
-            const { data, error } = await admin
-                .from('contact_messages')
-                .insert([{
-                    operator_name: operatorName,
-                    email,
-                    mission_type: missionType,
-                    subject,
-                    message,
-                    order_id: orderId,
-                    user_agent: userAgent,
-                }])
-                .select('id')
-                .single();
+        let dbError: string | null = null;
 
-            if (error) {
-                console.error('❌ [Contact] Supabase insert error:', error.message);
-                return Response.json({ error: 'Failed to store message' }, { status: 500 });
+        if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+            try {
+                const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+                    auth: { autoRefreshToken: false, persistSession: false },
+                });
+                const { data, error } = await admin
+                    .from('contact_messages')
+                    .insert([{
+                        operator_name: operatorName,
+                        email,
+                        mission_type: missionType,
+                        subject,
+                        message,
+                        order_id: orderId,
+                        user_agent: userAgent,
+                        handled: false
+                    }])
+                    .select('id')
+                    .single();
+
+                if (error) {
+                    console.error('❌ [Contact] Supabase insert error:', error.message);
+                    dbError = error.message;
+                } else {
+                    savedId = data?.id ?? null;
+                    console.log('✅ [Contact] Message stored in Supabase with ID:', savedId);
+                }
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.error('❌ [Contact] Supabase client exception:', msg);
+                dbError = msg;
             }
-            savedId = data?.id ?? null;
         } else {
-            console.warn('⚠️ [Contact] Supabase not configured — skipping persistence.');
+            console.warn('⚠️ [Contact] Supabase not configured — skipping database persistence.');
         }
 
+        // 2. SMTP Email Dispatch (to foryoutalk@gmail.com)
         let emailSent = false;
+        let emailError: string | null = null;
+
         if (SMTP_PASS) {
             try {
                 const transporter = createTransport({
@@ -113,53 +129,132 @@ export async function POST(req: Request) {
                     port: SMTP_PORT,
                     secure: SMTP_PORT === 465,
                     auth: { user: SMTP_USER, pass: SMTP_PASS },
+                    tls: {
+                        rejectUnauthorized: false
+                    }
                 });
+
+                const htmlContent = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d0d0d; color: #ffffff; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background-color: #141414; border: 1px solid #262626; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1f1a00, #000000); border-bottom: 2px solid #eab308; padding: 24px; text-align: center; }
+    .header h1 { color: #eab308; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+    .header p { color: #a3a3a3; margin: 6px 0 0 0; font-size: 13px; }
+    .content { padding: 24px; }
+    .field-card { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+    .field-label { font-size: 11px; color: #eab308; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .field-value { font-size: 15px; color: #ffffff; line-height: 1.5; font-weight: 500; }
+    .message-box { background: #181818; border-right: 4px solid #eab308; border-radius: 8px; padding: 16px; margin: 16px 0; color: #f5f5f5; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+    .footer { background: #0a0a0a; padding: 16px 24px; text-align: center; font-size: 12px; color: #737373; border-top: 1px solid #262626; }
+    .btn { display: inline-block; background: #eab308; color: #000000; font-weight: 800; text-decoration: none; padding: 10px 20px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>رسالة دعم وتواصل جديدة ⚡</h1>
+      <p>منصة Mr. X Steroid — مركز قيادة الدعم</p>
+    </div>
+    <div class="content">
+      <div class="field-card">
+        <div class="field-label">👤 اسم المرسل:</div>
+        <div class="field-value">${operatorName}</div>
+      </div>
+      <div class="field-card">
+        <div class="field-label">📧 البريد الإلكتروني:</div>
+        <div class="field-value"><a href="mailto:${email}" style="color: #eab308; text-decoration: none;">${email}</a></div>
+      </div>
+      <div class="field-card">
+        <div class="field-label">📌 نوع الاستفسار / المهمة:</div>
+        <div class="field-value">${missionType}</div>
+      </div>
+      ${orderId ? `
+      <div class="field-card">
+        <div class="field-label">📦 رقم الطلب المرجعي:</div>
+        <div class="field-value">${orderId}</div>
+      </div>` : ''}
+      <div class="field-card">
+        <div class="field-label">📝 موضوع الرسالة:</div>
+        <div class="field-value">${subject}</div>
+      </div>
+      
+      <div class="field-label" style="margin-top: 16px;">💬 تفاصيل الرسالة:</div>
+      <div class="message-box">${message}</div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" class="btn">الرد المباشر على المرسل ↩️</a>
+      </div>
+    </div>
+    <div class="footer">
+      تم إرسال هذا الإشعار تلقائياً عبر نظام الدعم الفني لموقع Mr. X Steroid.<br/>
+      معرف الرسالة: ${savedId || 'N/A'} | التاريخ: ${new Date().toLocaleString('ar-EG')}
+    </div>
+  </div>
+</body>
+</html>
+                `.trim();
 
                 await transporter.sendMail({
                     from: `"${SENDER_NAME}" <${SMTP_USER}>`,
                     to: DESTINATION_EMAIL,
                     replyTo: email,
-                    subject: `[Contact] ${subject}`,
+                    subject: `[Mr. X Support] ${missionTypeRaw.toUpperCase()}: ${subject}`,
                     text: [
-                        `New contact form submission (Mr. X Steroid).`,
+                        `رسالة دعم جديدة من موقع Mr. X Steroid:`,
+                        `----------------------------------------`,
+                        `الاسم:       ${operatorName}`,
+                        `البريد:      ${email}`,
+                        `النوع:       ${missionType}`,
+                        `رقم الطلب:   ${orderId || 'غير محدد'}`,
+                        `الموضوع:     ${subject}`,
                         ``,
-                        `Operator:  ${operatorName}`,
-                        `Email:     ${email}`,
-                        `Mission:   ${missionType}`,
-                        `Subject:   ${subject}`,
-                        `Order ID:  ${orderId || '—'}`,
-                        ``,
-                        `Message:`,
+                        `نص الرسالة:`,
                         message,
                         ``,
-                        `User Agent: ${userAgent || '—'}`,
+                        `User Agent:  ${userAgent || 'N/A'}`,
+                        `ID:          ${savedId || 'N/A'}`,
                     ].join('\n'),
+                    html: htmlContent,
                 });
+
                 emailSent = true;
-                console.log('✅ [Contact] Email dispatched to', DESTINATION_EMAIL);
+                console.log('✅ [Contact] Email dispatched successfully to', DESTINATION_EMAIL);
             } catch (emailErr) {
                 const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
-                console.error('❌ [Contact] Email dispatch failed:', msg);
+                console.error('❌ [Contact] Email dispatch error:', msg);
+                emailError = msg;
             }
         } else {
-            console.warn('⚠️ [Contact] SMTP password not configured — email NOT sent.');
+            console.warn('⚠️ [Contact] SMTP credentials not set — email was not sent.');
         }
 
         const saved = savedId !== null;
+
+        // If neither saved in DB nor sent via email, return error
         if (!saved && !emailSent) {
-            return Response.json({ error: 'Message could not be processed' }, { status: 500 });
+            return Response.json({
+                ok: false,
+                error: 'Message could not be saved or emailed',
+                dbError,
+                emailError
+            }, { status: 500 });
         }
 
         return Response.json({
             ok: true,
-            message: 'Transmission received',
+            message: 'Transmission received successfully',
             saved,
             emailSent,
             id: savedId,
         });
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
-        console.error('💥 [Contact] TOP-LEVEL CRASH:', msg);
-        return Response.json({ error: 'Server initialization error', message: msg }, { status: 500 });
+        console.error('💥 [Contact] Server error:', msg);
+        return Response.json({ ok: false, error: 'Internal server error', details: msg }, { status: 500 });
     }
 }

@@ -1,0 +1,64 @@
+# =============================================================
+# MrXSteroid — docker-compose.yml
+# Local development + containerized testing
+# =============================================================
+
+name: mrxsteroid
+
+services:
+
+  # ---- Next.js App (Development with hot reload) ------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps         # Only build to dep stage for dev speed
+    image: mrxsteroid-app:dev
+    container_name: mrxsteroid-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source for hot reload (excludes node_modules from host)
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    env_file:
+      - .env.local          # Mount your local secrets at runtime
+    command: ["npm", "run", "dev"]
+    networks:
+      - mrxsteroid-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ---- Production Preview (builds final image) --------------
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    image: mrxsteroid-app:prod
+    container_name: mrxsteroid-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - mrxsteroid-net
+    profiles:
+      - prod                # Only start with: docker compose --profile prod up
+
+networks:
+  mrxsteroid-net:
+    driver: bridge

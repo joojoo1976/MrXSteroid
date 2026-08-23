@@ -1,57 +1,98 @@
-```
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-target/
-.gradle/
+# ============================================================
+# MrXSteroid — .gitignore
+# Next.js 15 | React 19 | TypeScript | Tailwind | Supabase
+# ============================================================
 
-# Build artifacts
+# ------ Dependencies ----------------------------------------
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ------ Build Outputs ---------------------------------------
+.next/
+out/
 dist/
 build/
-*.pyc
-*.class
-*.o
-*.exe
-*.dll
-*.so
-*.a
-*.obj
-*.out
+*.tsbuildinfo
 
-# Environment
-.env
-.env.local
-*.env.*
-
-# AI Agents
-.agent/
-.cursor/
-.qwen/
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# System
-.DS_Store
-Thumbs.db
-
-# Logs and temp files
-*.log
-*.tmp
-
-# Coverage
+# ------ Testing & Coverage ----------------------------------
 coverage/
 htmlcov/
 .coverage
+*.lcov
 
-# Compressed files
+# ------ Environment Variables -------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Keep .env.example in git
+!.env.example
+
+# ------ Logs ------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.dev-err.log
+.dev-out.log
+dev.log
+
+# ------ OS / System -----------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.tmp
+
+# ------ Python / Virtual Envs ------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+
+# ------ Docker Build Cache Leftovers ------------------------
+blobs/
+manifests/
+
+# ------ IDE / Editor ----------------------------------------
+.idea/
+*.swp
+*.swo
+*.orig
+.history/
+
+# ------ Vercel ----------------------------------------------
+.vercel
+
+# ------ AI Agent Caches (do not commit) --------------------
+.agent/
+.cursor/
+.qwen/
+.roo/
+
+# ------ Next.js Specific ------------------------------------
+next-env.d.ts
+
+# ------ Test Probe Files ------------------------------------
+home-test.cjs
+probe.cjs
+probe2.cjs
+
+# ------ Archives / Compressed -------------------------------
 *.zip
 *.gz
 *.tar
@@ -60,34 +101,7 @@ htmlcov/
 *.xz
 *.7z
 *.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-```.github/workflows/  
 
-.vercel
-.env*
-!.env.example
-
-# Legacy archive (kept on disk for reference, excluded from git)
-_legacy_src/
-
-# Next.js
-.next/
-*.tsbuildinfo
-
-# Test artifacts
-home-test.cjs
-probe.cjs
-probe2.cjs
+# ------ Misc ------------------------------------------------
+*.pem
+.npmrc.local

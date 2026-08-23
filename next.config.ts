@@ -8,6 +8,9 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
+    // Required for Docker multi-stage production builds (Dockerfile runner stage).
+    // Set DOCKER_BUILD=1 in your docker-compose.yml build args to enable.
+    output: process.env.DOCKER_BUILD === '1' ? 'standalone' : undefined,
     async headers() {
         return [
             {

@@ -1,0 +1,53 @@
+# MrXSteroid — Git Attributes
+# Normalize line endings across all OS platforms.
+# Ensures GitHub Desktop, WSL, and CI/CD all use LF consistently.
+
+# Auto-detect text files and normalize to LF on commit
+* text=auto eol=lf
+
+# Force LF for web source files
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.jsx       text eol=lf
+*.mjs       text eol=lf
+*.cjs       text eol=lf
+*.json      text eol=lf
+*.jsonc     text eol=lf
+*.md        text eol=lf
+*.mdx       text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.html      text eol=lf
+*.xml       text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.toml      text eol=lf
+*.env       text eol=lf
+*.sh        text eol=lf
+*.gitignore text eol=lf
+Dockerfile  text eol=lf
+*.dockerignore text eol=lf
+
+# Binary files — do NOT process
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.webp      binary
+*.avif      binary
+*.ico       binary
+*.svg       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.otf       binary
+*.eot       binary
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.tar       binary
+*.mp4       binary
+*.webm      binary
+*.mp3       binary
+*.wav       binary

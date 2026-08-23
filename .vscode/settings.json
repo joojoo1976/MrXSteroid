@@ -1,22 +1,133 @@
 {
-    "html.validate.scripts": false,
-    "javascript.validate.enable": false,
-    "css.validate": false,
-    "webhint.enable": false,
-    "cloudcode.active-kubeconfig": "eb2ffd72546f43569d20047291d0893d",
-    "cloudcode.apigee.emulators": [
-        "1.9.2",
-        "eb2ffd72546f43569d20047291d0893d"
-    ],
-    "sqltools.connections": [
-        {
-            "previewLimit": 50,
-            "driver": "SQLite",
-            "name": "db.alghvtpkpspnqupbvodu.supabase.co",
-            "database": "postgresql://postgres:[joojoo1976_1$Professional#]@db.alghvtpkpspnqupbvodu.supabase.co:5432/postgres"
-        }
-    ],
-    "sqltools.useNodeRuntime": true,
-    "codeium.indexStoragePath": "ott$tz-XB3W2vn2Zz4-CdCwZ5l7caF2uYYv1I5o8jCWOEpY",
-    "claudeCode.useTerminal": false
+  // ============================================================
+  // MrXSteroid — VSCode / Antigravity / OpenCode Workspace Settings
+  // Optimized for: Next.js 15 | React 19 | TypeScript | Tailwind
+  // ============================================================
+
+  // --- TypeScript & JavaScript --------------------------------
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // --- Formatting (Prettier as default) -----------------------
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.rulers": [100],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+
+  // --- ESLint -------------------------------------------------
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.useFlatConfig": true,
+
+  // --- Tailwind CSS -------------------------------------------
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "tailwindCSS.validate": true,
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+
+  // --- File Encoding ------------------------------------------
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // --- Explorer -----------------------------------------------
+  "explorer.compactFolders": false,
+
+  // --- Exclusions (keep AI tools fast & lean) -----------------
+  // These folders are hidden from the Explorer and NOT indexed
+  "files.exclude": {
+    "**/.git": true,
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/.agent": true,
+    "**/.agents": true,
+    "**/.roo": true,
+    "**/.venv": true,
+    "**/blobs": true,
+    "**/manifests": true,
+    "**/*.tsbuildinfo": true,
+    "**/.vercel": true
+  },
+
+  // --- Search Exclusions (Antigravity / OpenCode / Jan) -------
+  // These folders are excluded from search and AI indexing
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.git": true,
+    "**/.agent": true,
+    "**/.agents": true,
+    "**/.roo": true,
+    "**/.venv": true,
+    "**/blobs": true,
+    "**/manifests": true,
+    "**/coverage": true,
+    "**/*.tsbuildinfo": true,
+    "**/package-lock.json": true,
+    "**/.vercel": true
+  },
+
+  // --- Language Specific Settings ----------------------------
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // --- Next.js App Router ------------------------------------
+  "emmet.includeLanguages": {
+    "typescriptreact": "html"
+  },
+
+  // --- Git ---------------------------------------------------
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+
+  // --- Terminal ----------------------------------------------
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // --- Jan / Ollama AI Integration (do NOT store secrets here) -
+  // Configure Jan AI at: http://localhost:1337/v1
+  // Configure Ollama at: http://localhost:11434/v1
+  // Set OPENAI_BASE_URL in .env.local
+
+  // --- SQLTools (credentials removed — use .env.local) -------
+  "sqltools.useNodeRuntime": true,
+  "claudeCode.useTerminal": false
 }
