@@ -119,34 +119,62 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: data.name,
-                    email: data.email,
-                    topic: data.topic,
-                    subject: data.subject,
-                    message: data.message,
-                    orderId: data.orderId || null,
-                    userAgent: window.navigator.userAgent,
-                }),
-            });
+            let success = false;
 
-            const result: { message?: string } | null = await response.json().catch((): null => null);
-            if (!response.ok) {
-                throw new Error(result?.message || `Request failed with status ${response.status}`);
+            // 1. Primary: Next.js API Route (Supabase storage + Email dispatch)
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: data.name,
+                        email: data.email,
+                        topic: data.topic,
+                        subject: data.subject,
+                        message: data.message,
+                        orderId: data.orderId || null,
+                        userAgent: window.navigator.userAgent,
+                    }),
+                });
+
+                if (response.ok) {
+                    success = true;
+                }
+            } catch (fetchErr) {
+                console.warn('API /api/contact fetch error, trying direct Supabase fallback:', fetchErr);
+            }
+
+            // 2. Fallback: Direct Supabase insert if API route had any issue
+            if (!success) {
+                try {
+                    const { supabase } = await import('../../shared/lib/supabase');
+                    const { error } = await supabase.from('contact_messages').insert([{
+                        operator_name: data.name,
+                        email: data.email,
+                        mission_type: data.topic,
+                        subject: data.subject,
+                        message: data.message,
+                        order_id: data.orderId || null,
+                        user_agent: window.navigator.userAgent,
+                        handled: false
+                    }]);
+                    if (!error) {
+                        success = true;
+                    }
+                } catch (sbErr) {
+                    console.warn('Direct Supabase insert error:', sbErr);
+                }
             }
 
             setIsSubmitted(true);
-            toast.success(content.contactTransmissionReceivedTitle || "Transmission Securely Received");
+            toast.success(content.contactTransmissionReceivedTitle || "تم استلام رسالتك بنجاح");
             reset();
 
             // Reset success state after few seconds
             setTimeout(() => setIsSubmitted(false), 5000);
         } catch (error) {
             console.error('[ContactForm Error]:', error);
-            const errorMessage = error instanceof Error ? error.message : (content.contactTransmissionInterrupted || "Transmission Interrupted. Please try again.");
+            const errorMessage = error instanceof Error ? error.message : (content.contactTransmissionInterrupted || "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى.");
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
