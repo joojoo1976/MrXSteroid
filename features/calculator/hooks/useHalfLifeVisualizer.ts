@@ -71,14 +71,7 @@ interface UseHalfLifeVisualizerOptions {
 }
 
 export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLifeVisualizerOptions) => {
-    const loadSavedStack = (): StackItem[] => {
-        try {
-            const saved = localStorage.getItem('mrx_steroid_stack');
-            return saved ? JSON.parse(saved) : [];
-        } catch { return []; }
-    };
-
-    const [stack, setStack] = useState<StackItem[]>(loadSavedStack);
+    const [stack, setStack] = useState<StackItem[]>([]);
     const [compoundId, setCompoundId] = useState('test_e');
     const [dosage, setDosage] = useState(250);
     const [frequency, setFrequency] = useState('e3d');
@@ -88,7 +81,20 @@ export const useHalfLifeVisualizer = ({ content, isRTL, unitSystem }: UseHalfLif
     const colors = useMemo(() => ['#eab308', '#3b82f6', '#ef4444', '#10b981', '#8b5cf6'], []);
 
     useEffect(() => {
-        localStorage.setItem('mrx_steroid_stack', JSON.stringify(stack));
+        try {
+            const saved = localStorage.getItem('mrx_steroid_stack');
+            if (saved) setStack(JSON.parse(saved));
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('mrx_steroid_stack', JSON.stringify(stack));
+        } catch {
+            // ignore
+        }
     }, [stack]);
 
     const selectedCompound = useMemo(() =>

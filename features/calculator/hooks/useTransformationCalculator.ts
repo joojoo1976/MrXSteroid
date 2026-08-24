@@ -114,12 +114,18 @@ export const useTransformationCalculator = ({
     const [activePhase, setActivePhase] = useState(0);
 
     // ── Live engine inputs (editable, metric base values) ──────────────
-    // Hydrated once from localStorage so the user's plan survives reloads.
-    const initial = useMemo(() => readPersistedInputs(), []);
-    const [startWeightKg, setStartWeightKg] = useState(initial.weightKg);
-    const [startBodyFatPct, setStartBodyFatPct] = useState(initial.bodyFatPct);
-    const [heightCm, setHeightCm] = useState<number>(initial.heightCm);
-    const [trainingAge, setTrainingAge] = useState<TrainingAge>(initial.trainingAge);
+    const [startWeightKg, setStartWeightKg] = useState(DEFAULT_ENGINE_INPUTS.weightKg);
+    const [startBodyFatPct, setStartBodyFatPct] = useState(DEFAULT_ENGINE_INPUTS.bodyFatPct);
+    const [heightCm, setHeightCm] = useState<number>(DEFAULT_ENGINE_INPUTS.heightCm);
+    const [trainingAge, setTrainingAge] = useState<TrainingAge>(DEFAULT_ENGINE_INPUTS.trainingAge);
+
+    useEffect(() => {
+        const persisted = readPersistedInputs();
+        setStartWeightKg(persisted.weightKg);
+        setStartBodyFatPct(persisted.bodyFatPct);
+        setHeightCm(persisted.heightCm);
+        setTrainingAge(persisted.trainingAge);
+    }, []);
 
     // Deferred copies — the sliders stay buttery-smooth (60fps) while the
     // heavier derived math (simulation, summary, chart) lags a single frame.

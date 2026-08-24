@@ -55,30 +55,21 @@ const Header: React.FC<HeaderProps> = ({
 
   // Design Mode State
   const [isDesignMode, setIsDesignMode] = useState(false);
-  const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() => {
-    if (typeof window === 'undefined') {
-      return {
-        sections: ['logo', 'nav', 'lang-theme', 'auth'],
-        alignment: 'justify-between',
-        gap: 'gap-4'
-      };
-    }
-    try {
-      const saved = localStorage.getItem('header_layout_v2');
-      return saved ? JSON.parse(saved) : {
-        sections: ['logo', 'nav', 'lang-theme', 'auth'],
-        alignment: 'justify-between',
-        gap: 'gap-4'
-      };
-    } catch {
-      return {
-        sections: ['logo', 'nav', 'lang-theme', 'auth'],
-        alignment: 'justify-between',
-        gap: 'gap-4'
-      };
-    }
+  const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>({
+    sections: ['logo', 'nav', 'lang-theme', 'auth'],
+    alignment: 'justify-between',
+    gap: 'gap-4'
   });
   const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('header_layout_v2');
+      if (saved) setLayoutConfig(JSON.parse(saved));
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {

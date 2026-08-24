@@ -26,8 +26,8 @@ export interface UseThemeReturn {
 const STORAGE_KEY = 'mrx_ui_theme';
 const LEGACY_KEY  = 'theme';
 
-// ── Helpers ──────────────────────────────────────────────────────────
 function readStoredTheme(): ThemeMode {
+  if (typeof window === 'undefined') return 'dark';
   try {
     const modern = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     if (modern && ['light', 'dark', 'system'].includes(modern)) return modern;
