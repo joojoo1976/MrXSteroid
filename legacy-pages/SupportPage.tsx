@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { HelpCircle, MessageSquare, Mail, Clock, FileText, Search } from 'lucide-react';
+import { HelpCircle, MessageSquare, Mail, Clock, FileText, Search, Send, Loader2 } from 'lucide-react';
 import { Page, ContentStrings } from '@/shared/types/types';
 
 interface SupportPageProps {
@@ -11,6 +11,11 @@ interface SupportPageProps {
 }
 
 const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
+    // حالة الإرسال والتحميل لمكون النموذج
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
     const contactMethods = [
         {
             title: content.supportEmailTitle,
@@ -31,6 +36,26 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
             action: null
         }
     ];
+
+    // دالة المعالجة مع منع الإرسال المزدوج وحالة التحميل
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (isSubmitting) return; // حماية إضافية ضد الضغط المتكرر
+        setIsSubmitting(true);
+        setSubmitSuccess(false);
+
+        try {
+            // قم يستبدال هذا الجزء برابط الـ API الخاص بك إذا وجد
+            await new Promise((resolve) => setTimeout(resolve, 1500)); 
+            setSubmitSuccess(true);
+            setFormData({ name: '', email: '', message: '' });
+        } catch (error) {
+            console.error("Error sending support message:", error);
+        } finally {
+            setIsSubmitting(false); // إعادة تفعيل الزر عند الانتهاء
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto space-y-16 pb-20">
@@ -85,6 +110,67 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
                     </motion.div>
                 ))}
             </div>
+
+            {/* Support Form Section */}
+            <section className="p-10 md:p-14 rounded-[3rem] bg-zinc-900/80 border border-zinc-800 relative overflow-hidden">
+                <h2 className="text-3xl font-black mb-8 text-center uppercase tracking-tight text-white">
+                    {content.supportContactDirect || "ارسل لنا رسالة"}
+                </h2>
+                
+                {submitSuccess && (
+                    <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-bold">
+                        تم إرسال رسالتك بنجاح! سنقوم بالرد عليك في أقرب وقت.
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <input
+                            type="text"
+                            required
+                            placeholder="الاسم"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:border-gold-500 focus:outline-none transition-colors"
+                        />
+                        <input
+                            type="email"
+                            required
+                            placeholder="البريد الإلكتروني"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:border-gold-500 focus:outline-none transition-colors"
+                        />
+                    </div>
+                    <textarea
+                        required
+                        rows={4}
+                        placeholder="اكتب رسالتك هنا..."
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:border-gold-500 focus:outline-none transition-colors resize-none"
+                    />
+
+                    {/* زر الإرسال المزود بحالة التحميل لمنع الإرسال المزدوج */}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-5 bg-gold-500 text-black font-black uppercase rounded-2xl hover:bg-gold-400 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gold-500 shadow-[0_0_30px_-5px_rgba(234,179,8,0.3)]"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span>جاري الإرسال...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5" />
+                                <span>إرسال الرسالة</span>
+                            </>
+                        )}
+                    </button>
+                </form>
+            </section>
 
             {/* Useful Links */}
             <section className="p-12 rounded-[4rem] bg-zinc-900 border border-zinc-800">
