@@ -20,7 +20,8 @@ import {
     Wrench,
     Building2,
     Stethoscope,
-    Info
+    Info,
+    AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { errorHandler } from '../../shared/lib/error-handler';
@@ -38,6 +39,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '../../shared/ui/select';
+import { ErrorBoundary } from '../../shared/ui/ErrorBoundary';
 
 // --- Base Schema for Types ---
 const _baseSchema = z.object({
@@ -114,13 +116,15 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
         setTimeout(() => setCopiedEmail(false), 2000);
     };
 
-    const onSubmit = async (data: ContactFormData) => {
+    const onSubmit = async (data: ContactFormData, event?: React.BaseSyntheticEvent) => {
+        event?.preventDefault();
         if (data.honeypot) return; // Silent discard for bots
 
         setIsSubmitting(true);
-        try {
-            let success = false;
+        let success = false;
+        let errorMessage: string | null = null;
 
+        try {
             // 1. Primary: Next.js API Route (Supabase storage + Email dispatch)
             try {
                 const response = await fetch('/api/contact', {
@@ -137,11 +141,20 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                     }),
                 });
 
-                if (response.ok) {
+                const result = await response.json().catch(() => ({ ok: false }));
+
+                if (response.ok && result.ok === true) {
                     success = true;
+                    // Check for soft warnings in response
+                    if (result.dbError || result.emailError) {
+                        console.warn('[ContactForm] API returned soft warnings:', { dbError: result.dbError, emailError: result.emailError });
+                    }
+                } else {
+                    errorMessage = result.error || result.message || (content.contactTransmissionInterrupted || "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى.");
                 }
             } catch (fetchErr) {
                 console.warn('API /api/contact fetch error, trying direct Supabase fallback:', fetchErr);
+                errorMessage = fetchErr instanceof Error ? fetchErr.message : 'Network error';
             }
 
             // 2. Fallback: Direct Supabase insert if API route had any issue
@@ -160,22 +173,28 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                     }]);
                     if (!error) {
                         success = true;
+                    } else {
+                        errorMessage = error.message;
                     }
                 } catch (sbErr) {
                     console.warn('Direct Supabase insert error:', sbErr);
+                    errorMessage = sbErr instanceof Error ? sbErr.message : 'Database error';
                 }
             }
 
-            setIsSubmitted(true);
-            toast.success(content.contactTransmissionReceivedTitle || "تم استلام رسالتك بنجاح");
-            reset();
-
-            // Reset success state after few seconds
-            setTimeout(() => setIsSubmitted(false), 5000);
+            if (success) {
+                setIsSubmitted(true);
+                toast.success(content.contactTransmissionReceivedTitle || "تم استلام رسالتك بنجاح");
+                reset();
+                setTimeout(() => setIsSubmitted(false), 5000);
+            } else {
+                throw new Error(errorMessage || (content.contactTransmissionInterrupted || "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى."));
+            }
         } catch (error) {
             console.error('[ContactForm Error]:', error);
-            const errorMessage = error instanceof Error ? error.message : (content.contactTransmissionInterrupted || "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى.");
-            toast.error(errorMessage);
+            const finalErrorMessage = error instanceof Error ? error.message : (content.contactTransmissionInterrupted || "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى.");
+            toast.error(finalErrorMessage);
+            await errorHandler.handle(error, 'ContactForm');
         } finally {
             setIsSubmitting(false);
         }
@@ -331,11 +350,32 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </Button>
                                     </motion.div>
                                 ) : (
-                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                        {/* Honey Pot (Invisible) */}
-                                        <input type="text" {...register('honeypot')} className="hidden" />
+                                    <ErrorBoundary
+                                        fallback={
+                                            <div className="py-10 flex flex-col items-center text-center space-y-6">
+                                                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center border-4 border-red-500/20">
+                                                    <AlertTriangle className="w-10 h-10 text-red-500" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-2xl font-black text-white mb-2">{isRTL ? 'خطأ في نموذج التواصل' : 'Contact Form Error'}</h4>
+                                                    <p className="text-zinc-400 text-sm font-medium">{isRTL ? 'تعذر تحميل نموذج التواصل. يرجى تحديث الصفحة.' : 'Failed to load contact form. Please refresh the page.'}</p>
+                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    className="border-zinc-800 text-zinc-400 hover:text-white h-10 px-6 rounded-xl"
+                                                    onClick={() => window.location.reload()}
+                                                >
+                                                    {isRTL ? 'تحديث الصفحة' : 'Refresh Page'}
+                                                </Button>
+                                            </div>
+                                        }
+                                        isRTL={isRTL}
+                                    >
+                                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                                            {/* Honey Pot (Invisible) */}
+                                            <input type="text" {...register('honeypot')} className="hidden" />
 
-                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="grid md:grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
                                                 <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">{content.contactOperatorIdentityLabel}</label>
                                                 <Input
@@ -480,6 +520,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
                                         </motion.button>
                                     </form>
+                                    </ErrorBoundary>
                                 )}
                             </AnimatePresence>
                         </div>
