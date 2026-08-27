@@ -3,9 +3,11 @@
  * Contact / Customer Support Endpoint:
  * 1. Stores inbound message in Supabase database (`contact_messages` table).
  * 2. Dispatches an immediate rich email notification to admin email (`foryoutalk@gmail.com`).
+ *    Priority: Resend API (primary) → SMTP/nodemailer (fallback).
  * 3. Handles reply-to routing directly to the visitor's email.
  */
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 import { createTransport } from 'nodemailer';
 
 const mapMissionType = (topic: string): string => {
@@ -21,6 +23,105 @@ const mapMissionType = (topic: string): string => {
 
 const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
 const DEFAULT_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
+
+function buildHtmlEmail(opts: {
+    operatorName: string;
+    email: string;
+    missionType: string;
+    orderId: string | null;
+    subject: string;
+    message: string;
+    savedId: string | null;
+}): string {
+    const { operatorName, email, missionType, orderId, subject, message, savedId } = opts;
+    return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d0d0d; color: #ffffff; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background-color: #141414; border: 1px solid #262626; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1f1a00, #000000); border-bottom: 2px solid #eab308; padding: 24px; text-align: center; }
+    .header h1 { color: #eab308; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+    .header p { color: #a3a3a3; margin: 6px 0 0 0; font-size: 13px; }
+    .content { padding: 24px; }
+    .field-card { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+    .field-label { font-size: 11px; color: #eab308; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .field-value { font-size: 15px; color: #ffffff; line-height: 1.5; font-weight: 500; }
+    .message-box { background: #181818; border-right: 4px solid #eab308; border-radius: 8px; padding: 16px; margin: 16px 0; color: #f5f5f5; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+    .footer { background: #0a0a0a; padding: 16px 24px; text-align: center; font-size: 12px; color: #737373; border-top: 1px solid #262626; }
+    .btn { display: inline-block; background: #eab308; color: #000000; font-weight: 800; text-decoration: none; padding: 10px 20px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>رسالة دعم وتواصل جديدة ⚡</h1>
+      <p>منصة Mr. X Steroid — مركز قيادة الدعم</p>
+    </div>
+    <div class="content">
+      <div class="field-card">
+        <div class="field-label">👤 اسم المرسل:</div>
+        <div class="field-value">${operatorName}</div>
+      </div>
+      <div class="field-card">
+        <div class="field-label">📧 البريد الإلكتروني:</div>
+        <div class="field-value"><a href="mailto:${email}" style="color: #eab308; text-decoration: none;">${email}</a></div>
+      </div>
+      <div class="field-card">
+        <div class="field-label">📌 نوع الاستفسار / المهمة:</div>
+        <div class="field-value">${missionType}</div>
+      </div>
+      ${orderId ? `<div class="field-card">
+        <div class="field-label">📦 رقم الطلب المرجعي:</div>
+        <div class="field-value">${orderId}</div>
+      </div>` : ''}
+      <div class="field-card">
+        <div class="field-label">📝 موضوع الرسالة:</div>
+        <div class="field-value">${subject}</div>
+      </div>
+      <div class="field-label" style="margin-top: 16px;">💬 تفاصيل الرسالة:</div>
+      <div class="message-box">${message}</div>
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" class="btn">الرد المباشر على المرسل ↩️</a>
+      </div>
+    </div>
+    <div class="footer">
+      تم إرسال هذا الإشعار تلقائياً عبر نظام الدعم الفني لموقع Mr. X Steroid.<br/>
+      معرف الرسالة: ${savedId || 'N/A'} | التاريخ: ${new Date().toLocaleString('ar-EG')}
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function buildPlainText(opts: {
+    operatorName: string;
+    email: string;
+    missionType: string;
+    orderId: string | null;
+    subject: string;
+    message: string;
+    userAgent: string;
+    savedId: string | null;
+}): string {
+    const { operatorName, email, missionType, orderId, subject, message, userAgent, savedId } = opts;
+    return [
+        `رسالة دعم جديدة من موقع Mr. X Steroid:`,
+        `----------------------------------------`,
+        `الاسم:       ${operatorName}`,
+        `البريد:      ${email}`,
+        `النوع:       ${missionType}`,
+        `رقم الطلب:   ${orderId || 'غير محدد'}`,
+        `الموضوع:     ${subject}`,
+        ``,
+        `نص الرسالة:`,
+        message,
+        ``,
+        `User Agent:  ${userAgent || 'N/A'}`,
+        `ID:          ${savedId || 'N/A'}`,
+    ].join('\n');
+}
 
 export async function OPTIONS() {
     return new Response(null, {
@@ -68,6 +169,7 @@ export async function POST(req: Request) {
 
         // Dynamic Environment Config
         const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
+        const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
         const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
         const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
         const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
@@ -77,6 +179,7 @@ export async function POST(req: Request) {
             process.env.SUPABASE_SMTP_PASSWORD ||
             '';
         const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'Mr. X Steroid Support';
+        const RESEND_FROM = process.env.RESEND_FROM || `Mr. X Steroid Support <onboarding@resend.dev>`;
 
         const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
         const SUPABASE_KEY =
@@ -122,127 +225,84 @@ export async function POST(req: Request) {
             dbError = msg;
         }
 
-        // 2. SMTP Email Dispatch (to foryoutalk@gmail.com)
+        // 2. Email Dispatch — Resend (primary) → SMTP (fallback)
         let emailSent = false;
         let emailError: string | null = null;
+        let emailProvider = 'none';
 
-        if (SMTP_PASS) {
+        const htmlContent = buildHtmlEmail({ operatorName, email, missionType, orderId, subject, message, savedId });
+        const plainText = buildPlainText({ operatorName, email, missionType, orderId, subject, message, userAgent, savedId });
+        const emailSubject = `[Mr. X Support] ${missionTypeRaw.toUpperCase()}: ${subject}`;
+
+        // 2a. Primary: Resend API
+        if (RESEND_API_KEY) {
+            try {
+                const resend = new Resend(RESEND_API_KEY);
+                const { data: resendData, error: resendErr } = await resend.emails.send({
+                    from: RESEND_FROM,
+                    to: [DESTINATION_EMAIL],
+                    replyTo: email,
+                    subject: emailSubject,
+                    text: plainText,
+                    html: htmlContent,
+                });
+
+                if (resendErr) {
+                    console.error('❌ [Contact] Resend API error:', resendErr.message || JSON.stringify(resendErr));
+                    emailError = resendErr.message || 'Resend error';
+                } else {
+                    emailSent = true;
+                    emailProvider = 'resend';
+                    console.log('✅ [Contact] Email dispatched via Resend (id:', resendData?.id, ') to', DESTINATION_EMAIL);
+                }
+            } catch (resendEx) {
+                const msg = resendEx instanceof Error ? resendEx.message : String(resendEx);
+                console.error('❌ [Contact] Resend exception:', msg);
+                emailError = msg;
+            }
+        }
+
+        // 2b. Fallback: SMTP / Nodemailer
+        if (!emailSent && SMTP_PASS) {
             try {
                 const transporter = createTransport({
                     host: SMTP_HOST,
                     port: SMTP_PORT,
                     secure: SMTP_PORT === 465,
                     auth: { user: SMTP_USER, pass: SMTP_PASS },
-                    tls: {
-                        rejectUnauthorized: false
-                    }
+                    tls: { rejectUnauthorized: false }
                 });
-
-                const htmlContent = `
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d0d0d; color: #ffffff; margin: 0; padding: 20px; }
-    .container { max-width: 600px; margin: auto; background-color: #141414; border: 1px solid #262626; border-radius: 16px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #1f1a00, #000000); border-bottom: 2px solid #eab308; padding: 24px; text-align: center; }
-    .header h1 { color: #eab308; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
-    .header p { color: #a3a3a3; margin: 6px 0 0 0; font-size: 13px; }
-    .content { padding: 24px; }
-    .field-card { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
-    .field-label { font-size: 11px; color: #eab308; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
-    .field-value { font-size: 15px; color: #ffffff; line-height: 1.5; font-weight: 500; }
-    .message-box { background: #181818; border-right: 4px solid #eab308; border-radius: 8px; padding: 16px; margin: 16px 0; color: #f5f5f5; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
-    .footer { background: #0a0a0a; padding: 16px 24px; text-align: center; font-size: 12px; color: #737373; border-top: 1px solid #262626; }
-    .btn { display: inline-block; background: #eab308; color: #000000; font-weight: 800; text-decoration: none; padding: 10px 20px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>رسالة دعم وتواصل جديدة ⚡</h1>
-      <p>منصة Mr. X Steroid — مركز قيادة الدعم</p>
-    </div>
-    <div class="content">
-      <div class="field-card">
-        <div class="field-label">👤 اسم المرسل:</div>
-        <div class="field-value">${operatorName}</div>
-      </div>
-      <div class="field-card">
-        <div class="field-label">📧 البريد الإلكتروني:</div>
-        <div class="field-value"><a href="mailto:${email}" style="color: #eab308; text-decoration: none;">${email}</a></div>
-      </div>
-      <div class="field-card">
-        <div class="field-label">📌 نوع الاستفسار / المهمة:</div>
-        <div class="field-value">${missionType}</div>
-      </div>
-      ${orderId ? `
-      <div class="field-card">
-        <div class="field-label">📦 رقم الطلب المرجعي:</div>
-        <div class="field-value">${orderId}</div>
-      </div>` : ''}
-      <div class="field-card">
-        <div class="field-label">📝 موضوع الرسالة:</div>
-        <div class="field-value">${subject}</div>
-      </div>
-      
-      <div class="field-label" style="margin-top: 16px;">💬 تفاصيل الرسالة:</div>
-      <div class="message-box">${message}</div>
-
-      <div style="text-align: center; margin-top: 20px;">
-        <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" class="btn">الرد المباشر على المرسل ↩️</a>
-      </div>
-    </div>
-    <div class="footer">
-      تم إرسال هذا الإشعار تلقائياً عبر نظام الدعم الفني لموقع Mr. X Steroid.<br/>
-      معرف الرسالة: ${savedId || 'N/A'} | التاريخ: ${new Date().toLocaleString('ar-EG')}
-    </div>
-  </div>
-</body>
-</html>
-                `.trim();
 
                 await transporter.sendMail({
                     from: `"${SENDER_NAME}" <${SMTP_USER}>`,
                     to: DESTINATION_EMAIL,
                     replyTo: email,
-                    subject: `[Mr. X Support] ${missionTypeRaw.toUpperCase()}: ${subject}`,
-                    text: [
-                        `رسالة دعم جديدة من موقع Mr. X Steroid:`,
-                        `----------------------------------------`,
-                        `الاسم:       ${operatorName}`,
-                        `البريد:      ${email}`,
-                        `النوع:       ${missionType}`,
-                        `رقم الطلب:   ${orderId || 'غير محدد'}`,
-                        `الموضوع:     ${subject}`,
-                        ``,
-                        `نص الرسالة:`,
-                        message,
-                        ``,
-                        `User Agent:  ${userAgent || 'N/A'}`,
-                        `ID:          ${savedId || 'N/A'}`,
-                    ].join('\n'),
+                    subject: emailSubject,
+                    text: plainText,
                     html: htmlContent,
                 });
 
                 emailSent = true;
-                console.log('✅ [Contact] Email dispatched successfully to', DESTINATION_EMAIL);
+                emailProvider = 'smtp';
+                console.log('✅ [Contact] Email dispatched via SMTP to', DESTINATION_EMAIL);
             } catch (emailErr) {
                 const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
-                console.error('❌ [Contact] Email dispatch error:', msg);
+                console.error('❌ [Contact] SMTP dispatch error:', msg);
                 emailError = msg;
             }
-        } else {
-            console.warn('⚠️ [Contact] SMTP credentials not set — email was not sent.');
         }
 
-        // Always return OK if saved OR if request succeeded
+        if (!emailSent && !RESEND_API_KEY && !SMTP_PASS) {
+            console.warn('⚠️ [Contact] No email credentials set (RESEND_API_KEY or SMTP_PASS) — email was not sent.');
+            emailError = 'No email provider configured';
+        }
+
         return Response.json({
             ok: true,
             message: 'Transmission received successfully',
             saved: savedId !== null,
             emailSent,
+            emailProvider,
             id: savedId,
             dbError,
             emailError
@@ -251,7 +311,6 @@ export async function POST(req: Request) {
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
         console.error('💥 [Contact] Server error:', msg);
-        // Even on unexpected error, return 200 with soft notification so client does not crash with red 500 error
         return Response.json({
             ok: true,
             message: 'Transmission received with soft warning',
