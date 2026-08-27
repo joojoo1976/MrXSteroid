@@ -4,6 +4,7 @@ import React from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock, Sparkles, RefreshCw, EyeOff } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import SystemGuideCard from '../../shared/ui/SystemGuideCard';
+import { UnitToggle } from '../../shared/ui/UnitToggle';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useCycleCalendarExporter } from './hooks/useCycleCalendarExporter';
@@ -15,7 +16,8 @@ interface CycleCalendarExporterProps {
 }
 
 const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, navigateTo }) => {
-    const { isRTL } = usePreferences();
+    const { isRTL, unitSystem } = usePreferences();
+    const isImperial = unitSystem === 'imperial';
 
     const {
         isUnlocked,
@@ -34,7 +36,7 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
         updateCompound,
         loadPreset,
         generateICS
-    } = useCycleCalendarExporter({ content });
+    } = useCycleCalendarExporter({ content, unitSystem });
 
 
     if (!isUnlocked) {
@@ -155,6 +157,10 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                         <h3 className="font-bold mb-4">{content.cycleArchitect.configLabel}</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
+                                <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.unitSystemLabel}</span>
+                                <UnitToggle />
+                            </div>
+                            <div className="flex items-center justify-between">
                                 <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.stealthModeLabel}</span>
                                 <button aria-label={content.cycleArchitect.toggleStealth} onClick={() => setStealthMode(!stealthMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${stealthMode ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${stealthMode ? (isRTL ? '-translate-x-6' : 'translate-x-6') : ''}`}></div>
@@ -197,8 +203,8 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                                             <input id={`compound-${comp.id}`} type="text" value={comp.name} onChange={e => updateCompound(comp.id, 'name', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
                                         </div>
                                         <div className="md:col-span-2 space-y-1">
-                                            <label htmlFor={`dosage-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.dosageLabel}</label>
-                                            <input id={`dosage-${comp.id}`} type="number" value={comp.dosage} onChange={e => updateCompound(comp.id, 'dosage', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
+                                            <label htmlFor={`dosage-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.dosageLabel} ({isImperial ? 'oz' : 'mg'})</label>
+                                            <input id={`dosage-${comp.id}`} type="number" step="0.01" value={comp.dosage} onChange={e => updateCompound(comp.id, 'dosage', e.target.value)} className="w-full bg-white dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-base outline-none" />
                                         </div>
                                         <div className="md:col-span-3 space-y-1">
                                             <label htmlFor={`freq-${comp.id}`} className="text-xs font-bold text-zinc-500 uppercase">{content.cycleArchitect.form.frequencyLabel}</label>

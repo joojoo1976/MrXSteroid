@@ -1865,6 +1865,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         subtitle: "Architect your compound protocol with military precision. Generate a live, device-synced calendar (ICS) featuring smart injection rotation, stealth event naming, and evidence-based PCT calculation.",
         presetsTitle: "Quick Start Presets:",
         configLabel: "Protocol Configuration",
+        unitSystemLabel: "Measurement System",
         stealthModeLabel: "Stealth Mode — Privacy Shield",
         rotationLabel: "Smart Injection Site Rotation",
         pctLabel: "Auto-Calculate PCT Trigger Date",
@@ -1910,6 +1911,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     },
     units: {
         mg: "mg",
+        oz: "oz",
         g: "g",
         ml: "ml",
         kcal: "kcal",

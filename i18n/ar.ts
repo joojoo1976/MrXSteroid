@@ -1863,6 +1863,7 @@ export const arContent: ContentStrings = {
         subtitle: "صمم بروتوكولك بدقة، واحصل على جدول تنفيذي حي (ICS) مع تدوير الحقن وتحديد موعد التنظيف.",
         presetsTitle: "قوالب جاهزة:",
         configLabel: "الإعدادات",
+        unitSystemLabel: "نظام القياس",
         stealthModeLabel: "وضع الخصوصية (أسماء وهمية)",
         rotationLabel: "تدوير أماكن الحقن تلقائياً",
         pctLabel: "تحديد موعد بداية التنظيف (PCT)",
@@ -1908,6 +1909,7 @@ export const arContent: ContentStrings = {
     },
     units: {
         mg: "مجم",
+        oz: "أونصة",
         g: "جم",
         ml: "مل",
         kcal: "سعرة",

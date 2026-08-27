@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { ContentStrings } from '@/shared/types/types';
+import { toMetric } from '../../../shared/lib/logic';
+
+const MG_PER_OZ = 28349.523125;
 
 export interface Compound {
     id: string;
     name: string;
-    dosage: string;
+    dosage: string;       // displayed value (mg or oz)
+    dosageMg: number;     // internal metric value (mg)
     freq: string;
     duration: string;
     halfLife: number;
@@ -21,6 +25,7 @@ interface ICSEvent {
 
 interface UseCycleCalendarExporterOptions {
     content: ContentStrings;
+    unitSystem: 'metric' | 'imperial';
 }
 
 /** Local calendar date as `YYYY-MM-DD` (avoids the UTC shift of toISOString). */
@@ -31,58 +36,87 @@ const toISOLocal = (d: Date): string =>
 const toICSDate = (d: Date): string =>
     `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
 
-export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOptions) => {
+/** Convert displayed dosage to internal mg */
+const toMg = (displayed: string | number, system: 'metric' | 'imperial'): number => {
+    const val = parseFloat(String(displayed));
+    if (isNaN(val)) return 0;
+    return system === 'imperial' ? toMetric(val, 'volume') * 1000 : val; // oz -> mg (via ml)
+};
+
+/** Convert internal mg to displayed dosage */
+const fromMg = (mg: number, system: 'metric' | 'imperial'): string => {
+    if (system === 'imperial') {
+        const oz = mg / MG_PER_OZ;
+        return oz.toFixed(3).replace(/\.?0+$/, '');
+    }
+    return Math.round(mg).toString();
+};
+
+export const useCycleCalendarExporter = ({ content, unitSystem }: UseCycleCalendarExporterOptions) => {
+    const isImperial = unitSystem === 'imperial';
     const [isUnlocked, setIsUnlocked] = useState(false);
     const [startDate, setStartDate] = useState(() => toISOLocal(new Date()));
     const [stealthMode, setStealthMode] = useState(false);
     const [autoRotate, setAutoRotate] = useState(true);
     const [autoPCT, setAutoPCT] = useState(true);
 
-    const [compounds, setCompounds] = useState<Compound[]>([
-        { id: '1', name: 'Testosterone Enanthate', dosage: '250', freq: 'twiceWeekly', duration: '12', halfLife: 4.5 }
-    ]);
+    // Initialize with metric internal values, display converted
+    const initialCompounds = useMemo(() => ([
+        { id: '1', name: 'Testosterone Enanthate', dosageMg: 250, dosage: fromMg(250, unitSystem), freq: 'twiceWeekly', duration: '12', halfLife: 4.5 }
+    ]), [unitSystem]);
+
+    const [compounds, setCompounds] = useState<Compound[]>(initialCompounds);
 
     const handleVerify = useCallback(() => {
         setTimeout(() => setIsUnlocked(true), 1000);
     }, []);
 
     const addCompound = useCallback(() => {
+        const mg = 200;
         setCompounds(prev => [...prev, {
             id: Math.random().toString(),
             name: 'Deca Durabolin',
-            dosage: '200',
+            dosageMg: mg,
+            dosage: fromMg(mg, unitSystem),
             freq: 'weekly',
             duration: '10',
             halfLife: 6
         }]);
-    }, []);
+    }, [unitSystem]);
 
     const removeCompound = useCallback((id: string) => {
         setCompounds(prev => prev.filter(c => c.id !== id));
     }, []);
 
     const updateCompound = useCallback((id: string, field: string, value: string | number) => {
-        setCompounds(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
-    }, []);
+        setCompounds(prev => prev.map(c => {
+            if (c.id !== id) return c;
+            const updated = { ...c, [field]: value };
+            if (field === 'dosage') {
+                updated.dosageMg = toMg(value, unitSystem);
+            }
+            return updated;
+        }));
+    }, [unitSystem]);
 
     const loadPreset = useCallback((type: 'beginnerBulk' | 'cutting' | 'trt') => {
         if (type === 'beginnerBulk') {
             setCompounds([
-                { id: '1', name: 'Testosterone Enanthate', dosage: '500', freq: 'twiceWeekly', duration: '12', halfLife: 4.5 },
-                { id: '2', name: 'Dianabol', dosage: '30', freq: 'daily', duration: '4', halfLife: 0.2 }
+                { id: '1', name: 'Testosterone Enanthate', dosageMg: 500, dosage: fromMg(500, unitSystem), freq: 'twiceWeekly', duration: '12', halfLife: 4.5 },
+                { id: '2', name: 'Dianabol', dosageMg: 30, dosage: fromMg(30, unitSystem), freq: 'daily', duration: '4', halfLife: 0.2 }
             ]);
         } else if (type === 'cutting') {
             setCompounds([
-                { id: '1', name: 'Testosterone Propionate', dosage: '100', freq: 'eod', duration: '8', halfLife: 0.8 },
-                { id: '2', name: 'Trenbolone Acetate', dosage: '75', freq: 'eod', duration: '8', halfLife: 1 },
-                { id: '3', name: 'Winstrol', dosage: '50', freq: 'daily', duration: '6', halfLife: 0.4 }
+                { id: '1', name: 'Testosterone Propionate', dosageMg: 100, dosage: fromMg(100, unitSystem), freq: 'eod', duration: '8', halfLife: 0.8 },
+                { id: '2', name: 'Trenbolone Acetate', dosageMg: 75, dosage: fromMg(75, unitSystem), freq: 'eod', duration: '8', halfLife: 1 },
+                { id: '3', name: 'Winstrol', dosageMg: 50, dosage: fromMg(50, unitSystem), freq: 'daily', duration: '6', halfLife: 0.4 }
             ]);
         } else {
             setCompounds([
-                { id: '1', name: 'Testosterone Cypionate', dosage: '150', freq: 'weekly', duration: '20', halfLife: 5 }
+                { id: '1', name: 'Testosterone Cypionate', dosageMg: 150, dosage: fromMg(150, unitSystem), freq: 'weekly', duration: '20', halfLife: 5 }
             ]);
         }
-    }, []);
+    }, [unitSystem]);
 
     const generateICS = useCallback(() => {
         const events: ICSEvent[] = [];
@@ -126,12 +160,16 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
 
                 const dateString = toICSDate(currentDate);
 
-                let summary = `${comp.name} (${comp.dosage}mg)`;
+                // Use internal mg value, display in current unit system
+                const displayDosage = comp.dosage; // already converted for display
+                const unitLabel = isImperial ? content.units.oz : content.units.mg;
+
+                let summary = `${comp.name} (${displayDosage}${unitLabel})`;
                 if (stealthMode) {
                     summary = stealthAliases[Math.floor(Math.random() * stealthAliases.length)];
                 }
 
-                let description = `${content.cycleArchitect.form.compoundLabel}: ${comp.name} ${comp.dosage}${content.units.mg}.`.replace(/[,;]/g, '\\$&');
+                let description = `${content.cycleArchitect.form.compoundLabel}: ${comp.name} ${displayDosage}${unitLabel}.`.replace(/[,;]/g, '\\$&');
                 if (autoRotate && comp.halfLife > 1) {
                     description += ` Site: ${rotationSites[rotationIndex % rotationSites.length]}`;
                     rotationIndex++;
@@ -186,7 +224,7 @@ export const useCycleCalendarExporter = ({ content }: UseCycleCalendarExporterOp
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }, [startDate, compounds, stealthMode, autoRotate, autoPCT, content]);
+    }, [startDate, compounds, stealthMode, autoRotate, autoPCT, content, unitSystem]);
 
     return {
         isUnlocked,

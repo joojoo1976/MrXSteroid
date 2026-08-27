@@ -298,6 +298,7 @@ export interface CycleArchitectContent {
   subtitle: string;
   presetsTitle: string;
   configLabel: string;
+  unitSystemLabel: string;
   stealthModeLabel: string;
   rotationLabel: string;
   pctLabel: string;
@@ -1418,6 +1419,7 @@ export interface ContentStrings {
   // Common Abbreviations & Units
   units: {
     mg: string;
+    oz: string;
     g: string;
     ml: string;
     kcal: string;
