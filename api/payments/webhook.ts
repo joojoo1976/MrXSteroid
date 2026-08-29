@@ -19,12 +19,24 @@ import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
 import { verifyPaidAmount } from './verifyPaidAmount';
 
-const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
-
+/**
+ * Admin Supabase client for the webhook handler.
+ * SECURITY: no hardcoded fallback values. This handler writes to `invoices`
+ * and `profiles` (subscription activation), so it must use the service-role
+ * key — never the anon key, which would rely on RLS designed for
+ * unprivileged clients and could silently under- or over-permission this
+ * write path. Fail loudly at startup instead of degrading silently.
+ */
 const getSupabaseAdmin = () => {
-    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url) {
+        throw new Error('[Webhook] Missing SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL env var.');
+    }
+    if (!key) {
+        throw new Error('[Webhook] Missing SUPABASE_SERVICE_ROLE_KEY env var. The anon key must not be used here.');
+    }
 
     return createClient(url, key, {
         auth: { autoRefreshToken: false, persistSession: false },
