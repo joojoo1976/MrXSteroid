@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import nodemailer from "npm:nodemailer@6.9.7";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -8,69 +7,40 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const body = await req.json();
-    const { name, email, inquiry_type, subject, message } = body;
+    const { name, email, inquiry_type, subject, message } = await req.json();
+    if (!name || !email || !inquiry_type || !subject || !message) throw new Error("Missing fields");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Invalid email");
 
-    // 1. Validation
-    if (!name || !email || !inquiry_type || !subject || !message) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+    // 1. Save to DB (Guaranteed)
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    await supabase.from("support_tickets").insert({ name, email, inquiry_type, subject, message });
+
+    // 2. Send via Resend API (HTTPS - Bypasses Free Tier Block)
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    const fromEmail = Deno.env.get("SENDER_EMAIL") || "onboarding@resend.dev";
+
+    if (apiKey) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `Mr. X-Steroid <${fromEmail}>`,
+          to: ["[EMAIL]"], // Admin Target
+          reply_to: email, // User Reply-To
+          subject: `[${inquiry_type}] ${subject}`,
+          html: `<h3>New Ticket</h3><p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Type:</b> ${inquiry_type}</p><hr/><p>${message.replace(/\n/g, '<br>')}</p>`
+        })
+      });
+      if (!res.ok) console.error("Resend Error:", await res.text());
+      else console.log("✅ Email Sent via Resend");
     }
 
-    // 2. Database Integration (Save Ticket)
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      await supabase.from("support_tickets").insert({
-        name, email, inquiry_type, subject, message
-      });
-    }
-
-    // 3. Email Configuration (SMTP)
-    const smtpUser = Deno.env.get("SMTP_USER");
-    const smtpPass = Deno.env.get("SMTP_PASS");
-
-    if (!smtpUser || !smtpPass) {
-      console.error("Missing SMTP credentials");
-      // We continue execution even if SMTP fails, so DB is saved
-    } else {
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, 
-        auth: { user: smtpUser, pass: smtpPass },
-      });
-
-      await transporter.sendMail({
-        from: `"Mr. X-Steroid Support" <${smtpUser}>`, // Sender
-        to: "foryoutalk@gmail.com", // Admin Inbox
-        replyTo: email, // User's email for reply
-        subject: `[${inquiry_type}] ${subject}`,
-        text: `Name: ${name}\nEmail: ${email}\nType: ${inquiry_type}\n\nMessage:\n${message}`,
-        html: `<h3>New Support Ticket</h3><p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Type:</strong> ${inquiry_type}</p><hr/><p>${message.replace(/\n/g, '<br>')}</p>`
-      });
-    }
-
-    return new Response(
-      JSON.stringify({ message: "Ticket received successfully" }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-
-  } catch (error) {
-    console.error("Edge Function Error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal Server Error", details: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+  } catch (e) {
+    console.error("❌ Function Error:", e);
+    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
 });
