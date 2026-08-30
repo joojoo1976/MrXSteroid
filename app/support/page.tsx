@@ -32,7 +32,8 @@ export default function SupportForm() {
       setStatus("تم إرسال رسالتك بنجاح!");
       (e.target as HTMLFormElement).reset(); // Clear form on success
       
-    } catch (error) {
+    } catch {
+
       setStatus("حدث خطأ أثناء الإرسال. يرجى المحاولة لاحقاً.");
     } finally {
       setIsSubmitting(false); // Re-enable button
