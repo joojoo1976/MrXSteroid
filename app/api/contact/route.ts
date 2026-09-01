@@ -2,12 +2,11 @@
  * Route Handler — /api/contact
  * Contact / Customer Support Endpoint:
  * 1. Stores inbound message in Supabase database (`contact_messages` table).
- * 2. Dispatches an immediate rich email notification to admin email (`foryoutalk@gmail.com`).
- *    Priority: Resend API (primary) → SMTP/nodemailer (fallback).
+ * 2. Dispatches an immediate rich email notification to admin email (`[EMAIL]`).
+ *    Priority: SendGrid API (primary) → SMTP/nodemailer (fallback).
  * 3. Handles reply-to routing directly to the visitor's email.
  */
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
 import { createTransport } from 'nodemailer';
 
 const mapMissionType = (topic: string): string => {
@@ -169,7 +168,7 @@ export async function POST(req: Request) {
 
         // Dynamic Environment Config
         const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
-        const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+        const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || ''; const SENDGRID_FROM = process.env.SENDGRID_FROM || process.env.SENDGRID_FROM_EMAIL || 'Mr. X Steroid <[EMAIL]>';
         const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
         const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
         const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
@@ -179,7 +178,6 @@ export async function POST(req: Request) {
             process.env.SUPABASE_SMTP_PASSWORD ||
             '';
         const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'Mr. X Steroid Support';
-        const RESEND_FROM = process.env.RESEND_FROM || `Mr. X Steroid Support <onboarding@resend.dev>`;
 
         const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
         const SUPABASE_KEY =
@@ -225,7 +223,7 @@ export async function POST(req: Request) {
             dbError = msg;
         }
 
-        // 2. Email Dispatch — Resend (primary) → SMTP (fallback)
+        // 2. Email Dispatch — SendGrid (primary) → SMTP (fallback)
         let emailSent = false;
         let emailError: string | null = null;
         let emailProvider = 'none';
@@ -234,30 +232,41 @@ export async function POST(req: Request) {
         const plainText = buildPlainText({ operatorName, email, missionType, orderId, subject, message, userAgent, savedId });
         const emailSubject = `[Mr. X Support] ${missionTypeRaw.toUpperCase()}: ${subject}`;
 
-        // 2a. Primary: Resend API
-        if (RESEND_API_KEY) {
+        // 2a. Primary: SendGrid API
+        if (SENDGRID_API_KEY) {
             try {
-                const resend = new Resend(RESEND_API_KEY);
-                const { data: resendData, error: resendErr } = await resend.emails.send({
-                    from: RESEND_FROM,
-                    to: [DESTINATION_EMAIL],
-                    replyTo: email,
-                    subject: emailSubject,
-                    text: plainText,
-                    html: htmlContent,
+                const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        personalizations: [{
+                            to: [{ email: DESTINATION_EMAIL }],
+                            replyTo: { email: email },
+                        }],
+                        from: { email: SENDGRID_FROM },
+                        subject: emailSubject,
+                        content: [
+                            { type: 'text/plain', value: plainText },
+                            { type: 'text/html', value: htmlContent },
+                        ],
+                    }),
                 });
 
-                if (resendErr) {
-                    console.error('❌ [Contact] Resend API error:', resendErr.message || JSON.stringify(resendErr));
-                    emailError = resendErr.message || 'Resend error';
-                } else {
+                if (response.ok) {
                     emailSent = true;
-                    emailProvider = 'resend';
-                    console.log('✅ [Contact] Email dispatched via Resend (id:', resendData?.id, ') to', DESTINATION_EMAIL);
+                    emailProvider = 'sendgrid';
+                    console.log('✅ [Contact] Email dispatched via SendGrid to', DESTINATION_EMAIL);
+                } else {
+                    const errorBody = await response.text().catch(() => '');
+                    console.error('❌ [Contact] SendGrid API error:', response.status, errorBody);
+                    emailError = `SendGrid error: ${response.status}`;
                 }
-            } catch (resendEx) {
-                const msg = resendEx instanceof Error ? resendEx.message : String(resendEx);
-                console.error('❌ [Contact] Resend exception:', msg);
+            } catch (sendgridEx) {
+                const msg = sendgridEx instanceof Error ? sendgridEx.message : String(sendgridEx);
+                console.error('❌ [Contact] SendGrid exception:', msg);
                 emailError = msg;
             }
         }
@@ -292,8 +301,8 @@ export async function POST(req: Request) {
             }
         }
 
-        if (!emailSent && !RESEND_API_KEY && !SMTP_PASS) {
-            console.warn('⚠️ [Contact] No email credentials set (RESEND_API_KEY or SMTP_PASS) — email was not sent.');
+        if (!emailSent && !SENDGRID_API_KEY && !SMTP_PASS) {
+            console.warn('⚠️ [Contact] No email credentials set (SENDGRID_API_KEY or SMTP_PASS) — email was not sent.');
             emailError = 'No email provider configured';
         }
 
