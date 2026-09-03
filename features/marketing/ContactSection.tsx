@@ -258,11 +258,11 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">{content.contactDirectSecureLine || "Direct Secure Line"}</p>
-                                            <p className="text-sm font-bold text-white tracking-tight leading-none">{content.contactInfoEmail || 'support@mrxsteroid.com'}</p>
+                                            <p className="text-sm font-bold text-white tracking-tight leading-none">{content.contactInfoEmail || 'support@www.mrxsteroid.com'}</p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => copyToClipboard(content.contactInfoEmail || 'support@mrxsteroid.com')}
+                                        onClick={() => copyToClipboard(content.contactInfoEmail || 'support@www.mrxsteroid.com')}
                                         className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors hover:bg-gold-500 hover:text-black"
                                     >
                                         {copiedEmail ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}

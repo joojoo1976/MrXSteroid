@@ -56,7 +56,7 @@ Sender Email:        foryoutalk@gmail.com
 في Authentication Settings > Redirect URLs أضف:
 
 `
-https://mrxsteroid.com/auth/callback
+https://www.mrxsteroid.com/auth/callback
 http://localhost:5173/auth/callback
 http://localhost:3000/auth/callback
 `

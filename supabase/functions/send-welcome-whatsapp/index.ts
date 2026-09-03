@@ -18,8 +18,8 @@ serve(async (req: Request) => {
 
         // Template logic for multi-language consistency
         const templates = {
-            ar: `مرحباً بك في عالم مستر إكس! 🦅 تم تفعيل اشتراكك في باقة ${tier}. يمكنك تحميل كتابك الآن من الرابط: mrxsteroid.vercel.app/dashboard`,
-            en: `Welcome to the Mr. X protocols! 🦅 Your ${tier} subscription is now active. You can download your book from: mrxsteroid.vercel.app/dashboard`
+            ar: `مرحباً بك في عالم مستر إكس! 🦅 تم تفعيل اشتراكك في باقة ${tier}. يمكنك تحميل كتابك الآن من الرابط: www.mrxsteroid.com/dashboard`,
+            en: `Welcome to the Mr. X protocols! 🦅 Your ${tier} subscription is now active. You can download your book from: www.mrxsteroid.com/dashboard`
         }
 
         const body = templates[lang as keyof typeof templates] || templates.en

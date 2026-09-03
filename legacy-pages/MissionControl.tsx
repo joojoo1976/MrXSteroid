@@ -1812,7 +1812,7 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
                         <label className="text-[10px] font-black text-zinc-500 uppercase">{mc.supportEmail}</label>
-                        <input value={local['support_email'] || ''} onChange={e => setVal('support_email', e.target.value)} className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none" placeholder="support@mrxsteroid.com" />
+                        <input value={local['support_email'] || ''} onChange={e => setVal('support_email', e.target.value)} className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-gold-500 outline-none" placeholder="support@www.mrxsteroid.com" />
                     </div>
                 </div>
             </div>

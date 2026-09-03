@@ -25,7 +25,7 @@ const envSchema = z.object({
     PAYMOB_PAYPAL_INTEGRATION_ID: z.string().optional().default('5792310'),
 
     // Callback URLs
-    SPACEREMIT_CALLBACK_URL: z.string().url().default('https://mrxsteroid.vercel.app/api/payments/callback'),
+    SPACEREMIT_CALLBACK_URL: z.string().url().default('https://www.mrxsteroid.com/api/payments/callback'),
     PAYMENT_SUCCESS_URL: z.string().default(`${typeof window !== 'undefined' ? window.location.origin : ''}/success`),
     PAYMENT_CANCEL_URL: z.string().default(`${typeof window !== 'undefined' ? window.location.origin : ''}/cancel`),
 
@@ -34,7 +34,7 @@ const envSchema = z.object({
 
     // App Config
     MODE: z.enum(['development', 'production', 'test']).default('development'),
-    SITE_URL: z.string().url().optional().default('https://mrxsteroid.vercel.app'),
+    SITE_URL: z.string().url().optional().default('https://www.mrxsteroid.com'),
     ENCRYPTION_KEY: z.string().min(1, 'Encryption key is required').optional(),
 
     // AI Configuration

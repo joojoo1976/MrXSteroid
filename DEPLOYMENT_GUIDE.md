@@ -65,10 +65,10 @@
 NEXT_PUBLIC_SUPABASE_URL=https://alghvtpkpspnqupbvodu.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw
 VITE_SPACEREMIT_PUBLIC_KEY=***SPACEREMIT_PUBLIC_KEY_REDACTED***
-VITE_SPACEREMIT_CALLBACK_URL=https://mrxsteroid.vercel.app/api/payments/callback
-VITE_PAYMENT_SUCCESS_URL=https://mrxsteroid.vercel.app/success
-VITE_PAYMENT_CANCEL_URL=https://mrxsteroid.vercel.app/cancel
-VITE_SITE_URL=https://mrxsteroid.vercel.app
+VITE_SPACEREMIT_CALLBACK_URL=https://www.mrxsteroid.com/api/payments/callback
+VITE_PAYMENT_SUCCESS_URL=https://www.mrxsteroid.com/success
+VITE_PAYMENT_CANCEL_URL=https://www.mrxsteroid.com/cancel
+VITE_SITE_URL=https://www.mrxsteroid.com
 VITE_ENCRYPTION_KEY=MrXSteroid2024SecretKey32Chars!
 ```
 

@@ -214,7 +214,7 @@ export class InvoicePdfService {
 
         <div class="footer">
             <p>© ${new Date().getFullYear()} Mr. X Steroid. ${isRTL ? 'فاتورة إلكترونية معتمدة صادرة من النظام الآلي' : 'Certified digital invoice issued automatically by Mr. X Steroid System'}.</p>
-            <p>Support: foryoutalk@hotmail.com | https://mrxsteroid.vercel.app</p>
+            <p>Support: foryoutalk@hotmail.com | https://www.mrxsteroid.com</p>
         </div>
     </div>
 

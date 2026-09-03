@@ -125,7 +125,7 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
         ogDesc.setAttribute('content', description);
 
         // Dynamic hreflang & Canonical URL SEO updates
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mrxsteroid.vercel.app';
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.mrxsteroid.com';
         const path = window.location.pathname.replace(/^\/(ar|en)/, '') || '';
 
         const arUrl = `${baseUrl}/ar${path}`;

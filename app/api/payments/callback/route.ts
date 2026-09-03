@@ -9,7 +9,7 @@ import { verifyPaidAmount } from '../../../../api/payments/verifyPaidAmount';
 
 const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
-const APP_BASE = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://mrxsteroid.vercel.app';
+const APP_BASE = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://www.mrxsteroid.com';
 
 const getSupabaseAdmin = () => {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;

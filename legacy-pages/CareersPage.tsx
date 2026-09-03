@@ -106,8 +106,8 @@ const CareersPage: React.FC<CareersPageProps> = ({ content, navigateTo: _navigat
                         ? "نحن دائماً منفتحون على المواهب الاستثنائية. أرسل لنا سيرتك الذاتية وخطاب اهتمام يوضح كيف يمكنك تغيير اللعبة."
                         : "We are always open to exceptional talents. Send us your CV and a letter of interest explaining how you can change the game."}
                 </p>
-                <a href="mailto:talent@mrxsteroid.com" className="text-gold-500 font-black uppercase tracking-[0.2em] border-b-2 border-gold-500/30 hover:border-gold-500 transition-all pb-2">
-                    talent@mrxsteroid.com
+                <a href="mailto:talent@www.mrxsteroid.com" className="text-gold-500 font-black uppercase tracking-[0.2em] border-b-2 border-gold-500/30 hover:border-gold-500 transition-all pb-2">
+                    talent@www.mrxsteroid.com
                 </a>
             </div>
         </div>

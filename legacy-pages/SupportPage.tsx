@@ -19,9 +19,9 @@ const SupportPage: React.FC<SupportPageProps> = ({ content, navigateTo }) => {
     const contactMethods = [
         {
             title: content.supportEmailTitle,
-            value: content.contactInfoEmail || "support@mrxsteroid.com",
+            value: content.contactInfoEmail || "support@www.mrxsteroid.com",
             icon: Mail,
-            action: `mailto:${content.contactInfoEmail || "support@mrxsteroid.com"}`
+            action: `mailto:${content.contactInfoEmail || "support@www.mrxsteroid.com"}`
         },
         {
             title: content.supportWhatsAppTitle,

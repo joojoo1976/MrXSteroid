@@ -211,7 +211,7 @@ export class PaymobGateway implements IPaymentGateway {
                     order_id: paymobOrderId,
                     billing_data: {
                         apartment: 'NA',
-                        email: metadata.email || 'customer@mrxsteroid.com',
+                        email: metadata.email || 'customer@www.mrxsteroid.com',
                         floor: 'NA',
                         first_name: firstName,
                         street: 'NA',

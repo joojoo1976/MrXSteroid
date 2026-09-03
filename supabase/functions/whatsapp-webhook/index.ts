@@ -21,7 +21,7 @@ serve(async (req) => {
         const twiml = new MessagingResponse();
 
         if (incomingMsg.includes("سعر") || incomingMsg.includes("price")) {
-            twiml.message("سعر الكتاب حالياً هو 49.99$ بدلاً من 100$. يمكنك الشراء من الرابط: mrxsteroid.vercel.app/buy");
+            twiml.message("سعر الكتاب حالياً هو 49.99$ بدلاً من 100$. يمكنك الشراء من الرابط: www.mrxsteroid.com/buy");
         } else if (incomingMsg.includes("تفعيل") || incomingMsg.includes("activate")) {
             twiml.message("من فضلك أرسل رقم الطلب الخاص بك ليتم تفعيل حسابك فوراً.");
         } else {
