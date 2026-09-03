@@ -55,3 +55,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
 export function pageToPath(page: Page): string {
     return PAGE_TO_PATH[page] || '/';
 }
+
+export function pathToPage(path: string): Page | null {
+    // Strip leading /ar or /en locale prefixes
+    const normalized = path.replace(/^\/(ar|en)(?=\/|$)/, '') || '/';
+    for (const [page, p] of Object.entries(PAGE_TO_PATH)) {
+        if (p === normalized) return page as Page;
+    }
+    return null;
+}

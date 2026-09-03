@@ -8,7 +8,7 @@ import { Page, PricingTier, Language } from '@/shared/types/types';
 import { footerKeywordsPoolAr, footerKeywordsPoolEn, salesDataAr, salesDataEn } from '../../i18n/data';
 import { toast } from 'sonner';
 
-import Header from '../../shared/ui/Header';
+import GlobalHeader from '../../shared/ui/GlobalHeader';
 import Hero from '../../shared/ui/Hero';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ArabicVideoSection } from '../../features/marketing/ArabicVideoSection';
@@ -32,7 +32,7 @@ import PaymobProductModal from '../../features/modal/PaymobProductModal';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 
 export default function FullOriginalHomePage() {
-    const { content, isRTL, language: lang, theme, setTheme } = usePreferences();
+    const { content, isRTL, language: lang } = usePreferences();
     const { user, signOut } = useAuth();
     const navigateTo = useLegacyNavigation();
 
@@ -84,16 +84,9 @@ export default function FullOriginalHomePage() {
     const footerKeywords = isRTL ? footerKeywordsPoolAr : footerKeywordsPoolEn;
     const salesData = isRTL ? salesDataAr : salesDataEn;
 
-    const currentTheme = (theme === 'system' ? 'dark' : theme) as 'light' | 'dark';
-
     return (
         <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
-            <Header
-                theme={theme as 'light' | 'dark' | 'system'}
-                resolvedTheme={currentTheme}
-                setTheme={setTheme as (theme: 'light' | 'dark' | 'system') => void}
-                colorTheme={colorTheme}
-                changeColorTheme={setColorTheme}
+            <GlobalHeader
                 content={content}
                 currentPage={Page.HOME}
                 navigateTo={navigateTo}
