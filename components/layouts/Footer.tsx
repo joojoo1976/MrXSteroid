@@ -10,12 +10,23 @@ const LEGAL_LINKS = [
     { label: 'Contact', href: '/contact' },
 ];
 
+const TOOL_LINKS = [
+    { label: 'Smart Tools', href: '/smarttools' },
+    { label: 'Macro Calculator', href: '/macro' },
+    { label: 'Body Fat', href: '/bodyfat' },
+    { label: 'Injection Map', href: '/injection' },
+    { label: 'Half-Life', href: '/halflife' },
+    { label: 'Lab Reference', href: '/lab' },
+    { label: 'Genetic Potential', href: '/genetic' },
+    { label: 'Premium Resources', href: '/premium-resources' },
+];
+
 export default function Footer() {
     return (
         <footer className="border-t border-white/10 bg-black/40">
             {/* SEO copy block */}
             <div className="mx-auto max-w-7xl px-6 py-12">
-                <div className="grid gap-10 md:grid-cols-3">
+                <div className="grid gap-10 md:grid-cols-4">
                     <div>
                         <a href="/" className="flex items-center gap-2 text-lg font-black tracking-tight">
                             <span className="neon-text">MR</span>
@@ -28,7 +39,25 @@ export default function Footer() {
                         </p>
                     </div>
 
+                    <nav aria-label="Tools" className="grid grid-cols-2 gap-3">
+                        <h3 className="col-span-2 text-xs font-black uppercase tracking-widest text-gold-400">
+                            Smart Tools
+                        </h3>
+                        {TOOL_LINKS.map((l) => (
+                            <a
+                                key={l.href}
+                                href={l.href}
+                                className="text-xs font-semibold text-zinc-400 transition-colors hover:text-[rgb(var(--neon-primary))]"
+                            >
+                                {l.label}
+                            </a>
+                        ))}
+                    </nav>
+
                     <nav aria-label="Legal" className="grid grid-cols-2 gap-3">
+                        <h3 className="col-span-2 text-xs font-black uppercase tracking-widest text-gold-400">
+                            Legal
+                        </h3>
                         {LEGAL_LINKS.map((l) => (
                             <a
                                 key={l.href}
@@ -41,7 +70,7 @@ export default function Footer() {
                     </nav>
 
                     <div>
-                        <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">SEO</h3>
+                        <h3 className="text-xs font-black uppercase tracking-widest text-gold-400">SEO</h3>
                         <p className="mt-3 text-xs leading-relaxed text-zinc-600">
                             Metabolic rate calculator · TDEE &amp; BMR estimation · body-fat
                             projection · adaptive nutrition protocol · 12-week physique
