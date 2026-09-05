@@ -36,6 +36,7 @@ import {
     Dna,
     Syringe,
     Timer,
+    ExternalLink,
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { MockUser } from '../lib/mock-auth-service';
@@ -45,6 +46,7 @@ import DynamicBrandLogo from './DynamicBrandLogo';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import ThemeSwitcher from './ThemeSwitcher';
+import { DROPDOWN_CONFIGS, MenuItem } from '@/shared/config/menuConfig';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -79,6 +81,22 @@ const getProfilePic = (
     if (user.user_metadata?.picture) return user.user_metadata.picture;
     const emailHash = md5(user.email?.toLowerCase().trim() || '');
     return `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=100`;
+};
+
+const getIconComponent = (iconName?: string): React.ReactNode => {
+    if (!iconName) return null;
+    const icons: Record<string, React.ReactNode> = {
+        Flame: <Flame className="w-3.5 h-3.5" />,
+        Scale: <Scale className="w-3.5 h-3.5" />,
+        Syringe: <Syringe className="w-3.5 h-3.5" />,
+        Timer: <Timer className="w-3.5 h-3.5" />,
+        Beaker: <Beaker className="w-3.5 h-3.5" />,
+        Dna: <Dna className="w-3.5 h-3.5" />,
+        Trophy: <Trophy className="w-3.5 h-3.5 text-gold-500" />,
+        CalendarCheck: <CalendarCheck className="w-3.5 h-3.5 text-gold-500" />,
+        Activity: <Activity className="w-3.5 h-3.5 text-gold-500" />,
+    };
+    return icons[iconName] || null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -185,7 +203,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                     isScrolled ? 'shadow-md dark:shadow-black/40' : 'shadow-none'
                 }`}
             >
-                <nav className="container mx-auto px-4 lg:px-6 h-14 md:h-16 flex items-center justify-between gap-3">
+                <nav className="container mx-auto px-4 lg:px-6 h-12 md:h-14 flex items-center justify-between gap-3">
                     {/* Brand / Logo */}
                     <button
                         onClick={goHome}
@@ -212,69 +230,58 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             label={content.navFeatures || (isRTL ? 'المميزات' : 'Features')}
                         />
 
-                        {/* AI Tools Dropdown */}
+                        {/* AI Tools Dropdown — /smarttools */}
                         <DesktopDropdown
-                            label={content.navAiTools || (isRTL ? 'أدوات ذكية' : 'AI Tools')}
+                            label={isRTL ? 'أدوات ذكية' : 'Smart Tools'}
                             active={toolMeta.some((t) => t.page === currentPage)}
-                            isOpen={openDesktopDropdown === 'tools'}
+                            isOpen={openDesktopDropdown === 'smarttools'}
                             onToggle={() =>
-                                setOpenDesktopDropdown(openDesktopDropdown === 'tools' ? null : 'tools')
+                                setOpenDesktopDropdown(openDesktopDropdown === 'smarttools' ? null : 'smarttools')
                             }
                             onClose={() => setOpenDesktopDropdown(null)}
+                            onLabelClick={() => {
+                                window.location.href = '/smarttools';
+                            }}
                             isRTL={isRTL}
                         >
-                            {toolMeta.slice(0, 4).map((tool) => (
+                            {DROPDOWN_CONFIGS[0].items.map((item, idx) => (
                                 <DropdownItem
-                                    key={tool.key}
-                                    icon={tool.icon}
-                                    label={tool.label}
-                                    active={currentPage === tool.page}
+                                    key={item.href}
+                                    icon={getIconComponent(item.icon)}
+                                    label={isRTL ? item.labelAr : item.label}
+                                    active={currentPage === item.page}
                                     onClick={() => {
-                                        navigateTo(tool.page);
-                                        setOpenDesktopDropdown(null);
+                                        window.location.href = item.href;
                                     }}
                                 />
                             ))}
                         </DesktopDropdown>
 
-                        {/* Premium Resources Dropdown */}
+                        {/* Premium Resources Dropdown — /premium-resources */}
                         <DesktopDropdown
-                            label={content.navPremiumResources || (isRTL ? 'موارد حصرية' : 'Premium')}
+                            label={isRTL ? 'موارد حصرية' : 'Premium'}
                             active={currentPage === Page.CYCLE_ARCHITECT || currentPage === Page.TIMELINE}
                             isOpen={openDesktopDropdown === 'premium'}
                             onToggle={() =>
                                 setOpenDesktopDropdown(openDesktopDropdown === 'premium' ? null : 'premium')
                             }
                             onClose={() => setOpenDesktopDropdown(null)}
+                            onLabelClick={() => {
+                                window.location.href = '/premium-resources';
+                            }}
                             isRTL={isRTL}
                         >
-                            <DropdownItem
-                                icon={<Trophy className="w-3.5 h-3.5 text-gold-500" />}
-                                label={isRTL ? 'الجدول الزمني للتحول' : 'Transformation Timeline'}
-                                active={currentPage === Page.TIMELINE}
-                                onClick={() => {
-                                    navigateTo(Page.TIMELINE);
-                                    setOpenDesktopDropdown(null);
-                                }}
-                            />
-                            <DropdownItem
-                                icon={<CalendarCheck className="w-3.5 h-3.5 text-gold-500" />}
-                                label={content.navToolNames?.cycleArchitect || (isRTL ? 'مهندس الدورة' : 'Cycle Architect')}
-                                active={currentPage === Page.CYCLE_ARCHITECT}
-                                onClick={() => {
-                                    navigateTo(Page.CYCLE_ARCHITECT);
-                                    setOpenDesktopDropdown(null);
-                                }}
-                            />
-                            <DropdownItem
-                                icon={<Activity className="w-3.5 h-3.5 text-gold-500" />}
-                                label={isRTL ? 'المرجع الذكي للتحاليل' : 'Smart Lab Reference'}
-                                active={currentPage === Page.LAB}
-                                onClick={() => {
-                                    navigateTo(Page.LAB);
-                                    setOpenDesktopDropdown(null);
-                                }}
-                            />
+                            {DROPDOWN_CONFIGS[1].items.map((item) => (
+                                <DropdownItem
+                                    key={item.href}
+                                    icon={getIconComponent(item.icon)}
+                                    label={isRTL ? item.labelAr : item.label}
+                                    active={currentPage === item.page}
+                                    onClick={() => {
+                                        window.location.href = item.href;
+                                    }}
+                                />
+                            ))}
                         </DesktopDropdown>
 
                         <NavLink
@@ -422,7 +429,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                         opacity: isSubNavVisible ? 1 : 0,
                     }}
                     transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md"
+                    className="overflow-hidden border-b border-zinc-200/40 dark:border-zinc-800/40 bg-white/60 dark:bg-zinc-950/50 backdrop-blur-md"
                 >
                     <div className="container mx-auto px-4 lg:px-6">
                         <div className="flex items-center justify-center gap-1 py-1.5 overflow-x-auto scrollbar-none">
@@ -622,10 +629,13 @@ const DesktopDropdown: React.FC<{
     isOpen: boolean;
     onToggle: () => void;
     onClose: () => void;
+    onLabelClick?: () => void;
     isRTL: boolean;
     children: React.ReactNode;
-}> = ({ label, active, isOpen, onToggle, onClose, isRTL, children }) => {
+}> = ({ label, active, isOpen, onToggle, onClose, onLabelClick, isRTL, children }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -636,25 +646,55 @@ const DesktopDropdown: React.FC<{
         return () => document.removeEventListener('mousedown', onClick);
     }, [isOpen, onClose]);
 
+    const showDropdown = isOpen || isHovered;
+
+    const handleMouseEnter = () => {
+        if (closeTimeoutRef.current) {
+            clearTimeout(closeTimeoutRef.current);
+            closeTimeoutRef.current = null;
+        }
+        setIsHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+        closeTimeoutRef.current = setTimeout(() => {
+            setIsHovered(false);
+        }, 150);
+    };
+
     return (
-        <div ref={ref} className="relative">
-            <button
-                onClick={onToggle}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase tracking-widest transition-colors ${
-                    active ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-300 hover:text-gold-500'
-                }`}
-            >
-                {label}
-                <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
+        <div
+            ref={ref}
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={onLabelClick}
+                    className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase tracking-widest transition-colors ${
+                        active ? 'text-gold-500' : 'text-zinc-600 dark:text-zinc-300 hover:text-gold-500'
+                    }`}
+                >
+                    {label}
+                    <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                </button>
+                <button
+                    onClick={onToggle}
+                    className="px-1 py-1.5 text-zinc-600 dark:text-zinc-300 hover:text-gold-500 transition-colors"
+                    aria-label="Toggle dropdown"
+                >
+                    <ChevronDown className={`w-3 h-3 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                </button>
+            </div>
             <AnimatePresence>
-                {isOpen && (
+                {showDropdown && (
                     <motion.div
                         initial={{ opacity: 0, y: -6, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.97 }}
                         transition={{ duration: 0.15, ease: 'easeOut' }}
-                        className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} mt-1 min-w-[200px] py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl backdrop-blur-xl z-50`}
+                        className={`absolute top-full ${isRTL ? 'end-0' : 'start-0'} mt-1 min-w-[240px] py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl backdrop-blur-xl z-[100]`}
                     >
                         {children}
                     </motion.div>
