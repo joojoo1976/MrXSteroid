@@ -19,11 +19,12 @@ const SmartToolsPage = () => {
         Flame, Scale, Syringe, Timer, Beaker, Dna,
     };
 
-    const title = lang === Language.AR ? 'أدوات مRx الذكية' : 'Smart Tools';
+    const title = lang === Language.AR ? 'الأدوات الذكية' : 'Smart Tools';
     const subtitle = lang === Language.AR
-        ? 'استخدم أدواتنا الحسابية المتقدمة لتحليل و优化 خط plans التغذية والدورة والتحاليل'
-        : 'Use our advanced calculators to analyze and optimize your nutrition, cycle, and lab plans';
+        ? 'استخدم أدواتنا الحسابية المتقدمة لتحسين خطط التغذية والدورة والتحاليل بدقة علمية'
+        : 'Use our advanced calculators to optimize your nutrition, cycle, and lab plans with scientific precision';
     const exploreBtn = lang === Language.AR ? 'ابدأ الأداة' : 'Open Tool';
+    const aiBadge = lang === Language.AR ? 'مدعوم بالذكاء الاصطناعي' : 'AI-Powered Calculators';
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-black dark:to-zinc-900">
@@ -38,7 +39,7 @@ const SmartToolsPage = () => {
                         >
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-600 dark:text-gold-400 text-xs font-black uppercase tracking-widest mb-4">
                                 <Sparkles className="w-3.5 h-3.5" />
-                                {lang === Language.AR ? 'ento AI-Powered' : 'AI-Powered Calculators'}
+                                {aiBadge}
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white mb-3">
                                 {title}
