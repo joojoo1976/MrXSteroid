@@ -35,7 +35,7 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50">
+        <header className="sticky top-0 z-[100]">
             <div className="glass-strong border-b border-white/10 bg-black/80 backdrop-blur-xl">
                 <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
                     <a href="/" className="flex items-center gap-2 text-lg font-black tracking-tight">
@@ -59,7 +59,7 @@ export default function Header() {
                             </button>
 
                             {/* Dropdown Menu Card */}
-                            <div className="absolute top-full right-0 mt-1 w-64 rounded-2xl bg-zinc-950/95 border border-gold-500/30 p-2 shadow-2xl backdrop-blur-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div className="absolute top-full right-0 mt-1 w-64 rounded-2xl bg-zinc-950/95 border border-gold-500/30 p-2 shadow-2xl backdrop-blur-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[200]">
                                 <a
                                     href="/TransformationTimeline"
                                     className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gold-500/10 hover:border-gold-500/30 text-white transition-all group/item border border-transparent"

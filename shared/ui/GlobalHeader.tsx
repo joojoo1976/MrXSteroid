@@ -199,7 +199,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
             {/* HEADER 1 — Primary (Always visible, glass-morphism)             */}
             {/* ═══════════════════════════════════════════════════════════════ */}
             <div
-                className={`relative w-full border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/85 dark:bg-zinc-950/80 backdrop-blur-xl transition-all duration-300 ${
+                className={`relative w-full border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/85 dark:bg-zinc-950/80 backdrop-blur-xl transition-all duration-300 z-[60] ${
                     isScrolled ? 'shadow-md dark:shadow-black/40' : 'shadow-none'
                 }`}
             >
@@ -429,7 +429,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                         opacity: isSubNavVisible ? 1 : 0,
                     }}
                     transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden border-b border-zinc-200/40 dark:border-zinc-800/40 bg-white/60 dark:bg-zinc-950/50 backdrop-blur-md"
+                    className="relative z-40 overflow-hidden border-b border-zinc-200/40 dark:border-zinc-800/40 bg-white/60 dark:bg-zinc-950/50 backdrop-blur-md"
                 >
                     <div className="container mx-auto px-4 lg:px-6">
                         <div className="flex items-center justify-center gap-1 py-1.5 overflow-x-auto scrollbar-none">
