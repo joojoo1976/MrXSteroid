@@ -487,28 +487,47 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                 label={content.navFeatures || (isRTL ? 'المميزات' : 'Features')}
                             />
 
-                            <MobileSectionLabel label={content.navAiTools || (isRTL ? 'أدوات ذكية' : 'AI Tools')} />
-                            {toolMeta.map((tool) => (
+                            <MobileSectionLabel label={isRTL ? 'أدوات ذكية' : 'Smart Tools'} />
+                            {DROPDOWN_CONFIGS[0].items.map((item) => (
                                 <MobileNavButton
-                                    key={tool.key}
-                                    onClick={() => { navigateTo(tool.page); setIsMobileMenuOpen(false); }}
-                                    label={tool.label}
-                                    active={currentPage === tool.page}
+                                    key={item.href}
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        window.location.href = item.href;
+                                    }}
+                                    label={isRTL ? item.labelAr : item.label}
+                                    active={currentPage === item.page}
                                     indented
                                 />
                             ))}
-
-                            <MobileSectionLabel label={content.navPremiumResources || (isRTL ? 'موارد حصرية' : 'Premium')} />
                             <MobileNavButton
-                                onClick={() => { navigateTo(Page.TIMELINE); setIsMobileMenuOpen(false); }}
-                                label={isRTL ? 'الجدول الزمني' : 'Timeline'}
-                                active={currentPage === Page.TIMELINE}
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    window.location.href = '/smarttools';
+                                }}
+                                label={isRTL ? '← كل الأدوات' : '← View all tools'}
                                 indented
                             />
+
+                            <MobileSectionLabel label={isRTL ? 'موارد حصرية' : 'Premium Resources'} />
+                            {DROPDOWN_CONFIGS[1].items.map((item) => (
+                                <MobileNavButton
+                                    key={item.href}
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        window.location.href = item.href;
+                                    }}
+                                    label={isRTL ? item.labelAr : item.label}
+                                    active={currentPage === item.page}
+                                    indented
+                                />
+                            ))}
                             <MobileNavButton
-                                onClick={() => { navigateTo(Page.CYCLE_ARCHITECT); setIsMobileMenuOpen(false); }}
-                                label={content.navToolNames?.cycleArchitect || (isRTL ? 'مهندس الدورة' : 'Cycle Architect')}
-                                active={currentPage === Page.CYCLE_ARCHITECT}
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    window.location.href = '/premium-resources';
+                                }}
+                                label={isRTL ? '← كل الموارد' : '← View all resources'}
                                 indented
                             />
 
