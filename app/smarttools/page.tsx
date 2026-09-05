@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ComponentType } from 'react';
 import {
@@ -13,7 +12,6 @@ import { getAllToolLinks } from '@/shared/config/menuConfig';
 
 const SmartToolsPage = () => {
     const { language: lang } = usePreferences();
-    const [selectedCategory] = useState<string | null>(null);
 
     const tools = getAllToolLinks(lang);
 
