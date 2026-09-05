@@ -60,7 +60,7 @@ export const SMART_TOOLS: MenuItem[] = [
         href: '/injection',
         page: Page.INJECTION,
         description: 'Interactive injection site map with rotation tracker',
-        descriptionAr: 'خريطة م sites التفاعلية مع متتبع الدورة',
+        descriptionAr: 'خريطة مواقع الحقن التفاعلية مع متتبع الدورة',
         icon: 'Syringe',
     },
     {
