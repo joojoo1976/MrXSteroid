@@ -269,4 +269,11 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://mrxsteroid.com/all-links</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>

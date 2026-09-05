@@ -19,6 +19,7 @@ const TOOL_LINKS = [
     { label: 'Lab Reference', href: '/lab' },
     { label: 'Genetic Potential', href: '/genetic' },
     { label: 'Premium Resources', href: '/premium-resources' },
+    { label: 'All Project Links', href: '/all-links' },
 ];
 
 export default function Footer() {

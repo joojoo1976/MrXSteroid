@@ -90,6 +90,15 @@ export const SMART_TOOLS: MenuItem[] = [
         descriptionAr: 'صيغة Casey للتنبؤ بالبدن الطبيعي والمطور',
         icon: 'Dna',
     },
+    {
+        label: 'Cycle Schedule Sync',
+        labelAr: 'مزامنة جدول الكورس',
+        href: '/cycle',
+        page: Page.CYCLE_ARCHITECT,
+        description: 'Sync your cycle schedule across all your devices',
+        descriptionAr: 'مزامنة جدول الدورة عبر جميع أجهزتك',
+        icon: 'CalendarCheck',
+    },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
