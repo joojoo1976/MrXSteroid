@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 import { ComponentType } from 'react';
 import {
     Trophy, CalendarCheck, Activity,
-    ArrowRight, ChevronRight, Crown,
+    ArrowRight, ChevronRight, Crown, Home,
 } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { Language } from '@/shared/types/types';
 import { PREMIUM_RESOURCES } from '@/shared/config/menuConfig';
 
 const PremiumResourcesPage = () => {
-    const { language: lang } = usePreferences();
+    const { language: lang, isRTL } = usePreferences();
 
     const resources = PREMIUM_RESOURCES.map(item => ({
         ...item,
@@ -29,11 +29,22 @@ const PremiumResourcesPage = () => {
         : 'Use our exclusive prediction engines and tools to develop your performance';
     const exploreBtn = lang === Language.AR ? 'ابدأ الأداة' : 'Open Resource';
     const premiumBadge = lang === Language.AR ? 'حصرية' : 'Premium';
+    const homeLabel = lang === Language.AR ? 'الرئيسية' : 'Home';
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-black dark:to-zinc-900">
             <div className="container mx-auto px-4 py-8 md:py-12">
                 <div className="max-w-6xl mx-auto">
+                    {/* Breadcrumbs */}
+                    <nav className="mb-6 flex items-center gap-2 text-xs text-zinc-500">
+                        <a href="/" className="flex items-center gap-1.5 hover:text-gold-500 transition-colors">
+                            <Home className="w-3.5 h-3.5" />
+                            <span>{homeLabel}</span>
+                        </a>
+                        <ChevronRight className={`w-3 h-3 ${isRTL ? 'rotate-180' : ''}`} />
+                        <span className="text-gold-500 font-bold">{title}</span>
+                    </nav>
+
                     {/* Header */}
                     <div className="text-center mb-10 md:mb-16">
                         <motion.div
