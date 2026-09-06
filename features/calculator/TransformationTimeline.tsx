@@ -11,6 +11,7 @@ import {
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
+import { Popover, PopoverTrigger, PopoverContent } from '../../shared/ui/popover';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useTransformationCalculator } from './hooks/useTransformationCalculator';
 import {
@@ -88,6 +89,43 @@ const MetricBar: React.FC<{ label: string; value: number; colorClass: string; ic
             </div>
         </div>
     </div>
+));
+
+/**
+ * InfoPopover — a compact "what is this + how to read it" explainer anchored
+ * to an info icon. Rendered through a Radix portal so it is never clipped by
+ * the overflow-hidden cards it lives inside. Bilingual, keyboard-accessible.
+ */
+const InfoPopover: React.FC<{
+    title: string;
+    text: string;
+    isRTL: boolean;
+    align?: 'start' | 'center' | 'end';
+}> = memo(({ title, text, isRTL, align = 'start' }) => (
+    <Popover>
+        <PopoverTrigger asChild>
+            <button
+                type="button"
+                aria-label={title}
+                className="inline-flex items-center justify-center w-5 h-5 rounded-full text-zinc-400 hover:text-gold-500 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/30 transition-all cursor-help"
+            >
+                <Info className="w-3.5 h-3.5" />
+            </button>
+        </PopoverTrigger>
+        <PopoverContent
+            align={align}
+            sideOffset={8}
+            className="z-[9999] w-80 rounded-2xl border border-gold-500/20 bg-white dark:bg-zinc-900 p-4 shadow-2xl backdrop-blur-xl"
+        >
+            <div className="flex items-center gap-2 mb-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-gold-500/15 text-gold-600 dark:text-gold-400">
+                    <Info className="w-3.5 h-3.5" />
+                </span>
+                <h4 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h4>
+            </div>
+            <p className="text-[11px] leading-relaxed font-semibold text-zinc-600 dark:text-zinc-300">{text}</p>
+        </PopoverContent>
+    </Popover>
 ));
 
 /** Kinetic silhouette — SVG micro-graphic representing muscle vs fat linked 1:1 to live inputs. */
@@ -910,6 +948,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
     }, [planSnapshot]);
 
     const [showWeekly, setShowWeekly] = useState(true);
+    const [showGuide, setShowGuide] = useState(false);
+    const G = content.timelineGuide;
     const milestoneByWeek = useMemo(() => {
         const map: Record<number, MilestonePoint[]> = {};
         for (const m of summary.milestones) {
@@ -1020,6 +1060,56 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 </div>
             </div>
 
+            {/* ── Reading Guide (collapsible "how to read this section") ── */}
+            {G && (
+                <div className="mb-6 md:mb-8 rounded-[1.75rem] md:rounded-[2.25rem] border border-gold-500/20 bg-gold-500/[0.04] dark:bg-gold-500/[0.06] backdrop-blur-xl overflow-hidden">
+                    <button
+                        type="button"
+                        onClick={() => setShowGuide((v) => !v)}
+                        aria-expanded={showGuide}
+                        className="w-full flex items-center justify-between gap-3 p-4 md:p-5 text-start hover:bg-gold-500/[0.06] transition-colors group/guide"
+                    >
+                        <div className="flex items-center gap-3 min-w-0">
+                            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gold-500/15 text-gold-600 dark:text-gold-400 ring-1 ring-gold-500/20 flex-shrink-0 group-hover/guide:scale-105 transition-transform">
+                                <BookOpen className="w-5 h-5" />
+                            </span>
+                            <div className="min-w-0">
+                                <h3 className="text-sm md:text-base font-black uppercase tracking-widest text-zinc-900 dark:text-white">{G.title}</h3>
+                                <p className="text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 leading-snug">{G.subtitle}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest text-gold-600 dark:text-gold-400">{showGuide ? G.dismiss : G.toggle}</span>
+                            <motion.span animate={{ rotate: showGuide ? 180 : 0 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }} className="text-zinc-400">
+                                <ChevronDown className="w-4 h-4" />
+                            </motion.span>
+                        </div>
+                    </button>
+                    <AnimatePresence initial={false}>
+                        {showGuide && (
+                            <motion.div
+                                key="guide-body"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.28 }}
+                                className="overflow-hidden"
+                            >
+                                <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 p-4 md:p-5 pt-0">
+                                    {G.steps.map((step, i) => (
+                                        <li key={i} className="relative rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-zinc-200/60 dark:border-white/10 p-4">
+                                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gold-500 text-black text-xs font-black mb-2">{i + 1}</span>
+                                            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-1">{step.title}</h4>
+                                            <p className="text-[11px] leading-relaxed font-semibold text-zinc-600 dark:text-zinc-400">{step.text}</p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )}
+
             {/* ── Live Prediction Engine Panel ── */}
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -1055,6 +1145,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <Gauge className="w-5 h-5 text-gold-500 animate-pulse" />
                                 {L.engineTitle}
                             </h3>
+                            {G && <InfoPopover title={G.engine.title} text={G.engine.text} isRTL={isRTL} />}
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-500 text-[9px] font-black tracking-widest">
                                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                 {L.liveBadge}
@@ -1072,6 +1163,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 )}
                             </AnimatePresence>
                             <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 basis-full">{L.engineSubtitle}</p>
+                            {G && <p className="text-[11px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 basis-full leading-relaxed">{G.engine.caption}</p>}
                         </div>
 
                         {/* Unit toggle */}
@@ -1503,8 +1595,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 <h3 className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-gold-500 animate-pulse" />
                                     {L.chartTitle}
+                                    {G && <InfoPopover title={G.chart.title} text={G.chart.text} isRTL={isRTL} />}
                                 </h3>
                                 <p className="text-xs font-bold text-zinc-500 mt-0.5 uppercase tracking-widest">{L.chartSubtitle}</p>
+                                {G && <p className="text-[11px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 mt-1 leading-relaxed">{G.chart.caption}</p>}
                             </div>
                             <div className="grid grid-cols-2 gap-1">
                                 {[
@@ -1652,7 +1746,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                         {getPhaseIcon(activeData.iconKey)}
                                     </motion.div>
                                     <div>
-                                        <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight tracking-tighter uppercase">{activeData.title}</h3>
+                                        <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight tracking-tighter uppercase flex items-center gap-2">
+                                            {activeData.title}
+                                            {G && <InfoPopover title={G.phase.title} text={G.phase.text} isRTL={isRTL} />}
+                                        </h3>
                                         <p className="text-xs text-gold-600 dark:text-gold-500 font-black tracking-[0.2em] uppercase mt-1">{activeData.shortDesc}</p>
                                     </div>
                                 </div>
@@ -1792,33 +1889,42 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
 
                 {/* Week-by-week projection breakdown — full width, below the dashboard row */}
                 <div className="w-full rounded-[2rem] md:rounded-[2.5rem] bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl border border-zinc-200/60 dark:border-white/10 shadow-xl overflow-hidden">
-                    <button
-                        type="button"
-                        onClick={() => setShowWeekly((v) => !v)}
-                        aria-expanded={showWeekly}
-                        aria-label={L.weeklyTitle}
-                        className="w-full flex items-center justify-between gap-3 p-5 text-start hover:bg-white/40 dark:hover:bg-white/[0.03] transition-colors group/weekly"
-                    >
-                        <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center justify-between gap-3 p-5">
+                        <button
+                            type="button"
+                            onClick={() => setShowWeekly((v) => !v)}
+                            aria-expanded={showWeekly}
+                            aria-label={L.weeklyTitle}
+                            className="flex items-center gap-3 min-w-0 text-start flex-1 group/weekly"
+                        >
                             <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex-shrink-0 ring-1 ring-emerald-500/20 group-hover/weekly:scale-105 transition-transform">
                                 <Table2 className="w-5 h-5" />
                             </span>
                             <div className="min-w-0">
                                 <h4 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{L.weeklyTitle}</h4>
                                 <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{L.weeklySubtitle}</p>
+                                {G && <p className="text-[11px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 mt-1 leading-relaxed normal-case tracking-normal">{G.weekly.caption}</p>}
                             </div>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        </button>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {G && <InfoPopover title={G.weekly.title} text={G.weekly.text} isRTL={isRTL} align="end" />}
                             <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest text-zinc-400">{L.weeklyExpandHint}</span>
-                            <motion.span
-                                animate={{ rotate: showWeekly ? 180 : 0 }}
-                                transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-                                className="text-zinc-400"
+                            <button
+                                type="button"
+                                onClick={() => setShowWeekly((v) => !v)}
+                                aria-label={L.weeklyTitle}
+                                className="p-1.5 rounded-lg hover:bg-white/40 dark:hover:bg-white/[0.06] transition-colors"
                             >
-                                <ChevronDown className="w-4 h-4" />
-                            </motion.span>
+                                <motion.span
+                                    animate={{ rotate: showWeekly ? 180 : 0 }}
+                                    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                                    className="block text-zinc-400"
+                                >
+                                    <ChevronDown className="w-4 h-4" />
+                                </motion.span>
+                            </button>
                         </div>
-                    </button>
+                    </div>
 
                     <AnimatePresence initial={false}>
                         {showWeekly && (

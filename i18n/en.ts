@@ -1613,6 +1613,40 @@ These Terms shall be governed and construed in accordance with the laws of <stro
         noMilestone: "No body-fat milestone is projected within this cycle.",
     },
 
+    timelineGuide: {
+        title: "How to read this section",
+        subtitle: "A five-step walkthrough of the live transformation engine — what each part does and how to interpret it.",
+        toggle: "Show reading guide",
+        dismiss: "Hide reading guide",
+        steps: [
+            { title: "Set your baseline", text: "Enter your current weight, body-fat %, height and training age. Everything downstream is computed from these four inputs." },
+            { title: "Watch the live engine", text: "Each tile, the silhouette and the goal ring recompute instantly as you move a slider. Switch Metric/Imperial at any time — values convert automatically." },
+            { title: "Read the evolution chart", text: "Hover any week for exact figures. The gold vertical line marks the active phase; diamonds are body-fat milestones and the star is your ideal-weight crossing." },
+            { title: "Study each phase", text: "Move between the four phases with the side dots or the arrows. Each card explains the biology, how you'll feel, the action plan and the medical guidance." },
+            { title: "Verify the numbers", text: "The week-by-week table shows the precise math behind the chart, grouped by phase, with cumulative totals in the footer." },
+        ],
+        engine: {
+            title: "Live Prediction Engine",
+            text: "This is the control panel. Your four inputs feed a deterministic physiological model that projects a full 12-week trajectory in real time.",
+            caption: "Enter your stats — the whole section recalculates instantly.",
+        },
+        chart: {
+            title: "Cumulative Evolution Plot",
+            text: "Five stacked adaptation signals (strength, size, water, fat loss, mood) plus three dashed trend lines for body-fat %, cumulative lean mass and projected weight. Hover a week to read exact values.",
+            caption: "Stacked signals + trend lines — hover any week for details.",
+        },
+        phase: {
+            title: "Phase Breakdown",
+            text: "The narrative for the selected phase: what happens biologically, how you'll feel, the concrete action plan, and the medical safety guidance. Navigate phases with the side dots or arrows.",
+            caption: "Biology, feeling, action and medical guidance for each phase.",
+        },
+        weekly: {
+            title: "Week-by-Week Projection",
+            text: "The exact numbers behind the chart, grouped by phase: weight, body-fat % (with a progress bar toward your target), weekly and cumulative fat loss, lean mass and muscle gained. The footer summarizes the whole cycle.",
+            caption: "The precise weekly math — grouped by phase, milestones flagged.",
+        },
+    },
+
     bfTitle: "PrecisionBF™ — Advanced Body Composition Analyzer",
     bfSubtitle: "Multi-Formula Adipose Tissue Quantification · US Navy + BMI Validated · Real-Time Anabolic Index Scoring",
     bfGender: "Gender",

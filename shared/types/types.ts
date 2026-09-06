@@ -1355,6 +1355,18 @@ export interface ContentStrings {
     fatMassLabel: string;
     weeklyUnitShort: string;
   };
+  // Explanatory layer — "how to read" guide + per-part info popovers
+  timelineGuide?: {
+    title: string;
+    subtitle: string;
+    toggle: string;
+    dismiss: string;
+    steps: { title: string; text: string }[];
+    engine: { title: string; text: string; caption: string };
+    chart: { title: string; text: string; caption: string };
+    phase: { title: string; text: string; caption: string };
+    weekly: { title: string; text: string; caption: string };
+  };
   timeUnits: {
     days: string;
     hours: string;
