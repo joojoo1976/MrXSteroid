@@ -1316,6 +1316,13 @@ export interface ContentStrings {
     colBodyFat: string;
     colFatLoss: string;
     colLean: string;
+    colCumulativeFat: string;
+    colLeanMass: string;
+    phaseGroupLabel: string;
+    netWeightChange: string;
+    avgWeeklyFatLoss: string;
+    weeklyExpandHint: string;
+    weeklyBfTrajectory: string;
     // Body-composition quality twin card (live muscular × fat analysis)
     compositionCardTitle: string;
     compositionCardSubtitle: string;

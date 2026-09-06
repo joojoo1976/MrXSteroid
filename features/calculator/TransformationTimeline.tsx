@@ -18,6 +18,7 @@ import {
     formatHeight,
     clamp,
     roundTo,
+    phaseIndexForWeek,
     buildTimelineCopyContext,
     renderTimelineCopy,
     deriveCoachFacts,
@@ -908,7 +909,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         }
     }, [planSnapshot]);
 
-    const [showWeekly, setShowWeekly] = useState(false);
+    const [showWeekly, setShowWeekly] = useState(true);
     const milestoneByWeek = useMemo(() => {
         const map: Record<number, MilestonePoint[]> = {};
         for (const m of summary.milestones) {
@@ -916,6 +917,30 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
         }
         return map;
     }, [summary.milestones]);
+
+    // Enriched weekly rows: running cumulative fat loss, absolute lean mass,
+    // and the physiological phase each week belongs to. Pure derivation from
+    // the deterministic projection series — no new model, just clearer reading.
+    const weeklyRows = useMemo(() => {
+        let cumFat = 0;
+        return projections.map((p) => {
+            cumFat += p.fatLossKg;
+            const leanMassKg = p.weightKg * (1 - p.bodyFatPct / 100);
+            return {
+                ...p,
+                cumulativeFatLossKg: roundTo(cumFat, 2),
+                leanMassKg: roundTo(leanMassKg, 1),
+                phaseIdx: phaseIndexForWeek(p.week),
+            };
+        });
+    }, [projections]);
+
+    const bfTrajectory = useMemo(() => {
+        const start = startBodyFatPct;
+        const end = projections[projections.length - 1]?.bodyFatPct ?? start;
+        const span = Math.abs(start - end) || 1;
+        return { start, end, span };
+    }, [projections, startBodyFatPct]);
 
     const phaseProgress = ((activePhase + 1) / totalPhases) * 100;
 
@@ -1396,8 +1421,10 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                 </p>
             </motion.div>
 
-            {/* ── Dashboard Container ── */}
-            <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start relative z-20 ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
+            {/* ── Dashboard Container (outer vertical stack) ── */}
+            <div className="flex flex-col gap-6 md:gap-8 relative z-20">
+                {/* ── Dashboard Row: Sidebar + Chart (1/3) + Launch Phase (2/3) ── */}
+                <div className={`flex flex-col xl:flex-row gap-6 md:gap-8 items-start ${isRTL ? 'xl:flex-row-reverse' : ''}`}>
 
                 {/* Vertical Sidebar */}
                 <div className="w-full lg:w-32 flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 hide-scrollbar lg:sticky lg:top-24 relative">
@@ -1458,8 +1485,8 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                     })}
                 </div>
 
-                {/* Main Dashboard Grid */}
-                <div className="flex-grow grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8 items-stretch w-full bg-black/5 dark:bg-white/5 p-4 md:p-8 rounded-[2.5rem] md:rounded-[4rem] border-2 border-zinc-200/30 dark:border-zinc-800/30 backdrop-blur-md relative overflow-hidden shadow-[0_0_50px_-12px_rgba(234,179,8,0.15)]">
+                {/* Main Dashboard Grid — Chart (1/3) + Launch Phase (2/3) */}
+                <div className="flex-grow grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-8 items-stretch w-full bg-black/5 dark:bg-white/5 p-4 md:p-8 rounded-[2.5rem] md:rounded-[4rem] border-2 border-zinc-200/30 dark:border-zinc-800/30 backdrop-blur-md relative overflow-hidden shadow-[0_0_50px_-12px_rgba(234,179,8,0.15)]">
                     <div className="absolute top-0 inset-0 bg-gold-500/5 -z-10 opacity-30"></div>
 
                     {/* Evolution Chart */}
@@ -1467,7 +1494,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="bg-white/90 dark:bg-background/90 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col min-h-[400px]"
+                        className="xl:col-span-1 bg-white/90 dark:bg-background/90 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group/chart animate-glow flex flex-col min-h-[400px]"
                     >
                         <div className="absolute top-0 inset-inline-end-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
 
@@ -1610,7 +1637,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             animate="center"
                             exit="exit"
                             transition={{ type: 'spring', damping: 30, stiffness: 260 }}
-                            className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[520px]"
+                            className="xl:col-span-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-[2rem] md:rounded-[3.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col h-full card-shine animate-glow group min-h-[520px]"
                         >
                             {/* Stats Header */}
                             <div className="w-full bg-zinc-50/50 dark:bg-background/40 p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col relative text-start">
@@ -1760,32 +1787,37 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                         </motion.div>
                     </AnimatePresence>
                 </div>
+                </div>
+                {/* ── end Dashboard Row ── */}
 
-                {/* Week-by-week projection breakdown */}
-                <div className="w-full mt-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg overflow-hidden">
+                {/* Week-by-week projection breakdown — full width, below the dashboard row */}
+                <div className="w-full rounded-[2rem] md:rounded-[2.5rem] bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl border border-zinc-200/60 dark:border-white/10 shadow-xl overflow-hidden">
                     <button
                         type="button"
                         onClick={() => setShowWeekly((v) => !v)}
                         aria-expanded={showWeekly}
                         aria-label={L.weeklyTitle}
-                        className="w-full flex items-center justify-between gap-3 p-4 text-start hover:bg-white/40 dark:hover:bg-white/[0.03] transition-colors"
+                        className="w-full flex items-center justify-between gap-3 p-5 text-start hover:bg-white/40 dark:hover:bg-white/[0.03] transition-colors group/weekly"
                     >
                         <div className="flex items-center gap-3 min-w-0">
-                            <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex-shrink-0">
-                                <Table2 className="w-4 h-4" />
+                            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex-shrink-0 ring-1 ring-emerald-500/20 group-hover/weekly:scale-105 transition-transform">
+                                <Table2 className="w-5 h-5" />
                             </span>
                             <div className="min-w-0">
-                                <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{L.weeklyTitle}</h4>
-                                <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{L.weeklySubtitle}</p>
+                                <h4 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{L.weeklyTitle}</h4>
+                                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{L.weeklySubtitle}</p>
                             </div>
                         </div>
-                        <motion.span
-                            animate={{ rotate: showWeekly ? 180 : 0 }}
-                            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-                            className="text-zinc-400 flex-shrink-0"
-                        >
-                            <ChevronDown className="w-4 h-4" />
-                        </motion.span>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                            <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest text-zinc-400">{L.weeklyExpandHint}</span>
+                            <motion.span
+                                animate={{ rotate: showWeekly ? 180 : 0 }}
+                                transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                                className="text-zinc-400"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                            </motion.span>
+                        </div>
                     </button>
 
                     <AnimatePresence initial={false}>
@@ -1798,61 +1830,101 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden"
                             >
-                                <div className="px-4 pb-4 overflow-x-auto hide-scrollbar" data-testid="weekly-table">
-                                    <table className="w-full min-w-[540px] border-separate border-spacing-y-1 text-[11px] font-bold">
+                                <div className="px-4 pb-5 overflow-x-auto hide-scrollbar" data-testid="weekly-table">
+                                    <table className="w-full min-w-[760px] border-separate border-spacing-y-1 text-[11px] font-bold">
                                         <thead>
                                             <tr className="text-[9px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                                                <th className="text-start px-3 py-1.5">{L.colWeek}</th>
-                                                <th className="text-start px-3 py-1.5">{L.colWeight}</th>
-                                                <th className="text-start px-3 py-1.5">{L.colBodyFat}</th>
-                                                <th className="text-start px-3 py-1.5">{L.colFatLoss}</th>
-                                                <th className="text-start px-3 py-1.5">{L.colLean}</th>
+                                                <th className="text-start px-3 py-2">{L.colWeek}</th>
+                                                <th className="text-start px-3 py-2">{L.colWeight}</th>
+                                                <th className="text-start px-3 py-2 min-w-[120px]">{L.colBodyFat}</th>
+                                                <th className="text-start px-3 py-2">{L.colFatLoss}</th>
+                                                <th className="text-start px-3 py-2">{L.colCumulativeFat}</th>
+                                                <th className="text-start px-3 py-2">{L.colLeanMass}</th>
+                                                <th className="text-start px-3 py-2">{L.colLean}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {projections.map((p) => {
+                                            {weeklyRows.map((p, i) => {
                                                 const isActiveWeek = p.week === (activeAggregate?.weekStart ?? 1);
                                                 const badges = milestoneByWeek[p.week];
+                                                const prev = i > 0 ? weeklyRows[i - 1] : null;
+                                                const newPhase = !prev || prev.phaseIdx !== p.phaseIdx;
+                                                const phase = content.timelinePhases[p.phaseIdx];
+                                                const trajPct = clamp(((bfTrajectory.start - p.bodyFatPct) / bfTrajectory.span) * 100, 0, 100);
                                                 return (
-                                                    <tr
-                                                        key={p.week}
-                                                        className={
-                                                            isActiveWeek
-                                                                ? 'bg-gold-500/10 ring-1 ring-inset ring-gold-500/20'
-                                                                : 'bg-zinc-100/70 dark:bg-white/[0.03]'
-                                                        }
-                                                    >
-                                                        <td className="px-3 py-1.5 rounded-s-xl whitespace-nowrap text-zinc-900 dark:text-white tabular-nums">
-                                                            <span className="inline-flex items-center gap-1.5">
-                                                                {L.colWeek} {p.week}
-                                                                {badges?.map((m) =>
-                                                                    m.kind === 'midIdeal' ? (
-                                                                        <span key={m.kind} className="text-emerald-500" title={L.idealWeightLabel}>
-                                                                            <Star className="w-3 h-3" />
+                                                    <React.Fragment key={p.week}>
+                                                        {newPhase && phase && (
+                                                            <tr>
+                                                                <td colSpan={7} className="px-3 pt-3 pb-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="flex items-center justify-center w-5 h-5 rounded-md bg-gold-500/15 text-gold-600 dark:text-gold-400">
+                                                                            {getPhaseIcon(phase.iconKey)}
                                                                         </span>
-                                                                    ) : (
-                                                                        <span key={m.kind} className="text-cyan-400" title={`BF ${m.kind === 'bf15' ? 15 : m.kind === 'bf18' ? 18 : 20}%`}>
-                                                                            <Diamond className="w-2.5 h-2.5" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest text-gold-600 dark:text-gold-400">
+                                                                            {L.phaseGroupLabel} {p.phaseIdx + 1} · {phase.title}
                                                                         </span>
-                                                                    ),
-                                                                )}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.weightKg, unitSystem, isAr)}</td>
-                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{p.bodyFatPct.toLocaleString(isAr ? 'ar-EG' : 'en-US', { maximumFractionDigits: 1 })}%</td>
-                                                        <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.fatLossKg, unitSystem, isAr)}</td>
-                                                        <td className="px-3 py-1.5 rounded-e-xl text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.cumulativeMuscleGainKg, unitSystem, isAr)}</td>
-                                                    </tr>
+                                                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                                                                            {phase.week}
+                                                                        </span>
+                                                                        <span className="flex-grow h-px bg-gradient-to-r from-gold-500/30 to-transparent" />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                        <tr
+                                                            className={
+                                                                isActiveWeek
+                                                                    ? 'bg-gold-500/10 ring-1 ring-inset ring-gold-500/20'
+                                                                    : 'bg-zinc-100/70 dark:bg-white/[0.03]'
+                                                            }
+                                                        >
+                                                            <td className="px-3 py-1.5 rounded-s-xl whitespace-nowrap text-zinc-900 dark:text-white tabular-nums">
+                                                                <span className="inline-flex items-center gap-1.5">
+                                                                    {L.colWeek} {p.week}
+                                                                    {badges?.map((m) =>
+                                                                        m.kind === 'midIdeal' ? (
+                                                                            <span key={m.kind} className="text-emerald-500" title={L.idealWeightLabel}>
+                                                                                <Star className="w-3 h-3" />
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span key={m.kind} className="text-cyan-400" title={`BF ${m.kind === 'bf15' ? 15 : m.kind === 'bf18' ? 18 : 20}%`}>
+                                                                                <Diamond className="w-2.5 h-2.5" />
+                                                                            </span>
+                                                                        ),
+                                                                    )}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.weightKg, unitSystem, isAr)}</td>
+                                                            <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">
+                                                                <div className="flex flex-col gap-1">
+                                                                    <span>{p.bodyFatPct.toLocaleString(isAr ? 'ar-EG' : 'en-US', { maximumFractionDigits: 1 })}%</span>
+                                                                    <span className="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden" title={L.weeklyBfTrajectory}>
+                                                                        <span className="block h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500" style={{ width: `${trajPct}%` }} />
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.fatLossKg, unitSystem, isAr)}</td>
+                                                            <td className="px-3 py-1.5 text-emerald-600 dark:text-emerald-400 tabular-nums">{formatWeight(p.cumulativeFatLossKg, unitSystem, isAr)}</td>
+                                                            <td className="px-3 py-1.5 text-zinc-700 dark:text-zinc-300 tabular-nums">{formatWeight(p.leanMassKg, unitSystem, isAr)}</td>
+                                                            <td className="px-3 py-1.5 rounded-e-xl text-gold-600 dark:text-gold-400 tabular-nums">+{formatWeight(p.cumulativeMuscleGainKg, unitSystem, isAr)}</td>
+                                                        </tr>
+                                                    </React.Fragment>
                                                 );
                                             })}
                                         </tbody>
                                     </table>
-                                    <div className="flex flex-wrap gap-2 mt-2.5">
+                                    <div className="flex flex-wrap gap-2 mt-3">
                                         <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
                                             {L.totalFatLoss} · {totalFatLossStr}
                                         </span>
                                         <span className="px-3 py-1.5 rounded-full bg-gold-500/10 text-gold-600 dark:text-gold-400 text-[10px] font-black uppercase tracking-widest">
                                             {L.totalMuscleGain} · {totalMuscleStr}
+                                        </span>
+                                        <span className="px-3 py-1.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-black uppercase tracking-widest">
+                                            {L.netWeightChange} · {formatWeight(summary.weightChangeKg, unitSystem, isAr)}
+                                        </span>
+                                        <span className="px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase tracking-widest">
+                                            {L.avgWeeklyFatLoss} · {formatWeight(summary.avgWeeklyFatLossKg, unitSystem, isAr)}/{L.weeklyUnitShort}
                                         </span>
                                     </div>
                                 </div>
