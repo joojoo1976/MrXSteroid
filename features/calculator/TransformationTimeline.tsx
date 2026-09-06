@@ -1506,7 +1506,7 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                 </h3>
                                 <p className="text-xs font-bold text-zinc-500 mt-0.5 uppercase tracking-widest">{L.chartSubtitle}</p>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="grid grid-cols-2 gap-1">
                                 {[
                                     { label: L.strength, color: 'red-500' },
                                     { label: L.hypertrophy, color: 'purple-500' },
@@ -1519,19 +1519,19 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                                     { label: L.bfMilestones, color: 'cyan-400', marker: true },
                                     { label: L.idealWeightLabel, color: 'emerald-500', star: true },
                                 ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-[10px] font-black uppercase" title={item.label}>
+                                    <div key={i} className="flex items-center gap-1 min-w-0 px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-[9px] font-black uppercase" title={item.label}>
                                         {item.marker ? (
-                                            <span className={`w-2 h-2 rotate-45 rounded-[2px] ${item.color.replace('text-', 'bg-')}`}></span>
+                                            <span className={`w-2 h-2 shrink-0 rotate-45 rounded-[2px] ${item.color.replace('text-', 'bg-')}`}></span>
                                         ) : item.star ? (
-                                            <span className={`w-2 h-2 ${item.color.replace('text-', 'bg-')}`} style={{ clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' }}></span>
+                                            <span className={`w-2 h-2 shrink-0 ${item.color.replace('text-', 'bg-')}`} style={{ clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' }}></span>
                                         ) : item.dashed ? (
-                                            <span className="flex items-center w-3.5">
+                                            <span className="flex items-center w-3.5 shrink-0">
                                                 <span className={`h-[2px] w-3.5 ${item.color.replace('text-', 'bg-')} opacity-80`}></span>
                                             </span>
                                         ) : (
-                                            <div className={`w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
+                                            <div className={`w-1 h-1 shrink-0 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
                                         )}
-                                        {item.label}
+                                        <span className="truncate">{item.label}</span>
                                     </div>
                                 ))}
                             </div>
