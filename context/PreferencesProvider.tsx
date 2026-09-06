@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { SecureStorage } from '../shared/lib/secureStorage';
-import { detectBrowserLocale } from '../shared/lib/localeDetector';
 import { Language, ContentStrings, Theme } from '@/shared/types/types';
 import { arContent, enContent } from '../i18n';
 import {
@@ -25,54 +24,58 @@ const resolveContent = (lang: Language): ContentStrings => {
     return map[lang] || enContent;
 };
 
-export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface PreferencesProviderProps {
+    children: React.ReactNode;
+    /** Server-resolved initial language (cookie/header-aware) to avoid flash. */
+    initialLanguage?: 'ar' | 'en';
+    /** Server-resolved initial unit system to avoid flash. */
+    initialUnitSystem?: 'metric' | 'imperial';
+}
+
+export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ children, initialLanguage, initialUnitSystem }) => {
     const router = useRouter();
     const [isAutoDetected, setIsAutoDetected] = useState(false);
     const [status, setStatus] = useState<PreferenceStatus>('BOOT');
 
-    // Initial state matching SSR default to guarantee zero-hydration-mismatch
-    const [language, setLanguageState] = useState<Language>(Language.AR);
-    const [unitSystem, setUnitSystemState] = useState<UnitSystem>('metric');
+    // Seed from the server-resolved locale so the first client render matches
+    // SSR exactly — zero flash and no hydration mismatch.
+    const seededLang: Language = initialLanguage === 'en' ? Language.EN : Language.AR;
+    const seededUnits: UnitSystem =
+        initialUnitSystem === 'imperial' ? 'imperial'
+            : initialUnitSystem === 'metric' ? 'metric'
+                : (seededLang === Language.AR ? 'metric' : 'imperial');
+
+    const [language, setLanguageState] = useState<Language>(seededLang);
+    const [unitSystem, setUnitSystemState] = useState<UnitSystem>(seededUnits);
     const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
-    const [locale, setLocale] = useState<string>('ar-EG');
+    const [locale, setLocale] = useState<string>(seededLang === Language.AR ? 'ar-EG' : 'en-US');
     const [currency, setCurrency] = useState<string>('USD');
 
-    // Hydration Sync: safely read local preferences upon client mount
+    // Hydration Sync: reconcile client state with the server-resolved locale.
+    // The edge middleware already chose language/units (URL prefix > explicit
+    // cookie > IP-country > Accept-Language), so SSR is correct on first paint.
+    // Here we only apply a *manual* localStorage choice that differs, and the
+    // current URL prefix (for client-side navigations) — never re-detect, which
+    // is what previously caused the Arabic→English flash.
     useEffect(() => {
         try {
-            // URL locale prefix is authoritative when present (e.g. /ar/timeline).
-            // It wins over stored/auto-detected language so a prefixed link or a
-            // refresh of /en/* / /ar/* renders the correct language.
             const seg = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : '';
             const urlLang: Language | null = seg === 'ar' ? Language.AR : seg === 'en' ? Language.EN : null;
 
-            if (urlLang) {
+            if (urlLang && urlLang !== language) {
                 setLanguageState(urlLang);
                 setLocale(urlLang === Language.AR ? 'ar-EG' : 'en-US');
-                localStorage.setItem('mrx_explicit_language', urlLang);
-                SecureStorage.setItem('language', urlLang);
-            } else {
+            } else if (!urlLang) {
                 const explicit = localStorage.getItem('mrx_explicit_language');
-                if (explicit && (explicit === Language.AR || explicit === Language.EN)) {
+                if ((explicit === Language.AR || explicit === Language.EN) && explicit !== language) {
                     setLanguageState(explicit as Language);
                     setLocale(explicit === Language.AR ? 'ar-EG' : 'en-US');
-                } else {
-                    const storedAuto = SecureStorage.getItem('language');
-                    if (storedAuto && (storedAuto === Language.AR || storedAuto === Language.EN)) {
-                        setLanguageState(storedAuto as Language);
-                        setLocale(storedAuto === Language.AR ? 'ar-EG' : 'en-US');
-                    } else {
-                        const detected = detectBrowserLocale();
-                        setLanguageState(detected.language);
-                        setLocale(detected.locale);
-                    }
                 }
             }
 
             const explicitUnits = localStorage.getItem('mrx_explicit_units');
-            const storedUnits = localStorage.getItem('mrx_unit_system');
-            if (explicitUnits || storedUnits) {
-                setUnitSystemState((explicitUnits || storedUnits) as UnitSystem);
+            if ((explicitUnits === 'metric' || explicitUnits === 'imperial') && explicitUnits !== unitSystem) {
+                setUnitSystemState(explicitUnits as UnitSystem);
             }
 
             const storedTheme = localStorage.getItem('mrx_theme');
@@ -82,12 +85,10 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         } catch (e) {
             console.warn('Preferences hydration sync warning:', e);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const initPreferences = useCallback(async (force = false) => {
-        const hasExplicitLang = !!localStorage.getItem('mrx_explicit_language');
-        const hasExplicitUnits = !!localStorage.getItem('mrx_explicit_units');
-
         if (force || !isAutoDetected) {
             setStatus('RESOLVING');
             try {
@@ -97,24 +98,15 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 const detectedLocale = geoState.currency?.locale || (detectedLang === Language.AR ? 'ar-SA' : 'en-US');
                 const detectedCurrency = geoState.currency?.code || 'USD';
 
-                // Automatically apply if not explicitly overridden by user
-                if (!hasExplicitLang || force) {
-                    setLanguageState(detectedLang);
-                    SecureStorage.setItem('language', detectedLang);
-                }
-
+                // Currency + display locale are refined from IP geo. Language and
+                // unit-system are already resolved at the edge (SSR) and persisted
+                // via cookies, so we deliberately do NOT override them here — that
+                // client-side re-detection is what previously caused the flash.
                 setLocale(detectedLocale);
                 localStorage.setItem('mrx_locale', detectedLocale);
 
                 setCurrency(detectedCurrency);
                 localStorage.setItem('mrx_currency', detectedCurrency);
-
-                if (!hasExplicitUnits || force) {
-                    const currentLang = (hasExplicitLang && !force) ? language : detectedLang;
-                    const smartDefault: UnitSystem = currentLang === Language.AR ? 'metric' : 'imperial';
-                    setUnitSystemState(smartDefault);
-                    localStorage.setItem('mrx_unit_system', smartDefault);
-                }
 
                 setIsAutoDetected(true);
                 setStatus('IDLE');
@@ -125,7 +117,7 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         } else {
             setStatus('IDLE');
         }
-    }, [isAutoDetected, language]);
+    }, [isAutoDetected]);
 
     // Asynchronous Deep Detection (IP Based)
     useEffect(() => {
@@ -211,7 +203,11 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setLanguageState(newLang);
         localStorage.setItem('mrx_explicit_language', newLang);
         SecureStorage.setItem('language', newLang);
-        import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_language', newLang));
+        import('../shared/lib/cookies').then(m => {
+            m.setPreferenceCookie('mrx_language', newLang);
+            // Explicit-choice cookie read by the edge middleware on next SSR.
+            m.setPreferenceCookie('mrx_explicit_language', newLang);
+        });
         setIsAutoDetected(false);
 
         // Smart unit default: apply only when user has NOT explicitly overridden units
@@ -228,7 +224,11 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setUnitSystemState(system);
         localStorage.setItem('mrx_explicit_units', system);
         localStorage.setItem('mrx_unit_system', system);
-        import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_unit_system', system));
+        import('../shared/lib/cookies').then(m => {
+            m.setPreferenceCookie('mrx_unit_system', system);
+            // Explicit-choice cookie read by the edge middleware on next SSR.
+            m.setPreferenceCookie('mrx_explicit_units', system);
+        });
         setIsAutoDetected(false);
         window.dispatchEvent(new CustomEvent('mrx_unit_change', { detail: system }));
 

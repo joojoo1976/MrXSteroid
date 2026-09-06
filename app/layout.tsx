@@ -5,6 +5,7 @@
  * client boundary stays renderable on the server.
  */
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import '../styles/globals.css';
 import '../styles/legacy-theme.css';
 import '../styles/chiller-font.css';
@@ -46,11 +47,20 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    // Cookie/header-aware initial locale → the FIRST server render already
+    // matches the visitor's language & unit system, eliminating the flash.
+    const h = await headers();
+    const lang = h.get('x-locale') === 'en' ? 'en' : 'ar';
+    const units = h.get('x-units') === 'imperial' ? 'imperial' : 'metric';
+    const isRTL = lang === 'ar';
+
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang={lang} dir={isRTL ? 'rtl' : 'ltr'} suppressHydrationWarning>
             <body className="min-h-screen bg-background font-sans antialiased">
-                <RootProviders>{children}</RootProviders>
+                <RootProviders initialLanguage={lang} initialUnitSystem={units}>
+                    {children}
+                </RootProviders>
             </body>
         </html>
     );

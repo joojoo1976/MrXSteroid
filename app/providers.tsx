@@ -11,11 +11,19 @@ import { RegionProvider } from '../context/RegionContext';
 import { PreferencesProvider } from '../context/PreferencesProvider';
 import PaymobModalHost from '../components/legacy/PaymobModalHost';
 
-export default function RootProviders({ children }: { children: React.ReactNode }) {
+interface RootProvidersProps {
+    children: React.ReactNode;
+    /** Server-resolved initial language (cookie/header-aware) to avoid flash. */
+    initialLanguage?: 'ar' | 'en';
+    /** Server-resolved initial unit system to avoid flash. */
+    initialUnitSystem?: 'metric' | 'imperial';
+}
+
+export default function RootProviders({ children, initialLanguage, initialUnitSystem }: RootProvidersProps) {
     return (
         <AuthProvider>
             <RegionProvider>
-                <PreferencesProvider>
+                <PreferencesProvider initialLanguage={initialLanguage} initialUnitSystem={initialUnitSystem}>
                     {children}
                     <Toaster position="top-right" richColors />
                     <PaymobModalHost />
