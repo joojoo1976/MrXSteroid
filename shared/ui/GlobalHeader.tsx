@@ -172,6 +172,18 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
         }, 120);
     }, [navigateTo]);
 
+    // Toggle language and keep the URL locale prefix in sync so a refresh or
+    // direct share of the current page renders in the chosen language.
+    const toggleLanguage = useCallback(() => {
+        const nextLang = lang === Language.AR ? Language.EN : Language.AR;
+        setLanguage(nextLang);
+        if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname.replace(/^\/(ar|en)(?=\/|$)/, '') || '/';
+            const newPath = `/${nextLang}${currentPath === '/' ? '' : currentPath}`;
+            window.history.pushState({}, '', newPath);
+        }
+    }, [lang, setLanguage]);
+
     const isCalculatorPage = [
         Page.MACRO, Page.BODYFAT, Page.INJECTION, Page.HALFLIFE,
         Page.LAB, Page.GENETIC, Page.CYCLE_ARCHITECT,
@@ -320,15 +332,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
 
                         {/* Language Switcher */}
                         <button
-                            onClick={() => {
-                                const nextLang = lang === Language.AR ? Language.EN : Language.AR;
-                                setLanguage(nextLang);
-                                if (typeof window !== 'undefined') {
-                                    const currentPath = window.location.pathname.replace(/^\/(ar|en)/, '') || '/';
-                                    const newPath = `/${nextLang}${currentPath === '/' ? '' : currentPath}`;
-                                    window.history.pushState({}, '', newPath);
-                                }
-                            }}
+                            onClick={toggleLanguage}
                             className="hidden sm:flex items-center justify-center gap-1 px-2.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-[11px] font-black uppercase text-gold-500"
                             title={isRTL ? 'Switch to English' : 'التبديل إلى العربية'}
                             aria-label={isRTL ? 'تغيير اللغة' : 'Switch Language'}
@@ -589,10 +593,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             {/* Mobile Language + Theme */}
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => {
-                                        const nextLang = lang === Language.AR ? Language.EN : Language.AR;
-                                        setLanguage(nextLang);
-                                    }}
+                                    onClick={toggleLanguage}
                                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-bold"
                                 >
                                     <Globe className="w-4 h-4 text-gold-500" />

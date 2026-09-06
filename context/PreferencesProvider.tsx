@@ -40,19 +40,32 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Hydration Sync: safely read local preferences upon client mount
     useEffect(() => {
         try {
-            const explicit = localStorage.getItem('mrx_explicit_language');
-            if (explicit && (explicit === Language.AR || explicit === Language.EN)) {
-                setLanguageState(explicit as Language);
-                setLocale(explicit === Language.AR ? 'ar-EG' : 'en-US');
+            // URL locale prefix is authoritative when present (e.g. /ar/timeline).
+            // It wins over stored/auto-detected language so a prefixed link or a
+            // refresh of /en/* / /ar/* renders the correct language.
+            const seg = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : '';
+            const urlLang: Language | null = seg === 'ar' ? Language.AR : seg === 'en' ? Language.EN : null;
+
+            if (urlLang) {
+                setLanguageState(urlLang);
+                setLocale(urlLang === Language.AR ? 'ar-EG' : 'en-US');
+                localStorage.setItem('mrx_explicit_language', urlLang);
+                SecureStorage.setItem('language', urlLang);
             } else {
-                const storedAuto = SecureStorage.getItem('language');
-                if (storedAuto && (storedAuto === Language.AR || storedAuto === Language.EN)) {
-                    setLanguageState(storedAuto as Language);
-                    setLocale(storedAuto === Language.AR ? 'ar-EG' : 'en-US');
+                const explicit = localStorage.getItem('mrx_explicit_language');
+                if (explicit && (explicit === Language.AR || explicit === Language.EN)) {
+                    setLanguageState(explicit as Language);
+                    setLocale(explicit === Language.AR ? 'ar-EG' : 'en-US');
                 } else {
-                    const detected = detectBrowserLocale();
-                    setLanguageState(detected.language);
-                    setLocale(detected.locale);
+                    const storedAuto = SecureStorage.getItem('language');
+                    if (storedAuto && (storedAuto === Language.AR || storedAuto === Language.EN)) {
+                        setLanguageState(storedAuto as Language);
+                        setLocale(storedAuto === Language.AR ? 'ar-EG' : 'en-US');
+                    } else {
+                        const detected = detectBrowserLocale();
+                        setLanguageState(detected.language);
+                        setLocale(detected.locale);
+                    }
                 }
             }
 
