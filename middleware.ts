@@ -49,11 +49,14 @@ export function middleware(request: NextRequest) {
     const accept = pickAcceptLanguage(acceptHeader);
 
     // --- Language resolution (priority order) --------------------------------
+    // Manual choice and explicit URL prefix are supreme; then LIVE geo (IP
+    // country) so a returning visitor who changes country is re-detected,
+    // instead of being pinned to a stale auto-cookie.
     let lang: SupportedLang;
     if (pathLocale) lang = pathLocale;                 // explicit URL intent wins
     else if (explicitLang) lang = explicitLang;        // user's manual choice
-    else if (resolvedCookie) lang = resolvedCookie;    // previously resolved
-    else if (country) lang = languageForCountry(country); // IP geolocation
+    else if (country) lang = languageForCountry(country); // LIVE IP geolocation
+    else if (resolvedCookie) lang = resolvedCookie;    // previously resolved (no live geo)
     else if (accept) lang = accept;                    // browser language (supported)
     else if (acceptHeader) lang = 'en';                // browser language present but
                                                        // unsupported → English fallback

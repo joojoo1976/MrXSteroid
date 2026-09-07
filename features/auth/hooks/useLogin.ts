@@ -9,6 +9,7 @@ import { errorHandler } from '../../../shared/lib/error-handler';
 import { readEnv } from '../../../shared/lib/env-reader';
 import { Page } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
+import { supabase } from '../../../shared/lib/supabase';
 
 import { authService } from '../../../shared/lib/auth-service';
 
@@ -110,6 +111,25 @@ export const useLogin = ({ isRTL, navigateTo, refreshUser }: UseLoginOptions) =>
                         return;
                     }
                     if (errStr.includes('Invalid login credentials') || errStr.includes('invalid credentials')) {
+                        // Distinguish "email not registered" (amber warning) from a
+                        // wrong password (red error). Supabase returns the same generic
+                        // message for both (enumeration protection), so when the
+                        // identifier is an email we look it up in profiles.
+                        const id = values.identifier.trim();
+                        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
+                        if (isEmail) {
+                            const { data: existing } = await supabase
+                                .from('profiles')
+                                .select('id')
+                                .ilike('email', id.toLowerCase())
+                                .maybeSingle();
+                            if (!existing) {
+                                toast.warning(isRTL
+                                    ? "هذا البريد غير مسجّل لدينا. هل تريد إنشاء حساب جديد؟"
+                                    : "This email isn't registered. Would you like to create an account?");
+                                return;
+                            }
+                        }
                         toast.error(isRTL ? "بيانات الدخول غير صحيحة (البريد الإلكتروني/رقم الهاتف أو كلمة المرور)." : "Invalid login credentials (email/phone or password).");
                         return;
                     }
