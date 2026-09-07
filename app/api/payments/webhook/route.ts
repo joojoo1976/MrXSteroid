@@ -4,7 +4,7 @@
  * The underlying dual-mode handler detects the Web Fetch API signature and
  * processes Stripe/Paymob/SpaceRemit notifications accordingly.
  */
-import handler from '../../../../api/payments/webhook';
+import handler from '../../../../server/payments/webhook';
 
 export async function POST(req: Request) {
     const result = await handler(req);

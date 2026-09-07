@@ -5,8 +5,8 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { PaymentFactory } from '../../../../api/payments/gateways/PaymentFactory';
-import { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } from '../../../../api/payments/pricing';
+import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
+import { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } from '../../../../server/payments/pricing';
 
 const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
@@ -91,16 +91,16 @@ export async function POST(req: Request) {
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
             const isStripeEmbedded = input.paymentMethod === 'stripe';
 
-            let gateway: import('../../../../api/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
+            let gateway: import('../../../../server/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
             let gatewayName: string;
             if (isInstaPay) {
                 gatewayName = 'INSTAPAY';
             } else if (isStripeEmbedded) {
-                const { StripeGateway } = await import('../../../../api/payments/gateways/StripeGateway');
+                const { StripeGateway } = await import('../../../../server/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
                 gatewayName = 'STRIPE';
             } else if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
-                const { PaymobGateway } = await import('../../../../api/payments/gateways/PaymobGateway');
+                const { PaymobGateway } = await import('../../../../server/payments/gateways/PaymobGateway');
                 gateway = new PaymobGateway();
                 gatewayName = 'PAYMOB';
             } else {

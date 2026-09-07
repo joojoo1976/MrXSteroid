@@ -4,8 +4,8 @@
  * Adapted from the legacy Vercel serverless function to the App Router.
  */
 import { createClient } from '@supabase/supabase-js';
-import { PaymentFactory } from '../../../../api/payments/gateways/PaymentFactory';
-import { verifyPaidAmount } from '../../../../api/payments/verifyPaidAmount';
+import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
+import { verifyPaidAmount } from '../../../../server/payments/verifyPaidAmount';
 
 const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
@@ -146,7 +146,7 @@ export async function GET(req: Request) {
 
         const rawBody = '';
         const verification = await gateway.verifyWebhook(
-            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../api/payments/gateways/vercel-types').VercelRequest,
+            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../server/payments/gateways/vercel-types').VercelRequest,
             rawBody,
         );
 
@@ -180,7 +180,7 @@ export async function POST(req: Request) {
         console.log(`📥 [Callback:POST] ${gatewayName} webhook, body length: ${rawBody.length}`);
 
         const verification = await gateway.verifyWebhook(
-            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../api/payments/gateways/vercel-types').VercelRequest,
+            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../server/payments/gateways/vercel-types').VercelRequest,
             rawBody,
         );
 
