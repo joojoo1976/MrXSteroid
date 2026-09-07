@@ -20,15 +20,16 @@ serve(async (req) => {
 
     // 2. Send via Resend API (HTTPS - Bypasses Free Tier Block)
     const apiKey = Deno.env.get("RESEND_API_KEY");
-    const fromEmail = Deno.env.get("SENDER_EMAIL") || "onboarding@resend.dev";
+    const fromEmail = Deno.env.get("SENDER_EMAIL") || "support@mrxsteroid.com";
+    const adminEmail = Deno.env.get("ADMIN_EMAIL") || "foryoutalk@gmail.com";
 
     if (apiKey) {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: `Mr. X-Steroid <${fromEmail}>`,
-          to: ["[EMAIL]"], // Admin Target
+          from: `MrXSteroid.com <${fromEmail}>`,
+          to: [adminEmail], // Admin Target
           reply_to: email, // User Reply-To
           subject: `[${inquiry_type}] ${subject}`,
           html: `<h3>New Ticket</h3><p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Type:</b> ${inquiry_type}</p><hr/><p>${message.replace(/\n/g, '<br>')}</p>`

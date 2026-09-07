@@ -2,7 +2,9 @@
  * Route Handler — /api/contact
  * Contact / Customer Support Endpoint:
  * 1. Stores inbound message in Supabase database (`contact_messages` table).
- * 2. Dispatches an immediate rich email notification to admin email (`[EMAIL]`).
+ * 2. Dispatches an immediate rich email notification to the admin inbox
+ *    (CONTACT_DESTINATION_EMAIL, default foryoutalk@gmail.com) with a copy to
+ *    support@mrxsteroid.com.
  *    Priority: SendGrid API (primary) → SMTP/nodemailer (fallback).
  * 3. Handles reply-to routing directly to the visitor's email.
  */
@@ -169,7 +171,11 @@ export async function POST(req: Request) {
         // Dynamic Environment Config
         const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
         const SUPPORT_CC = process.env.CONTACT_CC_EMAIL || 'support@mrxsteroid.com';
-        const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || ''; const SENDGRID_FROM = process.env.SENDGRID_FROM || process.env.SENDGRID_FROM_EMAIL || 'Mr. X Steroid <support@mrxsteroid.com>';
+        const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
+        // SendGrid v3 requires a bare address in `from.email` and the display
+        // name in `from.name` — never "Name <email>" inside the email field.
+        const SENDGRID_FROM = process.env.SENDGRID_FROM_EMAIL || process.env.SENDGRID_FROM || 'support@mrxsteroid.com';
+        const SENDGRID_FROM_NAME = process.env.SENDGRID_FROM_NAME || 'MrXSteroid.com';
         const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
         const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
         const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
@@ -178,7 +184,7 @@ export async function POST(req: Request) {
             process.env.GMAIL_APP_PASSWORD ||
             process.env.SUPABASE_SMTP_PASSWORD ||
             '';
-        const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'Mr. X Steroid Support';
+        const SENDER_NAME = process.env.SMTP_SENDER_NAME || process.env.SUPABASE_SMTP_SENDER_NAME || 'MrXSteroid.com';
 
         const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
         const SUPABASE_KEY =
@@ -248,7 +254,7 @@ export async function POST(req: Request) {
                             cc: [{ email: SUPPORT_CC }],
                             replyTo: { email: email },
                         }],
-                        from: { email: SENDGRID_FROM },
+                        from: { email: SENDGRID_FROM, name: SENDGRID_FROM_NAME },
                         subject: emailSubject,
                         content: [
                             { type: 'text/plain', value: plainText },
