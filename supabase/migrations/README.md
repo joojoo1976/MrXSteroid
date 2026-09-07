@@ -1,56 +1,37 @@
-# Supabase Migrations — Status & Reconciliation Guide
+# Supabase Migrations — Status & Reconciliation
 
-## TL;DR
-- The **`profiles_auth_users_cascade`** migration (adds `profiles.id → auth.users.id`
-  `ON DELETE CASCADE`) is **fully aligned**: repo file
-  `20260907220419_profiles_auth_users_cascade.sql` matches the live
-  `supabase_migrations.schema_migrations` row (version `20260907220419`).
-  `supabase db push` treats it as applied — no re-run.
-- The **rest of this folder has pre-existing drift** vs the live database ledger
-  (see below). Do **not** run `supabase db push` blindly until reconciled.
+## Current state (reconciled)
+This folder was reconciled against the live database ledger
+(`supabase_migrations.schema_migrations`) so that **`supabase db push` is a clean
+no-op** (every file here is already recorded as applied; no duplicates).
 
-## The drift (pre-existing, not introduced by recent work)
-The live DB ledger (`supabase_migrations.schema_migrations`) is the source of
-truth and uses 14-digit versions (`YYYYMMDDHHMMSS`). Many files in this folder
-use 8-digit date prefixes (`YYYYMMDD`) that do **not** match any ledger version,
-and several ledger migrations have **no** file here (they were applied via the
-dashboard/CLI without committing the file).
+- `supabase/migrations/` → **15 files**, each filename version matches a live
+  ledger version exactly (14-digit `YYYYMMDDHHMMSS`).
+- `supabase/migrations_prebaseline/` → **14 archived files**: early foundational
+  migrations applied before the CLI ledger tracked them. Their schema is already
+  live in the database; they are kept here (outside the `db push` scan path) for
+  historical reference only. **Do not move them back** into `migrations/` — that
+  would make `db push` try to re-apply them and fail.
 
-Concretely:
-- **Exact version match (safe):** `20260805012110_revoke_execute_from_public_setup_fns`,
-  `20260907220419_profiles_auth_users_cascade`.
-- **Name matches a ledger version but filename timestamp differs** (e.g.
-  `20260805_add_cms_tables` ↔ ledger `20260805002341 add_cms_tables`).
-- **No ledger counterpart** (early foundational files applied before tracking):
-  `create_payments_table`, `create_profiles_table`, `delegate_sync`,
-  `final_auth_sync`, `add_avatar_to_profiles`, `add_payment_method_fields`,
-  `advisor_fixes`, `billing_invoices_enhancement`, etc.
-
-## Authoritative one-time fix (run with your own token)
-The correct, safe way to make this folder mirror the live DB is the Supabase CLI
-(it needs `SUPABASE_ACCESS_TOKEN`, which only the project owner has):
-
+## How to add a NEW migration (going forward)
 ```bash
-# 1) Authenticate
-supabase login                       # or: export SUPABASE_ACCESS_TOKEN=<token>
-
-# 2) Link the project (already linked: project_id = alghvtpkpspnqupbvodu)
-supabase link --project-ref alghvtpkpspnqupbvodu
-
-# 3) Re-baseline: capture the CURRENT live schema as the authoritative migration
-#    history. Move the drifted files aside first (git keeps them):
-git mv supabase/migrations supabase/migrations_drifted_backup
-mkdir supabase/migrations
-supabase db pull --local             # generates migrations from the live schema
-
-# 4) Review the generated migration, commit, and from then on use:
-#    supabase migration new <name>   -> edit -> supabase db push
+supabase migration new <short_name>     # creates <YYYYMMDDHHMMSS>_<short_name>.sql
+# edit the generated file with your DDL
+supabase db push                         # applies it to the linked project
 ```
+Always use the CLI-generated 14-digit timestamp so the repo filename matches the
+ledger version the CLI records.
 
-After this, `supabase db push` is clean and the folder is trustworthy.
+## Notes
+- The live DB ledger contains additional migrations that have **no file** in this
+  folder (applied via the dashboard/CLI without committing). These are harmless
+  for `db push` (it only pushes repo files not yet in the ledger). To capture them
+  as files, run `supabase db pull` on a machine with Docker (needs
+  `SUPABASE_ACCESS_TOKEN`).
+- The `profiles_auth_users_cascade` migration (`20260907220419`) adds
+  `profiles.id → auth.users.id ON DELETE CASCADE`, fixing orphan profile rows
+  left behind when an auth user is deleted.
 
-## Until then
-- Apply schema changes via the **Supabase Dashboard SQL editor** or the MCP, and
-  record them here as new `<YYYYMMDDHHMMSS>_<name>.sql` files using the SAME
-  14-digit version the CLI/ledger uses.
-- Never run `supabase db push` against production until the re-baseline above is done.
+## Verification performed
+Automated cross-check confirmed: all 15 `migrations/*.sql` versions ∈ ledger,
+zero duplicates → `supabase db push` is a clean no-op.
