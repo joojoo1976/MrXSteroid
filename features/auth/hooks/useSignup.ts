@@ -322,6 +322,21 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
             // ─────────────────────────────────────────────────────────────────
             setSuccess(true);
 
+            // Fire-and-forget branded welcome email from the platform Gmail
+            // (display name "MrXSteroid.com"). Never blocks or fails signup.
+            if (!isMock) {
+                fetch('/api/auth/welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: cleanEmail,
+                        fullName: values.fullName.trim(),
+                        lang: isRTL ? 'ar' : 'en',
+                    }),
+                }).catch(() => { /* silent */ });
+            }
+
+
             if (isMock) {
                 toast.success(
                     isRTL

@@ -191,6 +191,14 @@ describe('pharmaEngine — Pure Pharmacokinetic Math Core', () => {
         expect(clearanceDaysFromHalfLife(0.01)).toBe(0.5);
         expect(clearanceDaysFromHalfLife(200)).toBe(532.0);
       });
+
+      it('clearance window leaves ~2.5% remaining (≈97.5% eliminated)', () => {
+        const h = 8; // e.g. an 8-day ester
+        const clearance = clearanceDaysFromHalfLife(h); // 5.32 × h
+        const remaining = decayLevel(1000, h, clearance); // mg left
+        expect(remaining / 1000).toBeCloseTo(0.025, 2); // (1/2)^5.32 ≈ 0.0249
+        expect(1 - remaining / 1000).toBeGreaterThan(0.97); // >97% cleared
+      });
     });
 
     describe('pctWaitDays', () => {

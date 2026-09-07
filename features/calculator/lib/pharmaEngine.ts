@@ -26,7 +26,7 @@ import type { Compound } from '@/shared/types/types';
 /** Sub-daily simulation resolution in days (0.25 d = 6 h). */
 export const HALF_LIFE_STEP = 0.25;
 
-/** Clearance threshold multiplier: 5.32 × t½ ≈ 95% elimination (5 × t½ = 96.9%). */
+/** Clearance threshold multiplier: 5.32 × t½ ≈ 97.5% eliminated (5 × t½ ≈ 96.9%). */
 export const CLEARANCE_MULTIPLIER = 5.32;
 
 /** SERM-based PCT begins ≈ 3.5 × t½ after the final injection. */

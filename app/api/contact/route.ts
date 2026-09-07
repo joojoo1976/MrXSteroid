@@ -168,7 +168,8 @@ export async function POST(req: Request) {
 
         // Dynamic Environment Config
         const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'foryoutalk@gmail.com';
-        const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || ''; const SENDGRID_FROM = process.env.SENDGRID_FROM || process.env.SENDGRID_FROM_EMAIL || 'Mr. X Steroid <[EMAIL]>';
+        const SUPPORT_CC = process.env.CONTACT_CC_EMAIL || 'support@mrxsteroid.com';
+        const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || ''; const SENDGRID_FROM = process.env.SENDGRID_FROM || process.env.SENDGRID_FROM_EMAIL || 'Mr. X Steroid <support@mrxsteroid.com>';
         const SMTP_HOST = process.env.SMTP_HOST || process.env.SUPABASE_SMTP_HOST || 'smtp.gmail.com';
         const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.SUPABASE_SMTP_PORT || 587);
         const SMTP_USER = process.env.SMTP_USER || process.env.SUPABASE_SMTP_SENDER_EMAIL || 'foryoutalk@gmail.com';
@@ -244,6 +245,7 @@ export async function POST(req: Request) {
                     body: JSON.stringify({
                         personalizations: [{
                             to: [{ email: DESTINATION_EMAIL }],
+                            cc: [{ email: SUPPORT_CC }],
                             replyTo: { email: email },
                         }],
                         from: { email: SENDGRID_FROM },
@@ -285,6 +287,7 @@ export async function POST(req: Request) {
                 await transporter.sendMail({
                     from: `"${SENDER_NAME}" <${SMTP_USER}>`,
                     to: DESTINATION_EMAIL,
+                    cc: SUPPORT_CC,
                     replyTo: email,
                     subject: emailSubject,
                     text: plainText,

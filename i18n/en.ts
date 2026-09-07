@@ -2153,6 +2153,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     // Contact Page
     contactPageTitle: "Contact the Source",
     contactPageSubtitle: "Direct relay for cycle optimization, technical support, and protocol verification. Secure, encrypted, and authoritative.",
+    contactInfoEmail: "support@mrxsteroid.com",
     contactFormNamePlaceholder: "Your Name",
     contactFormEmailPlaceholder: "your.email@domain.com",
     contactFormMessagePlaceholder: "Write your message or inquiry details here...",

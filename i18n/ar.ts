@@ -2152,6 +2152,7 @@ export const arContent: ContentStrings = {
     // Contact Page (Branded)
     contactPageTitle: "تواصل مع المصدر",
     contactPageSubtitle: "ترحيل مباشر لتحسين الدورة، الدعم الفني، والتحقق من البروتوكول. آمن، مشفر، وموثوق.",
+    contactInfoEmail: "support@mrxsteroid.com",
     contactFormNamePlaceholder: "اسمك الكريم",
     contactFormEmailPlaceholder: "بريدك الإلكتروني (name@example.com)",
     errorNetwork: "مشكلة في الاتصال. يرجى التحقق من الإنترنت.",
