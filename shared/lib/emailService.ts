@@ -102,7 +102,7 @@ function wrapHtml(inner: string, isAr: boolean): string {
   .foot{padding:18px 28px;text-align:center;font-size:12px;color:#737373;border-top:1px solid #262626;}
 </style></head>
 <body><div class="wrap"><div class="card">
-  <div class="head"><h1>${SITE_NAME}</h1></div>
+  <div class="head"><h1><a href="${SITE_URL}" style="color:#eab308;text-decoration:none">${SITE_NAME}</a></h1></div>
   <div class="body">${inner}</div>
   <div class="foot">© ${new Date().getFullYear()} ${SITE_NAME} — ${isAr ? 'لأغراض تعليمية وبحثية، وليست نصيحة طبية.' : 'Educational & research use only — not medical advice.'}</div>
 </div></div></body></html>`;
