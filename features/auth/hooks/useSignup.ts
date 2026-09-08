@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -11,22 +11,6 @@ import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 import { isPasswordLeaked } from '../../../shared/lib/pwned-password';
-
-// Password validation helper - matches auth-service requirements
-const isSecurePassword = (password: string): boolean => {
-    const minLength = /.{8,}/;
-    const hasUpper = /[A-Z]/;
-    const hasLower = /[a-z]/;
-    const hasNumber = /[0-9]/;
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/;
-    return (
-        minLength.test(password) &&
-        hasUpper.test(password) &&
-        hasLower.test(password) &&
-        hasNumber.test(password) &&
-        hasSpecial.test(password)
-    );
-};
 
 // Inline signup schema
 const createSignupSchema = (isRTL: boolean) => z.object({
@@ -43,13 +27,7 @@ const createSignupSchema = (isRTL: boolean) => z.object({
         message: isRTL ? 'رقم الهاتف غير صحيح (مثال: +966500000000)' : 'Invalid phone format (e.g. +966500000000)'
     }),
     password: z.string()
-        .min(8, isRTL ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters')
-        .refine(
-            (pwd) => isSecurePassword(pwd),
-            isRTL
-                ? 'يجب أن تحتوي على حرف كبير، حرف صغير، رقم ورمز خاص (!@#$%^&*...)'
-                : 'Must contain uppercase, lowercase, number and special character (!@#$%^&*...)'
-        ),
+        .min(6, isRTL ? 'كلمة المرور يجب أن تكون 6 أحرف/أرقام على الأقل' : 'Password must be at least 6 characters (letters or numbers)'),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match',
@@ -67,6 +45,7 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [usedMockAuth, setUsedMockAuth] = useState(false);
+    const [emailTaken, setEmailTaken] = useState(false);
 
     const signupSchema = createSignupSchema(isRTL);
 
@@ -81,6 +60,33 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
             confirmPassword: '',
         },
     });
+
+    // Live "email already registered" detection: debounced lookup against the
+    // profiles table. Clears the amber flag the instant the email text changes
+    // and re-arms it only if the new value is also taken.
+    const emailValue = form.watch('email');
+    useEffect(() => {
+        setEmailTaken(false);
+        const email = (emailValue || '').trim().toLowerCase();
+        const isConfigured = !!(
+            (readEnv('VITE_SUPABASE_URL') || readEnv('NEXT_PUBLIC_SUPABASE_URL')) &&
+            (readEnv('VITE_SUPABASE_ANON_KEY') || readEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
+        );
+        if (!isConfigured || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+        const timer = setTimeout(async () => {
+            try {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .ilike('email', email)
+                    .maybeSingle();
+                if (data) setEmailTaken(true);
+            } catch {
+                /* fail-open: never block the form on a lookup error */
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [emailValue]);
 
     const onSubmit = async (values: SignupFormValues) => {
         setLoading(true);
@@ -393,6 +399,7 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
         loading,
         success,
         usedMockAuth,
+        emailTaken,
         onSubmit: form.handleSubmit(onSubmit)
     };
 };

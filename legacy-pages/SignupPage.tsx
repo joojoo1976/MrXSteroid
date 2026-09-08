@@ -26,7 +26,7 @@ interface SignupPageProps {
 export default function SignupPage({ content, navigateTo }: SignupPageProps) {
     const { isRTL } = usePreferences();
 
-    const { form, loading, success, usedMockAuth, onSubmit } = useSignup({
+    const { form, loading, success, usedMockAuth, emailTaken, onSubmit } = useSignup({
         content,
         isRTL
     });
@@ -141,7 +141,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <User className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <User className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
@@ -149,7 +149,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="name"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.fullNamePlaceholder || "John Doe"}
                                                             />
                                                         </div>
@@ -169,7 +169,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <AtSign className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <AtSign className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 dir="ltr"
@@ -177,7 +177,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="username"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.usernamePlaceholder || "johndoe123"}
                                                             />
                                                         </div>
@@ -199,7 +199,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <Mail className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <Mail className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 type="email"
@@ -208,11 +208,19 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="email"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left ${emailTaken ? 'border-amber-500 ring-2 ring-amber-500/40 shadow-[0_0_0_3px_rgba(245,158,11,0.25)]' : 'border-zinc-200 dark:border-zinc-800'}`}
                                                                 placeholder={content.emailPlaceholder || "name@example.com"}
                                                             />
                                                         </div>
                                                     </FormControl>
+                                                    {emailTaken && (
+                                                        <p className="text-[10px] font-black text-amber-500 flex items-center gap-1" role="alert">
+                                                            <span aria-hidden="true">⚠️</span>
+                                                            {isRTL
+                                                                ? "هذا البريد الإلكتروني مسجّل بالفعل. جرّب تسجيل الدخول أو استعادة كلمة المرور."
+                                                                : "This email is already registered. Try signing in or resetting your password."}
+                                                        </p>
+                                                    )}
                                                     <FormMessage className="font-bold text-[9px]" />
                                                 </FormItem>
                                             )}
@@ -228,7 +236,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <Phone className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <Phone className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 type="tel"
@@ -237,7 +245,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="tel"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder="+966500000000"
                                                             />
                                                         </div>
@@ -259,7 +267,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <Lock className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <Lock className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 type="password"
@@ -268,7 +276,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.passwordPlaceholder || "••••••••"}
                                                             />
                                                         </div>
@@ -288,7 +296,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
-                                                            <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'end-3' : 'start-3'} w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
+                                                            <ShieldCheck className={`absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400 transition-colors group-focus-within:text-gold-500`} />
                                                             <Input
                                                                 {...field}
                                                                 type="password"
@@ -297,7 +305,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                                                 lang="en"
                                                                 disabled={loading}
                                                                 autoComplete="new-password"
-                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg ${isRTL ? 'pe-9' : 'ps-9'} focus-visible:ring-gold-500 font-medium transition-all text-left`}
+                                                                className={`h-9 text-xs bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 rounded-lg !ps-10 focus-visible:ring-gold-500 font-medium transition-all text-left`}
                                                                 placeholder={content.passwordPlaceholder || (isRTL ? "••••••••" : "••••••••")}
                                                             />
                                                         </div>
