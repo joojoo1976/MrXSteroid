@@ -6,9 +6,7 @@ import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, 
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
-import GoogleButton from '../components/GoogleButton';
-import FacebookButton from '../components/FacebookButton';
-import XButton from '../components/XButton';
+import AuthButtons from '../components/AuthButtons';
 import { Button } from '../shared/ui/button';
 import {
     Form,
@@ -365,11 +363,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             </div>
 
                             {/* Social OAuth */}
-                            <div className="space-y-2">
-                                <GoogleButton />
-                                <FacebookButton />
-                                <XButton />
-                            </div>
+                            <AuthButtons />
 
                             <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center">
                                 <p className="text-zinc-500 font-medium mb-1 text-[10px]">{content.haveAccount}</p>
