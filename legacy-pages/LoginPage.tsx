@@ -8,6 +8,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { useLogin } from '../features/auth/hooks/useLogin';
 import GoogleButton from '../components/GoogleButton';
+import FacebookButton from '../components/FacebookButton';
 
 // Design System
 import { Button } from '../shared/ui/button';
@@ -150,8 +151,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
             <span className="h-px flex-1 bg-zinc-700/50" />
           </div>
 
-          {/* Google OAuth */}
-          <GoogleButton />
+          {/* Social OAuth */}
+          <div className="space-y-2">
+            <GoogleButton />
+            <FacebookButton />
+          </div>
         </motion.div>
     </div>
   );
