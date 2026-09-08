@@ -7,6 +7,7 @@ import { Page, ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { useLogin } from '../features/auth/hooks/useLogin';
+import GoogleButton from '../components/GoogleButton';
 
 // Design System
 import { Button } from '../shared/ui/button';
@@ -140,8 +141,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
               )}
             </Button>
           </form>
-        </Form>
-      </motion.div>
+          </Form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-2 my-3">
+            <span className="h-px flex-1 bg-zinc-700/50" />
+            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{isRTL ? 'أو' : 'or'}</span>
+            <span className="h-px flex-1 bg-zinc-700/50" />
+          </div>
+
+          {/* Google OAuth */}
+          <GoogleButton />
+        </motion.div>
     </div>
   );
 };

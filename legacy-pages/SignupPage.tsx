@@ -6,6 +6,7 @@ import { Mail, Lock, User, CheckCircle, Loader2, UserPlus, ShieldCheck, AtSign, 
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
+import GoogleButton from '../components/GoogleButton';
 import { Button } from '../shared/ui/button';
 import {
     Form,
@@ -353,6 +354,16 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                                     </Button>
                                 </form>
                             </Form>
+
+                            {/* Divider */}
+                            <div className="flex items-center gap-2 my-2">
+                                <span className="h-px flex-1 bg-zinc-700/50" />
+                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{isRTL ? 'أو' : 'or'}</span>
+                                <span className="h-px flex-1 bg-zinc-700/50" />
+                            </div>
+
+                            {/* Google OAuth */}
+                            <GoogleButton />
 
                             <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center">
                                 <p className="text-zinc-500 font-medium mb-1 text-[10px]">{content.haveAccount}</p>
