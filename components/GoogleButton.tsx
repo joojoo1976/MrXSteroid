@@ -1,10 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { supabase } from '../shared/lib/supabase';
-import { usePreferences } from '../context/PreferencesContext';
+import OAuthButton from './OAuthButton';
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -15,48 +11,15 @@ const GoogleIcon = () => (
     </svg>
 );
 
-/**
- * Google OAuth sign-in button. Uses the project's shared Supabase browser
- * client (PKCE). On success Supabase redirects to /auth/callback, which the
- * existing callback page turns into an active session. Requires the Google
- * provider to be enabled in the Supabase dashboard.
- */
 export default function GoogleButton() {
-    const { isRTL } = usePreferences();
-    const [loading, setLoading] = useState(false);
-
-    const handleGoogleLogin = async () => {
-        try {
-            setLoading(true);
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                },
-            });
-            if (error) throw error;
-            // On success the browser is redirected to Google; keep loading state.
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            console.error('Google sign-in error:', msg);
-            toast.error(
-                isRTL
-                    ? 'تعذّر بدء تسجيل الدخول عبر Google. تأكد من تفعيل مزوّد Google.'
-                    : 'Could not start Google sign-in. Ensure the Google provider is enabled.',
-            );
-            setLoading(false);
-        }
-    };
-
     return (
-        <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
+        <OAuthButton
+            provider="google"
+            name="Google"
+            icon={<GoogleIcon />}
+            labelAr="المتابعة باستخدام Google"
+            labelEn="Continue with Google"
             className="w-full h-10 flex items-center justify-center gap-3 bg-white text-gray-800 font-bold text-xs rounded-xl border border-gray-300 hover:bg-gray-50 active:scale-[0.99] transition-all shadow-sm disabled:opacity-60"
-        >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
-            <span>{isRTL ? 'المتابعة باستخدام Google' : 'Continue with Google'}</span>
-        </button>
+        />
     );
 }

@@ -8,6 +8,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useSignup } from '../features/auth/hooks/useSignup';
 import GoogleButton from '../components/GoogleButton';
 import FacebookButton from '../components/FacebookButton';
+import XButton from '../components/XButton';
 import { Button } from '../shared/ui/button';
 import {
     Form,
@@ -367,6 +368,7 @@ export default function SignupPage({ content, navigateTo }: SignupPageProps) {
                             <div className="space-y-2">
                                 <GoogleButton />
                                 <FacebookButton />
+                                <XButton />
                             </div>
 
                             <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center">

@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLogin } from '../features/auth/hooks/useLogin';
 import GoogleButton from '../components/GoogleButton';
 import FacebookButton from '../components/FacebookButton';
+import XButton from '../components/XButton';
 
 // Design System
 import { Button } from '../shared/ui/button';
@@ -155,6 +156,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ content, navigateTo }) => {
           <div className="space-y-2">
             <GoogleButton />
             <FacebookButton />
+            <XButton />
           </div>
         </motion.div>
     </div>
