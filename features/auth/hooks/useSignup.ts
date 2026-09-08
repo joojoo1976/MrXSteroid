@@ -12,8 +12,8 @@ import { ContentStrings } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 import { isPasswordLeaked } from '../../../shared/lib/pwned-password';
 
-// Inline signup schema
-const createSignupSchema = (isRTL: boolean) => z.object({
+// Inline signup schema (exported for unit testing)
+export const createSignupSchema = (isRTL: boolean) => z.object({
     fullName: z.string().min(2, isRTL ? 'الاسم الكامل مطلوب (حرفان على الأقل)' : 'Full name is required (min 2 chars)'),
     username: z.string()
         .min(3, isRTL ? 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' : 'Username must be at least 3 characters')
