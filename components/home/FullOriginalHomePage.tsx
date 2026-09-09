@@ -30,16 +30,25 @@ import CheckoutModal from '../../features/modal/CheckoutModal';
 import PreferencesModal from '../../features/modal/PreferencesModal';
 import PaymobProductModal from '../../features/modal/PaymobProductModal';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
+import { useIntroAudio } from '../../features/marketing/hooks/useIntroAudio';
 
 export default function FullOriginalHomePage() {
     const { content, isRTL, language: lang } = usePreferences();
     const { user, signOut } = useAuth();
     const navigateTo = useLegacyNavigation();
 
-    // Audio Player State for Hero
-    const [isPlaying, setIsPlaying] = useState(false);
-    const togglePlay = () => setIsPlaying((prev) => !prev);
-    const playerState = { isPlaying, togglePlay };
+    // Audio Player State for Hero — real HTMLAudioElement, language-aware source.
+    const introSrc = isRTL ? '/intro_Ar.mp3' : '/intro.mp3';
+    const audio = useIntroAudio(introSrc);
+    const playerState = {
+        isPlaying: audio.isPlaying,
+        togglePlay: audio.togglePlay,
+        duration: audio.duration,
+        currentTime: audio.currentTime,
+        ready: audio.ready,
+        error: audio.error,
+        seekTo: audio.seekTo,
+    };
 
     // Checkout & Modals State
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);

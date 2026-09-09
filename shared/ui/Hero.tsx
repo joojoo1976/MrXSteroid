@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
-import { Download, Pause, Play, Volume2, Lock, CheckCircle } from 'lucide-react';
+import { Download, Pause, Play, Volume2, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { StyledBrandName } from './StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
 
+export interface IntroPlayerState {
+  isPlaying: boolean;
+  togglePlay: () => void;
+  duration?: number;
+  currentTime?: number;
+  ready?: boolean;
+  error?: boolean;
+  seekTo?: (fraction: number) => void;
+}
+
+const fmtTime = (s: number): string => {
+  if (!Number.isFinite(s) || s <= 0) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+};
+
 interface HeroProps {
   content: ContentStrings;
   openCheckout: (tier: PricingTier) => void;
-  playerState: { isPlaying: boolean; togglePlay: () => void; };
+  playerState: IntroPlayerState;
 }
 
 // Internal BookCover Component to keep Hero self-contained
@@ -68,18 +85,80 @@ const BookCover: React.FC<{ content: ContentStrings, onClick: () => void }> = ({
   );
 };
 
-const AudioPlayer: React.FC<{ content: ContentStrings, playerState: { isPlaying: boolean, togglePlay: () => void } }> = ({ content, playerState }) => {
+const AudioPlayer: React.FC<{ content: ContentStrings, playerState: IntroPlayerState }> = ({ content, playerState }) => {
   const { isRTL } = usePreferences();
+  const duration = playerState.duration ?? 0;
+  const current = playerState.currentTime ?? 0;
+  const pct = duration > 0 ? Math.min(100, (current / duration) * 100) : 0;
+  const totalLabel = duration > 0 ? fmtTime(duration) : (content.audioPlayer.duration || '0:00');
+
+  const onSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!playerState.seekTo || duration <= 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    let ratio = (e.clientX - rect.left) / rect.width;
+    if (isRTL) ratio = 1 - ratio;
+    playerState.seekTo(Math.max(0, Math.min(1, ratio)));
+  };
+
+  const onSeekKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!playerState.seekTo || duration <= 0) return;
+    const step = 0.05;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const dir = (e.key === 'ArrowRight') !== isRTL ? step : -step;
+      playerState.seekTo(Math.min(1, Math.max(0, (current / duration) + dir)));
+      e.preventDefault();
+    }
+  };
+
   return (
-    <div className={`mt-8 p-4 bg-zinc-100 dark:bg-background rounded-2xl flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-      <button aria-label={playerState.isPlaying ? "Pause Audio" : "Play Audio"} title={playerState.isPlaying ? "Pause Audio" : "Play Audio"} onClick={playerState.togglePlay} className="w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-transform shrink-0">
-        {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+    <div className={`mt-8 p-4 sm:p-5 bg-zinc-100 dark:bg-background border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'} shadow-lg`}>
+      <button
+        aria-label={playerState.isPlaying ? 'Pause Audio' : 'Play Audio'}
+        title={playerState.isPlaying ? 'Pause' : 'Play'}
+        onClick={playerState.togglePlay}
+        disabled={playerState.ready === false}
+        className="w-12 h-12 rounded-full bg-gold-500 hover:bg-gold-400 disabled:opacity-50 text-black flex items-center justify-center shadow-lg shadow-gold-500/30 hover:scale-110 active:scale-95 transition-all shrink-0"
+      >
+        {playerState.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ms-0.5" />}
       </button>
-      <div className={`flex-1 text-start`}>
-        <h4 className="font-bold text-base text-zinc-900 dark:text-white">{content.audioPlayer.title}</h4>
-        <p className="text-sm text-zinc-500">{content.audioPlayer.subtitle}</p>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h4 className="font-bold text-base text-zinc-900 dark:text-white truncate">{content.audioPlayer.title}</h4>
+          {playerState.isPlaying && (
+            <span className="flex items-end gap-0.5 h-4" aria-hidden="true">
+              {[40, 80, 55, 90].map((h, i) => (
+                <span key={i} className="w-0.5 bg-gold-500 rounded-full animate-pulse" style={{ height: `${h}%`, animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </span>
+          )}
+        </div>
+        {playerState.error ? (
+          <p className="text-sm font-semibold text-rose-500 flex items-center gap-1.5 truncate">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {isRTL ? 'تعذّر تشغيل الصوت.' : 'Audio failed to load.'}
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-500 truncate">{content.audioPlayer.subtitle}</p>
+        )}
+        <div
+          role="slider"
+          aria-label="Seek"
+          aria-valuemin={0}
+          aria-valuemax={Math.round(duration)}
+          aria-valuenow={Math.round(current)}
+          tabIndex={0}
+          onClick={onSeek}
+          onKeyDown={onSeekKey}
+          className="mt-2 h-1.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 cursor-pointer overflow-hidden focus-visible:ring-2 focus-visible:ring-gold-500"
+        >
+          <div className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-400" style={{ width: `${pct}%` }} />
+        </div>
       </div>
-      <div className="text-sm font-mono font-bold text-zinc-400 shrink-0">{content.audioPlayer.duration}</div>
+
+      <div className="text-sm font-mono font-bold text-zinc-400 shrink-0 tabular-nums" dir="ltr">
+        {fmtTime(current)} / {totalLabel}
+      </div>
     </div>
   );
 };
@@ -161,16 +240,26 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
           <button
             onClick={playerState.togglePlay}
             aria-label={playerState.isPlaying ? "Pause Intro" : "Listen to Intro"}
+            disabled={!!playerState.error}
             style={{ transform: 'scale(1)', transition: 'transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease' }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseEnter={e => { if (!playerState.error) e.currentTarget.style.transform = 'scale(1.05)'; }}
             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 border-2 font-black text-lg md:text-xl rounded-2xl md:rounded-full flex items-center justify-center gap-3 relative overflow-hidden ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-xl' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500'}`}
+            className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 border-2 font-black text-lg md:text-xl rounded-2xl md:rounded-full flex items-center justify-center gap-3 relative overflow-hidden disabled:opacity-60 ${playerState.isPlaying ? 'bg-gold-500 border-gold-500 text-black shadow-xl' : 'bg-transparent text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 hover:border-gold-500'}`}
           >
-            {playerState.isPlaying ? <Pause className="w-5 h-5 md:w-6 md:h-6" /> : <Volume2 className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />}
-            <span>{content.audioPreviewBtn}</span>
+            {playerState.error
+              ? <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
+              : playerState.ready === false
+                ? <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
+                : playerState.isPlaying
+                  ? <Pause className="w-5 h-5 md:w-6 md:h-6" />
+                  : <Volume2 className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />}
+            <span>{playerState.error ? (isRTL ? 'الصوت غير متاح' : 'Audio unavailable') : content.audioPreviewBtn}</span>
             <span
-              className="absolute bottom-0 start-0 h-1 bg-black/20 animate-progress w-full"
-              style={{ opacity: playerState.isPlaying ? 1 : 0 }}
+              className="absolute bottom-0 start-0 h-1 bg-black/20 transition-[width] duration-150"
+              style={{
+                width: `${(playerState.duration ?? 0) > 0 ? Math.min(100, ((playerState.currentTime ?? 0) / (playerState.duration as number)) * 100) : 0}%`,
+                opacity: playerState.isPlaying ? 1 : 0,
+              }}
             />
           </button>
         </div>
