@@ -22,11 +22,14 @@ interface OAuthButtonProps {
     labelAr: string;
     labelEn: string;
     className?: string;
+    /** Optional OAuth scopes. NOTE: Supabase MERGES these with the provider's
+     *  server-configured default scopes; it cannot remove a server-set scope. */
+    scopes?: string;
 }
 
 const BASE = 'w-full h-10 flex items-center justify-center gap-3 font-bold text-xs rounded-xl transition-all active:scale-[0.99] shadow-sm disabled:opacity-60 border';
 
-export default function OAuthButton({ provider, name, icon, labelAr, labelEn, className }: OAuthButtonProps) {
+export default function OAuthButton({ provider, name, icon, labelAr, labelEn, className, scopes }: OAuthButtonProps) {
     const { isRTL } = usePreferences();
     const [loading, setLoading] = useState(false);
 
@@ -35,7 +38,10 @@ export default function OAuthButton({ provider, name, icon, labelAr, labelEn, cl
             setLoading(true);
             const { error } = await supabase.auth.signInWithOAuth({
                 provider,
-                options: { redirectTo: `${window.location.origin}/auth/callback` },
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    ...(scopes ? { scopes } : {}),
+                },
             });
             if (error) throw error;
         } catch (err) {

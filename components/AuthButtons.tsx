@@ -36,11 +36,15 @@ const XLogo = () => (
 const NEON_BTN =
     'relative flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-[#39FF14]/40 bg-zinc-950/70 text-sm font-semibold text-[#39FF14] shadow-[0_0_14px_rgba(57,255,20,0.12)] backdrop-blur transition-all hover:-translate-y-0.5 hover:border-[#39FF14] hover:text-white hover:shadow-[0_0_22px_rgba(57,255,20,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#39FF14]/60 active:scale-[0.98] disabled:opacity-50 disabled:hover:translate-y-0';
 
-interface Social { provider: Provider; name: string; labelAr: string; labelEn: string; icon: ReactNode; }
+interface Social { provider: Provider; name: string; labelAr: string; labelEn: string; icon: ReactNode; scopes?: string; }
 
+// NOTE: Supabase merges these with each provider's SERVER-configured default
+// scopes. Facebook's server default requests `email`, which Meta rejects with
+// "Invalid Scopes: email" until `email` is enabled in the Meta console OR the
+// Supabase Facebook provider's Scopes field is set to `public_profile`.
 const PROVIDERS: Social[] = [
     { provider: 'google',   name: 'Google',   labelAr: 'المتابعة باستخدام Google',   labelEn: 'Continue with Google',   icon: <GoogleLogo /> },
-    { provider: 'facebook', name: 'Facebook', labelAr: 'المتابعة باستخدام Facebook', labelEn: 'Continue with Facebook', icon: <FacebookLogo /> },
+    { provider: 'facebook', name: 'Facebook', labelAr: 'المتابعة باستخدام Facebook', labelEn: 'Continue with Facebook', icon: <FacebookLogo />, scopes: 'public_profile' },
     { provider: 'twitter',  name: 'X',        labelAr: 'المتابعة باستخدام X',        labelEn: 'Continue with X',        icon: <XLogo /> },
 ];
 
@@ -55,6 +59,7 @@ export default function AuthButtons() {
                     icon={s.icon}
                     labelAr={s.labelAr}
                     labelEn={s.labelEn}
+                    scopes={s.scopes}
                     className={NEON_BTN}
                 />
             ))}
