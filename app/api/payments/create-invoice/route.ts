@@ -1,19 +1,19 @@
 /**
  * Route Handler — /api/payments/create-invoice
  * Creates an invoice record and routes to the correct payment gateway.
- * Adapted from the legacy Vercel serverless function to the App Router.
+ *
+ * SECURITY: Requires SUPABASE_SERVICE_ROLE_KEY — never falls back to anon key.
  */
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } from '../../../../server/payments/pricing';
 
-const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
-
 const getSupabaseAdmin = () => {
-    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url) throw new Error('[CreateInvoice] Missing SUPABASE_URL env var.');
+    if (!key) throw new Error('[CreateInvoice] Missing SUPABASE_SERVICE_ROLE_KEY env var.');
     return createClient(url, key, {
         auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -31,7 +31,7 @@ const CreateInvoiceSchema = z.object({
     email: z.string().email('Invalid email address'),
     fullName: z.string().min(2, 'Full name is required'),
     locale: z.enum(['ar', 'en']).optional().default('en'),
-    paymentMethod: z.string().optional(),
+    paymentMethod: z.string().optional(), // 'card','wallet','kiosk','paypal','stripe','instapay','kashier'
     integrationId: z.union([z.number(), z.string()]).optional(),
     phoneNumber: z.string().optional(),
     quantity: z.number().int().min(1).max(99).optional(),
@@ -90,6 +90,7 @@ export async function POST(req: Request) {
             const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
             const isStripeEmbedded = input.paymentMethod === 'stripe';
+            const isKashier = input.paymentMethod === 'kashier';
 
             let gateway: import('../../../../server/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
             let gatewayName: string;
@@ -99,6 +100,17 @@ export async function POST(req: Request) {
                 const { StripeGateway } = await import('../../../../server/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
                 gatewayName = 'STRIPE';
+            } else if (isKashier) {
+                // Kashier: Egypt merchant for EG, Global merchant for everyone else.
+                // Currency is resolved server-side; never trust client-supplied currency.
+                const { KashierGateway } = await import('../../../../server/payments/gateways/KashierGateway');
+                if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT') {
+                    gateway = new KashierGateway('egypt');
+                    gatewayName = 'KASHIER_EGYPT';
+                } else {
+                    gateway = new KashierGateway('global');
+                    gatewayName = 'KASHIER_GLOBAL';
+                }
             } else if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
                 const { PaymobGateway } = await import('../../../../server/payments/gateways/PaymobGateway');
                 gateway = new PaymobGateway();
@@ -110,7 +122,7 @@ export async function POST(req: Request) {
 
             input.country = secureCountryCode;
 
-            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY';
+            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY' || gatewayName === 'KASHIER_EGYPT';
             const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
 
             const pricing = await loadPricing(async () => {
@@ -159,15 +171,60 @@ export async function POST(req: Request) {
 
             console.log(`🏭 [CreateInvoice] Gateway: ${gatewayName}, Method: ${input.paymentMethod}, Tier: ${input.tierId}, Amount: ${amount} ${currency}`);
 
+            // ── Referral Attribution (server-side, cookie only) ─────────────────────
+            // Read mrx_ref cookie set by /api/referral/track. Never trust body-supplied
+            // affiliate data. Validate the code server-side before persisting.
+            let affiliateId: string | null = null;
+            let referralCode: string | null = null;
+            let attributionTimestamp: string | null = null;
+            let attributionExpiresAt: string | null = null;
+            try {
+                const cookieHeader = req.headers.get('cookie') || '';
+                const mrxRefMatch = cookieHeader.match(/(?:^|;\s*)mrx_ref=([^;]+)/);
+                if (mrxRefMatch) {
+                    const { parseAttributionCookie, isSelfReferral } = await import('../../../../server/affiliate/attributionService');
+                    const attribution = parseAttributionCookie(decodeURIComponent(mrxRefMatch[1]));
+                    if (attribution) {
+                        // Self-referral check
+                        const selfRef = await isSelfReferral(attribution.affiliateId, effectiveUserId);
+                        if (selfRef) {
+                            console.log(`🚫 [CreateInvoice] Self-referral blocked for user ${effectiveUserId}`);
+                        } else {
+                            affiliateId = attribution.affiliateId;
+                            referralCode = attribution.referralCode;
+                            attributionTimestamp = attribution.attributionTimestamp;
+                            attributionExpiresAt = attribution.attributionExpiresAt;
+                        }
+                    }
+                }
+            } catch (attrErr) {
+                // Attribution failure must never prevent checkout
+                console.error('[CreateInvoice] Attribution parsing failed:', attrErr);
+            }
+            // ────────────────────────────────────────────────────────────────────────
+
             const { data: invoice, error: insertError } = await supabase
                 .from('invoices')
                 .insert({
                     user_id: effectiveUserId,
                     gateway: gatewayName.toLowerCase(),
                     status: 'pending',
+                    payment_status: 'pending',
                     tier_id: input.tierId,
                     amount,
                     currency,
+                    payment_provider_merchant: gatewayName.toLowerCase(),
+                    region: (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT') ? 'egypt' : 'global',
+                    shipping_cost: shippingCost,
+                    discount_amount: discount,
+                    customer_email: input.email,
+                    customer_name: input.fullName,
+                    phone_number: input.phoneNumber || null,
+                    // Attribution (immutable after creation)
+                    affiliate_id: affiliateId,
+                    referral_code: referralCode,
+                    attribution_timestamp: attributionTimestamp,
+                    attribution_expires_at: attributionExpiresAt,
                 })
                 .select('id')
                 .single();
@@ -178,7 +235,8 @@ export async function POST(req: Request) {
             }
 
             const invoiceId = invoice.id;
-            console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}`);
+            console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}${referralCode ? ` (ref: ${referralCode})` : ''}`);
+
 
             if (isInstaPay) {
                 const refText = String(input.metadata?.instapayReference || input.phoneNumber || '');

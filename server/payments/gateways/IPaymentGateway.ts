@@ -11,7 +11,24 @@ import type { VercelRequest } from './vercel-types';
 //                              TYPE DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE';
+export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE' | 'KASHIER_EGYPT' | 'KASHIER_GLOBAL';
+
+/**
+ * Granular payment status codes — primarily used by Kashier but shared across all gateways.
+ * TIMED_OUT and UNKNOWN must never trigger fulfillment or permanent failure.
+ */
+export type PaymentDetailedStatus =
+    | 'APPROVED'
+    | 'DECLINED'
+    | 'EXPIRED_CARD'
+    | 'TIMED_OUT'
+    | 'ACQUIRER_SYSTEM_ERROR'
+    | 'UNSPECIFIED_FAILURE'
+    | 'UNKNOWN'
+    | 'REFUNDED'
+    | 'VOIDED'
+    | 'AUTHORIZED'
+    | 'CAPTURED';
 
 export interface CreateInvoiceParams {
     userId: string | null;
@@ -32,6 +49,8 @@ export interface CreateInvoiceResult {
     externalReferenceId: string;
     /** Embedded-flow client secret (e.g. Stripe PaymentIntent client_secret). Present when no redirect is required. */
     clientSecret?: string;
+    /** Provider's order/transaction ID for reference (e.g. Kashier orderId) */
+    providerOrderId?: string;
 }
 
 export interface WebhookVerificationResult {
@@ -42,6 +61,10 @@ export interface WebhookVerificationResult {
     errorMessage?: string;
     /** Amount actually paid in major units, when reported by the gateway. Used for defense-in-depth amount verification. */
     paidAmount?: number;
+    /** Granular status code from the provider (APPROVED, DECLINED, TIMED_OUT, UNKNOWN, etc.) */
+    detailedStatus?: PaymentDetailedStatus;
+    /** Provider's merchant ID extracted from the webhook payload (used for cross-account validation) */
+    merchantId?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

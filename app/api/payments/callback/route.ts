@@ -1,19 +1,23 @@
 /**
  * Route Handler — /api/payments/callback
  * Multi-gateway callback handler (GET redirect callbacks + POST webhooks).
- * Adapted from the legacy Vercel serverless function to the App Router.
+ *
+ * SECURITY:
+ * - GET callback is ADVISORY ONLY — does NOT activate subscriptions.
+ *   Subscription activation happens exclusively via the POST webhook.
+ * - Requires SUPABASE_SERVICE_ROLE_KEY — never falls back to anon key.
  */
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { verifyPaidAmount } from '../../../../server/payments/verifyPaidAmount';
 
-const DEFAULT_SUPABASE_URL = 'https://alghvtpkpspnqupbvodu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZ2h2dHBrcHNwbnF1cGJ2b2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDgyMTYsImV4cCI6MjA4MTQyNDIxNn0.4en9cYMCkIwxd1pWxehb9-lP77cHgh5FhZnrBRg-yaw';
 const APP_BASE = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://www.mrxsteroid.com';
 
 const getSupabaseAdmin = () => {
-    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url) throw new Error('[Callback] Missing SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL env var.');
+    if (!key) throw new Error('[Callback] Missing SUPABASE_SERVICE_ROLE_KEY env var. Anon key must NOT be used here.');
     return createClient(url, key, {
         auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -134,38 +138,24 @@ export async function GET(req: Request) {
         const url = new URL(req.url);
         const invoiceId = url.searchParams.get('txn') || url.searchParams.get('reference_id') || '';
 
-        console.log(`📥 [Callback:GET] Invoice: ${invoiceId}, Query: ${url.search}`);
+        console.log(`📥 [Callback:GET] Invoice: ${invoiceId}, Query: ${url.search} — advisory redirect only`);
 
-        if (invoiceId && (await isAlreadyProcessed(invoiceId))) {
-            return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(invoiceId)}`);
+        // GET callback is ADVISORY ONLY.
+        // We read the CURRENT invoice status from our DB (set by the webhook) and redirect.
+        // We NEVER activate a subscription from a GET return URL alone.
+        if (invoiceId) {
+            if (await isAlreadyProcessed(invoiceId)) {
+                return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(invoiceId)}`);
+            }
+            // Invoice not yet paid — the webhook may still be in-flight.
+            // Redirect to a pending/status page so the customer can see the live status.
+            return redirect(`${APP_BASE}/payment-pending?txn=${encodeURIComponent(invoiceId)}&gateway=callback`);
         }
 
-        const normalized = normalizeRequest(req);
-        const gateway = PaymentFactory.detectGatewayFromRequest(normalized);
-        const gatewayName = gateway.getGatewayName();
-
-        const rawBody = '';
-        const verification = await gateway.verifyWebhook(
-            { headers: normalized.headers, query: normalized.query } as unknown as import('../../../../server/payments/gateways/vercel-types').VercelRequest,
-            rawBody,
-        );
-
-        const resolvedInvoiceId = verification.invoiceId || invoiceId;
-
-        if (verification.valid && verification.status === 'success' && resolvedInvoiceId) {
-            await activateSubscription(resolvedInvoiceId, verification.externalReferenceId);
-            return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(resolvedInvoiceId)}`);
-        }
-
-        if (resolvedInvoiceId) {
-            await markInvoiceFailed(resolvedInvoiceId, verification.errorMessage);
-            return redirect(`${APP_BASE}/cancel?error=verification_failed`);
-        }
-
-        console.log(`🏭 [Callback:GET] Gateway detected: ${gatewayName}`);
+        // No invoice ID in the return URL — just go home.
         return redirect(`${APP_BASE}/`);
     } catch (error) {
-        console.error('❌ [Callback] Unhandled error:', error);
+        console.error('❌ [Callback:GET] Unhandled error:', error);
         return redirect(`${APP_BASE}/`);
     }
 }
