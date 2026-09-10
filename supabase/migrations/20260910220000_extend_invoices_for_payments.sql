@@ -17,7 +17,7 @@ ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS product_name_snapshot text;
 ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS attribution_source text;
 
 -- Add payment_status check constraint idempotently
-DO  BEGIN
+DO $$ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'invoices_payment_status_check'
     ) THEN
@@ -25,7 +25,7 @@ DO  BEGIN
             ADD CONSTRAINT invoices_payment_status_check
             CHECK (payment_status IN ('pending','paid','failed','cancelled','refunded','partially_refunded','unknown','initiated'));
     END IF;
-END ;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_invoices_payment_status ON public.invoices(payment_status);
 CREATE INDEX IF NOT EXISTS idx_invoices_referral_code ON public.invoices(referral_code);

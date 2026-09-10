@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ╔══════════════════════════════════════════════════════════════════════════╗
  * ║  🏭 PAYMENT FACTORY — Gateway Selector with Zod Validation               ║
  * ║  Routes to the correct gateway based on the customer's country            ║
@@ -129,9 +129,17 @@ export class PaymentFactory {
      * Used by the webhook handler for cross-account routing after initial Kashier detection.
      */
     static detectKashierAccountFromMerchantId(merchantId: string): KashierGateway | null {
-        const egyptMid = process.env.KASHIER_EGYPT_MERCHANT_ID || '';
+        const rawMode = (process.env.KASHIER_MODE || 'test').toLowerCase();
+        const modePrefix = rawMode === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
+
+        // Check new naming convention first (KASHIER_TEST_*/KASHIER_LIVE_*)
+        const testMid  = process.env[modePrefix + '_MERCHANT_ID'] || '';
+        if (testMid && merchantId === testMid) return PaymentFactory.getKashierEgypt();
+
+        // Fallback to legacy naming (KASHIER_EGYPT_*/KASHIER_GLOBAL_*)
+        const egyptMid  = process.env.KASHIER_EGYPT_MERCHANT_ID  || '';
         const globalMid = process.env.KASHIER_GLOBAL_MERCHANT_ID || '';
-        if (egyptMid && merchantId === egyptMid) return PaymentFactory.getKashierEgypt();
+        if (egyptMid  && merchantId === egyptMid)  return PaymentFactory.getKashierEgypt();
         if (globalMid && merchantId === globalMid) return PaymentFactory.getKashierGlobal();
         return null;
     }
