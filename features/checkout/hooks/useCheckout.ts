@@ -50,7 +50,7 @@ export interface useCheckoutOptions {
     userName?: string;
 }
 
-export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe' | 'instapay';
+export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe' | 'instapay' | 'kashier';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
@@ -302,10 +302,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 paypal: 5792310,
                 stripe: 0,
                 instapay: 0,
+                kashier: 0,
             };
 
             const isStripeFlow = paymobMethod === 'stripe';
-            const activeIntegrationId = isStripeFlow ? undefined : (integrationIdsMap[paymobMethod] || (isEg ? 5573815 : 5792310));
+            const activeIntegrationId = (isStripeFlow || paymobMethod === 'kashier') ? undefined : (integrationIdsMap[paymobMethod] || (isEg ? 5573815 : 5792310));
 
             console.log('🚀 Initiating Payment Gateway Invoice...', {
                 tierId: selectedTier.id,

@@ -638,7 +638,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
             <div className="space-y-6">
                 <h3 className="text-xl font-black text-white flex items-center gap-2">
                     <span className="text-gold-500">03.</span>
-                    {isAr ? "اختر طريقة الدفع المناسبة عبر Paymob" : "Select Payment Method via Paymob"}
+                    {isAr ? "اختر طريقة الدفع المناسبة" : "Select Payment Method"}
                 </h3>
 
                 <Card id="checkout-payment-methods" className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl scroll-mt-32">
@@ -653,7 +653,40 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     </span>
                                 </div>
 
-                                {/* Option 1: Card (5573815) */}
+                                {/* Option 1: Kashier Egypt (كاشير مصر) */}
+                                <motion.div
+                                    id="checkout-method-kashier"
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('kashier')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'kashier'
+                                            ? "border-amber-500 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'kashier' ? "bg-amber-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                            <CreditCard className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "كاشير / بطاقة بنكية ومحافظ (Kashier)" : "Kashier Online Card & Payments"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "دفع آمن بالفيزا، ماستركارد، ميزة عبر كاشير (EGP)" : "Visa, Mastercard & Meeza via Kashier in EGP"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                            Kashier
+                                        </span>
+                                        {paymobMethod === 'kashier' && <CheckCircle2 className="w-5 h-5 text-amber-500" />}
+                                    </div>
+                                </motion.div>
+
+                                {/* Option 2: Paymob Card (5573815) */}
                                 <motion.div
                                     id="checkout-method-card"
                                     whileHover={{ scale: 1.01 }}
@@ -671,10 +704,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         </div>
                                         <div>
                                             <p className="font-black text-white text-sm">
-                                                {isAr ? "بطاقة بنكية / أونلاين (Online Card)" : "Online Credit / Debit Card"}
+                                                {isAr ? "بطاقة بنكية / أونلاين (Paymob Card)" : "Online Credit / Debit Card (Paymob)"}
                                             </p>
                                             <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "فيزا / ماستركارد بالجنيه المصري (ID: 5573815)" : "Visa & Mastercard online in EGP"}
+                                                {isAr ? "فيزا / ماستركارد بالجنيه المصري عبر Paymob" : "Visa & Mastercard online in EGP via Paymob"}
                                             </p>
                                         </div>
                                     </div>
@@ -966,6 +999,39 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         {paymobMethod === 'stripe' && <CheckCircle2 className="w-5 h-5 text-[#635bff]" />}
                                     </div>
                                 </motion.div>
+
+                                {/* Option 3: Kashier Global (كاشير الدولي) */}
+                                <motion.div
+                                    id="checkout-method-kashier-global"
+                                    whileHover={{ scale: 1.01 }}
+                                    onClick={() => setPaymobMethod('kashier')}
+                                    className={cn(
+                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
+                                        paymobMethod === 'kashier'
+                                            ? "border-amber-500 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30"
+                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'kashier' ? "bg-amber-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
+                                            <Globe className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-white text-sm">
+                                                {isAr ? "كاشير الدولي / بطاقات ائتمان (Kashier Global)" : "Kashier Global (USD Credit Cards)"}
+                                            </p>
+                                            <p className="text-xs text-zinc-400 font-medium">
+                                                {isAr ? "دفع دولي سريع وآمن ببطاقات فيزا وماستركارد (USD)" : "Fast & secure international card checkout in USD"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                            Kashier
+                                        </span>
+                                        {paymobMethod === 'kashier' && <CheckCircle2 className="w-5 h-5 text-amber-500" />}
+                                    </div>
+                                </motion.div>
                             </div>
                         )}
 
@@ -1006,9 +1072,13 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     ? (isAr
                                         ? "مدفوعات Stripe محمية بتشفير 256-bit SSL ومتوافقة مع PCI-DSS Level 1. لا يتم تخزين بيانات بطاقتك على خوادمنا إطلاقاً."
                                         : "Payments are secured via Stripe 256-bit SSL encryption and PCI-DSS Level 1 compliance. Your card details never touch our servers.")
-                                    : (isAr
-                                        ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
-                                        : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page.")}
+                                    : paymobMethod === 'kashier'
+                                        ? (isAr
+                                            ? "جميع المعاملات تتم عبر بوابة كاشير (Kashier) المشفرة بنظام 256-bit SSL والمتوافقة مع معايير PCI-DSS. يتم توجيهك بأمان لصفحة الدفع المباشرة."
+                                            : "All transactions are secured via Kashier 256-bit SSL encryption and PCI-DSS compliance. You will be redirected directly to the secure Kashier checkout page.")
+                                        : (isAr
+                                            ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
+                                            : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page.")}
                             </p>
                         </div>
                     </CardContent>
@@ -1028,7 +1098,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     checked={watch("agreeToTerms")}
                                     onCheckedChange={(checked) => setValue('agreeToTerms', checked as boolean)}
                                     className="mt-1 border-zinc-700 data-[state=checked]:bg-gold-500 data-[state=checked]:text-black"
-                                />
+                                    />
                                 <div className="space-y-1">
                                     <label htmlFor="agreeToTerms" className="text-xs font-bold text-zinc-400 cursor-pointer leading-relaxed">
                                         {renderAgreeText(content.checkoutAgree)}
@@ -1038,7 +1108,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                             </div>
                         </div>
 
-                        {/* Paymob / Stripe Submit Button */}
+                        {/* Paymob / Stripe / Kashier Submit Button */}
                         <Button
                             id="checkout-submit-btn"
                             type="submit"
@@ -1075,7 +1145,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     ? "bg-[#635bff] hover:bg-[#7a73ff] text-white shadow-[0_0_30px_rgba(99,91,255,0.35)]"
                                     : paymobMethod === 'instapay'
                                         ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-                                        : "bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.25)]"
+                                        : paymobMethod === 'kashier'
+                                            ? "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_30px_rgba(245,158,11,0.25)]"
+                                            : "bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.25)]"
                             )}
                         >
                             <span className="flex items-center justify-center gap-2">
@@ -1099,6 +1171,12 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                                 : isProcessing
                                                     ? (isAr ? "جاري تسجيل الطلب..." : "Recording Order...")
                                                     : (isAr ? `تأكيد طلب إنستاباي (${formattedTotal})` : `Confirm InstaPay Order (${formattedTotal})`))
+                                            : paymobMethod === 'kashier'
+                                                ? (isRedirecting
+                                                    ? (isAr ? "جاري التحويل لكاشير..." : "Redirecting to Kashier...")
+                                                    : isProcessing
+                                                        ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
+                                                        : (isAr ? `دفع آمن عبر كاشير (${formattedTotal})` : `Pay with Kashier (${formattedTotal})`))
                                             : paymobMethod === 'wallet'
                                                 ? (isRedirecting
                                                     ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting...")
