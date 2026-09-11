@@ -20,6 +20,12 @@ import {
     CheckCircle2,
     XCircle,
     FileText,
+    Globe,
+    Search,
+    TrendingUp,
+    Sparkles,
+    ExternalLink,
+    Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -42,6 +48,41 @@ const AdminAnalytics: React.FC = () => {
     const [totalProfiles, setTotalProfiles] = useState(0);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
+    const [seoReport, setSeoReport] = useState<any>(null);
+    const [competitorGaps, setCompetitorGaps] = useState<any>(null);
+    const [refreshingSeo, setRefreshingSeo] = useState(false);
+    const [seoLangFilter, setSeoLangFilter] = useState<'all' | 'en' | 'ar'>('all');
+
+    const loadSeoData = async () => {
+        try {
+            const [repRes, compRes] = await Promise.all([
+                fetch('/api/seo/report').then(r => r.ok ? r.json() : null),
+                fetch('/api/seo/competitors').then(r => r.ok ? r.json() : null),
+            ]);
+            if (repRes) setSeoReport(repRes);
+            if (compRes) setCompetitorGaps(compRes);
+        } catch (e) {
+            console.warn('[AdminAnalytics] SEO fetch error:', e);
+        }
+    };
+
+    const triggerSeoRefresh = async () => {
+        setRefreshingSeo(true);
+        try {
+            const res = await fetch('/api/seo/refresh', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success(`SEO snapshot refreshed! (${data.keywordsScanned || 0} evaluated)`);
+                await loadSeoData();
+            } else {
+                toast.error('SEO refresh failed: ' + (data.error || 'Server error'));
+            }
+        } catch (e: any) {
+            toast.error('SEO refresh request failed: ' + e.message);
+        } finally {
+            setRefreshingSeo(false);
+        }
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -58,6 +99,7 @@ const AdminAnalytics: React.FC = () => {
             setProfiles((profRes.data || []) as Profile[]);
             setTotalInvoices(invoiceCount.count ?? 0);
             setTotalProfiles(profileCount.count ?? 0);
+            await loadSeoData();
         } catch (e) {
             console.error('[AdminAnalytics] Failed to load:', e);
         } finally {
@@ -348,6 +390,264 @@ const AdminAnalytics: React.FC = () => {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* ── SEO Keyword Intelligence & Search Dominance ─────────────── */}
+            <div className="space-y-6 pt-6 border-t border-zinc-800/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-6 h-6 text-gold-500" />
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                                SEO Keyword Intelligence & Live Directory
+                            </h2>
+                        </div>
+                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">
+                            3-Tier Serving · Multi-Factor Scoring (0-100) · Zero 404 Route Enforcement
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {/* Language Selector */}
+                        <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-xl p-1 text-xs font-bold">
+                            {(['all', 'en', 'ar'] as const).map(l => (
+                                <button
+                                    key={l}
+                                    onClick={() => setSeoLangFilter(l)}
+                                    className={`px-3 py-1 rounded-lg uppercase transition-all ${
+                                        seoLangFilter === l
+                                            ? 'bg-gold-500 text-black font-black'
+                                            : 'text-zinc-400 hover:text-white'
+                                    }`}
+                                >
+                                    {l}
+                                </button>
+                            ))}
+                        </div>
+
+                        <Button
+                            onClick={triggerSeoRefresh}
+                            disabled={refreshingSeo}
+                            className="bg-gold-500 hover:bg-gold-400 text-black font-black text-xs uppercase shadow-md shadow-gold-500/20"
+                        >
+                            {refreshingSeo ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                                    Refreshing...
+                                </>
+                            ) : (
+                                <>
+                                    <Zap className="w-3.5 h-3.5 mr-1.5" />
+                                    Trigger Refresh Now
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* SEO Metrics Row */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Card className="bg-zinc-900 border-zinc-800">
+                        <CardContent className="p-6 space-y-2">
+                            <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase">
+                                <Globe className="w-4 h-4 text-gold-500" /> Active Keywords
+                            </div>
+                            <p className="text-3xl font-black text-white">
+                                {seoReport?.summary?.totalActiveKeywords || '—'}
+                            </p>
+                            <p className="text-xs text-zinc-500 font-bold">
+                                {seoReport?.summary?.englishCount || 0} EN · {seoReport?.summary?.arabicCount || 0} AR
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-zinc-900 border-zinc-800">
+                        <CardContent className="p-6 space-y-2">
+                            <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase">
+                                <TrendingUp className="w-4 h-4 text-emerald-400" /> Avg Quality Score
+                            </div>
+                            <p className="text-3xl font-black text-white">
+                                {seoReport?.summary?.averageScore ? `${seoReport.summary.averageScore} / 100` : '—'}
+                            </p>
+                            <p className="text-xs text-emerald-400 font-bold">
+                                {seoReport?.summary?.healthStatus || 'Active'}
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-zinc-900 border-zinc-800">
+                        <CardContent className="p-6 space-y-2">
+                            <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase">
+                                <Sparkles className="w-4 h-4 text-rose-400" /> Trend Pulse
+                            </div>
+                            <p className="text-3xl font-black text-white">
+                                {seoReport?.trends?.rising || 0}
+                            </p>
+                            <p className="text-xs text-zinc-500 font-bold">
+                                {seoReport?.trends?.new || 0} New · {seoReport?.trends?.stable || 0} Stable
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-zinc-900 border-zinc-800">
+                        <CardContent className="p-6 space-y-2">
+                            <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase">
+                                <Clock className="w-4 h-4 text-sky-400" /> Current Snapshot
+                            </div>
+                            <p className="text-3xl font-black text-white">
+                                {seoReport?.weekNumber ? `Week ${seoReport.weekNumber}` : '—'}
+                            </p>
+                            <p className="text-xs text-zinc-500 font-bold">
+                                Year {seoReport?.year || new Date().getFullYear()} ISO
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Top Keywords Table */}
+                <Card className="bg-zinc-900/80 border-zinc-800 overflow-hidden">
+                    <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Search className="w-4 h-4 text-gold-500" />
+                            <h3 className="text-sm font-black text-white uppercase">
+                                Top Ranked Keywords & Verified Routing
+                            </h3>
+                        </div>
+                        <span className="text-xs text-zinc-500 font-bold">
+                            Live Snapshot Preview
+                        </span>
+                    </div>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                        <th className="p-4">Keyword</th>
+                                        <th className="p-4">Language</th>
+                                        <th className="p-4">Cluster</th>
+                                        <th className="p-4">Intent</th>
+                                        <th className="p-4">Score</th>
+                                        <th className="p-4">Trend</th>
+                                        <th className="p-4">Target Route</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(seoReport?.topKeywords || [])
+                                        .filter((k: any) => seoLangFilter === 'all' || k.language === seoLangFilter)
+                                        .slice(0, 10)
+                                        .map((k: any) => (
+                                            <tr key={k.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                                <td className="p-4 font-bold text-white text-xs">
+                                                    {k.keyword}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                        k.language === 'ar' ? 'bg-gold-500/10 text-gold-400' : 'bg-sky-500/10 text-sky-400'
+                                                    }`}>
+                                                        {k.language}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-xs text-zinc-400 font-medium">
+                                                    {k.cluster}
+                                                </td>
+                                                <td className="p-4 text-xs text-zinc-400 font-mono">
+                                                    {k.intent}
+                                                </td>
+                                                <td className="p-4 text-xs font-black text-gold-400">
+                                                    {k.score}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                        k.trend_status === 'rising'
+                                                            ? 'bg-rose-500/10 text-rose-400'
+                                                            : k.trend_status === 'new'
+                                                            ? 'bg-emerald-500/10 text-emerald-400'
+                                                            : 'bg-zinc-800 text-zinc-400'
+                                                    }`}>
+                                                        {k.trend_status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-xs font-mono text-zinc-400">
+                                                    {k.destination_path}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    {(!seoReport?.topKeywords || seoReport.topKeywords.length === 0) && (
+                                        <tr>
+                                            <td colSpan={7} className="p-8 text-center text-zinc-500 text-sm font-bold">
+                                                No SEO keywords loaded yet. Click "Trigger Refresh Now".
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Competitor Gap Intelligence */}
+                {competitorGaps && (
+                    <Card className="bg-zinc-900/80 border-zinc-800 overflow-hidden">
+                        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-rose-400" />
+                                <h3 className="text-sm font-black text-white uppercase">
+                                    Competitor Gap Analysis & High-Opportunity Queries
+                                </h3>
+                            </div>
+                            <span className="text-xs text-zinc-400 font-bold">
+                                {competitorGaps?.summary?.coveragePercentage || 0}% Coverage · {competitorGaps?.summary?.missingOpportunities || 0} Untapped Opportunities
+                            </span>
+                        </div>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
+                                            <th className="p-4">Target Keyword</th>
+                                            <th className="p-4">Lang</th>
+                                            <th className="p-4">Opportunity Score</th>
+                                            <th className="p-4">Search Volume</th>
+                                            <th className="p-4">Competitor Landscape</th>
+                                            <th className="p-4">Recommended Route</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(competitorGaps?.opportunities || [])
+                                            .filter((g: any) => seoLangFilter === 'all' || g.language === seoLangFilter)
+                                            .slice(0, 8)
+                                            .map((gap: any, idx: number) => (
+                                                <tr key={idx} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-950/40 transition-colors">
+                                                    <td className="p-4 font-bold text-white text-xs">
+                                                        {gap.keyword}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                            gap.language === 'ar' ? 'bg-gold-500/10 text-gold-400' : 'bg-sky-500/10 text-sky-400'
+                                                        }`}>
+                                                            {gap.language}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-xs font-black text-emerald-400">
+                                                        {gap.opportunityScore} / 100
+                                                    </td>
+                                                    <td className="p-4 text-xs text-zinc-400 font-medium">
+                                                        {gap.searchVolumeEstimate}
+                                                    </td>
+                                                    <td className="p-4 text-xs text-zinc-500 max-w-xs truncate" title={gap.competitorPresence}>
+                                                        {gap.competitorPresence}
+                                                    </td>
+                                                    <td className="p-4 text-xs font-mono text-gold-400">
+                                                        {gap.recommendedDestination}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </div>
     );

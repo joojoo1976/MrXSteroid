@@ -9,6 +9,7 @@ import BrandLogo from './BrandLogo';
 import DynamicBrandLogo from './DynamicBrandLogo';
 
 import { usePreferences } from '../../context/PreferencesContext';
+import { LiveKeywordSection } from '../../components/seo/LiveKeywordSection';
 
 interface FooterProps {
   content: ContentStrings;
@@ -38,27 +39,6 @@ const PAYMENT_METHODS_DATA = [
     ]
   }
 ];
-
-const WeeklyKeywords: React.FC<{ pool: string[] }> = ({ pool }) => {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = (now.getTime() - start.getTime()) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
-  const oneDay = 1000 * 60 * 60 * 24;
-  const weekNumber = Math.floor(diff / oneDay / 7);
-  const subsetSize = 100;
-  const totalKeywords = pool.length;
-  const startIndex = (weekNumber * subsetSize) % totalKeywords;
-  let currentKeywords = pool.slice(startIndex, startIndex + subsetSize);
-  if (currentKeywords.length < subsetSize) currentKeywords = [...currentKeywords, ...pool.slice(0, subsetSize - currentKeywords.length)];
-
-  return (
-    <div className="mt-16 pt-10 border-t border-white/5">
-      <p className="text-xs leading-relaxed text-zinc-800 text-justify opacity-20 select-none font-mono tracking-tighter uppercase italic">
-        {currentKeywords.join(' • ')}
-      </p>
-    </div>
-  );
-};
 
 const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
   const { isRTL, language } = usePreferences();
@@ -274,7 +254,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
           </nav>
         </div>
 
-        <WeeklyKeywords pool={pool} />
+        <LiveKeywordSection navigateTo={navigateTo} fallbackPool={pool} />
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-xs font-bold tracking-wider text-zinc-500 text-center md:text-start">
