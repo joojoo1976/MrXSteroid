@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import type { AffiliateProfile, Referral } from "../types/affiliate.types";
+import { supabase } from "../../../lib/supabaseClient";
 
 interface LedgerEntry {
     id: string;
@@ -30,6 +31,16 @@ async function apiFetch(path: string, options?: RequestInit) {
     return res.json();
 }
 
+async function resolveAuthToken(explicitToken?: string): Promise<string | undefined> {
+    if (explicitToken) return explicitToken;
+    try {
+        const { data } = await supabase.auth.getSession();
+        return data.session?.access_token ?? undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 export function useAffiliate(token?: string): UseAffiliateReturn {
     const [enrolled, setEnrolled] = useState(false);
     const [affiliate, setAffiliate] = useState<AffiliateProfile | null>(null);
@@ -41,12 +52,18 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
     const [error, setError] = useState<string | null>(null);
     const [tick, setTick] = useState(0);
 
-    const headers: HeadersInit = token ? { Authorization: "Bearer " + token } : {};
-
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
+            const authToken = await resolveAuthToken(token);
+            if (!authToken) {
+                // If user is not yet logged in or session is restoring
+                setLoading(false);
+                return;
+            }
+
+            const headers: HeadersInit = { Authorization: "Bearer " + authToken };
             const [meData, refData, statsData] = await Promise.all([
                 apiFetch("/api/affiliate/me", { headers }),
                 apiFetch("/api/affiliate/referrals?limit=20", { headers }).catch(() => ({ referrals: [], total: 0 })),
@@ -62,7 +79,6 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
         } finally {
             setLoading(false);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token, tick]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
@@ -71,6 +87,9 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
         setEnrolling(true);
         setError(null);
         try {
+            const authToken = await resolveAuthToken(token);
+            if (!authToken) throw new Error("Please log in to enroll");
+            const headers: HeadersInit = { Authorization: "Bearer " + authToken };
             await apiFetch("/api/affiliate/create", { method: "POST", headers });
             setTick(t => t + 1);
         } catch (e) {
@@ -78,7 +97,6 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
         } finally {
             setEnrolling(false);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     return { enrolled, affiliate, referrals, totalReferrals, ledger, loading, enrolling, error, enroll, refetch: () => setTick(t => t + 1) };

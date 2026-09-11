@@ -162,3 +162,134 @@ describe('Ledger Service — Commission eligibility guards (pure logic)', () => 
         }
     });
 });
+
+// ── Commission Rate Math ───────────────────────────────────────────────────────
+describe('Commission Rate Math — percentage calculations', () => {
+    it('bronze (25%) on EGP 100 → 25 commission', () => {
+        expect(Math.round(100 * 0.25)).toBe(25);
+    });
+    it('silver (35%) on EGP 200 → 70 commission', () => {
+        expect(Math.round(200 * 0.35)).toBe(70);
+    });
+    it('gold (45%) on EGP 500 → 225 commission', () => {
+        expect(Math.round(500 * 0.45)).toBe(225);
+    });
+    it('commission on zero amount is always zero', () => {
+        expect(Math.round(0 * 0.45)).toBe(0);
+        expect(Math.round(0 * 0.35)).toBe(0);
+        expect(Math.round(0 * 0.25)).toBe(0);
+    });
+    it('fractional amounts round correctly — EGP 99.99 at 25%', () => {
+        expect(Math.round(99.99 * 0.25)).toBe(25);
+    });
+    it('tier rate values match expected percentages', () => {
+        const [bronze, silver, gold] = COMMISSION_TIERS;
+        expect(bronze.rate).toBe(25);
+        expect(silver.rate).toBe(35);
+        expect(gold.rate).toBe(45);
+    });
+});
+
+// ── Tier Boundary Exhaustive Cases ────────────────────────────────────────────
+describe('Commission Config — Tier boundary exhaustive checks', () => {
+    const cases: Array<[number, string | null]> = [
+        [0, null],
+        [1, 'bronze'], [5, 'bronze'], [10, 'bronze'],
+        [11, 'silver'], [25, 'silver'], [50, 'silver'],
+        [51, 'gold'], [100, 'gold'], [9999, 'gold'],
+    ];
+    for (const [sales, expected] of cases) {
+        it(`getTier(${sales}) → ${expected ?? 'null'}`, () => {
+            const t = getTier(sales);
+            if (expected === null) {
+                expect(t).toBeNull();
+            } else {
+                expect(t?.name).toBe(expected);
+            }
+        });
+    }
+});
+
+// ── Attribution Cookie Field Validation ──────────────────────────────────────
+describe('Attribution — buildAttributionData field completeness', () => {
+    it('result has all 4 required fields', () => {
+        const d = buildAttributionData('aff-x', 'CODE-X');
+        expect(d).toHaveProperty('affiliateId');
+        expect(d).toHaveProperty('referralCode');
+        expect(d).toHaveProperty('attributionTimestamp');
+        expect(d).toHaveProperty('attributionExpiresAt');
+    });
+    it('affiliateId and referralCode are preserved exactly', () => {
+        const d = buildAttributionData('MY-AFF-123', 'MY-CODE-456');
+        expect(d.affiliateId).toBe('MY-AFF-123');
+        expect(d.referralCode).toBe('MY-CODE-456');
+    });
+    it('expiry is exactly ATTRIBUTION_WINDOW_DAYS after timestamp', () => {
+        const d = buildAttributionData('aff-t', 'T');
+        const ts = new Date(d.attributionTimestamp).getTime();
+        const exp = new Date(d.attributionExpiresAt).getTime();
+        const diffDays = (exp - ts) / (1000 * 60 * 60 * 24);
+        expect(Math.round(diffDays)).toBe(ATTRIBUTION_WINDOW_DAYS);
+    });
+    it('parseAttributionCookie returns null for malformed JSON', () => {
+        expect(parseAttributionCookie('{broken json')).toBeNull();
+    });
+    it('parseAttributionCookie returns null for empty string', () => {
+        expect(parseAttributionCookie('')).toBeNull();
+    });
+    it('parseAttributionCookie returns null for number string', () => {
+        expect(parseAttributionCookie('42')).toBeNull();
+    });
+});
+
+// ── Payment Method Eligibility Matrix ────────────────────────────────────────
+describe('Payment Method — Commission eligibility matrix', () => {
+    type EligibilityCase = { method: string; affiliateId: string | null; eligible: boolean };
+    const matrix: EligibilityCase[] = [
+        { method: 'kashier',    affiliateId: 'aff-1',  eligible: true  },
+        { method: 'kashier',    affiliateId: null,      eligible: false },
+        { method: 'stripe',     affiliateId: 'aff-2',  eligible: true  },
+        { method: 'stripe',     affiliateId: null,      eligible: false },
+        { method: 'instapay',   affiliateId: 'aff-3',  eligible: false },
+        { method: 'instapay',   affiliateId: null,      eligible: false },
+        { method: 'vodafone',   affiliateId: 'aff-4',  eligible: false },
+        { method: 'paymob',     affiliateId: 'aff-5',  eligible: true  },
+        { method: 'paymob',     affiliateId: null,      eligible: false },
+    ];
+    const BLOCKED_METHODS = ['instapay', 'vodafone'];
+    for (const c of matrix) {
+        it(`${c.method} + affiliate=${c.affiliateId ?? 'null'} → eligible=${c.eligible}`, () => {
+            const isEligible = !BLOCKED_METHODS.includes(c.method) && c.affiliateId !== null;
+            expect(isEligible).toBe(c.eligible);
+        });
+    }
+});
+
+// ── Referral Code Format Validation ──────────────────────────────────────────
+describe('Referral Code — Format validation (pure logic)', () => {
+    const VALID_PATTERN = /^[A-Z0-9_-]{3,20}$/;
+    it('accepts uppercase alphanumeric codes', () => {
+        expect(VALID_PATTERN.test('MRXAFF123')).toBe(true);
+    });
+    it('accepts codes with hyphens and underscores', () => {
+        expect(VALID_PATTERN.test('MRX_AFF-01')).toBe(true);
+    });
+    it('rejects lowercase codes', () => {
+        expect(VALID_PATTERN.test('mrxaff123')).toBe(false);
+    });
+    it('rejects codes shorter than 3 chars', () => {
+        expect(VALID_PATTERN.test('AB')).toBe(false);
+    });
+    it('rejects codes longer than 20 chars', () => {
+        expect(VALID_PATTERN.test('ABCDEFGHIJKLMNOPQRSTU')).toBe(false);
+    });
+    it('rejects codes with special characters', () => {
+        expect(VALID_PATTERN.test('CODE@123')).toBe(false);
+    });
+    it('accepts minimum length code (3 chars)', () => {
+        expect(VALID_PATTERN.test('ABC')).toBe(true);
+    });
+    it('accepts maximum length code (20 chars)', () => {
+        expect(VALID_PATTERN.test('ABCDEFGHIJ1234567890')).toBe(true);
+    });
+});

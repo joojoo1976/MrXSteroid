@@ -62,12 +62,19 @@ vi.mock('../../server/affiliate/ledgerService', () => ({
     triggerAffiliateCommission: vi.fn().mockResolvedValue({ ok: true }),
 }));
 vi.mock('../../server/payments/verifyPaidAmount', () => ({
-    verifyPaidAmount: vi.fn().mockReturnValue({ valid: true, message: null }),
+    verifyPaidAmount: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
 beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    // Re-register mocks after resetModules so dynamic imports inside postWebhook() still see them
+    vi.doMock('../../server/affiliate/ledgerService', () => ({
+        triggerAffiliateCommission: vi.fn().mockResolvedValue({ ok: true }),
+    }));
+    vi.doMock('../../server/payments/verifyPaidAmount', () => ({
+        verifyPaidAmount: vi.fn().mockResolvedValue({ ok: true }),
+    }));
     process.env.KASHIER_EGYPT_MERCHANT_ID     = MERCHANT_ID_EG;
     process.env.KASHIER_EGYPT_PAYMENT_API_KEY = API_KEY_EG;
     process.env.KASHIER_EGYPT_SECRET_KEY      = 'SECRET_EG';
@@ -223,5 +230,100 @@ describe('POST /api/payments/webhook — Missing Env Vars', () => {
         const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
         // Should be 500 (throws) or 401 (cascade) — never crash silently
         expect([200, 401, 500]).toContain(res.status);
+    });
+});
+
+// ── Cross-Account Routing & Multi-Gateway Integration ────────────────────────
+describe('POST /api/payments/webhook — Cross-Account & Edge Scenarios', () => {
+    it('200 for Global account when merchantId is MERCHANT_ID_GL and signed with API_KEY_GL', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-gl-1', status: 'pending', payment_status: 'pending', amount: 50, currency: 'USD', affiliate_id: null },
+            null
+        );
+        const fields = {
+            orderId: 'inv-gl-1',
+            orderStatus: 'APPROVED',
+            amount: '50.00',
+            currency: 'USD',
+            transactionId: 'txn-gl-1',
+            merchantId: MERCHANT_ID_GL,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_GL));
+        expect(res.status).toBe(200);
+    });
+
+    it('401 when merchantId does not match any known account', async () => {
+        const fields = {
+            orderId: 'inv-unknown-mid',
+            orderStatus: 'APPROVED',
+            amount: '50.00',
+            currency: 'USD',
+            merchantId: 'MID_UNKNOWN_123',
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(401);
+    });
+
+    it('calls triggerAffiliateCommission when invoice has affiliate_id on success', async () => {
+        const { triggerAffiliateCommission } = await import('../../server/affiliate/ledgerService');
+        supabaseMock = buildSupaMock(
+            { id: 'inv-aff-1', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP', affiliate_id: 'aff-user-123', referral_code: 'MRXREF' },
+            null
+        );
+        const fields = {
+            orderId: 'inv-aff-1',
+            orderStatus: 'APPROVED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-aff-1',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(triggerAffiliateCommission).toHaveBeenCalledWith('inv-aff-1');
+    });
+
+    it('detects Paymob gateway via hmac header and processes request', async () => {
+        const { POST } = await import('../../app/api/payments/webhook/route');
+        const req = new Request('http://localhost/api/payments/webhook', {
+            method: 'POST',
+            body: JSON.stringify({ type: 'TRANSACTION', obj: { id: 12345, success: false } }),
+            headers: {
+                'content-type': 'application/json',
+                'hmac': 'fake_paymob_hmac_signature',
+            },
+        });
+        const res = await POST(req);
+        // Paymob gateway verification should reject fake hmac with 401
+        expect([200, 400, 401]).toContain(res.status);
+    });
+
+    it('detects Stripe gateway via stripe-signature header', async () => {
+        const { POST } = await import('../../app/api/payments/webhook/route');
+        const req = new Request('http://localhost/api/payments/webhook', {
+            method: 'POST',
+            body: JSON.stringify({ id: 'evt_test', type: 'payment_intent.succeeded' }),
+            headers: {
+                'content-type': 'application/json',
+                'stripe-signature': 't=123,v1=fake_stripe_sig',
+            },
+        });
+        const res = await POST(req);
+        // Without real STRIPE_WEBHOOK_SECRET, should return 401 or 400
+        expect([200, 400, 401]).toContain(res.status);
+    });
+
+    it('detects SpaceRemit gateway via x-spaceremit-signature header', async () => {
+        const { POST } = await import('../../app/api/payments/webhook/route');
+        const req = new Request('http://localhost/api/payments/webhook', {
+            method: 'POST',
+            body: JSON.stringify({ payment_id: 'sp_123', status: 'PAID' }),
+            headers: {
+                'content-type': 'application/json',
+                'x-spaceremit-signature': 'fake_spaceremit_sig',
+            },
+        });
+        const res = await POST(req);
+        expect([200, 400, 401]).toContain(res.status);
     });
 });

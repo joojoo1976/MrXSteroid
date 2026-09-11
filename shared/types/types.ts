@@ -63,7 +63,8 @@ export enum Page {
   ADMIN_ANALYTICS = 'admin-analytics',
   AUTH_CALLBACK = 'auth_callback',
   PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic',
-  TIMELINE = 'timeline'
+  TIMELINE = 'timeline',
+  AFFILIATE = 'affiliate'
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

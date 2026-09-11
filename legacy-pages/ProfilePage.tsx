@@ -381,14 +381,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                 {isRTL ? `عضو منذ: ${createdDate}` : `Member since: ${createdDate}`}
                             </p>
 
-                            {/* Direct Dashboard Link Card */}
-                            <div className="mt-6 pt-6 border-t border-zinc-800">
+                            {/* Direct Dashboard & Affiliate Link Cards */}
+                            <div className="mt-6 pt-6 border-t border-zinc-800 space-y-2">
                                 <button
                                     onClick={() => navigateTo(Page.DASHBOARD)}
                                     className="w-full py-3 bg-zinc-800 hover:bg-gold-500 hover:text-black border border-gold-500/30 text-gold-400 font-black text-xs rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 group"
                                 >
                                     <LayoutDashboard className="w-4 h-4 text-gold-500 group-hover:text-black transition-colors" />
                                     <span>{isRTL ? 'لوحة التحكم والأدوات' : 'Dashboard & Tools'}</span>
+                                </button>
+                                <button
+                                    onClick={() => navigateTo(Page.AFFILIATE)}
+                                    className="w-full py-3 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 hover:bg-gold-500 hover:text-black border border-gold-500/40 text-gold-400 font-black text-xs rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 group"
+                                >
+                                    <DollarSign className="w-4 h-4 text-gold-500 group-hover:text-black transition-colors" />
+                                    <span>{isRTL ? 'برنامج التسويق بالعمولة' : 'Affiliate Program'}</span>
                                 </button>
                             </div>
                         </div>
@@ -539,6 +546,38 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, content, navigateTo }) 
                                 className="w-full sm:w-auto px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-black font-black text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
                             >
                                 <span>{isRTL ? 'فتح لوحة التحكم' : 'Open Dashboard'}</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
+                        {/* Affiliate Program Highlight Card */}
+                        <div className="bg-gradient-to-r from-amber-500/15 via-zinc-900 to-yellow-500/10 border border-gold-500/30 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-gradient-to-br from-amber-400 to-yellow-500 text-black rounded-2xl shrink-0 font-black shadow-lg">
+                                    <DollarSign className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-black text-gold-400 text-sm">
+                                            {isRTL ? 'برنامج الشركاء والتسويق بالعمولة (Affiliate)' : 'Affiliate & Partner Program'}
+                                        </h3>
+                                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                                            {isRTL ? 'عمولة 25% - 45%' : '25% - 45% Commission'}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-zinc-400 mt-1">
+                                        {isRTL 
+                                            ? 'شارك كود ورابط الإحالة الخاص بك واربح عمولات تبدأ من 25% وتصل إلى 45% على كل طلب مؤهل' 
+                                            : 'Share your referral link and earn 25% up to 45% recurring commission on all qualified orders'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => navigateTo(Page.AFFILIATE)}
+                                className="w-full sm:w-auto px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-black font-black text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
+                            >
+                                <span>{isRTL ? 'لوحة أرباح الإحالات' : 'Affiliate Dashboard'}</span>
                                 <ExternalLink className="w-3.5 h-3.5" />
                             </button>
                         </div>

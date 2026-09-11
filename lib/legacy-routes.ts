@@ -50,6 +50,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.CHECKOUT]: '/checkout',
     [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
     [Page.TIMELINE]: '/TransformationTimeline',
+    [Page.AFFILIATE]: '/profile/affiliate',
 };
 
 export function pageToPath(page: Page): string {

@@ -295,11 +295,21 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                        {/* Direct Link to Affiliate Page */}
+                        <button
+                            onClick={() => navigateTo(Page.AFFILIATE)}
+                            className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/10 hover:bg-gold-500 hover:text-black border border-gold-500/40 text-gold-400 font-bold text-xs rounded-xl transition-all shadow-md group"
+                        >
+                            <DollarSign className="w-4 h-4 text-gold-500 group-hover:text-black transition-colors" />
+                            <span>{isRTL ? 'برنامج الإحالة' : 'Affiliate'}</span>
+                            <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                        </button>
+
                         {/* Direct Link to Profile Page */}
                         <button
                             onClick={() => navigateTo(Page.PROFILE)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-gold-500/30 text-gold-400 hover:text-white font-bold text-xs rounded-xl transition-all shadow-md group"
+                            className="flex items-center gap-2 px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-gold-500/30 text-gold-400 hover:text-white font-bold text-xs rounded-xl transition-all shadow-md group"
                         >
                             <User className="w-4 h-4 text-gold-500 group-hover:scale-110 transition-transform" />
                             <span>{isRTL ? 'الملف الشخصي' : 'User Profile'}</span>
@@ -309,7 +319,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                         {/* Logout Button */}
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-xs rounded-xl transition-all shadow-md hover:border-red-500/50"
+                            className="flex items-center gap-2 px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-xs rounded-xl transition-all shadow-md hover:border-red-500/50"
                         >
                             <LogOut className="w-4 h-4" />
                             <span>{isRTL ? 'تسجيل الخروج' : 'Logout'}</span>

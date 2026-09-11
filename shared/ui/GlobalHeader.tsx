@@ -37,6 +37,7 @@ import {
     Syringe,
     Timer,
     ExternalLink,
+    DollarSign,
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { MockUser } from '../lib/mock-auth-service';
@@ -366,6 +367,14 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                         <LayoutDashboard className="w-4 h-4 text-gold-500" />
                                     </button>
                                     <button
+                                        onClick={() => navigateTo(Page.AFFILIATE)}
+                                        className="flex items-center justify-center w-9 h-9 rounded-xl border border-gold-500/30 dark:border-gold-500/30 bg-amber-500/10 dark:bg-amber-500/10 hover:bg-gold-500 hover:text-black transition-all group"
+                                        title={isRTL ? 'برنامج التسويق بالعمولة (Affiliate)' : 'Affiliate Program'}
+                                        aria-label={isRTL ? 'برنامج التسويق بالعمولة' : 'Affiliate Program'}
+                                    >
+                                        <DollarSign className="w-4 h-4 text-gold-500 group-hover:text-black transition-colors" />
+                                    </button>
+                                    <button
                                         onClick={() => navigateTo(Page.PROFILE)}
                                         className="flex items-center gap-2 group"
                                         title={isRTL ? 'الملف الشخصي' : 'Profile'}
@@ -555,6 +564,11 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                         onClick={() => { navigateTo(Page.DASHBOARD); setIsMobileMenuOpen(false); }}
                                         label={isRTL ? 'لوحة التحكم' : 'Dashboard'}
                                         icon={<LayoutDashboard className="w-4 h-4" />}
+                                    />
+                                    <MobileNavButton
+                                        onClick={() => { navigateTo(Page.AFFILIATE); setIsMobileMenuOpen(false); }}
+                                        label={isRTL ? 'برنامج التسويق بالعمولة' : 'Affiliate Program'}
+                                        icon={<DollarSign className="w-4 h-4 text-gold-500" />}
                                     />
                                     <MobileNavButton
                                         onClick={() => { navigateTo(Page.PROFILE); setIsMobileMenuOpen(false); }}

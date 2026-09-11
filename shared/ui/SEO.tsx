@@ -40,6 +40,9 @@ const SEO: React.FC<SEOProps> = ({ currentPage }) => {
             case Page.PROFILE:
                 title = `Profile | Mr. X-Steroid`;
                 break;
+            case Page.AFFILIATE:
+                title = `Affiliate Dashboard | Mr. X-Steroid`;
+                break;
             case Page.CHECKOUT:
                 title = `Checkout | Mr. X-Steroid`;
                 break;
