@@ -1,4 +1,4 @@
-﻿/**
+/**
  * commissionEngine.ts — Pure commission calculation functions.
  * No side-effects, no DB calls. Fully testable in isolation.
  *
@@ -88,7 +88,22 @@ export function getNextTierProgress(monthlyPaidReferrals: number): {
     return { currentTier: current, nextTier, salesUntilNextTier };
 }
 
+/**
+ * Calculate reversal amount for a refund.
+ * Proportional to the refunded fraction of the original commission base / invoice amount.
+ */
+export function calculateReversal(
+    originalCommissionAmount: number,
+    refundAmount: number,
+    originalInvoiceAmount: number
+): number {
+    if (originalInvoiceAmount <= 0 || refundAmount <= 0 || originalCommissionAmount <= 0) return 0;
+    const fraction = Math.min(1, refundAmount / originalInvoiceAmount);
+    return roundCurrency(originalCommissionAmount * fraction);
+}
+
 /** Round to 2 decimal places using banker's/half-up rounding */
 function roundCurrency(value: number): number {
     return Math.round((value + Number.EPSILON) * 100) / 100;
 }
+

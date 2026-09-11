@@ -34,10 +34,12 @@ import {
     Trash2,
     Syringe,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BillingHistoryTable } from '../features/billing';
+import { supabase } from '../shared/lib/supabase';
 
 interface DashboardProps {
     navigateTo: (page: Page) => void;
@@ -50,6 +52,62 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
     const [history, setHistory] = useState<Array<{ id: string; tool: string; title: string | null; inputs: Record<string, unknown>; result: Record<string, unknown>; created_at: string }>>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [downloading, setDownloading] = useState<'en' | 'ar' | null>(null);
+
+    // Supabase User Dashboard Persistence State
+    const [savedNotes, setSavedNotes] = useState('');
+    const [currentPhase, setCurrentPhase] = useState('cutting');
+    const [savingDashboard, setSavingDashboard] = useState(false);
+
+    useEffect(() => {
+        if (!user) return;
+        let isMounted = true;
+        const fetchUserData = async () => {
+            try {
+                const { data } = await supabase
+                    .from('user_dashboard_data')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+
+                if (data && isMounted) {
+                    if (data.saved_notes) setSavedNotes(data.saved_notes);
+                    const goals = data.custom_goals as { currentPhase?: string } | null;
+                    if (goals?.currentPhase) setCurrentPhase(goals.currentPhase);
+                }
+            } catch {
+                // Ignore network/offline errors gracefully
+            }
+        };
+
+        fetchUserData();
+        return () => {
+            isMounted = false;
+        };
+    }, [user]);
+
+    const handleSaveDashboardData = async () => {
+        if (!user) return;
+        setSavingDashboard(true);
+        try {
+            const { error } = await supabase
+                .from('user_dashboard_data')
+                .upsert({
+                    user_id: user.id,
+                    saved_notes: savedNotes,
+                    custom_goals: { currentPhase },
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+            if (!error) {
+                toast.success(isRTL ? 'تم حفظ أهداف وملاحظات البروتوكول بنجاح' : 'Protocol goals & notes saved to Supabase');
+            } else {
+                toast.error(isRTL ? 'فشل حفظ البيانات' : 'Failed to save data');
+            }
+        } catch {
+            toast.error(isRTL ? 'حدث خطأ أثناء الحفظ' : 'Error saving data');
+        } finally {
+            setSavingDashboard(false);
+        }
+    };
 
     // Protection Logic
     useEffect(() => {
@@ -604,6 +662,70 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                         )}
                     </details>
                 </div>
+
+                {/* ── Protocol Goals & Saved Notes (Supabase Persisted) ─────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6"
+                >
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-gold-500/10 rounded-xl border border-gold-500/20 text-gold-500">
+                                <FileText className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-white">
+                                    {isRTL ? 'أهداف وملاحظات البروتوكول (Supabase)' : 'Protocol Goals & Saved Notes (Supabase)'}
+                                </h2>
+                                <p className="text-xs text-zinc-400">
+                                    {isRTL ? 'بياناتك محفوظة بشكل دائم ومشفر عبر قاعدة بيانات سوبابيز' : 'Permanently persisted and secured via Supabase database'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleSaveDashboardData}
+                            disabled={savingDashboard}
+                            className="flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-400 text-black font-black text-xs rounded-xl shadow-lg transition-all disabled:opacity-50"
+                        >
+                            <Save className={`w-4 h-4 ${savingDashboard ? 'animate-spin' : ''}`} />
+                            <span>{savingDashboard ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'حفظ التغييرات' : 'Save Changes')}</span>
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                {isRTL ? 'مرحلة البروتوكول الحالية' : 'Current Protocol Phase'}
+                            </label>
+                            <select
+                                value={currentPhase}
+                                onChange={(e) => setCurrentPhase(e.target.value)}
+                                className="w-full bg-zinc-950/80 border border-zinc-800 focus:border-gold-500/60 rounded-xl px-4 py-2.5 text-sm text-white outline-none transition-colors"
+                            >
+                                <option value="Cutting">{isRTL ? 'تنشيف (Cutting)' : 'Cutting'}</option>
+                                <option value="Bulking">{isRTL ? 'تضخيم (Bulking)' : 'Bulking'}</option>
+                                <option value="Recomp">{isRTL ? 'إعادة تشكيل (Recomp)' : 'Body Recomposition'}</option>
+                                <option value="Maintenance">{isRTL ? 'ثبات ومحافظة (Maintenance)' : 'Maintenance'}</option>
+                                <option value="PCT">{isRTL ? 'تنظيف واستشفاء (PCT)' : 'Post-Cycle Therapy (PCT)'}</option>
+                            </select>
+                        </div>
+
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                {isRTL ? 'الملاحظات الشخصية للبروتوكول' : 'Personal Protocol Notes'}
+                            </label>
+                            <textarea
+                                value={savedNotes}
+                                onChange={(e) => setSavedNotes(e.target.value)}
+                                placeholder={isRTL ? 'اكتب ملاحظاتك، الجرعات، التعديلات اليومية هنا...' : 'Log notes, dosages, personal observations here...'}
+                                rows={3}
+                                className="w-full bg-zinc-950/80 border border-zinc-800 focus:border-gold-500/60 rounded-xl p-3 text-sm text-white placeholder-zinc-600 outline-none transition-colors resize-none"
+                            />
+                        </div>
+                    </div>
+                </motion.div>
 
                 {/* ── Billing & Invoices Section ───────────────────────────── */}
                 <motion.div
