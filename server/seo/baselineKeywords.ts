@@ -2406,6 +2406,8 @@ export function getBaselineKeywords(language: 'en' | 'ar'): SeoKeyword[] {
 
         result.push({
             ...item,
+            id: `base-${language}-${result.length + 1}`,
+            keyword: item.originalKeyword,
             language,
             locale,
             normalizedKeyword: normalized,

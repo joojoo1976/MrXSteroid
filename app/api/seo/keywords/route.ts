@@ -25,7 +25,13 @@ export async function GET(req: NextRequest) {
 
         // Retrieve snapshot (Tier 1 Snapshot -> Tier 2 Live DB -> Tier 3 Baseline)
         const snapshot = await getOrGenerateWeeklySnapshot(language);
-        const keywords = filterKeywordsByCategory(snapshot, category, limit);
+        const rawKeywords = filterKeywordsByCategory(snapshot, category, limit);
+        const keywords = rawKeywords.map((k, idx) => ({
+            ...k,
+            id: k.id || `kw-${language}-${idx}`,
+            keyword: k.keyword || k.originalKeyword || k.normalizedKeyword || '',
+            originalKeyword: k.originalKeyword || k.keyword || '',
+        }));
 
         return NextResponse.json(
             {

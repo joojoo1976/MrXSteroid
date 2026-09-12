@@ -5,10 +5,13 @@ import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Compass, Wrench, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { Page, Language } from '@/shared/types/types';
+import { pathToPage } from '../../lib/legacy-routes';
 
 export interface LiveKeywordItem {
     id: string;
     keyword: string;
+    originalKeyword?: string;
+    normalizedKeyword?: string;
     language: 'ar' | 'en';
     cluster: string;
     intent: string;
@@ -26,22 +29,20 @@ export interface LiveKeywordSectionProps {
 
 type TabType = 'all' | 'trending' | 'rising' | 'guides' | 'tools' | 'plans';
 
-const PATH_TO_PAGE_MAP: Record<string, Page> = {
-    '/': Page.HOME,
-    '/macro': Page.MACRO,
-    '/bodyfat': Page.BODYFAT,
-    '/halflife': Page.HALFLIFE,
-    '/injection': Page.INJECTION,
-    '/lab': Page.LAB,
-    '/genetic': Page.GENETIC,
-    '/cycle': Page.CYCLE_ARCHITECT,
-    '/checkout': Page.CHECKOUT,
-    '/faq': Page.FAQ,
-    '/blog': Page.BLOG,
-    '/about': Page.ABOUT,
-    '/support': Page.SUPPORT,
-    '/profile/affiliate': Page.AFFILIATE || Page.PROFILE,
-};
+interface RawKeywordResponseItem {
+    id?: string;
+    keyword?: string;
+    originalKeyword?: string;
+    normalizedKeyword?: string;
+    language?: 'ar' | 'en';
+    cluster?: string;
+    intent?: string;
+    destinationPath?: string;
+    destinationType?: string;
+    score?: number;
+    trendStatus?: string;
+    isRising?: boolean;
+}
 
 export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     navigateTo,
@@ -54,17 +55,20 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     const [activeTab, setActiveTab] = useState<TabType>('all');
     const [keywords, setKeywords] = useState<LiveKeywordItem[]>(() => {
         // Immediate baseline fallback from pool to avoid layout flash
-        return fallbackPool.map((kw, i) => ({
-            id: `fallback-${i}`,
-            keyword: kw,
-            language: lang,
-            cluster: 'general',
-            intent: 'informational',
-            destinationPath: '/',
-            destinationType: 'page',
-            score: 70,
-            trendStatus: 'stable'
-        }));
+        return (fallbackPool || [])
+            .filter(kw => typeof kw === 'string' && kw.trim().length > 0)
+            .map((kw, i) => ({
+                id: `fallback-${lang}-${i}`,
+                keyword: kw.trim(),
+                originalKeyword: kw.trim(),
+                language: lang,
+                cluster: 'general',
+                intent: 'informational',
+                destinationPath: '/',
+                destinationType: 'page',
+                score: 70,
+                trendStatus: 'stable'
+            }));
     });
     const [isExpanded, setIsExpanded] = useState(false);
     // Fetch weekly dynamic keywords for active language
@@ -77,11 +81,33 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (!isMounted) return;
-                const items: LiveKeywordItem[] = Array.isArray(data) ? data : (data?.keywords || []);
-                if (items.length > 0) {
-                    // Strict separation: only keep keywords matching the active language
-                    const strictlyFiltered = items.filter(k => k.language === lang);
-                    setKeywords(strictlyFiltered);
+                const rawItems: RawKeywordResponseItem[] = Array.isArray(data) ? data : (data?.keywords || []);
+                if (rawItems.length > 0) {
+                    const parsed: LiveKeywordItem[] = rawItems
+                        .map((k, idx) => {
+                            const text = String(k.keyword || k.originalKeyword || k.normalizedKeyword || '').trim();
+                            const rawPath = String(k.destinationPath || '/').trim();
+                            const safePath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+                            return {
+                                id: k.id || `kw-${lang}-${idx}`,
+                                keyword: text,
+                                originalKeyword: k.originalKeyword || text,
+                                normalizedKeyword: k.normalizedKeyword || text,
+                                language: (k.language === 'ar' || k.language === 'en') ? k.language : lang,
+                                cluster: k.cluster || 'general',
+                                intent: k.intent || 'informational',
+                                destinationPath: safePath,
+                                destinationType: k.destinationType || 'page',
+                                score: typeof k.score === 'number' ? k.score : 70,
+                                trendStatus: k.trendStatus || 'stable',
+                                isRising: k.trendStatus === 'rising' || k.isRising === true,
+                            };
+                        })
+                        .filter(k => k.keyword.length > 0 && k.language === lang);
+
+                    if (parsed.length > 0) {
+                        setKeywords(parsed);
+                    }
                 }
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : String(err);
@@ -109,6 +135,7 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     // Categorized keyword filtering
     const filteredKeywords = useMemo(() => {
         return keywords.filter((item) => {
+            if (!item.keyword || item.keyword.trim().length === 0) return false;
             if (item.language !== lang) return false;
 
             switch (activeTab) {
@@ -135,14 +162,18 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
 
     // Click handler: non-blocking search logging + safe navigation
     const handleKeywordClick = (item: LiveKeywordItem) => {
+        const keywordText = item.keyword || item.originalKeyword || item.normalizedKeyword || '';
+        const rawDestination = (item.destinationPath || '/').trim();
+        const safeDestination = rawDestination.startsWith('/') ? rawDestination : `/${rawDestination}`;
+
         // Non-blocking anonymous search log
         try {
             fetch('/api/seo/search-log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    query: item.keyword,
-                    destination: item.destinationPath,
+                    query: keywordText,
+                    destination: safeDestination,
                     language: lang,
                     source: 'footer_chip'
                 })
@@ -151,12 +182,14 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
             // Ignore logging errors
         }
 
-        // Navigate
-        const targetPage = PATH_TO_PAGE_MAP[item.destinationPath];
+        // Navigate safely using centralized router
+        const targetPage = pathToPage(safeDestination);
         if (targetPage && navigateTo) {
             navigateTo(targetPage);
+        } else if (navigateTo) {
+            navigateTo(Page.HOME);
         } else if (typeof window !== 'undefined') {
-            window.location.assign(item.destinationPath);
+            window.location.assign(safeDestination || '/');
         }
     };
 

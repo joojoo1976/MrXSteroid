@@ -15,6 +15,7 @@ import { POST as postSearchLog } from '../../app/api/seo/search-log/route';
 import { GET as getReport } from '../../app/api/seo/report/route';
 import { GET as getCompetitors } from '../../app/api/seo/competitors/route';
 import { POST as postRefresh } from '../../app/api/seo/refresh/route';
+import { pathToPage } from '../../lib/legacy-routes';
 
 describe('Live SEO API Integration Suite', () => {
     describe('GET /api/seo/keywords', () => {
@@ -84,6 +85,27 @@ describe('Live SEO API Integration Suite', () => {
             const res = await getKeywords(req);
             const data = await res.json();
             expect(data.keywords.length).toBeLessThanOrEqual(5);
+        });
+
+        it('guarantees keyword property, id, and valid route resolution for all keywords', async () => {
+            for (const lang of ['en', 'ar'] as const) {
+                const req = new NextRequest(`http://localhost:3000/api/seo/keywords?lang=${lang}&limit=100`);
+                const res = await getKeywords(req);
+                const data = await res.json();
+                expect(data.ok).toBe(true);
+
+                for (const kw of data.keywords) {
+                    expect(kw.keyword).toBeDefined();
+                    expect(typeof kw.keyword).toBe('string');
+                    expect(kw.keyword.trim().length).toBeGreaterThan(0);
+                    expect(kw.id).toBeDefined();
+                    expect(kw.destinationPath).toBeDefined();
+
+                    // Must resolve to a valid Page enum or recognized path, never navigate to undefined
+                    const page = pathToPage(kw.destinationPath);
+                    expect(page).not.toBeNull();
+                }
+            }
         });
     });
 

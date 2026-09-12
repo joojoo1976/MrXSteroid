@@ -169,8 +169,9 @@ export async function getOrGenerateWeeklySnapshot(
                 .order('score', { ascending: false });
 
             if (!kwErr && keywordsRows && keywordsRows.length >= 10) {
-                const mapped: SeoKeyword[] = keywordsRows.map(r => ({
-                    id: r.id,
+                const mapped: SeoKeyword[] = keywordsRows.map((r, idx) => ({
+                    id: r.id || `kw-${language}-${idx}`,
+                    keyword: r.original_keyword,
                     language: r.language,
                     locale: r.locale,
                     originalKeyword: r.original_keyword,
@@ -178,7 +179,7 @@ export async function getOrGenerateWeeklySnapshot(
                     cluster: r.cluster,
                     intent: r.intent,
                     trendStatus: r.trend_status,
-                    destinationPath: r.destination_path,
+                    destinationPath: r.destination_path || '/',
                     score: Number(r.score),
                     scoreComponents: r.score_components || {},
                     source: r.source,

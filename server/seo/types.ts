@@ -47,6 +47,7 @@ export interface ScoreComponents {
 
 export interface SeoKeyword {
     id?: string;
+    keyword?: string;
     language: SeoLanguage;
     locale: string;
     originalKeyword: string;

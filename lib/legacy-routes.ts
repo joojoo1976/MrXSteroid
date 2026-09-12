@@ -57,11 +57,24 @@ export function pageToPath(page: Page): string {
     return PAGE_TO_PATH[page] || '/';
 }
 
-export function pathToPage(path: string): Page | null {
-    // Strip leading /ar or /en locale prefixes
-    const normalized = path.replace(/^\/(ar|en)(?=\/|$)/, '') || '/';
-    for (const [page, p] of Object.entries(PAGE_TO_PATH)) {
-        if (p === normalized) return page as Page;
+export function pathToPage(path: string | null | undefined): Page | null {
+    if (!path || typeof path !== 'string') return Page.HOME;
+    // Strip leading /ar or /en locale prefixes, trim whitespace, and normalize trailing slashes
+    const trimmed = path.trim();
+    let normalized = trimmed.replace(/^\/(ar|en)(?=\/|$)/i, '') || '/';
+    if (normalized.length > 1 && normalized.endsWith('/')) {
+        normalized = normalized.slice(0, -1);
     }
+    const lowerNormalized = normalized.toLowerCase();
+
+    for (const [page, p] of Object.entries(PAGE_TO_PATH)) {
+        if (p === normalized || p.toLowerCase() === lowerNormalized) return page as Page;
+    }
+
+    // Common aliases
+    if (lowerNormalized === '/timeline') return Page.TIMELINE;
+    if (lowerNormalized === '/affiliate') return Page.AFFILIATE;
+    if (lowerNormalized === '/admin') return Page.ADMIN_DASHBOARD;
+
     return null;
 }
