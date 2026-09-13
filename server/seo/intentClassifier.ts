@@ -125,3 +125,5 @@ export function classifySearchIntent(raw: string, language: SeoLanguage): Search
 
     return 'unknown';
 }
+
+export const classifyIntent = classifySearchIntent;

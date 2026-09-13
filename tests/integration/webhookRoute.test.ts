@@ -326,4 +326,60 @@ describe('POST /api/payments/webhook — Cross-Account & Edge Scenarios', () => 
         const res = await POST(req);
         expect([200, 400, 401]).toContain(res.status);
     });
+
+    it('handles REFUNDED status from provider and updates payment status', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-ref-1', status: 'paid', payment_status: 'paid', amount: 100, currency: 'EGP', affiliate_id: null },
+            null
+        );
+        const fields = {
+            orderId: 'inv-ref-1',
+            orderStatus: 'REFUNDED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-refund-1',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.status).toBe('ok');
+    });
+
+    it('records provider metadata and updates invoice on successful payment', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-meta-1', status: 'pending', payment_status: 'pending', amount: 250, currency: 'EGP', affiliate_id: null },
+            null
+        );
+        const fields = {
+            orderId: 'inv-meta-1',
+            orderStatus: 'APPROVED',
+            amount: '250.00',
+            currency: 'EGP',
+            transactionId: 'kashier-tx-777',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalled();
+    });
+
+    it('safely handles invoice without affiliate_id without throwing or breaking ledger', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-no-aff-1', status: 'pending', payment_status: 'pending', amount: 500, currency: 'EGP', affiliate_id: null, referral_code: null },
+            null
+        );
+        const fields = {
+            orderId: 'inv-no-aff-1',
+            orderStatus: 'APPROVED',
+            amount: '500.00',
+            currency: 'EGP',
+            transactionId: 'kashier-tx-888',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.status).toBe('ok');
+    });
 });

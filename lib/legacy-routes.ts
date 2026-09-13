@@ -75,6 +75,7 @@ export function pathToPage(path: string | null | undefined): Page | null {
     if (lowerNormalized === '/timeline') return Page.TIMELINE;
     if (lowerNormalized === '/affiliate') return Page.AFFILIATE;
     if (lowerNormalized === '/admin') return Page.ADMIN_DASHBOARD;
+    if (lowerNormalized === '/smarttools') return Page.MASTER_CALCULATOR;
 
     return null;
 }

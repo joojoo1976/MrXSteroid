@@ -46,11 +46,21 @@ export function resolveDestination(
     const lower = keyword.toLowerCase();
 
     // 1. Transactional intent -> Checkout
-    if (intent === 'transactional' || lower.includes('buy') || lower.includes('شراء') || lower.includes('سعر') || lower.includes('تحميل')) {
+    if (intent === 'transactional' || lower.includes('buy') || lower.includes('شراء') || /(?:^|\s)(سعر|اسعار|أسعار)(?:$|\s)/.test(lower) || lower.includes('تحميل')) {
         return { path: '/checkout', type: 'page' };
     }
 
-    // 2. Specific Tool keyword matches
+    // 2. Timeline & Transformation (must precede generic cycle/stack checks)
+    if (lower.includes('timeline') || lower.includes('transformation') || lower.includes('تحول') || lower.includes('زمني')) {
+        return { path: '/TransformationTimeline', type: 'tool' };
+    }
+
+    // 3. Health, safety & PCT clusters -> /blog (must precede generic cycle check)
+    if (cluster === 'pct-recovery' || cluster === 'hormone-safety' || lower.includes('pct') || lower.includes('تنظيف')) {
+        return { path: '/blog', type: 'article' };
+    }
+
+    // 4. Specific Tool keyword matches
     if (lower.includes('macro') || lower.includes('calorie') || lower.includes('ماكرو') || lower.includes('سعرات') || lower.includes('tdee') || lower.includes('bmr')) {
         return { path: '/macro', type: 'tool' };
     }
@@ -71,7 +81,7 @@ export function resolveDestination(
         return { path: '/lab', type: 'tool' };
     }
 
-    if (lower.includes('genetic') || lower.includes('ffmi') || lower.includes('potential') || lower.includes('جينات')) {
+    if (lower.includes('genetic') || lower.includes('ffmi') || lower.includes('potential') || lower.includes('جينات') || lower.includes('جيني')) {
         return { path: '/genetic', type: 'tool' };
     }
 
@@ -79,18 +89,9 @@ export function resolveDestination(
         return { path: '/cycle', type: 'tool' };
     }
 
-    if (lower.includes('timeline') || lower.includes('transformation') || lower.includes('تحول') || lower.includes('زمني')) {
-        return { path: '/TransformationTimeline', type: 'tool' };
-    }
-
-    // 3. Questions -> FAQ
+    // 5. Questions -> FAQ
     if (intent === 'question' || lower.startsWith('how') || lower.startsWith('what') || lower.startsWith('كيف') || lower.startsWith('هل')) {
         return { path: '/faq', type: 'page' };
-    }
-
-    // 4. Cluster mappings
-    if (cluster === 'pct-recovery' || cluster === 'hormone-safety') {
-        return { path: '/blog', type: 'article' };
     }
 
     if (cluster === 'supplements-nutrition') {
