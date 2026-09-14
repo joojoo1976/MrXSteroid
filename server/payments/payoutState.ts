@@ -10,14 +10,18 @@
 export type PayoutState =
     | 'QUEUED'
     | 'PROCESSING'
+    | 'RECONCILING'
     | 'COMPLETED'
-    | 'FAILED';
+    | 'FAILED'
+    | 'UNKNOWN';
 
 const VALID_PAYOUT_TRANSITIONS: Record<PayoutState, PayoutState[]> = {
     QUEUED: ['PROCESSING', 'FAILED'],
-    PROCESSING: ['COMPLETED', 'FAILED'],
+    PROCESSING: ['RECONCILING', 'COMPLETED', 'FAILED', 'UNKNOWN'],
+    RECONCILING: ['COMPLETED', 'FAILED', 'UNKNOWN', 'PROCESSING'],
     COMPLETED: [], // Terminal
-    FAILED: ['PROCESSING'], // Only after admin manual verification / recovery
+    FAILED: ['PROCESSING', 'RECONCILING'], // Only after admin manual verification / recovery
+    UNKNOWN: ['RECONCILING', 'PROCESSING', 'COMPLETED', 'FAILED'], // Resolving timeout or indeterminate state
 };
 
 export function canTransitionPayout(current: string, next: string): boolean {
@@ -32,3 +36,4 @@ export function assertPayoutTransition(current: string, next: string): void {
         throw new Error(`[PayoutState] Invalid transition from ${current} to ${next}`);
     }
 }
+

@@ -312,7 +312,7 @@ async function processWebhook(
             // 2. Get invoice details for profile update and affiliate commission
             const { data: invoice } = await supabase
                 .from('invoices')
-                .select('user_id, tier_id, affiliate_id, referral_code')
+                .select('user_id, tier_id, affiliate_id, referral_code, amount, currency')
                 .eq('id', invoiceId)
                 .single();
 
@@ -329,7 +329,7 @@ async function processWebhook(
                     })
                     .eq('id', invoice.user_id);
 
-                console.log(`âœ… [Webhook] Subscription activated â€” User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
+                console.log(`✅ [Webhook] Subscription activated — User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
             }
 
             // 4. Trigger affiliate commission (non-blocking, non-fatal)
@@ -347,9 +347,64 @@ async function processWebhook(
             try {
                 const { freezeOrderSplits } = await import('./splitEngine');
                 await freezeOrderSplits(supabase, invoiceId);
+
+                // 6. Record Double-Entry Journal in Financial Ledger (N-4)
+                try {
+                    const { recordPaymentCaptureJournal, recordSplitAllocationJournal } = await import('./financialLedgerService');
+                    const grossMinor = Math.round(Number(verification.paidAmount || (invoice as any)?.amount || 0) * 100);
+                    const feeMinor = 0; // gateway fee if available
+
+                    await recordPaymentCaptureJournal({
+                        paymentIntentId: invoiceId,
+                        invoiceId,
+                        grossAmountMinor: grossMinor,
+                        gatewayFeeMinor: feeMinor,
+                        currency: (invoice as any)?.currency || 'EGP',
+                        transactionId: verification.externalReferenceId || invoiceId,
+                        supabaseClient: supabase,
+                    });
+
+                    const { data: savedSplits } = await supabase
+                        .from('order_splits')
+                        .select('beneficiary_id, allocated_amount_minor, rule_snapshot')
+                        .eq('invoice_id', invoiceId);
+
+                    if (savedSplits && savedSplits.length > 0) {
+                        const netMinor = grossMinor - feeMinor;
+                        await recordSplitAllocationJournal({
+                            paymentIntentId: invoiceId,
+                            invoiceId,
+                            netAmountMinor: netMinor,
+                            currency: (invoice as any)?.currency || 'EGP',
+                            splits: savedSplits.map((s: any) => ({
+                                beneficiaryId: s.beneficiary_id,
+                                allocatedAmountMinor: s.allocated_amount_minor,
+                                role: s.rule_snapshot?.role || 'beneficiary',
+                            })),
+                            supabaseClient: supabase,
+                        });
+                    }
+                } catch (ledgerErr) {
+                    console.warn(`[Webhook] Financial ledger posting notice for ${invoiceId}:`, ledgerErr);
+                }
             } catch (splitErr) {
                 // Split calculation failure must NEVER roll back payment activation
                 console.error(`[Webhook] Revenue split freeze failed for ${invoiceId} (non-fatal):`, splitErr);
+            }
+
+            // 7. Grant Product Entitlement (N-11)
+            if (invoice?.user_id && invoice?.tier_id) {
+                try {
+                    const { grantEntitlement } = await import('./entitlementService');
+                    await grantEntitlement({
+                        userId: invoice.user_id,
+                        productId: invoice.tier_id,
+                        invoiceId,
+                        paymentIntentId: invoiceId,
+                    }, supabase);
+                } catch (entitleErr) {
+                    console.warn(`[Webhook] Entitlement grant notice for ${invoiceId}:`, entitleErr);
+                }
             }
 
         } else if (verification.status === 'failed') {

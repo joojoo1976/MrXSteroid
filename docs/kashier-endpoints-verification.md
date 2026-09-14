@@ -14,8 +14,10 @@
 | **Create Payment Session** | Live | `api.kashier.io` | `/v3/payment/sessions` | Bearer Secret + api-key | **PENDING** | Enabled upon live deployment |
 | **Get Payment Session** | Test | `test-api.kashier.io` | `/v3/payment/sessions/:sessionId/payment` | Bearer Secret + api-key | **YES** | Server-to-server session status check |
 | **Get Payment Session** | Live | `api.kashier.io` | `/v3/payment/sessions/:sessionId/payment` | Bearer Secret + api-key | **PENDING** | Enabled upon live deployment |
-| **Payout / Transfer** | Test | `test-api.kashier.io` | `/v3/transfers/single` | Bearer Secret + api-key | **PENDING** | Test simulation active; verified when account transfer capability is enabled |
-| **Payout / Transfer** | Live | `api.kashier.io` | `/v3/transfers/single` | Bearer Secret + api-key | **PENDING** | Enforces Admin Manual Batch Approval in v1 |
+| **Payout / Transfer Host [C-2]** | Test/Live | *Pending AM Confirmation* (`fep/v3` vs `api/v2`) | `/v3/transfers/single` | Bearer Secret + api-key | **BLOCKED** | Blocked pending formal confirmation from Kashier Account Manager |
+| **Transfers Hashing [D-8]** | Test/Live | Kashier Host | `/?transfer=...` | `kashier-hash` (HMAC-SHA256) | **BLOCKED** | Blocked pending confirmation with Kashier Account Manager |
+| **Payout / Transfer Execution** | Test | `test-api.kashier.io` | `/v3/transfers/single` | Bearer Secret + api-key | **SIMULATED** | Test simulation active; verified when account transfer capability is enabled |
+| **Payout / Transfer Execution** | Live | `api.kashier.io` | `/v3/transfers/single` | Bearer Secret + api-key | **BLOCKED** | Blocked by Kill Switch (KASHIER_LIVE_ENABLED=false) & AM confirmation |
 
 ---
 

@@ -343,5 +343,12 @@ export class KashierGateway implements IPaymentGateway {
         if (!this.config.merchantId || !this.config.paymentApiKey || !this.config.secretKey) {
             throw new Error(`[KashierGateway:${this.config.merchantType}] Missing credentials.`);
         }
+
+        // Final Gate v4 N-13: Server-side Release Kill Switch
+        if (this.config.mode === 'live' && process.env.KASHIER_LIVE_ENABLED !== 'true') {
+            throw new Error(
+                `[KashierGateway:${this.config.merchantType}] Live mode is blocked by Owner Kill Switch (KASHIER_LIVE_ENABLED=false). Production traffic requires explicit owner activation.`
+            );
+        }
     }
 }
