@@ -1,4 +1,4 @@
-﻿/**
+/**
  * â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
  * â•‘  ðŸ”” MULTI-GATEWAY WEBHOOK HANDLER                                        â•‘
  * â•‘  Route: /api/payments/webhook                                            â•‘
@@ -14,6 +14,7 @@
  * â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
+import crypto from 'crypto';
 import type { VercelRequest, VercelResponse } from './gateways/vercel-types';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
@@ -167,30 +168,36 @@ async function processWebhook(
         // Build a stable provider_event_id: for Kashier = transactionId, else externalReferenceId
         const providerEventId = verification.externalReferenceId || invoiceId || '';
         const payloadHash = rawBody.length > 0
-            ? Buffer.from(require('crypto').createHash('sha256').update(rawBody).digest('hex')).toString('hex').slice(0, 64)
+            ? Buffer.from(crypto.createHash('sha256').update(rawBody).digest('hex')).toString('hex').slice(0, 64)
             : null;
 
         if (providerEventId) {
+            let parsedRawPayload: Record<string, unknown> = {};
+            try { parsedRawPayload = JSON.parse(rawBody); } catch { /* ignore */ }
+
             const { error: dedupError } = await supabase
                 .from('webhook_events')
                 .insert({
                     provider: gatewayName.toLowerCase(),
                     merchant_account: verification.merchantId || null,
                     provider_event_id: providerEventId,
+                    transaction_id: verification.externalReferenceId || null,
                     invoice_id: invoiceId || null,
                     event_type: verification.detailedStatus || verification.status || 'unknown',
                     payload_hash: payloadHash,
                     status: 'pending',
+                    processing_status: 'pending',
+                    raw_payload: parsedRawPayload,
                 });
 
             if (dedupError) {
                 if (dedupError.code === '23505') {
-                    // Unique constraint violation â†’ duplicate event
-                    console.log(`âš¡ [Webhook] Duplicate event â€” provider_event_id=${providerEventId} already processed`);
+                    // Unique constraint violation → duplicate event
+                    console.log(`[Webhook] Duplicate event — provider_event_id=${providerEventId} already processed`);
                     // Update attempt count
                     await supabase
                         .from('webhook_events')
-                        .update({ attempt_count: supabase.rpc('coalesce', { a: 1 }) as unknown as number, status: 'duplicate' })
+                        .update({ attempt_count: supabase.rpc('coalesce', { a: 1 }) as unknown as number, status: 'duplicate', processing_status: 'duplicate' })
                         .eq('provider', gatewayName.toLowerCase())
                         .eq('provider_event_id', providerEventId);
                     return respond(200, { status: 'ok', message: 'Duplicate event' });
@@ -334,6 +341,15 @@ async function processWebhook(
                     // Commission failure must NEVER roll back payment activation
                     console.error(`[Webhook] Commission trigger failed for ${invoiceId} (non-fatal):`, commErr);
                 }
+            }
+
+            // 5. Freeze revenue splits (non-blocking, non-fatal to order payment)
+            try {
+                const { freezeOrderSplits } = await import('./splitEngine');
+                await freezeOrderSplits(supabase, invoiceId);
+            } catch (splitErr) {
+                // Split calculation failure must NEVER roll back payment activation
+                console.error(`[Webhook] Revenue split freeze failed for ${invoiceId} (non-fatal):`, splitErr);
             }
 
         } else if (verification.status === 'failed') {

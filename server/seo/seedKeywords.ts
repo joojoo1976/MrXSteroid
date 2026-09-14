@@ -7,7 +7,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getBaselineKeywords } from './baselineKeywords';
 import { getSupabaseAdmin, getOrGenerateWeeklySnapshot } from './seoService';
-import { SeoLanguage } from './types';
 
 export async function seedSeoKeywords(
     client: SupabaseClient | null = getSupabaseAdmin()

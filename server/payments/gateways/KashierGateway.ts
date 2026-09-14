@@ -1,10 +1,18 @@
 import crypto from "crypto";
 import type { VercelRequest } from "./vercel-types";
-import type { IPaymentGateway, GatewayName, CreateInvoiceParams, CreateInvoiceResult, WebhookVerificationResult, PaymentDetailedStatus } from "./IPaymentGateway";
+import type {
+    IPaymentGateway,
+    GatewayName,
+    CreateInvoiceParams,
+    CreateInvoiceResult,
+    WebhookVerificationResult,
+    PaymentDetailedStatus
+} from "./IPaymentGateway";
+import { resolveKashierPaymentOutcome } from "./kashierVerification";
 
-type MerchantType = "egypt" | "global";
+export type MerchantType = "egypt" | "global";
 
-interface KashierConfig {
+export interface KashierConfig {
     merchantId: string;
     paymentApiKey: string;
     secretKey: string;
@@ -13,41 +21,17 @@ interface KashierConfig {
     merchantType: MerchantType;
 }
 
-interface KashierWebhookPayload {
+export interface KashierPaymentSessionResponse {
+    sessionId: string;
+    sessionUrl: string;
     orderId?: string;
-    merchantOrderId?: string;
-    merchantId?: string;
-    amount?: string;
+    amount?: number;
     currency?: string;
-    transactionId?: string;
-    orderStatus?: string;
-    signature?: string;
-    signatureKeys?: string;
-    [key: string]: string | undefined;
-}
-
-function mapKashierStatus(orderStatus: string): { status: "success" | "failed" | undefined; detailedStatus: PaymentDetailedStatus } {
-    const s = orderStatus.toUpperCase();
-    switch (s) {
-        case "APPROVED": case "SUCCESS": return { status: "success", detailedStatus: "APPROVED" };
-        case "DECLINED": case "DECLINED_BY_BANK": return { status: "failed", detailedStatus: "DECLINED" };
-        case "EXPIRED_CARD": return { status: "failed", detailedStatus: "EXPIRED_CARD" };
-        case "TIMED_OUT": case "TIMEOUT": return { status: undefined, detailedStatus: "TIMED_OUT" };
-        case "ACQUIRER_SYSTEM_ERROR": case "ACQUIRER_ERROR": return { status: "failed", detailedStatus: "ACQUIRER_SYSTEM_ERROR" };
-        case "UNSPECIFIED_FAILURE": case "FAILURE": case "FAILED": return { status: "failed", detailedStatus: "UNSPECIFIED_FAILURE" };
-        case "UNKNOWN": return { status: undefined, detailedStatus: "UNKNOWN" };
-        case "REFUNDED": return { status: "failed", detailedStatus: "REFUNDED" };
-        case "VOIDED": return { status: "failed", detailedStatus: "VOIDED" };
-        case "AUTHORIZED": return { status: undefined, detailedStatus: "AUTHORIZED" };
-        case "CAPTURED": return { status: "success", detailedStatus: "CAPTURED" };
-        default:
-            console.warn("[KashierGateway] Unknown orderStatus: " + s + " - treating as UNKNOWN");
-            return { status: undefined, detailedStatus: "UNKNOWN" };
-    }
+    status?: string;
 }
 
 export class KashierGateway implements IPaymentGateway {
-    private readonly config: KashierConfig;
+    public readonly config: KashierConfig;
 
     constructor(merchantType: MerchantType) {
         const rawMode = (process.env.KASHIER_MODE || "test").toLowerCase();
@@ -55,8 +39,6 @@ export class KashierGateway implements IPaymentGateway {
         const modePrefix = mode === "live" ? "KASHIER_LIVE" : "KASHIER_TEST";
         const legacyPrefix = merchantType === "egypt" ? "KASHIER_EGYPT" : "KASHIER_GLOBAL";
 
-        // Prefer KASHIER_TEST_* / KASHIER_LIVE_* (new naming convention)
-        // Fall back to KASHIER_EGYPT_* / KASHIER_GLOBAL_* (legacy naming)
         const merchantId =
             process.env[modePrefix + "_MERCHANT_ID"] ||
             process.env[legacyPrefix + "_MERCHANT_ID"] || "";
@@ -69,71 +51,297 @@ export class KashierGateway implements IPaymentGateway {
 
         if (!merchantId || !paymentApiKey || !secretKey) {
             console.warn(
-                "[KashierGateway] Missing credentials for mode: " + mode +
-                ". Set " + modePrefix + "_MERCHANT_ID, " + modePrefix + "_PAYMENT_API_KEY, " + modePrefix + "_SECRET_KEY."
+                `[KashierGateway] Missing credentials for mode: ${mode}. Set ${modePrefix}_MERCHANT_ID, ${modePrefix}_PAYMENT_API_KEY, ${modePrefix}_SECRET_KEY.`
             );
         }
-        this.config = { merchantId, paymentApiKey, secretKey, mode, currency: merchantType === "egypt" ? "EGP" : "USD", merchantType };
+
+        this.config = {
+            merchantId,
+            paymentApiKey,
+            secretKey,
+            mode,
+            currency: merchantType === "egypt" ? "EGP" : "USD",
+            merchantType,
+        };
     }
 
     getGatewayName(): GatewayName {
         return this.config.merchantType === "egypt" ? "KASHIER_EGYPT" : "KASHIER_GLOBAL";
     }
 
-    async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResult> {
-        this.assertCredentials();
-        const { merchantId, paymentApiKey, mode, currency } = this.config;
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mrxsteroid.com";
-        const returnUrl = siteUrl + "/api/payments/callback?txn=" + encodeURIComponent(params.invoiceId);
-        const webhookUrl = siteUrl + "/api/payments/webhook";
-        const amountStr = params.amount.toFixed(2);
-        const signaturePayload = merchantId + params.invoiceId + amountStr + currency;
-        const hash = crypto.createHmac("sha256", paymentApiKey).update(signaturePayload).digest("hex");
-        const qs = new URLSearchParams({ merchantId, orderId: params.invoiceId, amount: amountStr, currency, hash, mode, merchantRedirect: returnUrl, webhookUrl, display: "en", allowedMethods: "card", description: "Mr. X Steroid - " + params.tierId, customerName: params.metadata.fullName || "", customerEmail: params.metadata.email || "" });
-        const redirectUrl = "https://checkout.kashier.io/?" + qs.toString();
-        console.log("[KashierGateway:" + this.config.merchantType + "] Created order " + params.invoiceId + ", amount: " + amountStr + " " + currency);
-        return { redirectUrl, externalReferenceId: params.invoiceId, providerOrderId: params.invoiceId };
+    /**
+     * Resolves the official Kashier API host based on environment mode.
+     */
+    private getApiBaseUrl(): string {
+        return this.config.mode === "live"
+            ? "https://api.kashier.io"
+            : "https://test-api.kashier.io";
     }
 
-    async verifyWebhook(_req: VercelRequest, rawBody: string): Promise<WebhookVerificationResult> {
-        if (!rawBody || rawBody.trim() === "") return { valid: false, errorMessage: "[KashierGateway] Empty webhook body" };
-        let payload: KashierWebhookPayload;
-        try { payload = JSON.parse(rawBody) as KashierWebhookPayload; }
-        catch { return { valid: false, errorMessage: "[KashierGateway] Invalid JSON body" }; }
-        const { signature, signatureKeys, orderId, merchantOrderId, merchantId, orderStatus, amount, transactionId } = payload;
-        if (!signature || !signatureKeys) return { valid: false, errorMessage: "[KashierGateway] Missing signature or signatureKeys" };
-        if (merchantId && merchantId !== this.config.merchantId) {
-            return { valid: false, errorMessage: "[KashierGateway:" + this.config.merchantType + "] Merchant ID mismatch: expected " + this.config.merchantId + ", got " + merchantId, merchantId };
+    /**
+     * Creates a hosted payment session using the official Kashier Payment Sessions API:
+     * POST /v3/payment/sessions
+     */
+    async createPaymentSession(params: {
+        orderId: string;
+        amount: number;
+        currency: string;
+        customerEmail?: string;
+        customerName?: string;
+    }): Promise<KashierPaymentSessionResponse> {
+        this.assertCredentials();
+        const host = this.getApiBaseUrl();
+        const endpoint = `${host}/v3/payment/sessions`;
+
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mrxsteroid.com";
+        const returnUrl = `${siteUrl}/api/payments/callback?txn=${encodeURIComponent(params.orderId)}`;
+        const webhookUrl = `${siteUrl}/api/payments/webhook`;
+
+        const payload = {
+            merchantId: this.config.merchantId,
+            orderId: params.orderId,
+            amount: params.amount.toFixed(2),
+            currency: params.currency,
+            merchantRedirect: returnUrl,
+            webhookUrl,
+            customer: {
+                name: params.customerName || "Customer",
+                email: params.customerEmail || "customer@example.com",
+            },
+            display: "en",
+        };
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${this.config.secretKey}`,
+                    "api-key": this.config.paymentApiKey,
+                },
+                body: JSON.stringify(payload),
+                signal: AbortSignal.timeout(3000),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
+                const sessionId = data.sessionId || data.id || params.orderId;
+                if (sessionUrl) {
+                    return {
+                        sessionId,
+                        sessionUrl,
+                        orderId: params.orderId,
+                        amount: params.amount,
+                        currency: params.currency,
+                        status: data.status || "ACTIVE",
+                    };
+                }
+            }
+        } catch (err) {
+            console.warn(`[KashierGateway] Session API call failed, using signed checkout redirect fallback:`, err);
         }
+
+        // Fallback to official Kashier hosted redirect with HMAC-SHA256 signature
+        const amountStr = params.amount.toFixed(2);
+        const signaturePayload = `${this.config.merchantId}${params.orderId}${amountStr}${params.currency}`;
+        const hash = crypto.createHmac("sha256", this.config.paymentApiKey).update(signaturePayload).digest("hex");
+
+        const qs = new URLSearchParams({
+            merchantId: this.config.merchantId,
+            orderId: params.orderId,
+            amount: amountStr,
+            currency: params.currency,
+            hash,
+            mode: this.config.mode,
+            merchantRedirect: returnUrl,
+            webhookUrl,
+            display: "en",
+            allowedMethods: "card",
+            customerName: params.customerName || "",
+            customerEmail: params.customerEmail || "",
+        });
+
+        const fallbackUrl = `https://checkout.kashier.io/?${qs.toString()}`;
+        return {
+            sessionId: params.orderId,
+            sessionUrl: fallbackUrl,
+            orderId: params.orderId,
+            amount: params.amount,
+            currency: params.currency,
+            status: "FALLBACK_REDIRECT",
+        };
+    }
+
+    /**
+     * Verifies payment session status via official Kashier API:
+     * GET /v3/payment/sessions/:sessionId/payment
+     */
+    async verifyPaymentSession(sessionId: string): Promise<Record<string, unknown> | null> {
+        this.assertCredentials();
+        const host = this.getApiBaseUrl();
+        const endpoint = `${host}/v3/payment/sessions/${encodeURIComponent(sessionId)}/payment`;
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${this.config.secretKey}`,
+                    "api-key": this.config.paymentApiKey,
+                },
+            });
+
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (err) {
+            console.error(`[KashierGateway] verifyPaymentSession error:`, err);
+        }
+        return null;
+    }
+
+    /**
+     * IPaymentGateway implementation of createInvoice
+     */
+    async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResult> {
+        this.assertCredentials();
+        const session = await this.createPaymentSession({
+            orderId: params.invoiceId,
+            amount: params.amount,
+            currency: this.config.currency,
+            customerEmail: params.metadata.email,
+            customerName: params.metadata.fullName,
+        });
+
+        return {
+            redirectUrl: session.sessionUrl,
+            externalReferenceId: params.invoiceId,
+            providerOrderId: session.sessionId,
+        };
+    }
+
+    /**
+     * IPaymentGateway implementation of verifyWebhook.
+     * Validates HMAC-SHA256 signature using sorted signatureKeys and timingSafeEqual.
+     * Evaluates final outcome using resolveKashierPaymentOutcome layer.
+     */
+    async verifyWebhook(_req: VercelRequest, rawBody: string): Promise<WebhookVerificationResult> {
+        if (!rawBody || rawBody.trim() === "") {
+            return { valid: false, errorMessage: "[KashierGateway] Empty webhook body" };
+        }
+
+        let payload: Record<string, unknown>;
+        try {
+            payload = JSON.parse(rawBody) as Record<string, unknown>;
+        } catch {
+            return { valid: false, errorMessage: "[KashierGateway] Invalid JSON body" };
+        }
+
+        const signature = String(payload.signature || "");
+        const signatureKeys = String(payload.signatureKeys || "");
+        const merchantId = String(payload.merchantId || "");
+
+        if (!signature || !signatureKeys) {
+            return { valid: false, errorMessage: "[KashierGateway] Missing signature or signatureKeys" };
+        }
+
+        // Cross-account validation
+        if (merchantId && merchantId !== this.config.merchantId) {
+            return {
+                valid: false,
+                errorMessage: `[KashierGateway:${this.config.merchantType}] Merchant ID mismatch: expected ${this.config.merchantId}, got ${merchantId}`,
+                merchantId,
+            };
+        }
+
+        // 1. Sort signatureKeys and construct payload string
         const fieldNames = signatureKeys.split(",").map((k: string) => k.trim()).sort();
         const signatureParts: string[] = [];
         for (const f of fieldNames) {
             const val = payload[f];
-            if (val !== undefined && val !== null) signatureParts.push(f + "=" + val);
+            if (val !== undefined && val !== null) {
+                signatureParts.push(`${f}=${val}`);
+            }
         }
         const signatureInput = signatureParts.join("&");
-        const computedHmac = crypto.createHmac("sha256", this.config.paymentApiKey).update(signatureInput).digest("hex");
+        const computedHmac = crypto
+            .createHmac("sha256", this.config.paymentApiKey)
+            .update(signatureInput)
+            .digest("hex");
+
+        // Constant-time comparison
         let signaturesMatch = false;
         try {
             const expectedBuf = Buffer.from(computedHmac, "hex");
             const receivedBuf = Buffer.from(signature, "hex");
-            signaturesMatch = expectedBuf.length === receivedBuf.length && crypto.timingSafeEqual(expectedBuf, receivedBuf);
-        } catch { signaturesMatch = false; }
-        if (!signaturesMatch) {
-            console.error("[KashierGateway:" + this.config.merchantType + "] Signature mismatch.");
-            return { valid: false, errorMessage: "[KashierGateway] HMAC signature verification failed", merchantId };
+            signaturesMatch =
+                expectedBuf.length === receivedBuf.length &&
+                crypto.timingSafeEqual(expectedBuf, receivedBuf);
+        } catch {
+            signaturesMatch = false;
         }
-        const invoiceId = orderId || merchantOrderId;
-        if (!invoiceId) return { valid: true, errorMessage: "[KashierGateway] No orderId in payload", merchantId };
-        const { status, detailedStatus } = mapKashierStatus(orderStatus || "");
-        const paidAmount = amount ? parseFloat(amount) : undefined;
-        console.log("[KashierGateway:" + this.config.merchantType + "] Verified. Invoice: " + invoiceId + ", Status: " + orderStatus + " -> " + detailedStatus);
-        return { valid: true, invoiceId, status, detailedStatus, externalReferenceId: transactionId || invoiceId, paidAmount, merchantId };
+
+        if (!signaturesMatch) {
+            console.error(`[KashierGateway:${this.config.merchantType}] Signature mismatch.`);
+            return {
+                valid: false,
+                errorMessage: "[KashierGateway] HMAC signature verification failed",
+                merchantId,
+            };
+        }
+
+        // 2. Resolve outcome with Kashier Verification Layer
+        const resolution = resolveKashierPaymentOutcome(payload);
+        const rawInvoiceId = payload.orderId || payload.merchantOrderId;
+        const invoiceId = rawInvoiceId ? String(rawInvoiceId) : undefined;
+        const paidAmount = payload.amount ? parseFloat(String(payload.amount)) : undefined;
+        const transactionId = String(payload.transactionId || invoiceId || "");
+
+        let mappedStatus: "success" | "failed" | undefined;
+        let detailedStatus: PaymentDetailedStatus = "UNKNOWN";
+
+        switch (resolution.outcome) {
+            case "SUCCESS":
+                mappedStatus = "success";
+                detailedStatus = (resolution.detailedStatus as PaymentDetailedStatus) || "APPROVED";
+                break;
+            case "FAILURE":
+                mappedStatus = "failed";
+                detailedStatus = (resolution.detailedStatus as PaymentDetailedStatus) || "DECLINED";
+                break;
+            case "EXPIRED":
+                mappedStatus = "failed";
+                detailedStatus = "EXPIRED_CARD";
+                break;
+            case "PENDING":
+                mappedStatus = undefined;
+                detailedStatus = "AUTHORIZED";
+                break;
+            case "UNKNOWN":
+            default:
+                mappedStatus = undefined;
+                detailedStatus = resolution.detailedStatus === "TIMED_OUT" ? "TIMED_OUT" : "UNKNOWN";
+                break;
+        }
+
+        console.log(
+            `[KashierGateway:${this.config.merchantType}] Verified: invoice=${invoiceId}, outcome=${resolution.outcome} (${resolution.reason})`
+        );
+
+        return {
+            valid: true,
+            invoiceId,
+            status: mappedStatus,
+            detailedStatus,
+            externalReferenceId: transactionId,
+            paidAmount,
+            merchantId,
+        };
     }
 
     private assertCredentials(): void {
         if (!this.config.merchantId || !this.config.paymentApiKey || !this.config.secretKey) {
-            throw new Error("[KashierGateway:" + this.config.merchantType + "] Missing credentials.");
+            throw new Error(`[KashierGateway:${this.config.merchantType}] Missing credentials.`);
         }
     }
 }

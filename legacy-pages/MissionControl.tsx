@@ -44,6 +44,7 @@ import { useAdminData, fmtCurrency, timeAgo, Order, ContactMessage, Profile, Pro
 import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { ContentStrings } from '../shared/types/types';
+import { RevenueSplitsManager } from '../features/admin/RevenueSplitsManager';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
 type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms';
@@ -80,6 +81,9 @@ const GATEWAY_COLORS: Record<string, string> = {
     stripe: '#6366f1',
     paymob: '#10b981',
     spaceremit: '#0ea5e9',
+    kashier: '#f59e0b',
+    kashier_egypt: '#f59e0b',
+    kashier_global: '#f59e0b',
 };
 
 const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
@@ -1822,7 +1826,11 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
                 {gatewayRow('stripe', `${mc.gatewayStripe} (Global)`)}
                 {gatewayRow('paymob', `${mc.gatewayPaymob} (Egypt)`)}
                 {gatewayRow('spaceremit', `${mc.gatewaySpaceRemit} (Global)`)}
+                {gatewayRow('kashier', 'Kashier (Egypt & Global)')}
             </div>
+
+            {/* ── Revenue Splits & Payouts Engine (v3.1) ── */}
+            <RevenueSplitsManager />
 
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 space-y-4">
                 <h2 className="text-sm font-black text-white uppercase flex items-center gap-2"><Tag className="w-4 h-4 text-gold-500" /> {mc.pricingSection}</h2>
