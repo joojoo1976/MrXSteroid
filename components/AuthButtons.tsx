@@ -48,11 +48,10 @@ const PROVIDERS: Social[] = [
     { provider: 'twitter',  name: 'X',        labelAr: 'المتابعة باستخدام X',        labelEn: 'Continue with X',        icon: <XLogo /> },
 ];
 
-// Feature flag: X / Twitter OAuth 2.0 is currently NOT emitted by this Supabase
-// project's GoTrue (authorize returns root instead of x.com). The button is
-// hidden to avoid a broken redirect; the wiring is kept intact. Flip to true to
-// re-enable once Supabase fixes X OAuth 2.0 for this project.
-const ENABLE_X = false;
+// Feature flag: keep X / Twitter OAuth visible when the Supabase provider is enabled.
+// Supabase uses the `twitter` provider slug for both Twitter (Deprecated) and
+// X / Twitter OAuth 2.0, so the shared OAuthButton wiring remains unchanged.
+const ENABLE_X = true;
 
 const VISIBLE_PROVIDERS = PROVIDERS.filter((s) => ENABLE_X || s.provider !== 'twitter');
 
