@@ -293,9 +293,18 @@ async function processWebhook(
             }
 
             // 1. Update invoice to paid
+            let isFromPaymentPage = false;
+            try {
+                const parsed = JSON.parse(rawBody);
+                if (parsed.source === 'kashier_payment_page' || parsed.ppLink || parsed.prepaymentPage) {
+                    isFromPaymentPage = true;
+                }
+            } catch { /* ignore */ }
+
             const kashierFields = gatewayName.startsWith('KASHIER') ? {
                 kashier_transaction_id: verification.externalReferenceId || undefined,
                 kashier_order_id: invoiceId,
+                payment_source: isFromPaymentPage ? 'kashier_payment_page' : 'kashier_gateway',
             } : {};
             await supabase
                 .from('invoices')
@@ -308,6 +317,7 @@ async function processWebhook(
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', invoiceId);
+
 
             // 2. Get invoice details for profile update and affiliate commission
             const { data: invoice } = await supabase

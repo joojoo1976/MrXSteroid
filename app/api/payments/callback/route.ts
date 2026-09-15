@@ -136,29 +136,52 @@ function normalizeRequest(req: Request): { headers: Record<string, string>; quer
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
-        const invoiceId = url.searchParams.get('txn') || url.searchParams.get('reference_id') || '';
+        const invoiceId = url.searchParams.get('txn') || url.searchParams.get('reference_id') || url.searchParams.get('orderId') || '';
+        const paymentStatus = (url.searchParams.get('paymentStatus') || url.searchParams.get('status') || '').toUpperCase();
+        const planId = url.searchParams.get('plan_id') || '';
+        const source = url.searchParams.get('source') || '';
 
-        console.log(`📥 [Callback:GET] Invoice: ${invoiceId}, Query: ${url.search} — advisory redirect only`);
+        console.log(`📥 [Callback:GET] Invoice: ${invoiceId}, Status: ${paymentStatus}, Source: ${source}, Query: ${url.search} — advisory redirect`);
+
+        // Check for explicit cancellation or failure from query params
+        if (paymentStatus === 'FAILED' || paymentStatus === 'DECLINED' || paymentStatus === 'CANCELLED') {
+            return redirect(`${APP_BASE}/cancel?txn=${encodeURIComponent(invoiceId)}&reason=${encodeURIComponent(paymentStatus)}`);
+        }
 
         // GET callback is ADVISORY ONLY.
         // We read the CURRENT invoice status from our DB (set by the webhook) and redirect.
-        // We NEVER activate a subscription from a GET return URL alone.
         if (invoiceId) {
             if (await isAlreadyProcessed(invoiceId)) {
-                return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(invoiceId)}`);
+                const planQuery = planId ? `&plan_id=${encodeURIComponent(planId)}` : '';
+                return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(invoiceId)}${planQuery}`);
             }
-            // Invoice not yet paid — the webhook may still be in-flight.
-            // Redirect to a pending/status page so the customer can see the live status.
-            return redirect(`${APP_BASE}/payment-pending?txn=${encodeURIComponent(invoiceId)}&gateway=callback`);
+            // If paymentStatus query param is explicitly SUCCESS (e.g. from payment page redirect),
+            // forward to success with plan details while webhook finishes settling
+            if (paymentStatus === 'SUCCESS') {
+                const planQuery = planId ? `&plan_id=${encodeURIComponent(planId)}` : '';
+                return redirect(`${APP_BASE}/success?txn=${encodeURIComponent(invoiceId)}${planQuery}`);
+            }
+            // Invoice not yet paid — redirect to pending page with poll check
+            return redirect(`${APP_BASE}/payment-pending?txn=${encodeURIComponent(invoiceId)}&gateway=kashier`);
         }
 
-        // No invoice ID in the return URL — just go home.
+        // Direct payment page return with plan_id
+        if (paymentStatus === 'SUCCESS' && planId) {
+            return redirect(`${APP_BASE}/success?plan_id=${encodeURIComponent(planId)}&source=${encodeURIComponent(source || 'kashier_payment_page')}`);
+        }
+
+        if (paymentStatus === 'FAILED' || paymentStatus === 'CANCELLED') {
+            return redirect(`${APP_BASE}/cancel?source=kashier_payment_page`);
+        }
+
+        // Fallback
         return redirect(`${APP_BASE}/`);
     } catch (error) {
         console.error('❌ [Callback:GET] Unhandled error:', error);
         return redirect(`${APP_BASE}/`);
     }
 }
+
 
 export async function POST(req: Request) {
     try {

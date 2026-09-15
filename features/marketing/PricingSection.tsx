@@ -6,21 +6,19 @@ import { useRegion } from '../../context/RegionContext';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { usePricing } from '../calculator/hooks/usePricing';
 
-/** Map internal plan IDs to Paymob product IDs for the quick-buy modal */
-const PLAN_TO_PAYMOB_PRODUCT: Record<string, number> = {
-    digital:  308488,  // البروتوكول الرقمي — 499 EGP
-    bundle:   308489,  // الباقة التكتيكية — 749 EGP
-    coaching: 308490,  // المحترف الذكي  — 849 EGP
-};
+import { KASHIER_PAYMENT_PAGES, buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
+import { useAuth } from '../../context/AuthContext';
 
 interface PricingSectionProps {
     content: ContentStrings;
     openCheckout: (tier: PricingTier) => void;
 }
 
+
 const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }) => {
     const { t, isRTL } = usePreferences();
     const { isEgypt } = useRegion();
+    const { user } = useAuth();
 
     // --- الإعدادات الافتراضية حسب اللغة ---
     // عربية (isRTL) => داخل مصر + جنيه مصري + كتاب عربي
@@ -372,25 +370,28 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
                                 </motion.button>
 
-                                {/* 🇪🇬 زر الدفع السريع عبر Paymob — يظهر فقط لمستخدمي مصر */}
-                                {selectedLocation === 'EG' && !planCoachingActive && PLAN_TO_PAYMOB_PRODUCT[plan.id] && (
-                                    <motion.button
-                                        type="button"
-                                        id={`paymob-quick-buy-${plan.id}`}
+                                {/* 💳 زر الدفع المباشر عبر Kashier Live Checkout */}
+                                {KASHIER_PAYMENT_PAGES[plan.id] && (
+                                    <motion.a
+                                        id={`kashier-direct-pay-${plan.id}`}
+                                        href={buildKashierPaymentPageUrl(plan.id as 'digital' | 'bundle' | 'coaching', {
+                                            userId: user?.id,
+                                            userEmail: user?.email,
+                                        })}
+                                        target="_self"
+                                        rel="noopener noreferrer"
                                         whileHover={{ scale: 1.015 }}
                                         whileTap={{ scale: 0.975 }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            window.dispatchEvent(new CustomEvent('mrx_open_paymob', {
-                                                detail: { productId: PLAN_TO_PAYMOB_PRODUCT[plan.id] }
-                                            }));
-                                        }}
-                                        className="w-full py-3 rounded-xl font-black text-[11px] tracking-widest uppercase border border-amber-500/40 text-amber-400 bg-amber-500/8 hover:bg-amber-500/15 hover:border-amber-500/70 transition-all flex items-center justify-center gap-2 mt-2"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full py-3 rounded-xl font-black text-[11px] tracking-widest uppercase border border-amber-500/50 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 hover:border-amber-500/80 transition-all flex items-center justify-center gap-2 mt-2 shadow-sm"
                                     >
-                                        <Zap className="w-3.5 h-3.5 fill-current" />
-                                        {isRTL ? '⚡ دفع سريع عبر Paymob' : '⚡ Quick Pay via Paymob'}
-                                    </motion.button>
+                                        <Zap className="w-3.5 h-3.5 fill-current text-amber-400" />
+                                        <span>
+                                            {isRTL ? '⚡ الدفع السريع المباشر (Kashier)' : '⚡ Direct Quick Pay (Kashier)'}
+                                        </span>
+                                    </motion.a>
                                 )}
+
                             </motion.div>
                         );
                     })}
