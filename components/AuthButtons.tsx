@@ -45,7 +45,7 @@ interface Social { provider: Provider; name: string; labelAr: string; labelEn: s
 const PROVIDERS: Social[] = [
     { provider: 'google',   name: 'Google',   labelAr: 'المتابعة باستخدام Google',   labelEn: 'Continue with Google',   icon: <GoogleLogo /> },
     { provider: 'facebook', name: 'Facebook', labelAr: 'المتابعة باستخدام Facebook', labelEn: 'Continue with Facebook', icon: <FacebookLogo />, scopes: 'public_profile' },
-    { provider: 'twitter',  name: 'X',        labelAr: 'المتابعة باستخدام X',        labelEn: 'Continue with X',        icon: <XLogo /> },
+    { provider: 'x',  name: 'X',        labelAr: 'المتابعة باستخدام X',        labelEn: 'Continue with X',        icon: <XLogo /> },
 ];
 
 // Feature flag: keep X / Twitter OAuth visible when the Supabase provider is enabled.
