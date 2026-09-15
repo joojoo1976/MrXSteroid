@@ -24,6 +24,29 @@ export interface SplitRule {
     is_active?: boolean;
 }
 
+/**
+ * Owner Decision 3-4 (Final Gate v4):
+ * Strict default distribution shares:
+ * Author: 85%, Platform: 10%, Reserve: 5% (Total = 100%)
+ */
+export const DEFAULT_OWNER_SPLIT_RATIOS = {
+    AUTHOR_SHARE_PERCENT: 85,
+    PLATFORM_SHARE_PERCENT: 10,
+    RESERVE_SHARE_PERCENT: 5,
+    TOTAL_PERCENT: 100,
+} as const;
+
+/**
+ * Owner Decisions 3-1 & 3-2 Policy Constants:
+ * 3-1: Refund distribution basis = NET_AFTER_GATEWAY_FEE
+ * 3-2: Gateway fee handling on refunds = MERCHANT_ABSORBS
+ */
+export const OWNER_REFUND_POLICY = {
+    DISTRIBUTION_BASIS: 'NET_AFTER_GATEWAY_FEE',
+    GATEWAY_FEE_POLICY: 'MERCHANT_ABSORBS',
+} as const;
+
+
 export interface CalculatedSplit {
     beneficiaryId: string;
     shareType: 'percentage' | 'fixed';

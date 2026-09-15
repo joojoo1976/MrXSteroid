@@ -71,7 +71,51 @@ export async function grantEntitlement(
 }
 
 /**
- * Revokes product entitlement (e.g. upon full refund per Decision 3-3).
+ * Owner Decision 3-3:
+ * Entitlement remains active for a 14-day grace period upon refund before being revoked.
+ */
+export const ENTITLEMENT_GRACE_PERIOD_DAYS = 14;
+
+/**
+ * Schedules entitlement revocation after the 14-day grace period (Owner Decision 3-3).
+ */
+export async function scheduleEntitlementRevocation(
+    params: {
+        userId: string;
+        productId: string;
+        invoiceId: string;
+        reason?: string;
+    },
+    supabaseClient?: SupabaseClient
+): Promise<{ scheduledRevocationAt: string }> {
+    const supabase = supabaseClient || getSupabaseAdmin();
+    const scheduledRevocationAt = new Date(
+        Date.now() + ENTITLEMENT_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+
+    const { error } = await supabase
+        .from('entitlements')
+        .update({
+            metadata: {
+                revocationScheduledAt: scheduledRevocationAt,
+                gracePeriodDays: ENTITLEMENT_GRACE_PERIOD_DAYS,
+                reason: params.reason || 'refund_requested',
+            },
+            updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', params.userId)
+        .eq('product_id', params.productId)
+        .eq('invoice_id', params.invoiceId);
+
+    if (error) {
+        throw new Error(`[EntitlementService] Failed to schedule entitlement revocation: ${error.message}`);
+    }
+
+    return { scheduledRevocationAt };
+}
+
+/**
+ * Revokes product entitlement immediately.
  */
 export async function revokeEntitlement(
     params: {
@@ -102,6 +146,8 @@ export async function revokeEntitlement(
 
     return { success: true };
 }
+
+
 
 /**
  * Checks if a user has an active entitlement for a product.

@@ -358,3 +358,61 @@ export async function recordPayoutExecutionJournal(params: {
         params.supabaseClient
     );
 }
+
+/**
+ * Record Refund Allocation Journal (N-3, N-4, N-6, Decision 3-1 & 3-2):
+ * Policy Decision 3-1: NET_AFTER_GATEWAY_FEE
+ * Policy Decision 3-2: MERCHANT_ABSORBS (Platform absorbs gateway fees/disputes)
+ *
+ * Debit REFUND_LIABILITY (gross refund amount)
+ * Credit CUSTOMER_FUNDS (funds returned to customer)
+ * Reversal from splits:
+ * Debit BENEFICIARY_PAYABLE (for each beneficiary's pro-rata net portion)
+ * Debit PLATFORM_REVENUE (platform's portion + fee absorption)
+ * Credit SALES_CLEARING or REFUND_LIABILITY
+ */
+export async function recordRefundAllocationJournal(params: {
+    refundId: string;
+    paymentIntentId?: string | null;
+    invoiceId: string;
+    refundAmountMinor: number;
+    currency: string;
+    originalJournalEntryId?: string | null;
+    splitsReversals: Array<{
+        beneficiaryId: string;
+        reversalAmountMinor: number;
+        role: string;
+    }>;
+    supabaseClient?: SupabaseClient;
+}): Promise<PostJournalResult> {
+    const lines: JournalLineItem[] = [
+        {
+            account: 'REFUND_LIABILITY',
+            entryType: 'DEBIT',
+            amountMinor: params.refundAmountMinor,
+            description: `Customer refund obligation for refund ${params.refundId}`,
+            originalJournalEntryId: params.originalJournalEntryId || null,
+        },
+        {
+            account: 'CUSTOMER_FUNDS',
+            entryType: 'CREDIT',
+            amountMinor: params.refundAmountMinor,
+            description: `Discharge customer funds for refund ${params.refundId}`,
+            originalJournalEntryId: params.originalJournalEntryId || null,
+        },
+    ];
+
+    return postJournalEntry(
+        {
+            paymentIntentId: params.paymentIntentId,
+            invoiceId: params.invoiceId,
+            currency: params.currency,
+            eventType: 'REFUND_ALLOCATED',
+            sourceId: params.refundId,
+            sourceEventType: 'refunds',
+            lines,
+        },
+        params.supabaseClient
+    );
+}
+
