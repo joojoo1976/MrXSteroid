@@ -1,7 +1,7 @@
 # K-2 — Kashier Docs Conformity Evidence Card
 
 Phase: 1 (Discovery & Docs Verification) · Gate: Final Gate v5 §3
-Status: **DELIVERED — awaiting owner approval before Phase 2**
+Status: **DELIVERED — technical close-out complete; waiting owner decision before Phase 2** (all verified findings folded into Final Gate v5.1 §K-2 Conformity Mandates)
 Verifier: Lead Digital Architect · Date: 2026-09-16
 Source of truth: live `developers.kashier.io` (fetched this session). Where v5 and the live docs disagree, **the live docs win** (v5 §3).
 

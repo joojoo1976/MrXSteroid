@@ -45,6 +45,56 @@ Any code path depending on a blocked item MUST raise `BlockedGateError` with the
 
 ---
 
+# K-2) CONFORMITY MANDATES — VERIFIED KASHIER FINDINGS (Phase 1 close-out)
+
+**Source:** K-2 Evidence Card (`docs/kashier/K-2-docs-conformity.md`) — live `developers.kashier.io` verification.
+**Status:** MANDATORY for all subsequent phases. Folded into Phases 2–9. Where the live docs differ from earlier v5 language, **the live docs win** and this block overrides the earlier language.
+
+## Phase 2 — Configuration & Secrets
+
+- **C11 IP allow-list:** once the Secret Key IP allow-list has at least one entry, ONLY those IPs may use the Secret Key; everything else is rejected with `403 Unauthorized IP address`. Vercel egress IPs MUST be allow-listed before go-live. An empty allow-list is NOT a valid live configuration.
+- **B2 MID format:** documented format is `MID-XXXX-XXXX` (v5 stored `MID-48761-625`). Owner MUST confirm the exact MID from the dashboard top-nav before Phase 2 writes real MID values. `merchant_configs.merchant_id` MUST store the confirmed dashboard MID; the conflicting legacy format is FORBIDDEN in `merchant_configs`.
+
+## Phase 3 — Schema
+
+- **C7 webhook de-dupe key:** Kashier de-dupes delivery on `{transactionId}::{webhookUrl}::{status}`. `webhook_events` MUST index/store the composite `(provider, transaction_id, status)` alongside the existing unique index, so replays resolve by the Kashier de-dupe key. Replayed order notifications arrive as `event: "idempotency"` with `ORDER_PAID_BEFORE` and MUST be treated as duplicates — acknowledge (200/409), NO financial mutation.
+
+## Phase 4 — Checkout (Payment Session)
+
+- **C4 required session fields (10):** `expireAt`, `maxFailureAttempts`, `amount`, `currency`, `order`, `merchantId`, `merchantRedirect`, `type`, `display`, `customer`. The checkout design MUST send all 10 (see §36 Payment Session).
+- **C5 unique order reference:** Kashier rejects a duplicate order reference for the same merchant with `ERR_ORD_02`. The idempotency key (§12) MUST guarantee a unique `order` reference; repeated identical requests return the prior session, never a duplicate PaymentIntent.
+- **C6 per-request webhook:** sessions accept `serverWebhook`; MUST be set to the per-merchant webhook URL resolved from `merchant_configs` so Egypt/Global never share a destination (see §50 Webhook Architecture).
+- **A11 test/live session host:** the hosted checkout host is shared between modes; the mode travels on the `sessionUrl` as a `mode` query parameter. Do NOT branch the hosted-checkout host URL on mode. (Sessions API differs: `test-api.kashier.io` vs `api.kashier.io`.)
+- **C3 (CORRECTED) test-mode methods:** outside live, checkout ignores `allowedMethods` and forces the method list to `card,wallet`. Test expectations (§40 Group L / §37 Egypt) MUST NOT assume `bank_installments`/`fawry`/similar are exercisable in test; those require one live transaction per method.
+
+## Phase 5 — Webhook
+
+- **C12 ignore `data.hash`:** `data.hash` is an internal Kashier integrity field; the handler MUST explicitly NOT attempt to verify it.
+- **C7 replay semantics:** handle `event:"idempotency"` / `ORDER_PAID_BEFORE` as duplicate (acknowledge, no mutation) — see §10 Replay & Late-Arrival Protection.
+- **A9 ack/retry:** ack = HTTP 200 or 409; retries up to 10× with backoff 2m → 10m → 30m → 1h → 2h → 4h → 4h…; 30-second delivery timeout. See §9 Webhook Pipeline.
+
+## Phase 6 — Ledger
+
+- No K-2 finding changes 85/10/5. C2 refund-fee remains UNVERIFIED — see Phase 8.
+
+## Phase 7 — Reconciliation
+
+- **C8 live-only settlements:** settlement windows/batches are produced by the live pipeline only; test mode never creates them. Reconciliation MUST branch on mode: test-mode reconciliation relies on provider session/status queries; live adds settlement-window reconciliation.
+
+## Phase 8 — Refund + Payout
+
+- **A13 refund permission:** executing `refund`/`void` requires the refund permission on the API key's role. The key used MUST carry it, verified during setup and again before Phase 8.
+- **C9 capability flags:** payouts/instant settlement are disabled for a new merchant until Kashier enables the capability. Phase 8 MUST NOT proceed until the capability flag is verified/enabled for the target merchant.
+- **C2 (UNVERIFIED):** refund-fee accounting — refunds page not yet fetched; `MERCHANT_ABSORBS` remains per owner decision, but fee treatment stays provisional until verified or confirmed by the account manager.
+- **C-2 / D-8 (BLOCKED):** payout host (FEP) and transfers hashing remain blocked pending written confirmation.
+
+## Phase 9 — Production Gate
+
+- **C10 live rate limit:** checkout limited to 1000 req/min per IP at the gateway; keep the stricter app-layer guard (10/min per IP, 30/hour per user) — see §15 Security.
+- **C11 (cross-ref):** confirm live Secret Key IP allow-list includes Vercel egress before go-live.
+
+---
+
 # 3) SYSTEM RESPONSIBILITY BOUNDARY
 
 **Kashier:** external payment-provider layer only (session, payment, refund, webhook).
@@ -211,15 +261,17 @@ K-1 Schema Migration · K-2 Kashier Docs Conformity · K-3 Webhook Pipeline · K
 
 # 20) PHASED EXECUTION
 
-Phase 1: Discovery & Docs Verification → K-2 + Conflict Log
-Phase 2: Configuration & Secrets → Merchant Resolver, Secret Rotation
-Phase 3: Schema & Migrations
-Phase 4: Checkout → Session + Idempotency + Multi-Merchant + Tests
-Phase 5: Webhook → Verification + Replay + Late-arrival Quarantine + Outbox + Tests
+Each phase MUST also absorb its cross-referenced mandates from §K-2 (K-2 Conformity Mandates).
+
+Phase 1: Discovery & Docs Verification → K-2 + Conflict Log (DELIVERED — technical close-out complete; owner sign-off pending)
+Phase 2: Configuration & Secrets → Merchant Resolver, Secret Rotation (+ K-2: C11 IP allow-list, B2 MID format)
+Phase 3: Schema & Migrations (+ K-2: C7 de-dupe composite key)
+Phase 4: Checkout → Session + Idempotency + Multi-Merchant + Tests (+ K-2: C4 10 required fields, C5 ERR_ORD_02, C6 serverWebhook, A11 host, C3 test-mode methods)
+Phase 5: Webhook → Verification + Replay + Late-arrival Quarantine + Outbox + Tests (+ K-2: C12 ignore data.hash, C7 replay semantics, A9 ack/retry)
 Phase 6: Ledger + Revenue Allocation → 85/10/5 + Posting Matrix + Largest-Remainder + Ledger Rebuild Test
-Phase 7: Reconciliation → 5-min Cron + Provider Status + Backoff + Retry + Audit
-Phase 8: Refund + Payout → Engines + State Machines + Payout Reconciliation (Payout execution BLOCKED until C-2/D-8/KYC/MID/KASHIER_LIVE_ENABLED)
-Phase 9: Chaos + Production Gate → K-5 + K-6
+Phase 7: Reconciliation → 5-min Cron + Provider Status + Backoff + Retry + Audit (+ K-2: C8 live-only settlement windows)
+Phase 8: Refund + Payout → Engines + State Machines + Payout Reconciliation (+ K-2: A13 refund permission, C9 capability flags; C2 refund-fee provisional; Payout execution BLOCKED until C-2/D-8/KYC/MID/KASHIER_LIVE_ENABLED)
+Phase 9: Chaos + Production Gate → K-5 + K-6 (+ K-2: C10 live rate limit, C11 IP allow-list confirm)
 
 No phase begins until previous phase is explicitly approved.
 
