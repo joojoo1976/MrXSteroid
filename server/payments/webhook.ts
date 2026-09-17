@@ -209,12 +209,12 @@ async function processWebhook(
                 if (dedupError.code === '23505') {
                     // Unique constraint violation → duplicate event
                     console.log(`[Webhook] Duplicate event — provider_event_id=${providerEventId} already processed`);
-                    // Update attempt count
+                    // Atomic attempt bump via RPC (replaces the invalid rpc('coalesce')).
                     await supabase
-                        .from('webhook_events')
-                        .update({ attempt_count: supabase.rpc('coalesce', { a: 1 }) as unknown as number, status: 'duplicate', processing_status: 'duplicate' })
-                        .eq('provider', gatewayName.toLowerCase())
-                        .eq('provider_event_id', providerEventId);
+                        .rpc('bump_webhook_attempt', {
+                            p_provider: gatewayName.toLowerCase(),
+                            p_provider_event_id: providerEventId,
+                        });
                     return respond(200, { status: 'ok', message: 'Duplicate event' });
                 }
                 // Non-fatal: log but continue processing (dedup is best-effort)
