@@ -48,6 +48,21 @@ const getSupabaseAdmin = () => {
 //                         HELPERS
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
+interface InvoiceRow {
+    user_id: string | null;
+    tier_id: string | null;
+    affiliate_id: string | null;
+    referral_code: string | null;
+    amount: number | null;
+    currency: string | null;
+}
+
+interface SplitRow {
+    beneficiary_id: string;
+    allocated_amount_minor: number;
+    rule_snapshot: { role?: string } | null;
+}
+
 const json = (body: unknown, status = 200): Response =>
     new Response(JSON.stringify(body), {
         status,
@@ -361,7 +376,7 @@ async function processWebhook(
                 // 6. Record Double-Entry Journal in Financial Ledger (N-4)
                 try {
                     const { recordPaymentCaptureJournal, recordSplitAllocationJournal } = await import('./financialLedgerService');
-                    const grossMinor = Math.round(Number(verification.paidAmount || (invoice as any)?.amount || 0) * 100);
+                    const grossMinor = Math.round(Number(verification.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100);
                     const feeMinor = 0; // gateway fee if available
 
                     await recordPaymentCaptureJournal({
@@ -369,7 +384,7 @@ async function processWebhook(
                         invoiceId,
                         grossAmountMinor: grossMinor,
                         gatewayFeeMinor: feeMinor,
-                        currency: (invoice as any)?.currency || 'EGP',
+                        currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
                         transactionId: verification.externalReferenceId || invoiceId,
                         supabaseClient: supabase,
                     });
@@ -385,8 +400,8 @@ async function processWebhook(
                             paymentIntentId: invoiceId,
                             invoiceId,
                             netAmountMinor: netMinor,
-                            currency: (invoice as any)?.currency || 'EGP',
-                            splits: savedSplits.map((s: any) => ({
+                            currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
+                            splits: savedSplits.map((s: SplitRow) => ({
                                 beneficiaryId: s.beneficiary_id,
                                 allocatedAmountMinor: s.allocated_amount_minor,
                                 role: s.rule_snapshot?.role || 'beneficiary',
