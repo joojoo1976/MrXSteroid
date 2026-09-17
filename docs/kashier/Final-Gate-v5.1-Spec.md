@@ -39,7 +39,8 @@ Kashier MUST NOT be treated as the internal accounting owner, revenue-allocation
 
 # 2) BLOCKED REGISTER
 
-C-2 Payout Host · D-8 Transfers Hashing · N-13 KASHIER_LIVE_ENABLED · MID reconciliation · KYC/Onboarding
+D-8 Transfers Hashing · N-13 KASHIER_LIVE_ENABLED · Global MID confirmation · Refund-fee (C2) · KYC/Onboarding
+_(C-2 Payout Host removed 2026-09-17 — owner provided written account-manager confirmation; payout may use the FEP host.)_
 
 Any code path depending on a blocked item MUST raise `BlockedGateError` with the exact blocked item.
 
@@ -53,7 +54,7 @@ Any code path depending on a blocked item MUST raise `BlockedGateError` with the
 ## Phase 2 — Configuration & Secrets
 
 - **C11 IP allow-list:** once the Secret Key IP allow-list has at least one entry, ONLY those IPs may use the Secret Key; everything else is rejected with `403 Unauthorized IP address`. Vercel egress IPs MUST be allow-listed before go-live. An empty allow-list is NOT a valid live configuration.
-- **B2 MID format:** documented format is `MID-XXXX-XXXX` (v5 stored `MID-48761-625`). Owner MUST confirm the exact MID from the dashboard top-nav before Phase 2 writes real MID values. `merchant_configs.merchant_id` MUST store the confirmed dashboard MID; the conflicting legacy format is FORBIDDEN in `merchant_configs`.
+- **B2 MID format — RESOLVED 2026-09-17:** owner confirmed via Kashier management that `MID-48761-625` is the real Egypt MID. `merchant_configs.merchant_id` MUST store `MID-48761-625` for Egypt. The documented `MID-XXXX-XXXX` form is the generic dashboard representation and is NOT a contradiction. Global MID remains to be confirmed from the dashboard before Phase 8.
 
 ## Phase 3 — Schema
 
@@ -86,7 +87,7 @@ Any code path depending on a blocked item MUST raise `BlockedGateError` with the
 - **A13 refund permission:** executing `refund`/`void` requires the refund permission on the API key's role. The key used MUST carry it, verified during setup and again before Phase 8.
 - **C9 capability flags:** payouts/instant settlement are disabled for a new merchant until Kashier enables the capability. Phase 8 MUST NOT proceed until the capability flag is verified/enabled for the target merchant.
 - **C2 (UNVERIFIED):** refund-fee accounting — refunds page not yet fetched; `MERCHANT_ABSORBS` remains per owner decision, but fee treatment stays provisional until verified or confirmed by the account manager.
-- **C-2 / D-8 (BLOCKED):** payout host (FEP) and transfers hashing remain blocked pending written confirmation.
+- **C-2 (RESOLVED 2026-09-17):** payout host (FEP) unblocked — owner supplied written account-manager confirmation. **D-8 (BLOCKED):** transfers hashing remains blocked pending confirmation.
 
 ## Phase 9 — Production Gate
 
@@ -173,7 +174,7 @@ State: QUEUED → PROCESSING → RECONCILING → COMPLETED · FAILED · UNKNOWN.
 Postings: Payout Sent (Dr BENEFICIARY_PAYABLE / Cr PAYOUT_CLEARING), Confirmed (Dr PAYOUT_CLEARING / Cr CUSTOMER_FUNDS), Failed (Dr PAYOUT_CLEARING / Cr BENEFICIARY_PAYABLE).
 
 ### Payout Block Conditions
-Refuse execution if: C-2 unresolved OR D-8 unresolved OR KASHIER_LIVE_ENABLED=false.
+Refuse execution if: D-8 unresolved OR KASHIER_LIVE_ENABLED=false. Payout host uses the FEP host (`fep.kashier.io` / `test-fep.kashier.io`) per K-2 B1 + owner confirmation (C-2 resolved 2026-09-17).
 
 ---
 
@@ -263,14 +264,14 @@ K-1 Schema Migration · K-2 Kashier Docs Conformity · K-3 Webhook Pipeline · K
 
 Each phase MUST also absorb its cross-referenced mandates from §K-2 (K-2 Conformity Mandates).
 
-Phase 1: Discovery & Docs Verification → K-2 + Conflict Log (DELIVERED — technical close-out complete; owner sign-off pending)
-Phase 2: Configuration & Secrets → Merchant Resolver, Secret Rotation (+ K-2: C11 IP allow-list, B2 MID format)
+Phase 1: Discovery & Docs Verification → K-2 + Conflict Log (DELIVERED — OWNER-SIGNED 2026-09-17; B2 MID-48761-625 confirmed by Kashier management; C-2 removed from Blocked Register)
+Phase 2: Configuration & Secrets → Merchant Resolver, Secret Rotation (+ K-2: C11 IP allow-list, B2 MID format) (DELIVERED 2026-09-17 — server/payments/merchantResolver.ts; PRIMARY/SECONDARY rotation in KashierGateway; tests/unit/merchantResolver.test.ts; full audit 721/721)
 Phase 3: Schema & Migrations (+ K-2: C7 de-dupe composite key)
 Phase 4: Checkout → Session + Idempotency + Multi-Merchant + Tests (+ K-2: C4 10 required fields, C5 ERR_ORD_02, C6 serverWebhook, A11 host, C3 test-mode methods)
 Phase 5: Webhook → Verification + Replay + Late-arrival Quarantine + Outbox + Tests (+ K-2: C12 ignore data.hash, C7 replay semantics, A9 ack/retry)
 Phase 6: Ledger + Revenue Allocation → 85/10/5 + Posting Matrix + Largest-Remainder + Ledger Rebuild Test
 Phase 7: Reconciliation → 5-min Cron + Provider Status + Backoff + Retry + Audit (+ K-2: C8 live-only settlement windows)
-Phase 8: Refund + Payout → Engines + State Machines + Payout Reconciliation (+ K-2: A13 refund permission, C9 capability flags; C2 refund-fee provisional; Payout execution BLOCKED until C-2/D-8/KYC/MID/KASHIER_LIVE_ENABLED)
+Phase 8: Refund + Payout → Engines + State Machines + Payout Reconciliation (+ K-2: A13 refund permission, C9 capability flags, C-2 FEP host unblocked 2026-09-17; C2 refund-fee provisional; Payout execution BLOCKED until D-8/KYC/Global-MID/KASHIER_LIVE_ENABLED)
 Phase 9: Chaos + Production Gate → K-5 + K-6 (+ K-2: C10 live rate limit, C11 IP allow-list confirm)
 
 No phase begins until previous phase is explicitly approved.

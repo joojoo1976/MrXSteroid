@@ -9,16 +9,22 @@ import type {
     PaymentDetailedStatus
 } from "./IPaymentGateway";
 import { resolveKashierPaymentOutcome } from "./kashierVerification";
+import { getMerchantConfig, BlockedGateError } from "../merchantResolver";
 
 export type MerchantType = "egypt" | "global";
 
 export interface KashierConfig {
     merchantId: string;
     paymentApiKey: string;
+    /** Rotation: secondary Payment API Key (v5.1 §4.4). HMAC verification tries primary then secondary. */
+    paymentApiKeySecondary?: string;
     secretKey: string;
+    /** Rotation: secondary Secret Key. Outbound session calls retry with it on 401/403. */
+    secretKeySecondary?: string;
     mode: "test" | "live";
     currency: string;
     merchantType: MerchantType;
+    webhookUrl?: string;
 }
 
 export interface KashierPaymentSessionResponse {
@@ -34,34 +40,18 @@ export class KashierGateway implements IPaymentGateway {
     public readonly config: KashierConfig;
 
     constructor(merchantType: MerchantType) {
-        const rawMode = (process.env.KASHIER_MODE || "test").toLowerCase();
-        const mode = (rawMode === "live" ? "live" : "test") as "test" | "live";
-        const modePrefix = mode === "live" ? "KASHIER_LIVE" : "KASHIER_TEST";
-        const legacyPrefix = merchantType === "egypt" ? "KASHIER_EGYPT" : "KASHIER_GLOBAL";
-
-        const merchantId =
-            process.env[modePrefix + "_MERCHANT_ID"] ||
-            process.env[legacyPrefix + "_MERCHANT_ID"] || "";
-        const paymentApiKey =
-            process.env[modePrefix + "_PAYMENT_API_KEY"] ||
-            process.env[legacyPrefix + "_PAYMENT_API_KEY"] || "";
-        const secretKey =
-            process.env[modePrefix + "_SECRET_KEY"] ||
-            process.env[legacyPrefix + "_SECRET_KEY"] || "";
-
-        if (!merchantId || !paymentApiKey || !secretKey) {
-            console.warn(
-                `[KashierGateway] Missing credentials for mode: ${mode}. Set ${modePrefix}_MERCHANT_ID, ${modePrefix}_PAYMENT_API_KEY, ${modePrefix}_SECRET_KEY.`
-            );
-        }
+        const resolved = getMerchantConfig(merchantType === "egypt" ? "EGYPT" : "GLOBAL");
 
         this.config = {
-            merchantId,
-            paymentApiKey,
-            secretKey,
-            mode,
-            currency: merchantType === "egypt" ? "EGP" : "USD",
+            merchantId: resolved.merchantId,
+            paymentApiKey: resolved.secrets.paymentApiKey.primary,
+            paymentApiKeySecondary: resolved.secrets.paymentApiKey.secondary,
+            secretKey: resolved.secrets.secretKey.primary,
+            secretKeySecondary: resolved.secrets.secretKey.secondary,
+            mode: resolved.mode,
+            currency: resolved.currency,
             merchantType,
+            webhookUrl: resolved.webhookUrl,
         };
     }
 
@@ -95,7 +85,7 @@ export class KashierGateway implements IPaymentGateway {
 
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mrxsteroid.com";
         const returnUrl = `${siteUrl}/api/payments/callback?txn=${encodeURIComponent(params.orderId)}`;
-        const webhookUrl = `${siteUrl}/api/payments/webhook`;
+        const webhookUrl = this.config.webhookUrl || `${siteUrl}/api/payments/webhook`;
 
         const payload = {
             merchantId: this.config.merchantId,
@@ -112,31 +102,36 @@ export class KashierGateway implements IPaymentGateway {
         };
 
         try {
-            const res = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${this.config.secretKey}`,
-                    "api-key": this.config.paymentApiKey,
-                },
-                body: JSON.stringify(payload),
-                signal: AbortSignal.timeout(3000),
-            });
+            // Secret rotation (v5.1 §4.4): try primary secret; on 401/403 retry with secondary.
+            for (const secretKey of [this.config.secretKey, this.config.secretKeySecondary].filter(Boolean) as string[]) {
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${secretKey}`,
+                        "api-key": this.config.paymentApiKey,
+                    },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(3000),
+                });
 
-            if (res.ok) {
-                const data = await res.json();
-                const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
-                const sessionId = data.sessionId || data.id || params.orderId;
-                if (sessionUrl) {
-                    return {
-                        sessionId,
-                        sessionUrl,
-                        orderId: params.orderId,
-                        amount: params.amount,
-                        currency: params.currency,
-                        status: data.status || "ACTIVE",
-                    };
+                if (res.ok) {
+                    const data = await res.json();
+                    const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
+                    const sessionId = data.sessionId || data.id || params.orderId;
+                    if (sessionUrl) {
+                        return {
+                            sessionId,
+                            sessionUrl,
+                            orderId: params.orderId,
+                            amount: params.amount,
+                            currency: params.currency,
+                            status: data.status || "ACTIVE",
+                        };
+                    }
+                    break;
                 }
+                if (res.status !== 401 && res.status !== 403) break;
             }
         } catch (err) {
             console.warn(`[KashierGateway] Session API call failed, using signed checkout redirect fallback:`, err);
@@ -183,16 +178,20 @@ export class KashierGateway implements IPaymentGateway {
         const endpoint = `${host}/v3/payment/sessions/${encodeURIComponent(sessionId)}/payment`;
 
         try {
-            const res = await fetch(endpoint, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${this.config.secretKey}`,
-                    "api-key": this.config.paymentApiKey,
-                },
-            });
+            // Secret rotation (v5.1 §4.4): try primary secret; on 401/403 retry with secondary.
+            for (const secretKey of [this.config.secretKey, this.config.secretKeySecondary].filter(Boolean) as string[]) {
+                const res = await fetch(endpoint, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${secretKey}`,
+                        "api-key": this.config.paymentApiKey,
+                    },
+                });
 
-            if (res.ok) {
-                return await res.json();
+                if (res.ok) {
+                    return await res.json();
+                }
+                if (res.status !== 401 && res.status !== 403) break;
             }
         } catch (err) {
             console.error(`[KashierGateway] verifyPaymentSession error:`, err);
@@ -264,22 +263,9 @@ export class KashierGateway implements IPaymentGateway {
             }
         }
         const signatureInput = signatureParts.join("&");
-        const computedHmac = crypto
-            .createHmac("sha256", this.config.paymentApiKey)
-            .update(signatureInput)
-            .digest("hex");
 
-        // Constant-time comparison
-        let signaturesMatch = false;
-        try {
-            const expectedBuf = Buffer.from(computedHmac, "hex");
-            const receivedBuf = Buffer.from(signature, "hex");
-            signaturesMatch =
-                expectedBuf.length === receivedBuf.length &&
-                crypto.timingSafeEqual(expectedBuf, receivedBuf);
-        } catch {
-            signaturesMatch = false;
-        }
+        // Signature rotation (v5.1 §4.4): HMAC keyed with Payment API Key — try primary then secondary.
+        const signaturesMatch = this.signatureMatches(signatureInput, signature);
 
         if (!signaturesMatch) {
             console.error(`[KashierGateway:${this.config.merchantType}] Signature mismatch.`);
@@ -344,11 +330,33 @@ export class KashierGateway implements IPaymentGateway {
             throw new Error(`[KashierGateway:${this.config.merchantType}] Missing credentials.`);
         }
 
-        // Final Gate v4 N-13: Server-side Release Kill Switch
+        // Final Gate v4 N-13: Server-side Release Kill Switch — blocked register item.
         if (this.config.mode === 'live' && process.env.KASHIER_LIVE_ENABLED !== 'true') {
-            throw new Error(
+            throw new BlockedGateError(
+                'N-13 KASHIER_LIVE_ENABLED',
                 `[KashierGateway:${this.config.merchantType}] Live mode is blocked by Owner Kill Switch (KASHIER_LIVE_ENABLED=false). Production traffic requires explicit owner activation.`
             );
         }
+    }
+
+    /**
+     * Constant-time HMAC comparison against all rotation candidates for the
+     * Payment API Key (primary first, then secondary if configured).
+     */
+    private signatureMatches(signatureInput: string, receivedSignature: string): boolean {
+        const keys = [this.config.paymentApiKey, this.config.paymentApiKeySecondary].filter(Boolean) as string[];
+        for (const key of keys) {
+            const computedHmac = crypto.createHmac("sha256", key).update(signatureInput).digest("hex");
+            try {
+                const expectedBuf = Buffer.from(computedHmac, "hex");
+                const receivedBuf = Buffer.from(receivedSignature, "hex");
+                if (expectedBuf.length === receivedBuf.length && crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
+                    return true;
+                }
+            } catch {
+                // malformed signature hex — continue with next rotation candidate
+            }
+        }
+        return false;
     }
 }

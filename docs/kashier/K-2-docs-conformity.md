@@ -1,7 +1,7 @@
 # K-2 — Kashier Docs Conformity Evidence Card
 
 Phase: 1 (Discovery & Docs Verification) · Gate: Final Gate v5 §3
-Status: **DELIVERED — technical close-out complete; waiting owner decision before Phase 2** (all verified findings folded into Final Gate v5.1 §K-2 Conformity Mandates)
+Status: **OWNER-SIGNED 2026-09-17 — APPROVED for Phase 2** (technical close-out complete; B2 and C-2 ruled by owner)
 Verifier: Lead Digital Architect · Date: 2026-09-16
 Source of truth: live `developers.kashier.io` (fetched this session). Where v5 and the live docs disagree, **the live docs win** (v5 §3).
 
@@ -46,9 +46,9 @@ Verdict legend: `CONFIRMED` (v5 correct) · `CORRECTED` (v5 wrong / must change)
 
 ## 2. Conflict Log (mandatory amendments before Phase 2+)
 
-1. **MID format (B2)** — v5 §2.2 stores `MID-48761-625`; docs require `MID-XXXX-XXXX`. **Owner action:** confirm the exact MID from the dashboard top-nav before Phase 2.
+1. **MID format (B2) — RESOLVED 2026-09-17:** owner confirmed via Kashier management that `MID-48761-625` is the real Egypt MID. `merchant_configs.merchant_id` stores `MID-48761-625` for Egypt; the `MID-XXXX-XXXX` form in the docs is the generic dashboard representation.
 2. **Test-mode method coverage (C3)** — Group L (v5 §12.2) must be re-scoped: `bank_installments`, `fawry`, and similar can only be validated on live, one transaction per method.
-3. **Payout host (B1/C-2)** — live docs place transfers on the **FEP host**; v5 §1.2 governance still blocks until written confirmation from the Kashier account manager. Do not unblock in code.
+3. **Payout host (B1/C-2) — RESOLVED 2026-09-17:** written confirmation from the Kashier account manager obtained. C-2 removed from the Blocked Register; payout architecture may use the FEP host (`fep.kashier.io` / `test-fep.kashier.io`).
 4. **D-8 / refund-fee rules (C1, C2)** — remain BLOCKED; cannot design payout hashing nor finalise refund fee accounting until the docs (or account manager) confirm.
 
 ---
@@ -62,11 +62,11 @@ Verdict legend: `CONFIRMED` (v5 correct) · `CORRECTED` (v5 wrong / must change)
 ## 4. Verdict
 
 - **Phase 1 gate:** the signature algorithm, header names, encoding rules, ack semantics, status-branch rule, event list, and host map are **verified against live docs**.
-- **Cannot close Phase 1 fully** while B2 (MID), C1 (D-8), C2 (refund fees) remain unresolved.
-- **STOP here** per v5 §14 — no Phase 2 work begins until the owner approves this card and rules on the Conflict Log.
+- **Phase 1 CLOSED 2026-09-17:** owner ruled on the Conflict Log — B2 (MID) resolved as `MID-48761-625`, C-2 (payout host) unblocked via written account-manager confirmation. Only C1 (D-8) and C2 (refund-fee) remain technically blocked, deferred to Phase 8.
+- **Authorised to proceed to Phase 2.**
 
 ### Owner sign-off
-- [ ] K-2 accepted
-- [ ] MID confirmed
-- [ ] C-2 written confirmation obtained (or formally deferred)
-- [ ] Authorised to proceed to Phase 2
+- [x] K-2 accepted
+- [x] MID confirmed
+- [x] C-2 written confirmation obtained (or formally deferred)
+- [x] Authorised to proceed to Phase 2
