@@ -91,4 +91,51 @@ describe('Kashier Verification & Reconciliation Layer (v3.1)', () => {
         const result = resolveKashierPaymentOutcome(payload);
         expect(result.outcome).toBe('EXPIRED');
     });
+
+    it('maps VOIDED to FAILURE', () => {
+        const result = resolveKashierPaymentOutcome({ orderStatus: 'VOIDED', reconcilation: 'OK' });
+        expect(result.outcome).toBe('FAILURE');
+        expect(result.detailedStatus).toBe('VOIDED');
+    });
+
+    it('maps REFUNDED to FAILURE even when reconciliation verdict is OK', () => {
+        const result = resolveKashierPaymentOutcome({ orderStatus: 'REFUNDED', reconcilation: 'OK' });
+        expect(result.outcome).toBe('FAILURE');
+        expect(result.detailedStatus).toBe('REFUNDED');
+    });
+
+    it('maps CAPTURED + reconcilation OK to SUCCESS with detailedStatus CAPTURED', () => {
+        const result = resolveKashierPaymentOutcome({ orderStatus: 'CAPTURED', reconcilation: 'OK' });
+        expect(result.outcome).toBe('SUCCESS');
+        expect(result.detailedStatus).toBe('CAPTURED');
+    });
+
+    it('treats a transaction response code of 200 as primary success when no orderStatus present', () => {
+        const result = resolveKashierPaymentOutcome({ transactionResponseCode: '200' });
+        expect(result.outcome).toBe('SUCCESS');
+        expect(result.isReconciled).toBe(true);
+    });
+
+    it('is case-insensitive on the reconciliation verdict (lowercase / mixed ok)', () => {
+        expect(resolveKashierPaymentOutcome({ orderStatus: 'SUCCESS', reconcilation: 'ok' }).outcome).toBe('SUCCESS');
+        expect(resolveKashierPaymentOutcome({ orderStatus: 'SUCCESS', reconcilation: 'OK' }).isReconciled).toBe(true);
+    });
+
+    it('maps PENDING / AUTHORIZED to the PENDING outcome', () => {
+        expect(resolveKashierPaymentOutcome({ orderStatus: 'PENDING', reconcilation: 'NA' }).outcome).toBe('PENDING');
+        expect(resolveKashierPaymentOutcome({ orderStatus: 'AUTHORIZED' }).outcome).toBe('PENDING');
+    });
+
+    it('defaults unmapped statuses to UNKNOWN while preserving the raw status', () => {
+        const result = resolveKashierPaymentOutcome({ orderStatus: 'MYSTERY_STATE', reconcilation: 'OK' });
+        expect(result.outcome).toBe('UNKNOWN');
+        expect(result.detailedStatus).toBe('MYSTERY_STATE');
+        expect(result.isReconciled).toBe(false);
+    });
+
+    it('treats reconciliation (double-i spelling) FAILED as a mismatch too', () => {
+        const result = resolveKashierPaymentOutcome({ orderStatus: 'SUCCESS', reconciliation: 'FAILED' });
+        expect(result.outcome).toBe('UNKNOWN');
+        expect(result.isReconciled).toBe(false);
+    });
 });

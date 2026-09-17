@@ -143,25 +143,43 @@ function resolveMode(): Mode {
 }
 
 /**
- * Env lookup with mode-prefix → legacy-prefix → rotation-suffix priority:
- *   <modePrefix>_KEY || <modePrefix>_KEY_PRIMARY || <legacy>_KEY || <legacy>_KEY_PRIMARY
+ * Region-aware env lookup.
+ *
+ * The mode-prefix variables (KASHIER_TEST_* / KASHIER_LIVE_*) are SHARED —
+ * they name a single (primary/Egypt) merchant, so they must never shadow the
+ * distinct GLOBAL merchant from the legacy KASHIER_GLOBAL_* vars.
+ *   EGYPT: mode-prefix → legacy KASHIER_EGYPT
+ *   GLOBAL: legacy KASHIER_GLOBAL → mode-prefix (fallback only)
+ * Each slot also supports the rotation suffix `_PRIMARY`.
  */
-function resolvePrimary(modePrefix: string, legacyPrefix: string, keySuffix: string): string {
-    return (
-        process.env[`${modePrefix}_${keySuffix}`] ||
-        process.env[`${modePrefix}_${keySuffix}_PRIMARY`] ||
-        process.env[`${legacyPrefix}_${keySuffix}`] ||
-        process.env[`${legacyPrefix}_${keySuffix}_PRIMARY`] ||
-        ''
-    );
+function resolvePrimary(region: MerchantRegion, keySuffix: string): string {
+    const modePrefix = resolveMode() === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
+    const legacyPrefix = REGION_TO_LEGACY_PREFIX[region];
+    const prefixes = region === 'EGYPT'
+        ? [modePrefix, legacyPrefix]
+        : [legacyPrefix, modePrefix];
+
+    for (const prefix of prefixes) {
+        const value =
+            process.env[`${prefix}_${keySuffix}`] ||
+            process.env[`${prefix}_${keySuffix}_PRIMARY`];
+        if (value) return value;
+    }
+    return '';
 }
 
-function resolveSecondary(modePrefix: string, legacyPrefix: string, keySuffix: string): string | undefined {
-    return (
-        process.env[`${modePrefix}_${keySuffix}_SECONDARY`] ||
-        process.env[`${legacyPrefix}_${keySuffix}_SECONDARY`] ||
-        undefined
-    );
+function resolveSecondary(region: MerchantRegion, keySuffix: string): string | undefined {
+    const modePrefix = resolveMode() === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
+    const legacyPrefix = REGION_TO_LEGACY_PREFIX[region];
+    const prefixes = region === 'EGYPT'
+        ? [modePrefix, legacyPrefix]
+        : [legacyPrefix, modePrefix];
+
+    for (const prefix of prefixes) {
+        const value = process.env[`${prefix}_${keySuffix}_SECONDARY`];
+        if (value) return value;
+    }
+    return undefined;
 }
 
 function resolveWebhookUrl(region: MerchantRegion): string {
@@ -188,11 +206,11 @@ export function getMerchantConfig(region: MerchantRegion): MerchantConfig {
     const legacyPrefix = REGION_TO_LEGACY_PREFIX[region];
     const methods = DEFAULT_REGION_METHODS[region];
 
-    const merchantId = resolvePrimary(modePrefix, legacyPrefix, 'MERCHANT_ID');
-    const paymentApiKey = resolvePrimary(modePrefix, legacyPrefix, 'PAYMENT_API_KEY');
-    const paymentApiKeySecondary = resolveSecondary(modePrefix, legacyPrefix, 'PAYMENT_API_KEY');
-    const secretKey = resolvePrimary(modePrefix, legacyPrefix, 'SECRET_KEY');
-    const secretKeySecondary = resolveSecondary(modePrefix, legacyPrefix, 'SECRET_KEY');
+    const merchantId = resolvePrimary(region, 'MERCHANT_ID');
+    const paymentApiKey = resolvePrimary(region, 'PAYMENT_API_KEY');
+    const paymentApiKeySecondary = resolveSecondary(region, 'PAYMENT_API_KEY');
+    const secretKey = resolvePrimary(region, 'SECRET_KEY');
+    const secretKeySecondary = resolveSecondary(region, 'SECRET_KEY');
 
     if (!merchantId || !paymentApiKey || !secretKey) {
         console.warn(

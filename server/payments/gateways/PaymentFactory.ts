@@ -11,6 +11,7 @@ import { SpaceRemitGateway } from './SpaceRemitGateway';
 import { PaymobGateway } from './PaymobGateway';
 import { StripeGateway } from './StripeGateway';
 import { KashierGateway } from './KashierGateway';
+import { getMerchantConfig } from '../merchantResolver';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          COUNTRY ROUTING SCHEMA
@@ -128,19 +129,14 @@ export class PaymentFactory {
      * Detect Kashier account from a merchant ID.
      * Used by the webhook handler for cross-account routing after initial Kashier detection.
      */
-    static detectKashierAccountFromMerchantId(merchantId: string): KashierGateway | null {
-        const rawMode = (process.env.KASHIER_MODE || 'test').toLowerCase();
-        const modePrefix = rawMode === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
-
-        // Check new naming convention first (KASHIER_TEST_*/KASHIER_LIVE_*)
-        const testMid  = process.env[modePrefix + '_MERCHANT_ID'] || '';
-        if (testMid && merchantId === testMid) return PaymentFactory.getKashierEgypt();
-
-        // Fallback to legacy naming (KASHIER_EGYPT_*/KASHIER_GLOBAL_*)
-        const egyptMid  = process.env.KASHIER_EGYPT_MERCHANT_ID  || '';
-        const globalMid = process.env.KASHIER_GLOBAL_MERCHANT_ID || '';
-        if (egyptMid  && merchantId === egyptMid)  return PaymentFactory.getKashierEgypt();
-        if (globalMid && merchantId === globalMid) return PaymentFactory.getKashierGlobal();
+static detectKashierAccountFromMerchantId(merchantId: string): KashierGateway | null {
+        // Single source of truth: the Merchant Resolver (v5.1 §4.1).
+        // Mirrors config = new KashierGateway(region) so cross-account routing
+        // can never diverge from the merchant identities used at checkout.
+        const egyptId = getMerchantConfig('EGYPT').merchantId;
+        const globalId = getMerchantConfig('GLOBAL').merchantId;
+        if (egyptId && merchantId === egyptId) return PaymentFactory.getKashierEgypt();
+        if (globalId && merchantId === globalId) return PaymentFactory.getKashierGlobal();
         return null;
     }
 

@@ -151,6 +151,50 @@ describe('Merchant Resolver — v5.1 §4.1 + §51', () => {
         expect(err.name).toBe('BlockedGateError');
         expect(err.message).toContain('N-13 KASHIER_LIVE_ENABLED');
     });
+
+    it('accepts a mixed-case KASHIER_MODE (e.g. "Live") and reads KASHIER_LIVE_* vars', () => {
+        process.env.KASHIER_MODE = 'Live';
+        process.env.KASHIER_LIVE_MERCHANT_ID = 'MID-48761-625';
+        process.env.KASHIER_LIVE_PAYMENT_API_KEY = 'live-key';
+        process.env.KASHIER_LIVE_SECRET_KEY = 'live-secret';
+        delete process.env.KASHIER_TEST_MERCHANT_ID;
+        delete process.env.KASHIER_TEST_PAYMENT_API_KEY;
+        delete process.env.KASHIER_TEST_SECRET_KEY;
+
+        const cfg = getMerchantConfig('EGYPT');
+        expect(cfg.mode).toBe('live');
+        expect(cfg.merchantId).toBe('MID-48761-625');
+        expect(cfg.secrets.paymentApiKey.primary).toBe('live-key');
+        expect(cfg.secrets.secretKey.primary).toBe('live-secret');
+    });
+
+    it('honours a region-specific webhook URL env override', () => {
+        process.env.KASHIER_EGYPT_WEBHOOK_URL = 'https://custom.example.com/kashier-hook';
+        const cfg = getMerchantConfig('EGYPT');
+        expect(cfg.webhookUrl).toBe('https://custom.example.com/kashier-hook');
+    });
+
+    it('keeps the GLOBAL merchant distinct from the shared mode-prefix (Egypt) MID', () => {
+        // Owner-style live layout: mode-prefix MID is the EGYPT account;
+        // the GLOBAL account only exists via the legacy KASHIER_GLOBAL_* vars.
+        process.env.KASHIER_MODE = 'Live';
+        process.env.KASHIER_LIVE_MERCHANT_ID = 'MID-48761-625';
+        process.env.KASHIER_LIVE_PAYMENT_API_KEY = 'eg-live-key';
+        process.env.KASHIER_LIVE_SECRET_KEY = 'eg-live-secret';
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = 'MID-GLOBAL-ACCOUNT';
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = 'gl-key';
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'gl-secret';
+        delete process.env.KASHIER_TEST_MERCHANT_ID;
+        delete process.env.KASHIER_TEST_PAYMENT_API_KEY;
+        delete process.env.KASHIER_TEST_SECRET_KEY;
+
+        const egypt = getMerchantConfig('EGYPT');
+        const global = getMerchantConfig('GLOBAL');
+        expect(egypt.merchantId).toBe('MID-48761-625');
+        expect(global.merchantId).toBe('MID-GLOBAL-ACCOUNT');
+        expect(global.secrets.paymentApiKey.primary).toBe('gl-key');
+        expect(global.webhookUrl).toContain('/api/payments/webhook');
+    });
 });
 
 describe('KashierGateway — rotation integration (v5.1 §4.4 + N-13)', () => {

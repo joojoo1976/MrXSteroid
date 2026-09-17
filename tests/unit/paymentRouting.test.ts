@@ -67,9 +67,43 @@ describe("Payment Routing", () => {
         expect(gw?.getGatewayName()).toBe("KASHIER_GLOBAL");
     });
 
-    it("detectKashierAccountFromMerchantId returns null for unknown MID", async () => {
+it("detectKashierAccountFromMerchantId returns null for unknown MID", async () => {
         const { PaymentFactory } = await import("../../server/payments/gateways/PaymentFactory");
         const gw = PaymentFactory.detectKashierAccountFromMerchantId("UNKNOWN_MID");
         expect(gw).toBeNull();
+    });
+
+    it("detectKashierAccountFromMerchantId honors mode-prefix (KASHIER_TEST_*) env via the resolver", async () => {
+        process.env.KASHIER_TEST_MERCHANT_ID = "MID_T_PREFIX";
+        process.env.KASHIER_TEST_PAYMENT_API_KEY = "KEY_T";
+        process.env.KASHIER_TEST_SECRET_KEY = "SEC_T";
+        try {
+            vi.resetModules();
+            const { PaymentFactory } = await import("../../server/payments/gateways/PaymentFactory");
+            const gw = PaymentFactory.detectKashierAccountFromMerchantId("MID_T_PREFIX");
+            expect(gw?.getGatewayName()).toBe("KASHIER_EGYPT");
+        } finally {
+            delete process.env.KASHIER_TEST_MERCHANT_ID;
+            delete process.env.KASHIER_TEST_PAYMENT_API_KEY;
+            delete process.env.KASHIER_TEST_SECRET_KEY;
+        }
+    });
+
+    it("routes legacy GLOBAL MIDs even when the mode-prefix (Egypt) merchant is set", async () => {
+        // Owner-style layout: KASHIER_TEST_* names the Egypt merchant; the
+        // GLOBAL account must still resolve from KASHIER_GLOBAL_*.
+        process.env.KASHIER_TEST_MERCHANT_ID = "MID_T_PREFIX";
+        process.env.KASHIER_TEST_PAYMENT_API_KEY = "KEY_T";
+        process.env.KASHIER_TEST_SECRET_KEY = "SEC_T";
+        try {
+            vi.resetModules();
+            const { PaymentFactory } = await import("../../server/payments/gateways/PaymentFactory");
+            expect(PaymentFactory.detectKashierAccountFromMerchantId("MID_GLOBAL")?.getGatewayName()).toBe("KASHIER_GLOBAL");
+            expect(PaymentFactory.detectKashierAccountFromMerchantId("MID_T_PREFIX")?.getGatewayName()).toBe("KASHIER_EGYPT");
+        } finally {
+            delete process.env.KASHIER_TEST_MERCHANT_ID;
+            delete process.env.KASHIER_TEST_PAYMENT_API_KEY;
+            delete process.env.KASHIER_TEST_SECRET_KEY;
+        }
     });
 });

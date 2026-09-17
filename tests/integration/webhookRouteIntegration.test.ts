@@ -8,6 +8,8 @@ const API_KEY_EG = 'APIKEY_EG_INTEGRATION';
 const MERCHANT_ID_GL = 'MID_GL_INTEGRATION';
 const API_KEY_GL = 'APIKEY_GL_INTEGRATION';
 
+const verifyPaidAmountMock = vi.fn().mockResolvedValue({ ok: true });
+
 function buildKashierBody(fields: Record<string, string>, apiKey: string): string {
     const sortedKeys = Object.keys(fields).sort();
     const signatureKeysStr = sortedKeys.join(',');
@@ -53,7 +55,7 @@ vi.mock('../../server/affiliate/ledgerService', () => ({
     triggerAffiliateCommission: vi.fn().mockResolvedValue({ ok: true }),
 }));
 vi.mock('../../server/payments/verifyPaidAmount', () => ({
-    verifyPaidAmount: vi.fn().mockResolvedValue({ ok: true }),
+    verifyPaidAmount: verifyPaidAmountMock,
 }));
 
 beforeEach(() => {
@@ -63,7 +65,7 @@ beforeEach(() => {
         triggerAffiliateCommission: vi.fn().mockResolvedValue({ ok: true }),
     }));
     vi.doMock('../../server/payments/verifyPaidAmount', () => ({
-        verifyPaidAmount: vi.fn().mockResolvedValue({ ok: true }),
+        verifyPaidAmount: verifyPaidAmountMock,
     }));
     process.env.KASHIER_EGYPT_MERCHANT_ID = MERCHANT_ID_EG;
     process.env.KASHIER_EGYPT_PAYMENT_API_KEY = API_KEY_EG;
@@ -237,5 +239,224 @@ describe('Integration test for /api/payments/webhook (v5.1 compliance)', () => {
         const getReq = new Request('http://localhost/api/payments/webhook', { method: 'GET' });
         const res = await handler(getReq);
         expect(res?.status).toBe(405);
+    });
+
+    it('Processes REFUNDED webhook — invoice marked failed (refund lifecycle)', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-008', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-008',
+            orderStatus: 'REFUNDED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-008',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+    });
+
+    it('Processes VOIDED webhook — invoice marked failed', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-009', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-009',
+            orderStatus: 'VOIDED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-009',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+    });
+
+    it('Processes EXPIRED_CARD webhook — invoice marked failed', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-010', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-010',
+            orderStatus: 'EXPIRED_CARD',
+            amount: '100.00',
+            currency: 'EGP',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+    });
+
+    it('Does NOT fulfill on AUTHORIZED (pending) — held for reconciliation', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-011', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-011',
+            orderStatus: 'AUTHORIZED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-011',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.message).toContain('pending reconciliation');
+        expect(supabaseMock.chain.update).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }));
+    });
+
+    it('Activates payment when success is signalled by responseCode 00 alone', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-012', status: 'pending', payment_status: 'pending', amount: 150, currency: 'EGP', user_id: 'user-012', tier_id: 'pro', affiliate_id: null },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-012',
+            transactionResponseCode: '00',
+            amount: '150.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-012',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'success', payment_status: 'paid' })
+        );
+    });
+
+    it('Refuses activation on amount mismatch (defense-in-depth, no fulfillment)', async () => {
+        verifyPaidAmountMock.mockResolvedValueOnce({ ok: false });
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-013', status: 'pending', payment_status: 'pending', amount: 200, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-013',
+            orderStatus: 'APPROVED',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-013',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.message).toContain('Amount mismatch');
+        expect(supabaseMock.chain.update).not.toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'success', payment_status: 'paid' })
+        );
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+    });
+
+    it('Continues processing when webhook_events insert fails with a NON-duplicate error (best-effort dedup)', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-014', status: 'pending', payment_status: 'pending', amount: 120, currency: 'EGP', user_id: 'user-014', tier_id: 'basic', affiliate_id: null },
+            { code: '23502', message: 'not null violation' }
+        );
+
+        const fields = {
+            orderId: 'inv-int-014',
+            orderStatus: 'APPROVED',
+            amount: '120.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-014',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'success', payment_status: 'paid' })
+        );
+    });
+
+    it('Tags invoice source as payment page when webhook originated from the Kashier payment page', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-015', status: 'pending', payment_status: 'pending', amount: 90, currency: 'EGP', user_id: 'user-015', tier_id: 'pro', affiliate_id: null },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-015',
+            orderStatus: 'APPROVED',
+            amount: '90.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-015',
+            merchantId: MERCHANT_ID_EG,
+            source: 'kashier_payment_page',
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'success', payment_status: 'paid', payment_source: 'kashier_payment_page' })
+        );
+    });
+
+    it('Persists kashier_transaction_id and gateway_reference_id on success', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-016', status: 'pending', payment_status: 'pending', amount: 80, currency: 'EGP', user_id: 'user-016', tier_id: 'basic', affiliate_id: null },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-016',
+            orderStatus: 'APPROVED',
+            amount: '80.00',
+            currency: 'EGP',
+            transactionId: 'kashier-txn-016',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ gateway_reference_id: 'kashier-txn-016', kashier_transaction_id: 'kashier-txn-016' })
+        );
+    });
+
+    it('Idempotently skips an already-paid invoice (invoice-level dedup) without re-triggering fulfillment', async () => {
+        supabaseMock = buildSupaMock(
+            { id: 'inv-int-017', status: 'success', payment_status: 'paid', amount: 70, currency: 'EGP' },
+            null
+        );
+
+        const fields = {
+            orderId: 'inv-int-017',
+            orderStatus: 'APPROVED',
+            amount: '70.00',
+            currency: 'EGP',
+            transactionId: 'txn-int-017',
+            merchantId: MERCHANT_ID_EG,
+        };
+        const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.message).toContain('Already processed');
+        // The already-paid invoice row must NOT be rewritten to success again.
+        expect(supabaseMock.chain.update).not.toHaveBeenCalledWith(
+            expect.objectContaining({ payment_source: expect.anything() })
+        );
     });
 });
