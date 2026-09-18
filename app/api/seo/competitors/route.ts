@@ -31,7 +31,7 @@ export interface KeywordGapItem {
 }
 
 // 3 Curated Arab Competitors + 3 Curated Global Competitors
-export const VERIFIED_COMPETITORS: CompetitorItem[] = [
+const VERIFIED_COMPETITORS: CompetitorItem[] = [
     // Arab Competitors
     {
         domain: 'egyfitness.net',
