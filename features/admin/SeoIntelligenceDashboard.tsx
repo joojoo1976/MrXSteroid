@@ -9,13 +9,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     RefreshCw, Search, Pin, ShieldOff, Calendar, Layers,
     AlertTriangle, FileText, TrendingUp, ChevronDown, ChevronUp,
-    CheckCircle, XCircle, Clock, Loader2, Eye, Globe,
+    CheckCircle, XCircle, Clock, Loader2, Eye, Globe, Users, Database, Sparkles,
 } from 'lucide-react';
 
 type SeoTab =
     | 'overview'
     | 'keywords'
     | 'review_queue'
+    | 'competitor_gaps'
+    | 'sources'
     | 'blocks'
     | 'pins'
     | 'seasonal'
@@ -443,6 +445,113 @@ const ReviewQueuePanel: React.FC = () => {
     );
 };
 
+// ── Competitor Gaps Panel ─────────────────────────────────────────────────────
+const CompetitorGapsPanel: React.FC = () => {
+    const [competitors, setCompetitors] = useState<{ name: string; domain: string; market: string; language: string; competitorType: string }[]>([]);
+    const [opportunities, setOpportunities] = useState<{ keyword: string; language: string; opportunityScore: number; competitorPresence: string; competitorDomain?: string; status: string }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch('/api/seo/competitors')
+            .then(r => r.json())
+            .then(d => {
+                setCompetitors(d.competitors || []);
+                setOpportunities(d.opportunities || []);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return <div className="flex items-center justify-center h-32"><Loader2 className="w-6 h-6 animate-spin text-gold-500" /></div>;
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4">
+                <h3 className="text-xs font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gold-400" /> Monitored Competitors ({competitors.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {competitors.map(c => (
+                        <div key={c.domain} className="bg-zinc-950/60 border border-zinc-800/80 rounded-xl p-3">
+                            <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs text-white">{c.name}</span>
+                                <span className={badgeCls(c.language === 'ar' ? 'blue' : 'gray')}>{c.language}</span>
+                            </div>
+                            <p className="text-[11px] font-mono text-zinc-500 mt-1">{c.domain}</p>
+                            <p className="text-[10px] text-zinc-400 mt-0.5">{c.market}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="space-y-3">
+                <h3 className="text-xs font-black text-white uppercase tracking-wider">Identified Keyword Gaps & Opportunities</h3>
+                {opportunities.map((opp, idx) => (
+                    <div key={idx} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-white">{opp.keyword}</span>
+                                <span className={badgeCls(opp.language === 'ar' ? 'blue' : 'gray')}>{opp.language}</span>
+                                <span className={badgeCls(opp.status === 'covered' ? 'green' : 'yellow')}>{opp.status}</span>
+                            </div>
+                            <p className="text-xs text-zinc-400">
+                                Domain: <span className="text-zinc-200 font-mono">{opp.competitorDomain || 'Competitor'}</span> · {opp.competitorPresence}
+                            </p>
+                        </div>
+                        <div className="text-end shrink-0">
+                            <span className="text-xs text-zinc-500 block">Opportunity</span>
+                            <span className="text-lg font-black font-mono text-gold-400">{opp.opportunityScore}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// ── Sources Registry Panel ────────────────────────────────────────────────────
+const SourcesPanel: React.FC = () => {
+    const [sources, setSources] = useState<{ id: string; source_name: string; source_type: string; reliability_score?: number; terms_verified: boolean; retrieved_at: string }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch('/api/admin/seo/sources')
+            .then(r => r.json())
+            .then(d => setSources(d.sources || []))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return <div className="flex items-center justify-center h-32"><Loader2 className="w-6 h-6 animate-spin text-gold-500" /></div>;
+
+    return (
+        <div className="space-y-4">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <Database className="w-4 h-4 text-sky-400" /> Registered Data Sources & Provenance
+            </h3>
+            {sources.length === 0 ? (
+                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-6 text-center text-zinc-500 text-xs">
+                    No custom external sources added yet. Baseline and telemetry sources are operating normally.
+                </div>
+            ) : (
+                <div className="space-y-2">
+                    {sources.map(s => (
+                        <div key={s.id} className="bg-zinc-950/60 border border-zinc-800 rounded-xl px-4 py-3 flex items-center justify-between">
+                            <div>
+                                <span className="font-bold text-sm text-white">{s.source_name}</span>
+                                <span className="ms-2 font-mono text-xs text-zinc-400">[{s.source_type}]</span>
+                            </div>
+                            <span className="text-xs text-zinc-500">
+                                Reliability: <span className="text-gold-400 font-bold">{s.reliability_score ?? 70}%</span>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ── Blocks ────────────────────────────────────────────────────────────────────
 const BlocksPanel: React.FC = () => {
     const [blocks, setBlocks] = useState<BlockRow[]>([]);
@@ -770,15 +879,17 @@ const AuditLogPanel: React.FC = () => {
 
 // ── Main Dashboard Shell ──────────────────────────────────────────────────────
 const SEO_TABS: { key: SeoTab; label: string; icon: React.ElementType }[] = [
-    { key: 'overview',       label: 'Overview',       icon: Globe },
-    { key: 'keywords',       label: 'Keywords',       icon: Search },
-    { key: 'review_queue',   label: 'Review Queue',   icon: Eye },
-    { key: 'blocks',         label: 'Blocks',         icon: ShieldOff },
-    { key: 'pins',           label: 'Pins',           icon: Pin },
-    { key: 'seasonal',       label: 'Seasonal',       icon: Calendar },
-    { key: 'clusters',       label: 'Clusters',       icon: Layers },
-    { key: 'cannibalization',label: 'Cannibalization',icon: AlertTriangle },
-    { key: 'audit_log',      label: 'Audit Log',      icon: FileText },
+    { key: 'overview',        label: 'Overview',        icon: Globe },
+    { key: 'keywords',        label: 'Keywords',        icon: Search },
+    { key: 'review_queue',    label: 'Review Queue',    icon: Eye },
+    { key: 'competitor_gaps', label: 'Competitor Gaps', icon: Users },
+    { key: 'sources',         label: 'Sources Registry',icon: Database },
+    { key: 'blocks',          label: 'Blocks',          icon: ShieldOff },
+    { key: 'pins',            label: 'Pins',            icon: Pin },
+    { key: 'seasonal',        label: 'Seasonal',        icon: Calendar },
+    { key: 'clusters',        label: 'Clusters',        icon: Layers },
+    { key: 'cannibalization', label: 'Cannibalization', icon: AlertTriangle },
+    { key: 'audit_log',       label: 'Audit Log',       icon: FileText },
 ];
 
 export const SeoIntelligenceDashboard: React.FC = () => {
@@ -801,6 +912,8 @@ export const SeoIntelligenceDashboard: React.FC = () => {
             case 'overview':        return <OverviewPanel onRefreshSeo={handleRefreshSeo} refreshing={refreshing} />;
             case 'keywords':        return <KeywordsPanel />;
             case 'review_queue':    return <ReviewQueuePanel />;
+            case 'competitor_gaps': return <CompetitorGapsPanel />;
+            case 'sources':         return <SourcesPanel />;
             case 'blocks':          return <BlocksPanel />;
             case 'pins':            return <p className="text-xs text-zinc-500 py-8 text-center">Pinned keywords are managed from the Keywords tab via the 📌 pin action.</p>;
             case 'seasonal':        return <SeasonalPanel />;
