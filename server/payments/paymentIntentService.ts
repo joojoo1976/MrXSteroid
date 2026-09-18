@@ -78,10 +78,16 @@ export async function createPaymentIntentAttempt(
         if (currentActive) {
             supersedesId = currentActive.id;
             // Demote previous current active intent
-            await supabase
+            const { error: demoteError } = await supabase
                 .from('payment_intents')
                 .update({ is_current: false, updated_at: new Date().toISOString() })
                 .eq('id', currentActive.id);
+
+            if (demoteError) {
+                throw new Error(
+                    `[PaymentIntentService] Failed to supersede previous attempt #${currentActive.attempt_number}: ${demoteError.message}`
+                );
+            }
         }
     }
 
