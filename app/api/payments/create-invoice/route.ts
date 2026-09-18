@@ -94,23 +94,15 @@ export async function POST(req: Request) {
 
             let gateway: import('../../../../server/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
             let gatewayName: string;
-            if (isInstaPay) {
+            if (isKashier) {
+                // Delegated to the Phase 4 checkout session service further down.
+                gatewayName = 'KASHIER';
+            } else if (isInstaPay) {
                 gatewayName = 'INSTAPAY';
             } else if (isStripeEmbedded) {
                 const { StripeGateway } = await import('../../../../server/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
                 gatewayName = 'STRIPE';
-            } else if (isKashier) {
-                // Kashier: Egypt merchant for EG, Global merchant for everyone else.
-                // Currency is resolved server-side; never trust client-supplied currency.
-                const { KashierGateway } = await import('../../../../server/payments/gateways/KashierGateway');
-                if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT') {
-                    gateway = new KashierGateway('egypt');
-                    gatewayName = 'KASHIER_EGYPT';
-                } else {
-                    gateway = new KashierGateway('global');
-                    gatewayName = 'KASHIER_GLOBAL';
-                }
             } else if (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT' || isPaymobMethod) {
                 const { PaymobGateway } = await import('../../../../server/payments/gateways/PaymobGateway');
                 gateway = new PaymobGateway();
@@ -122,7 +114,7 @@ export async function POST(req: Request) {
 
             input.country = secureCountryCode;
 
-            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY' || gatewayName === 'KASHIER_EGYPT';
+            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY';
             const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
 
             const pricing = await loadPricing(async () => {
@@ -200,6 +192,75 @@ export async function POST(req: Request) {
             } catch (attrErr) {
                 // Attribution failure must never prevent checkout
                 console.error('[CreateInvoice] Attribution parsing failed:', attrErr);
+            }
+            // ────────────────────────────────────────────────────────────────────────
+
+            // ── Kashier: delegate to the single checkout service (Phase 4) ────────
+            // The session endpoint path mints the Payment Session, links invoice +
+            // PaymentIntent, persists idempotency, and is the source of truth.
+            if (isKashier) {
+                const { createCheckoutSession, CheckoutConflictError, CheckoutValidationError } =
+                    await import('../../../../server/payments/checkout/checkoutSessionService');
+                const { KashierSessionError } = await import('../../../../server/payments/gateways/KashierGateway');
+                const { BlockedGateError } = await import('../../../../server/payments/merchantResolver');
+                try {
+                    const metadata = input.metadata || {};
+                    const session = await createCheckoutSession(
+                        {
+                            tierId: input.tierId,
+                            email: input.email,
+                            fullName: input.fullName,
+                            country: secureCountryCode,
+                            userId: effectiveUserId,
+                            locale: input.locale,
+                            quantity: input.quantity,
+                            shippingProviderId: typeof metadata.shippingProviderId === 'string'
+                                ? metadata.shippingProviderId
+                                : undefined,
+                            shippingCost: input.shippingCost,
+                            promoCode: typeof metadata.promoCode === 'string' ? metadata.promoCode : undefined,
+                            shippingAddress: metadata.address
+                                ? {
+                                    address: typeof metadata.address === 'string' ? metadata.address : undefined,
+                                    city: typeof metadata.city === 'string' ? metadata.city : undefined,
+                                    zipCode: typeof metadata.zipCode === 'string' ? metadata.zipCode : undefined,
+                                    phone: input.phoneNumber,
+                                }
+                                : (input.phoneNumber ? { phone: input.phoneNumber } : undefined),
+                            attribution: (affiliateId || referralCode || attributionTimestamp)
+                                ? { affiliateId, referralCode, attributionTimestamp, attributionExpiresAt }
+                                : undefined,
+                            metadata,
+                        },
+                        { supabase }
+                    );
+
+                    return json({
+                        success: true,
+                        invoiceId: session.invoiceId,
+                        redirectUrl: session.sessionUrl,
+                        gateway: 'kashier',
+                        region: session.region,
+                        currency: session.currency,
+                        amount: session.amount,
+                        environment: session.environment,
+                        idempotent: session.idempotent,
+                    });
+                } catch (err) {
+                    if (err instanceof CheckoutValidationError) {
+                        return json({ success: false, error: err.message }, 400);
+                    }
+                    if (err instanceof CheckoutConflictError) {
+                        return json({ success: false, error: err.message, retry: true }, 409);
+                    }
+                    if (err instanceof KashierSessionError) {
+                        return json({ success: false, error: err.message }, 502);
+                    }
+                    if (err instanceof BlockedGateError) {
+                        return json({ success: false, error: err.message, blocked: true }, 409);
+                    }
+                    throw err;
+                }
             }
             // ────────────────────────────────────────────────────────────────────────
 

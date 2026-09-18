@@ -2,12 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
     createCheckoutSession,
     CheckoutValidationError,
+    CheckoutConflictError,
     type CheckoutSessionGateway,
 } from '../../server/payments/checkout/checkoutSessionService';
 
 type Row = Record<string, any>;
 
-function createFakeSupabase(seed: { invoices?: Row[]; payment_intents?: Row[] } = {}) {
+function createFakeSupabase(
+    seed: { invoices?: Row[]; payment_intents?: Row[]; raceWinner?: Row } = {},
+) {
     const db: Record<string, Row[]> = {
         invoices: seed.invoices ? [...seed.invoices] : [],
         payment_intents: seed.payment_intents ? [...seed.payment_intents] : [],
@@ -28,6 +31,10 @@ function createFakeSupabase(seed: { invoices?: Row[]; payment_intents?: Row[] } 
         const exec = async () => {
             const rows = db[table] || (db[table] = []);
             if (state.mode === 'insert') {
+                if (table === 'invoices' && seed.raceWinner) {
+                    rows.push({ id: nextId(table), metadata: {}, ...seed.raceWinner });
+                    return { data: null, error: { code: '23505', message: 'duplicate key value' } };
+                }
                 const row: Row = { id: nextId(table), metadata: {}, ...state.payload };
                 rows.push(row);
                 return { data: row, error: null };
@@ -251,6 +258,37 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(supabase._db.invoices).toHaveLength(1);
         expect(supabase._db.payment_intents).toHaveLength(1);
         expect(gateway.calls).toHaveLength(1);
+    });
+
+    it('a losing insert race returns a conflict instead of minting a second session', async () => {
+        const supabase = createFakeSupabase({
+            raceWinner: { id: 'inv-winner', idempotency_key: 'race-key', amount: 499, currency: 'EGP' },
+        });
+        const gateway = createFakeGateway();
+
+        await expect(createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'race-key' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        )).rejects.toThrow(CheckoutConflictError);
+
+        expect(gateway.calls).toHaveLength(0);
+        expect(supabase._db.invoices).toHaveLength(1);
+    });
+
+    it('an existing invoice without a session returns a conflict (never a second payable session)', async () => {
+        const supabase = createFakeSupabase({
+            invoices: [{ id: 'inv-pending', idempotency_key: 'k-existing', amount: 499, currency: 'EGP' }],
+        });
+        const gateway = createFakeGateway();
+
+        await expect(createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-existing' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        )).rejects.toThrow(CheckoutConflictError);
+
+        expect(gateway.calls).toHaveLength(0);
+        expect(supabase._db.invoices).toHaveLength(1);
+        expect(supabase._db.payment_intents).toHaveLength(0);
     });
 
     it('creating a session never confirms payment (redirect is advisory only)', async () => {

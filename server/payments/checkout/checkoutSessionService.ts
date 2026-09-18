@@ -46,6 +46,20 @@ export class CheckoutValidationError extends Error {
     }
 }
 
+/**
+ * Raised when a checkout for the same idempotency key is already in progress
+ * (or previously failed) and has not yet produced a session. We must NOT mint a
+ * second payable session for the same invoice — that would expose a
+ * double-charge window. Callers surface this as HTTP 409 and the client retries
+ * (a fresh submit generates a new idempotency key).
+ */
+export class CheckoutConflictError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'CheckoutConflictError';
+    }
+}
+
 export interface CheckoutShippingAddress {
     address?: string;
     city?: string;
@@ -191,26 +205,33 @@ export async function createCheckoutSession(
         throw new Error(`[CheckoutSession] Idempotency lookup failed: ${lookupError.message}`);
     }
 
-    if (existing?.id && existing.kashier_session_url && existing.kashier_session_id) {
-        return {
-            invoiceId: existing.id,
-            orderRef: existing.id,
-            sessionId: existing.kashier_session_id,
-            sessionUrl: existing.kashier_session_url,
-            amount: Number(existing.amount ?? amount),
-            currency: existing.currency ?? currency,
-            region,
-            merchantId: merchant.merchantId,
-            paymentMethods: merchant.paymentMethods,
-            environment,
-            idempotent: true,
-        };
+    if (existing?.id) {
+        if (existing.kashier_session_url && existing.kashier_session_id) {
+            return {
+                invoiceId: existing.id,
+                orderRef: existing.id,
+                sessionId: existing.kashier_session_id,
+                sessionUrl: existing.kashier_session_url,
+                amount: Number(existing.amount ?? amount),
+                currency: existing.currency ?? currency,
+                region,
+                merchantId: merchant.merchantId,
+                paymentMethods: merchant.paymentMethods,
+                environment,
+                idempotent: true,
+            };
+        }
+        // Invoice exists but no session yet → another request owns minting.
+        // Never mint a second payable session for the same invoice.
+        throw new CheckoutConflictError(
+            'A checkout for this idempotency key is already in progress. Retry shortly or start a new checkout.'
+        );
     }
 
-    // ── 4. Create (or reuse) the internal Order/Invoice ──────────────────────
-    let invoiceId = existing?.id as string | undefined;
+    // ── 4. Atomically claim the idempotency key by inserting the invoice ─────
+    let invoiceId: string | undefined;
 
-    if (!invoiceId) {
+    {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
             .insert({
@@ -265,13 +286,14 @@ export async function createCheckoutSession(
                         idempotent: true,
                     };
                 }
-                invoiceId = winner.id;
-            } else {
-                throw new Error(`[CheckoutSession] Failed to create invoice: ${insertError?.message}`);
+                // Winner inserted the invoice but has not persisted a session yet.
+                throw new CheckoutConflictError(
+                    'A concurrent checkout for this idempotency key is already in progress. Retry shortly.'
+                );
             }
-        } else {
-            invoiceId = invoice.id;
+            throw new Error(`[CheckoutSession] Failed to create invoice: ${insertError?.message}`);
         }
+        invoiceId = invoice.id;
     }
 
     if (!invoiceId) {

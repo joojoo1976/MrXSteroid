@@ -20,6 +20,7 @@ import { z } from 'zod';
 import {
     createCheckoutSession,
     CheckoutValidationError,
+    CheckoutConflictError,
     type CheckoutAttribution,
 } from '../../../../../server/payments/checkout/checkoutSessionService';
 import { BlockedGateError } from '../../../../../server/payments/merchantResolver';
@@ -168,6 +169,12 @@ export async function POST(req: Request) {
     } catch (error) {
         if (error instanceof CheckoutValidationError) {
             return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        }
+        if (error instanceof CheckoutConflictError) {
+            return NextResponse.json(
+                { success: false, error: error.message, retry: true },
+                { status: 409, headers: { 'Retry-After': '2' } },
+            );
         }
         if (error instanceof BlockedGateError) {
             return NextResponse.json({ success: false, error: error.message, blocked: true }, { status: 409 });

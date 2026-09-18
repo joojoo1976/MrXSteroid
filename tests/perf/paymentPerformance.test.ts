@@ -33,6 +33,8 @@ import {
 import { getMerchantConfig } from '../../server/payments/merchantResolver';
 import { buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
 import { KashierGateway } from '../../server/payments/gateways/KashierGateway';
+import { buildKashierSessionRequest } from '../../server/payments/checkout/sessionRequest';
+import { createCheckoutSession } from '../../server/payments/checkout/checkoutSessionService';
 
 interface BenchResult {
     name: string;
@@ -133,6 +135,65 @@ function signedKashierBody(apiKey: string): string {
 const fakeLedgerClient = {
     from: () => ({ insert: async () => ({ error: null }) }),
 } as unknown as SupabaseClient;
+
+// ──  Phase 4 checkout orchestration bench fixture ──────────────────────────
+type Row = Record<string, any>;
+
+function perfFakeSupabase(ref: { invoices: Row[]; payment_intents: Row[] }) {
+    const db: Record<string, Row[]> = {
+        invoices: ref.invoices,
+        payment_intents: ref.payment_intents,
+        admin_settings: [],
+    };
+    let idc = 0;
+    const from = (table: string) => {
+        const state: any = { mode: 'select', payload: null, filters: {}, orderCol: null, ascending: true };
+        const exec = async () => {
+            const rows = db[table] || (db[table] = []);
+            if (state.mode === 'insert') {
+                const row: Row = { id: `${table}-${++idc}`, metadata: {}, ...state.payload };
+                rows.push(row);
+                return { data: row, error: null };
+            }
+            const matched = rows.filter(r => Object.entries(state.filters).every(([k, v]) => r[k] === v));
+            if (state.mode === 'update') {
+                matched.forEach(r => Object.assign(r, state.payload));
+                return { data: null, error: null };
+            }
+            const result = [...matched];
+            if (state.orderCol) {
+                result.sort((a, b) => (a[state.orderCol] > b[state.orderCol] ? 1 : -1) * (state.ascending ? 1 : -1));
+            }
+            return { data: result, error: null };
+        };
+        const b: any = {
+            select() { return b; },
+            insert(p: Row) { state.mode = 'insert'; state.payload = p; return b; },
+            update(p: Row) { state.mode = 'update'; state.payload = p; return b; },
+            eq(c: string, v: any) { state.filters[c] = v; return b; },
+            order(c: string, o?: { ascending?: boolean }) { state.orderCol = c; state.ascending = o?.ascending !== false; return b; },
+            async single() { const { data } = await exec(); return { data: Array.isArray(data) ? (data[0] ?? null) : data, error: null }; },
+            async maybeSingle() { const { data } = await exec(); return { data: Array.isArray(data) ? (data[0] ?? null) : data, error: null }; },
+            then(res: any, rej: any) { return exec().then(res, rej); },
+        };
+        return b;
+    };
+    return { from } as unknown as SupabaseClient;
+}
+
+function perfGateway() {
+    return {
+        getGatewayName: () => 'KASHIER_EGYPT',
+        createPaymentSession: async (params: any) => ({
+            sessionId: 'sess-perf',
+            sessionUrl: 'https://test-api.kashier.io/s/perf',
+            orderId: params.orderRef,
+            amount: params.amount,
+            currency: params.currency,
+            status: 'ACTIVE',
+        }),
+    };
+}
 
 beforeAll(() => {
     for (const [key, value] of Object.entries(PERF_ENV)) {
@@ -253,5 +314,62 @@ describe('payment hot-path performance', () => {
         benchSync('buildKashierPaymentPageUrl', () => {
             buildKashierPaymentPageUrl('digital', { userId: 'u-1', userEmail: 'a@b.com', referralCode: 'REF1' });
         }, 5000, 2_000);
+    });
+
+    it('buildKashierSessionRequest mints the v3 session payload cheaply', () => {
+        benchSync('buildKashierSessionRequest', () => {
+            buildKashierSessionRequest({
+                merchantId: 'MID-PERF-0001',
+                orderRef: 'inv-perf-0001',
+                amount: 749.0,
+                currency: 'EGP',
+                merchantRedirect: 'https://www.mrxsteroid.com/api/payments/callback?txn=inv-perf-0001',
+                serverWebhook: 'https://www.mrxsteroid.com/api/payments/webhook',
+                customer: { name: 'Perf Buyer', email: 'a@b.com' },
+                paymentMethods: ['card', 'wallet'],
+                defaultMethod: 'card',
+            });
+        }, 100_000, 20_000);
+    });
+
+    it('createCheckoutSession orchestrates invoice+intent+session without network stalls', async () => {
+        const ref = { invoices: [] as Row[], payment_intents: [] as Row[] };
+        await benchAsync('createCheckoutSession(digital EG)', async () => {
+            const res = await createCheckoutSession(
+                {
+                    tierId: 'digital',
+                    email: 'perf@example.com',
+                    fullName: 'Perf Buyer',
+                    country: 'EG',
+                    idempotencyKey: crypto.randomUUID(),
+                },
+                { supabase: perfFakeSupabase(ref), gatewayFactory: () => perfGateway() as never, pricingRows: async () => [] },
+            );
+            if (!res.invoiceId || !res.sessionId || res.idempotent) {
+                throw new Error('broken checkout orchestration');
+            }
+        }, 400, 30);
+
+        // Oracle: every minted session produced exactly one invoice + one intent.
+        const wrote = ref.invoices.length;
+        expect(wrote).toBeGreaterThanOrEqual(400);
+        expect(ref.payment_intents.length).toBe(wrote);
+        expect(ref.invoices[0].kashier_session_id).toBe('sess-perf');
+    });
+
+    it('createCheckoutSession heating on a warm idempotency key stays cheap', async () => {
+        const ref = { invoices: [] as Row[], payment_intents: [] as Row[] };
+        const supabase = perfFakeSupabase(ref);
+        const key = 'perf-dup-key';
+        await createCheckoutSession(
+            { tierId: 'digital', email: 'perf@example.com', fullName: 'Perf Buyer', country: 'EG', idempotencyKey: key },
+            { supabase, gatewayFactory: () => perfGateway() as never, pricingRows: async () => [] },
+        );
+        await benchAsync('createCheckoutSession(idempotent replay)', async () => {
+            await createCheckoutSession(
+                { tierId: 'digital', email: 'perf@example.com', fullName: 'Perf Buyer', country: 'EG', idempotencyKey: key },
+                { supabase, gatewayFactory: () => perfGateway() as never, pricingRows: async () => [] },
+            );
+        }, 5_000, 500);
     });
 });
