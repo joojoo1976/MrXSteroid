@@ -65,6 +65,17 @@ export interface WebhookVerificationResult {
     detailedStatus?: PaymentDetailedStatus;
     /** Provider's merchant ID extracted from the webhook payload (used for cross-account validation) */
     merchantId?: string;
+    /**
+     * Provider's own status string for the transaction (Kashier de-dupe key component:
+     * `{transactionId}::{webhookUrl}::{status}` — C7). e.g. APPROVED / DECLINED / ORDER_PAID_BEFORE.
+     */
+    providerStatus?: string;
+    /** True when the provider marks this event as a replay (Kashier event:"idempotency" / ORDER_PAID_BEFORE) — ack, no financial mutation. */
+    replay?: boolean;
+    /** Reconciliation verdict surfacing from the provider payload (true = OK, undefined when not reported). */
+    isReconciled?: boolean;
+    /** Provider event kind (pay, authorize, capture, refund, void, reject, reversal, ...). */
+    providerOperation?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

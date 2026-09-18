@@ -24,6 +24,9 @@ function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insert
 
     const chain: Record<string, unknown> = {};
     chain.single = vi.fn().mockResolvedValue(singleResult);
+    chain.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    chain.order = vi.fn().mockReturnValue(chain);
+    chain.limit = vi.fn().mockReturnValue(chain);
     chain.in = vi.fn().mockResolvedValue({ error: null });
     chain.eq = vi.fn().mockReturnValue(chain);
     chain.select = vi.fn().mockReturnValue(chain);

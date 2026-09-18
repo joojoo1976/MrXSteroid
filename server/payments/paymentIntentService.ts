@@ -127,7 +127,7 @@ export async function createPaymentIntentAttempt(
  * and ensures that an older attempt cannot downgrade an invoice that is already PAID.
  */
 export function canApplyWebhookToIntent(params: {
-    intent: PaymentIntentRecord;
+    intent: Pick<PaymentIntentRecord, 'attempt_number' | 'is_current'>;
     invoiceStatus: string;
     incomingStatus: string;
 }): { canApply: boolean; reason?: string } {

@@ -323,6 +323,14 @@ export class KashierGateway implements IPaymentGateway {
         const paidAmount = payload.amount ? parseFloat(String(payload.amount)) : undefined;
         const transactionId = String(payload.transactionId || invoiceId || "");
 
+        // Phase 5 (C7): surface the provider's own status for de-dupe + replay detection.
+        // C12: `data.hash` is an internal Kashier integrity field — explicitly NOT verified.
+        const rawProviderStatus = String(
+            payload.orderStatus ?? payload.status ?? payload.lastStatus ?? ""
+        ).toUpperCase();
+        const rawEvent = String(payload.event ?? "").toLowerCase();
+        const isReplay = rawEvent === "idempotency" || rawProviderStatus === "ORDER_PAID_BEFORE";
+
         let mappedStatus: "success" | "failed" | undefined;
         let detailedStatus: PaymentDetailedStatus = "UNKNOWN";
 
@@ -362,6 +370,10 @@ export class KashierGateway implements IPaymentGateway {
             externalReferenceId: transactionId,
             paidAmount,
             merchantId,
+            providerStatus: rawProviderStatus || resolution.detailedStatus || undefined,
+            replay: isReplay || undefined,
+            isReconciled: resolution.isReconciled,
+            providerOperation: rawEvent || "pay",
         };
     }
 

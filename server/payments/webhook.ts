@@ -19,6 +19,7 @@ import type { VercelRequest, VercelResponse } from './gateways/vercel-types';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
 import { verifyPaidAmount } from './verifyPaidAmount';
+import { canApplyWebhookToIntent } from './paymentIntentService';
 
 /**
  * Admin Supabase client for the webhook handler.
@@ -179,6 +180,34 @@ async function processWebhook(
 
         const invoiceId = verification.invoiceId;
 
+        // ── Phase 5: parse once; persist provider signals (C7) ─────────────────
+        // C12: `data.hash` is an internal Kashier integrity field — the handler
+        // MUST explicitly NOT attempt to verify it. It is only stored raw.
+        let parsedRawPayload: Record<string, unknown> = {};
+        try { parsedRawPayload = rawBody.length > 0 ? JSON.parse(rawBody) : {}; } catch { /* ignore */ }
+
+        const providerStatus = verification.providerStatus
+            || String(parsedRawPayload.orderStatus ?? parsedRawPayload.status ?? parsedRawPayload.lastStatus ?? '')
+            || verification.detailedStatus
+            || null;
+        const isReplay = verification.replay === true
+            || parsedRawPayload.event === 'idempotency'
+            || String(parsedRawPayload.orderStatus ?? '').toUpperCase() === 'ORDER_PAID_BEFORE';
+
+        // Resolve the invoice's LATEST PaymentIntent try so the webhook can persist
+        // the provider verdict on the attempt row and enforce the late-arrival guard.
+        let currentIntentId: string | null = null;
+        if (invoiceId) {
+            const { data: intentRow } = await supabase
+                .from('payment_intents')
+                .select('id, attempt_number, is_current, status')
+                .eq('invoice_id', invoiceId)
+                .order('attempt_number', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            currentIntentId = intentRow?.id || null;
+        }
+
         // â”€â”€â”€ DB-LEVEL WEBHOOK DEDUPLICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // Build a stable provider_event_id: for Kashier = transactionId, else externalReferenceId
         const providerEventId = verification.externalReferenceId || invoiceId || '';
@@ -187,9 +216,6 @@ async function processWebhook(
             : null;
 
         if (providerEventId) {
-            let parsedRawPayload: Record<string, unknown> = {};
-            try { parsedRawPayload = JSON.parse(rawBody); } catch { /* ignore */ }
-
             const { error: dedupError } = await supabase
                 .from('webhook_events')
                 .insert({
@@ -197,6 +223,10 @@ async function processWebhook(
                     merchant_account: verification.merchantId || null,
                     provider_event_id: providerEventId,
                     transaction_id: verification.externalReferenceId || null,
+                    provider_transaction_id: verification.externalReferenceId || null,
+                    provider_status: providerStatus,
+                    provider_operation: verification.providerOperation || 'pay',
+                    payment_intent_id: currentIntentId,
                     invoice_id: invoiceId || null,
                     event_type: verification.detailedStatus || verification.status || 'unknown',
                     payload_hash: payloadHash,
@@ -226,6 +256,26 @@ async function processWebhook(
         // â”€â”€â”€ TIMED_OUT / UNKNOWN / UNRESOLVED â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // These statuses must NOT trigger fulfillment or permanent failure.
         // Mark as pending reconciliation and return 200 to suppress gateway retries.
+        // ── C7 REPLAY GUARD ────────────────────────────────────────────────────
+        // Replayed order notifications arrive as `event:"idempotency"` /
+        // `ORDER_PAID_BEFORE` (spec §10): acknowledge (200), NO financial mutation.
+        if (isReplay) {
+            console.log(`♻️ [Webhook] ${gatewayName} replay event (${providerStatus || 'idempotency'}) — acknowledged, no mutation`);
+            if (providerEventId) {
+                await supabase
+                    .from('webhook_events')
+                    .update({
+                        status: 'duplicate',
+                        processing_status: 'replay',
+                        processed_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('provider', gatewayName.toLowerCase())
+                    .eq('provider_event_id', providerEventId);
+            }
+            return respond(200, { status: 'ok', message: 'Replay acknowledged — no mutation' });
+        }
+
         const isUnresolved = !verification.status &&
             (verification.detailedStatus === 'TIMED_OUT' ||
              verification.detailedStatus === 'UNKNOWN' ||
@@ -233,7 +283,7 @@ async function processWebhook(
              !verification.detailedStatus);
 
         if (isUnresolved) {
-            console.log(`â³ [Webhook] Unresolved status (${verification.detailedStatus}) for invoice ${invoiceId} â€” no action, pending reconciliation`);
+            console.log(`⏳ [Webhook] Unresolved status (${verification.detailedStatus}) for invoice ${invoiceId} — no action, pending reconciliation`);
             if (invoiceId) {
                 await supabase
                     .from('invoices')
@@ -244,6 +294,18 @@ async function processWebhook(
                     .eq('id', invoiceId)
                     .in('payment_status', ['pending', 'initiated']);
             }
+            // Phase 5: mirror the provider signal onto the current PaymentIntent.
+            if (currentIntentId) {
+                await supabase
+                    .from('payment_intents')
+                    .update({
+                        status: 'unknown',
+                        provider_status: providerStatus,
+                        provider_transaction_id: verification.externalReferenceId || null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', currentIntentId);
+            }
             // Mark webhook_events record as skipped
             if (providerEventId) {
                 await supabase
@@ -252,7 +314,7 @@ async function processWebhook(
                     .eq('provider', gatewayName.toLowerCase())
                     .eq('provider_event_id', providerEventId);
             }
-            return respond(200, { status: 'ok', message: 'Event acknowledged â€” pending reconciliation' });
+            return respond(200, { status: 'ok', message: 'Event acknowledged — pending reconciliation' });
         }
         // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -268,8 +330,51 @@ async function processWebhook(
             .eq('id', invoiceId)
             .single();
 
+        // ── N-1 LATE-ARRIVAL GUARD (spec §10) ─────────────────────────────────
+        // Never let a webhook downgrade an invoice that is already paid, and never
+        // mutate through a stale/intentionally-void attempt. QUARANTINE instead of
+        // destructive rejection; the provider signal is still persisted on the row.
+        if (currentIntentId) {
+            const { data: intentRow } = await supabase
+                .from('payment_intents')
+                .select('id, attempt_number, is_current, status')
+                .eq('id', currentIntentId)
+                .single();
+            if (intentRow) {
+                const guard = canApplyWebhookToIntent({
+                    intent: intentRow,
+                    invoiceStatus: existing?.payment_status || existing?.status || '',
+                    incomingStatus: verification.status || 'unknown',
+                });
+                if (!guard.canApply) {
+                    console.warn(`⚠️ [Webhook] ${guard.reason}`);
+                    if (providerEventId) {
+                        await supabase
+                            .from('webhook_events')
+                            .update({
+                                status: 'skipped',
+                                processing_status: `quarantined: ${String(guard.reason || 'late arrival').slice(0, 200)}`,
+                                processed_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString(),
+                            })
+                            .eq('provider', gatewayName.toLowerCase())
+                            .eq('provider_event_id', providerEventId);
+                    }
+                    await supabase
+                        .from('payment_intents')
+                        .update({
+                            provider_status: providerStatus,
+                            provider_transaction_id: verification.externalReferenceId || null,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', currentIntentId);
+                    return respond(200, { status: 'ok', message: 'Quarantined — late-arrival event, no mutation' });
+                }
+            }
+        }
+
         if (existing?.status === 'success' || existing?.payment_status === 'paid') {
-            console.log(`âš¡ [Webhook] Invoice ${invoiceId} already processed â€” idempotent skip`);
+            console.log(`⚡ [Webhook] Invoice ${invoiceId} already processed — idempotent skip`);
             if (providerEventId) {
                 await supabase
                     .from('webhook_events')
@@ -279,6 +384,7 @@ async function processWebhook(
             }
             return respond(200, { status: 'ok', message: 'Already processed' });
         }
+        // ────────────────────────────────────────────────────────────────────────
         // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         // â”€â”€â”€ PROCESS PAYMENT RESULT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -286,7 +392,7 @@ async function processWebhook(
             // Defense-in-depth: never activate on a mismatched charge.
             const amountCheck = await verifyPaidAmount(invoiceId, verification.paidAmount);
             if (!amountCheck.ok) {
-                console.error(`âŒ [Webhook] Amount verification failed for ${invoiceId} â€” not activating.`);
+                console.error(`❌ [Webhook] Amount verification failed for ${invoiceId} — not activating.`);
                 await supabase
                     .from('invoices')
                     .update({
@@ -297,6 +403,18 @@ async function processWebhook(
                         updated_at: new Date().toISOString(),
                     })
                     .eq('id', invoiceId);
+                // Phase 5: persist the provider verdict on the intent.
+                if (currentIntentId) {
+                    await supabase
+                        .from('payment_intents')
+                        .update({
+                            status: 'failed',
+                            provider_status: providerStatus,
+                            provider_transaction_id: verification.externalReferenceId || null,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', currentIntentId);
+                }
                 if (providerEventId) {
                     await supabase
                         .from('webhook_events')
@@ -304,7 +422,7 @@ async function processWebhook(
                         .eq('provider', gatewayName.toLowerCase())
                         .eq('provider_event_id', providerEventId);
                 }
-                return respond(200, { status: 'ok', message: 'Amount mismatch â€” not activated' });
+                return respond(200, { status: 'ok', message: 'Amount mismatch — not activated' });
             }
 
             // 1. Update invoice to paid
@@ -332,6 +450,19 @@ async function processWebhook(
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', invoiceId);
+
+            // Phase 5: persist the provider verdict on the current PaymentIntent.
+            if (currentIntentId) {
+                await supabase
+                    .from('payment_intents')
+                    .update({
+                        status: 'succeeded',
+                        provider_status: providerStatus,
+                        provider_transaction_id: verification.externalReferenceId || null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', currentIntentId);
+            }
 
 
             // 2. Get invoice details for profile update and affiliate commission
@@ -446,7 +577,20 @@ async function processWebhook(
                 })
                 .eq('id', invoiceId);
 
-            console.log(`âŒ [Webhook] Payment failed for invoice: ${invoiceId} (${verification.detailedStatus || 'unknown'})`);
+            // Phase 5: persist the provider verdict on the current PaymentIntent.
+            if (currentIntentId) {
+                await supabase
+                    .from('payment_intents')
+                    .update({
+                        status: 'failed',
+                        provider_status: providerStatus,
+                        provider_transaction_id: verification.externalReferenceId || null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', currentIntentId);
+            }
+
+            console.log(`❌ [Webhook] Payment failed for invoice: ${invoiceId} (${verification.detailedStatus || 'unknown'})`);
         }
 
         // Mark webhook_events as processed
