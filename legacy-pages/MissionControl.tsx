@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -45,9 +45,10 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { ContentStrings } from '../shared/types/types';
 import { RevenueSplitsManager } from '../features/admin/RevenueSplitsManager';
+import { SeoIntelligenceDashboard } from '../features/admin/SeoIntelligenceDashboard';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
-type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms';
+type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms' | 'seo';
 
 interface VariantForm {
     id?: string;
@@ -96,6 +97,7 @@ const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
     { key: 'messages', icon: Mail },
     { key: 'logistics', icon: Map },
     { key: 'settings', icon: Settings },
+    { key: 'seo', icon: TrendingUp },
 ];
 
 const MissionControl: React.FC = () => {
@@ -106,7 +108,7 @@ const MissionControl: React.FC = () => {
     const [search, setSearch] = useState('');
     const data = useAdminData();
 
-    const sections = SECTIONS.map(s => ({ ...s, label: mc.sections[s.key] }));
+    const sections = SECTIONS.map(s => ({ ...s, label: s.key === 'seo' ? 'SEO Intelligence' : (mc.sections as Record<string,string>)[s.key] ?? s.key }));
 
     const navClass = (active: boolean) =>
         `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -231,7 +233,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
         case 'messages': return <MessagesSection data={data} search={search} onRefresh={onRefresh} mc={mc} />;
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
         case 'settings': return <SettingsSection data={data} mc={mc} />;
-        default: return null;
+        case 'seo': return <SeoIntelligenceDashboard />;
     }
 };
 

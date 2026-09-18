@@ -27,6 +27,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { RECONCILIATION_POLICY, delayForAttempt } from './backoffPolicy';
 
 type StatusOutcome = 'SUCCESS' | 'FAILURE' | 'PENDING' | 'EXPIRED' | 'UNKNOWN';
 
@@ -109,9 +110,6 @@ export interface ReconciliationRunSummary {
     }>;
 }
 
-const delayForAttempt = (attempt: number, baseMinutes: number, capMinutes: number): number =>
-    Math.min(baseMinutes * Math.pow(2, Math.max(0, attempt - 1)), capMinutes);
-
 function isCandidateStatus(status: string | null): boolean {
     const s = (status || '').toUpperCase();
     return s === 'INITIATED' || s === 'PENDING' || s === 'UNKNOWN';
@@ -180,8 +178,8 @@ export async function runReconciliation(
     const triggerSource = options.triggerSource || 'cron';
     const staleMinutes = options.staleInvoiceMinutes ?? 15;
     const maxAttempts = options.maxAttempts ?? 12;
-    const backoffBase = options.backoffBaseMinutes ?? 5;
-    const backoffCap = options.backoffMaxMinutes ?? 480;
+    const backoffBase = options.backoffBaseMinutes ?? RECONCILIATION_POLICY.baseMinutes;
+    const backoffCap = options.backoffMaxMinutes ?? RECONCILIATION_POLICY.capMinutes;
     const limit = options.limit ?? 100;
     const maxEvents = options.maxEvents ?? 500;
 

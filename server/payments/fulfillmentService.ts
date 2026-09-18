@@ -38,6 +38,14 @@ export interface ProviderVerdictInput {
     providerEventId: string;
     /** Latest PaymentIntent id for this invoice (resolve via intent lookup if not supplied). */
     currentIntentId?: string | null;
+    /**
+     * Per-intent monotonic CAS counter (Phase 8 gate_version). When supplied, the
+     * verdict is only applied if the intent's CURRENT gate_version still equals
+     * `expectedGateVersion` — a stale/adversarial verdict whose gate already moved
+     * past this value is QUARANTINED instead of overwriting the newer resolution.
+     * Omit (or pass undefined) for plain forward reconciliation (no CAS).
+     */
+    expectedGateVersion?: number;
     providerStatus: string | null;
     /**
      * 'webhook' -> reconcile webhook_events statuses exactly as Phase 5 does.
@@ -194,6 +202,39 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
 
     // ── SUCCESS PATH (fulfillment) ────────────────────────────────────────────
     if (verdict.status === 'success') {
+        // Phase 8 gate_version CAS: an adversarial / late-arriving verdict that
+        // no longer matches the intent's CURRENT gate (i.e. a NEWER verdict already
+        // advanced the counter) must NOT overwrite the newer resolution. We bail
+        // out into QUARANTINE instead of racing the counter.
+        const expectedGate = input.expectedGateVersion;
+        const hasCAsGate = typeof expectedGate === 'number' && !!currentIntentId;
+        if (hasCAsGate) {
+            const { data: intentRow } = await supabase
+                .from('payment_intents')
+                .select('gate_version')
+                .eq('id', currentIntentId)
+                .single();
+            const intentGate = intentRow?.gate_version ?? 0;
+            if (intentGate !== expectedGate) {
+                console.warn(
+                    `⚠️ [Fulfillment] gate_version CAS miss for ${invoiceId}: expected ${expectedGate}, current ${intentGate} — quarantining stale verdict (no overwrite)`
+                );
+                if (source === 'webhook' && providerEventId) {
+                    await supabase
+                        .from('webhook_events')
+                        .update({
+                            status: 'skipped',
+                            processing_status: `quarantined: gate_version CAS mismatch (expected ${expectedGate}, current ${intentGate})`,
+                            processed_at: nowIso(),
+                            updated_at: nowIso(),
+                        })
+                        .eq('provider', providerKey)
+                        .eq('provider_event_id', providerEventId);
+                }
+                return { code: 'quarantined', reason: `gate_version CAS mismatch (expected ${expectedGate}, intent is at ${intentGate})` };
+            }
+        }
+
         // Defense-in-depth: never activate on a mismatched charge.
         const amountCheck = await verifyPaidAmount(invoiceId, verdict.paidAmount);
         if (!amountCheck.ok) {

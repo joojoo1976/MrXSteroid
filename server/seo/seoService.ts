@@ -1,8 +1,8 @@
 /**
  * server/seo/seoService.ts
- * High-Performance Serving & 3-Tier Fallback Architecture:
+ * High-Performance Serving & 3-Tier Fallback Architecture (v3.0):
  * 1. Precomputed Weekly Snapshot (sub-millisecond JSON cache in DB)
- * 2. Live Database Query (seo_keywords where is_active=true)
+ * 2. Live Database Query with Pinning, Blocking, YMYL safety, and Market filters
  * 3. In-Memory Baseline Seeds (zero network failure guarantee)
  */
 
@@ -49,8 +49,8 @@ export function buildSnapshotData(
     year: number,
     weekNumber: number
 ): SeoKeywordSnapshotData {
-    // Sort all by score descending
-    const sorted = [...keywords].sort((a, b) => b.score - a.score);
+    // Sort all by finalScore or score descending
+    const sorted = [...keywords].sort((a, b) => (b.finalScore ?? b.score) - (a.finalScore ?? a.score));
 
     // Trending: High trend + high demand (Top 25)
     const trending = sorted
@@ -69,7 +69,8 @@ export function buildSnapshotData(
 
     // Tools: Mapping to calculator / simulator routes
     const tools = sorted
-        .filter(k => k.destinationPath.startsWith('/macro') ||
+        .filter(k => k.intent === 'tool' ||
+                     k.destinationPath.startsWith('/macro') ||
                      k.destinationPath.startsWith('/bodyfat') ||
                      k.destinationPath.startsWith('/halflife') ||
                      k.destinationPath.startsWith('/injection') ||
@@ -88,18 +89,10 @@ export function buildSnapshotData(
     // Statistics
     const total = sorted.length;
     const avgScore = total > 0
-        ? Math.round((sorted.reduce((acc, k) => acc + k.score, 0) / total) * 10) / 10
+        ? Math.round((sorted.reduce((acc, k) => acc + (k.finalScore ?? k.score), 0) / total) * 10) / 10
         : 0;
 
-    const intentsDistribution: Record<SearchIntent, number> = {
-        informational: 0,
-        commercial: 0,
-        transactional: 0,
-        navigational: 0,
-        comparison: 0,
-        question: 0,
-        unknown: 0,
-    };
+    const intentsDistribution: Record<string, number> = {};
     const clustersDistribution: Record<string, number> = {};
 
     for (const k of sorted) {
@@ -157,9 +150,36 @@ export async function getOrGenerateWeeklySnapshot(
         }
     }
 
-    // ── Tier 2: Query active keywords from DB and build snapshot ───────────
+    // ── Tier 2: Query active keywords from DB with Blocklist exclusion ──────
     if (client) {
         try {
+            // Check for blocked keywords
+            const blockedNormalizedSet = new Set<string>();
+            try {
+                const { data: blocks } = await client
+                    .from('seo_keyword_blocks')
+                    .select('normalized_keyword')
+                    .eq('language', language);
+                if (blocks) {
+                    blocks.forEach(b => blockedNormalizedSet.add(b.normalized_keyword));
+                }
+            } catch {
+                // Table might not be migrated yet in some envs
+            }
+
+            // Check for pinned keyword IDs
+            const pinnedIdsSet = new Set<string>();
+            try {
+                const { data: pins } = await client
+                    .from('seo_keyword_pins')
+                    .select('keyword_id');
+                if (pins) {
+                    pins.forEach(p => pinnedIdsSet.add(p.keyword_id));
+                }
+            } catch {
+                // Ignore if pins table is pending
+            }
+
             const { data: keywordsRows, error: kwErr } = await client
                 .from('seo_keywords')
                 .select('*')
@@ -169,23 +189,33 @@ export async function getOrGenerateWeeklySnapshot(
                 .order('score', { ascending: false });
 
             if (!kwErr && keywordsRows && keywordsRows.length >= 10) {
-                const mapped: SeoKeyword[] = keywordsRows.map((r, idx) => ({
-                    id: r.id || `kw-${language}-${idx}`,
-                    keyword: r.original_keyword,
-                    language: r.language,
-                    locale: r.locale,
-                    originalKeyword: r.original_keyword,
-                    normalizedKeyword: r.normalized_keyword,
-                    cluster: r.cluster,
-                    intent: r.intent,
-                    trendStatus: r.trend_status,
-                    destinationPath: r.destination_path || '/',
-                    score: Number(r.score),
-                    scoreComponents: r.score_components || {},
-                    source: r.source,
-                    lastObservedAt: r.last_observed_at,
-                    isActive: r.is_active,
-                }));
+                const mapped: SeoKeyword[] = keywordsRows
+                    .filter(r => !blockedNormalizedSet.has(r.normalized_keyword))
+                    .map((r, idx) => ({
+                        id: r.id || `kw-${language}-${idx}`,
+                        keyword: r.original_keyword,
+                        language: r.language,
+                        locale: r.locale,
+                        originalKeyword: r.original_keyword,
+                        normalizedKeyword: r.normalized_keyword,
+                        cluster: r.cluster,
+                        intent: r.intent,
+                        trendStatus: r.trend_status,
+                        lifecycleStatus: r.lifecycle_status || 'active',
+                        isPinned: r.is_pinned === true || pinnedIdsSet.has(r.id),
+                        destinationPath: r.destination_path || '/',
+                        destinationType: r.destination_type || 'page',
+                        score: Number(r.score),
+                        finalScore: Number(r.final_score ?? r.score),
+                        confidenceScore: Number(r.confidence_score ?? 70),
+                        isYmyl: r.is_ymyl ?? false,
+                        medicalRiskLevel: r.medical_risk_level || 'low',
+                        reviewStatus: r.review_status || 'approved',
+                        scoreComponents: r.score_components || {},
+                        source: r.source,
+                        lastObservedAt: r.last_observed_at,
+                        isActive: r.is_active,
+                    }));
 
                 const snapshot = buildSnapshotData(mapped, language, year, weekNumber);
 
@@ -220,6 +250,40 @@ export function filterKeywordsByCategory(
 ): SeoKeyword[] {
     const list = snapshot.categories[category] || snapshot.categories.all;
     return list.slice(0, limit);
+}
+
+/**
+ * Filter keywords tailored for a specific route / page (Page-Level Personalization).
+ */
+export function filterKeywordsForRoute(
+    keywords: SeoKeyword[],
+    route: string,
+    limit: number = 24
+): SeoKeyword[] {
+    if (!route || route === '/') {
+        return keywords.slice(0, limit);
+    }
+
+    const cleanRoute = route.split('?')[0].toLowerCase();
+
+    // 1. Direct match with destinationPath
+    const exactMatches = keywords.filter(k => k.destinationPath.toLowerCase() === cleanRoute);
+
+    // 2. Clustered / related match
+    let relatedCluster = '';
+    if (cleanRoute.includes('macro') || cleanRoute.includes('bodyfat')) relatedCluster = 'cutting-fatloss';
+    else if (cleanRoute.includes('halflife') || cleanRoute.includes('cycle')) relatedCluster = 'smart-tools';
+    else if (cleanRoute.includes('lab') || cleanRoute.includes('injection')) relatedCluster = 'hormone-safety';
+    else if (cleanRoute.includes('checkout')) relatedCluster = 'anabolic-steroids';
+
+    const relatedMatches = relatedCluster
+        ? keywords.filter(k => k.cluster === relatedCluster && k.destinationPath.toLowerCase() !== cleanRoute)
+        : [];
+
+    const combined = [...exactMatches, ...relatedMatches];
+    const pool = exactMatches.length > 0 ? combined : (combined.length >= 6 ? combined : keywords);
+
+    return pool.slice(0, limit);
 }
 
 /**

@@ -1,7 +1,7 @@
 /**
  * server/seo/intentClassifier.ts
- * Search Intent Classification Engine for English and Arabic.
- * Supported Intents: informational, commercial, transactional, navigational, comparison, question, unknown.
+ * Search Intent & YMYL Classification Engine for English and Arabic (v3.0).
+ * Supports primary & secondary intent detection plus YMYL / Medical Risk assessment.
  */
 
 import { SearchIntent, SeoLanguage } from './types';
@@ -83,14 +83,14 @@ const INTENT_RULES: IntentRule[] = [
         confidence: 0.90,
     },
 
-    // 6. Informational (Educational, scientific, calculation)
+    // 6. Informational (Educational, scientific, calculation & interactive tool terms)
     {
         intent: 'informational',
         patternsEn: [
-            /\b(calculator|calc|half life|dosage|dose|ranges|levels|symptoms|side effects|mechanism|causes|tips|science|blood work|cycle)\b/i,
+            /\b(calculator|calc|half life|dosage|dose|ranges|levels|symptoms|side effects|mechanism|causes|tips|science|blood work|cycle|simulator|plotter|estimator|converter|tracker)\b/i,
         ],
         patternsAr: [
-            /(?:^|\s)(حاسبة|حاسبه|حساب|عمر النصف|جرعات|جرعة|جرعه|تحليل|تحاليل|نسبة|نسبه|اعراض|آثار جانبية|اثاره|فوائد|اضرار|معدل|علم)(?:$|\s)/,
+            /(?:^|\s)(حاسبة|حاسبه|حساب|عمر النصف|جرعات|جرعة|جرعه|تحليل|تحاليل|نسبة|نسبه|اعراض|آثار جانبية|اثاره|فوائد|اضرار|معدل|علم|محاكي|مخطط)(?:$|\s)/,
         ],
         confidence: 0.85,
     },
@@ -98,16 +98,13 @@ const INTENT_RULES: IntentRule[] = [
 
 /**
  * Classify the search intent of a given keyword.
- * Returns one of the 7 official intents:
- * 'informational' | 'commercial' | 'transactional' | 'navigational' | 'comparison' | 'question' | 'unknown'
+ * Preserves exact backward-compatible signature.
  */
 export function classifySearchIntent(raw: string, language: SeoLanguage): SearchIntent {
     if (!raw || raw.trim().length < 2) return 'unknown';
 
     const normalized = normalizeKeyword(raw, language);
 
-    // Evaluate rules in prioritized order:
-    // Transactional > Comparison > Question > Commercial > Navigational > Informational
     for (const rule of INTENT_RULES) {
         const patterns = language === 'ar' ? rule.patternsAr : rule.patternsEn;
         for (const pattern of patterns) {
@@ -117,7 +114,6 @@ export function classifySearchIntent(raw: string, language: SeoLanguage): Search
         }
     }
 
-    // Default fallback: if it contains 3 or more words, it's typically informational; otherwise unknown
     const wordCount = normalized.split(/\s+/).length;
     if (wordCount >= 2) {
         return 'informational';
@@ -127,3 +123,54 @@ export function classifySearchIntent(raw: string, language: SeoLanguage): Search
 }
 
 export const classifyIntent = classifySearchIntent;
+
+/**
+ * Classifies medical/YMYL risk for human-in-the-loop review.
+ * Flags keywords that mention high-potency androgens, injection techniques, or cardiovascular/liver risks.
+ */
+export function classifyYmylRisk(raw: string, language: SeoLanguage): {
+    isYmyl: boolean;
+    medicalRiskLevel: 'low' | 'medium' | 'high';
+    requiresReview: boolean;
+} {
+    const lower = raw.toLowerCase();
+    const normalized = normalizeKeyword(raw, language);
+
+    // High risk: Trenbolone, Halotestin, Clenbuterol high doses, extreme toxicity, injection protocol
+    const highRiskTerms = [
+        'tren', 'trenbolone', 'halotestin', 'dnp', 'insulin', 'clenbuterol', 'injection',
+        'ترينبولون', 'ترين', 'انسولين', 'كلين بترول', 'حقن', 'ابرة', 'إبرة', 'تسمم'
+    ];
+
+    for (const t of highRiskTerms) {
+        if (lower.includes(t) || normalized.includes(t)) {
+            return {
+                isYmyl: true,
+                medicalRiskLevel: 'high',
+                requiresReview: true,
+            };
+        }
+    }
+
+    // Medium risk: general steroids, PCT, liver support, blood work
+    const mediumRiskTerms = [
+        'testosterone', 'anavar', 'deca', 'pct', 'clomid', 'nolvadex', 'tudca', 'liver', 'blood',
+        'تستوستيرون', 'تيست', 'انافار', 'ديكا', 'تنظيف', 'كلوميد', 'نولفادكس', 'كبد', 'تحليل'
+    ];
+
+    for (const t of mediumRiskTerms) {
+        if (lower.includes(t) || normalized.includes(t)) {
+            return {
+                isYmyl: true,
+                medicalRiskLevel: 'medium',
+                requiresReview: false, // medium risk can be published under standard review
+            };
+        }
+    }
+
+    return {
+        isYmyl: false,
+        medicalRiskLevel: 'low',
+        requiresReview: false,
+    };
+}

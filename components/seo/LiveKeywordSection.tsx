@@ -20,6 +20,8 @@ export interface LiveKeywordItem {
     score: number;
     trendStatus: string;
     isRising?: boolean;
+    isPinned?: boolean;
+    isYmyl?: boolean;
 }
 
 export interface LiveKeywordSectionProps {
@@ -42,6 +44,8 @@ interface RawKeywordResponseItem {
     score?: number;
     trendStatus?: string;
     isRising?: boolean;
+    isPinned?: boolean;
+    isYmyl?: boolean;
 }
 
 export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
@@ -101,6 +105,8 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                 score: typeof k.score === 'number' ? k.score : 70,
                                 trendStatus: k.trendStatus || 'stable',
                                 isRising: k.trendStatus === 'rising' || k.isRising === true,
+                                isPinned: k.isPinned === true,
+                                isYmyl: k.isYmyl === true,
                             };
                         })
                         .filter(k => k.keyword.length > 0 && k.language === lang);
@@ -271,7 +277,11 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                 }`}
                                 title={`${item.keyword} (${item.destinationPath})`}
                             >
-                                <span>{item.keyword}</span>
+                                {item.isPinned && (
+                                    <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-gold-500/20 text-gold-400 border border-gold-500/30">
+                                        {isAr ? 'مثبت 📌' : 'PINNED 📌'}
+                                    </span>
+                                )}
 
                                 {isRising && (
                                     <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">

@@ -3,10 +3,12 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin, getIsoWeek, buildSnapshotData } from '../../../../server/seo/seoService';
 import {
     calculateKeywordScore,
+    calculateKeywordScoreV3,
     calculateFreshnessScore,
     calculateSeasonalScore,
     determineTrendStatus,
 } from '../../../../server/seo/scoringEngine';
+import { classifyYmylRisk } from '../../../../server/seo/intentClassifier';
 import { SeoKeyword, SeoLanguage } from '../../../../server/seo/types';
 
 export const dynamic = 'force-dynamic';
@@ -14,9 +16,15 @@ export const dynamic = 'force-dynamic';
 interface KeywordUpdatePayload {
     id: string;
     score: number;
+    final_score: number;
+    raw_score: number;
     trend_status: string;
     score_components: Record<string, number>;
+    is_ymyl: boolean;
+    medical_risk_level: string;
+    requires_review: boolean;
     last_analyzed_at: string;
+    last_scored_at: string;
 }
 
 interface SnapshotSummary {
@@ -120,6 +128,17 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Fetch pinned keywords (must be protected from retirement)
+        const pinnedKeywordsSet = new Set<string>();
+        try {
+            const { data: pins } = await supabase.from('seo_keyword_pins').select('keyword_id');
+            if (pins) {
+                pins.forEach(p => pinnedKeywordsSet.add(p.keyword_id));
+            }
+        } catch {
+            // Pins table might be optional
+        }
+
         // 3. Scan all active keywords
         const { data: keywordsRows, error: kwError } = await supabase
             .from('seo_keywords')
@@ -169,16 +188,29 @@ export async function POST(req: NextRequest) {
                 demand: dynamicDemand,
             };
 
-            const newScore = calculateKeywordScore(updatedComponents);
-            const newTrendStatus = determineTrendStatus({
+            const legacyScore = calculateKeywordScore(updatedComponents);
+            const v3ScoreResult = calculateKeywordScoreV3(updatedComponents);
+
+            // Check if pinned
+            const isPinned = pinnedKeywordsSet.has(row.id) || row.is_pinned === true;
+
+            let newTrendStatus = determineTrendStatus({
                 daysSinceFirstSeen,
                 daysSinceLastObserved: daysSinceObserved,
                 trendScore: updatedComponents.trend || 70,
-                overallScore: newScore,
+                overallScore: v3ScoreResult.finalScore,
             });
 
+            // If pinned, never retire
+            if (isPinned && (newTrendStatus === 'retired' || newTrendStatus === 'declining')) {
+                newTrendStatus = 'stable';
+            }
+
+            // YMYL classification audit
+            const ymylClassification = classifyYmylRisk(row.original_keyword || row.keyword || '', row.language);
+
             const hasChanged =
-                Math.abs(Number(row.score) - newScore) > 0.5 ||
+                Math.abs(Number(row.final_score ?? row.score) - v3ScoreResult.finalScore) > 0.5 ||
                 row.trend_status !== newTrendStatus;
 
             if (hasChanged) {
@@ -187,10 +219,16 @@ export async function POST(req: NextRequest) {
 
                 updatedKeywords.push({
                     id: row.id,
-                    score: newScore,
+                    score: legacyScore,
+                    final_score: v3ScoreResult.finalScore,
+                    raw_score: v3ScoreResult.rawScore,
                     trend_status: newTrendStatus,
                     score_components: updatedComponents,
+                    is_ymyl: ymylClassification.isYmyl,
+                    medical_risk_level: ymylClassification.medicalRiskLevel,
+                    requires_review: ymylClassification.requiresReview,
                     last_analyzed_at: now.toISOString(),
+                    last_scored_at: now.toISOString(),
                 });
             }
         }
@@ -202,9 +240,15 @@ export async function POST(req: NextRequest) {
                     .from('seo_keywords')
                     .update({
                         score: item.score,
+                        final_score: item.final_score,
+                        raw_score: item.raw_score,
                         trend_status: item.trend_status,
                         score_components: item.score_components,
+                        is_ymyl: item.is_ymyl,
+                        medical_risk_level: item.medical_risk_level,
+                        requires_review: item.requires_review,
                         last_analyzed_at: item.last_analyzed_at,
+                        last_scored_at: item.last_scored_at,
                     })
                     .eq('id', item.id);
             }
@@ -236,6 +280,7 @@ export async function POST(req: NextRequest) {
                     trendStatus: r.trend_status,
                     destinationPath: r.destination_path,
                     score: Number(r.score),
+                    finalScore: Number(r.final_score ?? r.score),
                     scoreComponents: r.score_components || {},
                     source: r.source,
                     lastObservedAt: r.last_observed_at,
