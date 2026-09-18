@@ -15,6 +15,7 @@ import {
 } from '../../server/seo/scoringEngine';
 import { classifyYmylRisk } from '../../server/seo/intentClassifier';
 import { filterKeywordsForRoute } from '../../server/seo/seoService';
+import { hashSearchQuery, generateSessionRefHash } from '../../server/seo/searchTelemetry';
 import { SeoKeyword, ScoreComponents } from '../../server/seo/types';
 
 describe('Global SEO Intelligence Platform v3.0 Core Engines', () => {
@@ -172,6 +173,23 @@ describe('Global SEO Intelligence Platform v3.0 Core Engines', () => {
         it('returns all keywords when home route / is requested', () => {
             const results = filterKeywordsForRoute(sampleKeywords, '/', 10);
             expect(results.length).toBe(3);
+        });
+    });
+
+    describe('5. Anonymous Search Telemetry & Hash Privacy (Section 14)', () => {
+        it('generates consistent deterministic sha-256 hash without exposing cleartext', () => {
+            const hash1 = hashSearchQuery('Creatine Monohydrate');
+            const hash2 = hashSearchQuery('creatine monohydrate ');
+
+            expect(hash1).toBe(hash2);
+            expect(hash1.length).toBe(64);
+            expect(hash1).not.toContain('creatine');
+        });
+
+        it('generates pseudonymous session reference hash', () => {
+            const sess1 = generateSessionRefHash('192.168.1.1');
+            expect(sess1).toBeDefined();
+            expect(sess1.length).toBe(24);
         });
     });
 });
