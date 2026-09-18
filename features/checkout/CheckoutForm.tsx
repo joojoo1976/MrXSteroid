@@ -686,7 +686,10 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     </div>
                                 </motion.div>
 
-                                {/* Option 2: Paymob Card (5573815) */}
+                                {/* HIDING PAYMOB METHODS TEMPORARILY */}
+                                {false && (
+                                    <>
+                                        {/* Option 2: Paymob Card (5573815) */}
                                 <motion.div
                                     id="checkout-method-card"
                                     whileHover={{ scale: 1.01 }}
@@ -812,6 +815,8 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         {paymobMethod === 'kiosk' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
                                     </div>
                                 </motion.div>
+                                    </>
+                                )}
 
                                 {/* Option 4: InstaPay Instant Bank Transfer (إنستاباي) */}
                                 <motion.div
@@ -935,9 +940,12 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                     </span>
                                 </div>
 
-                                <motion.div
-                                    id="checkout-method-paypal"
-                                    whileHover={{ scale: 1.01 }}
+                                {/* HIDING PAYMOB METHODS TEMPORARILY */}
+                                {false && (
+                                    <>
+                                        <motion.div
+                                            id="checkout-method-paypal"
+                                            whileHover={{ scale: 1.01 }}
                                     onClick={() => setPaymobMethod('paypal')}
                                     className={cn(
                                         "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
@@ -965,7 +973,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                         </span>
                                         {paymobMethod === 'paypal' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
                                     </div>
-                                </motion.div>
+                                        </motion.div>
+                                    </>
+                                )}
 
                                 {/* Option 2: Link by Stripe (embedded PaymentElement) */}
                                 <motion.div

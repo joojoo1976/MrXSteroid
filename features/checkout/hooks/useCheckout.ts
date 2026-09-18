@@ -69,7 +69,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     // Single source of truth: `isEg` prop (from CheckoutPage). regionOption is
     // derived so every region toggle across the page stays in sync.
     const regionOption: RegionOption = isEgProp ? 'EG' : 'GLOBAL';
-    const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(regionOption === 'EG' ? 'card' : 'paypal');
+    const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(regionOption === 'EG' ? 'kashier' : 'stripe');
 
     // Promo Code State
     const [promoCode, setPromoCode] = useState('');
@@ -176,7 +176,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const handleRegionChange = (newRegion: RegionOption) => {
         const isEgyptRegion = newRegion === 'EG';
         form.setValue('country', isEgyptRegion ? 'EG' : 'US');
-        setPaymobMethod(isEgyptRegion ? 'card' : 'paypal');
+        setPaymobMethod(isEgyptRegion ? 'kashier' : 'stripe');
         setStripeClientSecret(null);
         setStripeInvoiceId(null);
         setIsStripeReady(false);
