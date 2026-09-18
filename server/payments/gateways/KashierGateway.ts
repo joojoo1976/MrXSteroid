@@ -220,7 +220,8 @@ export class KashierGateway implements IPaymentGateway {
                 const res = await fetch(endpoint, {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${secretKey}`,
+                        // K-2 A2: raw Secret Key value — NOT `Bearer <key>` (same as createPaymentSession).
+                        Authorization: secretKey,
                         "api-key": this.config.paymentApiKey,
                     },
                 });

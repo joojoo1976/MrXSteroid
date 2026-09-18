@@ -212,7 +212,7 @@ async function processWebhook(
         // Build a stable provider_event_id: for Kashier = transactionId, else externalReferenceId
         const providerEventId = verification.externalReferenceId || invoiceId || '';
         const payloadHash = rawBody.length > 0
-            ? Buffer.from(crypto.createHash('sha256').update(rawBody).digest('hex')).toString('hex').slice(0, 64)
+            ? crypto.createHash('sha256').update(rawBody).digest('hex')
             : null;
 
         if (providerEventId) {
