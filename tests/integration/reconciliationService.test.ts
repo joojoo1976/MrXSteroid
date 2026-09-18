@@ -168,6 +168,31 @@ describe('Phase 7 — reconciliation snapshot diagnostics', () => {
         expect(fresh).toBeUndefined();
     });
 
+    it('does NOT false-flag provider_never_spoke when the intent falls outside the recent window (§C9 regression)', async () => {
+        // maxEvents window is small; a stale invoice may be inside the invoice
+        // window while its intent is OUTSIDE the recent-intent window.
+        // The scoped intent load must still see it.
+        seedInvoice({ id: 'inv-stale', payment_status: 'pending', created_at: agoMinutes(40) });
+        seedIntent({ id: 'pi-stale', invoice_id: 'inv-stale', attempt_number: 1, status: 'pending', provider_status: 'APPROVED', provider_transaction_id: 'txn-stale', created_at: agoMinutes(38) });
+
+        // Four fresh invoices (window = 5, so inv-stale stays inside the invoice
+        // window) each with an intent NEWER than pi-stale; inv-f0 gets a second
+        // attempt so that FIVE intents are newer than pi-stale, pushing it out of
+        // the recent-intent window.
+        for (let i = 0; i < 4; i++) {
+            seedInvoice({ id: `inv-f${i}`, payment_status: 'pending', created_at: agoMinutes(20 + i) });
+            seedIntent({ id: `pi-f${i}`, invoice_id: `inv-f${i}`, attempt_number: 1, status: 'initiated', provider_status: null, provider_transaction_id: null, created_at: agoMinutes(2 + i) });
+        }
+        seedIntent({ id: 'pi-f0b', invoice_id: 'inv-f0', attempt_number: 2, status: 'initiated', provider_status: null, provider_transaction_id: null, created_at: agoMinutes(1) });
+
+        const snapshot = await buildReconciliationSnapshot({ supabase, now: FIXED_NOW, staleInvoiceMinutes: 15, maxEvents: 5 });
+
+        const stale = snapshot.stale_pending_invoices.find((i) => i.id === 'inv-stale');
+        expect(stale).toBeDefined();
+        expect(stale?.provider_never_spoke).toBe(false);
+        expect(stale?.latest_provider_status).toBe('APPROVED');
+    });
+
     it('is strictly read-only — never mutates the DB, errors surface cleanly', async () => {
         seedEvent({ id: 'ev', provider: 'kashier_egypt', provider_event_id: 'txn', status: 'processed', provider_status: 'APPROVED', received_at: agoMinutes(1) });
         const eventsBefore = db.tables.webhook_events.length;

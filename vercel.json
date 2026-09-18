@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/payments/reconciliation/run",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

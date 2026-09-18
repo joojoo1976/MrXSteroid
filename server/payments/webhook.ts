@@ -18,8 +18,7 @@ import crypto from 'crypto';
 import type { VercelRequest, VercelResponse } from './gateways/vercel-types';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
-import { verifyPaidAmount } from './verifyPaidAmount';
-import { canApplyWebhookToIntent } from './paymentIntentService';
+import { applyProviderVerdict } from './fulfillmentService';
 
 /**
  * Admin Supabase client for the webhook handler.
@@ -48,21 +47,6 @@ const getSupabaseAdmin = () => {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //                         HELPERS
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
-interface InvoiceRow {
-    user_id: string | null;
-    tier_id: string | null;
-    affiliate_id: string | null;
-    referral_code: string | null;
-    amount: number | null;
-    currency: string | null;
-}
-
-interface SplitRow {
-    beneficiary_id: string;
-    allocated_amount_minor: number;
-    rule_snapshot: { role?: string } | null;
-}
 
 const json = (body: unknown, status = 200): Response =>
     new Response(JSON.stringify(body), {
@@ -324,282 +308,40 @@ async function processWebhook(
         }
 
         // â”€â”€â”€ INVOICE-LEVEL IDEMPOTENCY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        const { data: existing } = await supabase
-            .from('invoices')
-            .select('status, payment_status, user_id, tier_id')
-            .eq('id', invoiceId)
-            .single();
+        // ── Phase 7: SINGLE canonical state path (spec §11) ─────────────────
+        // All mutating work — invoice/intent state, profile activation, splits,
+        // ledger, entitlement, idempotency + late-arrival quarantine — is
+        // delegated to applyProviderVerdict so webhook and reconciliation cron
+        // resolve via the SAME code path (never a second posting).
+        const fulfillment = await applyProviderVerdict({
+            supabase,
+            invoiceId,
+            gatewayName,
+            verdict: {
+                status: verification.status as 'success' | 'failed',
+                externalReferenceId: verification.externalReferenceId,
+                paidAmount: verification.paidAmount,
+                providerStatus: providerStatus || undefined,
+                providerOperation: verification.providerOperation,
+            },
+            providerEventId,
+            currentIntentId,
+            providerStatus,
+            source: 'webhook',
+            rawBody,
+        });
 
-        // ── N-1 LATE-ARRIVAL GUARD (spec §10) ─────────────────────────────────
-        // Never let a webhook downgrade an invoice that is already paid, and never
-        // mutate through a stale/intentionally-void attempt. QUARANTINE instead of
-        // destructive rejection; the provider signal is still persisted on the row.
-        if (currentIntentId) {
-            const { data: intentRow } = await supabase
-                .from('payment_intents')
-                .select('id, attempt_number, is_current, status')
-                .eq('id', currentIntentId)
-                .single();
-            if (intentRow) {
-                const guard = canApplyWebhookToIntent({
-                    intent: intentRow,
-                    invoiceStatus: existing?.payment_status || existing?.status || '',
-                    incomingStatus: verification.status || 'unknown',
-                });
-                if (!guard.canApply) {
-                    console.warn(`⚠️ [Webhook] ${guard.reason}`);
-                    if (providerEventId) {
-                        await supabase
-                            .from('webhook_events')
-                            .update({
-                                status: 'skipped',
-                                processing_status: `quarantined: ${String(guard.reason || 'late arrival').slice(0, 200)}`,
-                                processed_at: new Date().toISOString(),
-                                updated_at: new Date().toISOString(),
-                            })
-                            .eq('provider', gatewayName.toLowerCase())
-                            .eq('provider_event_id', providerEventId);
-                    }
-                    await supabase
-                        .from('payment_intents')
-                        .update({
-                            provider_status: providerStatus,
-                            provider_transaction_id: verification.externalReferenceId || null,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('id', currentIntentId);
-                    return respond(200, { status: 'ok', message: 'Quarantined — late-arrival event, no mutation' });
-                }
-            }
+        if (fulfillment.code === 'quarantined') {
+            return respond(200, { status: 'ok', message: 'Quarantined — late-arrival event, no mutation' });
         }
-
-        if (existing?.status === 'success' || existing?.payment_status === 'paid') {
-            console.log(`⚡ [Webhook] Invoice ${invoiceId} already processed — idempotent skip`);
-            if (providerEventId) {
-                await supabase
-                    .from('webhook_events')
-                    .update({ status: 'duplicate', processed_at: new Date().toISOString() })
-                    .eq('provider', gatewayName.toLowerCase())
-                    .eq('provider_event_id', providerEventId);
-            }
+        if (fulfillment.code === 'already_processed') {
             return respond(200, { status: 'ok', message: 'Already processed' });
         }
-        // ────────────────────────────────────────────────────────────────────────
-        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-        // â”€â”€â”€ PROCESS PAYMENT RESULT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        if (verification.status === 'success') {
-            // Defense-in-depth: never activate on a mismatched charge.
-            const amountCheck = await verifyPaidAmount(invoiceId, verification.paidAmount);
-            if (!amountCheck.ok) {
-                console.error(`❌ [Webhook] Amount verification failed for ${invoiceId} — not activating.`);
-                await supabase
-                    .from('invoices')
-                    .update({
-                        status: 'failed',
-                        payment_status: 'failed',
-                        gateway_reference_id: verification.externalReferenceId || undefined,
-                        kashier_transaction_id: gatewayName.startsWith('KASHIER') ? (verification.externalReferenceId || undefined) : undefined,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', invoiceId);
-                // Phase 5: persist the provider verdict on the intent.
-                if (currentIntentId) {
-                    await supabase
-                        .from('payment_intents')
-                        .update({
-                            status: 'failed',
-                            provider_status: providerStatus,
-                            provider_transaction_id: verification.externalReferenceId || null,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('id', currentIntentId);
-                }
-                if (providerEventId) {
-                    await supabase
-                        .from('webhook_events')
-                        .update({ status: 'processed', processed_at: new Date().toISOString() })
-                        .eq('provider', gatewayName.toLowerCase())
-                        .eq('provider_event_id', providerEventId);
-                }
-                return respond(200, { status: 'ok', message: 'Amount mismatch — not activated' });
-            }
-
-            // 1. Update invoice to paid
-            let isFromPaymentPage = false;
-            try {
-                const parsed = JSON.parse(rawBody);
-                if (parsed.source === 'kashier_payment_page' || parsed.ppLink || parsed.prepaymentPage) {
-                    isFromPaymentPage = true;
-                }
-            } catch { /* ignore */ }
-
-            const kashierFields = gatewayName.startsWith('KASHIER') ? {
-                kashier_transaction_id: verification.externalReferenceId || undefined,
-                kashier_order_id: invoiceId,
-                payment_source: isFromPaymentPage ? 'kashier_payment_page' : 'kashier_gateway',
-            } : {};
-            await supabase
-                .from('invoices')
-                .update({
-                    status: 'success',
-                    payment_status: 'paid',
-                    paid_at: new Date().toISOString(),
-                    gateway_reference_id: verification.externalReferenceId || undefined,
-                    ...kashierFields,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', invoiceId);
-
-            // Phase 5: persist the provider verdict on the current PaymentIntent.
-            if (currentIntentId) {
-                await supabase
-                    .from('payment_intents')
-                    .update({
-                        status: 'succeeded',
-                        provider_status: providerStatus,
-                        provider_transaction_id: verification.externalReferenceId || null,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', currentIntentId);
-            }
-
-
-            // 2. Get invoice details for profile update and affiliate commission
-            const { data: invoice } = await supabase
-                .from('invoices')
-                .select('user_id, tier_id, affiliate_id, referral_code, amount, currency')
-                .eq('id', invoiceId)
-                .single();
-
-            if (invoice?.user_id) {
-                // 3. Activate subscription
-                await supabase
-                    .from('profiles')
-                    .update({
-                        subscription_tier: invoice.tier_id,
-                        subscription_status: 'active',
-                        has_paid: true,
-                        plan_tier: invoice.tier_id,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', invoice.user_id);
-
-                console.log(`✅ [Webhook] Subscription activated — User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
-            }
-
-            // 4. Trigger affiliate commission (non-blocking, non-fatal)
-            if (invoice?.affiliate_id && invoice?.referral_code) {
-                try {
-                    const { triggerAffiliateCommission } = await import('../affiliate/ledgerService');
-                    await triggerAffiliateCommission(invoiceId);
-                } catch (commErr) {
-                    // Commission failure must NEVER roll back payment activation
-                    console.error(`[Webhook] Commission trigger failed for ${invoiceId} (non-fatal):`, commErr);
-                }
-            }
-
-            // 5. Freeze revenue splits (non-blocking, non-fatal to order payment)
-            try {
-                const { freezeOrderSplits } = await import('./splitEngine');
-                await freezeOrderSplits(supabase, invoiceId);
-
-                // 6. Record Double-Entry Journal in Financial Ledger (N-4)
-                try {
-                    const { recordPaymentCaptureJournal, recordSplitAllocationJournal } = await import('./financialLedgerService');
-                    const grossMinor = Math.round(Number(verification.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100);
-                    const feeMinor = 0; // gateway fee if available
-
-                    await recordPaymentCaptureJournal({
-                        paymentIntentId: invoiceId,
-                        invoiceId,
-                        grossAmountMinor: grossMinor,
-                        gatewayFeeMinor: feeMinor,
-                        currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
-                        transactionId: verification.externalReferenceId || invoiceId,
-                        supabaseClient: supabase,
-                    });
-
-                    const { data: savedSplits } = await supabase
-                        .from('order_splits')
-                        .select('beneficiary_id, allocated_amount_minor, rule_snapshot')
-                        .eq('invoice_id', invoiceId);
-
-                    if (savedSplits && savedSplits.length > 0) {
-                        const netMinor = grossMinor - feeMinor;
-                        await recordSplitAllocationJournal({
-                            paymentIntentId: invoiceId,
-                            invoiceId,
-                            netAmountMinor: netMinor,
-                            currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
-                            splits: savedSplits.map((s: SplitRow) => ({
-                                beneficiaryId: s.beneficiary_id,
-                                allocatedAmountMinor: s.allocated_amount_minor,
-                                role: s.rule_snapshot?.role || 'beneficiary',
-                            })),
-                            supabaseClient: supabase,
-                        });
-                    }
-                } catch (ledgerErr) {
-                    console.warn(`[Webhook] Financial ledger posting notice for ${invoiceId}:`, ledgerErr);
-                }
-            } catch (splitErr) {
-                // Split calculation failure must NEVER roll back payment activation
-                console.error(`[Webhook] Revenue split freeze failed for ${invoiceId} (non-fatal):`, splitErr);
-            }
-
-            // 7. Grant Product Entitlement (N-11)
-            if (invoice?.user_id && invoice?.tier_id) {
-                try {
-                    const { grantEntitlement } = await import('./entitlementService');
-                    await grantEntitlement({
-                        userId: invoice.user_id,
-                        productId: invoice.tier_id,
-                        invoiceId,
-                        paymentIntentId: invoiceId,
-                    }, supabase);
-                } catch (entitleErr) {
-                    console.warn(`[Webhook] Entitlement grant notice for ${invoiceId}:`, entitleErr);
-                }
-            }
-
-        } else if (verification.status === 'failed') {
-            const kashierFields = gatewayName.startsWith('KASHIER') ? {
-                kashier_transaction_id: verification.externalReferenceId || undefined,
-            } : {};
-            await supabase
-                .from('invoices')
-                .update({
-                    status: 'failed',
-                    payment_status: 'failed',
-                    ...kashierFields,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', invoiceId);
-
-            // Phase 5: persist the provider verdict on the current PaymentIntent.
-            if (currentIntentId) {
-                await supabase
-                    .from('payment_intents')
-                    .update({
-                        status: 'failed',
-                        provider_status: providerStatus,
-                        provider_transaction_id: verification.externalReferenceId || null,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', currentIntentId);
-            }
-
-            console.log(`❌ [Webhook] Payment failed for invoice: ${invoiceId} (${verification.detailedStatus || 'unknown'})`);
+        if (fulfillment.code === 'amount_mismatch') {
+            return respond(200, { status: 'ok', message: 'Amount mismatch — not activated' });
         }
-
-        // Mark webhook_events as processed
-        if (providerEventId) {
-            await supabase
-                .from('webhook_events')
-                .update({ status: 'processed', processed_at: new Date().toISOString() })
-                .eq('provider', gatewayName.toLowerCase())
-                .eq('provider_event_id', providerEventId);
+        if (fulfillment.code === 'unresolved') {
+            return respond(200, { status: 'ok', message: 'Event acknowledged' });
         }
 
         return respond(200, { status: 'ok' });

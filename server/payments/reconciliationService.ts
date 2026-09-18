@@ -164,7 +164,7 @@ export async function buildReconciliationSnapshot(
         };
     }) as WebhookEventView[];
 
-    // ── 2. Payment intents (unfiltered; unresolved classified in memory) ────
+    // ── 2. Recent payment intents (unfiltered; unresolved classified in memory) ──
     const { data: intentData, error: intentError } = await supabase
         .from('payment_intents')
         .select('*')
@@ -189,15 +189,6 @@ export async function buildReconciliationSnapshot(
             created_at: toNullableString(r.created_at),
         })) as UnresolvedIntentRow[];
 
-    const intentsByInvoice = new Map<string, Record<string, unknown>[]>();
-    for (const row of intentRowsAll) {
-        const invoiceId = toNullableString(row.invoice_id);
-        if (!invoiceId) continue;
-        const arr = intentsByInvoice.get(invoiceId) || [];
-        arr.push(row);
-        intentsByInvoice.set(invoiceId, arr);
-    }
-
     // ── 3. Stale pending invoices — late / missing webhook (§C9) ────────────
     const { data: invoiceData, error: invoiceError } = await supabase
         .from('invoices')
@@ -210,10 +201,40 @@ export async function buildReconciliationSnapshot(
         throw new Error(`[Reconciliation] invoices load failed: ${invoiceError.message}`);
     }
 
+    const staleCandidateRows = ((invoiceData || []) as Record<string, unknown>[]).filter((r) => {
+        const createdAt = toDate(toNullableString(r.created_at));
+        return createdAt !== null && createdAt < staleCutoff;
+    });
+
+    // Load attempts scoped to ONLY the stale-candidate invoices. Scoping by
+    // `invoice_id IN (...)` (instead of reusing the recent window) is essential:
+    // an old pending invoice whose intents fall outside the `maxEvents` window
+    // must still be analysed — otherwise it would be falsely reported as
+    // `provider_never_spoke` (§C9) even though the provider DID speak.
+    const intentsByInvoice = new Map<string, Record<string, unknown>[]>();
+    if (staleCandidateRows.length > 0) {
+        const { data: scopedIntentData, error: scopedIntentError } = await supabase
+            .from('payment_intents')
+            .select('*')
+            .in('invoice_id', staleCandidateRows.map((r) => toNullableString(r.id)).filter(Boolean) as string[]);
+
+        if (scopedIntentError) {
+            throw new Error(`[Reconciliation] scoped payment_intents load failed: ${scopedIntentError.message}`);
+        }
+
+        for (const row of ((scopedIntentData || []) as Record<string, unknown>[])) {
+            const invoiceId = toNullableString(row.invoice_id);
+            if (!invoiceId) continue;
+            const arr = intentsByInvoice.get(invoiceId) || [];
+            arr.push(row);
+            intentsByInvoice.set(invoiceId, arr);
+        }
+    }
+
     const staleInvoices: StaleInvoiceRow[] = [];
-    for (const row of ((invoiceData || []) as Record<string, unknown>[])) {
+    for (const row of staleCandidateRows) {
         const createdAt = toDate(toNullableString(row.created_at));
-        if (!createdAt || createdAt >= staleCutoff) continue;
+        if (!createdAt) continue;
 
         const intentRows = intentsByInvoice.get(toNullableString(row.id) || '') || [];
         const latest = intentRows
