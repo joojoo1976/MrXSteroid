@@ -294,6 +294,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
         setSubmissionCount(prev => prev + 1);
         setRedirectUrl(null);
 
+        const idempotencyKey = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+            ? crypto.randomUUID()
+            : `mrx-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
         try {
             const integrationIdsMap: Record<PaymobMethod, number> = {
                 card: 5573815,
@@ -333,6 +337,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 quantity: quantity ?? 1,
                 shippingCost: selectedShipping?.price || 0,
                 discount: discountAmount,
+                idempotencyKey,
                 metadata: {
                     tierName: selectedTier.name as string,
                     isPhysical,

@@ -37,6 +37,8 @@ export interface CreateInvoiceRequest {
     shippingCost?: number;
     discount?: number;
     metadata?: Record<string, unknown>;
+    /** v5.1 §12 checkout idempotency key — sent as the `Idempotency-Key` header. */
+    idempotencyKey?: string;
 }
 
 export interface CreateInvoiceResponse {
@@ -152,12 +154,47 @@ class PaymentService {
                 email: request.email,
             });
 
-            const response = await fetch('/api/payments/create-invoice', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request),
-            });
+            // Kashier checkout uses the Phase 4 PRIMARY Payment Session endpoint;
+            // all other methods keep the legacy multi-gateway create-invoice API.
+            const isKashier = request.paymentMethod === 'kashier';
+            const endpoint = isKashier ? '/api/checkout/kashier/session' : '/api/payments/create-invoice';
 
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (isKashier && request.idempotencyKey) {
+                headers['Idempotency-Key'] = request.idempotencyKey;
+            }
+
+            const requestBody = isKashier
+                ? {
+                    tierId: request.tierId,
+                    email: request.email,
+                    fullName: request.fullName,
+                    country: request.country,
+                    userId: request.userId,
+                    locale: request.locale,
+                    quantity: request.quantity,
+                    shippingProviderId: request.metadata?.shippingProviderId,
+                    shippingCost: request.shippingCost,
+                    promoCode: request.metadata?.promoCode,
+                    phoneNumber: request.phoneNumber,
+                    shippingAddress: request.metadata?.address
+                        ? {
+                            address: request.metadata.address,
+                            city: request.metadata.city,
+                            zipCode: request.metadata.zipCode,
+                            phone: request.phoneNumber,
+                        }
+                        : undefined,
+                    metadata: request.metadata,
+                    idempotencyKey: request.idempotencyKey,
+                }
+                : request;
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(requestBody),
+            });
             // Safe JSON parsing — handle non-JSON error responses (e.g., HTML 500 error pages)
             let data: Record<string, unknown>;
             const responseClone = response.clone();

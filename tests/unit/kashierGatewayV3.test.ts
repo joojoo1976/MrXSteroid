@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import crypto from 'crypto';
-import { KashierGateway } from '../../server/payments/gateways/KashierGateway';
+import { KashierGateway, KashierSessionError } from '../../server/payments/gateways/KashierGateway';
+import { KASHIER_SESSION_REQUIRED_FIELDS } from '../../server/payments/checkout/sessionRequest';
 import type { VercelRequest } from '../../server/payments/gateways/vercel-types';
 
 describe('KashierGateway v3.1 Integration & Verification', () => {
@@ -25,24 +26,57 @@ describe('KashierGateway v3.1 Integration & Verification', () => {
         expect(gateway.getGatewayName()).toBe('KASHIER_EGYPT');
     });
 
-    it('generates a valid signed checkout redirect URL in createPaymentSession', async () => {
-        // Mock fetch rejecting to trigger the signed fallback redirect
-        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network offline in unit test')));
+    it('mints a Payment Session with the raw Secret Key auth contract and all K-2 C4 fields', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(
+            JSON.stringify({ sessionId: 'sess-101', sessionUrl: 'https://checkout.kashier.io/s/101' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ));
+        vi.stubGlobal('fetch', fetchMock);
 
         const gateway = new KashierGateway('egypt');
         const session = await gateway.createPaymentSession({
-            orderId: 'inv-test-101',
+            orderRef: 'inv-test-101',
             amount: 150.0,
             currency: 'EGP',
             customerEmail: 'buyer@example.com',
             customerName: 'Test Buyer',
+            locale: 'ar',
         });
 
-        expect(session.sessionUrl).toContain('checkout.kashier.io');
-        expect(session.sessionUrl).toContain('merchantId=MID-TEST-EG');
-        expect(session.sessionUrl).toContain('orderId=inv-test-101');
-        expect(session.sessionUrl).toContain('amount=150.00');
-        expect(session.sessionUrl).toContain('hash=');
+        expect(session.sessionUrl).toBe('https://checkout.kashier.io/s/101');
+        expect(session.sessionId).toBe('sess-101');
+
+        const [url, init] = fetchMock.mock.calls[0];
+        expect(url).toBe('https://test-api.kashier.io/v3/payment/sessions');
+        // K-2 A2: raw Secret Key — NOT a Bearer token.
+        expect(init.headers.Authorization).toBe('test-secret-key-456');
+        expect(init.headers.Authorization).not.toContain('Bearer');
+        // K-2 A3
+        expect(init.headers['api-key']).toBe('test-api-key-123');
+
+        const payload = JSON.parse(init.body);
+        for (const field of KASHIER_SESSION_REQUIRED_FIELDS) {
+            expect(payload).toHaveProperty(field);
+        }
+        expect(payload.order).toBe('inv-test-101');
+        expect(payload.amount).toBe('150.00');
+        expect(payload.currency).toBe('EGP');
+        expect(payload.display).toBe('ar');
+        expect(payload.serverWebhook).toContain('/api/payments/webhook');
+        expect(payload.allowedMethods).toBe('card,wallet');
+
+        vi.unstubAllGlobals();
+    });
+
+    it('never falls back to a hardcoded payment URL — throws KashierSessionError on API failure', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('boom', { status: 500 })));
+
+        const gateway = new KashierGateway('egypt');
+        await expect(gateway.createPaymentSession({
+            orderRef: 'inv-test-500',
+            amount: 99,
+            currency: 'EGP',
+        })).rejects.toThrow(KashierSessionError);
 
         vi.unstubAllGlobals();
     });

@@ -9,9 +9,24 @@ import type {
     PaymentDetailedStatus
 } from "./IPaymentGateway";
 import { resolveKashierPaymentOutcome } from "./kashierVerification";
-import { getMerchantConfig, BlockedGateError } from "../merchantResolver";
+import { getMerchantConfig, BlockedGateError, type PaymentMethodId } from "../merchantResolver";
+import { buildKashierSessionRequest } from "../checkout/sessionRequest";
 
 export type MerchantType = "egypt" | "global";
+
+/**
+ * Thrown when the Kashier Payment Session API cannot mint a session.
+ * Phase 4 makes the Payment Session the PRIMARY checkout mechanism (v5.1 §36);
+ * we never silently fall back to a hardcoded payment URL.
+ */
+export class KashierSessionError extends Error {
+    readonly status?: number;
+    constructor(message: string, status?: number) {
+        super(message);
+        this.name = 'KashierSessionError';
+        this.status = status;
+    }
+}
 
 export interface KashierConfig {
     merchantId: string;
@@ -25,6 +40,28 @@ export interface KashierConfig {
     currency: string;
     merchantType: MerchantType;
     webhookUrl?: string;
+    paymentMethods: PaymentMethodId[];
+    defaultMethod: PaymentMethodId;
+}
+
+export interface CreateKashierSessionParams {
+    /** Unique merchant order reference (K-2 C5). */
+    orderRef: string;
+    /** Payable amount in major units — resolved server-side only. */
+    amount: number;
+    currency: string;
+    customerEmail?: string;
+    customerName?: string;
+    locale?: "ar" | "en";
+    /** Overrides the region defaults when supplied. */
+    paymentMethods?: PaymentMethodId[];
+    defaultMethod?: PaymentMethodId;
+    type?: string;
+    expireAt?: string;
+    maxFailureAttempts?: number;
+    /** Per-merchant webhook override (defaults to the resolved merchant webhook). */
+    serverWebhook?: string;
+    merchantRedirect?: string;
 }
 
 export interface KashierPaymentSessionResponse {
@@ -52,6 +89,8 @@ export class KashierGateway implements IPaymentGateway {
             currency: resolved.currency,
             merchantType,
             webhookUrl: resolved.webhookUrl,
+            paymentMethods: resolved.paymentMethods,
+            defaultMethod: resolved.defaultMethod,
         };
     }
 
@@ -71,101 +110,99 @@ export class KashierGateway implements IPaymentGateway {
     /**
      * Creates a hosted payment session using the official Kashier Payment Sessions API:
      * POST /v3/payment/sessions
+     *
+     * Final Gate v5.1 §36 — this is the PRIMARY ecommerce checkout mechanism.
+     * Auth contract (K-2 A2/A3): Authorization = raw Secret Key (NOT a Bearer
+     * token) · api-key = Payment API Key.
+     * Payload carries all K-2 C4 required fields + the per-request `serverWebhook`
+     * (K-2 C6). There is no hardcoded-URL fallback: a session must be minted by the
+     * API so it stays linked to the internal Order/Invoice/PaymentIntent.
      */
-    async createPaymentSession(params: {
-        orderId: string;
-        amount: number;
-        currency: string;
-        customerEmail?: string;
-        customerName?: string;
-    }): Promise<KashierPaymentSessionResponse> {
+    async createPaymentSession(params: CreateKashierSessionParams): Promise<KashierPaymentSessionResponse> {
         this.assertCredentials();
         const host = this.getApiBaseUrl();
         const endpoint = `${host}/v3/payment/sessions`;
 
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mrxsteroid.com";
-        const returnUrl = `${siteUrl}/api/payments/callback?txn=${encodeURIComponent(params.orderId)}`;
-        const webhookUrl = this.config.webhookUrl || `${siteUrl}/api/payments/webhook`;
+        const returnUrl = params.merchantRedirect
+            || `${siteUrl}/api/payments/callback?txn=${encodeURIComponent(params.orderRef)}`;
+        const webhookUrl = params.serverWebhook || this.config.webhookUrl || `${siteUrl}/api/payments/webhook`;
 
-        const payload = {
+        const payload = buildKashierSessionRequest({
             merchantId: this.config.merchantId,
-            orderId: params.orderId,
-            amount: params.amount.toFixed(2),
-            currency: params.currency,
+            orderRef: params.orderRef,
+            amount: params.amount,
+            currency: params.currency || this.config.currency,
             merchantRedirect: returnUrl,
-            webhookUrl,
+            serverWebhook: webhookUrl,
             customer: {
                 name: params.customerName || "Customer",
                 email: params.customerEmail || "customer@example.com",
             },
-            display: "en",
-        };
+            display: params.locale || "en",
+            paymentMethods: params.paymentMethods || this.config.paymentMethods,
+            defaultMethod: params.defaultMethod || this.config.defaultMethod,
+            type: params.type,
+            expireAt: params.expireAt,
+            maxFailureAttempts: params.maxFailureAttempts,
+        });
 
-        try {
-            // Secret rotation (v5.1 §4.4): try primary secret; on 401/403 retry with secondary.
-            for (const secretKey of [this.config.secretKey, this.config.secretKeySecondary].filter(Boolean) as string[]) {
-                const res = await fetch(endpoint, {
+        let lastStatus: number | undefined;
+        let lastBody = "";
+
+        // Secret rotation (v5.1 §4.4): try primary secret; on 401/403 retry with secondary.
+        for (const secretKey of [this.config.secretKey, this.config.secretKeySecondary].filter(Boolean) as string[]) {
+            let res: Response;
+            try {
+                res = await fetch(endpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${secretKey}`,
+                        // K-2 A2: raw Secret Key value — NOT `Bearer <key>`.
+                        Authorization: secretKey,
                         "api-key": this.config.paymentApiKey,
                     },
                     body: JSON.stringify(payload),
-                    signal: AbortSignal.timeout(3000),
+                    signal: AbortSignal.timeout(10_000),
                 });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
-                    const sessionId = data.sessionId || data.id || params.orderId;
-                    if (sessionUrl) {
-                        return {
-                            sessionId,
-                            sessionUrl,
-                            orderId: params.orderId,
-                            amount: params.amount,
-                            currency: params.currency,
-                            status: data.status || "ACTIVE",
-                        };
-                    }
-                    break;
-                }
-                if (res.status !== 401 && res.status !== 403) break;
+            } catch (err) {
+                throw new KashierSessionError(
+                    `[KashierGateway:${this.config.merchantType}] Payment Session API unreachable: ${err instanceof Error ? err.message : String(err)}`
+                );
             }
-        } catch (err) {
-            console.warn(`[KashierGateway] Session API call failed, using signed checkout redirect fallback:`, err);
+
+            if (res.ok) {
+                const data = await res.json();
+                const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
+                const sessionId = data.sessionId || data.id;
+                if (!sessionUrl) {
+                    throw new KashierSessionError(
+                        `[KashierGateway:${this.config.merchantType}] Payment Session response missing sessionUrl.`
+                    );
+                }
+                return {
+                    sessionId: String(sessionId || params.orderRef),
+                    sessionUrl: String(sessionUrl),
+                    orderId: params.orderRef,
+                    amount: params.amount,
+                    currency: payload.currency,
+                    status: data.status || "ACTIVE",
+                };
+            }
+
+            lastStatus = res.status;
+            lastBody = await res.text().catch(() => "");
+            if (res.status !== 401 && res.status !== 403) break;
+
+            console.warn(
+                `[KashierGateway:${this.config.merchantType}] Session auth failed (${res.status}); trying secondary Secret Key if available.`
+            );
         }
 
-        // Fallback to official Kashier hosted redirect with HMAC-SHA256 signature
-        const amountStr = params.amount.toFixed(2);
-        const signaturePayload = `${this.config.merchantId}${params.orderId}${amountStr}${params.currency}`;
-        const hash = crypto.createHmac("sha256", this.config.paymentApiKey).update(signaturePayload).digest("hex");
-
-        const qs = new URLSearchParams({
-            merchantId: this.config.merchantId,
-            orderId: params.orderId,
-            amount: amountStr,
-            currency: params.currency,
-            hash,
-            mode: this.config.mode,
-            merchantRedirect: returnUrl,
-            webhookUrl,
-            display: "en",
-            allowedMethods: "card",
-            customerName: params.customerName || "",
-            customerEmail: params.customerEmail || "",
-        });
-
-        const fallbackUrl = `https://checkout.kashier.io/?${qs.toString()}`;
-        return {
-            sessionId: params.orderId,
-            sessionUrl: fallbackUrl,
-            orderId: params.orderId,
-            amount: params.amount,
-            currency: params.currency,
-            status: "FALLBACK_REDIRECT",
-        };
+        throw new KashierSessionError(
+            `[KashierGateway:${this.config.merchantType}] Payment Session creation failed (HTTP ${lastStatus ?? "n/a"})${lastBody ? `: ${lastBody.slice(0, 300)}` : ""}`,
+            lastStatus
+        );
     }
 
     /**
@@ -205,11 +242,14 @@ export class KashierGateway implements IPaymentGateway {
     async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResult> {
         this.assertCredentials();
         const session = await this.createPaymentSession({
-            orderId: params.invoiceId,
+            orderRef: params.invoiceId,
             amount: params.amount,
             currency: this.config.currency,
             customerEmail: params.metadata.email,
             customerName: params.metadata.fullName,
+            locale: params.metadata.locale,
+            paymentMethods: this.config.paymentMethods,
+            defaultMethod: this.config.defaultMethod,
         });
 
         return {

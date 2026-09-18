@@ -265,7 +265,7 @@ describe('KashierGateway — rotation integration (v5.1 §4.4 + N-13)', () => {
 
         const gateway = new KashierGateway('egypt');
         await expect(gateway.createPaymentSession({
-            orderId: 'inv-live-01',
+            orderRef: 'inv-live-01',
             amount: 100,
             currency: 'EGP',
         })).rejects.toThrow(BlockedGateError);
