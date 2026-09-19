@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { parseAttributionCookie, buildAttributionData } from "../../server/affiliate/attributionService";
 
 describe("Attribution Service", () => {
@@ -53,4 +53,18 @@ describe("Attribution Service", () => {
         expect(parsed).not.toBeNull();
         expect(parsed?.affiliateId).toBe("a");
     });
+
+    it("isSelfReferral returns false when purchasingUserId or affiliateId is null/empty", async () => {
+        const { isSelfReferral } = await import("../../server/affiliate/attributionService");
+        expect(await isSelfReferral("", "user-1")).toBe(false);
+        expect(await isSelfReferral("aff-1", null)).toBe(false);
+    });
+
+    it("resolveReferralCode returns null for empty or invalid referral code strings", async () => {
+        const { resolveReferralCode } = await import("../../server/affiliate/attributionService");
+        expect(await resolveReferralCode("")).toBeNull();
+        expect(await resolveReferralCode("   ")).toBeNull();
+        expect(await resolveReferralCode("!@#$%^&*()")).toBeNull();
+    });
 });
+

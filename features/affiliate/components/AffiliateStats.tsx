@@ -1,18 +1,28 @@
-﻿import type { AffiliateProfile } from "../types/affiliate.types";
+import type { AffiliateProfile } from "../types/affiliate.types";
 
 interface Props { affiliate: AffiliateProfile; }
 
 const TIER_COLOR: Record<string, string> = {
-    bronze: "text-amber-600", silver: "text-gray-400", gold: "text-yellow-400", custom: "text-purple-400",
+    bronze: "text-amber-600",
+    silver: "text-gray-400",
+    gold: "text-yellow-400",
+    custom: "text-purple-400",
 };
+
 const TIER_RATE: Record<string, string> = {
-    bronze: "25%", silver: "35%", gold: "45%", custom: "Custom",
+    bronze: "25%",
+    silver: "35%",
+    gold: "45%",
+    custom: "Custom",
 };
 
 export function AffiliateStats({ affiliate }: Props) {
     const tierColor = TIER_COLOR[affiliate.tier] ?? "text-white";
-    const tierRate = affiliate.customCommissionRate !== null
-        ? `${affiliate.customCommissionRate}%` : (TIER_RATE[affiliate.tier] ?? "—");
+    const tierRate = affiliate.currentCommissionRate !== undefined
+        ? `${affiliate.currentCommissionRate}%`
+        : affiliate.customCommissionRate !== null
+            ? `${affiliate.customCommissionRate}%`
+            : (TIER_RATE[affiliate.tier] ?? "—");
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -17,6 +17,9 @@ interface UseAffiliateReturn {
     affiliate: AffiliateProfile | null;
     referrals: Referral[];
     totalReferrals: number;
+    page: number;
+    setPage: (p: number) => void;
+    totalPages: number;
     ledger: LedgerEntry[];
     loading: boolean;
     enrolling: boolean;
@@ -27,7 +30,10 @@ interface UseAffiliateReturn {
 
 async function apiFetch(path: string, options?: RequestInit) {
     const res = await fetch(path, options);
-    if (!res.ok) throw new Error("API error " + res.status);
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "API error " + res.status);
+    }
     return res.json();
 }
 
@@ -46,11 +52,15 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
     const [affiliate, setAffiliate] = useState<AffiliateProfile | null>(null);
     const [referrals, setReferrals] = useState<Referral[]>([]);
     const [totalReferrals, setTotalReferrals] = useState(0);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [ledger, setLedger] = useState<LedgerEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [enrolling, setEnrolling] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [tick, setTick] = useState(0);
+
+    const limit = 10;
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -58,7 +68,6 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
         try {
             const authToken = await resolveAuthToken(token);
             if (!authToken) {
-                // If user is not yet logged in or session is restoring
                 setLoading(false);
                 return;
             }
@@ -66,22 +75,30 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
             const headers: HeadersInit = { Authorization: "Bearer " + authToken };
             const [meData, refData, statsData] = await Promise.all([
                 apiFetch("/api/affiliate/me", { headers }),
-                apiFetch("/api/affiliate/referrals?limit=20", { headers }).catch(() => ({ referrals: [], total: 0 })),
-                apiFetch("/api/affiliate/stats", { headers }).catch(() => ({ stats: [] })),
+                apiFetch(`/api/affiliate/referrals?page=${page}&limit=${limit}`, { headers }).catch(() => ({
+                    referrals: [],
+                    total: 0,
+                    totalPages: 1,
+                })),
+                apiFetch("/api/affiliate/stats?page=1&limit=50", { headers }).catch(() => ({ stats: [] })),
             ]);
+
             setEnrolled(meData.enrolled ?? false);
             setAffiliate(meData.affiliate ?? null);
             setReferrals(refData.referrals ?? []);
             setTotalReferrals(refData.total ?? 0);
+            setTotalPages(refData.totalPages ?? 1);
             setLedger(statsData.stats ?? []);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to load affiliate data");
         } finally {
             setLoading(false);
         }
-    }, [token, tick]);
+    }, [token, page, tick]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const enroll = useCallback(async () => {
         setEnrolling(true);
@@ -99,5 +116,19 @@ export function useAffiliate(token?: string): UseAffiliateReturn {
         }
     }, [token]);
 
-    return { enrolled, affiliate, referrals, totalReferrals, ledger, loading, enrolling, error, enroll, refetch: () => setTick(t => t + 1) };
+    return {
+        enrolled,
+        affiliate,
+        referrals,
+        totalReferrals,
+        page,
+        setPage,
+        totalPages,
+        ledger,
+        loading,
+        enrolling,
+        error,
+        enroll,
+        refetch: () => setTick(t => t + 1),
+    };
 }

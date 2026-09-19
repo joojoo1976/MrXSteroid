@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { calculateCommission } from "../../server/affiliate/commissionEngine";
 
 const base = (productSubtotal: number, discountAmount = 0, monthlyPaidReferrals = 0, customCommissionRate: number | null = null) =>
@@ -99,4 +99,26 @@ describe("Commission Engine", () => {
         const r = base(-100, 0, 0);
         expect(r.commissionAmount).toBeGreaterThanOrEqual(0);
     });
+
+    // ── Reversals & Partial Refunds ────────────────────────────────────────
+    it("Full refund calculates 100% reversal", async () => {
+        const { calculateReversal } = await import("../../server/affiliate/commissionEngine");
+        const rev = calculateReversal(25.00, 100, 100);
+        expect(rev).toBe(25.00);
+    });
+
+    it("Partial refund calculates proportional reversal", async () => {
+        const { calculateReversal } = await import("../../server/affiliate/commissionEngine");
+        // $100 invoice, $25 commission, $50 refunded (50%) -> $12.50 reversal
+        const rev = calculateReversal(25.00, 50, 100);
+        expect(rev).toBe(12.50);
+    });
+
+    it("Zero refund or zero invoice -> zero reversal", async () => {
+        const { calculateReversal } = await import("../../server/affiliate/commissionEngine");
+        expect(calculateReversal(25.00, 0, 100)).toBe(0);
+        expect(calculateReversal(25.00, 50, 0)).toBe(0);
+        expect(calculateReversal(0, 50, 100)).toBe(0);
+    });
 });
+

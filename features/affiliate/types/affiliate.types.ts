@@ -1,4 +1,4 @@
-﻿export type AffiliateStatus = "pending" | "active" | "suspended" | "disabled";
+export type AffiliateStatus = "pending" | "active" | "suspended" | "disabled";
 export type AffiliateTier = "bronze" | "silver" | "gold" | "custom";
 export type ReferralStatus = "pending" | "approved" | "reversed" | "chargeback" | "refunded";
 
@@ -11,6 +11,7 @@ export interface AffiliateProfile {
     totalReferrals: number;
     totalPaidReferrals: number;
     customCommissionRate: number | null;
+    currentCommissionRate?: number;
     tier: AffiliateTier;
     monthlyPaidReferrals: number;
     createdAt: string;
