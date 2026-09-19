@@ -21,9 +21,11 @@ export type CanonicalProductId = 'MRX-PROTOCOL' | 'MRX-TACTICAL' | 'MRX-SMART-PR
 // ─────────────────────────────────────────────────────────────────────────────
 
 export class BlockedGateError extends Error {
+    readonly blockedItem: string;
     constructor(blockedItem: string, detail?: string) {
         super(`Blocked gate: ${blockedItem}${detail ? ` — ${detail}` : ''}`);
         this.name = 'BlockedGateError';
+        this.blockedItem = blockedItem;
     }
 }
 
@@ -88,6 +90,8 @@ export interface CanonicalProductDef {
     nameAr: string;
     nameEn: string;
     egyptAmount: number;
+    egyptBaseAmount?: number;
+    globalAmount?: number;
     globalPlaceholder: string;
 }
 
@@ -98,6 +102,8 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         nameAr: 'البروتوكول الرقمي',
         nameEn: 'The Digital Protocol',
         egyptAmount: 499,
+        egyptBaseAmount: 499,
+        globalAmount: 49.99,
         globalPlaceholder: 'USD_PRICE_1',
     },
     'MRX-TACTICAL': {
@@ -106,6 +112,8 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         nameAr: 'الباقة التكتيكية',
         nameEn: 'Tactical Bundle',
         egyptAmount: 749,
+        egyptBaseAmount: 749,
+        globalAmount: 72.00,
         globalPlaceholder: 'USD_PRICE_2',
     },
     'MRX-SMART-PRO': {
@@ -114,6 +122,8 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         nameAr: 'المحترف الذكي',
         nameEn: 'Smart Professional',
         egyptAmount: 10_848,
+        egyptBaseAmount: 849, // Base product price without Coaching Addon
+        globalAmount: 82.00,   // Base product USD price without Coaching Addon
         globalPlaceholder: 'USD_PRICE_3',
     },
 };
