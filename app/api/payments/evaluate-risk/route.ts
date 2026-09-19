@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FraudService, FraudObservation, FraudDecision } from '../../../../server/payments/fraud/fraudService';
+import { FraudService } from '../../../../server/payments/fraud/fraudService';
 
 /**
  * POST /api/payments/evaluate-risk

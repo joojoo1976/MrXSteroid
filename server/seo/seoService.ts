@@ -12,7 +12,6 @@ import {
     SeoKeywordSnapshotData,
     SeoLanguage,
     KeywordFilterCategory,
-    SearchIntent,
 } from './types';
 import { getBaselineKeywords } from './baselineKeywords';
 import { normalizeKeyword } from './normalization';
