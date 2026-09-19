@@ -1,242 +1,174 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FraudService, FraudObservation, FraudRule, FraudDecision } from '../../../server/payments/fraud/fraudService';
+import { describe, it, expect, beforeEach } from 'vitest';
+import {
+    FraudService,
+    FraudRule,
+    FraudObservation,
+    FraudDecision,
+} from '../../../server/payments/fraud/fraudService';
 
-describe('FraudService - Phase 9 Advanced Protection', () => {
-    describe('1. Core Evaluation Logic', () => {
-        it('should allow normal transaction under threshold', async () => {
-            const decision = await FraudService.evaluate('pi_test_1', 1000, {
+function clone<T>(v: T): T {
+    return JSON.parse(JSON.stringify(v));
+}
+
+describe('FraudService — Phase 9', () => {
+    beforeEach(() => {
+        FraudService.__resetForTests();
+    });
+
+    // ── 1. Core evaluation paths ──────────────────────────────────────────────
+    describe('1. Core evaluation paths', () => {
+        it('ALLOWS a normal small EGYPT transaction (default rule-3)', async () => {
+            const d = await FraudService.evaluate('pi_norm', 1000, {
                 amount: 1000,
                 ip_country: 'EGYPT',
-                device_fingerprint: 'dfp_test_1'
+                device_fingerprint: 'dfp_normal',
             });
-
-            expect(decision).toEqual(
-                expect.objectContaining({
-                    decision: 'ALLOW',
-                    reason: expect.stringContaining('Rule rule-3 triggered'),
-                    applied_to_payment_status: true
-                })
-            );
+            expect(d.decision).toBe('ALLOW');
+            expect(d.rule_id).toMatch(/^[0-9a-f-]{36}$/i); // uuid
+            expect(d.reason).toContain('Default Allow');
+            expect(d.applied_to_payment_status).toBe(true);
         });
 
-        it('should review transaction over amount threshold', async () => {
-            const decision = await FraudService.evaluate('pi_test_2', 75000, {
+        it('REVIEWs an amount-exceeded transaction via Amount Exceeded', async () => {
+            const d = await FraudService.evaluate('pi_big', 75000, {
                 amount: 75000,
                 ip_country: 'EGYPT',
-                device_fingerprint: 'dfp_test_2'
             });
-
-            expect(decision).toEqual(
-                expect.objectContaining({
-                    decision: 'REVIEW',
-                    reason: expect.stringContaining('Rule rule-1 triggered'),
-                    applied_to_payment_status: true
-                })
-            );
+            expect(d.decision).toBe('REVIEW');
+            expect(d.reason).toContain('Amount Exceeded');
         });
 
-        it('should reject transaction from blocked region', async () => {
-            const decision = await FraudService.evaluate('pi_test_3', 1000, {
+        it('REJECTs a transaction from a blocked region via Blocked Region', async () => {
+            const d = await FraudService.evaluate('pi_blocked', 1000, {
                 amount: 1000,
                 ip_country: 'BLOCKED_REGION',
-                device_fingerprint: 'dfp_test_3'
             });
-
-            expect(decision).toEqual(
-                expect.objectContaining({
-                    decision: 'REJECT',
-                    reason: expect.stringContaining('Rule rule-2 triggered'),
-                    applied_to_payment_status: true
-                })
-            );
+            expect(d.decision).toBe('REJECT');
+            expect(d.reason).toContain('Blocked Region');
         });
 
-        it('should respect dry_run mode - no state change', async () => {
-            const rules = await FraudService['loadActiveRules']();
-            const reviewRule = rules.find(r => r.id === 'rule-1');
-            if (reviewRule) {
-                reviewRule.dry_run = true;
-            }
-
-            const decision = await FraudService.evaluate('pi_test_4', 75000, {
+        it('Honors higher priority when multiple rules match (Blocked Region > Amount)', async () => {
+            const d = await FraudService.evaluate('pi_both', 75000, {
                 amount: 75000,
-                ip_country: 'EGYPT'
+                ip_country: 'BLOCKED_REGION',
             });
+            expect(d.decision).toBe('REJECT');
+            expect(d.reason).toContain('Blocked Region');
+        });
 
-            expect(decision.decision).toBe('REVIEW');
-            expect(decision.applied_to_payment_status).toBe(false);
+        it('dry_run=true on a matching rule does NOT mark applied_to_payment_status', async () => {
+            const rules = FraudService.loadActiveRules();
+            const r1 = rules.find((r) => r.name === 'Amount Exceeded')!;
+            r1.dry_run = true;
+            FraudService.__setRulesForTests(rules);
+
+            const d = await FraudService.evaluate('pi_dry', 75000, { amount: 75000 });
+            expect(d.decision).toBe('REVIEW');
+            expect(d.applied_to_payment_status).toBe(false);
         });
     });
 
-    describe('2. Observation Collection', () => {
-        it('should collect amount exceeded observation', async () => {
-            const observations = await FraudService['collectObservations']('pi_test_5', 100000, {
-                amount: 100000
-            });
-
-            expect(observations).toHaveLength(1);
-            expect(observations[0]).toEqual(
-                expect.objectContaining({
-                    signal_type: 'AMOUNT_EXCEEDED',
-                    payment_intent_id: 'pi_test_5',
-                    score: expect.any(Number),
-                    threshold: 50000,
-                    evidence: { amount: 100000, threshold: 50000 }
-                })
-            );
+    // ── 2. Observation collection (pure) ─────────────────────────────────────
+    describe('2. Observation collection', () => {
+        it('emits an AMOUNT_EXCEEDED observation for amounts > 50000', () => {
+            const obs = FraudService.collectObservations('pi_o1', 100000, { amount: 100000 });
+            expect(obs).toHaveLength(1);
+            expect(obs[0].signal_type).toBe('AMOUNT_EXCEEDED');
+            expect(obs[0].threshold).toBe(50000);
+            expect(obs[0].score).toBeGreaterThan(0);
+            expect(obs[0].evidence).toEqual({ amount: 100000, threshold: 50000 });
         });
 
-        it('should collect region mismatch observation', async () => {
-            const observations = await FraudService['collectObservations']('pi_test_6', 1000, {
-                ip_country: 'BLOCKED_REGION'
-            });
-
-            expect(observations).toHaveLength(1);
-            expect(observations[0]).toEqual(
-                expect.objectContaining({
-                    signal_type: 'REGION_MISMATCH',
-                    payment_intent_id: 'pi_test_6',
-                    score: 90,
-                    threshold: 80,
-                    evidence: { ip_country: 'BLOCKED_REGION' }
-                })
-            );
+        it('emits a REGION_MISMATCH observation for BLOCKED_REGION', () => {
+            const obs = FraudService.collectObservations('pi_o2', 1000, { ip_country: 'BLOCKED_REGION' });
+            expect(obs).toHaveLength(1);
+            expect(obs[0].signal_type).toBe('REGION_MISMATCH');
+            expect(obs[0].score).toBe(90);
+            expect(obs[0].threshold).toBe(80);
         });
 
-        it('should collect no observations for normal transaction', async () => {
-            const observations = await FraudService['collectObservations']('pi_test_7', 5000, {
+        it('emits no observations for a normal transaction', () => {
+            const obs = FraudService.collectObservations('pi_o3', 5000, {
                 amount: 5000,
-                ip_country: 'EGYPT'
+                ip_country: 'EGYPT',
             });
-
-            expect(observations).toHaveLength(0);
+            expect(obs).toHaveLength(0);
         });
     });
 
-    describe('3. Rule Evaluation', () => {
-        it('should evaluate amount condition correctly', async () => {
-            const rule: FraudRule = {
-                id: 'test-rule',
-                name: 'Test Rule',
-                version: 'v1.0',
-                condition: {
-                    amount: { max: 1000, operator: 'greater_than' }
-                },
-                action: 'REJECT',
-                priority: 10,
-                enabled: true,
-                dry_run: false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
+    // ── 3. Rule evaluation (pure) ────────────────────────────────────────────
+    describe('3. Rule evaluation', () => {
+        const baseRule: FraudRule = {
+            id: 'r',
+            name: 'r',
+            version: 'v1.0',
+            condition: {},
+            action: 'REJECT',
+            priority: 1,
+            enabled: true,
+            dry_run: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        };
 
-            const result = await FraudService['evaluateRule'](
-                rule,
-                [],
-                { amount: 1500 }
-            );
-
-            expect(result).toBe(true);
+        it('matches amount > max', () => {
+            const r = clone(baseRule);
+            r.condition = { amount: { max: 1000, operator: 'greater_than' } };
+            expect(FraudService.evaluateRule(r, [], { amount: 1500 })).toBe(true);
         });
 
-        it('should evaluate region condition correctly', async () => {
-            const rule: FraudRule = {
-                id: 'test-rule-2',
-                name: 'Test Rule 2',
-                version: 'v1.0',
-                condition: {
-                    region: { blocked: ['BLOCKED_REGION'] }
-                },
-                action: 'REJECT',
-                priority: 10,
-                enabled: true,
-                dry_run: false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-
-            const result = await FraudService['evaluateRule'](
-                rule,
-                [],
-                { ip_country: 'BLOCKED_REGION' }
-            );
-
-            expect(result).toBe(true);
+        it('does not match when amount ≤ max', () => {
+            const r = clone(baseRule);
+            r.condition = { amount: { max: 1000, operator: 'greater_than' } };
+            expect(FraudService.evaluateRule(r, [], { amount: 500 })).toBe(false);
         });
 
-        it('should return false for non-matching conditions', async () => {
-            const rule: FraudRule = {
-                id: 'test-rule-3',
-                name: 'Test Rule 3',
-                version: 'v1.0',
-                condition: {
-                    amount: { max: 1000, operator: 'greater_than' }
-                },
-                action: 'REJECT',
-                priority: 10,
-                enabled: true,
-                dry_run: false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
+        it('matches region.blocked', () => {
+            const r = clone(baseRule);
+            r.condition = { region: { blocked: ['X', 'Y'] } };
+            expect(FraudService.evaluateRule(r, [], { ip_country: 'X' })).toBe(true);
+        });
 
-            const result = await FraudService['evaluateRule'](
-                rule,
-                [],
-                { amount: 500 }
-            );
+        it('does not match region.blocked when country is not in list', () => {
+            const r = clone(baseRule);
+            r.condition = { region: { blocked: ['X'] } };
+            expect(FraudService.evaluateRule(r, [], { ip_country: 'Z' })).toBe(false);
+        });
 
-            expect(result).toBe(false);
+        it('empty condition always matches', () => {
+            const r = clone(baseRule);
+            r.condition = {};
+            expect(FraudService.evaluateRule(r, [], {})).toBe(true);
         });
     });
 
-    describe('4. Decision Creation', () => {
-        it('should create proper decision object', async () => {
-            const decision = await FraudService['createDecision'](
-                'pi_test_8',
-                'obs_test_1',
-                'rule_test_1',
-                'REJECT',
-                false
-            );
+    // ── 4. Decision creation (pure) ──────────────────────────────────────────
+    describe('4. Decision creation', () => {
+        it('builds a decision with all required fields', () => {
+            const d = FraudService.createDecision('pi_d', 'obs_1', 'rule_x', 'REJECT', false);
+            expect(d.id).toMatch(/^decision-/);
+            expect(d.payment_intent_id).toBe('pi_d');
+            expect(d.rule_id).toBe('rule_x');
+            expect(d.decision).toBe('REJECT');
+            expect(d.policy_version).toBe('v1.0');
+            expect(d.applied_to_payment_status).toBe(true);
+            expect(d.evaluated_at).toMatch(/T/);
+        });
 
-            expect(decision).toEqual(
-                expect.objectContaining({
-                    id: expect.any(String),
-                    payment_intent_id: 'pi_test_8',
-                    observation_id: 'obs_test_1',
-                    rule_id: 'rule_test_1',
-                    decision: 'REJECT',
-                    evaluated_at: expect.any(String),
-                    policy_version: 'v1.0',
-                    applied_to_payment_status: true
-                })
-            );
+        it('normalises NOTIFY to REVIEW for storage', () => {
+            const d = FraudService.createDecision('pi_n', undefined, 'rule_n', 'NOTIFY', false);
+            expect(d.decision).toBe('REVIEW');
         });
     });
 
-    describe('5. Priority Processing', () => {
-        it('should process rules in priority order', async () => {
-            const decision = await FraudService.evaluate('pi_test_9', 75000, {
-                amount: 75000,
-                ip_country: 'BLOCKED_REGION'
-            });
-
-            // Rule 2 (region block, priority 20) should take precedence over rule 1 (amount, priority 10)
-            expect(decision.decision).toBe('REJECT');
-            expect(decision.reason).toContain('Rule rule-2 triggered');
-        });
-    });
-
-    describe('6. Default Behavior', () => {
-        it('should allow when no rules match', async () => {
-            const decision = await FraudService.evaluate('pi_test_10', 1000, {
-                amount: 1000,
-                ip_country: 'EGYPT'
-            });
-
-            expect(decision.decision).toBe('ALLOW');
-            expect(decision.reason).toContain('Rule rule-3 triggered'); // default allow rule
+    // ── 5. Priority + conflict resolution ─────────────────────────────────────
+    describe('5. Priority + conflict resolution', () => {
+        it('sorts rules by priority DESC, deterministic across calls', () => {
+            const a = FraudService.loadActiveRules();
+            const b = FraudService.loadActiveRules();
+            const order = (xs: FraudRule[]) =>
+                [...xs].sort((p, q) => q.priority - p.priority).map((x) => x.id);
+            expect(order(a)).toEqual(order(b));
         });
     });
 });

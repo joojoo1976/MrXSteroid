@@ -94,18 +94,19 @@ function nowIso(): string {
     return new Date().toISOString();
 }
 
-function newId(prefix: string): string {
-    return `${prefix}-${crypto.randomBytes(4).toString('hex')}`;
+function newId(): string {
+    return `decision-${crypto.randomUUID()}`;
 }
 
 /**
  * The seed rule set. Rules are intentionally minimal: amount threshold + blocked
  * region + default allow. These are config-only values; do not encode business
- * numbers here without a signed ADR.
+ * numbers here without a signed ADR. Ids are stable UUIDs so they match the
+ * `uuid` primary key on `public.fraud_rules`.
  */
 const DEFAULT_RULES: FraudRule[] = [
     {
-        id: 'rule-2',
+        id: 'a6711e22-ce89-413b-8bac-361f6d79f095',
         name: 'Blocked Region',
         version: POLICY_VERSION,
         condition: { region: { blocked: ['BLOCKED_REGION'] } },
@@ -117,7 +118,7 @@ const DEFAULT_RULES: FraudRule[] = [
         updated_at: nowIso(),
     },
     {
-        id: 'rule-1',
+        id: '55549c79-67b6-4d78-a0b7-08c697710a8a',
         name: 'Amount Exceeded',
         version: POLICY_VERSION,
         condition: { amount: { max: 50000, operator: 'greater_than' } },
@@ -129,7 +130,7 @@ const DEFAULT_RULES: FraudRule[] = [
         updated_at: nowIso(),
     },
     {
-        id: 'rule-3',
+        id: '3cc158c6-ae59-4a3f-a185-d0794efdec28',
         name: 'Default Allow',
         version: POLICY_VERSION,
         condition: {},
@@ -175,8 +176,7 @@ export class FraudService {
             const decision = FraudService.createDecision(
                 payment_intent_id,
                 observations[0]?.id,
-                rule.id,
-                rule.action,
+                rule,
                 rule.dry_run,
             );
 
@@ -184,19 +184,20 @@ export class FraudService {
                 FraudService.applyDecision(decision, payment_intent_id);
             } else {
                 console.log(
-                    `[Fraud] DRY_RUN decision=${decision.decision} intent=${payment_intent_id} rule=${rule.id}`,
+                    `[Fraud] DRY_RUN decision=${decision.decision} intent=${payment_intent_id} rule=${rule.name}`,
                 );
             }
             return decision;
         }
 
-        // Fallback: default allow (priority 1, rule-3 in seed).
-        const defaultRule = activeRules.find((r) => r.id === 'rule-3') ?? activeRules[activeRules.length - 1];
+        // Fallback: default allow (priority 1, "Default Allow" in seed).
+        const defaultRule =
+            activeRules.find((r) => r.name === 'Default Allow') ??
+            activeRules[activeRules.length - 1];
         const decision = FraudService.createDecision(
             payment_intent_id,
             observations[0]?.id,
-            defaultRule.id,
-            'ALLOW',
+            defaultRule,
             false,
         );
         FraudService.applyDecision(decision, payment_intent_id);
@@ -213,7 +214,7 @@ export class FraudService {
 
         if (amount > 50000) {
             observations.push({
-                id: newId('obs'),
+                id: newId(),
                 payment_intent_id,
                 signal_type: 'AMOUNT_EXCEEDED',
                 score: Math.min(Math.round(amount / 1000), 100),
@@ -229,7 +230,7 @@ export class FraudService {
         const ipCountry = (metadata.ip_country as string | undefined) ?? 'UNKNOWN';
         if (ipCountry === 'BLOCKED_REGION') {
             observations.push({
-                id: newId('obs'),
+                id: newId(),
                 payment_intent_id,
                 signal_type: 'REGION_MISMATCH',
                 score: 90,
@@ -280,26 +281,43 @@ export class FraudService {
         return true;
     }
 
-    /** Pure: build a decision record. */
+    /** Pure: build a decision record from a matched rule or individual parameters. */
     static createDecision(
         payment_intent_id: string,
         observation_id: string | undefined,
-        rule_id: string,
-        rule_action: FraudAction,
-        dry_run: boolean,
+        ruleOrId: FraudRule | string,
+        actionOrDryRun: FraudAction | boolean,
+        dryRunArg?: boolean,
     ): FraudDecision {
+        let ruleId: string;
+        let action: FraudAction;
+        let ruleName: string;
+        let dry_run: boolean;
+
+        if (typeof ruleOrId === 'object' && ruleOrId !== null) {
+            ruleId = ruleOrId.id;
+            action = ruleOrId.action;
+            ruleName = ruleOrId.name;
+            dry_run = typeof actionOrDryRun === 'boolean' ? actionOrDryRun : false;
+        } else {
+            ruleId = String(ruleOrId);
+            action = (typeof actionOrDryRun === 'string' ? actionOrDryRun : 'REVIEW') as FraudAction;
+            ruleName = ruleId;
+            dry_run = typeof dryRunArg === 'boolean' ? dryRunArg : false;
+        }
+
         const decisionCode: FraudDecisionCode =
-            rule_action === 'ALLOW' || rule_action === 'REVIEW' || rule_action === 'REJECT' || rule_action === 'BLOCK'
-                ? rule_action
+            action === 'ALLOW' || action === 'REVIEW' || action === 'REJECT' || action === 'BLOCK'
+                ? action
                 : 'REVIEW';
 
         return {
-            id: newId('decision'),
+            id: newId(),
             payment_intent_id,
             observation_id,
-            rule_id,
+            rule_id: ruleId,
             decision: decisionCode,
-            reason: `Rule ${rule_id} triggered: action ${rule_action}`,
+            reason: `Rule "${ruleName}" triggered: action ${action}`,
             evaluated_at: nowIso(),
             policy_version: POLICY_VERSION,
             applied_to_payment_status: !dry_run,
