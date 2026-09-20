@@ -5,16 +5,10 @@
  * from the client; always returns 200 so it never blocks the signup UX.
  */
 import { sendWelcomeEmail, isEmailConfigured } from '../../../../shared/lib/emailService';
+import { corsPreflightResponse } from '../../../../server/cors/corsConfig';
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'POST, OPTIONS', 'Content-Type');
 }
 
 export async function POST(req: Request) {
@@ -34,7 +28,8 @@ export async function POST(req: Request) {
         const result = await sendWelcomeEmail({ to: email, fullName, lang });
         return Response.json(result, { status: 200 });
     } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        return Response.json({ ok: false, reason: msg }, { status: 200 });
+        console.error('❌ [WelcomeEmail] Failed to send email:', err);
+        return Response.json({ ok: false, reason: 'failed-to-send' }, { status: 200 });
     }
 }
+

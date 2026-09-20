@@ -1,3 +1,5 @@
+import { corsPreflightResponse } from '../../../server/cors/corsConfig';
+
 /**
  * Route Handler — /api/geo
  * Determines the user's country from the hosting platform's IP header
@@ -12,12 +14,7 @@ export async function GET(req: Request) {
     return Response.json({ countryCode });
 }
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'GET, OPTIONS', 'Content-Type');
 }
+

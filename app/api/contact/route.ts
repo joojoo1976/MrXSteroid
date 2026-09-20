@@ -10,6 +10,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import { createTransport } from 'nodemailer';
+import { corsPreflightResponse } from '../../../server/cors/corsConfig';
 
 const mapMissionType = (topic: string): string => {
     const map: Record<string, string> = {
@@ -124,15 +125,8 @@ function buildPlainText(opts: {
     ].join('\n');
 }
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'POST, OPTIONS', 'Content-Type, Authorization');
 }
 
 export async function POST(req: Request) {

@@ -26,6 +26,8 @@ import {
 import { BlockedGateError } from '../../../../../server/payments/merchantResolver';
 import { KashierSessionError } from '../../../../../server/payments/gateways/KashierGateway';
 import { enforceRateLimit, clientIp } from '../../../../../lib/ratelimit';
+import { corsPreflightResponse } from '../../../../../server/cors/corsConfig';
+import { resolveEffectiveUserId } from '../../../../../server/auth/resolveUser';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -89,15 +91,8 @@ async function resolveAttribution(
     }
 }
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, Idempotency-Key',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'POST, OPTIONS', 'Content-Type, Authorization, Idempotency-Key');
 }
 
 export async function POST(req: Request) {
@@ -127,7 +122,13 @@ export async function POST(req: Request) {
 
     const input = parsed.data;
     const idempotencyKey = req.headers.get('idempotency-key')?.trim() || input.idempotencyKey;
-    const effectiveUserId = input.userId && input.userId.trim() !== '' ? input.userId : null;
+
+    // IDOR Defense: verify caller identity and forbid creating sessions for another user
+    const userResolution = await resolveEffectiveUserId(req, input.userId);
+    if (!userResolution.success) {
+        return NextResponse.json({ success: false, error: userResolution.error }, { status: userResolution.status });
+    }
+    const effectiveUserId = userResolution.effectiveUserId;
 
     try {
         const attribution = await resolveAttribution(req, effectiveUserId);
@@ -184,6 +185,6 @@ export async function POST(req: Request) {
         }
         const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('❌ [CheckoutSession] Unhandled error:', message);
-        return NextResponse.json({ success: false, error: 'Internal server error', message }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
     }
 }

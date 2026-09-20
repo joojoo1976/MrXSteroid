@@ -7,31 +7,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { corsPreflightResponse } from '../../../server/cors/corsConfig';
 
 const BOOK_FILES: Record<string, { path: string; displayName: string }> = {
     en: { path: 'MrXSteroid_Book_EN.pdf', displayName: 'MrXSteroid_Book_EN.pdf' },
     ar: { path: 'MrXSteroid_Book_AR.pdf', displayName: 'MrXSteroid_Book_AR.pdf' },
 };
 
-const CONFIG = {
-    SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-};
-
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'GET, OPTIONS', 'Content-Type, Authorization');
 }
 
 export async function GET(req: Request) {
     try {
-        if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
+        const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+        if (!supabaseUrl || !supabaseAnonKey) {
             return Response.json({ error: 'Missing Supabase configuration' }, { status: 500 });
         }
 
@@ -42,7 +34,7 @@ export async function GET(req: Request) {
             return Response.json({ error: 'Authentication required' }, { status: 401 });
         }
 
-        const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
             auth: { autoRefreshToken: false, persistSession: false },
         });
 
@@ -90,6 +82,6 @@ export async function GET(req: Request) {
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
         console.error('💥 [Download] TOP-LEVEL CRASH:', msg);
-        return Response.json({ error: 'Server initialization error', message: msg }, { status: 500 });
+        return Response.json({ error: 'Download service unavailable' }, { status: 500 });
     }
 }

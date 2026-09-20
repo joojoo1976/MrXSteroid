@@ -15,6 +15,7 @@ out/
 dist/
 build/
 *.tsbuildinfo
+.freebuff/
 
 # ------ Testing & Coverage ----------------------------------
 coverage/

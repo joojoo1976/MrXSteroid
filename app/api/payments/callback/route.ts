@@ -10,6 +10,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { verifyPaidAmount } from '../../../../server/payments/verifyPaidAmount';
+import { corsPreflightResponse } from '../../../../server/cors/corsConfig';
+
 
 const APP_BASE = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://www.mrxsteroid.com';
 
@@ -240,13 +242,6 @@ export async function POST(req: Request) {
     }
 }
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, x-spaceremit-signature, stripe-signature, hmac',
-        },
-    });
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'GET, POST, OPTIONS', 'Content-Type, x-spaceremit-signature, stripe-signature, hmac');
 }

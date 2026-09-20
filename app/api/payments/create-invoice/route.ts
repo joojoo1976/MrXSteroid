@@ -8,6 +8,8 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } from '../../../../server/payments/pricing';
+import { corsPreflightResponse, buildCorsHeaders } from '../../../../server/cors/corsConfig';
+import { resolveEffectiveUserId } from '../../../../server/auth/resolveUser';
 
 const getSupabaseAdmin = () => {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -41,21 +43,17 @@ const CreateInvoiceSchema = z.object({
     metadata: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
-const json = (body: unknown, status = 200): Response =>
+const json = (body: unknown, status = 200, req?: Request): Response =>
     new Response(JSON.stringify(body), {
         status,
-        headers: { 'Content-Type': 'application/json' },
-    });
-
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
         headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Content-Type': 'application/json',
+            ...(req ? buildCorsHeaders(req) : {}),
         },
     });
+
+export async function OPTIONS(req: Request) {
+    return corsPreflightResponse(req, 'POST, OPTIONS', 'Content-Type, Authorization');
 }
 
 export async function POST(req: Request) {
@@ -64,7 +62,7 @@ export async function POST(req: Request) {
         try {
             body = await req.json();
         } catch {
-            return json({ error: 'Invalid JSON body' }, 400);
+            return json({ error: 'Invalid JSON body' }, 400, req);
         }
 
         const parsed = CreateInvoiceSchema.safeParse(body);
@@ -72,13 +70,17 @@ export async function POST(req: Request) {
         if (!parsed.success) {
             const errors = parsed.error.flatten().fieldErrors;
             console.error('❌ [CreateInvoice] Validation failed:', errors);
-            return json({ error: 'Validation failed', details: errors }, 400);
+            return json({ error: 'Validation failed', details: errors }, 400, req);
         }
 
         const input = parsed.data;
-        const effectiveUserId: string | null = (input.userId && input.userId.trim() !== '')
-            ? input.userId
-            : null;
+
+        // IDOR Defense: verify caller identity and forbid creating invoices for another user
+        const userResolution = await resolveEffectiveUserId(req, input.userId);
+        if (!userResolution.success) {
+            return json({ error: userResolution.error }, userResolution.status, req);
+        }
+        const effectiveUserId = userResolution.effectiveUserId;
 
         try {
             const supabase = getSupabaseAdmin();
@@ -292,7 +294,7 @@ export async function POST(req: Request) {
 
             if (insertError || !invoice) {
                 console.error('❌ [CreateInvoice] Failed to create invoice:', insertError);
-                return json({ error: 'Failed to create invoice record', details: insertError?.message }, 500);
+                return json({ error: 'Failed to create invoice record' }, 500, req);
             }
 
             const invoiceId = invoice.id;
@@ -319,7 +321,7 @@ export async function POST(req: Request) {
                     invoiceId,
                     gateway: 'instapay',
                     redirectUrl: `/payment-pending?gateway=instapay&txn=${invoiceId}&wa=${waText}`,
-                });
+                }, 200, req);
             }
 
             const gatewayParams = {
@@ -343,7 +345,7 @@ export async function POST(req: Request) {
             };
 
             if (!gateway) {
-                return json({ error: 'No payment gateway available for this request' }, 400);
+                return json({ error: 'No payment gateway available for this request' }, 400, req);
             }
 
             const result = typeof gateway.createPaymentIntent === 'function'
@@ -370,16 +372,16 @@ export async function POST(req: Request) {
                 redirectUrl: result.redirectUrl,
                 clientSecret: result.clientSecret,
                 gateway: gatewayName.toLowerCase(),
-            });
+            }, 200, req);
 
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             console.error('❌ [CreateInvoice] Unhandled error:', message);
-            return json({ success: false, error: 'Internal server error', message }, 500);
+            return json({ success: false, error: 'Internal server error' }, 500, req);
         }
     } catch (topLevelError) {
         const msg = topLevelError instanceof Error ? topLevelError.message : String(topLevelError);
         console.error('💥 [CreateInvoice] TOP-LEVEL CRASH:', msg);
-        return json({ success: false, error: 'Server initialization error', message: msg }, 500);
+        return json({ success: false, error: 'Internal server error' }, 500, req);
     }
 }

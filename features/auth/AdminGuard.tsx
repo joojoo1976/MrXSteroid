@@ -11,10 +11,17 @@ interface AdminGuardProps {
 }
 
 /**
- * Enterprise-Grade Admin Guard (RBAC)
+ * Enterprise-Grade Admin Guard (RBAC) — UI Layer
  *
- * Protects admin-only routes by verifying the user's `role` claim
- * (profiles.role === 'admin') from the authenticated Supabase session.
+ * Protects admin-only UI by verifying the user's `role` claim from the
+ * `profiles` table (profiles.role === 'admin') fetched via Supabase.
+ *
+ * Security contract:
+ * - Only trusts `profileData.role` sourced from the database via AuthContext.
+ * - Does NOT use `user_metadata.role` — that field is client-controlled and
+ *   MUST NOT be used as an authorization signal.
+ * - This is a UI-only guard; real authorization is enforced server-side by
+ *   `server/auth/require-admin.ts` on every admin API route.
  */
 const AdminGuard: React.FC<AdminGuardProps> = ({ children, navigateTo }) => {
     const { user, loading, profileData } = useAuth();
@@ -33,27 +40,29 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children, navigateTo }) => {
                 return;
             }
 
-            const metadataRole = (user as unknown as { user_metadata?: { role?: string } })?.user_metadata?.role;
-            const role = profileData?.role || metadataRole || 'user';
-
-            // Admins provisioned directly in the profiles table (role stored in DB
-            // only, metadata role is still 'user') need profileData to be resolved
-            // before we can authorize them. If it hasn't arrived yet, keep waiting
-            // instead of flashing a false "Access Denied".
-            if (profileData === null && metadataRole !== 'admin') {
+            // profileData === null means the DB fetch has not completed yet.
+            // Do NOT fall back to user_metadata.role — that field is client-controlled
+            // and MUST NOT be used as an authorization signal.
+            if (profileData === null) {
+                // Still waiting for profile from DB — keep spinner running.
                 return;
             }
 
-            setIsAuthorized(role === 'admin');
+            // profileData is available: authorize only if DB role is 'admin'.
+            setIsAuthorized(profileData.role === 'admin');
             setIsChecking(false);
         }, 0);
 
-        // Hard fallback: if the profile fetch never resolves (DB/network outage),
-        // fall back to the session metadata role after a bounded delay so the
-        // admin route doesn't hang on a spinner forever.
+        // Hard deadline: if the profile fetch never resolves (DB/network outage),
+        // deny access after a bounded delay rather than hanging forever or granting
+        // access based on untrustworthy client-side metadata.
         const fallbackTimer = setTimeout(() => {
-            const metadataRole = (user as unknown as { user_metadata?: { role?: string } })?.user_metadata?.role;
-            setIsAuthorized(profileData?.role === 'admin' || metadataRole === 'admin');
+            if (profileData?.role === 'admin') {
+                setIsAuthorized(true);
+            } else {
+                // Deny — do NOT use user_metadata.role as a fallback.
+                setIsAuthorized(false);
+            }
             setIsChecking(false);
         }, 4000);
 
@@ -62,6 +71,7 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children, navigateTo }) => {
             clearTimeout(fallbackTimer);
         };
     }, [user, loading, profileData, navigateTo]);
+
 
     if (loading || isChecking) {
         return (
