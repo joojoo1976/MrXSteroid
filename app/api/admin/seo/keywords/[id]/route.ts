@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '../../../../../../server/seo/seoService';
+import { requireAdmin } from '../../../../../../server/auth/require-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,9 @@ export async function PATCH(
     req: NextRequest,
     context: { params: Promise<{ id: string }> }
 ) {
+    const authResult = await requireAdmin(req);
+    if (!authResult.authorized) return authResult.response;
+
     const supabase = getSupabaseAdmin();
     if (!supabase) {
         return NextResponse.json({ error: 'Database unavailable' }, { status: 500 });

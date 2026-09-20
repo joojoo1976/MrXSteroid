@@ -1,45 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '../../../../../server/seo/seoService';
+import { requireAdmin } from '../../../../../server/auth/require-admin';
 
 export const dynamic = 'force-dynamic';
 
-async function checkAdmin(req: NextRequest) {
-    const supabase = getSupabaseAdmin();
-    if (!supabase) return { authorized: false, supabase: null };
-
-    const authHeader = req.headers.get('authorization') || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-    if (token) {
-        try {
-            const { data: { user } } = await supabase.auth.getUser(token);
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-                if (profile?.role === 'admin') {
-                    return { authorized: true, user, supabase };
-                }
-            }
-        } catch {
-            // ignore
-        }
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-        return { authorized: true, user: { id: 'dev-admin' }, supabase };
-    }
-
-    return { authorized: false, supabase };
-}
-
 export async function GET(req: NextRequest) {
-    const { authorized, supabase } = await checkAdmin(req);
-    if (!authorized || !supabase) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const authResult = await requireAdmin(req);
+    if (!authResult.authorized) return authResult.response;
+
+    const supabase = getSupabaseAdmin();
+    if (!supabase) return NextResponse.json({ error: 'Database unavailable' }, { status: 500 });
 
     const { searchParams } = new URL(req.url);
     const lang = searchParams.get('lang');
