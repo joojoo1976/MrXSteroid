@@ -120,7 +120,7 @@ updated_at TIMESTAMPTZ
 ## 6. Rules Engine Architecture
 
 - Rules stored in `fraud_rules` table
-- Evaluation order: `priority` ASC (lowest = highest priority)
+- Evaluation order: `priority` DESC (highest number = highest priority)
 - Short-circuit evaluation: first matching rule wins
 - `dry_run = true` logs decision without mutation
 - Each decision records `policy_version`

@@ -5,7 +5,7 @@
 
 -- ── 1. fraud_rules ───────────────────────────────────────────────────────────
 create table if not exists public.fraud_rules (
-    id text primary key,
+    id uuid primary key default gen_random_uuid(),
     name text not null,
     version text not null default 'v1.0',
     condition jsonb not null default '{}'::jsonb,
@@ -23,7 +23,7 @@ create index if not exists idx_fraud_rules_priority on public.fraud_rules (prior
 
 -- ── 2. fraud_observations ───────────────────────────────────────────────────
 create table if not exists public.fraud_observations (
-    id text primary key,
+    id uuid primary key default gen_random_uuid(),
     payment_intent_id uuid not null references public.payment_intents(id) on delete cascade,
     signal_type text not null,
     score integer not null,
@@ -42,10 +42,10 @@ create index if not exists idx_fraud_observations_expires
 
 -- ── 3. fraud_decisions ──────────────────────────────────────────────────────
 create table if not exists public.fraud_decisions (
-    id text primary key,
+    id uuid primary key default gen_random_uuid(),
     payment_intent_id uuid not null references public.payment_intents(id) on delete cascade,
-    observation_id text references public.fraud_observations(id) on delete set null,
-    rule_id text not null references public.fraud_rules(id) on delete restrict,
+    observation_id uuid references public.fraud_observations(id) on delete set null,
+    rule_id uuid not null references public.fraud_rules(id) on delete restrict,
     decision text not null check (decision in ('ALLOW', 'REVIEW', 'REJECT', 'BLOCK')),
     reason text not null,
     evaluated_at timestamptz not null default now(),
@@ -137,11 +137,11 @@ create trigger trg_fraud_decision_apply_flag
 -- ── 7. Seed rules (idempotent) ──────────────────────────────────────────────
 insert into public.fraud_rules (id, name, version, condition, action, priority, enabled, dry_run)
 values
-    ('rule-2', 'Blocked Region', 'v1.0',
+    ('a6711e22-ce89-413b-8bac-361f6d79f095', 'Blocked Region', 'v1.0',
         '{"region": {"blocked": ["BLOCKED_REGION"]}}'::jsonb, 'REJECT', 20, true, false),
-    ('rule-1', 'Amount Exceeded', 'v1.0',
+    ('55549c79-67b6-4d78-a0b7-08c697710a8a', 'Amount Exceeded', 'v1.0',
         '{"amount": {"max": 50000, "operator": "greater_than"}}'::jsonb, 'REVIEW', 10, true, false),
-    ('rule-3', 'Default Allow',   'v1.0',
+    ('3cc158c6-ae59-4a3f-a185-d0794efdec28', 'Default Allow',   'v1.0',
         '{}'::jsonb, 'ALLOW', 1, true, false)
 on conflict (id) do update set
     name = excluded.name,

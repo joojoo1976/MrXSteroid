@@ -146,7 +146,7 @@ describe('FraudService — Phase 9', () => {
     describe('4. Decision creation', () => {
         it('builds a decision with all required fields', () => {
             const d = FraudService.createDecision('pi_d', 'obs_1', 'rule_x', 'REJECT', false);
-            expect(d.id).toMatch(/^decision-/);
+            expect(d.id).toMatch(/^[0-9a-f-]{36}$/i); // uuid
             expect(d.payment_intent_id).toBe('pi_d');
             expect(d.rule_id).toBe('rule_x');
             expect(d.decision).toBe('REJECT');

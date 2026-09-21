@@ -95,7 +95,7 @@ function nowIso(): string {
 }
 
 function newId(): string {
-    return `decision-${crypto.randomUUID()}`;
+    return crypto.randomUUID();
 }
 
 /**
