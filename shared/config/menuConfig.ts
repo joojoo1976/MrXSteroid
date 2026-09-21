@@ -91,6 +91,15 @@ export const SMART_TOOLS: MenuItem[] = [
         icon: 'Dna',
     },
     {
+        label: 'Multi-Ester PK Simulator',
+        labelAr: 'محاكي تراكم الإسترات',
+        href: '/smarttools/multi-ester-pharmacokinetics',
+        page: Page.HALFLIFE,
+        description: 'Two-compartment Bateman simulator for multi-ester serum accumulation',
+        descriptionAr: 'محاكي ثنائي الأطوار لتراكم الإسترات بمصل الدم (معادلة باتمان)',
+        icon: 'Timer',
+    },
+    {
         label: 'Cycle Schedule Sync',
         labelAr: 'مزامنة جدول الكورس',
         href: '/cycle',
