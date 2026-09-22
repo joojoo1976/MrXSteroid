@@ -101,7 +101,7 @@ describe('Tool registry — resolution', () => {
         expect(getTool('macro')?.slug).toBe('macro');
         expect(getTool('/macro')?.slug).toBe('macro');
         expect(getTool('/ar/halflife/')?.slug).toBe('halflife');
-        expect(getTool('/TransformationTimeline')?.slug).toBe('timeline');
+        expect(getTool('/smarttools/timeline')?.slug).toBe('timeline');
         expect(getToolByHref('/lab')?.slug).toBe('lab');
         expect(getToolByPage(Page.GENETIC)?.slug).toBe('genetic');
         expect(getTool('does-not-exist')).toBeNull();
