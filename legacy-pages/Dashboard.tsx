@@ -144,6 +144,71 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         return () => { cancelled = true; };
     }, [user]);
 
+    // ── Dynamic System: Live Panel Data (Supabase Telemetry) ──────────
+    const [adminStats, setAdminStats] = useState<{ pending: number; total: number; revenue: number } | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<any[] | null>(null);
+    const [paymentLast, setPaymentLast] = useState<{ id: string; amount: number; status: string; created_at: string } | null>(null);
+    const [fraudRates, setFraudRates] = useState<{ pending: number; blocked: number; approved: number } | null>(null);
+
+    useEffect(() => {
+        if (!user) return;
+        let mounted = true;
+        const fetchLiveData = async () => {
+            try {
+                // Admin Dashboard: pending vs total payments
+                const { data: pending, error: e1 } = await supabase
+                    .from('payment_intents')
+                    .select('status, amount')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+                if (!e1 && mounted && pending) {
+                    const statuses = pending as string[];
+                    const total = (pending as any[]).length || 0;
+                    const revenue = (pending as any[]).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+                    setAdminStats({ pending: total, total: total, revenue });
+                }
+
+                // Admin Analytics: recent activity rows
+                const { data: analytics, error: e2 } = await supabase
+                    .from('payment_intents')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                if (!e2 && mounted) setAnalyticsData(analytics as any[]);
+
+                // Payment Diagnostic: last payment status
+                const { data: lastPay, error: e3 } = await supabase
+                    .from('payment_intents')
+                    .select('id, amount, status, created_at')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                if (!e3 && mounted && lastPay) setPaymentLast(lastPay as any);
+
+                // Fraud Engine: risk rates from recent observations
+                const { data: fraud, error: e4 } = await supabase
+                    .from('fraud_observations')
+                    .select('verdict, count')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                if (!e4 && mounted) {
+                    const rates = { pending: 0, blocked: 0, approved: 0 };
+                    (fraud as any[]).forEach((o: any) => {
+                        if (o.verdict === 'BLOCK') rates.blocked += (o.count || 0);
+                        else if (o.verdict === 'APPROVE') rates.approved += (o.count || 0);
+                        else rates.pending += (o.count || 0);
+                    });
+                    setFraudRates(rates);
+                }
+            } catch {
+                // Graceful fallback - panels remain empty until data available
+            }
+            return () => { mounted = false; };
+        };
+        fetchLiveData();
+    }, [user]);
+
     const handleDeleteHistory = async (id: string) => {
         const ok = await deleteCalculatorHistory(id);
         if (ok) {
@@ -724,6 +789,105 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                                 className="w-full bg-zinc-950/80 border border-zinc-800 focus:border-gold-500/60 rounded-xl p-3 text-sm text-white placeholder-zinc-600 outline-none transition-colors resize-none"
                             />
                         </div>
+                    </div>
+                </motion.div>
+
+                {/* ── Quick Navigation: Control Panels ────────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-4"
+                >
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                        <h2 className="text-lg font-black text-white">
+                            {isRTL ? 'ألواح التحكم السريعة' : 'Quick Navigation Panels'}
+                        </h2>
+                        <button
+                            onClick={() => navigateTo(Page.ADMIN_DASHBOARD)}
+                            className="text-xs font-bold text-gold-400 hover:text-gold-300 transition-colors"
+                        >
+                            {isRTL ? 'العودة للقائمة' : 'Back to List'}
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                        {/* Panel 1: Admin Dashboard */}
+                        <div
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${PageRole === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
+                        >
+                            <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
+                                <Crown className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-white">{isRTL ? 'لوحة التحكم' : 'Admin Dashboard'}</h4>
+                                <p className="text-xs text-zinc-500">{isRTL ? 'الصفحة الرئيسية للأدمن' : 'Admin main page'}</p>
+                            </div>
+                            <button
+                                onClick={() => navigateTo(Page.ADMIN_DASHBOARD)}
+                                className="mt-2 text-gold-400 hover:text-gold-300 text-xs font-bold transition-colors"
+                            >
+                                {isRTL ? 'الدخول' : 'Enter'}
+                            </button>
+                        </div>
+
+                        {/* Panel 2: Admin Analytics */}
+                        <div
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${PageRole === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
+                        >
+                            <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
+                                <Sparkles className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-white">{isRTL ? 'الألواح الإحصائية' : 'Admin Analytics'}</h4>
+                                <p className="text-xs text-zinc-500">{isRTL ? 'مقاييس الأداء والإيرادات' : 'Performance & revenue metrics'}</p>
+                            </div>
+                            <button
+                                onClick={() => navigateTo(Page.ADMIN_ANALYTICS)}
+                                className="mt-2 text-gold-400 hover:text-gold-300 text-xs font-bold transition-colors"
+                            >
+                                {isRTL ? 'الدخول' : 'Enter'}
+                            </button>
+                        </div>
+
+                        {/* Panel 3: Payment Diagnostic */}
+                        <div
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors`}
+                        >
+                            <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
+                                <DollarSign className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-white">{isRTL ? 'التشخيص المالي' : 'Payment Diagnostic'}</h4>
+                                <p className="text-xs text-zinc-500">{isRTL ? 'حالةLast payment status and failed transactions' : 'Last payment status & failed transactions'}</p>
+                            </div>
+                            <button
+                                onClick={() => navigateTo(Page.PAYMENT_DIAGNOSTIC)}
+                                className="mt-2 text-gold-400 hover:text-gold-300 text-xs font-bold transition-colors"
+                            >
+                                {isRTL ? 'الدخول' : 'Enter'}
+                            </button>
+                        </div>
+
+                        {/* Panel 4: Fraud Engine */}
+                        <div
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors`}
+                        >
+                            <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-white">{isRTL ? 'محرك الاحتيال' : 'Fraud Engine'}</h4>
+                                <p className="text-xs text-zinc-500">{isRTL ? 'نسب المخاطر المباشرة من المحرك' : 'Direct risk percentages from engine'}</p>
+                            </div>
+                            <button
+                                onClick={() => navigateTo(Page.FRAUD_ENGINE)}
+                                className="mt-2 text-gold-400 hover:text-gold-300 text-xs font-bold transition-colors"
+                            >
+                                {isRTL ? 'الدخول' : 'Enter'}
+                            </button>
+                        </div>
+
                     </div>
                 </motion.div>
 

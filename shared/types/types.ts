@@ -61,9 +61,12 @@ export enum Page {
   REPRESENTATIVE = 'representative',
   ADMIN_DASHBOARD = 'admin_dashboard',
   ADMIN_ANALYTICS = 'admin-analytics',
+  PAYMENT_DIAGNOSTIC = 'payment-diagnostic',
+  FRAUD_ENGINE = 'evaluate-risk',
   AUTH_CALLBACK = 'auth_callback',
   PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic',
   TIMELINE = 'timeline',
+  HPTA_RECOVERY = 'hpta-recovery',
   AFFILIATE = 'affiliate'
 }
 
