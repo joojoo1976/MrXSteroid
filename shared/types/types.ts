@@ -67,6 +67,8 @@ export enum Page {
   PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic',
   TIMELINE = 'timeline',
   HPTA_RECOVERY = 'hpta-recovery',
+  PCT_TIMING = 'pct-timing',
+  AROMATIZATION_RISK = 'aromatization-risk',
   AFFILIATE = 'affiliate'
 }
 
