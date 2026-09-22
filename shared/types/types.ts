@@ -66,6 +66,7 @@ export enum Page {
   TIMELINE = 'timeline',
   HPTA_RECOVERY = 'hpta-recovery',
   PCT_TIMING = 'pct-timing',
+  AROMATIZATION_RISK = 'aromatization-risk',
   AFFILIATE = 'affiliate'
 }
 

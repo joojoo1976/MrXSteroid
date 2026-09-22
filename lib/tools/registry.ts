@@ -174,6 +174,18 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         stackStatus: 'legacy',
     },
     {
+        toolId: 'mrx.tool.aromatization-risk',
+        slug: 'aromatization-risk',
+        version: '1.0.0',
+        page: Page.AROMATIZATION_RISK,
+        href: '/smarttools/aromatization-risk',
+        titleAr: 'محاكي مخاطر الأروماتزة والاستراديول',
+        titleEn: 'Aromatization Risk & E2 Management Modeler',
+        accessTier: 'free',
+        order: 45.5, // between multi-ester PK (45) and HPTA recovery (46)
+        stackStatus: 'layered',
+    },
+    {
         toolId: 'mrx.tool.hpta-recovery',
         slug: 'hpta-recovery',
         version: '1.0.0',

@@ -51,6 +51,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
     [Page.TIMELINE]: '/TransformationTimeline',
     [Page.HPTA_RECOVERY]: '/smarttools/hpta-recovery',
+    [Page.AROMATIZATION_RISK]: '/smarttools/aromatization-risk',
     [Page.PCT_TIMING]: '/smarttools/pct-timing',
     [Page.AFFILIATE]: '/profile/affiliate',
 };

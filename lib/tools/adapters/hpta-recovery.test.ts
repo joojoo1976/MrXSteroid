@@ -62,8 +62,8 @@ describe('Tool #003 — Layer 3 canonical envelope', () => {
         expect(output.toolId).toBe('mrx.tool.hpta-recovery');
         expect(output.toolSlug).toBe('hpta-recovery');
         expect(output.accessTier).toBe('free'); // registry is the single source of truth
-        // neighbors: multi-ester-pharmacokinetics (45) <-> hpta-recovery (46) <-> pct-timing (47)
-        expect(output.seoLinks.prevTool.slug).toBe('multi-ester-pharmacokinetics');
+        // neighbors: multi-ester-pharmacokinetics (45) <-> aromatization-risk (45.5) <-> hpta-recovery (46) <-> pct-timing (47)
+        expect(output.seoLinks.prevTool.slug).toBe('aromatization-risk');
         expect(output.seoLinks.nextTool.slug).toBe('pct-timing');
         expect(output.result.timeline.length).toBeGreaterThan(0);
         expect(output.calculatedAt).toBe('2026-09-21T10:00:00.000Z');
