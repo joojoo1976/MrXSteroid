@@ -114,6 +114,18 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         stackStatus: 'layered',
     },
     {
+        toolId: 'mrx.tool.hpta-recovery',
+        slug: 'hpta-recovery',
+        version: '1.0.0',
+        page: Page.HPTA_RECOVERY,
+        href: '/smarttools/hpta-recovery',
+        titleAr: 'محاكي التثبيط المحوري واستعادة HPTA',
+        titleEn: 'HPTA Suppression & Recovery Modeler',
+        accessTier: 'premium',
+        order: 46,
+        stackStatus: 'layered',
+    },
+    {
         toolId: 'mrx.tool.lab',
         slug: 'lab',
         version: '1.0.0',
@@ -123,7 +135,7 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         titleEn: 'Smart Lab Reference',
         accessTier: 'free',
         order: 50,
-        stackStatus: 'legacy',
+        stackStatus: 'layered',
     },
     {
         toolId: 'mrx.tool.genetic',
@@ -135,7 +147,7 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         titleEn: 'Genetic Potential Calculator',
         accessTier: 'free',
         order: 60,
-        stackStatus: 'legacy',
+        stackStatus: 'layered',
     },
     {
         toolId: 'mrx.tool.cycle',
@@ -147,7 +159,7 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         titleEn: 'Cycle Architect',
         accessTier: 'premium',
         order: 70,
-        stackStatus: 'legacy',
+        stackStatus: 'layered',
     },
     {
         toolId: 'mrx.tool.timeline',
