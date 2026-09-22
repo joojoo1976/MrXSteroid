@@ -117,9 +117,9 @@ describe('Tool registry — prev/next link-graph (SEO §7)', () => {
     it('returns the circular neighbour pair for a middle tool', () => {
         const links = getToolNeighbors('multi-ester-pharmacokinetics');
         expect(links.prevTool.slug).toBe('halflife');
-        expect(links.nextTool.slug).toBe('lab');
-        expect(links.nextTool.titleAr).toBe('المرجع الذكي للتحاليل');
-        expect(links.nextTool.titleEn).toBe('Smart Lab Reference');
+        expect(links.nextTool.slug).toBe('hpta-recovery');
+        expect(links.nextTool.titleAr).toBe('محاكي التثبيط المحوري واستعادة HPTA');
+        expect(links.nextTool.titleEn).toBe('HPTA Suppression & Recovery Modeler');
     });
 
     it('wraps around at both ends so no link is ever dead', () => {

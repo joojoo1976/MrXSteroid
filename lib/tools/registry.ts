@@ -173,6 +173,30 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         order: 90,
         stackStatus: 'legacy',
     },
+    {
+        toolId: 'mrx.tool.hpta-recovery',
+        slug: 'hpta-recovery',
+        version: '1.0.0',
+        page: Page.HPTA_RECOVERY,
+        href: '/smarttools/hpta-recovery',
+        titleAr: 'محاكي التثبيط المحوري واستعادة HPTA',
+        titleEn: 'HPTA Suppression & Recovery Modeler',
+        accessTier: 'free',
+        order: 46,
+        stackStatus: 'layered',
+    },
+    {
+        toolId: 'mrx.tool.pct-timing',
+        slug: 'pct-timing',
+        version: '1.0.0',
+        page: Page.PCT_TIMING,
+        href: '/smarttools/pct-timing',
+        titleAr: 'محرك توقيت PCT والتطهير',
+        titleEn: 'PCT Timing & Compound Washout Engine',
+        accessTier: 'free',
+        order: 47,
+        stackStatus: 'layered',
+    },
 ];
 
 export class ToolRegistryError extends Error {

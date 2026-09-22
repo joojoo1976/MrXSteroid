@@ -64,6 +64,8 @@ export enum Page {
   AUTH_CALLBACK = 'auth_callback',
   PAYMENT_CONFIG_DIAGNOSTIC = 'payment-config-diagnostic',
   TIMELINE = 'timeline',
+  HPTA_RECOVERY = 'hpta-recovery',
+  PCT_TIMING = 'pct-timing',
   AFFILIATE = 'affiliate'
 }
 
