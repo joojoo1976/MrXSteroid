@@ -1,4 +1,6 @@
-﻿import type { Metadata } from "next";
+﻿/* eslint-disable react-refresh/only-export-components */
+
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Affiliate Dashboard — Mr. X Steroid",

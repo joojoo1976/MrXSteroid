@@ -31,7 +31,6 @@ import {
     type EngineInput,
     E2_CRITICAL_THRESHOLD,
     E2_OPTIMAL_HIGH,
-    E2_OPTIMAL_LOW,
 } from '@/lib/tools/engines/aromatization-risk';
 import { buildAromatizationRiskOutput } from '@/lib/tools/adapters/aromatization-risk';
 import {
@@ -134,7 +133,6 @@ export default function AromatizationRiskToolComponent() {
             ? `${pgml.toFixed(0)} pg/mL`
             : `${(pgml * PMOL_PER_PGML).toFixed(0)} pmol/L`;
     const refHigh = unitSystem === 'metric' ? E2_OPTIMAL_HIGH : Math.round(E2_OPTIMAL_HIGH * PMOL_PER_PGML);
-    const refLow = unitSystem === 'metric' ? E2_OPTIMAL_LOW : Math.round(E2_OPTIMAL_LOW * PMOL_PER_PGML);
     const criticalRef = unitSystem === 'metric' ? E2_CRITICAL_THRESHOLD : Math.round(E2_CRITICAL_THRESHOLD * PMOL_PER_PGML);
 
     const chartData = useMemo(

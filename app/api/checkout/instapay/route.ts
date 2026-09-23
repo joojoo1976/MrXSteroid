@@ -37,7 +37,6 @@ import {
     computeAmount,
     resolveShippingCost,
     computePromoDiscount,
-    type TierId,
 } from '../../../../server/payments/pricing';
 
 export const runtime = 'nodejs';
@@ -183,7 +182,6 @@ async function uploadReceipt(
     orderId: string
 ): Promise<{ url: string; path: string }> {
     const timestamp = Date.now();
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = `${orderId}/${timestamp}_${sanitizedName}`;
 

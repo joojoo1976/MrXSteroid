@@ -191,7 +191,6 @@ export default function HptaRecoveryToolComponent() {
     }, [weeksOnCycle, compoundPotency, pctProtocol, locale, unitSystem, isRtl]);
 
     const testoUnitLabel = unitSystem === 'metric' ? 'ng/dL' : 'nmol/L';
-    const baseline = unitSystem === 'metric' ? BASELINE_NGDL : BASELINE_NMOL;
     const formatTesto = (pct: number) =>
         unitSystem === 'metric'
             ? `${Math.round((pct / 100) * BASELINE_NGDL)} ng/dL`

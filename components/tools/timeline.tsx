@@ -12,7 +12,7 @@
  *   - "Save to Bio-Dashboard" → `submitted_snapshot` + `dashboard_projection`
  *     through `POST /api/tools/logs` (Bearer-authenticated).
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ResponsiveContainer,
     LineChart,

@@ -133,11 +133,6 @@ const round2 = (value: number): number => Math.round(value * 100) / 100;
 const clamp = (value: number, min: number, max: number): number =>
     Math.min(Math.max(value, min), max);
 
-const safeNumber = (value: number, fallback: number, min: number, max: number): number => {
-    const v = Number.isFinite(value) ? value : fallback;
-    return clamp(v, min, max);
-};
-
 const safeInt = (value: number, fallback: number, min: number, max: number): number => {
     const v = Number.isFinite(value) ? Math.round(value) : fallback;
     return clamp(Math.round(v), min, max);

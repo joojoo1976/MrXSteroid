@@ -129,33 +129,8 @@ export function calculateCycleArchitect(input: {
   experienceLevel: 'beginner' | 'intermediate' | 'advanced';
   goal: 'bulk' | 'cut' | 'recomp' | 'strength';
 }): CycleOutput {
-  const totalWeeklyMg = input.compounds.reduce((sum, c) => sum + c.doseMg * c.frequencyPerWeek, 0);
-  const totalCycleMg = input.compounds.reduce((sum, c) => sum + c.doseMg * c.frequencyPerWeek * c.weeks, 0);
-  const mgPerKgPerWeek = input.userWeightKg ? totalWeeklyMg / input.userWeightKg : undefined;
-  const longestHalfLifeDays = 14;
-  const pctStartDayAfterLastPin = 14;
-  const peakTroughRatio = 1;
-  const compoundsSummary = input.compounds.map(c => ({
-    compound: c.compound,
-    nameAr: c.compound,
-    nameEn: c.compound,
-    weeklyMg: c.doseMg * c.frequencyPerWeek,
-    totalMg: c.doseMg * c.frequencyPerWeek * c.weeks,
-    halfLifeDays: 14,
-    activeWeeks: c.weeks,
-  }));
   const warnings: string[] = [];
   if (input.compounds.reduce((s, c) => s + c.doseMg * c.frequencyPerWeek, 0) > 1000) warnings.push('إجمالي الجرعة الأسبوعية يتجاوز 1000 مغ — خطر عالٍ');
-  const pctProtocol = {
-    startDay: input.cycleLengthWeeks * 7 + 14,
-    clomidMgDay1_14: 50,
-    clomidMgDay15_28: 25,
-    nolvaMgDay1_14: 40,
-    nolvaMgDay15_28: 20,
-    hcgIuPerWeek: 2500,
-    hcgWeeks: 2,
-  };
-  const aiRecommendation = { compound: 'anastrozole', doseMg: 0.5, frequency: 'e3d' };
   return {
     totalWeeklyMg: Math.round(input.compounds.reduce((s, c) => s + c.doseMg * c.frequencyPerWeek, 0)),
     totalCycleMg: Math.round(input.compounds.reduce((s, c) => s + c.doseMg * c.frequencyPerWeek * c.weeks, 0)),

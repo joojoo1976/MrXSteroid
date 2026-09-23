@@ -19,7 +19,7 @@ import { getTool } from '../../lib/tools/registry';
 import { supabase } from '../../shared/lib/supabase';
 
 export default function Lab() {
-    const { isRTL } = usePreferences();
+    const { isRTL: _isRTL } = usePreferences();
     const { user } = useAuth();
     const tool = getTool(Page.LAB);
 
@@ -36,10 +36,10 @@ export default function Lab() {
     const [saveStatus, setSaveStatus] = useState('');
 
     // ── Dynamic System: live telemetry (Supabase, graceful) ────
-    const [adminStats, setAdminStats] = useState<{ stats: { pending: number; total: number; revenue: number }; pendingRows: number; revenueRows: number } | null>(null);
-    const [analyticsData, setAnalyticsData] = useState<unknown[] | null>(null);
-    const [paymentLast, setPaymentLast] = useState<{ id: string; amount: number; status: string; created_at: string } | null>(null);
-    const [fraudRates, setFraudRates] = useState<{ pending: number; blocked: number; approved: number } | null>(null);
+    const [_adminStats, setAdminStats] = useState<{ stats: { pending: number; total: number; revenue: number }; pendingRows: number; revenueRows: number } | null>(null);
+    const [_analyticsData, setAnalyticsData] = useState<unknown[] | null>(null);
+    const [_paymentLast, setPaymentLast] = useState<{ id: string; amount: number; status: string; created_at: string } | null>(null);
+    const [_fraudRates, setFraudRates] = useState<{ pending: number; blocked: number; approved: number } | null>(null);
 
     useEffect(() => {
         if (!user) return;
