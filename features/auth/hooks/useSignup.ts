@@ -11,6 +11,7 @@ import { errorHandler } from '../../../shared/lib/error-handler';
 import { ContentStrings } from '@/shared/types/types';
 import { mockAuthService } from '../../../shared/lib/mock-auth-service';
 import { isPasswordLeaked } from '../../../shared/lib/pwned-password';
+import { checkPasswordServerSide } from '../../../shared/lib/password-safety-client';
 
 // Inline signup schema (exported for unit testing)
 export const createSignupSchema = (isRTL: boolean) => z.object({
@@ -110,6 +111,49 @@ export const useSignup = ({ content, isRTL }: UseSignupOptions) => {
                         ? 'كلمة المرور مسرّبة في اختراقات سابقة — اختر أخرى'
                         : 'Password found in previous breaches — pick another one'
                 });
+                return;
+            }
+
+            // ─────────────────────────────────────────────────────────────────
+            // PRE-CHECK 0b: Server-side HIBP check (security boundary).
+            // The password is POSTed to /api/auth/check-password over HTTPS and
+            // consumed server-side; only the SHA-1 prefix leaves our server.
+            // Fail-CLOSED by default: any non-'safe' result blocks signup.
+            // ─────────────────────────────────────────────────────────────────
+            const serverCheck = await checkPasswordServerSide(values.password);
+            if (serverCheck.status !== 'safe') {
+                if (serverCheck.status === 'leaked') {
+                    toast.error(
+                        isRTL
+                            ? '⚠️ كلمة المرور هذه ظهرت في اختراقات سابقة! اختر كلمة مرور قوية وفريدة.'
+                            : '⚠️ This password has appeared in known data breaches! Choose a strong, unique password.'
+                    );
+                    form.setError('password', {
+                        type: 'manual',
+                        message: isRTL
+                            ? 'كلمة المرور مسرّبة في اختراقات سابقة — اختر أخرى'
+                            : 'Password found in previous breaches — pick another one'
+                    });
+                } else if (serverCheck.status === 'rate_limited') {
+                    toast.error(
+                        isRTL
+                            ? '⏳ وصلت للحد الأقصى من المحاولات. انتظر قليلاً ثم أعد المحاولة.'
+                            : '⏳ Too many attempts. Please wait a moment and try again.'
+                    );
+                } else {
+                    // temporarily_unavailable / error / forbidden / others → fail-closed block
+                    toast.error(
+                        isRTL
+                            ? '⚠️ تعذّر التحقق من أمان كلمة المرور حالياً. حاول مرة أخرى لاحقاً.'
+                            : '⚠️ Unable to verify password safety right now. Please try again later.'
+                    );
+                    form.setError('password', {
+                        type: 'manual',
+                        message: isRTL
+                            ? 'تعذّر التحقق من كلمة المرور حالياً — حاول لاحقاً'
+                            : 'Unable to verify password right now — try again later'
+                    });
+                }
                 return;
             }
 

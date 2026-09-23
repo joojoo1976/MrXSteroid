@@ -6,7 +6,7 @@
  *    registered" flag, clearing on email change.
  * Supabase + env-reader are mocked; no network.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import type { ContentStrings } from '@/shared/types/types';
 
@@ -27,6 +27,7 @@ vi.mock('../../../shared/lib/supabase', () => ({
                 }),
             }),
         }),
+        auth: { signUp: authMock.signUp },
     },
 }));
 
@@ -41,6 +42,25 @@ vi.mock('../../../shared/lib/env-reader', () => ({
 // Avoid the real mock-auth-service module (it touches localStorage at import).
 vi.mock('../../../shared/lib/mock-auth-service', () => ({
     mockAuthService: { signUp: vi.fn(), signIn: vi.fn() },
+}));
+
+// Avoid real HIBP calls: the client UX pre-check is mocked fail-open.
+const pwned = vi.hoisted(() => ({ result: { leaked: false, unavailable: true } }));
+vi.mock('../../../shared/lib/pwned-password', () => ({
+    isPasswordLeaked: vi.fn(async () => pwned.result),
+}));
+
+// The server-side check is the real security boundary — mock to control it.
+const pwCheck = vi.hoisted(() => ({ result: { status: 'safe' as const }, fn: vi.fn(async () => pwCheck.result) }));
+vi.mock('../../../shared/lib/password-safety-client', () => ({
+    checkPasswordServerSide: pwCheck.fn,
+}));
+
+const authMock = vi.hoisted(() => ({
+    signUp: vi.fn(async () => ({
+        data: { user: { identities: [{ id: 'new-identity' }] } },
+        error: null,
+    })),
 }));
 
 import { useSignup, createSignupSchema } from './useSignup';
@@ -100,5 +120,57 @@ describe('useSignup — emailTaken amber flag', () => {
         // give the debounce window time to (not) fire
         await new Promise((r) => setTimeout(r, 700));
         expect(result.current.emailTaken).toBe(false);
+    });
+});
+
+describe('useSignup — server-side leaked-password gate', () => {
+    const validForm = {
+        fullName: 'Test User',
+        username: 'testuser',
+        email: 'user@example.com',
+        phoneNumber: '',
+        password: 'Sup3rSecret123!',
+        confirmPassword: 'Sup3rSecret123!',
+    };
+
+    const fillAndSubmit = async (result: { current: { form: { setValue: (k: string, v: string) => void }, onSubmit: () => Promise<unknown> } }) => {
+        await act(async () => {
+            for (const [k, v] of Object.entries(validForm)) {
+                result.current.form.setValue(k, v);
+            }
+        });
+        await act(async () => { await result.current.onSubmit(); });
+    };
+
+    beforeEach(() => {
+        lookup.result = { data: null };
+        pwCheck.result = { status: 'safe' };
+        authMock.signUp.mockClear();
+        vi.stubGlobal('fetch', vi.fn(async () => new Response('{"ok":true}', { status: 200 })));
+    });
+    afterEach(() => { vi.unstubAllGlobals(); });
+
+    it('safe → proceeds to supabase.auth.signUp', async () => {
+        const { result } = renderHook(() => useSignup({ content: {} as unknown as ContentStrings, isRTL: false }));
+        await fillAndSubmit(result);
+        expect(authMock.signUp).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaked → blocks signup without calling supabase.auth.signUp', async () => {
+        pwCheck.result = { status: 'leaked' };
+        const { result } = renderHook(() => useSignup({ content: {} as unknown as ContentStrings, isRTL: false }));
+        await fillAndSubmit(result);
+        expect(authMock.signUp).not.toHaveBeenCalled();
+        expect(result.current.success).toBe(false);
+        expect(result.current.form.getFieldState('password').error).toBeTruthy();
+    });
+
+    it('temporarily_unavailable (fail-closed) → blocks signup without calling signUp', async () => {
+        pwCheck.result = { status: 'temporarily_unavailable' };
+        const { result } = renderHook(() => useSignup({ content: {} as unknown as ContentStrings, isRTL: false }));
+        await fillAndSubmit(result);
+        expect(authMock.signUp).not.toHaveBeenCalled();
+        expect(result.current.success).toBe(false);
+        expect(result.current.form.getFieldState('password').error).toBeTruthy();
     });
 });

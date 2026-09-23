@@ -1,16 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ShieldCheck, Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
-import { supabase } from '../shared/lib/supabase';
-import { toast } from 'sonner';
-import { errorHandler } from '../shared/lib/error-handler';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../context/PreferencesContext';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import {
+    usePasswordReset,
+    ResetPasswordFormValues,
+} from '../features/auth/hooks/usePasswordReset';
 
 // Design System
 import { Button } from '../shared/ui/button';
@@ -32,49 +30,15 @@ interface ResetPasswordProps {
 
 export default function ResetPasswordPage({ content, navigateTo }: ResetPasswordProps) {
     const { isRTL } = usePreferences();
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
 
-    const resetSchema = z.object({
-        password: z.string()
-            .min(8, { message: isRTL ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "Password must be at least 8 characters" })
-            .regex(/[A-Z]/, { message: isRTL ? "يجب أن تحتوي على حرف كبير واحد على الأقل" : "Must contain at least one uppercase letter" })
-            .regex(/[0-9]/, { message: isRTL ? "يجب أن تحتوي على رقم واحد على الأقل" : "Must contain at least one number" }),
-        confirmPassword: z.string(),
-    }).refine((data) => data.password === data.confirmPassword, {
-        message: isRTL ? "كلمتا المرور غير متطابقتين" : "Passwords do not match",
-        path: ["confirmPassword"],
+    const { form, loading, success, runReset } = usePasswordReset({
+        isRTL,
+        successMessage: content.passwordResetSuccess || 'Password updated successfully!',
     });
 
-    type ResetFormValues = z.infer<typeof resetSchema>;
-
-    const form = useForm<ResetFormValues>({
-        resolver: zodResolver(resetSchema),
-        defaultValues: {
-            password: "",
-            confirmPassword: "",
-        },
-    });
-
-    const onSubmit = async (values: ResetFormValues) => {
-        setLoading(true);
-
-        try {
-            const { error } = await supabase.auth.updateUser({
-                password: values.password
-            });
-
-            if (error) throw error;
-
-            setSuccess(true);
-            toast.success(content.passwordResetSuccess || "Password updated successfully!");
-
-            setTimeout(() => navigateTo(Page.LOGIN), 3000);
-        } catch (error) {
-            errorHandler.handle(error, 'ResetPassword');
-        } finally {
-            setLoading(false);
-        }
+    const onSubmit = async (values: ResetPasswordFormValues) => {
+        const ok = await runReset(values);
+        if (ok) setTimeout(() => navigateTo(Page.LOGIN), 3000);
     };
 
     if (success) {
