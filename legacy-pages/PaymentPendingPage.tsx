@@ -22,11 +22,12 @@ import { Page } from '@/shared/types/types';
 
 interface PaymentPendingPageProps {
     transactionId: string;
+    gateway?: string;
     navigateTo: (page: Page) => void;
     locale?: 'ar' | 'en';
 }
 
-type PaymentState = 'pending' | 'processing' | 'completed' | 'failed' | 'timeout';
+type PaymentState = 'pending' | 'processing' | 'completed' | 'failed' | 'timeout' | 'review';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              CONTENT STRINGS
@@ -38,7 +39,11 @@ const CONTENT = {
         subtitle: 'يرجى الانتظار بينما نتحقق من معاملتك...',
         processing: 'جاري التحقق من الدفع',
         success: '🎉 تم الدفع بنجاح!',
-        successDesc: 'تم تفعيل اشتراكك. يمكنك الآن الوصول لجميع المميزات.',
+successDesc: 'تم تفعيل اشتراكك. يمكنك الآن الوصول لجميع المميزات.',
+        review: '📋 طلب إنستاباي قيد المراجعة',
+        reviewDesc: 'استلمنا إيصالك بنجاح. سيقوم فريقنا بالتحقق منه خلال 24 ساعة، وسيتم تفعيل اشتراكك تلقائياً بعد التأكيد.',
+        reviewRef: 'رقم الطلب',
+        reviewContact: 'تواصل مع فريق الدعم عند أي استفسار.',
         failed: '❌ فشل الدفع',
         failedDesc: 'حدث خطأ أثناء معالجة الدفع. يرجى المحاولة مرة أخرى.',
         timeout: '⏰ انتهت مهلة الانتظار',
@@ -54,7 +59,11 @@ const CONTENT = {
         subtitle: 'Please wait while we verify your transaction...',
         processing: 'Verifying Payment',
         success: '🎉 Payment Successful!',
-        successDesc: 'Your subscription has been activated. You now have access to all premium features.',
+successDesc: 'Your subscription has been activated. You now have access to all premium features.',
+        review: '📋 InstaPay Order Under Review',
+        reviewDesc: 'We received your transfer receipt. Our team will verify it within 24 hours, and your subscription will be activated automatically once confirmed.',
+        reviewRef: 'Order Ref',
+        reviewContact: 'Reach out to our support team for any inquiries.',
         failed: '❌ Payment Failed',
         failedDesc: 'There was an error processing your payment. Please try again.',
         timeout: '⏰ Verification Timeout',
@@ -73,6 +82,7 @@ const CONTENT = {
 
 const PaymentPendingPage: React.FC<PaymentPendingPageProps> = ({
     transactionId,
+    gateway = '',
     navigateTo,
     locale = 'en'
 }) => {
@@ -81,11 +91,18 @@ const PaymentPendingPage: React.FC<PaymentPendingPageProps> = ({
     const [_checkCount, setCheckCount] = useState(0);
     const isAr = locale === 'ar';
     const content = CONTENT[locale];
+    const isInstaPayManualReview = gateway === 'instapay';
 
     // ─────────────────────────────────────────────────────────────────────────
     // Payment Status Polling
     // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
+        if (isInstaPayManualReview) {
+            // InstaPay receipts are queued for manual admin review — no polling.
+            setState('review');
+            return;
+        }
+
         if (!transactionId) {
             // Use timeout to avoid sync setState in effect
             const failTimeout = setTimeout(() => setState('failed'), 0);
@@ -150,7 +167,7 @@ const PaymentPendingPage: React.FC<PaymentPendingPageProps> = ({
             window.removeEventListener('paymentSuccess', handlePaymentSuccess);
             window.removeEventListener('paymentStatusChanged', handlePaymentStatusChanged);
         };
-    }, [transactionId, state]);
+    }, [transactionId, state, isInstaPayManualReview]);
 
     // ─────────────────────────────────────────────────────────────────────────
     // Elapsed Time Counter
@@ -193,6 +210,35 @@ const PaymentPendingPage: React.FC<PaymentPendingPageProps> = ({
                         >
                             {content.goToDashboard}
                         </Button>
+                    </motion.div>
+                );
+
+            case 'review':
+                return (
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-center space-y-6"
+                    >
+                        <div className="w-24 h-24 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center">
+                            <Clock className="w-12 h-12 text-blue-500" />
+                        </div>
+                        <h2 className="text-3xl font-black text-white">{content.review}</h2>
+                        <p className="text-zinc-400 max-w-md mx-auto">{content.reviewDesc}</p>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800/60 border border-zinc-700">
+                            <span className="text-xs text-zinc-400 font-bold">{content.reviewRef}:</span>
+                            <span className="text-xs font-mono text-gold-400">{transactionId}</span>
+                        </div>
+                        <div className="flex justify-center">
+                            <Button
+                                onClick={() => navigateTo(Page.SUPPORT)}
+                                variant="outline"
+                                className="border-zinc-700 text-zinc-300 font-bold px-8 py-4 rounded-xl"
+                            >
+                                {content.contactSupport}
+                            </Button>
+                        </div>
+                        <p className="text-[10px] text-zinc-600 font-bold">{content.reviewContact}</p>
                     </motion.div>
                 );
 

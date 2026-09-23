@@ -243,6 +243,82 @@ class PaymentService {
     }
 
     /**
+     * InstaPay manual payment submission.
+     *
+     * Submits the customer's receipt file + order data to the canonical
+     * manual-review checkout endpoint (/api/checkout/instapay) which creates
+     * an Order + PaymentReceipt and queues it for admin verification.
+     * Multipart FormData is required (file + JSON `data` field).
+     */
+    public async submitInstaPay(input: {
+        receipt: File;
+        data: Record<string, unknown>;
+        idempotencyKey?: string;
+    }): Promise<{
+        success: boolean;
+        orderId?: string;
+        orderRef?: string;
+        receiptId?: string;
+        status?: string;
+        error?: string;
+    }> {
+        try {
+            const formData = new FormData();
+            formData.append('receipt', input.receipt);
+            formData.append(
+                'data',
+                JSON.stringify({
+                    ...input.data,
+                    idempotencyKey: input.idempotencyKey,
+                })
+            );
+
+            const headers: Record<string, string> = {};
+            if (input.idempotencyKey) headers['Idempotency-Key'] = input.idempotencyKey;
+
+            const response = await fetch('/api/checkout/instapay', {
+                method: 'POST',
+                headers,
+                body: formData,
+            });
+
+            let data: Record<string, unknown>;
+            const responseClone = response.clone();
+            try {
+                data = await response.json();
+            } catch {
+                const rawText = await responseClone.text().catch(() => `HTTP ${response.status}`);
+                loggers.payment.error('InstaPay submission returned non-JSON response', { status: response.status, rawText });
+                return {
+                    success: false,
+                    error: 'حدث خطأ مؤقت أثناء تسجيل طلبك. يرجى المحاولة مرة أخرى.',
+                };
+            }
+
+            if (!response.ok || data.success === false) {
+                loggers.payment.error('InstaPay submission failed', data);
+                return {
+                    success: false,
+                    error: (data.error || data.message || 'InstaPay submission failed') as string,
+                };
+            }
+
+            return {
+                success: true,
+                orderId: data.orderId as string | undefined,
+                orderRef: data.orderRef as string | undefined,
+                receiptId: data.receiptId as string | undefined,
+                status: data.status as string | undefined,
+            };
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            errorHandler.handle(error, 'PaymentService.submitInstaPay');
+            loggers.payment.error('submitInstaPay failed', { error: message });
+            return { success: false, error: message };
+        }
+    }
+
+    /**
      * @deprecated Use createInvoice() instead — this method is SpaceRemit-only.
      * Kept for backward compatibility during migration.
      * 

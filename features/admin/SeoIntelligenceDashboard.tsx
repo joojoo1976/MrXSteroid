@@ -11,6 +11,16 @@ import {
     AlertTriangle, FileText, TrendingUp, ChevronDown, ChevronUp,
     CheckCircle, XCircle, Clock, Loader2, Eye, Globe, Users, Database, Sparkles,
 } from 'lucide-react';
+import { adminHeaders } from './adminFetch';
+
+// Server-side requireAdmin() rejects requests without a Supabase Bearer token,
+// so every admin fetch here must carry the session token. We shadow the global
+// `fetch` for this module so all existing call sites are authenticated.
+const authedFetch = (input: string, init?: RequestInit) =>
+    adminHeaders().then(headers =>
+        globalThis.fetch(input, { ...init, headers: { ...((init?.headers as Record<string, string>) || {}), ...headers } })
+    );
+const fetch = authedFetch;
 
 type SeoTab =
     | 'overview'

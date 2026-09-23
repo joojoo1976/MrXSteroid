@@ -155,28 +155,34 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         let mounted = true;
         const fetchLiveData = async () => {
             try {
-                // Admin Dashboard: pending vs total payments
-                const { data: pending, error: e1 } = await supabase
+                // Admin Dashboard: aggregate payment_intents for the current user.
+                // Use .then() (list) rather than .maybeSingle() so we can sum all rows
+                // without PostgREST "multiple rows returned" errors.
+                const { data: allPayments, error: e1 } = await supabase
                     .from('payment_intents')
                     .select('status, amount')
                     .eq('user_id', user.id)
-                    .maybeSingle();
-                if (!e1 && mounted && pending) {
-                    const statuses = pending as string[];
-                    const total = (pending as any[]).length || 0;
-                    const revenue = (pending as any[]).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
-                    setAdminStats({ pending: total, total: total, revenue });
+                    .order('created_at', { ascending: false });
+                if (!e1 && mounted && Array.isArray(allPayments)) {
+                    const rows = allPayments as Array<{ status: string | null; amount: number | null }>;
+                    const total = rows.length;
+                    const pending = rows.filter((r) => {
+                        const s = String(r.status ?? '').toLowerCase();
+                        return s === 'pending' || s === 'initiated' || s === 'unknown';
+                    }).length;
+                    const revenue = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+                    setAdminStats({ pending, total, revenue });
                 }
 
-                // Admin Analytics: recent activity rows
+                // Admin Analytics: recent activity rows (no .maybeSingle for lists).
                 const { data: analytics, error: e2 } = await supabase
                     .from('payment_intents')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(5);
-                if (!e2 && mounted) setAnalyticsData(analytics as any[]);
+                if (!e2 && mounted && Array.isArray(analytics)) setAnalyticsData(analytics);
 
-                // Payment Diagnostic: last payment status
+                // Payment Diagnostic: last payment status (single row, safe with .maybeSingle).
                 const { data: lastPay, error: e3 } = await supabase
                     .from('payment_intents')
                     .select('id, amount, status, created_at')
@@ -186,27 +192,30 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
                     .maybeSingle();
                 if (!e3 && mounted && lastPay) setPaymentLast(lastPay as any);
 
-                // Fraud Engine: risk rates from recent observations
+                // Fraud Engine: risk rates from recent observations (list, not single).
                 const { data: fraud, error: e4 } = await supabase
                     .from('fraud_observations')
                     .select('verdict, count')
                     .order('created_at', { ascending: false })
                     .limit(100);
-                if (!e4 && mounted) {
+                if (!e4 && mounted && Array.isArray(fraud)) {
                     const rates = { pending: 0, blocked: 0, approved: 0 };
-                    (fraud as any[]).forEach((o: any) => {
-                        if (o.verdict === 'BLOCK') rates.blocked += (o.count || 0);
-                        else if (o.verdict === 'APPROVE') rates.approved += (o.count || 0);
-                        else rates.pending += (o.count || 0);
+                    (fraud as Array<{ verdict?: string | null; count?: number | null }>).forEach((o) => {
+                        const v = String(o.verdict ?? '').toUpperCase();
+                        const c = Number(o.count) || 0;
+                        if (v === 'BLOCK') rates.blocked += c;
+                        else if (v === 'APPROVE') rates.approved += c;
+                        else if (v === 'REJECT') rates.blocked += c;
+                        else rates.pending += c;
                     });
                     setFraudRates(rates);
                 }
             } catch {
                 // Graceful fallback - panels remain empty until data available
             }
-            return () => { mounted = false; };
         };
         fetchLiveData();
+        return () => { mounted = false; };
     }, [user]);
 
     const handleDeleteHistory = async (id: string) => {
@@ -814,7 +823,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
 
                         {/* Panel 1: Admin Dashboard */}
                         <div
-                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${PageRole === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${role === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
                         >
                             <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
                                 <Crown className="w-5 h-5" />
@@ -833,7 +842,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
 
                         {/* Panel 2: Admin Analytics */}
                         <div
-                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${PageRole === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
+                            className={`bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800 hover:border-gold-500/30 transition-colors ${role === 'admin' ? 'border-gold-500/50' : 'border-zinc-600'}`}
                         >
                             <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 shrink-0">
                                 <Sparkles className="w-5 h-5" />

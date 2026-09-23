@@ -75,6 +75,17 @@ export async function POST(req: Request) {
 
         const input = parsed.data;
 
+        // ── InstaPay deprecation ──────────────────────────────────────────────
+        // Manual-review InstaPay now lives exclusively at POST /api/checkout/instapay
+        // (uploads the receipt, creates Order + PaymentReceipt, queues admin review).
+        // The legacy invoice-based flow is deliberately rejected so no parallel path exists.
+        if (input.paymentMethod === 'instapay') {
+            return json({
+                success: false,
+                error: 'InstaPay checkout has moved — please complete your order through the new receipt-upload flow.',
+            }, 400, req);
+        }
+
         // IDOR Defense: verify caller identity and forbid creating invoices for another user
         const userResolution = await resolveEffectiveUserId(req, input.userId);
         if (!userResolution.success) {
@@ -88,7 +99,6 @@ export async function POST(req: Request) {
             const vcalCountry = req.headers.get('x-vercel-ip-country') || '';
             const secureCountryCode = vcalCountry.trim() !== '' ? vcalCountry : input.country;
 
-            const isInstaPay = input.paymentMethod === 'instapay';
             const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
             const isStripeEmbedded = input.paymentMethod === 'stripe';
@@ -99,8 +109,6 @@ export async function POST(req: Request) {
             if (isKashier) {
                 // Delegated to the Phase 4 checkout session service further down.
                 gatewayName = 'KASHIER';
-            } else if (isInstaPay) {
-                gatewayName = 'INSTAPAY';
             } else if (isStripeEmbedded) {
                 const { StripeGateway } = await import('../../../../server/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
@@ -116,7 +124,7 @@ export async function POST(req: Request) {
 
             input.country = secureCountryCode;
 
-            const isEgypt = (gatewayName === 'PAYMOB' && !isPaymobPayPal) || gatewayName === 'INSTAPAY';
+            const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
             const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
 
             const pricing = await loadPricing(async () => {
@@ -299,30 +307,6 @@ export async function POST(req: Request) {
 
             const invoiceId = invoice.id;
             console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}${referralCode ? ` (ref: ${referralCode})` : ''}`);
-
-
-            if (isInstaPay) {
-                const refText = String(input.metadata?.instapayReference || input.phoneNumber || '');
-                const waText = encodeURIComponent(
-                    `مرحباً كابتن، لقد قمت بطلب الاشتراك عبر إنستاباي:\n- رقم الفاتورة: #${invoiceId.slice(0, 8)}\n- الباقة: ${input.tierId}\n- المبلغ: ${amount} ج.م\n- الاسم: ${input.fullName}\n- البريد: ${input.email}\n- رقم التحويل/المرجع: ${refText}`
-                );
-
-                await supabase
-                    .from('invoices')
-                    .update({
-                        gateway_reference_id: `INSTAPAY-${refText || invoiceId.slice(0, 8)}`,
-                        metadata: { ...input.metadata, instapayAddress: 'jan.ghattas@instapay' },
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', invoiceId);
-
-                return json({
-                    success: true,
-                    invoiceId,
-                    gateway: 'instapay',
-                    redirectUrl: `/payment-pending?gateway=instapay&txn=${invoiceId}&wa=${waText}`,
-                }, 200, req);
-            }
 
             const gatewayParams = {
                 userId: effectiveUserId,

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle,
     MapPin, Target, Truck, CheckCircle2, Smartphone, Store, Globe, Phone, Zap,
-    QrCode, Copy, Check, ExternalLink
+QrCode, Copy, Check, ExternalLink, Upload
 } from 'lucide-react';
 import { Button } from '../../shared/ui/button';
 import { Input } from '../../shared/ui/input';
@@ -64,6 +64,33 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
     const { user, profileData, isAuthenticated } = useAuth();
 
+    const [instapayRef, setInstapayRef] = React.useState('');
+    const [instapayFile, setInstapayFile] = React.useState<File | null>(null);
+    const [instapayFileError, setInstapayFileError] = React.useState('');
+
+    const handleInstapayFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInstapayFileError('');
+        const file = e.target.files?.[0] || null;
+        if (!file) {
+            setInstapayFile(null);
+            return;
+        }
+        const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
+        if (!ALLOWED.includes(file.type)) {
+            setInstapayFileError(isAr ? 'صيغة غير مدعومة. المسموح: PNG, JPG, WEBP, PDF' : 'Unsupported file type. Allowed: PNG, JPG, WEBP, PDF');
+            setInstapayFile(null);
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            setInstapayFileError(isAr ? 'حجم الملف أكبر من 10 ميجابايت' : 'File is larger than 10MB');
+            setInstapayFile(null);
+            e.target.value = '';
+            return;
+        }
+        setInstapayFile(file);
+    };
+
     const {
         form: { register, watch, setValue, formState: { errors } },
         isProcessing,
@@ -92,7 +119,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         stripeInvoiceId,
         isStripeReady,
         setIsStripeReady,
-    } = useCheckout({
+} = useCheckout({
         content,
         lang,
         selectedTier,
@@ -104,14 +131,18 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         quantity,
         userId: user?.id,
         userEmail: user?.email,
-        userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name
+        userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name,
+        instapayRef,
+        instapayFile,
+        onInstaPaySuccess: (orderRef) => {
+            window.location.assign(`/payment-pending?gateway=instapay&txn=${encodeURIComponent(orderRef)}`);
+        },
     });
 
-    const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
+const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
     const stripePublishableKey = env.STRIPE_PUBLISHABLE_KEY || '';
     const isStripeSelected = paymobMethod === 'stripe';
     const [copiedInstapay, setCopiedInstapay] = React.useState(false);
-    const [instapayRef, setInstapayRef] = React.useState('');
 
     const handleCopyInstapay = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -915,7 +946,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                                 </div>
                                             </div>
 
-                                            {/* Optional Reference Input */}
+{/* Optional Reference Input */}
                                             <div className="space-y-1.5">
                                                 <Label className="text-xs text-emerald-400 font-bold block">
                                                     {isAr ? "اسم صاحب الحساب المحول منه أو رقم العملية (اختياري للتأكيد)" : "Sender Account Name / Transfer Ref (Optional)"}
@@ -926,6 +957,32 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
                                                     placeholder={isAr ? "مثال: تحويل باسم أحمد محمود / Ref: 98124" : "e.g. Sent by John Doe / Ref: 98124"}
                                                     className="bg-black/60 border-zinc-700 text-xs focus:border-emerald-500"
                                                 />
+                                            </div>
+
+                                            {/* Required Receipt Upload */}
+                                            <div className="space-y-1.5">
+                                                <Label className="text-xs text-emerald-400 font-bold block">
+                                                    {isAr ? "🔍 رفع إيصال التحويل (مطلوب للتأكيد)" : "🔍 Upload Transfer Receipt (Required)"}
+                                                </Label>
+                                                <label className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/60 border-2 border-dashed border-zinc-700 hover:border-emerald-500/50 cursor-pointer transition-all text-center">
+                                                    <Upload className="w-5 h-5 text-emerald-400" />
+                                                    <span className="text-[11px] font-bold text-zinc-300">
+                                                        {instapayFile
+                                                            ? instapayFile.name
+                                                            : isAr
+                                                                ? "اضغط لاختيار صورة أو PDF للإيصال — PNG, JPG, WEBP, PDF (حتى 10MB)"
+                                                                : "Tap to select receipt image or PDF — PNG, JPG, WEBP, PDF (up to 10MB)"}
+                                                    </span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/png,image/jpeg,image/webp,application/pdf"
+                                                        onChange={handleInstapayFileChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                {instapayFileError && (
+                                                    <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">{instapayFileError}</p>
+                                                )}
                                             </div>
                                         </div>
                                     )}

@@ -101,7 +101,7 @@ describe('Tool registry — resolution', () => {
         expect(getTool('macro')?.slug).toBe('macro');
         expect(getTool('/macro')?.slug).toBe('macro');
         expect(getTool('/ar/halflife/')?.slug).toBe('halflife');
-        expect(getTool('/TransformationTimeline')?.slug).toBe('timeline');
+        expect(getTool('/smarttools/timeline')?.slug).toBe('timeline');
         expect(getToolByHref('/lab')?.slug).toBe('lab');
         expect(getToolByPage(Page.GENETIC)?.slug).toBe('genetic');
         expect(getTool('does-not-exist')).toBeNull();
@@ -117,7 +117,13 @@ describe('Tool registry — prev/next link-graph (SEO §7)', () => {
     it('returns the circular neighbour pair for a middle tool', () => {
         const links = getToolNeighbors('multi-ester-pharmacokinetics');
         expect(links.prevTool.slug).toBe('halflife');
-        // order 46 — HPTA Recovery sits between PharmaSim™ (45) and Lab (50).
+        // order 45 → 45.5 → 46: Aromatization sits between PharmaSim™ and HPTA Recovery.
+        expect(links.nextTool.slug).toBe('aromatization-risk');
+    });
+
+    it('walks forward from aromatization-risk into hpta-recovery', () => {
+        const links = getToolNeighbors('aromatization-risk');
+        expect(links.prevTool.slug).toBe('multi-ester-pharmacokinetics');
         expect(links.nextTool.slug).toBe('hpta-recovery');
         expect(links.nextTool.titleAr).toBe('محاكي التثبيط المحوري واستعادة HPTA');
         expect(links.nextTool.titleEn).toBe('HPTA Suppression & Recovery Modeler');

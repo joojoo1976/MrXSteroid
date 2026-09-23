@@ -46,9 +46,10 @@ import { useAuth } from '../context/AuthContext';
 import { ContentStrings } from '../shared/types/types';
 import { RevenueSplitsManager } from '../features/admin/RevenueSplitsManager';
 import { SeoIntelligenceDashboard } from '../features/admin/SeoIntelligenceDashboard';
+import { PaymentReceiptsSection } from '../features/admin/PaymentReceiptsSection';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
-type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms' | 'seo';
+type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms' | 'seo' | 'payments';
 
 interface VariantForm {
     id?: string;
@@ -98,6 +99,7 @@ const SECTIONS: { key: SectionKey; icon: React.ElementType }[] = [
     { key: 'logistics', icon: Map },
     { key: 'settings', icon: Settings },
     { key: 'seo', icon: TrendingUp },
+    { key: 'payments', icon: Wallet },
 ];
 
 const MissionControl: React.FC = () => {
@@ -108,7 +110,7 @@ const MissionControl: React.FC = () => {
     const [search, setSearch] = useState('');
     const data = useAdminData();
 
-    const sections = SECTIONS.map(s => ({ ...s, label: s.key === 'seo' ? 'SEO Intelligence' : (mc.sections as Record<string,string>)[s.key] ?? s.key }));
+    const sections = SECTIONS.map(s => ({ ...s, label: s.key === 'seo' ? 'SEO Intelligence' : s.key === 'payments' ? 'InstaPay Receipts' : (mc.sections as Record<string,string>)[s.key] ?? s.key }));
 
     const navClass = (active: boolean) =>
         `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -234,6 +236,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section, search, data
         case 'logistics': return <LogisticsSection data={data} mc={mc} />;
         case 'settings': return <SettingsSection data={data} mc={mc} />;
         case 'seo': return <SeoIntelligenceDashboard />;
+        case 'payments': return <PaymentReceiptsSection />;
     }
 };
 

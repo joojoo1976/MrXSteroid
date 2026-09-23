@@ -49,6 +49,8 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.RESET_PASSWORD]: '/reset-password',
     [Page.CHECKOUT]: '/checkout',
     [Page.PAYMENT_CONFIG_DIAGNOSTIC]: '/payment-diagnostic',
+    [Page.PAYMENT_DIAGNOSTIC]: '/payment-diagnostic',
+    [Page.FRAUD_ENGINE]: '/evaluate-risk',
     [Page.TIMELINE]: '/TransformationTimeline',
     [Page.HPTA_RECOVERY]: '/smarttools/hpta-recovery',
     [Page.AROMATIZATION_RISK]: '/smarttools/aromatization-risk',

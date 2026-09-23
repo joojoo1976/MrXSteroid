@@ -121,7 +121,7 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         href: '/smarttools/hpta-recovery',
         titleAr: 'محاكي التثبيط المحوري واستعادة HPTA',
         titleEn: 'HPTA Suppression & Recovery Modeler',
-        accessTier: 'premium',
+        accessTier: 'free',
         order: 46,
         stackStatus: 'layered',
     },
@@ -195,18 +195,6 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         titleEn: 'Aromatization Risk & E2 Management Modeler',
         accessTier: 'free',
         order: 45.5, // between multi-ester PK (45) and HPTA recovery (46)
-        stackStatus: 'layered',
-    },
-    {
-        toolId: 'mrx.tool.hpta-recovery',
-        slug: 'hpta-recovery',
-        version: '1.0.0',
-        page: Page.HPTA_RECOVERY,
-        href: '/smarttools/hpta-recovery',
-        titleAr: 'محاكي التثبيط المحوري واستعادة HPTA',
-        titleEn: 'HPTA Suppression & Recovery Modeler',
-        accessTier: 'free',
-        order: 46,
         stackStatus: 'layered',
     },
     {

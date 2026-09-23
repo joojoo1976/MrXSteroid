@@ -64,8 +64,9 @@ describe('Tool #001 — Layer 3 canonical envelope', () => {
         expect(output.toolId).toBe('mrx.tool.multi-ester-pharmacokinetics');
         expect(output.toolSlug).toBe('multi-ester-pharmacokinetics');
         expect(output.accessTier).toBe('premium'); // registry is the single source of truth
+        // chain: halflife (40) <-> multi-ester (45) <-> aromatization-risk (45.5) <-> hpta-recovery (46)
         expect(output.seoLinks.prevTool.slug).toBe('halflife');
-        expect(output.seoLinks.nextTool.slug).toBe('hpta-recovery');
+        expect(output.seoLinks.nextTool.slug).toBe('aromatization-risk');
         expect(output.result.timeline.length).toBe(61);
         expect(output.calculatedAt).toBe('2026-09-21T10:00:00.000Z'); // injected, never read from the clock
         expect(output.snapshotType).toBe('dashboard_projection');

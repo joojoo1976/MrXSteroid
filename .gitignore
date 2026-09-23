@@ -93,6 +93,9 @@ home-test.cjs
 probe.cjs
 probe2.cjs
 
+# ------ Windows Desktop Shortcuts ---------------------------
+*.lnk
+
 # ------ Archives / Compressed -------------------------------
 *.zip
 *.gz
@@ -106,3 +109,14 @@ probe2.cjs
 # ------ Misc ------------------------------------------------
 *.pem
 .npmrc.local
+
+
+# ------ Dev-Junk (do not commit) ----------------
+*.lnk
+tmp/
+*.bak
+*.hpta
+.dev-err.log
+.dev-out.log
+dev.log
+

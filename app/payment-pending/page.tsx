@@ -14,6 +14,7 @@ function PaymentPendingInner() {
             {({ navigateTo }) => (
                 <PaymentPendingPage
                     transactionId={searchParams?.get('txn') || ''}
+                    gateway={searchParams?.get('gateway') || ''}
                     navigateTo={navigateTo}
                     locale={language}
                 />

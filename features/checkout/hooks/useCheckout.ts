@@ -48,13 +48,19 @@ export interface useCheckoutOptions {
     userId?: string;
     userEmail?: string;
     userName?: string;
+    /** InstaPay transfer reference entered by the customer (optional). */
+    instapayRef?: string;
+    /** InstaPay receipt file (image/PDF) selected by the customer (required for InstaPay). */
+    instapayFile?: File | null;
+    /** Called with the created orderRef after a successful InstaPay submission. */
+    onInstaPaySuccess?: (orderRef: string) => void;
 }
 
 export type PaymobMethod = 'card' | 'wallet' | 'kiosk' | 'paypal' | 'stripe' | 'instapay' | 'kashier';
 export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
-    const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, quantity, userId, userEmail, userName } = options;
+    const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, quantity, userId, userEmail, userName, instapayRef, instapayFile, onInstaPaySuccess } = options;
     const { currency, formatPrice: globalFormatPrice } = usePreferences();
     
     const [isProcessing, setIsProcessing] = useState(false);
@@ -299,6 +305,55 @@ export const useCheckout = (options: useCheckoutOptions) => {
             : `mrx-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
         try {
+            // ── INSTAPAY: canonical manual-review flow ───────────────────────
+            // The customer uploads their transfer receipt; the server creates the
+            // Order + PaymentReceipt and queues it for admin verification.
+            // NOTE: this deliberately bypasses the legacy create-invoice path.
+            if (paymobMethod === 'instapay') {
+                if (!instapayFile) {
+                    setPaymentError(isAr ? 'يرجى رفع صورة أو ملف PDF لإيصال التحويل أولاً (مطلوب للتأكيد).' : 'Please upload your transfer receipt (image or PDF) first — required for confirmation.');
+                    setIsProcessing(false);
+                    return;
+                }
+                if (!data.phoneNumber || data.phoneNumber.trim().length < 8) {
+                    setPaymentError(isAr ? 'رقم الهاتف مطلوب لتأكيد طلب إنستاباي.' : 'A valid phone number is required for InstaPay orders.');
+                    setIsProcessing(false);
+                    return;
+                }
+
+                const result = await paymentService.submitInstaPay({
+                    receipt: instapayFile,
+                    idempotencyKey,
+                    data: {
+                        tierId: selectedTier.id,
+                        quantity: quantity ?? 1,
+                        customerName: data.fullName,
+                        email: data.email,
+                        phoneNumber: data.phoneNumber.trim(),
+                        transactionRef: instapayRef?.trim() || undefined,
+                        shippingAddress: isPhysical
+                            ? {
+                                  address: data.address,
+                                  city: data.city,
+                                  zipCode: data.zipCode,
+                                  country: 'EG',
+                              }
+                            : undefined,
+                        promoCode: promoCode?.trim() || undefined,
+                        userId: data.userId || userId || undefined,
+                        locale: isAr ? 'ar' : 'en',
+                    },
+                });
+
+                if (result.success && result.orderRef) {
+                    console.log('🚀 InstaPay order recorded:', result.orderRef);
+                    setIsRedirecting(true);
+                    onInstaPaySuccess?.(result.orderRef);
+                    return;
+                }
+                throw new Error(result.error || (isAr ? 'فشل تسجيل طلب إنستاباي' : 'InstaPay submission failed'));
+            }
+
             const integrationIdsMap: Record<PaymobMethod, number> = {
                 card: 5573815,
                 wallet: 5792309,
