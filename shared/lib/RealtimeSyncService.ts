@@ -174,7 +174,26 @@ export class RealtimeSyncService {
 
     /**
      * Sync order data with validation
+     *
+     * M1A guard: this sync is UPDATE-only (never INSERTs — a missing row is a
+     * no-op, so a new order can never be created with NULL governance columns).
+     * Only allowlisted, non-financial fields may be written; region, currency,
+     * payment_status, fulfillment_status, external_*, source_channel,
+     * payment_method, idempotency_key, invoice_id, amount and user_id are
+     * never touched here (cannot be overwritten, cannot be reset to NULL).
      */
+    private static readonly ORDER_SYNC_ALLOWLIST = new Set([
+        'status',
+        'fullname',
+        'email',
+        'phone',
+        'address',
+        'city',
+        'country',
+        'postalcode',
+        'items',
+    ]);
+
     async syncOrderData(orderId: string, orderData: Record<string, unknown>) {
         if (!orderId || orderId.trim() === '') {
             throw new Error('Order ID is required');
@@ -190,9 +209,21 @@ export class RealtimeSyncService {
 
         const sanitizedData = this.sanitizeData(orderData) as Record<string, unknown>;
 
+        const patch: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(sanitizedData)) {
+            if (key === 'id') continue;
+            if (RealtimeSyncService.ORDER_SYNC_ALLOWLIST.has(key)) patch[key] = value;
+        }
+
+        if (Object.keys(patch).length === 0) {
+            throw new Error('No updatable order fields provided');
+        }
+
         const { data, error } = await supabase
             .from('orders')
-            .upsert({ id: orderId, ...sanitizedData } as unknown as Database['public']['Tables']['orders']['Insert']);
+            .update(patch)
+            .eq('id', orderId)
+            .select();
 
         if (error) throw error;
         const rows = data as unknown as Database['public']['Tables']['orders']['Row'][] | null;

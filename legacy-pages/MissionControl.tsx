@@ -375,7 +375,7 @@ const OverviewSection: React.FC<{ data: ReturnType<typeof useAdminData>; search:
                                 const pct = orders.length ? Math.round((n / orders.length) * 100) : 0;
                                 const barColor =
                                     s === 'delivered' ? 'bg-emerald-500' :
-                                    s === 'shipped' || s === 'confirmed' || s === 'processing' ? 'bg-amber-500' :
+                                    s === 'shipped' || s === 'processing' ? 'bg-amber-500' :
                                     s === 'cancelled' || s === 'refunded' ? 'bg-red-500' : 'bg-zinc-500';
                                 return (
                                     <div key={s}>
@@ -1146,7 +1146,7 @@ const MarketingSection: React.FC<{ data: ReturnType<typeof useAdminData>; onRefr
 /* ════════════════════════════════════════════════════════════════════════
    ORDERS
    ════════════════════════════════════════════════════════════════════════ */
-const ORDER_STATUSES = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled', 'refunded'];
+const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
 
 const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: string; mc: MC }> = ({ data, search, mc }) => {
     const [statusFilter, setStatusFilter] = useState('all');
@@ -1170,7 +1170,13 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
 
     const updateStatus = async (order: Order, nextStatus: string) => {
         setSaving(true);
-        const { error } = await supabase.from('orders').update({ status: nextStatus }).eq('id', order.id);
+        // M1A: 'processing' is the payment-confirmed operational state in this lifecycle
+        // (replaces the retired 'confirmed' action) → also mark payment as paid.
+        const patch: Partial<Order> = { status: nextStatus };
+        if (nextStatus === 'processing' && order.payment_status !== 'paid') {
+            patch.payment_status = 'paid';
+        }
+        const { error } = await supabase.from('orders').update(patch).eq('id', order.id);
         setSaving(false);
         if (error) return toast.error(`${mc.updateFailed} ${error.message}`);
         toast.success(mc.orderUpdated);
@@ -1220,7 +1226,7 @@ const OrdersSection: React.FC<{ data: ReturnType<typeof useAdminData>; search: s
                                         <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${
                                             o.status === 'delivered' ? 'bg-green-500/10 text-green-400' :
                                             o.status === 'cancelled' || o.status === 'refunded' ? 'bg-red-500/10 text-red-400' :
-                                            o.status === 'shipped' || o.status === 'confirmed' ? 'bg-sky-500/10 text-sky-400' :
+                                            o.status === 'shipped' ? 'bg-sky-500/10 text-sky-400' :
                                             'bg-amber-500/10 text-amber-400'
                                         }`}>{o.status}</span>
                                     </td>

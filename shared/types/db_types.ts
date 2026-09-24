@@ -298,6 +298,19 @@ export type Database = {
                     items: Json | null
                     created_at: string | null
                     updated_at: string | null
+                    region: string | null
+                    currency: string | null
+                    payment_provider_merchant: string | null
+                    payment_status: string | null
+                    fulfillment_status: string | null
+                    external_provider: string | null
+                    external_order_id: string | null
+                    external_payment_reference: string | null
+                    external_sync_status: string | null
+                    source_channel: string | null
+                    payment_method: string | null
+                    idempotency_key: string | null
+                    invoice_id: string | null
                 }
                 Insert: {
                     id?: string
@@ -314,6 +327,19 @@ export type Database = {
                     items?: Json | null
                     created_at?: string | null
                     updated_at?: string | null
+                    region?: string | null
+                    currency?: string | null
+                    payment_provider_merchant?: string | null
+                    payment_status?: string | null
+                    fulfillment_status?: string | null
+                    external_provider?: string | null
+                    external_order_id?: string | null
+                    external_payment_reference?: string | null
+                    external_sync_status?: string | null
+                    source_channel?: string | null
+                    payment_method?: string | null
+                    idempotency_key?: string | null
+                    invoice_id?: string | null
                 }
                 Update: {
                     id?: string
@@ -330,8 +356,29 @@ export type Database = {
                     items?: Json | null
                     created_at?: string | null
                     updated_at?: string | null
+                    region?: string | null
+                    currency?: string | null
+                    payment_provider_merchant?: string | null
+                    payment_status?: string | null
+                    fulfillment_status?: string | null
+                    external_provider?: string | null
+                    external_order_id?: string | null
+                    external_payment_reference?: string | null
+                    external_sync_status?: string | null
+                    source_channel?: string | null
+                    payment_method?: string | null
+                    idempotency_key?: string | null
+                    invoice_id?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "orders_invoice_id_fkey"
+                        columns: ["invoice_id"]
+                        isOneToOne: false
+                        referencedRelation: "invoices"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
             payments: {
                 Row: {

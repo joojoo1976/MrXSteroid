@@ -107,14 +107,17 @@ export async function PATCH(
             return NextResponse.json({ error: 'Failed to update receipt' }, { status: 500 });
         }
 
-        // Settle the linked order: verified → processing (payment confirmed),
-        // rejected → cancelled (invalid payment).
+        // Settle the linked order: verified → processing + payment_status=paid (payment confirmed),
+        // rejected → cancelled + payment_status=failed (invalid/never-confirmed payment).
         if (receipt.order_id) {
             const orderStatus = status === 'verified' ? 'processing' : status === 'rejected' ? 'cancelled' : null;
+            const paymentStatus = status === 'verified' ? 'paid' : status === 'rejected' ? 'failed' : null;
             if (orderStatus) {
+                const orderPatch: Record<string, unknown> = { status: orderStatus, updated_at: now };
+                if (paymentStatus) orderPatch['payment_status'] = paymentStatus;
                 const { error: orderError } = await supabase
                     .from('orders')
-                    .update({ status: orderStatus, updated_at: now })
+                    .update(orderPatch)
                     .eq('id', receipt.order_id);
 
                 if (orderError) {
@@ -137,6 +140,7 @@ export async function PATCH(
             new_state: {
                 status,
                 order_status: status === 'verified' ? 'processing' : status === 'rejected' ? 'cancelled' : receipt.status,
+                payment_status: status === 'verified' ? 'paid' : status === 'rejected' ? 'failed' : null,
             },
             metadata: {
                 reviewNotes: reviewNotes || null,

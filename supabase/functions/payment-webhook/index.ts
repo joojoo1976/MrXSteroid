@@ -63,11 +63,12 @@ serve(async (req: Request) => {
 
             // Sync with Orders Table if order_id exists
             if (updatedPayment?.order_id) {
-                console.log(`📦 Syncing Order ${updatedPayment.order_id}...`)
+                console.log(`📦 Syncing Order ${updatedPayment.order_id} (payment confirmed)...`)
                 await supabase
                     .from('orders')
                     .update({
-                        status: 'completed',
+                        // M1A: payment outcome → orders.payment_status (never orders.status='completed').
+                        payment_status: 'paid',
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', updatedPayment.order_id)

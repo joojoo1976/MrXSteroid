@@ -143,9 +143,9 @@ describe('Payment Receipts Admin API', () => {
         expect(res.status).toBe(409);
     });
 
-    it('verifies a pending receipt, settles order to processing and writes the audit log', async () => {
+    it('verifies a pending receipt, settles order to processing + payment_status=paid and writes the audit log', async () => {
         let updated: Record<string, unknown> | null = null;
-        let orderUpdateStatus: string | null = null;
+        let orderUpdate: Record<string, unknown> | null = null;
         configTable('payment_receipts', () => ({
             select: vi.fn(() => ({
                 eq: vi.fn(() => ({
@@ -171,7 +171,7 @@ describe('Payment Receipts Admin API', () => {
         }));
         configTable('orders', () => ({
             update: vi.fn((fields: Record<string, unknown>) => {
-                orderUpdateStatus = fields.status as string;
+                orderUpdate = fields;
                 return { eq: vi.fn(() => Promise.resolve({ error: null })) };
             }),
         }));
@@ -184,10 +184,11 @@ describe('Payment Receipts Admin API', () => {
         expect(body.success).toBe(true);
         expect(body.orderStatus).toBe('processing');
         expect(updated).toMatchObject({ status: 'verified', reviewed_by: 'admin-1', review_notes: 'looks good' });
-        expect(orderUpdateStatus).toBe('processing');
+        expect(orderUpdate).toMatchObject({ status: 'processing', payment_status: 'paid' });
     });
 
-    it('rejects a receipt and settles order to cancelled', async () => {
+    it('rejects a receipt and settles order to cancelled + payment_status=failed', async () => {
+        let orderUpdate: Record<string, unknown> | null = null;
         configTable('payment_receipts', () => ({
             select: () => ({
                 eq: () => ({
@@ -208,12 +209,19 @@ describe('Payment Receipts Admin API', () => {
                 })),
             })),
         }));
+        configTable('orders', () => ({
+            update: vi.fn((fields: Record<string, unknown>) => {
+                orderUpdate = fields;
+                return { eq: vi.fn(() => Promise.resolve({ error: null })) };
+            }),
+        }));
         const res = await PATCH(makePatchReq({ status: 'rejected', rejectionReason: 'amount mismatch' }), {
             params: Promise.resolve({ id: 'rc-1' }),
         });
         expect(res.status).toBe(200);
         const body = await res.json();
         expect(body.orderStatus).toBe('cancelled');
+        expect(orderUpdate).toMatchObject({ status: 'cancelled', payment_status: 'failed' });
     });
 
     it('returns 404 for a signed URL when the receipt has no stored file', async () => {

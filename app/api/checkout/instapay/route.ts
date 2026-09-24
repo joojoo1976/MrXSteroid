@@ -12,6 +12,8 @@
  *  - File upload validation (type, size, content)
  *  - Receipt stored in private Supabase bucket
  *  - Order created with 'pending_manual_review' status
+ *  - Order carries M1A checkout context: region=EG, currency=EGP,
+ *    payment_method=instapay, source_channel=web_checkout, payment_status=pending
  *  - Integrates with existing payment architecture (orders, invoices, payment_intents)
  *  - Affiliate attribution preserved
  *
@@ -391,6 +393,12 @@ export async function POST(req: NextRequest) {
                 amount: finalAmount,
                 status: 'pending_manual_review',
                 items: [{ tierId: input.tierId, quantity: input.quantity }],
+                // M1A compatibility fields (server-resolved checkout context)
+                region: 'EG',
+                currency: 'EGP',
+                payment_method: 'instapay',
+                source_channel: 'web_checkout',
+                payment_status: 'pending',
             })
             .select()
             .single();
