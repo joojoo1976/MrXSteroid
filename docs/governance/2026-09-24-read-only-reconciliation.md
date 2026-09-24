@@ -2,6 +2,7 @@
 
 **Project:** MrXSteroid — Egypt Local Checkout + Global Store + Supabase + Admin + Shipping + Payments
 **Governing prompt:** `docs/governance/MASTER_IMPLEMENTATION_GOVERNANCE_PROMPT.md` (sections 0–70)
+**Phase 1 status:** owner decisions approved on 2026-09-24 → `docs/governance/phase1/PHASE1-DECISION-RECORD.md`, `docs/governance/phase1/PHASE1-MIGRATION-DESIGN-ORDERS.md`, `docs/governance/phase1/PHASE1-API-WEBHOOK-CONTRACTS.md` (designs only; nothing applied)
 **Report date:** 2026-09-24
 **Mode:** READ-ONLY. No SQL, no migration, no code change, no production mutation, no deployment was performed while producing this report. The only repository write is this document plus the governing prompt document (doc-only commit).
 
