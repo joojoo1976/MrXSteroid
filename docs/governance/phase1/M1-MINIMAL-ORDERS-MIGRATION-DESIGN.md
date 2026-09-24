@@ -1,11 +1,14 @@
-# M1 — Minimal Orders Migration Design (Revision 3 — FINAL)
+# M1 — Minimal Orders Migration Design (Revision 4 — FINAL)
 
 **Status:**
 ```text
-M1 Design = APPROVED WITH FINAL CORRECTIONS
-M1A SQL   = DRAFT ONLY (never applied)
-M1B       = NOT APPROVED
-Production= UNTOUCHED
+M1 Design                   = APPROVED WITH FINAL CORRECTIONS (Rev 4 lock)
+M1A SQL                     = APPLIED (migration 20260924174753, committed 0d18c84)
+Application Compatibility   = LIVE (committed ecbd4ea, deployed mrxsteroid.com)
+Rejected receipt outcome    = LOCKED: status='cancelled' + payment_status='failed' (order attempt only)
+InstaPay (payment method)   = LIVE / ACTIVE — POST /api/checkout/instapay preserved
+M1B                         = NOT APPLIED
+Production                  = LIVE (M1A + Application Compatibility)
 ```
 **Scope:** M1 design revision per owner feedback (Rev 2 → Rev 3). Rollout stays **M1A (additive) → code-compat → validate producers → observation → M1B (enforcement).** NO SQL applied, no code change, no RLS/grants, no price changes, no deployment.
 
@@ -23,6 +26,18 @@ Production= UNTOUCHED
 | 4 | `orders.amount` | **KEEP `numeric` (no narrowing).** Type narrowing is NOT performed for uniformity; evidence table in §7 shows no technical need. |
 
 Also confirmed by owner (Rev3): M1A/M1B kept separate; `region = EG\|GLOBAL` · `currency = EGP\|USD`; `orders.status` CHECK untouched (`completed`/`confirmed` never added); `payment_status` mirrors `invoices_payment_status_check`; `fulfillment_status` nullable with **no invented vocabulary** (CHECK only after Bosta/DHL close); `source_channel` 5 values with `instapay_manual` removed; `invoice_id` FK SET NULL with no UNIQUE in M1; `idempotency_key` nullable + partial unique; `external_sync_status` column in M1A with **no CHECK** until its state vocab is defined; `payment_intent_id` **not added** (1:N); `merchant_reference` **not added** (`payment_intents.merchant_reference` canonical); breakdown columns removed (canonical total stays in `orders.amount`, historical breakdown stays in invoice structures); observation = **min 30 min + 10 gates** before M1B.
+
+### Rev 4 — owner decisions (LOCKED 2026-09-24)
+
+| # | Decision | Locked state |
+|---|---|---|
+| R4-1 | **Rejected-receipt mapping** — approved exactly as implemented and verified in M1A, **as an order-level outcome for the individual rejected InstaPay payment attempt only**: `orders.status='cancelled'` + `orders.payment_status='failed'`. | LOCKED |
+| R4-2 | **InstaPay remains LIVE / ACTIVE** as an existing payment method on mrxsteroid.com. Do **not** remove, disable, deprecate, replace, or consolidate away InstaPay. The current Production flow and route **`POST /api/checkout/instapay`** are preserved **as-is**: receipt upload, file validation, private storage, manual review, affiliate attribution, rate limiting, rollback. | LOCKED |
+| R4-3 | `rejected → cancelled+failed` does **not** signal a payment-method shutdown; InstaPay stays selectable and functional at all times. | LOCKED |
+| R4-4 | **No Kashier changes** and **no unrelated payment-method changes** in the next steps. | LOCKED |
+| R4-5 | Kept: **M1A = LIVE**, **Application Compatibility = LIVE**, **M1B = NOT APPLIED**. | LOCKED |
+
+**Preserved InstaPay invariants (locked, enforced by `tests/unit/instapayPreservationLock.test.ts`):** route file exists and exports `POST`; `req.formData()` + `receiptFile` + `validateReceiptFile` (file type/size/content); `enforceRateLimit('instapay-checkout:…')`; receipt→`RECEIPT_BUCKET` storage upload; order insert keeps `status:'pending_manual_review'`, `payment_method:'instapay'`; `payment_receipts` dedupe on `transaction_reference`/idempotency; affiliate `attribution` persisted in receipt metadata; rollback deletes order + removes stored receipt on failure; admin review (verify/reject) untouched. No replacement of InstaPay with Kashier.
 
 ---
 
