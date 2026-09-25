@@ -16,9 +16,9 @@ export type LedgerAccount =
     | 'GATEWAY_FEES'
     | 'PLATFORM_REVENUE'
     | 'BENEFICIARY_PAYABLE'
+    | 'RESERVE'
     | 'REFUND_LIABILITY'
-    | 'PAYOUT_CLEARING'
-    | 'SALES_CLEARING';
+    | 'PAYOUT_CLEARING';
 
 export type LedgerEntryType = 'DEBIT' | 'CREDIT';
 
@@ -157,35 +157,52 @@ export async function postJournalEntry(
 }
 
 /**
- * Record Payment Captured Journal (N-3, N-4):
- * Gross 100:
- * Debit CUSTOMER_FUNDS 10,000 / Credit SALES_CLEARING 10,000
- * Gateway Fee 300:
- * Debit GATEWAY_FEES 300 / Credit CUSTOMER_FUNDS 300
+ * Record Payment Posting Journal (Posting Matrix §6.3 — exact single entry):
+ * Net amount N = gross − gateway fee. Single entry:
+ *   Dr CUSTOMER_FUNDS       G
+ *   Cr BENEFICIARY_PAYABLE  0.85·N   (author split)
+ *   Cr PLATFORM_REVENUE     0.10·N   (platform split → internal ledger account)
+ *   Cr RESERVE              0.05·N   (reserve split → internal ledger account)
+ *   Dr GATEWAY_FEES         F
+ *   Cr CUSTOMER_FUNDS       F
+ * Balanced: debits G+F = credits (0.85+0.10+0.05)·N + F = N + F = G.
+ * Every split line carries its target ledger account so no role guessing is
+ * needed (SALES_CLEARING is retired and must never be written).
  */
-export async function recordPaymentCaptureJournal(params: {
+export async function recordPaymentPostingJournal(params: {
     paymentIntentId: string;
     invoiceId: string;
     grossAmountMinor: number;
     gatewayFeeMinor: number;
     currency: string;
     transactionId: string;
+    splits: Array<{
+        beneficiaryId: string | null;
+        allocatedAmountMinor: number;
+        account: LedgerAccount;
+    }>;
     supabaseClient?: SupabaseClient;
 }): Promise<PostJournalResult> {
     const lines: JournalLineItem[] = [
         {
             account: 'CUSTOMER_FUNDS',
             entryType: 'DEBIT',
-            amountMinor: params.grossAmountMinor,
+            amountMinor: params.grossAmountMinor - params.gatewayFeeMinor,
             description: `Customer payment captured for invoice ${params.invoiceId}`,
         },
-        {
-            account: 'SALES_CLEARING',
-            entryType: 'CREDIT',
-            amountMinor: params.grossAmountMinor,
-            description: `Sales revenue clearing for invoice ${params.invoiceId}`,
-        },
     ];
+
+    for (const split of params.splits) {
+        lines.push({
+            account: split.account,
+            entryType: 'CREDIT',
+            amountMinor: split.allocatedAmountMinor,
+            beneficiaryId: split.beneficiaryId ?? null,
+            description: split.beneficiaryId
+                ? `Split allocation for beneficiary ${split.beneficiaryId} (${split.account})`
+                : `Split allocation to ${split.account} for invoice ${params.invoiceId}`,
+        });
+    }
 
     if (params.gatewayFeeMinor > 0) {
         lines.push(
@@ -199,7 +216,7 @@ export async function recordPaymentCaptureJournal(params: {
                 account: 'CUSTOMER_FUNDS',
                 entryType: 'CREDIT',
                 amountMinor: params.gatewayFeeMinor,
-                description: `Gateway fee withheld from customer funds`,
+                description: 'Gateway fee withheld from customer funds',
             }
         );
     }
@@ -212,61 +229,6 @@ export async function recordPaymentCaptureJournal(params: {
             eventType: 'PAYMENT_CAPTURED',
             sourceId: params.transactionId,
             sourceEventType: 'kashier_transaction',
-            lines,
-        },
-        params.supabaseClient
-    );
-}
-
-/**
- * Record Split Allocation Journal (N-3, N-4):
- * Net Amount:
- * Debit SALES_CLEARING (netAmountMinor)
- * Credits to BENEFICIARY_PAYABLE (for each beneficiary)
- * Credit to PLATFORM_REVENUE (platform share)
- */
-export async function recordSplitAllocationJournal(params: {
-    paymentIntentId: string;
-    invoiceId: string;
-    netAmountMinor: number;
-    currency: string;
-    splits: Array<{
-        beneficiaryId: string;
-        allocatedAmountMinor: number;
-        role: string;
-    }>;
-    supabaseClient?: SupabaseClient;
-}): Promise<PostJournalResult> {
-    const lines: JournalLineItem[] = [
-        {
-            account: 'SALES_CLEARING',
-            entryType: 'DEBIT',
-            amountMinor: params.netAmountMinor,
-            description: `Clear sales revenue to allocations for invoice ${params.invoiceId}`,
-        },
-    ];
-
-    for (const split of params.splits) {
-        const targetAccount: LedgerAccount =
-            split.role === 'platform' ? 'PLATFORM_REVENUE' : 'BENEFICIARY_PAYABLE';
-
-        lines.push({
-            account: targetAccount,
-            entryType: 'CREDIT',
-            amountMinor: split.allocatedAmountMinor,
-            beneficiaryId: split.beneficiaryId,
-            description: `Split allocation for beneficiary ${split.beneficiaryId} (${split.role})`,
-        });
-    }
-
-    return postJournalEntry(
-        {
-            paymentIntentId: params.paymentIntentId,
-            invoiceId: params.invoiceId,
-            currency: params.currency,
-            eventType: 'SPLIT_ALLOCATED',
-            sourceId: params.invoiceId,
-            sourceEventType: 'order_splits',
             lines,
         },
         params.supabaseClient
@@ -369,7 +331,7 @@ export async function recordPayoutExecutionJournal(params: {
  * Reversal from splits:
  * Debit BENEFICIARY_PAYABLE (for each beneficiary's pro-rata net portion)
  * Debit PLATFORM_REVENUE (platform's portion + fee absorption)
- * Credit SALES_CLEARING or REFUND_LIABILITY
+ * Credit REFUND_LIABILITY
  */
 export async function recordRefundAllocationJournal(params: {
     refundId: string;

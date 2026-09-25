@@ -15,7 +15,7 @@ describe('Financial Ledger — extended invariants (G-11, G-12)', () => {
     it('validates a 4-line journal with a gateway fee', () => {
         const lines: JournalLineItem[] = [
             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 10000 },
-            { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 10000 },
+            { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 10000 },
             { account: 'GATEWAY_FEES', entryType: 'DEBIT', amountMinor: 300 },
             { account: 'CUSTOMER_FUNDS', entryType: 'CREDIT', amountMinor: 300 },
         ];
@@ -28,7 +28,7 @@ describe('Financial Ledger — extended invariants (G-11, G-12)', () => {
     it('rejects negative amounts', () => {
         const lines: JournalLineItem[] = [
             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: -100 },
-            { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: -100 },
+            { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: -100 },
         ];
         expect(() => validateJournalBalance(lines)).toThrow(/positive integer minor unit/);
     });
@@ -36,7 +36,7 @@ describe('Financial Ledger — extended invariants (G-11, G-12)', () => {
     it('rejects NaN amounts', () => {
         const lines: JournalLineItem[] = [
             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: Number.NaN },
-            { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 100 },
+            { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 100 },
         ];
         expect(() => validateJournalBalance(lines)).toThrow(/positive integer minor unit/);
     });
@@ -44,7 +44,7 @@ describe('Financial Ledger — extended invariants (G-11, G-12)', () => {
     it('rejects an invalid entry type', () => {
         const lines = [
             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 100 },
-            { account: 'SALES_CLEARING', entryType: 'SIDE' as unknown as 'CREDIT', amountMinor: 100 },
+            { account: 'BENEFICIARY_PAYABLE', entryType: 'SIDE' as unknown as 'CREDIT', amountMinor: 100 },
         ] as JournalLineItem[];
         expect(() => validateJournalBalance(lines)).toThrow(/Invalid entryType/);
     });

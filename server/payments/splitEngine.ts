@@ -11,7 +11,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface SplitRule {
     id: string;
-    beneficiary_id: string;
+    beneficiary_id: string | null;
     share_type: 'percentage' | 'fixed';
     /**
      * For percentage: value in basis points or percent (e.g. 33.33 for 33.33%).
@@ -22,6 +22,13 @@ export interface SplitRule {
     tier_id?: string | null;
     product_id?: string | null;
     is_active?: boolean;
+    /**
+     * Ledger account the split allocation must be credited to
+     * (Posting Matrix §6.3). Defaults to BENEFICIARY_PAYABLE.
+     * NULL beneficiary rows (e.g. platform 10%) MUST carry a
+     * non-broker ledger destination like PLATFORM_REVENUE.
+     */
+    destination_account?: string | null;
 }
 
 /**
@@ -48,7 +55,8 @@ export const OWNER_REFUND_POLICY = {
 
 
 export interface CalculatedSplit {
-    beneficiaryId: string;
+    beneficiaryId: string | null;
+    destinationAccount?: string | null;
     shareType: 'percentage' | 'fixed';
     shareValue: number;
     allocatedAmountMinor: number;
@@ -110,6 +118,7 @@ export function calculateOrderSplits(params: {
 
         results.push({
             beneficiaryId: rule.beneficiary_id,
+            destinationAccount: rule.destination_account || 'BENEFICIARY_PAYABLE',
             shareType: 'fixed',
             shareValue: rule.share_value,
             allocatedAmountMinor: actualAllocation,
@@ -165,6 +174,7 @@ export function calculateOrderSplits(params: {
         for (const item of items) {
             results.push({
                 beneficiaryId: item.rule.beneficiary_id,
+                destinationAccount: item.rule.destination_account || 'BENEFICIARY_PAYABLE',
                 shareType: 'percentage',
                 shareValue: item.rule.share_value,
                 allocatedAmountMinor: item.integerPart,
@@ -268,17 +278,19 @@ export async function freezeOrderSplits(
         frozenAt: new Date().toISOString(),
     };
 
-    // 4. Insert frozen splits
+    // 4. Insert calculated splits (status 'calculated' = computed, awaiting
+    //    admin approval; payout batch approval promotes them to 'approved').
     const rowsToInsert = calculated.map(c => ({
         invoice_id: invoiceId,
         beneficiary_id: c.beneficiaryId,
+        destination_account: c.destinationAccount || 'BENEFICIARY_PAYABLE',
         rule_snapshot: snapshot,
         gross_amount_minor: c.grossAmountMinor,
         gateway_fee_minor: c.gatewayFeeMinor,
         net_amount_minor: c.netAmountMinor,
         allocated_amount_minor: c.allocatedAmountMinor,
         currency: c.currency,
-        status: 'queued', // Ready for batch admin approval
+        status: 'calculated',
     }));
 
     const { error: insertError } = await supabase

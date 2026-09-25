@@ -4,7 +4,7 @@
  * End-to-end integration test for POST /api/payments/webhook that exercises the
  * REAL fulfillment orchestration (not just the invoice status flip):
  *
- *   1. Invoice → paid
+ *   1. Invoice â†’ paid
  *   2. Profile subscription activation
  *   3. Affiliate commission trigger
  *   4. Revenue split freeze (real splitEngine)
@@ -157,9 +157,9 @@ function freshState(overrides: Partial<MockState> = {}): MockState {
         },
         existingSplits: [],
         savedSplits: [
-            { beneficiary_id: 'author-1', allocated_amount_minor: 42415, rule_snapshot: { role: 'author' } },
-            { beneficiary_id: 'platform-1', allocated_amount_minor: 4990, rule_snapshot: { role: 'platform' } },
-            { beneficiary_id: 'reserve-1', allocated_amount_minor: 2495, rule_snapshot: { role: 'reserve' } },
+            { beneficiary_id: 'author-1', allocated_amount_minor: 41140, rule_snapshot: { role: 'author' } },
+            { beneficiary_id: 'platform-1', allocated_amount_minor: 4840, rule_snapshot: { role: 'platform' } },
+            { beneficiary_id: 'reserve-1', allocated_amount_minor: 2420, rule_snapshot: { role: 'reserve' } },
         ],
         splitRules: [
             { id: 'r1', beneficiary_id: 'author-1', share_type: 'percentage', share_value: 85, priority: 0, tier_id: null, is_active: true },
@@ -196,7 +196,7 @@ function callsFor(table: string, op: string): MockCall[] {
     return state.calls.filter(c => c.table === table && c.op === op);
 }
 
-describe('POST /api/payments/webhook — Full Fulfillment Lifecycle', () => {
+describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () => {
     beforeEach(() => {
         vi.resetModules();
         vi.clearAllMocks();
@@ -227,7 +227,7 @@ describe('POST /api/payments/webhook — Full Fulfillment Lifecycle', () => {
         ].forEach(k => delete process.env[k]);
     });
 
-    it('drives the complete paid → subscription → split → ledger → entitlement pipeline', async () => {
+    it('drives the complete paid â†’ subscription â†’ split â†’ ledger â†’ entitlement pipeline', async () => {
         const res = await postWebhook(successBody());
         expect(res.status).toBe(200);
         expect((await res.json()).status).toBe('ok');
@@ -258,9 +258,9 @@ describe('POST /api/payments/webhook — Full Fulfillment Lifecycle', () => {
         const allocated = splitInserts[0].payload.reduce((s: number, r: any) => s + r.allocated_amount_minor, 0);
         expect(allocated).toBe(49900);
 
-        // 5. Double-entry ledger: payment capture + split allocation journals
+        // 5. Double-entry ledger: single Â§6.3 posting journal (capture + splits + fee)
         const ledgerInserts = callsFor('financial_ledger', 'insert');
-        expect(ledgerInserts).toHaveLength(2);
+        expect(ledgerInserts).toHaveLength(1);
         for (const entry of ledgerInserts) {
             const debit = entry.payload.filter((l: any) => l.entry_type === 'DEBIT')
                 .reduce((s: number, l: any) => s + l.amount_minor, 0);

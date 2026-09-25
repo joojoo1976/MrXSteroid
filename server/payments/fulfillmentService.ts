@@ -64,11 +64,14 @@ export type ProviderVerdictResult =
     | { code: 'amount_mismatch' }
     | { code: 'unresolved' };
 
-interface SplitRow {
-    beneficiary_id: string;
-    allocated_amount_minor: number;
-    rule_snapshot: { role?: string } | null;
-}
+export type LedgerSplitAccount =
+    | 'BENEFICIARY_PAYABLE'
+    | 'PLATFORM_REVENUE'
+    | 'RESERVE'
+    | 'CUSTOMER_FUNDS'
+    | 'GATEWAY_FEES'
+    | 'REFUND_LIABILITY'
+    | 'PAYOUT_CLEARING';
 
 interface InvoiceRow {
     user_id: string | null;
@@ -332,42 +335,39 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             const { freezeOrderSplits } = await import('./splitEngine');
             await freezeOrderSplits(supabase, invoiceId);
 
-            // 6. Record Double-Entry Journal in Financial Ledger (N-4)
+            // 6. Record the EXACT single Posting Matrix §6.3 entry (N-4)
+            //    Dr CUSTOMER_FUNDS G / Cr BENEFICIARY_PAYABLE .85N /
+            //    Cr PLATFORM_REVENUE .10N / Cr RESERVE .05N /
+            //    Dr GATEWAY_FEES F / Cr CUSTOMER_FUNDS F
             try {
-                const { recordPaymentCaptureJournal, recordSplitAllocationJournal } = await import('./financialLedgerService');
+                const { recordPaymentPostingJournal } = await import('./financialLedgerService');
                 const grossMinor = Math.round(Number(verdict.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100);
-                const feeMinor = 0; // gateway fee if available
 
-                await recordPaymentCaptureJournal({
+                const { data: savedSplits } = await supabase
+                    .from('order_splits')
+                    .select('beneficiary_id, allocated_amount_minor, destination_account')
+                    .eq('invoice_id', invoiceId);
+
+                const allocatedSplitsMinor = (savedSplits || []).reduce(
+                    (sum, s) => sum + Number(s.allocated_amount_minor || 0),
+                    0
+                );
+                const feeMinor = Math.max(0, grossMinor - allocatedSplitsMinor); // gateway fee F
+
+                await recordPaymentPostingJournal({
                     paymentIntentId: invoiceId,
                     invoiceId,
                     grossAmountMinor: grossMinor,
                     gatewayFeeMinor: feeMinor,
                     currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
                     transactionId: verdict.externalReferenceId || invoiceId,
+                    splits: (savedSplits || []).map((s) => ({
+                        beneficiaryId: (s.beneficiary_id ?? null) as string | null,
+                        allocatedAmountMinor: Number(s.allocated_amount_minor),
+                        account: (s.destination_account ?? 'BENEFICIARY_PAYABLE') as LedgerSplitAccount,
+                    })),
                     supabaseClient: supabase,
                 });
-
-                const { data: savedSplits } = await supabase
-                    .from('order_splits')
-                    .select('beneficiary_id, allocated_amount_minor, rule_snapshot')
-                    .eq('invoice_id', invoiceId);
-
-                if (savedSplits && savedSplits.length > 0) {
-                    const netMinor = grossMinor - feeMinor;
-                    await recordSplitAllocationJournal({
-                        paymentIntentId: invoiceId,
-                        invoiceId,
-                        netAmountMinor: netMinor,
-                        currency: (invoice as InvoiceRow | null)?.currency || 'EGP',
-                        splits: savedSplits.map((s: SplitRow) => ({
-                            beneficiaryId: s.beneficiary_id,
-                            allocatedAmountMinor: s.allocated_amount_minor,
-                            role: s.rule_snapshot?.role || 'beneficiary',
-                        })),
-                        supabaseClient: supabase,
-                    });
-                }
             } catch (ledgerErr) {
                 console.warn(`[Fulfillment] Financial ledger posting notice for ${invoiceId}:`, ledgerErr);
             }

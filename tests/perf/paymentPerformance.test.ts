@@ -1,5 +1,5 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  *  PAYMENT HOT-PATH PERFORMANCE BENCHMARKS (Final Gate v5.1)
  *
  *  Measures the deterministic, CPU-bound paths exercised on every payment /
@@ -16,7 +16,7 @@
  *  only trip on a catastrophic regression (accidental O(n^2), sync crypto,
  *  unbounded allocations), never on noisy CI hardware. The measured numbers are
  *  printed as a report for humans.
- * ═══════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -28,7 +28,7 @@ import { resolveKashierPaymentOutcome } from '../../server/payments/gateways/kas
 import {
     validateJournalBalance,
     postJournalEntry,
-    recordPaymentCaptureJournal,
+    recordPaymentPostingJournal,
 } from '../../server/payments/financialLedgerService';
 import { getMerchantConfig } from '../../server/payments/merchantResolver';
 import { buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
@@ -136,7 +136,7 @@ const fakeLedgerClient = {
     from: () => ({ insert: async () => ({ error: null }) }),
 } as unknown as SupabaseClient;
 
-// ──  Phase 4 checkout orchestration bench fixture ──────────────────────────
+// â”€â”€  Phase 4 checkout orchestration bench fixture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type Row = Record<string, any>;
 
 function perfFakeSupabase(ref: { invoices: Row[]; payment_intents: Row[] }) {
@@ -211,7 +211,7 @@ afterAll(() => {
     const rows = results
         .map((r) => `| ${r.name.padEnd(38)} | ${r.iterations.toString().padStart(7)} | ${r.opsPerSec.toFixed(0).padStart(12)} | ${r.usPerOp.toFixed(3).padStart(10)} |`)
         .join('\n');
-    console.log(`\n[perf] Payment hot-path benchmarks\n| Operation                              | Iters   |     ops/sec  |    µs/op   |\n|----------------------------------------|---------|--------------|------------|\n${rows}\n`);
+    console.log(`\n[perf] Payment hot-path benchmarks\n| Operation                              | Iters   |     ops/sec  |    Âµs/op   |\n|----------------------------------------|---------|--------------|------------|\n${rows}\n`);
 });
 
 describe('payment hot-path performance', () => {
@@ -245,7 +245,7 @@ describe('payment hot-path performance', () => {
     it('validateJournalBalance enforces G-11 quickly', () => {
         const lines = [
             { account: 'CUSTOMER_FUNDS' as const, entryType: 'DEBIT' as const, amountMinor: 49900 },
-            { account: 'SALES_CLEARING' as const, entryType: 'CREDIT' as const, amountMinor: 49900 },
+            { account: 'BENEFICIARY_PAYABLE' as const, entryType: 'CREDIT' as const, amountMinor: 49900 },
             { account: 'GATEWAY_FEES' as const, entryType: 'DEBIT' as const, amountMinor: 1500 },
             { account: 'CUSTOMER_FUNDS' as const, entryType: 'CREDIT' as const, amountMinor: 1500 },
         ];
@@ -264,19 +264,24 @@ describe('payment hot-path performance', () => {
                 sourceEventType: 'kashier_transaction',
                 lines: [
                     { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 49900 },
-                    { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 49900 },
+                    { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 49900 },
                 ],
             }, fakeLedgerClient);
         }, 3000, 2_000);
 
-        await benchAsync('recordPaymentCaptureJournal(fake)', async () => {
-            await recordPaymentCaptureJournal({
+        await benchAsync('recordPaymentPostingJournal(fake)', async () => {
+            await recordPaymentPostingJournal({
                 paymentIntentId: 'pi-perf-0001',
                 invoiceId: 'inv-perf-0001',
                 grossAmountMinor: 49900,
                 gatewayFeeMinor: 1500,
                 currency: 'EGP',
                 transactionId: 'txn-perf-0001',
+                splits: [
+                    { beneficiaryId: 'author', allocatedAmountMinor: 41140, account: 'BENEFICIARY_PAYABLE' },
+                    { beneficiaryId: null, allocatedAmountMinor: 4840, account: 'PLATFORM_REVENUE' },
+                    { beneficiaryId: 'reserve', allocatedAmountMinor: 2420, account: 'RESERVE' },
+                ],
                 supabaseClient: fakeLedgerClient,
             });
         }, 3000, 2_000);

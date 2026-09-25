@@ -2,8 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
     postJournalEntry,
-    recordPaymentCaptureJournal,
-    recordSplitAllocationJournal,
+    recordPaymentPostingJournal,
     recordPayoutExecutionJournal,
     recordRefundAllocationJournal,
 } from '../../server/payments/financialLedgerService';
@@ -28,10 +27,10 @@ function captureClient() {
 
 const balancedLines = [
     { account: 'CUSTOMER_FUNDS' as const, entryType: 'DEBIT' as const, amountMinor: 49900 },
-    { account: 'SALES_CLEARING' as const, entryType: 'CREDIT' as const, amountMinor: 49900 },
+    { account: 'BENEFICIARY_PAYABLE' as const, entryType: 'CREDIT' as const, amountMinor: 49900 },
 ];
 
-describe('FinancialLedgerService — journal posting (N-3 / N-4)', () => {
+describe('FinancialLedgerService â€” journal posting (N-3 / N-4)', () => {
     describe('postJournalEntry', () => {
         it('rejects unbalanced entries before touching the database (G-11)', async () => {
             const { client, insert } = captureClient();
@@ -43,9 +42,9 @@ describe('FinancialLedgerService — journal posting (N-3 / N-4)', () => {
                         eventType: 'PAYMENT_CAPTURED',
                         sourceId: 'src-1',
                         sourceEventType: 'kashier_transaction',
-                        lines: [
+lines: [
                             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 100 },
-                            { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 99 },
+                            { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 99 },
                         ],
                     },
                     client
@@ -111,31 +110,11 @@ describe('FinancialLedgerService — journal posting (N-3 / N-4)', () => {
         });
     });
 
-    describe('recordPaymentCaptureJournal', () => {
-        it('posts gross only when there is no gateway fee', async () => {
+describe('recordPaymentPostingJournal (Posting Matrix Â§6.3 single entry)', () => {
+        it('posts the exact 85/10/5 single entry when a gateway fee is present', async () => {
             const { client, getRows } = captureClient();
 
-            await recordPaymentCaptureJournal(
-                {
-                    paymentIntentId: 'pi-1',
-                    invoiceId: 'inv-1',
-                    grossAmountMinor: 49900,
-                    gatewayFeeMinor: 0,
-                    currency: 'EGP',
-                    transactionId: 'txn-1',
-                    supabaseClient: client,
-                }
-            );
-
-            const rows = getRows()!;
-            expect(rows).toHaveLength(2);
-            expect(rows.map((r) => r.account)).toEqual(['CUSTOMER_FUNDS', 'SALES_CLEARING']);
-        });
-
-        it('adds gateway-fee lines when a fee is present', async () => {
-            const { client, getRows } = captureClient();
-
-            await recordPaymentCaptureJournal(
+            const result = await recordPaymentPostingJournal(
                 {
                     paymentIntentId: 'pi-1',
                     invoiceId: 'inv-1',
@@ -143,6 +122,54 @@ describe('FinancialLedgerService — journal posting (N-3 / N-4)', () => {
                     gatewayFeeMinor: 1500,
                     currency: 'EGP',
                     transactionId: 'txn-1',
+                    splits: [
+                        { beneficiaryId: 'author-1', allocatedAmountMinor: 41140, account: 'BENEFICIARY_PAYABLE' },
+                        { beneficiaryId: null, allocatedAmountMinor: 4840, account: 'PLATFORM_REVENUE' },
+                        { beneficiaryId: 'reserve-1', allocatedAmountMinor: 2420, account: 'RESERVE' },
+                    ],
+                    supabaseClient: client,
+                }
+            );
+
+            const rows = getRows()!;
+            // Single journal entry, single event type, one row per line.
+            expect(new Set(rows.map((r) => r.journal_entry_id)).size).toBe(1);
+            expect(rows.every((r) => r.event_type === 'PAYMENT_CAPTURED')).toBe(true);
+            expect(rows.map((r) => `${r.account}:${r.entry_type}`)).toEqual([
+                'CUSTOMER_FUNDS:DEBIT',
+                'BENEFICIARY_PAYABLE:CREDIT',
+                'PLATFORM_REVENUE:CREDIT',
+                'RESERVE:CREDIT',
+                'GATEWAY_FEES:DEBIT',
+                'CUSTOMER_FUNDS:CREDIT',
+            ]);
+            // Debits G + F == Credits (0.85+0.10+0.05)N + F  â†’ always balanced.
+            expect(result.totalDebitMinor).toBe(49900);
+            expect(result.totalCreditMinor).toBe(49900);
+
+            // Platform split carries NO beneficiary (internal ledger account).
+            const platformLine = rows.find((r) => r.account === 'PLATFORM_REVENUE')!;
+            expect(platformLine.beneficiary_id).toBeNull();
+            // Reserve split routes to RESERVE regardless of role.
+            expect(rows.find((r) => r.account === 'RESERVE')!.beneficiary_id).toBe('reserve-1');
+        });
+
+        it('posts the split credits without a fee row when gatewayFeeMinor is 0', async () => {
+            const { client, getRows } = captureClient();
+
+            await recordPaymentPostingJournal(
+                {
+                    paymentIntentId: 'pi-2',
+                    invoiceId: 'inv-2',
+                    grossAmountMinor: 10000,
+                    gatewayFeeMinor: 0,
+                    currency: 'EGP',
+                    transactionId: 'txn-2',
+                    splits: [
+                        { beneficiaryId: 'author-1', allocatedAmountMinor: 8500, account: 'BENEFICIARY_PAYABLE' },
+                        { beneficiaryId: null, allocatedAmountMinor: 1000, account: 'PLATFORM_REVENUE' },
+                        { beneficiaryId: 'reserve-1', allocatedAmountMinor: 500, account: 'RESERVE' },
+                    ],
                     supabaseClient: client,
                 }
             );
@@ -151,40 +178,10 @@ describe('FinancialLedgerService — journal posting (N-3 / N-4)', () => {
             expect(rows).toHaveLength(4);
             expect(rows.map((r) => `${r.account}:${r.entry_type}`)).toEqual([
                 'CUSTOMER_FUNDS:DEBIT',
-                'SALES_CLEARING:CREDIT',
-                'GATEWAY_FEES:DEBIT',
-                'CUSTOMER_FUNDS:CREDIT',
+                'BENEFICIARY_PAYABLE:CREDIT',
+                'PLATFORM_REVENUE:CREDIT',
+                'RESERVE:CREDIT',
             ]);
-        });
-    });
-
-    describe('recordSplitAllocationJournal', () => {
-        it('routes platform share to PLATFORM_REVENUE and others to BENEFICIARY_PAYABLE', async () => {
-            const { client, getRows } = captureClient();
-
-            await recordSplitAllocationJournal(
-                {
-                    paymentIntentId: 'pi-1',
-                    invoiceId: 'inv-1',
-                    netAmountMinor: 48400,
-                    currency: 'EGP',
-                    splits: [
-                        { beneficiaryId: 'author-1', allocatedAmountMinor: 41140, role: 'author' },
-                        { beneficiaryId: 'platform-1', allocatedAmountMinor: 4840, role: 'platform' },
-                        { beneficiaryId: 'reserve-1', allocatedAmountMinor: 2420, role: 'reserve' },
-                    ],
-                    supabaseClient: client,
-                }
-            );
-
-            const rows = getRows()!;
-            expect(rows[0]).toEqual(
-                expect.objectContaining({ account: 'SALES_CLEARING', entry_type: 'DEBIT', amount_minor: 48400 })
-            );
-            const credits = rows.filter((r) => r.entry_type === 'CREDIT');
-            expect(credits).toHaveLength(3);
-            expect(credits.find((r) => r.beneficiary_id === 'platform-1')!.account).toBe('PLATFORM_REVENUE');
-            expect(credits.find((r) => r.beneficiary_id === 'author-1')!.account).toBe('BENEFICIARY_PAYABLE');
         });
     });
 

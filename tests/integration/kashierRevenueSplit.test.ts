@@ -73,7 +73,8 @@ describe('Kashier & Revenue Split Integration Flow (v3.1)', () => {
         expect(insertedRows).toHaveLength(2);
         expect(insertedRows[0].allocated_amount_minor).toBe(6860);
         expect(insertedRows[1].allocated_amount_minor).toBe(2940);
-        expect(insertedRows[0].status).toBe('queued');
+        expect(insertedRows[0].status).toBe('calculated');
+        expect(insertedRows[0].destination_account).toBe('BENEFICIARY_PAYABLE');
     });
 
     it('preserves order payment as success even if split calculation throws (failure isolation)', async () => {
