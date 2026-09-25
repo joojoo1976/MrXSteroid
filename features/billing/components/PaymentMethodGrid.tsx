@@ -45,7 +45,11 @@ export const PaymentMethodGrid: React.FC<PaymentMethodGridProps> = ({
                     {isRTL ? 'اختر طريقة الدفع المناسبة' : 'Select Payment Method'}
                 </span>
                 <span className="text-[10px] font-bold text-zinc-500">
-                    {market === 'EG' ? (isRTL ? 'معالجة عبر Paymob مصر' : 'Processed via Paymob Egypt') : (isRTL ? 'معالجة عبر Stripe و PayPal' : 'Processed via Stripe & PayPal')}
+                    {/* Processor-agnostic on purpose: naming a payment processor
+                        here leaks infrastructure to shoppers and goes stale the
+                        moment routing changes. (This line previously hard-coded
+                        an EG-specific processor brand in both locales.) */}
+                    {isRTL ? 'دفع آمن ومشفّر' : 'Secure encrypted payment'}
                 </span>
             </div>
 

@@ -155,8 +155,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'الشحن داخل مصر',
         nameEn: 'Egypt Shipping Add-on',
         tierId: 'shipping',
-        priceEGP: 239,
-        priceCents: 23900,
+        priceEGP: 199,
+        priceCents: 19900,
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2QjhLZFVKbDhQeTJZU2FSSGExa211Zz09X1krNVc2MTltd2JKWmtOQzExaG1YYmc9PQ',
         requiresShipping: false,
         featuresAr: [

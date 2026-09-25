@@ -20,10 +20,14 @@
  *  Flow:
  *  1. Validate request (product, customer info, transaction ref)
  *  2. Calculate server-side pricing (Egypt EGP only)
- *  3. Upload receipt to secure storage
- *  4. Create Order + Invoice + PaymentIntent (like Kashier flow)
- *  5. Store receipt record with 'pending_review' status
+ *  3. Create canonical Invoice + PaymentIntent + Order
+ *  4. Upload receipt to secure storage
+ *  5. Create PaymentReceipt linked to the REAL invoice id
  *  6. Return order confirmation (NOT payment confirmation)
+ *
+ *  Money state: the invoice stays `pending` and the intent stays `initiated`.
+ *  A receipt upload means "receipt submitted", never "payment verified" — this
+ *  route never grants an entitlement or activates a subscription.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -37,7 +41,7 @@ import { corsPreflightResponse } from '../../../../server/cors/corsConfig';
 import {
     loadPricing,
     computeAmount,
-    resolveShippingCost,
+        resolveShippingForCheckout,
     computePromoDiscount,
 } from '../../../../server/payments/pricing';
 
@@ -240,6 +244,20 @@ export async function POST(req: NextRequest) {
         // ─────────────────────────────────────────────────────────────────────
         // 1. PARSE MULTIPART FORM DATA
         // ─────────────────────────────────────────────────────────────────────
+        const contentType = req.headers.get('content-type') || '';
+        if (
+            !contentType.includes('multipart/form-data') &&
+            !contentType.includes('application/x-www-form-urlencoded')
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Expected multipart/form-data or application/x-www-form-urlencoded',
+                },
+                { status: 415 }
+            );
+        }
+
         const formData = await req.formData();
         const receiptFile = formData.get('receipt') as File | null;
 
@@ -326,12 +344,20 @@ export async function POST(req: NextRequest) {
             currency: 'EGP', // InstaPay is Egypt-only
         });
 
-        const shippingCost = resolveShippingCost(
-            pricing,
-            'eg_standard',
-            0,
-            'EGP'
-        );
+        // SECURITY: single canonical shipping resolver, identical to every other
+        // gateway. A digital tier resolves to 0 without any provider lookup; a
+        // physical tier is priced from server config (199 EGP local). The former
+        // unconditional `resolveShippingCost(pricing, 'eg_standard', ...)` charged
+        // shipping on digital downloads.
+        //
+        // InstaPay is Egypt-only and its request schema does not accept
+        // `shippingProviderId` / `shippingCost`, so there is no client shipping
+        // intent to honour here — the resolver picks the canonical local rate.
+        const shippingCost = resolveShippingForCheckout(pricing, {
+            tierId: input.tierId,
+            region: 'EGYPT',
+            currency: 'EGP',
+        }).amount;
 
         let discountAmount = 0;
         let discountPct = 0;
@@ -373,15 +399,98 @@ export async function POST(req: NextRequest) {
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 6. CREATE ORDER (pending_manual_review status)
+        // 6. CREATE CANONICAL PAYMENT CHAIN
+        //    order -> invoice -> payment_intent -> payment_receipt
+        //
+        //    InstaPay used to insert ONLY `orders` + `payment_receipts`, which
+        //    left the capture with no invoice and therefore no payment_intent.
+        //    `fulfillmentService` resolves a capture exclusively through
+        //    `invoices` (and requires a real `payment_intents.id` for the §6.3
+        //    ledger FK), so an InstaPay order could never enter the fulfillment
+        //    lifecycle or be reconciled. The chain is now built explicitly.
+        //
+        //    Nothing here marks the payment as paid: the invoice stays
+        //    `pending` and the intent stays `initiated`. A receipt upload is
+        //    "receipt submitted", never "payment verified".
         // ─────────────────────────────────────────────────────────────────────
         const orderId = randomUUID();
         const orderRef = `MRX-${Date.now()}-${orderId.slice(0, 8).toUpperCase()}`;
+        const idempotencyKeyForInvoice = `instapay:${idempotencyKey}`;
 
+        // 6a. Canonical invoice
+        const { data: invoice, error: invoiceError } = await supabase
+            .from('invoices')
+            .insert({
+                user_id: effectiveUserId,
+                gateway: 'instapay',
+                status: 'pending',
+                payment_status: 'pending',
+                tier_id: input.tierId,
+                amount: finalAmount,
+                currency: 'EGP',
+                region: 'eg',
+                idempotency_key: idempotencyKeyForInvoice,
+                customer_email: input.email,
+                customer_name: input.customerName,
+                phone_number: input.phoneNumber,
+                shipping_cost: shippingCost,
+                discount_amount: discountAmount,
+                promo_code: input.promoCode || null,
+                product_name_snapshot: input.tierId,
+                metadata: {
+                    source: 'instapay_manual_transfer',
+                    orderRef,
+                    locale: input.locale,
+                    attribution: input.attribution,
+                },
+            })
+            .select('id')
+            .single();
+
+        if (invoiceError || !invoice) {
+            console.error('[InstaPay] Invoice creation error:', invoiceError);
+            return NextResponse.json(
+                { success: false, error: 'Failed to create invoice' },
+                { status: 500 }
+            );
+        }
+
+        // 6b. Canonical payment intent (required by the §6.3 ledger FK and by
+        //     the fulfillment intent resolution)
+        let paymentIntentId: string | null = null;
+        try {
+            const { createPaymentIntentAttempt } = await import(
+                '../../../../server/payments/paymentIntentService'
+            );
+            const intent = await createPaymentIntentAttempt(
+                {
+                    invoiceId: invoice.id,
+                    provider: 'instapay',
+                    providerOrderId: orderId,
+                    merchantReference: orderRef,
+                    amountMinor: Math.round(finalAmount * 100),
+                    currency: 'EGP',
+                    environment: 'test',
+                    metadata: { source: 'instapay_manual_transfer', orderRef },
+                },
+                supabase
+            );
+            paymentIntentId = intent.id;
+        } catch (intentErr) {
+            console.error('[InstaPay] PaymentIntent creation error:', intentErr);
+            await supabase.from('invoices').delete().eq('id', invoice.id);
+            return NextResponse.json(
+                { success: false, error: 'Failed to create payment intent' },
+                { status: 500 }
+            );
+        }
+
+        // 6c. Canonical order, linked to the invoice
         const { data: order, error: orderError } = await supabase
             .from('orders')
             .insert({
                 id: orderId,
+                invoice_id: invoice.id,
                 user_id: effectiveUserId,
                 fullname: input.customerName,
                 email: input.email,
@@ -405,6 +514,7 @@ export async function POST(req: NextRequest) {
 
         if (orderError) {
             console.error('[InstaPay] Order creation error:', orderError);
+            await supabase.from('invoices').delete().eq('id', invoice.id);
             return NextResponse.json(
                 { success: false, error: 'Failed to create order' },
                 { status: 500 }
@@ -422,8 +532,9 @@ export async function POST(req: NextRequest) {
             receiptPath = upload.path;
         } catch (uploadError) {
             console.error('[InstaPay] Upload error:', uploadError);
-            // Rollback order
+            // Rollback the whole chain
             await supabase.from('orders').delete().eq('id', orderId);
+            await supabase.from('invoices').delete().eq('id', invoice.id);
             return NextResponse.json(
                 { success: false, error: 'Failed to upload receipt' },
                 { status: 500 }
@@ -432,12 +543,16 @@ export async function POST(req: NextRequest) {
 
         // ─────────────────────────────────────────────────────────────────────
         // 9. CREATE PAYMENT RECEIPT RECORD
+        //    `invoice_id` holds the REAL invoice id (the column is `text`, so the
+        //    uuid string is type-compatible). The human-readable `MRX-...`
+        //    reference lives in `metadata.orderRef` and in the response — it must
+        //    never be written into an invoice identifier field.
         // ─────────────────────────────────────────────────────────────────────
         const { data: receipt, error: receiptError } = await supabase
             .from('payment_receipts')
             .insert({
                 order_id: orderId,
-                invoice_id: orderRef,
+                invoice_id: invoice.id,
                 customer_name: input.customerName,
                 customer_email: input.email,
                 customer_phone: input.phoneNumber,
@@ -452,6 +567,9 @@ export async function POST(req: NextRequest) {
                 receipt_size_bytes: receiptFile.size,
                 status: 'pending_review',
                 metadata: {
+                    orderRef,
+                    invoiceId: invoice.id,
+                    paymentIntentId,
                     tierId: input.tierId,
                     quantity: input.quantity,
                     baseAmount,
@@ -470,6 +588,7 @@ export async function POST(req: NextRequest) {
             console.error('[InstaPay] Receipt record error:', receiptError);
             // Rollback
             await supabase.from('orders').delete().eq('id', orderId);
+            await supabase.from('invoices').delete().eq('id', invoice.id);
             await supabase.storage.from(RECEIPT_BUCKET).remove([receiptPath]);
             return NextResponse.json(
                 { success: false, error: 'Failed to save receipt record' },
@@ -484,6 +603,8 @@ export async function POST(req: NextRequest) {
             {
                 success: true,
                 orderId: order.id,
+                invoiceId: invoice.id,
+                paymentIntentId,
                 orderRef,
                 receiptId: receipt.id,
                 status: 'pending_manual_review',
@@ -497,9 +618,8 @@ export async function POST(req: NextRequest) {
         );
     } catch (error) {
         console.error('[InstaPay] Unexpected error:', error);
-        const message = error instanceof Error ? error.message : 'Internal server error';
         return NextResponse.json(
-            { success: false, error: message },
+            { success: false, error: 'Internal server error' },
             { status: 500 }
         );
     }

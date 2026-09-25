@@ -47,6 +47,13 @@ import { ContentStrings } from '../shared/types/types';
 import { RevenueSplitsManager } from '../features/admin/RevenueSplitsManager';
 import { SeoIntelligenceDashboard } from '../features/admin/SeoIntelligenceDashboard';
 import { PaymentReceiptsSection } from '../features/admin/PaymentReceiptsSection';
+import {
+    operationalKey,
+    customerVisibleKey,
+    normalizeGatewayState,
+    DEFAULT_GATEWAY_STATE,
+    DEFAULT_CUSTOMER_VISIBLE,
+} from '../server/payments/gatewayConfig';
 
 type MC = NonNullable<ContentStrings['missionControl']>;
 type SectionKey = 'overview' | 'orders' | 'catalog' | 'marketing' | 'customers' | 'messages' | 'logistics' | 'settings' | 'cms' | 'seo' | 'payments';
@@ -1793,16 +1800,50 @@ const SettingsSection: React.FC<{ data: ReturnType<typeof useAdminData>; mc: MC 
 
     const setVal = (key: string, value: string) => setLocal(prev => ({ ...prev, [key]: value }));
 
-    const gatewayRow = (key: string, label: string) => (
-        <div className="flex items-center justify-between gap-4 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-            <span className="text-sm font-bold text-zinc-300">{label}</span>
-            <select value={local[`gateway_${key}`] || 'disabled'} onChange={e => setVal(`gateway_${key}`, e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:border-gold-500 outline-none">
-                <option value="disabled">{mc.disabledState}</option>
-                <option value="sandbox">{mc.sandboxState}</option>
-                <option value="live">{mc.liveState}</option>
-            </select>
-        </div>
-    );
+    // Per-gateway admin control: TWO independent axes.
+    //
+    //   Operational status (`gateway_<name>`) — may a payment session start?
+    //   Customer visibility (`gateway_<name>_customer_visible`) — is the gateway
+    //   rendered to shoppers?
+    //
+    // They are deliberately separate so a gateway can be fully working
+    // server-side while being absent from the storefront (ACTIVE + HIDDEN).
+    // Visibility never implies operational state, and never disables anything.
+    //
+    // The displayed default is read from the shared canonical module so the UI
+    // can never disagree with the server's reader (server/payments/gatewayConfig).
+    // Previously the select defaulted to 'disabled' for a missing row, which
+    // mis-reported the live production gateways as disabled.
+    const gatewayRow = (key: string, label: string) => {
+        const opKey = operationalKey(key);
+        const visKey = customerVisibleKey(key);
+        const rawState = local[opKey];
+        const state = rawState == null || rawState === ''
+            ? DEFAULT_GATEWAY_STATE
+            : normalizeGatewayState(rawState);
+        const visible = local[visKey] == null || local[visKey] === ''
+            ? DEFAULT_CUSTOMER_VISIBLE
+            : local[visKey] === 'true';
+        return (
+            <div className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-bold text-zinc-300">{label}</span>
+                    <select value={state} onChange={e => setVal(opKey, e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:border-gold-500 outline-none" aria-label={`${label} operational status`}>
+                        <option value="disabled">{mc.disabledState}</option>
+                        <option value="sandbox">{mc.sandboxState}</option>
+                        <option value="live">{mc.liveState}</option>
+                    </select>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                    <span className="text-xs font-bold text-zinc-500" title="Shopper-facing. Hiding a gateway does not disable it.">Customer visibility</span>
+                    <select value={visible ? 'true' : 'false'} onChange={e => setVal(visKey, e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:border-gold-500 outline-none" aria-label={`${label} customer visibility`}>
+                        <option value="true">Visible</option>
+                        <option value="false">Hidden</option>
+                    </select>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-6 max-w-3xl">

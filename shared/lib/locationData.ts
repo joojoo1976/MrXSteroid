@@ -180,4 +180,21 @@ export const WORLD_COUNTRIES: CountryOption[] = [
     { code: 'MU', nameAr: 'موريتشيوس 🇲🇺', nameEn: 'Mauritius 🇲🇺', flag: '🇲🇺', dialCode: '+230', defaultShippingUsd: 40, postalCodeRequired: true }
 ];
 
-export const EGYPT_FIXED_SHIPPING_EGP = 239;
+/**
+ * APPROVED BUSINESS PRICE — local (Egypt) flat shipping, in EGP.
+ *
+ * This is the SINGLE SOURCE OF TRUTH for the local shipping price. It was
+ * previously duplicated as the literal `239` in four independent places
+ * (`shared/lib/locationData.ts`, `shared/lib/logic.ts`,
+ * `server/payments/pricing.ts`, `features/checkout/CheckoutForm.tsx`), which
+ * is how the shipped value drifted from the approved decision.
+ *
+ * Authority: docs/governance/phase1/PHASE1-DECISION-RECORD.md (D3) — 199 EGP.
+ * The 239 figure is recorded as CONFLICT in
+ * docs/governance/2026-09-24-read-only-reconciliation.md and is NOT approved.
+ *
+ * NOTE: this price is a flat rate only. No carrier integration is active — see
+ * `server/payments/pricing.ts` (EGYPT_LOCAL_SHIPPING_PROVIDER). Do not present
+ * any provider name here as a connected courier.
+ */
+export const EGYPT_FIXED_SHIPPING_EGP = 199;

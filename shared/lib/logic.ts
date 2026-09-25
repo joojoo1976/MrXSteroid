@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { Currency } from '@/shared/types/types';
+import { EGYPT_FIXED_SHIPPING_EGP } from '@/shared/lib/locationData';
 /**
  * SHARED & COOKIE UTILITIES
  */
@@ -247,7 +248,10 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
     const isEgypt = country && (country.toUpperCase() === 'EG' || country.toLowerCase() === 'egypt' || country.includes('مصر'));
     if (isEgypt) {
         return [
-            { id: 'eg_standard', name: 'الشحن القياسي - جمهورية مصر العربية', price: 239.00, estimatedDays: '2-4' },
+            // Price comes from the shared single source of truth, not a local
+            // literal. The server re-prices this independently; the value here
+            // is display only.
+            { id: 'eg_standard', name: 'الشحن القياسي - جمهورية مصر العربية', price: EGYPT_FIXED_SHIPPING_EGP, estimatedDays: '2-4' },
         ];
     }
     return [

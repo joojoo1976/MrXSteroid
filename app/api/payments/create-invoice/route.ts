@@ -7,7 +7,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
-import { loadPricing, computeAmount, computePromoDiscount, resolveShippingCost, isAmountValid } from '../../../../server/payments/pricing';
+import { loadPricing, computeAmount, computePromoDiscount, resolveShippingForCheckout, ShippingConfigurationError, isAmountValid } from '../../../../server/payments/pricing';
+import { resolveRegion } from '../../../../server/payments/merchantResolver';
+import { loadGatewayConfig, isOperationallyAllowed, isCustomerRenderable } from '../../../../server/payments/gatewayConfig';
 import { corsPreflightResponse, buildCorsHeaders } from '../../../../server/cors/corsConfig';
 import { resolveEffectiveUserId } from '../../../../server/auth/resolveUser';
 
@@ -37,7 +39,19 @@ const CreateInvoiceSchema = z.object({
     integrationId: z.union([z.number(), z.string()]).optional(),
     phoneNumber: z.string().optional(),
     quantity: z.number().int().min(1).max(99).optional(),
+    /**
+     * Accepted for backward compatibility ONLY so legacy clients that still send
+     * it are not rejected outright. It is never used for pricing: the shipping
+     * price is resolved server-side from a canonical provider (see
+     * `resolveCanonicalShippingProvider`). Sending 0 no longer buys free
+     * shipping — a physical order with no resolvable provider is rejected.
+     */
     shippingCost: z.number().min(0).optional(),
+    /**
+     * The client may express *which* carrier it wants; the server validates it
+     * against its own shipping table and prices it. Never a price.
+     */
+    shippingProviderId: z.string().min(1).max(64).optional(),
     discount: z.number().min(0).optional(),
     amount: z.number().min(0).optional(),
     metadata: z.record(z.string(), z.unknown()).optional().default({}),
@@ -54,6 +68,32 @@ const json = (body: unknown, status = 200, req?: Request): Response =>
 
 export async function OPTIONS(req: Request) {
     return corsPreflightResponse(req, 'POST, OPTIONS', 'Content-Type, Authorization');
+}
+
+/**
+ * Extract the client's shipping-carrier INTENT from either request shape.
+ *
+ * Historical defect: the Kashier branch read
+ *     input.shippingProviderId || metadata.shippingProviderId
+ * while the Paymob/Stripe branch read
+ *     metadata.shippingProviderId
+ * only. A client that sent the carrier top-level therefore got it honoured on
+ * Kashier and silently DROPPED on every other gateway — so the same request
+ * priced differently depending on the payment method chosen.
+ *
+ * Both call sites now use this one function, so the two shapes can no longer
+ * diverge. The value is only INTENT: the server validates it against the
+ * configured shipping table and prices it from server config. `clientShippingCost`
+ * is never an accounting input.
+ */
+function readShippingProviderIntent(
+    input: { shippingProviderId?: string | null },
+    metadata: Record<string, unknown> | undefined | null
+): string | undefined {
+    const top = typeof input.shippingProviderId === 'string' ? input.shippingProviderId.trim() : '';
+    if (top) return top;
+    const nested = metadata?.shippingProviderId;
+    return typeof nested === 'string' && nested.trim() ? nested.trim() : undefined;
 }
 
 export async function POST(req: Request) {
@@ -96,8 +136,19 @@ export async function POST(req: Request) {
         try {
             const supabase = getSupabaseAdmin();
 
-            const vcalCountry = req.headers.get('x-vercel-ip-country') || '';
-            const secureCountryCode = vcalCountry.trim() !== '' ? vcalCountry : input.country;
+            // ── SOURCE OF TRUTH for the checkout region ──
+            // The customer explicitly selects a shipping destination in the form
+            // (`input.country`), so THAT is authoritative. `x-vercel-ip-country`
+            // describes where the connection originates, not where the parcel
+            // goes — a customer in Cairo buying for a US address, a customer
+            // abroad on a VPN, or an expat in London ordering to Egypt all break
+            // if the IP header overrides their stated destination. The IP header
+            // is therefore a FALLBACK hint only, used when the client sent no
+            // country at all. This matches the existing contract documented on
+            // `CheckoutSessionInput.country` ("a ROUTING HINT only").
+            const ipCountry = (req.headers.get('x-vercel-ip-country') || '').trim();
+            const explicitCountry = String(input.country || '').trim();
+            const secureCountryCode = (explicitCountry || ipCountry).toUpperCase();
 
             const isPaymobPayPal = input.paymentMethod === 'paypal' && input.integrationId === 5792310;
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
@@ -122,29 +173,108 @@ export async function POST(req: Request) {
                 gatewayName = gateway.getGatewayName();
             }
 
-            input.country = secureCountryCode;
+            // ── Canonical gateway operational status ──
+            // The Admin Dashboard has always had a three-state control per
+            // gateway (`admin_settings.gateway_<name>` = disabled|sandbox|live),
+            // but nothing on the server read it — the operator's choice had no
+            // effect. This is the reader. Enforced AFTER gateway resolution so
+            // the requested gateway is known, and BEFORE any invoice is created
+            // so a stopped gateway cannot produce a session.
+            //
+            // This axis is deliberately separate from customer visibility:
+            // `disabled` rejects initiation here, whereas `customer_visible=false`
+            // only removes the option from the shopper's UI (enforced at the
+            // customer-facing layer) and never disables the integration.
+            //
+            // Single-flight read: gateway status and pricing are both keys in
+            // `admin_settings`, so they share one query on this hot path.
+            let adminSettingsRowsPromise: Promise<Array<{ key: string; value: string }>> | null = null;
+            const adminSettingsRows = async (): Promise<Array<{ key: string; value: string }>> => {
+                adminSettingsRowsPromise ??= (async () => {
+                    const { data } = await supabase.from('admin_settings').select('key, value');
+                    return (data || []) as Array<{ key: string; value: string }>;
+                })();
+                return adminSettingsRowsPromise;
+            };
 
-            const isEgypt = gatewayName === 'PAYMOB' && !isPaymobPayPal;
+            const gatewayCfg = await loadGatewayConfig(adminSettingsRows);
+            const configKey = gatewayName.toLowerCase();
+            if (!isOperationallyAllowed(gatewayCfg, configKey)) {
+                return json({
+                    success: false,
+                    error: `Payment gateway "${gatewayName}" is currently ${gatewayCfg[configKey]?.operational}. Please choose another payment method.`,
+                    code: 'GATEWAY_NOT_OPERATIONAL',
+                    gateway: configKey,
+                    operational: gatewayCfg[configKey]?.operational,
+                }, 400, req);
+            }
+            // A gateway that is hidden from shoppers must not be startable by a
+            // crafted request either. This is a server-side check precisely so
+            // the hiding cannot be bypassed by bypassing the UI.
+            if (!isCustomerRenderable(gatewayCfg, configKey)) {
+                return json({
+                    success: false,
+                    error: 'This payment method is not available for checkout.',
+                    code: 'GATEWAY_NOT_AVAILABLE',
+                    gateway: configKey,
+                }, 400, req);
+            }
+
+            // Region and currency are a PRICING decision derived from the
+            // destination country. They must NOT be derived from which gateway
+            // was selected: `isPaymobMethod` above makes any card/wallet/kiosk
+            // request a Paymob request, so deriving region from the gateway made
+            // `country: 'US'` resolve to region=egypt / EGP — the customer was
+            // billed in EGP for an international shipment. The canonical resolver
+            // in merchantResolver is the same one the Kashier path already uses,
+            // so both paths now agree.
+            const region = resolveRegion({ country: secureCountryCode });
+            const isEgypt = region === 'EGYPT';
+
+            // Paymob settles through an Egyptian merchant in EGP only. A global
+            // destination cannot be collected with it; refuse explicitly rather
+            // than silently charging EGP for an order we cannot ship worldwide.
+            if (gatewayName === 'PAYMOB' && !isPaymobPayPal && !isEgypt) {
+                return json({
+                    success: false,
+                    error: 'Paymob can only collect payments for Egyptian orders. Choose a payment method available in your region.',
+                    code: 'PAYMENT_METHOD_REGION_MISMATCH',
+                }, 400, req);
+            }
+
             const currency = (input.paymentMethod === 'paypal' || input.paymentMethod === 'stripe') ? 'USD' : (isEgypt ? 'EGP' : 'USD');
 
-            const pricing = await loadPricing(async () => {
-                const { data } = await supabase.from('admin_settings').select('key, value');
-                return (data || []) as Array<{ key: string; value: string }>;
-            });
+            const pricing = await loadPricing(adminSettingsRows);
 
             const quantity = input.quantity ?? 1;
 
-            const DIGITAL_TIERS = ['digital', 'digital_plus', 'pdf'];
-            const isDigital = DIGITAL_TIERS.includes(input.tierId);
-            const resolvedProviderId = isDigital ? '' : String(input.metadata?.shippingProviderId || '');
-            const resolvedClientShipping = isDigital ? 0 : (input.shippingCost ?? 0);
-
-            const shippingCost = resolveShippingCost(
-                pricing,
-                resolvedProviderId,
-                resolvedClientShipping,
-                currency
-            );
+            // Single canonical shipping resolver, used by EVERY gateway.
+            // Digital → 0; Egypt physical → 199 EGP; Global physical → rejected.
+            //
+            // Kashier is delegated to `createCheckoutSession` further down, which
+            // calls the same resolver; pricing it here as well would compute a
+            // value that is then discarded.
+            let shippingCost = 0;
+            if (gatewayName !== 'KASHIER') {
+                // Kashier is delegated to `createCheckoutSession` further down,
+                // which calls the same resolver — pricing it here as well would
+                // compute a value that is then discarded.
+                try {
+                    const providerIntent = readShippingProviderIntent(input, input.metadata);
+                    shippingCost = resolveShippingForCheckout(pricing, {
+                        tierId: input.tierId,
+                        region: isEgypt ? 'EGYPT' : 'GLOBAL',
+                        currency,
+                        requestedProviderId: providerIntent,
+                        legacyClientShippingCost: input.shippingCost,
+                    }).amount;
+                } catch (shipErr) {
+                    if (shipErr instanceof ShippingConfigurationError) {
+                        return json({ success: false, error: shipErr.message, code: 'SHIPPING_UNAVAILABLE' }, 400, req);
+                    }
+                    throw shipErr;
+                }
+            }
 
             const subtotalForDiscount = computeAmount(pricing, {
                 tierId: input.tierId,
@@ -224,10 +354,11 @@ export async function POST(req: Request) {
                             userId: effectiveUserId,
                             locale: input.locale,
                             quantity: input.quantity,
-                            shippingProviderId: typeof metadata.shippingProviderId === 'string'
-                                ? metadata.shippingProviderId
-                                : undefined,
-                            shippingCost: input.shippingCost,
+                            // Legacy clients put the carrier under
+                            // `metadata.shippingProviderId`; newer ones send it
+                            // top-level. Both go through ONE extraction so every
+                            // gateway sees the identical intent.
+                            shippingProviderId: readShippingProviderIntent(input, metadata),
                             promoCode: typeof metadata.promoCode === 'string' ? metadata.promoCode : undefined,
                             shippingAddress: metadata.address
                                 ? {
@@ -257,6 +388,11 @@ export async function POST(req: Request) {
                         idempotent: session.idempotent,
                     });
                 } catch (err) {
+                    if (err instanceof ShippingConfigurationError) {
+                        // Same code as the non-Kashier branch above: one meaning
+                        // for "shipping cannot be priced" across every gateway.
+                        return json({ success: false, error: err.message, code: 'SHIPPING_UNAVAILABLE' }, 400, req);
+                    }
                     if (err instanceof CheckoutValidationError) {
                         return json({ success: false, error: err.message }, 400);
                     }
@@ -285,7 +421,7 @@ export async function POST(req: Request) {
                     amount,
                     currency,
                     payment_provider_merchant: gatewayName.toLowerCase(),
-                    region: (secureCountryCode === 'EG' || secureCountryCode === 'EGYPT') ? 'egypt' : 'global',
+                    region: region.toLowerCase(),
                     shipping_cost: shippingCost,
                     discount_amount: discount,
                     customer_email: input.email,

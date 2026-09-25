@@ -29,15 +29,15 @@ import {
     loadPricing,
     computeAmount,
     computePromoDiscount,
-    resolveShippingCost,
+    resolveShippingForCheckout,
+    DEFAULT_EGYPT_SHIPPING_PROVIDER,
     type TierId,
 } from '../pricing';
 import { createPaymentIntentAttempt } from '../paymentIntentService';
 
 /** Digital-only tiers are never charged shipping (Phase 4 requirement #4). */
 export const DIGITAL_TIERS: TierId[] = ['digital', 'digital_plus', 'pdf'];
-/** Egypt fixed shipping comes from server config, not the frontend. */
-export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
+export { DEFAULT_EGYPT_SHIPPING_PROVIDER };
 
 export class CheckoutValidationError extends Error {
     constructor(message: string) {
@@ -164,12 +164,17 @@ export async function createCheckoutSession(
     const pricing = await loadPricing(rowLoader);
     const quantity = Math.max(1, Math.floor(input.quantity || 1));
 
-    let shippingCost = 0;
-    if (!isDigital) {
-        const providerId = input.shippingProviderId
-            || (region === 'EGYPT' ? DEFAULT_EGYPT_SHIPPING_PROVIDER : undefined);
-        shippingCost = resolveShippingCost(pricing, providerId, input.shippingCost ?? 0, currency);
-    }
+    // Single canonical shipping resolver. Digital → 0 with no provider work;
+    // Egypt physical → 199 EGP; Global physical → rejected as not yet
+    // available. `input.shippingCost` is never read.
+    const shipping = resolveShippingForCheckout(pricing, {
+        tierId: input.tierId,
+        region,
+        currency,
+        requestedProviderId: input.shippingProviderId,
+        legacyClientShippingCost: input.shippingCost,
+    });
+    const shippingCost = shipping.amount;
 
     const subtotalForDiscount = computeAmount(pricing, {
         tierId: input.tierId,

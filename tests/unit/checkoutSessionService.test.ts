@@ -132,7 +132,7 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(gateway.calls[0].amount).toBe(499);
     });
 
-    it('Tactical (bundle) Egypt physical → 749 product + 239 order-level shipping', async () => {
+    it('Tactical (bundle) Egypt physical → 749 product + 199 order-level shipping', async () => {
         const { supabase, options } = deps();
         const res = await createCheckoutSession({
             ...baseInput(),
@@ -141,12 +141,12 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
             shippingAddress: { address: '1 Street', city: 'Cairo' },
         }, options);
 
-        expect(res.amount).toBe(749 + 239);
-        expect(supabase._db.invoices[0].shipping_cost).toBe(239);
+        expect(res.amount).toBe(749 + 199);
+        expect(supabase._db.invoices[0].shipping_cost).toBe(199);
         expect(res.amount - supabase._db.invoices[0].shipping_cost).toBe(749);
     });
 
-    it('Smart Pro base Egypt physical → 849 product + 239 shipping', async () => {
+    it('Smart Pro base Egypt physical → 849 product + 199 shipping', async () => {
         const { supabase, options } = deps();
         const res = await createCheckoutSession({
             ...baseInput(),
@@ -155,11 +155,11 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
             shippingAddress: { address: '1 Street', city: 'Cairo' },
         }, options);
 
-        expect(supabase._db.invoices[0].amount - 239).toBe(849);
-        expect(res.amount).toBe(849 + 239);
+        expect(supabase._db.invoices[0].amount - 199).toBe(849);
+        expect(res.amount).toBe(849 + 199);
     });
 
-    it('Smart Pro + Coaching add-on Egypt → 10,848 (base 849 + add-on 9,999) + 239 shipping', async () => {
+    it('Smart Pro + Coaching add-on Egypt → 10,848 (base 849 + add-on 9,999) + 199 shipping', async () => {
         const { supabase, options } = deps();
         const res = await createCheckoutSession({
             ...baseInput(),
@@ -170,7 +170,7 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
 
         const shipping = supabase._db.invoices[0].shipping_cost;
         expect(res.amount - shipping).toBe(10_848);
-        expect(shipping).toBe(239);
+        expect(shipping).toBe(199);
     });
 
     it('Global order → USD pricing, card-only methods, no Egypt shipping', async () => {
@@ -218,7 +218,7 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
             shippingCost: 1,
             shippingAddress: { address: '1 Street', city: 'Cairo' },
         }, options);
-        expect(gateway.calls[0].amount).toBe(749 + 239);
+        expect(gateway.calls[0].amount).toBe(749 + 199);
     });
 
     it('links the session to invoice + payment_intent (v5.1 §36)', async () => {

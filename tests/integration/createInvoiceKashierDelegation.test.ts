@@ -222,7 +222,7 @@ describe("create-invoice Kashier delegation (Phase 4)", () => {
         expect(FH.calls.length).toBe(0);
     });
 
-    it("EG physical order delegates and prices server-side (749 + shipping 239 = 988 EGP)", async () => {
+    it("EG physical order delegates and prices server-side (749 + shipping 199 = 948 EGP)", async () => {
         const { POST } = await importRoute();
         const res = await POST(req({
             tierId: "bundle",
@@ -240,8 +240,8 @@ describe("create-invoice Kashier delegation (Phase 4)", () => {
         const json = (await res.json()) as any;
         expect(json.success).toBe(true);
         const invoice = h.tables.invoices[0];
-        expect(invoice.amount).toBe(988);
-        expect(invoice.shipping_cost).toBe(239);
+        expect(invoice.amount).toBe(948);
+        expect(invoice.shipping_cost).toBe(199);
         expect(invoice.discount_amount).toBe(0);
         expect(invoice.customer_name).toBe("Physical Buyer Two");
         expect(invoice.phone_number).toBeNull();
@@ -266,5 +266,84 @@ describe("create-invoice Kashier delegation (Phase 4)", () => {
         expect(invoice.currency).toBe("USD");
         expect(invoice.amount).toBe(49.99);
         expect(invoice.payment_provider_merchant).toBe("kashier_global");
+    });
+
+    it("GLOBAL physical Kashier with no shipping provider is REJECTED, not free shipping", async () => {
+        const { POST } = await importRoute();
+        const res = await POST(req({
+            tierId: "bundle",
+            country: "US",
+            email: "global-phys@example.com",
+            fullName: "Global Physical Buyer",
+            paymentMethod: "kashier",
+            metadata: { address: "1 Test Ave", city: "NY", zipCode: "10001" },
+        }));
+        // A Global physical order has no declared default carrier, so the server
+        // must refuse rather than fall back to the client's shippingCost (0).
+        expect(res.status).toBe(400);
+        const json = (await res.json()) as any;
+        expect(json.success).toBe(false);
+        expect(json.code).toBe("SHIPPING_UNAVAILABLE");
+        expect(h.tables.invoices).toHaveLength(0);
+    });
+
+    it("GLOBAL physical is BLOCKED even when an explicit configured provider is named", async () => {
+        // This test previously asserted the OPPOSITE outcome (200 + a priced
+        // invoice at 38 USD via `fedex_priority`). That contradicted the
+        // canonical decision GLOBAL physical = BLOCKED and made the block
+        // depend on the shape of the shipping config instead of the business
+        // decision. A configured provider is now insufficient: naming a real
+        // provider must not buy a shopper a global shipping price.
+        const { POST } = await importRoute();
+        const res = await POST(req({
+            tierId: "bundle",
+            country: "US",
+            email: "global-phys2@example.com",
+            fullName: "Global Physical Buyer Two",
+            paymentMethod: "kashier",
+            shippingProviderId: "fedex_priority",
+            metadata: { address: "1 Test Ave", city: "NY", zipCode: "10001" },
+        }));
+        expect(res.status).toBe(400);
+        const json = (await res.json()) as any;
+        expect(json.success).toBe(false);
+        expect(json.code).toBe("SHIPPING_UNAVAILABLE");
+        // No invoice, no payment intent, no session — and no price leaked.
+        expect(h.tables.invoices).toHaveLength(0);
+        expect(h.tables.payment_intents).toHaveLength(0);
+    });
+
+    it("GLOBAL physical ignores a client-supplied shipping price and never falls back to 0", async () => {
+        // A physical global order must be refused, not silently shipped free.
+        const { POST } = await importRoute();
+        const res = await POST(req({
+            tierId: "bundle",
+            country: "US",
+            email: "global-phys3@example.com",
+            fullName: "Global Physical Buyer Three",
+            paymentMethod: "kashier",
+            shippingProviderId: "fedex_priority",
+            shippingCost: 0,
+            metadata: { address: "1 Test Ave", city: "NY", zipCode: "10001" },
+        }));
+        expect(res.status).toBe(400);
+        expect(h.tables.invoices).toHaveLength(0);
+    });
+
+    it("rejects an unknown shipping provider even for an EG order", async () => {
+        const { POST } = await importRoute();
+        const res = await POST(req({
+            tierId: "bundle",
+            country: "EG",
+            email: "bad-provider@example.com",
+            fullName: "Bad Provider Buyer",
+            paymentMethod: "kashier",
+            shippingProviderId: "totally_made_up",
+            metadata: { address: "10 Nile St", city: "Cairo", zipCode: "11511" },
+        }));
+        expect(res.status).toBe(400);
+        const json = (await res.json()) as any;
+        expect(json.code).toBe("SHIPPING_UNAVAILABLE");
+        expect(h.tables.invoices).toHaveLength(0);
     });
 });

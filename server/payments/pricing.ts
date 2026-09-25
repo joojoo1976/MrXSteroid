@@ -11,6 +11,8 @@
 //                              DEFAULTS
 // ═══════════════════════════════════════════════════════════════════════════
 
+import { EGYPT_FIXED_SHIPPING_EGP } from '../../shared/lib/locationData';
+
 export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
 
 /** Base unit prices per tier (currency keyed). `_plus` tiers use base + addon. */
@@ -29,6 +31,24 @@ export interface PricingConfig {
     tolerance: number;
 }
 
+/** Canonical local-Egypt shipping provider id. */
+export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
+
+/**
+ * APPROVED BUSINESS PRICE — local (Egypt) flat shipping = 199 EGP.
+ *
+ * Imported from the shared single source of truth so the server can never drift
+ * from the client display again. Authority:
+ * docs/governance/phase1/PHASE1-DECISION-RECORD.md (D3). This supersedes the
+ * 239 EGP figure that was hard-coded in FOUR independent places and is recorded
+ * as CONFLICT in docs/governance/2026-09-24-read-only-reconciliation.md.
+ *
+ * The provider integration is NOT active: no carrier API is wired up, no
+ * tracking, no SLA. The id `eg_standard` is a price bucket, not a live courier.
+ * Do not surface it in the UI as a connected carrier.
+ */
+export const EGYPT_LOCAL_SHIPPING_EGP = EGYPT_FIXED_SHIPPING_EGP;
+
 export const DEFAULT_PRICING: PricingConfig = {
     tiers: {
         digital:       { usd: 49.99, egp: 499 },
@@ -46,7 +66,11 @@ export const DEFAULT_PRICING: PricingConfig = {
         digital_plus:  { usd: 200.00, egp: 9999 },
     },
     shipping: {
-        eg_standard: { egp: 239 },
+        // Local Egypt flat rate = 199 EGP (approved business price, D3).
+        // The `239` that lived here was recorded as CONFLICT and is not approved.
+        eg_standard: { egp: EGYPT_LOCAL_SHIPPING_EGP },
+        // International carriers: configured, but Global PHYSICAL checkout is
+        // gated off until a carrier service/rate card is actually integrated.
         dhl_global:  { usd: 45 },
         fedex_priority: { usd: 38 },
         ups_worldwide:  { usd: 42 },
@@ -192,7 +216,22 @@ export interface ComputeAmountInput {
     discount?: number;
 }
 
-/** Resolve the authoritative shipping cost for a provider+currency from the config (falls back to client value). */
+/**
+ * Resolve the authoritative shipping cost for a physical order.
+ *
+ * SECURITY: the client-supplied `clientShippingCost` is NEVER an accounting
+ * input. It is read only to produce an explicit error message, so a caller that
+ * tampers with it gets a REJECT instead of a cheaper total.
+ *
+ * A physical order with no known configured provider is a configuration gap, not
+ * a free-shipping entitlement: this throws rather than defaulting to 0. Digital
+ * tiers must not reach this function at all — use `resolveShippingForCheckout`,
+ * which is the single entry point every gateway should call.
+ *
+ * @deprecated Prefer `resolveShippingForCheckout`, which also handles the
+ *             digital-is-free and Egypt/Global rules.
+ * @throws ShippingConfigurationError when the provider has no configured price.
+ */
 export function resolveShippingCost(
     cfg: PricingConfig,
     providerId: string | undefined,
@@ -203,8 +242,132 @@ export function resolveShippingCost(
     if (providerId && cfg.shipping[providerId]?.[cur] !== undefined) {
         return cfg.shipping[providerId][cur]!;
     }
-    // No known provider: only accept a non-negative client value (0 for digital).
-    return Math.max(0, clientShippingCost || 0);
+    // Fail closed. A client asking for 0 (or any value) must never be able to
+    // downgrade a physical order to free shipping.
+    throw new ShippingConfigurationError(
+        `No configured shipping price for provider "${providerId ?? '(missing)'}" in ${String(cur).toUpperCase()}. ` +
+        (clientShippingCost
+            ? 'Client-supplied shipping amounts are never used for pricing.'
+            : 'Configure the shipping provider before accepting physical orders.')
+    );
+}
+
+export class ShippingConfigurationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ShippingConfigurationError';
+    }
+}
+
+/** Digital-only tiers never ship, so they are never charged shipping. */
+export const DIGITAL_TIER_IDS: readonly TierId[] = ['digital', 'digital_plus', 'pdf'];
+
+/** Tiers that represent a shippable physical product. */
+export function isShippableTier(tierId: string): boolean {
+    return !DIGITAL_TIER_IDS.includes(tierId as TierId);
+}
+
+export type CheckoutRegion = 'EGYPT' | 'GLOBAL';
+
+export interface ResolveShippingInput {
+    tierId: string;
+    region: CheckoutRegion;
+    currency: string;
+    /**
+     * The client's *intent* — which carrier it wants. It is validated against
+     * the server shipping table and is never a price. Accepted from either the
+     * top-level field or metadata so every gateway resolves identically.
+     */
+    requestedProviderId?: string | null;
+    /** Legacy client price. NEVER used for pricing; only to shape the error. */
+    legacyClientShippingCost?: number;
+}
+
+/**
+ * THE single server-side shipping resolver. Every gateway (Kashier, Paymob,
+ * Stripe/PayPal, InstaPay) must go through this function so that:
+ *
+ *   - digital  → 0, unconditionally, with no provider resolution at all
+ *   - Egypt physical → 199 EGP (approved business price)
+ *   - Global physical → ALWAYS REJECTED with ShippingConfigurationError
+ *
+ * The client can express intent but never a price, and never an outcome: an
+ * unresolvable physical order is rejected rather than shipped free. The
+ * provider abstraction (table, ids, intent reader) is retained so
+ * international shipping can be enabled later by configuration alone.
+ *
+ * @throws ShippingConfigurationError when a physical order cannot be priced
+ *         from canonical server configuration.
+ */
+export function resolveShippingForCheckout(
+    cfg: PricingConfig,
+    input: ResolveShippingInput
+): { amount: number; providerId: string | null; currency: string } {
+    const cur = toCurrencyKey(input.currency);
+
+    // 1. Digital is never shipped and never charged.
+    if (!isShippableTier(input.tierId)) {
+        return { amount: 0, providerId: null, currency: cur };
+    }
+
+    const available = Object.entries(cfg.shipping)
+        .filter(([, v]) => v[cur] !== undefined)
+        .map(([k]) => k);
+
+    // 2. Egypt local: the approved flat price.
+    if (input.region === 'EGYPT' || cur === 'egp') {
+        // An explicitly requested provider must still be REAL. Silently ignoring
+        // a bogus name would hide a client bug or tampering behind a plausible
+        // total, so an unknown provider is rejected — fail closed, always.
+        const requested = (input.requestedProviderId || '').trim();
+        if (requested && !available.includes(requested)) {
+            throw new ShippingConfigurationError(
+                `Shipping provider "${requested}" is not available for ${String(cur).toUpperCase()}. ` +
+                `Available: ${available.join(', ') || '(none configured)'}.`
+            );
+        }
+
+        // Egypt has exactly one canonical rate. Whatever was requested, the
+        // charge is the approved local flat price.
+        const providerId = DEFAULT_EGYPT_SHIPPING_PROVIDER;
+        const configured = cfg.shipping[providerId]?.[cur];
+        if (configured === undefined) {
+            throw new ShippingConfigurationError(
+                `No configured shipping price for "${providerId}" in ${String(cur).toUpperCase()}. ` +
+                'Local shipping must be configured before accepting physical orders.'
+            );
+        }
+        return { amount: configured, providerId, currency: cur };
+    }
+
+    // 3. Global physical: BLOCKED — unconditionally.
+    //
+    // There is no international carrier service, rate card or country rule set
+    // in production yet, so a physical order outside Egypt cannot be priced
+    // honestly. This branch therefore NEVER returns a price. It previously
+    // honoured an explicitly requested provider when one happened to be
+    // configured for the currency, which contradicted the documented decision
+    // ("GLOBAL physical = BLOCKED") and meant the block depended on the shape
+    // of the shipping config rather than on the business decision.
+    //
+    // The provider abstraction is deliberately KEPT INTACT — `shippingProviderId`,
+    // the `cfg.shipping` table, `readShippingProviderIntent` and this resolver's
+    // signature all stay, so enabling international shipping later is a config
+    // + rate-card change, not a redesign. Only the outcome is withheld.
+    //
+    // No fallback to 0, no client-supplied price, and no partial fulfilment.
+    const requestedGlobal = (input.requestedProviderId || '').trim();
+    throw new ShippingConfigurationError(
+        `Shipping is not available for ${String(cur).toUpperCase()} orders yet. ` +
+        (requestedGlobal
+            ? `Requested provider "${requestedGlobal}" cannot be used: no international carrier ` +
+              `service or rate card is configured. ` +
+              (available.length
+                  ? `Locally configured providers: ${available.join(', ')}.`
+                  : 'No international shipping provider is configured.')
+            : 'No international shipping provider is configured. Physical products are currently ' +
+              'limited to Egypt.')
+    );
 }
 
 /**

@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Checkbox } from '../../shared/ui/checkbox';
 import { ContentStrings, Language, PricingTier, ProductVariant } from '@/shared/types/types';
 import { cn } from '../../shared/lib/utils';
+import { EGYPT_FIXED_SHIPPING_EGP } from '@/shared/lib/locationData';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
@@ -516,7 +517,7 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
                                                         </div>
                                                     </div>
                                                     <span className="text-sm font-black text-gold-500">
-                                                        +{isEg ? `239 ج.م` : formatPrice(provider.price)}
+                                                        +{isEg ? `${EGYPT_FIXED_SHIPPING_EGP} ج.م.` : formatPrice(provider.price)}
                                                     </span>
                                                 </label>
                                             ))}
@@ -1141,9 +1142,13 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
                                         : "Payments are secured via Stripe 256-bit SSL encryption and PCI-DSS Level 1 compliance. Your card details never touch our servers.")
                                     : paymobMethod === 'kashier'
                                         ? (isAr
-                                            ? "جميع المعاملات تتم عبر بوابة كاشير (Kashier) المشفرة بنظام 256-bit SSL والمتوافقة مع معايير PCI-DSS. يتم توجيهك بأمان لصفحة الدفع المباشرة."
+                                            ? "كل المعاملات مؤمّنة عبر كاشير بتشفير 256-bit SSL وامتثال PCI-DSS. سيتم تحويلك مباشرة إلى صفحة الدفع الآمنة."
                                             : "All transactions are secured via Kashier 256-bit SSL encryption and PCI-DSS compliance. You will be redirected directly to the secure Kashier checkout page.")
-                                        : (isAr
+                                        : paymobMethod === 'instapay'
+                                            ? (isAr
+                                                ? "جميع المعاملات مؤمّنة عبر إنستاباي بتشفير 256-bit SSL. سيتم تحويلك مباشرة إلى صفحة دفع إنستاباي الآمنة."
+                                                : "All transactions are secured via InstaPay 256-bit SSL encryption. You will be redirected directly to the secure InstaPay checkout page.")
+                                            : (isAr
                                             ? "جميع المعاملات تتم عبر مشفرات Paymob المعتمدة بنظام 256-bit SSL. يتم توليد رابط عملية الدفع المباشر فور الضغط على الزر أدناه."
                                             : "All transactions are secured via Paymob 256-bit SSL encryption. You will be redirected directly to your selected Paymob checkout page.")}
                             </p>
