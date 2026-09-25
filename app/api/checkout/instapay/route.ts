@@ -244,20 +244,6 @@ export async function POST(req: NextRequest) {
         // ─────────────────────────────────────────────────────────────────────
         // 1. PARSE MULTIPART FORM DATA
         // ─────────────────────────────────────────────────────────────────────
-        const contentType = req.headers.get('content-type') || '';
-        if (
-            !contentType.includes('multipart/form-data') &&
-            !contentType.includes('application/x-www-form-urlencoded')
-        ) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Expected multipart/form-data or application/x-www-form-urlencoded',
-                },
-                { status: 415 }
-            );
-        }
-
         const formData = await req.formData();
         const receiptFile = formData.get('receipt') as File | null;
 
@@ -618,8 +604,9 @@ export async function POST(req: NextRequest) {
         );
     } catch (error) {
         console.error('[InstaPay] Unexpected error:', error);
+        const message = error instanceof Error ? error.message : 'Internal server error';
         return NextResponse.json(
-            { success: false, error: 'Internal server error' },
+            { success: false, error: message },
             { status: 500 }
         );
     }
