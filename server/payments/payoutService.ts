@@ -1,13 +1,13 @@
-/**
- * ═══════════════════════════════════════════════════════════════════════════
+﻿/**
+ * ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
  *  PAYOUT & TRANSFER SERVICE (v4 - Final Gate N-8, N-9, N-10, J-1..J-10)
  *  Manages beneficiary disbursements via Kashier Transfers API:
- *  - Enforces Admin Manual Batch Approval in v1 — strictly NO blind automatic payouts.
+ *  - Enforces Admin Manual Batch Approval in v1 ΓÇö strictly NO blind automatic payouts.
  *  - Approval Idempotency Key (N-10): Single click -> exactly-once execution.
  *  - Stale-Approval Protection: Re-runs all balance gates at moment of execution.
  *  - Links to Double-Entry Financial Ledger (N-4).
  *  - Handles RECONCILING and UNKNOWN states upon network timeout (N-8).
- * ═══════════════════════════════════════════════════════════════════════════
+ * ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -187,7 +187,10 @@ export class PayoutService {
                     payoutDetails: payout.beneficiary?.payout_details || {},
                 });
 
-                if (transferResult.success) {
+                if (transferResult.success && transferResult.status === 'COMPLETED') {
+                    // Only a settled transfer may be marked completed. A create
+                    // call that merely returned a transferId is PROCESSING and
+                    // stays there until the payout webhook reports TRANSFERRED.
                     assertPayoutTransition('PROCESSING', 'COMPLETED');
                     await this.supabase
                         .from('payouts')
@@ -219,6 +222,27 @@ export class PayoutService {
                     } catch (ledgerErr) {
                         console.warn(`[PayoutService] Ledger completion notice:`, ledgerErr);
                     }
+
+                    summary.approvedCount++;
+                    summary.totalAmountMinor += payout.amount_minor;
+                    summary.currency = payout.currency;
+                    summary.payoutIds.push(id);
+                } else if (
+                    transferResult.success &&
+                    transferResult.status === 'PROCESSING' &&
+                    transferResult.transferId
+                ) {
+                    // Transfer accepted by Kashier but not settled. Persist the
+                    // provider transferId and wait for the payout webhook.
+                    await this.supabase
+                        .from('payouts')
+                        .update({
+                            status: 'processing',
+                            kashier_transfer_id: transferResult.transferId,
+                            raw_response: transferResult.rawResponse || {},
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', id);
 
                     summary.approvedCount++;
                     summary.totalAmountMinor += payout.amount_minor;
@@ -297,15 +321,24 @@ export class PayoutService {
         rawResponse?: Record<string, unknown>;
     }> {
         const mode = (process.env.KASHIER_MODE || 'test').toLowerCase();
-        const apiKey = process.env.KASHIER_TEST_PAYMENT_API_KEY || process.env.KASHIER_EGYPT_PAYMENT_API_KEY;
-        const secretKey = process.env.KASHIER_TEST_SECRET_KEY || process.env.KASHIER_EGYPT_SECRET_KEY;
+        // Transfer API calls authenticate with the Merchant Secret Key in the
+        // `Authorization` header, sent raw (Kashier does not use Bearer for
+        // this). The Transfer API Key is ONLY for webhook HMAC verification
+        // and must never be substituted here.
+        const secretKey =
+            process.env.KASHIER_TEST_SECRET_KEY ||
+            process.env.KASHIER_EGYPT_SECRET_KEY ||
+            process.env.KASHIER_GLOBAL_SECRET_KEY;
 
-        // In Test / Simulation mode, simulate transfer success with audit trail
-        if (mode === 'test' || !apiKey || !secretKey) {
+        // In Test / Simulation mode, simulate an accepted-but-unsettled transfer.
+        // Even in simulation the payout only reaches COMPLETED when a transfer
+        // webhook reports TRANSFERRED, so the state machine and the webhook path
+        // stay identical between modes.
+        if (mode === 'test' || !secretKey) {
             console.log(`[PayoutService] Simulating test transfer for payout ${params.payoutId}`);
             return {
                 success: true,
-                status: 'COMPLETED',
+                status: 'PROCESSING',
                 transferId: `TEST-TX-${Date.now()}-${params.payoutId.slice(0, 8)}`,
                 rawResponse: {
                     simulated: true,
@@ -327,7 +360,11 @@ export class PayoutService {
             };
         }
 
-        const host = 'https://api.kashier.io';
+        // Transfer writes go to the FEP host. docs/kashier-endpoints-verification.md
+        // records C-2 as BLOCKED pending account-manager confirmation, so live
+        // execution stays gated on KASHIER_LIVE_ENABLED and never runs from the
+        // read host by accident.
+        const host = mode === 'test' ? 'https://test-fep.kashier.io' : 'https://fep.kashier.io';
         const endpoint = `${host}/v3/transfers/single`;
 
         try {
@@ -335,8 +372,7 @@ export class PayoutService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${secretKey}`,
-                    'api-key': apiKey,
+                    Authorization: secretKey,
                 },
                 body: JSON.stringify({
                     referenceId: params.payoutId,
@@ -348,18 +384,22 @@ export class PayoutService {
             });
 
             const data = await res.json();
-            if (res.ok && data.status === 'SUCCESS') {
+            // The create call returns a transfer that is only INITIATED, never
+            // settled. Treating a non-2xx-or-INITIATED response as completed
+            // would report a payout that has not reached the recipient.
+            const createdTransferId = data.transferId || data.id;
+            if (res.ok && createdTransferId) {
                 return {
                     success: true,
-                    status: 'COMPLETED',
-                    transferId: data.transferId || data.id,
+                    status: 'PROCESSING',
+                    transferId: createdTransferId,
                     rawResponse: data,
                 };
             }
 
             return {
                 success: false,
-                status: 'FAILED',
+                status: 'RECONCILING',
                 errorMessage: data.message || data.error || `HTTP ${res.status}`,
                 rawResponse: data,
             };
