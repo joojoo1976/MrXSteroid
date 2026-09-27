@@ -2082,7 +2082,7 @@ These Terms shall be governed and construed in accordance with the laws of <stro
     pricingBestValue: "Best Value",
     pricingBilledInUsd: "Billed in USD",
     pricingAddCoaching: "Add 1-on-1 Coaching",
-    pricingCoachingRate: "+ $200.00 / Cycle",
+    pricingCoachingRate: "+ $349.99 / Cycle",
     pricingRequiresStats: "Requires Body Stats & Bloodwork",
     pricingCoachingUnlock: "Unlocks full 1-on-1 analysis including: body measurements, bloodwork review, compound calibration, and custom diet protocol design.",
     supportLinks: "Support & Help",

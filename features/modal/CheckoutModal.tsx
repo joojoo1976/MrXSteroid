@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, Lock, X, Download } from 'lucide-react';
 import { PricingTier, ContentStrings, Page, Language } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { CheckoutForm, NewPricingTier } from '../checkout/CheckoutForm';
 import { usePreferences } from '../../context/PreferencesContext';
+import { resolveTierAmount } from '../../shared/lib/logic';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -19,7 +20,13 @@ interface CheckoutModalProps {
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, content, onSuccess, openLegal }) => {
     const { language: lang } = usePreferences();
     const [step, setStep] = useState<'form' | 'success'>('form');
-    const [isEgypt, setIsEgypt] = useState(false); // Used for location-specific logic
+    const [isEgypt, setIsEgypt] = useState(tier?.selectedLocation !== 'GLOBAL');
+
+    useEffect(() => {
+        if (!isOpen || !tier) return;
+        setStep('form');
+        setIsEgypt(tier.selectedLocation !== 'GLOBAL');
+    }, [isOpen, tier]);
 
     if (!isOpen || !tier) return null;
 
@@ -29,6 +36,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, co
     };
 
     const newTier = tier as NewPricingTier;
+    const totalAmount = resolveTierAmount(tier, isEgypt);
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
@@ -49,7 +57,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, tier, co
                                 quantity={1}
                                 isEg={isEgypt}
                                 onLocationChange={setIsEgypt}
-                                totalAmount={tier.price}
+                                totalAmount={totalAmount}
                                 openLegal={openLegal}
                             />
                         </div>

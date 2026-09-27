@@ -211,11 +211,14 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-16 flex-wrap px-4">
           <div className="relative w-full sm:w-auto flex flex-col items-center">
             <motion.button
-              whileHover={{ scale: 1.05, rotate: -1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => openCheckout(content.pricingTiers[0])}
-              aria-label={content.heroCta}
-              className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black border-2 border-transparent font-black text-xl rounded-full transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
+                whileHover={{ scale: 1.05, rotate: -1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => openCheckout(content.pricingTiers[0])}
+                aria-label={content.heroCta}
+                /* D-10 L2 inline: an explicit opt-in marker. Only this subtree is a candidate for
+                   machine translation, and only while the page is in the English experience. */
+                data-mrx-surface="hero"
+                className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black border-2 border-transparent font-black text-xl rounded-full transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] animate-glow relative overflow-hidden group"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {content.heroCta}

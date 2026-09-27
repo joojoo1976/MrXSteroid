@@ -22,18 +22,26 @@ vi.mock('../../server/auth/resolveUser', () => ({
     resolveEffectiveUserId: vi.fn(async () => ({ success: true, effectiveUserId: 'user-1' })),
 }));
 
-vi.mock('../../server/payments/pricing', () => ({
-    loadPricing: vi.fn(async () => ({})),
-    computeAmount: vi.fn(() => 1000),
-    resolveShippingCost: vi.fn(() => 0),
-    computePromoDiscount: vi.fn(() => 0),
-}));
+// The real shipping resolver must run. The previous mock exported only
+// `resolveShippingCost: () => 0`, which silently hid the defect this file sits
+// next to: InstaPay charged local shipping on digital products.
+vi.mock('../../server/payments/pricing', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../server/payments/pricing')>();
+    return {
+        ...actual,
+        loadPricing: vi.fn(async () => actual.DEFAULT_PRICING),
+        computeAmount: vi.fn(() => 1000),
+        computePromoDiscount: vi.fn(() => 0),
+    };
+});
 
 import { createClient } from '@supabase/supabase-js';
 import { POST } from '../../app/api/checkout/instapay/route';
 
 let orderInsertPayload: Record<string, unknown> | null = null;
 let receiptInsertPayload: Record<string, unknown> | null = null;
+let invoiceInsertPayload: Record<string, unknown> | null = null;
+let paymentIntentInsertPayload: Record<string, unknown> | null = null;
 
 beforeAll(() => {
     process.env.SUPABASE_URL = 'https://mock.supabase.co';
@@ -44,6 +52,8 @@ beforeEach(() => {
     vi.clearAllMocks();
     orderInsertPayload = null;
     receiptInsertPayload = null;
+    invoiceInsertPayload = null;
+    paymentIntentInsertPayload = null;
 
     (createClient as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         from: vi.fn((table: string) => {
@@ -77,6 +87,38 @@ beforeEach(() => {
                         return {
                             select: vi.fn(() => ({
                                 single: vi.fn(async () => ({ data: { ...payload, id: 'rc-1' }, error: null })),
+                            })),
+                        };
+                    }),
+                };
+            }
+            if (table === 'invoices') {
+                return {
+                    insert: vi.fn((payload: Record<string, unknown>) => {
+                        invoiceInsertPayload = payload;
+                        return {
+                            select: vi.fn(() => ({
+                                single: vi.fn(async () => ({ data: { ...payload, id: 'inv-1' }, error: null })),
+                            })),
+                        };
+                    }),
+                    delete: vi.fn(() => ({ eq: vi.fn(async () => ({ error: null })) })),
+                };
+            }
+            if (table === 'payment_intents') {
+                return {
+                    // createPaymentIntentAttempt: select(...).eq(...).order(...)
+                    select: vi.fn(() => ({
+                        eq: vi.fn(() => ({
+                            order: vi.fn(async () => ({ data: [], error: null })),
+                        })),
+                    })),
+                    update: vi.fn(() => ({ eq: vi.fn(async () => ({ error: null })) })),
+                    insert: vi.fn((payload: Record<string, unknown>) => {
+                        paymentIntentInsertPayload = payload;
+                        return {
+                            select: vi.fn(() => ({
+                                single: vi.fn(async () => ({ data: { ...payload, id: 'pi-1' }, error: null })),
                             })),
                         };
                     }),

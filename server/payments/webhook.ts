@@ -221,18 +221,43 @@ async function processWebhook(
 
             if (dedupError) {
                 if (dedupError.code === '23505') {
-                    // Unique constraint violation → duplicate event
-                    console.log(`[Webhook] Duplicate event — provider_event_id=${providerEventId} already processed`);
+                    // This provider event id is already recorded. A row that is
+                    // still 'pending'/'failed' means the PREVIOUS attempt never
+                    // completed financial settlement (crash, or the fail-closed
+                    // §6.3 path). We must RESUME it instead of discarding the
+                    // replay as a duplicate — otherwise a partial failure is
+                    // permanently unrecoverable.
+                    const { data: existingEvent } = await supabase
+                        .from('webhook_events')
+                        .select('status, processing_status')
+                        .eq('provider', gatewayName.toLowerCase())
+                        .eq('provider_event_id', providerEventId)
+                        .maybeSingle();
+
+                    const resumable = existingEvent
+                        && (existingEvent.status === 'failed' || existingEvent.status === 'pending');
+                    const priorStatus = String(existingEvent?.status ?? 'unknown');
+                    const priorStage = String(existingEvent?.processing_status ?? 'unknown');
+
                     // Atomic attempt bump via RPC (replaces the invalid rpc('coalesce')).
                     await supabase
                         .rpc('bump_webhook_attempt', {
                             p_provider: gatewayName.toLowerCase(),
                             p_provider_event_id: providerEventId,
                         });
-                    return respond(200, { status: 'ok', message: 'Duplicate event' });
+
+                    if (!resumable) {
+                        console.log(`[Webhook] Duplicate event — provider_event_id=${providerEventId} already ${priorStatus}`);
+                        return respond(200, { status: 'ok', message: 'Duplicate event' });
+                    }
+
+                    console.warn(
+                        `♻️ [Webhook] Replaying provider_event_id=${providerEventId} — prior attempt did not settle financially (status=${priorStatus}, ${priorStage}); resuming settlement`
+                    );
+                } else {
+                    // Non-fatal: log but continue processing (dedup is best-effort)
+                    console.warn(`[Webhook] webhook_events insert failed (non-fatal):`, dedupError.message);
                 }
-                // Non-fatal: log but continue processing (dedup is best-effort)
-                console.warn(`[Webhook] webhook_events insert failed (non-fatal):`, dedupError.message);
             }
         }
         // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -339,6 +364,24 @@ async function processWebhook(
         }
         if (fulfillment.code === 'amount_mismatch') {
             return respond(200, { status: 'ok', message: 'Amount mismatch — not activated' });
+        }
+        if (fulfillment.code === 'financial_failure') {
+            // The provider capture is acknowledged, but it is NOT financially
+            // settled. `applyProviderVerdict` has already recorded the event as
+            // webhook_events.status='failed' with the failing stage in
+            // processing_status, and left the invoice reconciler-visible
+            // (payment_status='unknown'). Returning 200 stops the gateway from
+            // hammering a capture we have durably recorded; a provider replay
+            // of the SAME provider_event_id resumes the settlement instead of
+            // being discarded as a duplicate.
+            console.error(
+                `❌ [Webhook] Financial settlement incomplete for ${invoiceId} (${fulfillment.stage}): ${fulfillment.reason}`
+            );
+            return respond(200, {
+                status: 'financial_review',
+                code: fulfillment.stage,
+                message: 'Capture recorded; §6.3 settlement incomplete — queued for reconciliation',
+            });
         }
         if (fulfillment.code === 'unresolved') {
             return respond(200, { status: 'ok', message: 'Event acknowledged' });

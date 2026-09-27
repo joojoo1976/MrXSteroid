@@ -8,7 +8,7 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const getSupabaseAdmin = () => {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,21 +37,31 @@ export interface AmountVerification {
  * - When the gateway did not report an amount (paidAmount undefined), we cannot
  *   verify — returns ok:true so legacy flows are not broken.
  * - When the invoice cannot be resolved, returns ok:false (caller must NOT activate).
+ *
+ * `supabaseClient` must be supplied by the caller so amount verification reads
+ * the SAME database handle as the rest of the state path; otherwise the check
+ * silently consults a different client and can diverge from what is settled.
  */
-export async function verifyPaidAmount(invoiceId: string, paidAmount?: number): Promise<AmountVerification> {
+export async function verifyPaidAmount(
+    invoiceId: string,
+    paidAmount?: number,
+    supabaseClient?: SupabaseClient
+): Promise<AmountVerification> {
     if (paidAmount === undefined || paidAmount === null || Number.isNaN(paidAmount)) {
         return { ok: true };
     }
 
-    const supabase = getSupabaseAdmin();
-    const { data: invoice } = await supabase
+    const supabase = supabaseClient || getSupabaseAdmin();
+    const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
         .select('amount, currency')
         .eq('id', invoiceId)
         .single();
 
-    if (!invoice) {
-        console.warn(`⚠️ [VerifyAmount] Invoice ${invoiceId} not found — refusing to activate`);
+    if (invoiceError || !invoice) {
+        console.warn(
+            `⚠️ [VerifyAmount] Invoice ${invoiceId} not resolvable (${invoiceError?.message ?? 'no row'}) — refusing to activate`
+        );
         return { ok: false };
     }
 

@@ -17,23 +17,74 @@ const API_KEY_GL     = 'APIKEY_GL_TEST';
 // ── Build Supabase mock that supports full chaining ────────────────────────────
 // Pattern: supabase.from(t).insert/select/update chained with .eq/.single/.in
 function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insertError: {code:string; message:string} | null = null) {
-    // singleResult controls what .single() resolves to
+    const paymentIntentId = invoiceRow?.id ? `pi-${String(invoiceRow.id)}` : null;
+    const paymentIntent = invoiceRow
+        ? {
+            id: paymentIntentId,
+            invoice_id: invoiceRow.id,
+            attempt_number: 1,
+            is_current: true,
+            status: 'initiated',
+            provider: 'kashier',
+        }
+        : null;
+    const grossMinor = Math.round(Number(invoiceRow?.amount ?? 0) * 100);
+    const frozenSplits = grossMinor > 0
+        ? [{
+            beneficiary_id: 'route-beneficiary',
+            allocated_amount_minor: grossMinor,
+            destination_account: 'BENEFICIARY_PAYABLE',
+        }]
+        : [];
+    const splitRules = [{
+        id: 'route-rule',
+        beneficiary_id: 'route-beneficiary',
+        share_type: 'percentage',
+        share_value: 100,
+        priority: 0,
+        tier_id: null,
+        is_active: true,
+    }];
     const singleResult = invoiceRow
         ? { data: invoiceRow, error: null }
         : { data: null, error: { code: 'PGRST116', message: 'Row not found' } };
 
-    const chain: Record<string, unknown> = {};
-    chain.single = vi.fn().mockResolvedValue(singleResult);
-    chain.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    let activeTable = '';
+    let lastSelect = '';
+    const chain: Record<string, any> = {};
     chain.order = vi.fn().mockReturnValue(chain);
     chain.limit = vi.fn().mockReturnValue(chain);
-    chain.in = vi.fn().mockResolvedValue({ error: null });
+    chain.in = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
-    chain.select = vi.fn().mockReturnValue(chain);
+    chain.select = vi.fn((columns?: string) => { lastSelect = columns || ''; return chain; });
     chain.update = vi.fn().mockReturnValue(chain);
-    chain.insert = vi.fn().mockResolvedValue({ data: [{ id: 'wh-001' }], error: insertError });
+    chain.insert = vi.fn()
+        .mockResolvedValueOnce({ data: [{ id: 'wh-001' }], error: insertError })
+        .mockResolvedValue({ data: [{ id: 'financial-row' }], error: null });
+    chain.upsert = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn(async () => {
+        if (activeTable === 'payment_intents') {
+            return { data: paymentIntent, error: paymentIntent ? null : { code: 'PGRST116', message: 'Row not found' } };
+        }
+        if (activeTable === 'entitlements') return { data: { id: 'ent-route-001' }, error: null };
+        return singleResult;
+    });
+    chain.maybeSingle = vi.fn(async () => {
+        if (activeTable === 'payment_intents') return { data: paymentIntent, error: null };
+        if (activeTable === 'webhook_events') return { data: { status: 'duplicate' }, error: null };
+        return { data: null, error: null };
+    });
+    chain.then = (onFulfilled: any, onRejected: any) => {
+        let data: any[] = [];
+        if (activeTable === 'split_rules' && lastSelect === '*') data = splitRules;
+        if (activeTable === 'order_splits' && lastSelect.includes('allocated_amount_minor')) data = frozenSplits;
+        return Promise.resolve({ data, error: null }).then(onFulfilled, onRejected);
+    };
 
-    const mockFrom = vi.fn().mockReturnValue(chain);
+    const mockFrom = vi.fn((table: string) => {
+        activeTable = table;
+        return chain;
+    });
     return { from: mockFrom, rpc: vi.fn().mockResolvedValue({ data: null, error: null }), chain };
 }
 

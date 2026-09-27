@@ -13,8 +13,8 @@
  *
  * It also covers:
  *   - The legacy Vercel (req, res) dual-mode handler path.
- *   - Failure isolation: a failing entitlement / ledger write must NEVER roll
- *     back the payment activation or turn the webhook into a 5xx.
+ *   - Failure isolation: a failing entitlement write remains non-fatal, while a
+ *     financial ledger failure fails closed before payment activation.
  *
  * Supabase is mocked with a per-table, chain-aware fake so that the real
  * services run against a deterministic database shape.
@@ -27,6 +27,7 @@ const API_KEY = 'APIKEY_EG_LIFECYCLE';
 const SECRET_KEY = 'SECRET_EG_LIFECYCLE';
 
 const INVOICE_ID = 'inv-life-001';
+const PAYMENT_INTENT_ID = 'pi-life-001';
 const USER_ID = 'user-life-001';
 const TIER_ID = 'MRX-PROTOCOL';
 const AFFILIATE_ID = 'aff-life-001';
@@ -42,6 +43,7 @@ interface MockCall {
 interface MockState {
     calls: MockCall[];
     invoice: Record<string, any> | null;
+    paymentIntent: Record<string, any> | null;
     existingSplits: Record<string, any>[];
     savedSplits: Record<string, any>[];
     splitRules: Record<string, any>[];
@@ -89,6 +91,11 @@ function makeTable(state: MockState, table: string) {
     };
 
     q.single = vi.fn(async () => {
+        if (table === 'payment_intents') {
+            return state.paymentIntent
+                ? { data: state.paymentIntent, error: null }
+                : { data: null, error: { code: 'PGRST116', message: 'Row not found' } };
+        }
         if (table === 'invoices') {
             return state.invoice
                 ? { data: state.invoice, error: null }
@@ -103,6 +110,7 @@ function makeTable(state: MockState, table: string) {
     });
 
     q.maybeSingle = vi.fn(async () => {
+        if (table === 'payment_intents') return { data: state.paymentIntent, error: null };
         if (table === 'invoices') return { data: state.invoice, error: null };
         if (table === 'entitlements') return { data: { id: 'ent-life-001' }, error: null };
         return { data: null, error: null };
@@ -154,6 +162,14 @@ function freshState(overrides: Partial<MockState> = {}): MockState {
             tier_id: TIER_ID,
             affiliate_id: AFFILIATE_ID,
             referral_code: REFERRAL_CODE,
+        },
+        paymentIntent: {
+            id: PAYMENT_INTENT_ID,
+            invoice_id: INVOICE_ID,
+            attempt_number: 1,
+            is_current: true,
+            status: 'initiated',
+            provider: 'kashier',
         },
         existingSplits: [],
         savedSplits: [
@@ -261,6 +277,7 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
         // 5. Double-entry ledger: single Â§6.3 posting journal (capture + splits + fee)
         const ledgerInserts = callsFor('financial_ledger', 'insert');
         expect(ledgerInserts).toHaveLength(1);
+        expect(ledgerInserts[0].payload.every((line: any) => line.payment_intent_id === PAYMENT_INTENT_ID)).toBe(true);
         for (const entry of ledgerInserts) {
             const debit = entry.payload.filter((l: any) => l.entry_type === 'DEBIT')
                 .reduce((s: number, l: any) => s + l.amount_minor, 0);
@@ -276,6 +293,7 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
             user_id: USER_ID,
             product_id: TIER_ID,
             invoice_id: INVOICE_ID,
+            payment_intent_id: PAYMENT_INTENT_ID,
             status: 'granted',
         });
         expect(entitlementUpserts[0].opts).toMatchObject({ onConflict: 'user_id,product_id,invoice_id' });
@@ -291,6 +309,7 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
 
         const res = await postWebhook(successBody());
         expect(res.status).toBe(200);
+        expect((await res.json()).status).toBe('ok');
 
         const invoiceUpdates = callsFor('invoices', 'update');
         expect(invoiceUpdates.some(c =>
@@ -299,18 +318,21 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
         expect(callsFor('profiles', 'update')).toHaveLength(1);
     });
 
-    it('keeps the payment activated even when the financial ledger write fails (failure isolation)', async () => {
+    it('blocks payment activation when the financial ledger write fails (fail-closed)', async () => {
         state = freshState({ errors: { 'financial_ledger.insert': { message: 'ledger unavailable' } } });
         supabaseMock = buildSupabaseMock(state);
 
         const res = await postWebhook(successBody());
         expect(res.status).toBe(200);
+        expect((await res.json()).status).toBe('financial_review');
 
         const invoiceUpdates = callsFor('invoices', 'update');
         expect(invoiceUpdates.some(c =>
             c.payload.status === 'success' && c.payload.payment_status === 'paid'
-        )).toBe(true);
-        // Splits still freeze; ledger failure is isolated.
+        )).toBe(false);
+        expect(callsFor('profiles', 'update')).toHaveLength(0);
+        expect(callsFor('entitlements', 'upsert')).toHaveLength(0);
+        expect(callsFor('webhook_events', 'update').some(c => c.payload.status === 'failed')).toBe(true);
         expect(callsFor('order_splits', 'insert')).toHaveLength(1);
     });
 

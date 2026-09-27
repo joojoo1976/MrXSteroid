@@ -70,24 +70,48 @@ const CheckoutSchema = z.object({
 async function resolveAttribution(
     req: Request,
     effectiveUserId: string | null,
-): Promise<CheckoutAttribution | undefined> {
+): Promise<{ attribution?: CheckoutAttribution; source?: 'db' | 'cookie' }> {
     try {
-        const cookieHeader = req.headers.get('cookie') || '';
-        const match = cookieHeader.match(/(?:^|;\s*)mrx_ref=([^;]+)/);
-        if (!match) return undefined;
-        const { parseAttributionCookie, isSelfReferral } = await import('../../../../../server/affiliate/attributionService');
-        const attribution = parseAttributionCookie(decodeURIComponent(match[1]));
-        if (!attribution) return undefined;
-        if (await isSelfReferral(attribution.affiliateId, effectiveUserId)) return undefined;
+        const {
+            parseAttributionCookie,
+            isSelfReferral,
+            resolveDbAttribution,
+        } = await import('../../../../../server/affiliate/attributionService');
+
+        let attribution = null;
+        let source: 'db' | 'cookie' | null = null;
+
+        // 1. DB-first attribution: server-side persistence survives cookie loss
+        //    (attributionService dual-layer, documented resolution priority).
+        if (effectiveUserId) {
+            attribution = await resolveDbAttribution(effectiveUserId);
+            if (attribution) source = 'db';
+        }
+
+        // 2. Cookie fallback (anonymous / unauthenticated / no DB record yet).
+        if (!attribution) {
+            const cookieHeader = req.headers.get('cookie') || '';
+            const match = cookieHeader.match(/(?:^|;\s*)mrx_ref=([^;]+)/);
+            if (match) {
+                attribution = parseAttributionCookie(decodeURIComponent(match[1]));
+                if (attribution) source = 'cookie';
+            }
+        }
+
+        if (!attribution || !source) return {};
+        if (await isSelfReferral(attribution.affiliateId, effectiveUserId)) return {};
         return {
-            affiliateId: attribution.affiliateId,
-            referralCode: attribution.referralCode,
-            attributionTimestamp: attribution.attributionTimestamp,
-            attributionExpiresAt: attribution.attributionExpiresAt,
+            attribution: {
+                affiliateId: attribution.affiliateId,
+                referralCode: attribution.referralCode,
+                attributionTimestamp: attribution.attributionTimestamp,
+                attributionExpiresAt: attribution.attributionExpiresAt,
+            },
+            source,
         };
     } catch {
         // Attribution must never block checkout.
-        return undefined;
+        return {};
     }
 }
 
@@ -131,7 +155,7 @@ export async function POST(req: Request) {
     const effectiveUserId = userResolution.effectiveUserId;
 
     try {
-        const attribution = await resolveAttribution(req, effectiveUserId);
+        const { attribution, source } = await resolveAttribution(req, effectiveUserId);
 
         const result = await createCheckoutSession(
             {
@@ -152,6 +176,17 @@ export async function POST(req: Request) {
             },
             { supabase: getSupabaseAdmin() },
         );
+
+        // Mark the DB attribution record as used once it is stamped on the invoice
+        // (idempotent; prevents reusing the same attribution on future invoices).
+        if (effectiveUserId && source === 'db' && attribution?.affiliateId) {
+            const { markAttributionUsed } = await import('../../../../../server/affiliate/attributionService');
+            await markAttributionUsed({
+                userId: effectiveUserId,
+                affiliateId: attribution.affiliateId,
+                invoiceId: result.invoiceId,
+            });
+        }
 
         return NextResponse.json({
             success: true,

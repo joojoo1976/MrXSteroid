@@ -287,7 +287,23 @@ export const EGP_ORIGINAL_PRICES: Record<string, number> = {
 };
 
 export const COACHING_ADDON_EGP = 9999;
-export const COACHING_ADDON_USD = 200.00;
+
+/**
+ * APPROVED BUSINESS PRICE — Global (USD) 1-on-1 coaching add-on = 349.99 USD.
+ *
+ * Authority: docs/governance/phase1/PHASE1-DECISION-RECORD.md (D4), which
+ * cancels the previous 200.00 USD figure. The Egypt add-on above (9,999 EGP)
+ * is explicitly NOT changed by D4.
+ */
+export const COACHING_ADDON_USD = 349.99;
+
+export function resolveTierAmount(
+    tier: { price: number; egpPrice?: number; usdPrice?: number },
+    isEgypt: boolean
+): number {
+    if (isEgypt) return tier.egpPrice ?? tier.price;
+    return tier.usdPrice ?? tier.price;
+}
 
 /**
  * Calculates the base amount for a product based on country and original USD price.

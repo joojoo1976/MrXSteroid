@@ -84,6 +84,7 @@ export type CandidateResolution =
     | 'already_processed' // invoice already resolved elsewhere — no second posting
     | 'amount_mismatch'  // success reported but amount verification failed
     | 'quarantined'      // N-1 guard rejected the resolution
+    | 'financial_failure' // capture real but §6.3 settlement incomplete — retryable
     | 'unresolved'       // provider reply pending/unknown or unreachable
     | 'max_attempts_reached';
 
@@ -400,13 +401,25 @@ export async function runReconciliation(
                     record.resolution = 'quarantined';
                     record.message = result.reason || 'N-1 late-arrival guard rejected resolution';
                     break;
+                case 'financial_failure':
+                    // The capture is real but §6.3 settlement did not complete.
+                    // Keep it retryable: stay on the backoff clock and never
+                    // clear the attempt budget, so recovery is automatic.
+                    counts.unresolved++;
+                    record.resolution = 'financial_failure';
+                    record.message = `§6.3 settlement incomplete (${result.stage}): ${result.reason}`;
+                    await applyBackoff(supabase, intent.id, attempt, now, maxAttempts, backoffBase, backoffCap);
+                    break;
                 default:
                     counts.unresolved++;
                     record.resolution = 'unresolved';
                     record.message = 'Verdict unresolved — will retry on backoff';
                     await applyBackoff(supabase, intent.id, attempt, now, maxAttempts, backoffBase, backoffCap);
             }
-            if (result.code !== 'unresolved') {
+            // Terminal outcomes stop the backoff clock. A financial failure is
+            // NOT terminal — the invoice was left reconciler-visible, so it
+            // must stay on the retry schedule.
+            if (result.code !== 'unresolved' && result.code !== 'financial_failure') {
                 await applyBackoff(supabase, intent.id, attempt, now, maxAttempts, backoffBase, backoffCap, true);
             }
             record.provider_status = provider.providerStatus || record.provider_status;

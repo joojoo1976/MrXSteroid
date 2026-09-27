@@ -56,7 +56,7 @@ beforeEach(() => {
     ib.rpcLog.length = 0;
 
     verifyPaidAmountMock = vi.fn().mockResolvedValue({ ok: true });
-    freezeOrderSplitsMock = vi.fn().mockResolvedValue({ frozen: true, splitsCount: 0 });
+    freezeOrderSplitsMock = vi.fn().mockResolvedValue({ frozen: true, splitsCount: 1 });
     triggerAffiliateCommissionMock = vi.fn().mockResolvedValue({ ok: true });
 
     vi.doMock('../../server/payments/verifyPaidAmount', () => ({
@@ -75,6 +75,10 @@ describe('Phase 7 — active reconciliation runner', () => {
     it('resolves a stale pending invoice via the shared state path on provider SUCCESS', async () => {
         seedInvoice({ id: 'inv-r1', status: 'pending', payment_status: 'pending', user_id: 'u1', tier_id: 't1', created_at: agoMinutes(40) });
         seedIntent({ id: 'pi-1', invoice_id: 'inv-r1', attempt_number: 1, is_current: true, status: 'initiated', provider_order_id: 'sess-1', provider_status: null, created_at: agoMinutes(38) });
+        (ib.tables.order_splits ??= []).push({
+            invoice_id: 'inv-r1', beneficiary_id: 'u1', allocated_amount_minor: 10000,
+            destination_account: 'BENEFICIARY_PAYABLE', frozen: true,
+        });
 
         const statusQuery = vi.fn().mockResolvedValue({
             found: true, outcome: 'SUCCESS', externalReferenceId: 'txn-1', paidAmount: 100, providerStatus: 'CAPTURED',
@@ -103,6 +107,7 @@ describe('Phase 7 — active reconciliation runner', () => {
         const reconciled = ib.tables.webhook_events.find((e) => String(e.processing_status) === 'reconciled');
         expect(reconciled).toBeDefined();
         expect(reconciled.invoice_id).toBe('inv-r1');
+        expect(ib.tables.financial_ledger.every(line => line.payment_intent_id === 'pi-1')).toBe(true);
         expect(ib.tables.audit_log?.length).toBeGreaterThanOrEqual(1);
     });
 

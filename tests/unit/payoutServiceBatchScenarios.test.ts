@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PayoutService } from '../../server/payments/payoutService';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+const confirmedGates = () => [
+    { gate_key: 'C_2', confirmed: true },
+    { gate_key: 'D_8', confirmed: true },
+    { gate_key: 'LIVE_ACTIVATION', confirmed: true },
+];
+
 describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
     let mockSupabase: any;
 
@@ -14,8 +20,8 @@ describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
 
     it('processes a mixed batch where some succeed and some fail gracefully without throwing', async () => {
         const payouts = {
-            'payout-ok-1': { id: 'payout-ok-1', amount_minor: 5000, currency: 'EGP', payout_method: 'mobile_wallet', status: 'queued' },
-            'payout-ok-2': { id: 'payout-ok-2', amount_minor: 7000, currency: 'EGP', payout_method: 'bank_account', status: 'queued' },
+            'payout-ok-1': { id: 'payout-ok-1', amount_minor: 5000, currency: 'EGP', payout_method: 'mobile_wallet', status: 'queued', admin_approved: false },
+            'payout-ok-2': { id: 'payout-ok-2', amount_minor: 7000, currency: 'EGP', payout_method: 'bank_account', status: 'queued', admin_approved: false },
             'payout-fail-3': { id: 'payout-fail-3', amount_minor: 3000, currency: 'EGP', payout_method: 'card', status: 'processing' }, // Not queued!
         };
 
@@ -24,6 +30,11 @@ describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
         });
 
         mockSupabase.from.mockImplementation((table: string) => {
+            if (table === 'payout_gates') {
+                return {
+                    select: vi.fn().mockResolvedValue({ data: confirmedGates(), error: null }),
+                };
+            }
             if (table === 'payouts') {
                 return {
                     select: vi.fn().mockReturnValue({
@@ -53,7 +64,7 @@ describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
             'admin-lead'
         );
 
-        // 2 succeeded, 1 failed because status was already processing
+        // 2 approved, 1 failed because status was already processing
         expect(summary.approvedCount).toBe(2);
         expect(summary.failedCount).toBe(1);
         expect(summary.totalAmountMinor).toBe(12000); // 5000 + 7000
@@ -64,6 +75,15 @@ describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
     });
 
     it('returns empty summary when empty array is passed', async () => {
+        mockSupabase.from.mockImplementation((table: string) => {
+            if (table === 'payout_gates') {
+                return {
+                    select: vi.fn().mockResolvedValue({ data: confirmedGates(), error: null }),
+                };
+            }
+            return {};
+        });
+
         const service = new PayoutService(mockSupabase as unknown as SupabaseClient);
         const summary = await service.approveBatchPayouts([], 'admin-lead');
 
@@ -73,13 +93,20 @@ describe('PayoutService Batch Scenarios & Mixed Results (v3.1)', () => {
     });
 
     it('records error when a payout id is not found in database', async () => {
-        mockSupabase.from.mockImplementation(() => ({
-            select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockReturnValue({
-                    single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+        mockSupabase.from.mockImplementation((table: string) => {
+            if (table === 'payout_gates') {
+                return {
+                    select: vi.fn().mockResolvedValue({ data: confirmedGates(), error: null }),
+                };
+            }
+            return {
+                select: vi.fn().mockReturnValue({
+                    eq: vi.fn().mockReturnValue({
+                        single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+                    }),
                 }),
-            }),
-        }));
+            };
+        });
 
         const service = new PayoutService(mockSupabase as unknown as SupabaseClient);
         const summary = await service.approveBatchPayouts(['missing-id'], 'admin-lead');

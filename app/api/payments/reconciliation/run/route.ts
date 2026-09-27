@@ -15,6 +15,21 @@ function getSupabaseAdmin(): SupabaseClient | null {
 }
 
 /**
+ * Reconciliation trigger.
+ *
+ * BOTH `GET` and `POST` execute the identical reconciliation body through
+ * `executeReconciliation()`. `GET` exists because Vercel Cron can only issue
+ * GET requests; `POST` remains for manual / break-glass invocation. Neither
+ * verb owns the logic and neither is a privileged shortcut — both call the
+ * same authorization guard first, so adding `GET` did not widen access.
+ *
+ * ⚠️ ARMED ONLY WHEN: `CRON_SECRET` exists in Production, the Vercel plan
+ * supports the configured schedule, AND the deployed GET route has been
+ * observed to validate the Authorization header. Until then this route must
+ * stay unreachable from any scheduler.
+ */
+
+/**
  * Authorization (same pattern as /api/seo/refresh):
  * 1. CRON_SECRET via `x-cron-secret` header or Bearer token
  * 2. Authenticated Admin profile
@@ -52,7 +67,12 @@ async function isAuthorized(req: NextRequest, supabase: SupabaseClient | null): 
     return false;
 }
 
-export async function POST(req: NextRequest) {
+/**
+ * The single reconciliation execution path. `GET` and `POST` both delegate
+ * here, so the settlement logic, the authorization guard, and the parameter
+ * handling exist exactly once.
+ */
+async function executeReconciliation(req: NextRequest): Promise<NextResponse> {
     const supabase = getSupabaseAdmin();
 
     const authorized = await isAuthorized(req, supabase);
@@ -118,4 +138,19 @@ export async function POST(req: NextRequest) {
         console.error('❌ [Reconciliation Run] failed:', message);
         return NextResponse.json({ ok: false, error: message }, { status: 500 });
     }
+}
+
+/**
+ * GET — the Vercel Cron entrypoint.
+ *
+ * Identical guard and identical body as POST; the verb only decides how the
+ * request arrives. Kept fail-closed: without `CRON_SECRET` (or an admin JWT)
+ * this returns 401 exactly as POST does.
+ */
+export async function GET(req: NextRequest): Promise<NextResponse> {
+    return executeReconciliation(req);
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+    return executeReconciliation(req);
 }

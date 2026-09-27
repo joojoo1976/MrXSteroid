@@ -1,18 +1,24 @@
-﻿/**
- * ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
  *  PAYOUT & TRANSFER SERVICE (v4 - Final Gate N-8, N-9, N-10, J-1..J-10)
  *  Manages beneficiary disbursements via Kashier Transfers API:
- *  - Enforces Admin Manual Batch Approval in v1 ΓÇö strictly NO blind automatic payouts.
+ *  - Enforces Admin Manual Batch Approval in v1 — strictly NO blind automatic payouts.
  *  - Approval Idempotency Key (N-10): Single click -> exactly-once execution.
  *  - Stale-Approval Protection: Re-runs all balance gates at moment of execution.
  *  - Links to Double-Entry Financial Ledger (N-4).
  *  - Handles RECONCILING and UNKNOWN states upon network timeout (N-8).
- * ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { assertPayoutTransition, type PayoutState } from './payoutState';
 import { recordPayoutExecutionJournal } from './financialLedgerService';
+import {
+    PayoutBlockedError,
+    evaluatePayoutGates,
+    loadPayoutGates,
+    type PayoutGateKey,
+} from './payoutGates';
 
 export interface CreatePayoutParams {
     beneficiaryId: string;
@@ -87,8 +93,21 @@ export class PayoutService {
     }
 
     /**
-     * Executes manual batch approval for queued payouts (Admin Trigger).
-     * Enforces the verification gates and approval idempotency key before sending requests.
+     * Returns the current payout-gate evaluation (all C_2 / D_8 /
+     * LIVE_ACTIVATION confirmations). Used by the admin gates surface.
+     */
+    async getPayoutGates(): Promise<{ gates: string[]; blocked: PayoutGateKey[]; cleared: boolean }> {
+        const gates = await loadPayoutGates(this.supabase);
+        const evaluation = evaluatePayoutGates(gates);
+        return { gates: gates.map((g) => g.gate_key), blocked: evaluation.blocked, cleared: evaluation.cleared };
+    }
+
+    /**
+     * ADMIN BATCH APPROVAL — Affiliate / Ledger / Payout Expansion phase.
+     * Approval ONLY: records the admin decision + audit fields and promotes the
+     * linked order_splits to `approved`. It NEVER executes a transfer and makes
+     * ZERO external calls — any unconfirmed payout gate throws PayoutBlockedError
+     * with machine-readable blocked gates before touching a record.
      */
     async approveBatchPayouts(
         payoutIds: string[],
@@ -97,6 +116,18 @@ export class PayoutService {
     ): Promise<BatchApprovalSummary> {
         if (!adminUserId) {
             throw new Error('[PayoutService] Admin user authentication required for batch approval');
+        }
+
+        const idempotencyKey = approvalIdempotencyKey || `batch-${adminUserId}-${Date.now()}`;
+
+        // 0. Global gate check BEFORE any record is touched or any network is used.
+        const gates = await loadPayoutGates(this.supabase);
+        const gateEvaluation = evaluatePayoutGates(gates);
+        if (!gateEvaluation.cleared) {
+            throw new PayoutBlockedError(
+                gateEvaluation.blocked,
+                `Live payout approval/execution is blocked by unconfirmed gates: ${gateEvaluation.blocked.join(', ')}`
+            );
         }
 
         const summary: BatchApprovalSummary = {
@@ -130,10 +161,24 @@ export class PayoutService {
                     continue;
                 }
 
+                // Exactly-once: a payout already admin-approved cannot be approved again.
+                if (payout.admin_approved === true) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} is already admin-approved — duplicate approval rejected`);
+                    continue;
+                }
+
                 // Balance Gate: Beneficiary active check (J-7)
                 if (payout.beneficiary && payout.beneficiary.is_active === false) {
                     summary.failedCount++;
                     summary.errors.push(`Payout ${id} rejected: Beneficiary ${payout.beneficiary_id} is inactive.`);
+                    continue;
+                }
+
+                // Governance Gate: reserve beneficiary must never be paid out
+                if (payout.beneficiary && payout.beneficiary.role === 'reserve') {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: benevolent role 'reserve' is never paid out (ledger allocation only).`);
                     continue;
                 }
 
@@ -145,7 +190,135 @@ export class PayoutService {
                 }
 
                 // Idempotency key protection (N-10)
-                const idempotencyKey = approvalIdempotencyKey || `batch-${adminUserId}-${Date.now()}-${id}`;
+                if (payout.approval_idempotency_key && payout.approval_idempotency_key !== idempotencyKey) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: Duplicate approval key detected.`);
+                    continue;
+                }
+
+                const now = new Date().toISOString();
+
+                // Record the ADMIN APPROVAL only — state remains 'queued'. No transfer.
+                await this.supabase
+                    .from('payouts')
+                    .update({
+                        status: 'queued',
+                        admin_approved: true,
+                        approved_by: adminUserId,
+                        approved_at: now,
+                        approval_batch_id: idempotencyKey,
+                        approval_idempotency_key: idempotencyKey,
+                        updated_at: now,
+                    })
+                    .eq('id', id);
+
+                // Promote linked order_splits to 'approved' (audit-trailed).
+                await this.supabase
+                    .from('order_splits')
+                    .update({
+                        status: 'approved',
+                        admin_approved: true,
+                        approved_by: adminUserId,
+                        approved_at: now,
+                        approval_batch_id: idempotencyKey,
+                        updated_at: now,
+                    })
+                    .eq('payout_id', id);
+
+                summary.approvedCount++;
+                summary.totalAmountMinor += payout.amount_minor;
+                summary.currency = payout.currency;
+                summary.payoutIds.push(id);
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : String(err);
+                summary.failedCount++;
+                summary.errors.push(`Payout ${id} error: ${message}`);
+            }
+        }
+
+        return summary;
+    }
+
+    /**
+     * EXECUTION of already-approved payouts. This performs the actual external
+     * transfer and is NOT wired to any route in this phase. It re-checks every
+     * payout gate, the owner kill switch (KASHIER_LIVE_ENABLED) and per-record
+     * balance gates before ANY external call.
+     */
+    async executeApprovedPayouts(
+        payoutIds: string[],
+        adminUserId: string,
+        approvalIdempotencyKey?: string
+    ): Promise<BatchApprovalSummary> {
+        if (!adminUserId) {
+            throw new Error('[PayoutService] Admin user authentication required for payout execution');
+        }
+
+        // 0. Global gate check BEFORE any record is touched or any network is used.
+        const gates = await loadPayoutGates(this.supabase);
+        const gateEvaluation = evaluatePayoutGates(gates);
+        if (!gateEvaluation.cleared) {
+            throw new PayoutBlockedError(
+                gateEvaluation.blocked,
+                `Live payout execution is blocked by unconfirmed gates: ${gateEvaluation.blocked.join(', ')}`
+            );
+        }
+
+        const summary: BatchApprovalSummary = {
+            approvedCount: 0,
+            failedCount: 0,
+            totalAmountMinor: 0,
+            currency: 'EGP',
+            payoutIds: [],
+            errors: [],
+        };
+
+        for (const id of payoutIds) {
+            try {
+                const { data: payout, error: fetchErr } = await this.supabase
+                    .from('payouts')
+                    .select('*, beneficiary:beneficiaries(*)')
+                    .eq('id', id)
+                    .single();
+
+                if (fetchErr || !payout) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} not found`);
+                    continue;
+                }
+
+                // Must have been admin-approved first; state remains 'queued'.
+                if (payout.admin_approved !== true) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: must be admin-approved before execution.`);
+                    continue;
+                }
+
+                if (payout.status !== 'queued') {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} is not in 'queued' state (current: ${payout.status})`);
+                    continue;
+                }
+
+                if (payout.beneficiary && payout.beneficiary.is_active === false) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: Beneficiary ${payout.beneficiary_id} is inactive.`);
+                    continue;
+                }
+
+                if (payout.beneficiary && payout.beneficiary.role === 'reserve') {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: role 'reserve' is never paid out.`);
+                    continue;
+                }
+
+                if (!Number.isInteger(payout.amount_minor) || payout.amount_minor <= 0) {
+                    summary.failedCount++;
+                    summary.errors.push(`Payout ${id} rejected: Invalid non-positive amount ${payout.amount_minor}`);
+                    continue;
+                }
+
+                const idempotencyKey = approvalIdempotencyKey || `exec-${adminUserId}-${Date.now()}-${id}`;
                 if (payout.approval_idempotency_key && payout.approval_idempotency_key !== idempotencyKey) {
                     summary.failedCount++;
                     summary.errors.push(`Payout ${id} rejected: Duplicate approval key detected.`);
@@ -178,7 +351,7 @@ export class PayoutService {
                     console.warn(`[PayoutService] Ledger hold notice:`, ledgerErr);
                 }
 
-                // 2. Perform external transfer via Kashier Transfer API
+                // Perform external transfer via Kashier Transfer API
                 const transferResult = await this.executeKashierTransfer({
                     payoutId: id,
                     amountMinor: payout.amount_minor,

@@ -13,7 +13,7 @@ interface UsePricingOptions {
     bookLanguage: 'en' | 'ar';
 }
 
-const BASE_PRICES: Record<string, number> = {
+export const BASE_PRICES: Record<string, number> = {
     'digital': 49.99,
     'bundle': 72.00,
     'coaching': 82.00
@@ -68,6 +68,9 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
             finalTierId = (planId + '_plus') as ProductVariant;
         }
 
+        const egpPrice = (EGP_PRICES[planId] || 849) + (coachingIsActive ? COACHING_ADDON_EGP : 0);
+        const usdPrice = (BASE_PRICES[planId] || 0) + (coachingIsActive ? COACHING_ADDON_USD : 0);
+
         const originalPriceStr = selectedLocation === 'EG'
             ? String((EGP_ORIGINAL_PRICES[planId] || 949) + (coachingIsActive ? coachingAddon * 1.18 : 0))
             : String((BASE_ORIGINAL_PRICES[planId] || finalPrice * 1.4) + (coachingIsActive ? coachingAddon * 1.5 : 0));
@@ -76,6 +79,8 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
             id: finalTierId,
             name: plan.name + (coachingIsActive ? (selectedLocation === 'EG' ? ' + تدريب شخصي' : ' + Coaching') : ''),
             price: finalPrice,
+            egpPrice,
+            usdPrice,
             originalPrice: originalPriceStr,
             description: plan.description,
             features: plan.features,

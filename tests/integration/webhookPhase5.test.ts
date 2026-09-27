@@ -35,6 +35,7 @@ vi.mock('@supabase/supabase-js', () => ({
 interface DbShape {
     invoice?: Record<string, any>;
     intents?: Record<string, any>[];
+    splits?: Record<string, any>[];
 }
 
 let triggerAffiliateCommissionMock: ReturnType<typeof vi.fn>;
@@ -64,6 +65,7 @@ function seed(db: DbShape): void {
     Object.keys(ib.tables).forEach((k) => delete ib.tables[k]);
     if (db.invoice) ib.tables.invoices = [db.invoice];
     ib.tables.payment_intents = db.intents || [];
+    ib.tables.order_splits = db.splits || [];
 }
 
 beforeEach(() => {
@@ -79,7 +81,7 @@ beforeEach(() => {
     });
 
     triggerAffiliateCommissionMock = vi.fn().mockResolvedValue({ ok: true });
-    freezeOrderSplitsMock = vi.fn().mockResolvedValue({ frozen: true, splitsCount: 0 });
+    freezeOrderSplitsMock = vi.fn().mockResolvedValue({ frozen: true, splitsCount: 1 });
     verifyPaidAmountMock = vi.fn().mockResolvedValue({ ok: true });
 
     vi.doMock('../../server/payments/splitEngine', () => ({
@@ -112,6 +114,10 @@ describe('Phase 5 — webhook provider_status persistence (C7)', () => {
                 id: 'pi-1', invoice_id: 'inv-p5-s', attempt_number: 1, is_current: true,
                 status: 'initiated', provider: 'kashier',
             }],
+            splits: [{
+                invoice_id: 'inv-p5-s', beneficiary_id: 'author-p5-s', allocated_amount_minor: 10000,
+                destination_account: 'BENEFICIARY_PAYABLE', frozen: true,
+            }],
         });
 
         const res = await postWebhook(signKashierBody({
@@ -142,6 +148,9 @@ describe('Phase 5 — webhook provider_status persistence (C7)', () => {
         expect(invoice.status).toBe('success');
         expect(triggerAffiliateCommissionMock).toHaveBeenCalledWith('inv-p5-s');
         expect(freezeOrderSplitsMock).toHaveBeenCalled();
+        expect(ib.tables.financial_ledger).toHaveLength(2);
+        expect(new Set(ib.tables.financial_ledger.map(line => line.journal_entry_id)).size).toBe(1);
+        expect(ib.tables.financial_ledger.every(line => line.payment_intent_id === 'pi-1')).toBe(true);
     });
 
     it('failure (DECLINED) marks the PaymentIntent failed + provider verdict', async () => {

@@ -114,32 +114,48 @@ describe('Group L: Adversarial & Chaos Financial Testing (Final Gate v4)', () =>
 
     // L-6: Admin double-click approval x 2
     it('L-6: Admin double-click approval executes exactly-once via approval_idempotency_key', async () => {
-        let invocationCount = 0;
+        const confirmedGates = [
+            { gate_key: 'C_2', confirmed: true },
+            { gate_key: 'D_8', confirmed: true },
+            { gate_key: 'LIVE_ACTIVATION', confirmed: true },
+        ];
+        let approvedFlag = false;
+        const payoutRow = () => ({
+            id: 'payout-double-click',
+            status: 'queued',
+            admin_approved: approvedFlag,
+            amount_minor: 5000,
+            currency: 'EGP',
+            payout_method: 'bank_account',
+            beneficiary: { is_active: true, role: 'author' },
+            approval_idempotency_key: approvedFlag ? 'key-abc' : null,
+        });
         const mockSupabase = {
-            from: () => ({
-                select: () => ({
-                    eq: () => ({
-                        single: async () => ({
-                            data: {
-                                id: 'payout-double-click',
-                                status: invocationCount === 0 ? 'queued' : 'processing',
-                                amount_minor: 5000,
-                                currency: 'EGP',
-                                p_method: 'bank_account',
-                                beneficiary: { is_active: true },
-                                approval_idempotency_key: invocationCount > 0 ? 'key-abc' : null,
-                            },
-                            error: null,
+            from: (table: string) => {
+                if (table === 'payout_gates') {
+                    return {
+                        select: async () => ({ data: confirmedGates, error: null }),
+                    };
+                }
+                if (table === 'order_splits') {
+                    return {
+                        update: () => ({ eq: async () => ({ error: null }) }),
+                    };
+                }
+                return {
+                    select: () => ({
+                        eq: () => ({
+                            single: async () => ({ data: payoutRow(), error: null }),
                         }),
                     }),
-                }),
-                update: () => ({
-                    eq: async () => {
-                        invocationCount++;
-                        return { error: null };
-                    },
-                }),
-            }),
+                    update: () => ({
+                        eq: async () => {
+                            approvedFlag = true;
+                            return { error: null };
+                        },
+                    }),
+                };
+            },
         } as any;
 
         const service = new PayoutService(mockSupabase);
@@ -148,7 +164,7 @@ describe('Group L: Adversarial & Chaos Financial Testing (Final Gate v4)', () =>
 
         expect(firstClick.approvedCount).toBe(1);
         expect(secondClick.approvedCount).toBe(0);
-        expect(secondClick.errors[0]).toContain('not in \'queued\' state');
+        expect(secondClick.errors[0]).toContain('already admin-approved');
     });
 
     // L-7: Concurrent approval by two admins (lock test)
@@ -216,13 +232,13 @@ describe('Group L: Adversarial & Chaos Financial Testing (Final Gate v4)', () =>
         expect(() =>
             validateJournalBalance([
                 { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 10000 },
-                { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 9999 },
+                { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 9999 },
             ])
         ).not.toThrow(); // returns isBalanced: false
 
         const balance = validateJournalBalance([
             { account: 'CUSTOMER_FUNDS', entryType: 'DEBIT', amountMinor: 10000 },
-            { account: 'SALES_CLEARING', entryType: 'CREDIT', amountMinor: 9999 },
+            { account: 'BENEFICIARY_PAYABLE', entryType: 'CREDIT', amountMinor: 9999 },
         ]);
         expect(balance.isBalanced).toBe(false);
     });

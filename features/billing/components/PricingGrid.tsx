@@ -7,6 +7,7 @@ import { useBillingPlans } from '../hooks/useBillingPlans';
 import { RegionalSelector } from './RegionalSelector';
 import { RegionalMarket, SupportedLocale } from '../types/billing.types';
 import { PricingTier } from '@/shared/types/types';
+import { COACHING_ADDON_USD } from '@/shared/lib/logic';
 
 interface PricingGridProps {
     locale?: SupportedLocale;
@@ -42,7 +43,7 @@ export const PricingGrid: React.FC<PricingGridProps> = ({
 
     const coachingAddonLabel = market === 'EG'
         ? (isRTL ? '+ 9,999 ج.م تدريب شخصي' : '+ 9,999 EGP 1-on-1 Coaching')
-        : (isRTL ? '+ $200.00 تدريب شخصي' : '+ $200.00 1-on-1 Coaching');
+        : (isRTL ? `+ $${COACHING_ADDON_USD.toFixed(2)} تدريب شخصي` : `+ $${COACHING_ADDON_USD.toFixed(2)} 1-on-1 Coaching`);
 
     return (
         <section className="py-16 relative overflow-hidden bg-black" id="pricing">

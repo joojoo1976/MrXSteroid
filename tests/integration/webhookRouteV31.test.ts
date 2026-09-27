@@ -6,7 +6,7 @@
  * - Status vs Reconciliation separation
  * - Idempotency and deduplication
  * - Automatic Order Splits freezing on confirmed payments
- * - Failure isolation: split error does not fail payment
+ * - Failure isolation: split/ledger errors fail closed; entitlement remains non-fatal
  * - Amount verification defense-in-depth
  * - Method Not Allowed handling
  */
@@ -27,24 +27,64 @@ function buildKashierSignedBody(fields: Record<string, string>, apiKey: string =
 }
 
 function createChainedSupaMock(invoiceRow: Record<string, any> | null = null, insertError: any = null) {
+    const paymentIntentId = invoiceRow?.id ? `pi-${String(invoiceRow.id)}` : null;
+    const paymentIntent = invoiceRow
+        ? {
+            id: paymentIntentId,
+            invoice_id: invoiceRow.id,
+            attempt_number: 1,
+            is_current: true,
+            status: 'initiated',
+            provider: 'kashier',
+        }
+        : null;
+    const grossMinor = Math.round(Number(invoiceRow?.amount ?? 0) * 100);
+    const frozenSplits = grossMinor > 0
+        ? [{
+            beneficiary_id: 'v31-beneficiary',
+            allocated_amount_minor: grossMinor,
+            destination_account: 'BENEFICIARY_PAYABLE',
+        }]
+        : [];
     const singleResult = invoiceRow
         ? { data: invoiceRow, error: null }
         : { data: null, error: { code: 'PGRST116', message: 'Row not found' } };
 
+    let activeTable = '';
+    let lastSelect = '';
     const chain: Record<string, any> = {};
-    chain.single = vi.fn().mockResolvedValue(singleResult);
-    chain.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     chain.order = vi.fn().mockReturnValue(chain);
     chain.limit = vi.fn().mockReturnValue(chain);
     chain.in = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
-    chain.select = vi.fn().mockReturnValue(chain);
+    chain.select = vi.fn((columns?: string) => { lastSelect = columns || ''; return chain; });
     chain.update = vi.fn().mockReturnValue(chain);
-    chain.insert = vi.fn().mockResolvedValue({ data: [{ id: 'wh-001' }], error: insertError });
-    // Make chain thenable so awaiting .update().eq() resolves cleanly
-    chain.then = (resolve: any) => Promise.resolve({ data: invoiceRow, error: null }).then(resolve);
+    chain.insert = vi.fn()
+        .mockResolvedValueOnce({ data: [{ id: 'wh-001' }], error: insertError })
+        .mockResolvedValue({ data: [{ id: 'financial-row' }], error: null });
+    chain.upsert = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn(async () => {
+        if (activeTable === 'payment_intents') {
+            return { data: paymentIntent, error: paymentIntent ? null : { code: 'PGRST116', message: 'Row not found' } };
+        }
+        if (activeTable === 'entitlements') return { data: { id: 'ent-v31-001' }, error: null };
+        return singleResult;
+    });
+    chain.maybeSingle = vi.fn(async () => {
+        if (activeTable === 'payment_intents') return { data: paymentIntent, error: null };
+        if (activeTable === 'webhook_events') return { data: { status: 'duplicate' }, error: null };
+        return { data: null, error: null };
+    });
+    chain.then = (onFulfilled: any, onRejected: any) => {
+        let data: any[] = [];
+        if (activeTable === 'order_splits' && lastSelect.includes('allocated_amount_minor')) data = frozenSplits;
+        return Promise.resolve({ data, error: null }).then(onFulfilled, onRejected);
+    };
 
-    const mockFrom = vi.fn().mockReturnValue(chain);
+    const mockFrom = vi.fn((table: string) => {
+        activeTable = table;
+        return chain;
+    });
     return { from: mockFrom, rpc: vi.fn().mockResolvedValue({ data: null, error: null }), chain };
 }
 
@@ -227,7 +267,7 @@ describe('POST /api/payments/webhook — Architecture v3.1 Integration', () => {
         expect(freezeOrderSplitsMock).not.toHaveBeenCalled();
     });
 
-    it('Scenario 5: Split engine failure does not roll back payment activation (failure isolation)', async () => {
+    it('Scenario 5: Split engine failure blocks payment activation (fail-closed)', async () => {
         freezeOrderSplitsMock.mockRejectedValue(new Error('Database lock error during split'));
 
         currentSupaMock = createChainedSupaMock(
@@ -254,11 +294,23 @@ describe('POST /api/payments/webhook — Architecture v3.1 Integration', () => {
 
         const res = await POST(req);
         expect(res.status).toBe(200);
-
-        // Payment activation succeeded even though split calculation had an error
+        expect(await res.json()).toMatchObject({
+            status: 'financial_review',
+            code: 'split_freeze_failed',
+        });
         expect(currentSupaMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ payment_status: 'unknown' })
+        );
+        expect(currentSupaMock.chain.update).toHaveBeenCalledWith(
+            expect.objectContaining({ status: 'failed', processing_status: 'financial_review:split_freeze_failed' })
+        );
+        expect(currentSupaMock.chain.update).not.toHaveBeenCalledWith(
             expect.objectContaining({ status: 'success', payment_status: 'paid' })
         );
+        expect(currentSupaMock.chain.update).not.toHaveBeenCalledWith(
+            expect.objectContaining({ subscription_status: 'active' })
+        );
+        expect(currentSupaMock.chain.upsert).not.toHaveBeenCalled();
     });
 
     it('Scenario 6: HTTP GET method returns 405 Method Not Allowed', async () => {

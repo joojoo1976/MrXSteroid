@@ -2080,7 +2080,7 @@ export const arContent: ContentStrings = {
     pricingBestValue: "أفضل قيمة",
     pricingBilledInUsd: "الدفع بالدولار الأمريكي",
     pricingAddCoaching: "إضافة تدريب شخصي أونلاين",
-    pricingCoachingRate: "+ 9,999 ج.م / دورة (أو 200$ للدفع بالدولار)",
+    pricingCoachingRate: "+ 9,999 ج.م / دورة (أو 349.99$ للدفع بالدولار)",
     pricingRequiresStats: "يتطلب قياسات الجسم وتحاليل الدم",
     pricingCoachingUnlock: "يفتح تحليلاً فردياً كاملاً يشمل: قياسات الجسم، تحاليل الدم، معايرة المركبات، وتصميم النظام الغذائي المخصص.",
     supportLinks: "الدعم والمساعدة",

@@ -8,8 +8,20 @@
  * - POST /api/seo/refresh
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+
+// GET /api/seo/report is admin-only (P1 fix). These tests assert the REPORT
+// CONTENT, so they authenticate as an admin. The rejection path itself is
+// covered by tests/unit/seoReportAdminOnly.test.ts.
+vi.mock('../../server/auth/require-admin', () => ({
+    requireAdmin: async () => ({
+        authorized: true,
+        user: { id: 'test-admin' },
+        profile: { id: 'test-admin', role: 'admin' },
+    }),
+}));
+
 import { GET as getKeywords } from '../../app/api/seo/keywords/route';
 import { POST as postSearchLog } from '../../app/api/seo/search-log/route';
 import { GET as getReport } from '../../app/api/seo/report/route';

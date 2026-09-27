@@ -5,6 +5,7 @@ import { usePreferences } from '../../context/PreferencesContext';
 import { useRegion } from '../../context/RegionContext';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { usePricing } from '../calculator/hooks/usePricing';
+import { COACHING_ADDON_USD } from '@/shared/lib/logic';
 
 import { KASHIER_PAYMENT_PAGES, buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -74,7 +75,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
 
     const coachingAddonLabel = selectedLocation === 'EG'
         ? (isRTL ? `+ 9,999 ج.م / دورة` : `+ 9,999 EGP / Cycle`)
-        : `+ $200.00 / Cycle`;
+        : `+ $${COACHING_ADDON_USD.toFixed(2)} / Cycle`;
 
     return (
         <section className="py-12 relative overflow-hidden bg-black" id="pricing">

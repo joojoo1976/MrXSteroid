@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin, getIsoWeek } from '../../../../server/seo/seoService';
 import { getBaselineKeywords } from '../../../../server/seo/baselineKeywords';
+import { requireAdmin } from '../../../../server/auth/require-admin';
 import { SeoLanguage } from '../../../../server/seo/types';
 
 export const dynamic = 'force-dynamic';
@@ -40,6 +41,13 @@ interface SearchLogItem {
 }
 
 export async function GET(req: NextRequest) {
+    // SECURITY: this report aggregates the full SEO keyword corpus, search logs,
+    // competitor intelligence and cannibalization alerts. It is internal
+    // competitive data, not a public asset — it must be admin-only like every
+    // other /api/admin/seo/* reader.
+    const authResult = await requireAdmin(req);
+    if (!authResult.authorized) return authResult.response;
+
     const supabase = getSupabaseAdmin();
     const url = new URL(req.url);
     const lang = (url.searchParams.get('lang') || 'all') as SeoLanguage | 'all';

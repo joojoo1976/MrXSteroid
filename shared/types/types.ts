@@ -98,6 +98,8 @@ export interface PricingTier {
   includesCoaching: boolean;
   selectedLanguage?: 'en' | 'ar';
   selectedLocation?: 'EG' | 'GLOBAL';
+  egpPrice?: number;
+  usdPrice?: number;
 }
 
 export interface TargetAudience {

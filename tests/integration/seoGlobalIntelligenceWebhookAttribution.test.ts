@@ -13,6 +13,12 @@ import crypto from 'crypto';
 import { NextRequest } from 'next/server';
 import { GET as getKeywords } from '../../app/api/seo/keywords/route';
 import { POST as postSearchLog } from '../../app/api/seo/search-log/route';
+// GET /api/seo/report is admin-only (P1 fix); these tests assert report CONTENT.
+// The rejection path is covered by tests/unit/seoReportAdminOnly.test.ts.
+vi.mock('../../server/auth/require-admin', () => ({
+    requireAdmin: async () => ({ authorized: true, user: { id: 'test-admin' }, profile: { id: 'test-admin', role: 'admin' } }),
+}));
+
 import { GET as getReport } from '../../app/api/seo/report/route';
 import { GET as getCompetitors } from '../../app/api/seo/competitors/route';
 import { calculateKeywordScoreV3, calculateSourceConfidence } from '../../server/seo/scoringEngine';
