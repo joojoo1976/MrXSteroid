@@ -129,6 +129,72 @@ describe('Tool registry — prev/next link-graph (SEO §7)', () => {
         expect(links.nextTool.titleEn).toBe('HPTA Suppression & Recovery Modeler');
     });
 
+    // ── AAS physiologic modelers: #001 → #002 → #003 → #004 ──────────────────
+    it('links Tool #001 backwards to Tool #002 (aromatization-risk)', () => {
+        const links = getToolNeighbors('multi-ester-pharmacokinetics');
+        expect(links.prevTool.slug).toBe('halflife');
+        expect(links.nextTool.slug).toBe('aromatization-risk');
+        expect(links.nextTool.titleAr).toBe('محاكي مخاطر الأروماتزة والاستراديول');
+        expect(links.nextTool.titleEn).toBe('Aromatization Risk & E2 Management Modeler');
+    });
+
+    it('links Tool #003 backwards to Tool #002 and forward to Tool #004', () => {
+        const links = getToolNeighbors('hpta-recovery');
+        expect(links.prevTool.slug).toBe('aromatization-risk');
+        expect(links.nextTool.slug).toBe('pct-timing');
+        expect(links.nextTool.titleAr).toBe('محرك توقيت PCT والتطهير');
+        expect(links.nextTool.titleEn).toBe('PCT Timing & Compound Washout Engine');
+    });
+
+    it('links Tool #004 backwards to Tool #003 and forward into the lab reference', () => {
+        const links = getToolNeighbors('pct-timing');
+        expect(links.prevTool.slug).toBe('hpta-recovery');
+        expect(links.nextTool.slug).toBe('lab');
+    });
+
+    it('keeps the #001 ← #002 → #003 → #004 sub-chain contiguous and layered', () => {
+        const expected = [
+            'multi-ester-pharmacokinetics', // Tool #001 — PharmaSim™
+            'aromatization-risk',           // Tool #002 — Aromatization / E2
+            'hpta-recovery',                // Tool #003 — HPTA suppression
+            'pct-timing',                   // Tool #004 — PCT timing & washout
+        ];
+
+        const chain = orderedTools().map((t) => t.slug);
+        const start = chain.indexOf(expected[0]);
+        expect(chain.slice(start, start + expected.length)).toEqual(expected);
+
+        // Explicit chain orders (gaps tolerated, contiguity is not index-based).
+        expect(expected.map((slug) => requireTool(slug).order)).toEqual([45, 45.5, 46, 47]);
+
+        // Every link of the sub-chain must be migrated through all five layers.
+        for (const slug of expected) {
+            const tool = requireTool(slug);
+            expect(tool.stackStatus, `${slug} must be fully layered`).toBe('layered');
+            expect(tool.toolId).toBe(`mrx.tool.${slug}`);
+            expect(tool.href).toBe(`/smarttools/${slug}`);
+        }
+    });
+
+    it('registers Tool #002 with a real route and an injectable envelope', () => {
+        const tool = requireTool('aromatization-risk');
+        expect(existsSync(join(APP_DIR, 'smarttools', 'aromatization-risk', 'page.tsx'))).toBe(true);
+
+        const output = buildToolOutput('aromatization-risk', {
+            calculatedAt: '2026-09-21T10:00:00.000Z',
+            locale: 'ar',
+            unitSystem: 'metric',
+            snapshotType: 'draft',
+            result: { peakE2: 62 },
+            provenance,
+            keyFindings: [],
+        });
+
+        expect(output.toolId).toBe(tool.toolId);
+        expect(output.seoLinks.prevTool.slug).toBe('multi-ester-pharmacokinetics');
+        expect(output.seoLinks.nextTool.slug).toBe('hpta-recovery');
+    });
+
     it('wraps around at both ends so no link is ever dead', () => {
         const chain = orderedTools();
         const first = getToolNeighbors(chain[0].slug);
