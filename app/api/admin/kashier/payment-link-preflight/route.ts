@@ -45,6 +45,79 @@ function asText(value: unknown): string | null {
     return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
 }
 
+/**
+ * Kashier dashboard-API responses wrap the payload, e.g. { data: { ... } }.
+ * Peel the known envelope keys to reach the innermost object. Recognition is
+ * checked separately so an unrecognised payload can still be described.
+ */
+function locatePayload(parsed: Record<string, unknown> | null): Record<string, unknown> | null {
+    if (parsed === null) return null;
+
+    for (const key of ['data', 'body', 'paymentLink'] as const) {
+        const inner = asRecord(parsed[key]);
+        if (inner !== null) return inner;
+        // List-style envelopes wrap an array.
+        const asArray = parsed[key];
+        if (Array.isArray(asArray)) {
+            const first = asRecord(asArray[0]);
+            if (first !== null) return first;
+        }
+    }
+
+    return parsed;
+}
+
+const LINK_IDENTITY_FIELDS = [
+    'paymentLinkId', 'urlIdentifier', 'merchantId', 'paymentRequestId',
+    'totalAmount', 'amount', 'invoiceItems', 'currency',
+] as const;
+
+function looksLikeLink(record: Record<string, unknown>): boolean {
+    return LINK_IDENTITY_FIELDS.some((key) => record[key] !== undefined && record[key] !== null);
+}
+
+/** Merchant identity may be flat or nested under merchant / merchantInfo. */
+function extractMerchantId(record: Record<string, unknown>): string | null {
+    const direct = asText(pick(record, ['merchantId', 'merchant_id', 'mid']));
+    if (direct !== null) return direct;
+
+    for (const key of ['merchant', 'merchantInfo', 'account'] as const) {
+        const nested = asRecord(pick(record, [key]));
+        if (nested === null) continue;
+        const nestedId = asText(pick(nested, ['id', 'merchantId', 'merchant_id', 'mid']));
+        if (nestedId !== null) return nestedId;
+    }
+    return null;
+}
+
+/**
+ * Key names and value types only, never values. Used to confirm which envelope
+ * and field names Kashier actually returns without disclosing any content.
+ */
+function describeShape(value: unknown, depth = 0): Record<string, string> {
+    const record = asRecord(value);
+    if (record === null || depth > 1) return {};
+
+    const shape: Record<string, string> = {};
+    for (const [key, entry] of Object.entries(record)) {
+        if (entry === null) {
+            shape[key] = 'null';
+        } else if (Array.isArray(entry)) {
+            shape[key] = `array(${entry.length})`;
+        } else if (typeof entry === 'object') {
+            shape[key] = 'object';
+            for (const [nestedKey, nestedValue] of Object.entries(entry as Record<string, unknown>)) {
+                shape[`${key}.${nestedKey}`] = Array.isArray(nestedValue)
+                    ? `array(${nestedValue.length})`
+                    : (nestedValue === null ? 'null' : typeof nestedValue);
+            }
+        } else {
+            shape[key] = typeof entry;
+        }
+    }
+    return shape;
+}
+
 function sanitizePaymentLink(
     raw: Record<string, unknown>,
     requestedPl: string,
@@ -58,8 +131,11 @@ function sanitizePaymentLink(
         .filter((name): name is string => name !== null);
 
     const description = asText(pick(raw, ['description']));
-    const merchantId = asText(pick(raw, ['merchantId', 'mid']));
-    const storeName = asText(pick(merchantInfo ?? {}, ['storeName'])) ?? asText(pick(raw, ['storeName']));
+    const merchantId = extractMerchantId(raw);
+    const storeName =
+        asText(pick(merchantInfo ?? {}, ['storeName', 'name']))
+        ?? asText(pick(asRecord(pick(raw, ['merchant'])) ?? {}, ['storeName', 'name']))
+        ?? asText(pick(raw, ['storeName']));
 
     // Payment-method configuration is surfaced only under keys Kashier itself uses.
     const paymentMethodConfig = pick(raw, [
@@ -117,6 +193,12 @@ export async function GET(req: NextRequest) {
     }
 
     const results = [];
+    let observedShape: {
+        envelopeKeys: string[];
+        linkKeys: string[];
+        fieldTypes: Record<string, string>;
+    } | null = null;
+
     for (const pl of OWNER_SUPPLIED_PL_IDS) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
@@ -144,17 +226,27 @@ export async function GET(req: NextRequest) {
 
             // A non-2xx body is an error payload, not a payment link: never let it
             // be reported as a verified link just because it happened to parse.
-            const linkRecord = parsed === null
-                ? null
-                : asRecord(parsed.body) ?? asRecord(parsed.paymentLink) ?? parsed;
+            const payload = upstream.ok ? locatePayload(parsed) : null;
+            const recognized = payload !== null && looksLikeLink(payload);
+
+            // Capture the shape even when unrecognised, so the keys Kashier
+            // actually returns are visible without revealing any value.
+            if (payload !== null && observedShape === null) {
+                observedShape = {
+                    envelopeKeys: parsed === null ? [] : Object.keys(parsed),
+                    linkKeys: Object.keys(payload),
+                    fieldTypes: describeShape(payload),
+                };
+            }
 
             results.push({
                 pl,
                 upstreamStatus: upstream.status,
                 upstreamOk: upstream.ok,
-                link: linkRecord === null
-                    ? null
-                    : sanitizePaymentLink(linkRecord, pl, liveMerchantId),
+                shapeRecognized: recognized,
+                link: recognized
+                    ? sanitizePaymentLink(payload as Record<string, unknown>, pl, liveMerchantId)
+                    : null,
                 error: upstream.ok
                     ? null
                     : {
@@ -180,18 +272,26 @@ export async function GET(req: NextRequest) {
 
     const found = results.filter((r) => r.link !== null);
     const mismatched = found.filter((r) => r.link?.matchesLiveEgyptMerchant === false);
+    const unresolved = results.filter((r) => r.upstreamOk && r.link === null);
 
     return NextResponse.json(
         {
             checkedAt: new Date().toISOString(),
             liveHost: LIVE_API_BASE,
             readOnly: true,
+            // Key names and value types from the first successful read, so the
+            // envelope actually used by Kashier can be confirmed. No values.
+            observedSchema: observedShape,
             summary: {
                 total: OWNER_SUPPLIED_PL_IDS.length,
                 found: found.length,
                 missing: OWNER_SUPPLIED_PL_IDS.length - found.length,
+                unresolvedShape: unresolved.length,
                 mismatchedMerchant: mismatched.length,
-                allMatchLiveEgyptMerchant: found.length === OWNER_SUPPLIED_PL_IDS.length && mismatched.length === 0,
+                allMatchLiveEgyptMerchant:
+                    found.length === OWNER_SUPPLIED_PL_IDS.length
+                    && mismatched.length === 0
+                    && unresolved.length === 0,
             },
             results,
         },

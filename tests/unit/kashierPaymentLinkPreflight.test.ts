@@ -68,7 +68,7 @@ function linkPayload(pl: string, overrides: Record<string, unknown> = {}) {
 function mockLinks(overrides: (pl: string) => Record<string, unknown> = () => ({})) {
     return vi.fn(async (url: string) => {
         const pl = String(url).split('/').pop()!;
-        return upstream({ body: linkPayload(pl, overrides(pl)) });
+        return upstream({ data: linkPayload(pl, overrides(pl)) });
     });
 }
 
@@ -182,6 +182,74 @@ describe('Gate 3 payment-link preflight', () => {
         expect(body.summary.allMatchLiveEgyptMerchant).toBe(false);
         const flagged = body.results.find((r: any) => r.pl === 'PL-4876162504F7E');
         expect(flagged.link.matchesLiveEgyptMerchant).toBe(false);
+    });
+
+    it('reads the link out of the { data: {...} } envelope Kashier returns', async () => {
+        globalThis.fetch = mockLinks() as any;
+
+        const body = await (await GET(req())).json();
+
+        // A regression guard: the envelope must be unwrapped, not read directly.
+        expect(body.summary.unresolvedShape).toBe(0);
+        expect(body.results.every((r: any) => r.shapeRecognized)).toBe(true);
+
+        for (const entry of body.results) {
+            expect(entry.link.merchantId).toBe(LIVE_MERCHANT);
+            expect(entry.link.amount).toBe('499.00');
+            expect(entry.link.currency).toBe('EGP');
+            expect(entry.link.state).toBe('published');
+            expect(entry.link.name).toBe('The Digital Protocol');
+        }
+    });
+
+    it('reports the observed envelope and field types without disclosing values', async () => {
+        globalThis.fetch = mockLinks() as any;
+
+        const body = await (await GET(req())).json();
+
+        expect(body.observedSchema.envelopeKeys).toEqual(['data']);
+        expect(body.observedSchema.linkKeys).toContain('merchantId');
+        expect(body.observedSchema.fieldTypes.merchantId).toBe('string');
+        expect(body.observedSchema.fieldTypes.invoiceItems).toBe('array(1)');
+
+        const serialized = JSON.stringify(body.observedSchema);
+        expect(serialized).not.toContain(LIVE_MERCHANT);
+        expect(serialized).not.toContain('The Digital Protocol');
+        expect(serialized).not.toContain('499.00');
+        expect(serialized).not.toContain('EGP');
+    });
+
+    it('accepts a list-style envelope and reads the nested merchant identity', async () => {
+        const { merchantInfo: _dropped, ...withoutMerchantInfo } = linkPayload('PL-487616250298X');
+        globalThis.fetch = vi.fn(async () => upstream({
+            data: [{
+                ...withoutMerchantInfo,
+                merchant: { id: LIVE_MERCHANT, storeName: 'Nested Store' },
+                merchantId: undefined,
+            }],
+        })) as any;
+
+        const body = await (await GET(req())).json();
+
+        const first = body.results[0];
+        expect(first.shapeRecognized).toBe(true);
+        expect(first.link.merchantId).toBe(LIVE_MERCHANT);
+        expect(first.link.storeName).toBe('Nested Store');
+        expect(first.link.matchesLiveEgyptMerchant).toBe(true);
+    });
+
+    it('flags an unrecognised shape instead of reporting a field of nulls', async () => {
+        globalThis.fetch = vi.fn(async () => upstream({ data: { unexpected: true } })) as any;
+
+        const body = await (await GET(req())).json();
+
+        expect(body.summary.unresolvedShape).toBe(PL_IDS.length);
+        expect(body.summary.mismatchedMerchant).toBe(0);
+        expect(body.summary.allMatchLiveEgyptMerchant).toBe(false);
+        for (const entry of body.results) {
+            expect(entry.link).toBeNull();
+            expect(entry.upstreamStatus).toBe(200);
+        }
     });
 
     it('never infers a PP association from the PL', async () => {
