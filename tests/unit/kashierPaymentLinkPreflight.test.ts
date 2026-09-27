@@ -151,9 +151,10 @@ describe('Gate 3 payment-link preflight', () => {
 
         for (const entry of body.results) {
             expect(Object.keys(entry.link).sort()).toEqual([
-                'amount', 'associatedPp', 'currency', 'dueDate', 'invoiceItems',
-                'isPaymentLink', 'isSuspendedPayment', 'matchesLiveEgyptMerchant', 'name',
-                'paymentMethods', 'paymentStatus', 'paymentType', 'pl', 'ppInferred',
+                'amount', 'amountIsNumeric', 'associatedPp', 'currency', 'dueDate',
+                'isPaymentLink', 'isSuspendedPayment', 'items', 'linkName',
+                'matchesLiveEgyptMerchant', 'paymentMethods', 'paymentStatus',
+                'paymentType', 'pl', 'ppInferred', 'product',
                 'referenceId', 'requestedPl', 'state', 'storeName', 'merchantId',
             ].sort());
         }
@@ -198,8 +199,90 @@ describe('Gate 3 payment-link preflight', () => {
             expect(entry.link.amount).toBe('499.00');
             expect(entry.link.currency).toBe('EGP');
             expect(entry.link.state).toBe('published');
-            expect(entry.link.name).toBe('The Digital Protocol');
+            expect(entry.link.product).toBe('The Digital Protocol');
         }
+    });
+
+    it('reads a numeric totalAmount instead of reporting it absent', async () => {
+        // Regression: a strict string check made JSON numbers read as null.
+        globalThis.fetch = mockLinks(() => ({ totalAmount: 499, amount: undefined })) as any;
+
+        const body = await (await GET(req())).json();
+
+        for (const entry of body.results) {
+            expect(entry.link.amount).toBe('499');
+            expect(entry.link.amountIsNumeric).toBe(true);
+        }
+    });
+
+    it('exposes the product and per-item amounts for owner comparison', async () => {
+        globalThis.fetch = mockLinks(() => ({
+            description: undefined,
+            invoiceItems: [{ name: 'Digital Protocol', amount: 499, quantity: 1 }],
+        })) as any;
+
+        const body = await (await GET(req())).json();
+
+        const first = body.results[0].link;
+        expect(first.product).toBe('Digital Protocol');
+        expect(first.items).toEqual([
+            { name: 'Digital Protocol', amount: '499', quantity: '1', currency: null },
+        ]);
+    });
+
+    it('rebuilds payment methods from primitive leaves and never echoes the raw value', async () => {
+        globalThis.fetch = mockLinks(() => ({
+            paymentMethods: {
+                card: true,
+                wallet: false,
+                cash: true,
+                // Non-primitive: must be walked, not returned.
+                limits: { daily: 1000 },
+                // Free-form text: not an enum, must be dropped.
+                notes: 'card <script> & wallet',
+                // Credential-shaped key: must never be emitted.
+                customerEmail: 'buyer@example.com',
+                apiKey: 'sk-live-should-never-appear',
+            },
+        })) as any;
+
+        const body = await (await GET(req())).json();
+
+        const methods = body.results[0].link.paymentMethods;
+        expect(methods.card).toBe(true);
+        expect(methods.wallet).toBe(false);
+        expect(methods.cash).toBe(true);
+        expect(methods.daily).toBe(1000);
+
+        const serialized = JSON.stringify(body);
+        expect(serialized).not.toContain('buyer@example.com');
+        expect(serialized).not.toContain('sk-live-should-never-appear');
+        expect(serialized).not.toContain('customerEmail');
+        expect(serialized).not.toContain('apiKey');
+    });
+
+    it('reads a list-valued payment method configuration', async () => {
+        globalThis.fetch = mockLinks(() => ({
+            paymentMethods: ['card', 'wallet', { secret: 'nope' }, '<script>'],
+        })) as any;
+
+        const body = await (await GET(req())).json();
+
+        expect(body.results[0].link.paymentMethods.paymentMethods).toEqual(['card', 'wallet']);
+        expect(JSON.stringify(body)).not.toContain('nope');
+    });
+
+    it('surfaces paymentType and a string-form totalAmount', async () => {
+        globalThis.fetch = mockLinks(() => ({
+            paymentType: 'ONE_TIME',
+            totalAmount: '499.00',
+        })) as any;
+
+        const body = await (await GET(req())).json();
+
+        expect(body.results[0].link.paymentType).toBe('ONE_TIME');
+        expect(body.results[0].link.amount).toBe('499.00');
+        expect(body.results[0].link.amountIsNumeric).toBe(false);
     });
 
     it('reports the observed envelope and field types without disclosing values', async () => {

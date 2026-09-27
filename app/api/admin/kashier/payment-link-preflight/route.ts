@@ -46,6 +46,110 @@ function asText(value: unknown): string | null {
 }
 
 /**
+ * Scalar tolerant: Kashier returns some numeric fields as JSON numbers, so a
+ * strict string check would silently report them as absent.
+ */
+function asScalar(value: unknown): string | null {
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        return trimmed !== '' ? trimmed : null;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'boolean') return String(value);
+    return null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+    if (typeof value === 'boolean') return value;
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return null;
+}
+
+/** Keys that must never be echoed back, whatever their value type. */
+const SENSITIVE_FIELD = /(customer|client|buyer|subscriber|email|phone|address|token|secret|api[_-]?key|auth|password|signature|iban|card\s*(number|num|no\b)|cvv|cvc)/i;
+
+/** Key names are metadata, but credential- and customer-shaped ones are not echoed. */
+function redactKey(key: string): string {
+    return SENSITIVE_FIELD.test(key) ? '[redacted]' : key;
+}
+
+/** Only short, plain enum-like text is safe to surface verbatim. */
+function isSafeEnumText(value: string): boolean {
+    return value.length <= 48 && /^[A-Za-z0-9 _.,:/()\-#]+$/.test(value);
+}
+
+type PaymentConfiguration = Record<string, boolean | number | string | string[]>;
+
+const PAYMENT_CONFIG_ROOTS = [
+    'paymentMethods',
+    'allowedPaymentMethods',
+    'availablePaymentMethods',
+    'paymentMethodConfiguration',
+    'paymentOptions',
+    'paymentTypes',
+] as const;
+
+/** Any top-level key that names itself as payment related. */
+const PAYMENT_KEY_HINT = /payment|payWith|wallet|card|installment|bankTransfer|cash/i;
+
+/**
+ * Rebuilds the payment-method configuration from primitive leaves only.
+ *
+ * The upstream value is never returned as-is: objects and arrays are walked,
+ * and each leaf is re-emitted only when it is a boolean, a finite number, or a
+ * short enum-like string. Anything else - and anything under a customer or
+ * credential-shaped key - is dropped, so no customer data, secret, or
+ * free-form text can leak through this diagnostic.
+ */
+function collectPaymentConfiguration(raw: Record<string, unknown>): PaymentConfiguration | null {
+    const collected: PaymentConfiguration = {};
+
+    const visit = (key: string, value: unknown, depth: number): void => {
+        if (SENSITIVE_FIELD.test(key) || depth > 3) return;
+
+        if (Array.isArray(value)) {
+            const entries = value
+                .filter((entry): entry is string => typeof entry === 'string' && isSafeEnumText(entry.trim()))
+                .map((entry) => entry.trim());
+            if (entries.length > 0) collected[key] = entries;
+            return;
+        }
+
+        const record = asRecord(value);
+        if (record !== null) {
+            for (const [nestedKey, nestedValue] of Object.entries(record)) {
+                visit(nestedKey, nestedValue, depth + 1);
+            }
+            return;
+        }
+
+        if (typeof value === 'boolean') {
+            collected[key] = value;
+        } else if (typeof value === 'number' && Number.isFinite(value)) {
+            collected[key] = value;
+        } else if (typeof value === 'string' && isSafeEnumText(value.trim())) {
+            collected[key] = value.trim();
+        }
+    };
+
+    for (const root of PAYMENT_CONFIG_ROOTS) {
+        if (raw[root] !== undefined && raw[root] !== null) visit(root, raw[root], 0);
+    }
+
+    // Cover upstream naming we did not anticipate, but only for booleans and
+    // enums; a non-primitive stays out of the result entirely.
+    for (const [key, value] of Object.entries(raw)) {
+        if ((PAYMENT_CONFIG_ROOTS as readonly string[]).includes(key)) continue;
+        if (!PAYMENT_KEY_HINT.test(key)) continue;
+        if (typeof value === 'object' && value !== null) continue;
+        visit(key, value, 0);
+    }
+
+    return Object.keys(collected).length > 0 ? collected : null;
+}
+
+/**
  * Kashier dashboard-API responses wrap the payload, e.g. { data: { ... } }.
  * Peel the known envelope keys to reach the innermost object. Recognition is
  * checked separately so an unrecognised payload can still be described.
@@ -78,13 +182,13 @@ function looksLikeLink(record: Record<string, unknown>): boolean {
 
 /** Merchant identity may be flat or nested under merchant / merchantInfo. */
 function extractMerchantId(record: Record<string, unknown>): string | null {
-    const direct = asText(pick(record, ['merchantId', 'merchant_id', 'mid']));
+    const direct = asScalar(pick(record, ['merchantId', 'merchant_id', 'mid']));
     if (direct !== null) return direct;
 
     for (const key of ['merchant', 'merchantInfo', 'account'] as const) {
         const nested = asRecord(pick(record, [key]));
         if (nested === null) continue;
-        const nestedId = asText(pick(nested, ['id', 'merchantId', 'merchant_id', 'mid']));
+        const nestedId = asScalar(pick(nested, ['id', 'merchantId', 'merchant_id', 'mid']));
         if (nestedId !== null) return nestedId;
     }
     return null;
@@ -100,19 +204,20 @@ function describeShape(value: unknown, depth = 0): Record<string, string> {
 
     const shape: Record<string, string> = {};
     for (const [key, entry] of Object.entries(record)) {
+        const name = redactKey(key);
         if (entry === null) {
-            shape[key] = 'null';
+            shape[name] = 'null';
         } else if (Array.isArray(entry)) {
-            shape[key] = `array(${entry.length})`;
+            shape[name] = `array(${entry.length})`;
         } else if (typeof entry === 'object') {
-            shape[key] = 'object';
+            shape[name] = 'object';
             for (const [nestedKey, nestedValue] of Object.entries(entry as Record<string, unknown>)) {
-                shape[`${key}.${nestedKey}`] = Array.isArray(nestedValue)
+                shape[`${name}.${redactKey(nestedKey)}`] = Array.isArray(nestedValue)
                     ? `array(${nestedValue.length})`
                     : (nestedValue === null ? 'null' : typeof nestedValue);
             }
         } else {
-            shape[key] = typeof entry;
+            shape[name] = typeof entry;
         }
     }
     return shape;
@@ -126,48 +231,57 @@ function sanitizePaymentLink(
     // The v2 link object nests the store name under merchantInfo.
     const merchantInfo = asRecord(pick(raw, ['merchantInfo']));
     const items = Array.isArray(raw.invoiceItems) ? raw.invoiceItems : [];
-    const itemNames = items
-        .map((item) => asText(pick(asRecord(item) ?? {}, ['description'])))
+
+    // Per-item name and amount, so the total can be checked against the
+    // products rather than taken on trust.
+    const itemEntries = items.map((item) => {
+        const record = asRecord(item) ?? {};
+        return {
+            name: asScalar(pick(record, ['description', 'name', 'title'])),
+            amount: asScalar(pick(record, ['amount', 'totalAmount', 'price'])),
+            quantity: asScalar(pick(record, ['quantity'])),
+            currency: asScalar(pick(record, ['currency'])),
+        };
+    });
+    const itemNames = itemEntries
+        .map((item) => item.name)
         .filter((name): name is string => name !== null);
 
-    const description = asText(pick(raw, ['description']));
+    const description = asScalar(pick(raw, ['description']));
     const merchantId = extractMerchantId(raw);
     const storeName =
-        asText(pick(merchantInfo ?? {}, ['storeName', 'name']))
-        ?? asText(pick(asRecord(pick(raw, ['merchant'])) ?? {}, ['storeName', 'name']))
-        ?? asText(pick(raw, ['storeName']));
-
-    // Payment-method configuration is surfaced only under keys Kashier itself uses.
-    const paymentMethodConfig = pick(raw, [
-        'paymentMethods',
-        'allowedPaymentMethods',
-        'availablePaymentMethods',
-        'paymentMethodConfiguration',
-        'paymentOptions',
-    ]);
+        asScalar(pick(merchantInfo ?? {}, ['storeName', 'name']))
+        ?? asScalar(pick(asRecord(pick(raw, ['merchant'])) ?? {}, ['storeName', 'name']))
+        ?? asScalar(pick(raw, ['storeName']));
 
     // A PP association is reported only when Kashier explicitly returns one.
     // It is never derived, guessed, or resolved from the PL.
-    const explicitPp = asText(pick(raw, ['ppLink', 'pp', 'ppId', 'prepaymentPageLink', 'prepaymentPage']));
+    const explicitPp = asScalar(pick(raw, ['ppLink', 'pp', 'ppId', 'prepaymentPageLink', 'prepaymentPage']));
 
     return {
-        pl: asText(pick(raw, ['paymentLinkId', 'urlIdentifier', 'paymentRequestId'])) ?? requestedPl,
+        pl: asScalar(pick(raw, ['paymentLinkId', 'urlIdentifier', 'paymentRequestId'])) ?? requestedPl,
         requestedPl,
         merchantId,
         storeName,
         matchesLiveEgyptMerchant: expectedMerchantId !== null && merchantId === expectedMerchantId,
-        name: description ?? (itemNames.length > 0 ? itemNames.join(' | ') : null),
-        invoiceItems: itemNames,
-        amount: asText(pick(raw, ['totalAmount', 'amount'])),
-        currency: asText(pick(raw, ['currency'])),
-        state: asText(pick(raw, ['state'])),
-        paymentStatus: asText(pick(raw, ['paymentStatus'])),
-        paymentType: asText(pick(raw, ['paymentType'])),
-        paymentMethods: paymentMethodConfig === null ? null : paymentMethodConfig,
-        isPaymentLink: raw.isPaymentLink === true,
-        isSuspendedPayment: typeof raw.isSuspendedPayment === 'boolean' ? raw.isSuspendedPayment : null,
-        dueDate: asText(pick(raw, ['dueDate'])),
-        referenceId: asText(pick(raw, ['referenceId', 'invoiceReferenceId'])),
+        // Product identity: link description, else the invoice item names.
+        product: description ?? (itemNames.length > 0 ? itemNames.join(' | ') : null),
+        // Kept separate so a link name can never be mistaken for the product.
+        linkName: asScalar(pick(raw, ['title', 'linkName', 'paymentLinkName', 'name'])),
+        items: itemEntries,
+        // totalAmount is read first; a JSON number is accepted, not just a string.
+        amount: asScalar(pick(raw, ['totalAmount', 'amount'])),
+        amountIsNumeric: typeof raw.totalAmount === 'number' || typeof raw.amount === 'number',
+        currency: asScalar(pick(raw, ['currency'])),
+        state: asScalar(pick(raw, ['state'])),
+        paymentStatus: asScalar(pick(raw, ['paymentStatus'])),
+        paymentType: asScalar(pick(raw, ['paymentType', 'paymentTypes', 'type'])),
+        // Primitive leaves only; never the raw upstream value.
+        paymentMethods: collectPaymentConfiguration(raw),
+        isPaymentLink: asBoolean(raw.isPaymentLink),
+        isSuspendedPayment: asBoolean(raw.isSuspendedPayment),
+        dueDate: asScalar(pick(raw, ['dueDate'])),
+        referenceId: asScalar(pick(raw, ['referenceId', 'invoiceReferenceId'])),
         // Only ever a value Kashier itself returned; never inferred from the PL.
         associatedPp: explicitPp,
         ppInferred: false,
@@ -233,8 +347,8 @@ export async function GET(req: NextRequest) {
             // actually returns are visible without revealing any value.
             if (payload !== null && observedShape === null) {
                 observedShape = {
-                    envelopeKeys: parsed === null ? [] : Object.keys(parsed),
-                    linkKeys: Object.keys(payload),
+                    envelopeKeys: parsed === null ? [] : Object.keys(parsed).map(redactKey),
+                    linkKeys: Object.keys(payload).map(redactKey),
                     fieldTypes: describeShape(payload),
                 };
             }
