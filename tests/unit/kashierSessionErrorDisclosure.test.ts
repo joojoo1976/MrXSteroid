@@ -3,6 +3,8 @@ import {
     KashierGateway,
     KashierSessionError,
     buildSanitizedUpstreamDetail,
+    buildSanitizedUpstreamMessage,
+    scrubSensitiveText,
 } from '../../server/payments/gateways/KashierGateway';
 
 const FAKE_SECRET_LIKE = ['sk', 'live', '9f8e7d6c5b4a3210'].join('_');
@@ -91,6 +93,127 @@ describe('KashierSessionError upstream disclosure', () => {
 
         it('rejects over-long code values outright', () => {
             expect(buildSanitizedUpstreamDetail(JSON.stringify({ code: 'A'.repeat(65) }))).toBeUndefined();
+        });
+    });
+
+    describe('buildSanitizedUpstreamMessage', () => {
+        it('captures a top-level message field', () => {
+            expect(buildSanitizedUpstreamMessage(JSON.stringify({ message: 'Invalid payment_type value' })))
+                .toBe('Invalid payment_type value');
+        });
+
+        it('captures and flattens a messages object', () => {
+            const out = buildSanitizedUpstreamMessage(JSON.stringify({ messages: { en: 'Field amount is required' } }));
+            expect(out).toBe('Field amount is required');
+        });
+
+        it('captures a messages array', () => {
+            const out = buildSanitizedUpstreamMessage(JSON.stringify({ messages: ['first problem', 'second problem'] }));
+            expect(out).toBe('first problem | second problem');
+        });
+
+        it('returns undefined when the body carries no message', () => {
+            expect(buildSanitizedUpstreamMessage(JSON.stringify({ status: 'INVALID_REQUEST' }))).toBeUndefined();
+            expect(buildSanitizedUpstreamMessage('not json')).toBeUndefined();
+            expect(buildSanitizedUpstreamMessage('')).toBeUndefined();
+        });
+
+        it('truncates the captured message to a safe maximum length', () => {
+            const out = buildSanitizedUpstreamMessage(JSON.stringify({ message: 'validation problem: '.repeat(40) }));
+            expect(out).toBeDefined();
+            expect(out!.length).toBe(200);
+        });
+    });
+
+    describe('scrubSensitiveText', () => {
+        it('redacts secret-key material', () => {
+            const out = scrubSensitiveText(`rejected ${FAKE_SECRET_LIKE}`);
+            expect(out).not.toContain(FAKE_SECRET_LIKE);
+            expect(out).toContain('[REDACTED_KEY]');
+        });
+
+        it('redacts bearer tokens', () => {
+            expect(scrubSensitiveText('Authorization: Bearer abc.def.ghi')).not.toContain('abc.def.ghi');
+        });
+
+        it('redacts card-like digit runs', () => {
+            expect(scrubSensitiveText(`pan ${FAKE_PAN}`)).not.toContain(FAKE_PAN);
+        });
+
+        it('redacts spaced card-like digit runs', () => {
+            expect(scrubSensitiveText('pan 4111 1111 1111 1111')).not.toContain('4111 1111 1111 1111');
+        });
+
+        it('redacts email addresses', () => {
+            expect(scrubSensitiveText('customer buyer@example.com rejected')).not.toContain('buyer@example.com');
+        });
+
+        it('redacts long hex tokens', () => {
+            expect(scrubSensitiveText(`trace ${'a1b2c3d4'.repeat(6)}`)).not.toContain('a1b2c3d4a1b2c3d4');
+        });
+
+        it('leaves ordinary diagnostic text intact', () => {
+            expect(scrubSensitiveText('paymentType credit is not allowed'))
+                .toBe('paymentType credit is not allowed');
+        });
+    });
+
+    describe('server-side message logging', () => {
+        function captureLog(body: string, status: number) {
+            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            vi.stubGlobal(
+                'fetch',
+                vi.fn().mockResolvedValue(
+                    new Response(body, { status, headers: { 'Content-Type': 'application/json' } }),
+                ),
+            );
+            return newGateway()
+                .createPaymentSession(sessionArgs)
+                .catch(() => undefined)
+                .then(() => errorSpy.mock.calls.map((c) => String(c[0])).join('\n'));
+        }
+
+        it('logs the upstream message with orderRef, region, mode and status', async () => {
+            const logged = await captureLog(
+                JSON.stringify({ message: 'paymentType is not a supported field' }),
+                400,
+            );
+            expect(logged).toContain('inv-disclosure-1');
+            expect(logged).toContain('region=EGYPT');
+            expect(logged).toContain('mode=test');
+            expect(logged).toContain('status=400');
+            expect(logged).toContain('paymentType is not a supported field');
+        });
+
+        it('never logs secrets even when the upstream message contains them', async () => {
+            const logged = await captureLog(SENSITIVE_UPSTREAM_BODY, 400);
+            expect(logged).toContain('upstreamMessage=');
+            expect(logged).not.toContain(FAKE_SECRET_LIKE);
+            expect(logged).not.toContain(FAKE_PAN);
+            expect(logged).not.toContain('buyer@example.com');
+            expect(logged).not.toContain('test-secret-key-456');
+            expect(logged).not.toContain('test-api-key-123');
+        });
+
+        it('keeps the thrown client-facing message free of upstream detail', async () => {
+            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            vi.stubGlobal(
+                'fetch',
+                vi.fn().mockResolvedValue(
+                    new Response(JSON.stringify({ message: 'paymentType is not a supported field' }), { status: 400 }),
+                ),
+            );
+
+            const error = await newGateway()
+                .createPaymentSession(sessionArgs)
+                .then(() => null)
+                .catch((e: unknown) => e);
+
+            expect(error).toBeInstanceOf(KashierSessionError);
+            const message = (error as KashierSessionError).message;
+            expect(message).not.toContain('paymentType is not a supported field');
+            expect(message).toContain('inv-disclosure-1');
+            expect(message).toContain('HTTP 400');
         });
     });
 

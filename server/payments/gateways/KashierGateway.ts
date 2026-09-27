@@ -32,7 +32,7 @@ const UPSTREAM_DETAIL_MAX_LENGTH = 120;
 const UPSTREAM_DETAIL_ALLOWED_KEYS = ['code', 'error', 'status'] as const;
 const UPSTREAM_DETAIL_CODE_PATTERN = /^[A-Za-z0-9_.:-]{1,64}$/;
 
-export function buildSanitizedUpstreamDetail(rawBody: string): string | undefined {
+function parseUpstreamObject(rawBody: string): Record<string, unknown> | undefined {
     if (!rawBody) return undefined;
     let parsed: unknown;
     try {
@@ -41,7 +41,12 @@ export function buildSanitizedUpstreamDetail(rawBody: string): string | undefine
         return undefined;
     }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
-    const record = parsed as Record<string, unknown>;
+    return parsed as Record<string, unknown>;
+}
+
+export function buildSanitizedUpstreamDetail(rawBody: string): string | undefined {
+    const record = parseUpstreamObject(rawBody);
+    if (!record) return undefined;
     const parts: string[] = [];
     for (const key of UPSTREAM_DETAIL_ALLOWED_KEYS) {
         const value = record[key];
@@ -51,6 +56,50 @@ export function buildSanitizedUpstreamDetail(rawBody: string): string | undefine
         parts.push(`${key}=${trimmed}`);
     }
     return parts.length > 0 ? parts.join(' ').slice(0, UPSTREAM_DETAIL_MAX_LENGTH) : undefined;
+}
+
+const UPSTREAM_MESSAGE_MAX_LENGTH = 200;
+const SENSITIVE_TEXT_PATTERNS: Array<[RegExp, string]> = [
+    [/\b(?:sk|pk|rk|whsec)_(?:live|test)_[A-Za-z0-9]+/gi, '[REDACTED_KEY]'],
+    [/\b(?:sk|pk|rk|whsec)_[A-Za-z0-9]{8,}/gi, '[REDACTED_KEY]'],
+    [/\bBearer\s+\S+/gi, 'Bearer [REDACTED]'],
+    [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '[REDACTED_EMAIL]'],
+    [/\b(?:\d[ -]?){13,19}\b/g, '[REDACTED_PAN]'],
+    [/\b[0-9a-f]{24,}\b/gi, '[REDACTED_TOKEN]'],
+];
+
+export function scrubSensitiveText(value: string): string {
+    let out = value;
+    for (const [pattern, replacement] of SENSITIVE_TEXT_PATTERNS) {
+        out = out.replace(pattern, replacement);
+    }
+    return out;
+}
+
+function collectUpstreamMessage(value: unknown): string[] {
+    if (typeof value === 'string') return [value];
+    if (Array.isArray(value)) {
+        return value.flatMap((entry) => collectUpstreamMessage(entry));
+    }
+    if (value && typeof value === 'object') {
+        return Object.values(value as Record<string, unknown>).flatMap((entry) => collectUpstreamMessage(entry));
+    }
+    return [];
+}
+
+export function buildSanitizedUpstreamMessage(rawBody: string): string | undefined {
+    const record = parseUpstreamObject(rawBody);
+    if (!record) return undefined;
+    const candidates = [
+        ...collectUpstreamMessage(record.message),
+        ...collectUpstreamMessage(record.messages),
+        ...collectUpstreamMessage(record.error_description),
+    ];
+    const combined = candidates
+        .map((entry) => scrubSensitiveText(entry).replace(/\s+/g, ' ').trim())
+        .filter((entry) => entry.length > 0)
+        .join(' | ');
+    return combined.length > 0 ? combined.slice(0, UPSTREAM_MESSAGE_MAX_LENGTH) : undefined;
 }
 
 export interface KashierConfig {
@@ -231,8 +280,12 @@ export class KashierGateway implements IPaymentGateway {
         }
 
         const sanitizedDetail = buildSanitizedUpstreamDetail(lastBody);
+        const sanitizedMessage = buildSanitizedUpstreamMessage(lastBody);
+        const regionLabel = this.config.merchantType === "egypt" ? "EGYPT" : "GLOBAL";
         console.error(
-            `[KashierGateway:${this.config.merchantType}] session_create_failed orderRef=${params.orderRef} mode=${this.config.mode} status=${lastStatus ?? "n/a"}${sanitizedDetail ? ` detail="${sanitizedDetail}"` : ""}`
+            `[KashierGateway:${this.config.merchantType}] session_create_failed orderRef=${params.orderRef} region=${regionLabel} mode=${this.config.mode} status=${lastStatus ?? "n/a"}` +
+            `${sanitizedDetail ? ` detail="${sanitizedDetail}"` : ""}` +
+            `${sanitizedMessage ? ` upstreamMessage="${sanitizedMessage}"` : ""}`
         );
         throw new KashierSessionError(
             `[KashierGateway:${this.config.merchantType}] Payment Session creation failed (HTTP ${lastStatus ?? "n/a"}, orderRef=${params.orderRef}).`,
