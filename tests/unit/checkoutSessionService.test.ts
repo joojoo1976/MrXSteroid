@@ -110,6 +110,47 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
     });
     afterEach(() => { process.env = { ...originalEnv }; });
 
+    it('fails closed with GATEWAY_NOT_AVAILABLE before creating any record when the region is unconfigured', async () => {
+        delete process.env.KASHIER_TEST_MERCHANT_ID;
+        delete process.env.KASHIER_TEST_PAYMENT_API_KEY;
+        delete process.env.KASHIER_TEST_SECRET_KEY;
+        delete process.env.KASHIER_EGYPT_MERCHANT_ID;
+
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+
+        await expect(createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-noconf' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        )).rejects.toThrow(/GATEWAY_NOT_AVAILABLE/);
+
+        expect(supabase._db.invoices).toHaveLength(0);
+        expect(supabase._db.payment_intents).toHaveLength(0);
+    });
+
+    it('refuses to route a non-Egypt checkout through the Egypt merchant', async () => {
+        delete process.env.KASHIER_GLOBAL_MERCHANT_ID;
+        delete process.env.KASHIER_GLOBAL_PAYMENT_API_KEY;
+        delete process.env.KASHIER_GLOBAL_SECRET_KEY;
+
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+        const calls: any[] = [];
+        (gateway.createPaymentSession as any) = async (params: any) => {
+            calls.push(params);
+            throw new Error('must not be reached');
+        };
+
+        await expect(createCheckoutSession(
+            { ...baseInput(), country: 'US', tierId: 'digital', idempotencyKey: 'k-global' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        )).rejects.toThrow(/GATEWAY_NOT_AVAILABLE/);
+
+        expect(calls).toHaveLength(0);
+        expect(supabase._db.invoices).toHaveLength(0);
+        expect(supabase._db.payment_intents).toHaveLength(0);
+    });
+
     function deps() {
         const supabase = createFakeSupabase();
         const gateway = createFakeGateway();
@@ -174,6 +215,11 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
     });
 
     it('Global order → USD pricing, card-only methods, no Egypt shipping', async () => {
+        // GLOBAL now requires its own merchant; it must never borrow Egypt's.
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = 'MID-TEST-GLOBAL';
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = 'global-test-api-key';
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'global-test-secret';
+
         const { gateway, options } = deps();
         const res = await createCheckoutSession({
             ...baseInput(),
@@ -186,6 +232,7 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(res.currency).toBe('USD');
         expect(res.amount).toBe(49.99);
         expect(res.paymentMethods).toEqual(['card']);
+        expect(res.merchantId).toBe('MID-TEST-GLOBAL');
         expect(gateway.calls[0].paymentMethods).toEqual(['card']);
     });
 
@@ -299,6 +346,81 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(invoice.status).toBe('pending');
         expect(invoice.payment_status).toBe('pending');
         expect(invoice.paid_at).toBeUndefined();
+    });
+
+    it('persists the Kashier session id, never the application order reference', async () => {
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+
+        const result = await createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-sid' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        );
+
+        const invoice = supabase._db.invoices[0];
+        const intent = supabase._db.payment_intents[0];
+
+        expect(result.sessionId).toBe('sess-1');
+        expect(invoice.kashier_session_id).toBe('sess-1');
+        expect(invoice.gateway_reference_id).toBe('sess-1');
+        expect(intent.provider_order_id).toBe('sess-1');
+        // The application's own order reference lives in its own column only.
+        expect(invoice.kashier_order_id).toBe(result.orderRef);
+        expect(invoice.kashier_session_id).not.toBe(result.orderRef);
+        expect(intent.provider_order_id).not.toBe(result.orderRef);
+    });
+
+    it('stores null provider identifiers when the gateway exposes no session id', async () => {
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+        (gateway.createPaymentSession as any) = async (params: any) => ({
+            sessionId: null,
+            sessionUrl: 'https://payments.kashier.io/session/abc123',
+            orderId: params.orderRef,
+            amount: params.amount,
+            currency: params.currency,
+        });
+
+        const result = await createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-nosid' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        );
+
+        const invoice = supabase._db.invoices[0];
+        expect(result.sessionId).toBeNull();
+        expect(invoice.kashier_session_id).toBeNull();
+        expect(invoice.gateway_reference_id).toBeNull();
+        expect(supabase._db.payment_intents[0].provider_order_id).toBeNull();
+        expect(invoice.kashier_session_url).toBe('https://payments.kashier.io/session/abc123');
+    });
+
+    it('replays a prior session even when it carries no provider session id', async () => {
+        const supabase = createFakeSupabase({
+            invoices: [{
+                id: 'inv-replay-1',
+                idempotency_key: 'k-replay',
+                amount: '499.00',
+                currency: 'EGP',
+                kashier_session_id: null,
+                kashier_session_url: 'https://payments.kashier.io/session/replay1',
+            }],
+        });
+        const gateway = createFakeGateway();
+        const calls: any[] = [];
+        (gateway.createPaymentSession as any) = async (params: any) => {
+            calls.push(params);
+            throw new Error('must not mint a second session');
+        };
+
+        const result = await createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-replay' },
+            { supabase, gatewayFactory: () => gateway, pricingRows: async () => [] },
+        );
+
+        expect(result.idempotent).toBe(true);
+        expect(result.sessionId).toBeNull();
+        expect(result.sessionUrl).toBe('https://payments.kashier.io/session/replay1');
+        expect(calls).toHaveLength(0);
     });
 
     it('a failed session mint propagates and leaves the invoice unconfirmed without a session URL', async () => {

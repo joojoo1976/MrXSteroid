@@ -20,12 +20,16 @@ export type CanonicalProductId = 'MRX-PROTOCOL' | 'MRX-TACTICAL' | 'MRX-SMART-PR
 //  ERROR TYPE — blocked register items must raise BlockedGateError (v5.1 §2)
 // ─────────────────────────────────────────────────────────────────────────────
 
+export const GATEWAY_NOT_AVAILABLE = 'GATEWAY_NOT_AVAILABLE';
+
 export class BlockedGateError extends Error {
     readonly blockedItem: string;
+    readonly code: string;
     constructor(blockedItem: string, detail?: string) {
-        super(`Blocked gate: ${blockedItem}${detail ? ` — ${detail}` : ''}`);
+        super(`Blocked gate: ${blockedItem}${detail ? ` - ${detail}` : ''}`);
         this.name = 'BlockedGateError';
         this.blockedItem = blockedItem;
+        this.code = blockedItem;
     }
 }
 
@@ -162,14 +166,28 @@ function resolveMode(): Mode {
  *   GLOBAL: legacy KASHIER_GLOBAL → mode-prefix (fallback only)
  * Each slot also supports the rotation suffix `_PRIMARY`.
  */
-function resolvePrimary(region: MerchantRegion, keySuffix: string): string {
+/**
+ * Region-aware credential prefixes.
+ *
+ * The mode-prefix variables (KASHIER_TEST_* / KASHIER_LIVE_*) are SHARED and
+ * name the single primary/Egypt merchant, so they must never shadow the
+ * distinct GLOBAL merchant from the legacy KASHIER_GLOBAL_* vars.
+ *   EGYPT: mode-prefix -> legacy KASHIER_EGYPT
+ *   GLOBAL: legacy KASHIER_GLOBAL ONLY
+ *
+ * GLOBAL deliberately has no mode-prefix fallback: silently answering a
+ * USD/global request with the Egypt merchant would route a foreign-currency
+ * charge through the wrong merchant. A missing GLOBAL configuration must fail
+ * closed via assertRegionCredentials() instead.
+ */
+function credentialPrefixes(region: MerchantRegion): string[] {
     const modePrefix = resolveMode() === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
     const legacyPrefix = REGION_TO_LEGACY_PREFIX[region];
-    const prefixes = region === 'EGYPT'
-        ? [modePrefix, legacyPrefix]
-        : [legacyPrefix, modePrefix];
+    return region === 'EGYPT' ? [modePrefix, legacyPrefix] : [legacyPrefix];
+}
 
-    for (const prefix of prefixes) {
+function resolvePrimary(region: MerchantRegion, keySuffix: string): string {
+    for (const prefix of credentialPrefixes(region)) {
         const value =
             process.env[`${prefix}_${keySuffix}`] ||
             process.env[`${prefix}_${keySuffix}_PRIMARY`];
@@ -179,13 +197,7 @@ function resolvePrimary(region: MerchantRegion, keySuffix: string): string {
 }
 
 function resolveSecondary(region: MerchantRegion, keySuffix: string): string | undefined {
-    const modePrefix = resolveMode() === 'live' ? 'KASHIER_LIVE' : 'KASHIER_TEST';
-    const legacyPrefix = REGION_TO_LEGACY_PREFIX[region];
-    const prefixes = region === 'EGYPT'
-        ? [modePrefix, legacyPrefix]
-        : [legacyPrefix, modePrefix];
-
-    for (const prefix of prefixes) {
+    for (const prefix of credentialPrefixes(region)) {
         const value = process.env[`${prefix}_${keySuffix}_SECONDARY`];
         if (value) return value;
     }
@@ -198,6 +210,28 @@ function resolveWebhookUrl(region: MerchantRegion): string {
     if (configured) return configured;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mrxsteroid.com';
     return `${siteUrl}/api/payments/webhook`;
+}
+
+/**
+ * Deterministic pre-flight credential gate.
+ *
+ * Must be called before any invoice/payment-intent is created so a region with
+ * no configured merchant fails closed instead of minting records that can
+ * never be collected.
+ */
+export function assertRegionCredentials(region: MerchantRegion): MerchantConfig {
+    const config = getMerchantConfig(region);
+    const missing: string[] = [];
+    if (!config.merchantId) missing.push('MERCHANT_ID');
+    if (!config.secrets.paymentApiKey.primary) missing.push('PAYMENT_API_KEY');
+    if (!config.secrets.secretKey.primary) missing.push('SECRET_KEY');
+    if (missing.length > 0) {
+        throw new BlockedGateError(
+            GATEWAY_NOT_AVAILABLE,
+            `${region} merchant is not configured (missing: ${missing.join(', ')})`
+        );
+    }
+    return config;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

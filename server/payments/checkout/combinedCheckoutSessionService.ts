@@ -25,7 +25,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { KashierGateway } from '../gateways/KashierGateway';
 import {
-    getMerchantConfig,
+    assertRegionCredentials,
     resolveRegion,
     type MerchantRegion,
 } from '../merchantResolver';
@@ -67,7 +67,8 @@ export interface CombinedCheckoutSessionResult {
     invoiceId: string;
     orderId: string;
     orderRef: string;
-    sessionId: string;
+    /** Kashier's own session id, or null when the provider exposes none. */
+    sessionId: string | null;
     sessionUrl: string;
     /** The single authoritative total for the entire combined order. */
     amount: number;
@@ -148,7 +149,7 @@ async function buildIdempotentResult(
         invoiceId: invoice.id,
         orderId: order.id,
         orderRef: invoice.id,
-        sessionId: invoice.kashier_session_id,
+        sessionId: invoice.kashier_session_id ?? null,
         sessionUrl: invoice.kashier_session_url,
         amount: Number(invoice.amount ?? context.amount),
         currency: invoice.currency ?? context.currency,
@@ -172,7 +173,7 @@ export async function createCombinedCheckoutSession(
 
     // ── 1. Server-side region / merchant / currency resolution (never client) ──
     const region = resolveRegion({ country: input.country });
-    const merchant = getMerchantConfig(region);
+    const merchant = assertRegionCredentials(region);
     const currency = merchant.currency;
     const environment = merchant.mode;
 
@@ -398,13 +399,17 @@ export async function createCombinedCheckoutSession(
     });
 
     // ── 8. Link the session to the invoice, the order and the intent ─────────
+    // Provider-identifier columns carry KASHIER's session id only, and stay
+    // null when the provider exposes none. The application's own order
+    // reference belongs to kashier_order_id / invoices.id.
+    const providerSessionId = session.sessionId ?? null;
     const { error: linkError } = await supabase
         .from('invoices')
         .update({
-            kashier_session_id: session.sessionId,
+            kashier_session_id: providerSessionId,
             kashier_session_url: session.sessionUrl,
             kashier_order_id: orderRef,
-            gateway_reference_id: session.sessionId,
+            gateway_reference_id: providerSessionId,
             updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId);
@@ -417,15 +422,15 @@ export async function createCombinedCheckoutSession(
         .from('orders')
         .update({
             external_provider: 'kashier',
-            external_order_id: session.sessionId,
-            external_payment_reference: session.sessionId,
+            external_order_id: providerSessionId,
+            external_payment_reference: providerSessionId,
         })
         .eq('id', orderId);
 
     await supabase
         .from('payment_intents')
         .update({
-            provider_order_id: session.sessionId,
+            provider_order_id: providerSessionId,
             status: 'pending',
             metadata: { ...(intent.metadata || {}), session_url: session.sessionUrl },
             updated_at: new Date().toISOString(),
@@ -436,7 +441,7 @@ export async function createCombinedCheckoutSession(
         invoiceId,
         orderId,
         orderRef,
-        sessionId: session.sessionId,
+        sessionId: providerSessionId,
         sessionUrl: session.sessionUrl,
         amount,
         currency,

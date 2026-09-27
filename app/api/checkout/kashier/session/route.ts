@@ -213,7 +213,10 @@ export async function POST(req: Request) {
             );
         }
         if (error instanceof BlockedGateError) {
-            return NextResponse.json({ success: false, error: error.message, blocked: true }, { status: 409 });
+            return NextResponse.json(
+                { success: false, error: error.message, blocked: true, code: error.code },
+                { status: 409 },
+            );
         }
         if (error instanceof KashierSessionError) {
             console.error(`[CheckoutSession] payment_start_failed: ${error.message}`);

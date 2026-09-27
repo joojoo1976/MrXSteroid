@@ -139,12 +139,46 @@ export interface CreateKashierSessionParams {
 }
 
 export interface KashierPaymentSessionResponse {
-    sessionId: string;
+    /**
+     * Kashier's own session identifier, or null when the provider exposes none.
+     * Never the application's order reference: the order reference is `orderId`.
+     */
+    sessionId: string | null;
     sessionUrl: string;
     orderId?: string;
     amount?: number;
     currency?: string;
     status?: string;
+}
+
+const PROVIDER_SESSION_ID_FIELDS = ['sessionId', 'session_id', 'paymentSessionId', 'id'] as const;
+
+/**
+ * Resolves Kashier's own session identifier.
+ *
+ * The v3 session response does not reliably carry an explicit id field, so the
+ * identifier carried in the provider-hosted session URL is used as the
+ * authoritative fallback. Nothing is invented: when neither source yields a
+ * value the result is null and callers must persist null rather than a
+ * locally-generated reference.
+ */
+export function extractProviderSessionId(
+    data: Record<string, unknown>,
+    sessionUrl: string
+): string | null {
+    for (const field of PROVIDER_SESSION_ID_FIELDS) {
+        const value = data[field];
+        if (typeof value === 'string' && value.trim()) return value.trim();
+        if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    }
+    try {
+        const segments = new URL(sessionUrl).pathname.split('/').filter(Boolean);
+        const last = segments[segments.length - 1];
+        if (last) return decodeURIComponent(last);
+    } catch {
+        return null;
+    }
+    return null;
 }
 
 export class KashierGateway implements IPaymentGateway {
@@ -251,7 +285,6 @@ export class KashierGateway implements IPaymentGateway {
             if (res.ok) {
                 const data = await res.json();
                 const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
-                const sessionId = data.sessionId || data.id;
                 if (!sessionUrl) {
                     console.error(
                         `[KashierGateway:${this.config.merchantType}] session_create_missing_url orderRef=${params.orderRef} mode=${this.config.mode}`
@@ -261,7 +294,7 @@ export class KashierGateway implements IPaymentGateway {
                     );
                 }
                 return {
-                    sessionId: String(sessionId || params.orderRef),
+                    sessionId: extractProviderSessionId(data, String(sessionUrl)),
                     sessionUrl: String(sessionUrl),
                     orderId: params.orderRef,
                     amount: params.amount,
@@ -344,7 +377,7 @@ export class KashierGateway implements IPaymentGateway {
         return {
             redirectUrl: session.sessionUrl,
             externalReferenceId: params.invoiceId,
-            providerOrderId: session.sessionId,
+            providerOrderId: session.sessionId ?? undefined,
         };
     }
 

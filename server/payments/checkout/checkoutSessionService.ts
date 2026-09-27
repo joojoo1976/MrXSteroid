@@ -20,7 +20,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { KashierGateway, KashierSessionError } from '../gateways/KashierGateway';
 import {
-    getMerchantConfig,
+    assertRegionCredentials,
     resolveRegion,
     type MerchantRegion,
     type PaymentMethodId,
@@ -96,7 +96,11 @@ export interface CreateCheckoutSessionInput {
 export interface CreateCheckoutSessionResult {
     invoiceId: string;
     orderRef: string;
-    sessionId: string;
+    /**
+     * Kashier's own session id, or null when the provider exposes none.
+     * `orderRef` is the application's order reference and is never substituted.
+     */
+    sessionId: string | null;
     sessionUrl: string;
     amount: number;
     currency: string;
@@ -175,7 +179,10 @@ export async function createCheckoutSession(
 
     // ── 1. Server-side region / merchant / currency resolution (never client) ──
     const region = resolveRegion({ country: input.country });
-    const merchant = getMerchantConfig(region);
+    // Fail closed before any invoice/payment-intent row exists: a region whose
+    // merchant is not configured must never mint uncollectable records, and USD
+    // traffic must never be answered with the Egypt merchant.
+    const merchant = assertRegionCredentials(region);
     const currency = merchant.currency;
     const environment = merchant.mode;
     const isDigital = DIGITAL_TIERS.includes(input.tierId);
@@ -252,11 +259,13 @@ export async function createCheckoutSession(
     }
 
     if (existing?.id) {
-        if (existing.kashier_session_url && existing.kashier_session_id) {
+        // Replay is keyed on the hosted session URL, which the provider always
+        // returns. The session id is optional and must not gate the replay.
+        if (existing.kashier_session_url) {
             return {
                 invoiceId: existing.id,
                 orderRef: existing.id,
-                sessionId: existing.kashier_session_id,
+                sessionId: existing.kashier_session_id ?? null,
                 sessionUrl: existing.kashier_session_url,
                 amount: Number(existing.amount ?? amount),
                 currency: existing.currency ?? currency,
@@ -317,11 +326,11 @@ export async function createCheckoutSession(
                 if (winnerError || !winner) {
                     throw new Error(`[CheckoutSession] Idempotency race unresolvable: ${winnerError?.message}`);
                 }
-                if (winner.kashier_session_url && winner.kashier_session_id) {
+                if (winner.kashier_session_url) {
                     return {
                         invoiceId: winner.id,
                         orderRef: winner.id,
-                        sessionId: winner.kashier_session_id,
+                        sessionId: winner.kashier_session_id ?? null,
                         sessionUrl: winner.kashier_session_url,
                         amount: Number(winner.amount ?? amount),
                         currency: winner.currency ?? currency,
@@ -399,13 +408,18 @@ export async function createCheckoutSession(
     }
 
     // ── 7. Persist session linkage on invoice + payment intent ───────────────
+    // kashier_session_id / provider_order_id carry KASHIER's session id only.
+    // They stay null when the provider exposes none: the application's own
+    // order reference belongs to kashier_order_id and invoices.id, and must
+    // never be written into a provider-identifier column.
+    const providerSessionId = session.sessionId ?? null;
     const { error: linkError } = await supabase
         .from('invoices')
         .update({
-            kashier_session_id: session.sessionId,
+            kashier_session_id: providerSessionId,
             kashier_session_url: session.sessionUrl,
             kashier_order_id: orderRef,
-            gateway_reference_id: session.sessionId,
+            gateway_reference_id: providerSessionId,
             updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId);
@@ -416,7 +430,7 @@ export async function createCheckoutSession(
     await supabase
         .from('payment_intents')
         .update({
-            provider_order_id: session.sessionId,
+            provider_order_id: providerSessionId,
             status: 'pending',
             metadata: { ...(intent.metadata || {}), session_url: session.sessionUrl },
             updated_at: new Date().toISOString(),
