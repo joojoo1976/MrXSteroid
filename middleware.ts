@@ -7,14 +7,31 @@
  *    1. Rewrites /ar/* and /en/* to the underlying route (prefix stripped) so
  *       every page works under both locales without duplicating routes.
  *    2. Computes the effective language & unit-system from, in priority order:
- *         URL prefix  >  explicit user cookie  >  resolved cookie
- *         >  Vercel IP-country header  >  Accept-Language  >  default (ar)
+ *         Path Locale  (explicit URL intent — routing signal, highest)
+ *         >  explicit user cookie  (mrx_explicit_language)
+ *         >  resolved cookie      (mrx_locale — saved locale preference)
+ *         >  Vercel IP-country header (Geo-IP)
+ *         >  Accept-Language
+ *         >  English fallback
  *    3. Passes them to server components via request headers (x-locale /
  *       x-units) so the FIRST server render is already correct — no flash.
  *    4. Persists the resolved locale to a cookie for stable subsequent renders.
  *
  *  Manual overrides (set by the header controls) live in mrx_explicit_language
  *  / mrx_explicit_units cookies and always win over auto-detection.
+ *
+ *  ── T1 change (adopted D-01 / D-02) ────────────────────────────────────────
+ *  Before T1 the order was: Path > Explicit > Geo-IP > Saved > Browser > 'ar'.
+ *  Geo-IP sat ABOVE the saved-locale cookie, so a visitor whose request
+ *  originated from another country had a strong saved preference silently
+ *  displaced by IP geolocation (spec §11, §13, §91).
+ *
+ *  T1 reorders to: Path > Explicit > Saved > Geo-IP > Browser > 'en':
+ *    · the resolved-cookie branch now precedes the Geo-IP branch;
+ *    · DEFAULT_LANG changed from 'ar' to 'en' to match the approved
+ *      English fallback (spec §18).
+ *  Unit-system resolution is deliberately untouched (spec §100): it remains
+ *  explicit cookie > country > language, an independent concern.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { NextResponse } from 'next/server';
@@ -29,7 +46,8 @@ import {
     type UnitSystemLite,
 } from './shared/lib/localeMap';
 
-const DEFAULT_LANG: SupportedLang = 'ar';
+/** D-02: the approved final fallback is English, not Arabic. */
+const DEFAULT_LANG: SupportedLang = 'en';
 
 function normalizeUnit(raw: string | undefined | null): UnitSystemLite | null {
     return raw === 'metric' || raw === 'imperial' ? raw : null;
@@ -49,18 +67,18 @@ export function middleware(request: NextRequest) {
     const accept = pickAcceptLanguage(acceptHeader);
 
     // --- Language resolution (priority order) --------------------------------
-    // Manual choice and explicit URL prefix are supreme; then LIVE geo (IP
-    // country) so a returning visitor who changes country is re-detected,
-    // instead of being pinned to a stale auto-cookie.
+    // Manual choice and explicit URL prefix are supreme. The saved-locale cookie
+    // now precedes live geo so a returning visitor who merely travels with the
+    // request is not re-pinned to a geo-derived language (spec §11, §13, §91).
     let lang: SupportedLang;
     if (pathLocale) lang = pathLocale;                 // explicit URL intent wins
     else if (explicitLang) lang = explicitLang;        // user's manual choice
-    else if (country) lang = languageForCountry(country); // LIVE IP geolocation
-    else if (resolvedCookie) lang = resolvedCookie;    // previously resolved (no live geo)
+    else if (resolvedCookie) lang = resolvedCookie;    // saved locale preference
+    else if (country) lang = languageForCountry(country); // live IP geolocation
     else if (accept) lang = accept;                    // browser language (supported)
     else if (acceptHeader) lang = 'en';                // browser language present but
-                                                       // unsupported → English fallback
-    else lang = DEFAULT_LANG;                          // no signal at all
+                                                        // unsupported → English fallback
+    else lang = DEFAULT_LANG;                          // no signal at all → English
 
     // --- Unit-system resolution ----------------------------------------------
     let units: UnitSystemLite;

@@ -44,6 +44,7 @@ import { MockUser } from '../lib/mock-auth-service';
 import { ContentStrings, Page, Language } from '@/shared/types/types';
 import { md5 } from '../../shared/lib/cryptoUtils';
 import DynamicBrandLogo from './DynamicBrandLogo';
+import RuntimeLanguageSelector from './RuntimeLanguageSelector';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -341,6 +342,10 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             <Globe className="w-3.5 h-3.5" />
                             <span>{lang === Language.AR ? 'EN' : 'عربي'}</span>
                         </button>
+
+                        {/* L2 runtime machine-translation target. Separate from the L1 ar/en
+                            control above: it never changes the L1 language or the URL. */}
+                        <RuntimeLanguageSelector />
 
                         {/* Unit Switcher (calculators only) */}
                         {isCalculatorPage && (

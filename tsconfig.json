@@ -60,6 +60,7 @@
     "utils/**/*.tsx",
     "legacy-pages/**/*.tsx",
     "api/**/*.ts",
+    "scripts/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

@@ -40,6 +40,31 @@ const envSchema = z.object({
     // AI Configuration
     OPENAI_API_KEY: z.string().optional(),
     GEMINI_API_KEY: z.string().optional(),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Runtime Translation — Google Cloud Translation Advanced (spec §27, §28, §31)
+    //
+    // SECURITY: every value below is SERVER-ONLY. None of these are prefixed
+    // with VITE_/NEXT_PUBLIC_, so the Vite/Next client bundler cannot inline
+    // them into browser JavaScript. Do not add a public prefix (§28, §116).
+    // ═══════════════════════════════════════════════════════════════════════
+    GOOGLE_CLOUD_PROJECT_ID: z.string().optional(),
+    GOOGLE_CLOUD_TRANSLATION_LOCATION: z.string().default('global'),
+    /**
+     * Model id, NOT an API version. The general built-in NMT model is
+     * 'general/nmt'; 'v3' is the API version and is rejected by the provider.
+     */
+    GOOGLE_CLOUD_TRANSLATION_MODEL: z.string().default('general/nmt'),
+    /** Full service-account JSON key material. Server-only. */
+    GOOGLE_CLOUD_TRANSLATION_CREDENTIALS: z.string().optional(),
+    /** Optional pre-minted access token, used instead of the service-account grant. */
+    GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN: z.string().optional(),
+    /** §34 — glossary version; a change must invalidate incompatible cache entries. */
+    TRANSLATION_GLOSSARY_VERSION: z.string().default('none'),
+    /** §115 — circuit breaker: consecutive provider failures before fail-open. */
+    TRANSLATION_CIRCUIT_BREAKER_THRESHOLD: z.coerce.number().int().positive().default(5),
+    /** §114 — budget guard: characters per window before translation is refused. */
+    TRANSLATION_BUDGET_CHARS: z.coerce.number().int().positive().default(2_000_000),
 });
 
 const parseEnv = () => {
@@ -63,6 +88,17 @@ const parseEnv = () => {
         ENCRYPTION_KEY: readEnv('VITE_ENCRYPTION_KEY'),
         OPENAI_API_KEY: readEnv('VITE_OPENAI_API_KEY'),
         GEMINI_API_KEY: readEnv('VITE_GEMINI_API_KEY'),
+
+        // Runtime translation — read directly from process.env, never via a
+        // VITE_/NEXT_PUBLIC_ prefix, so credentials stay server-side (§28).
+        GOOGLE_CLOUD_PROJECT_ID: readEnv('GOOGLE_CLOUD_PROJECT_ID'),
+    GOOGLE_CLOUD_TRANSLATION_LOCATION: readEnv('GOOGLE_CLOUD_TRANSLATION_LOCATION'),
+    GOOGLE_CLOUD_TRANSLATION_MODEL: readEnv('GOOGLE_CLOUD_TRANSLATION_MODEL'),
+    GOOGLE_CLOUD_TRANSLATION_CREDENTIALS: readEnv('GOOGLE_CLOUD_TRANSLATION_CREDENTIALS'),
+        GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN: readEnv('GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN'),
+        TRANSLATION_GLOSSARY_VERSION: readEnv('TRANSLATION_GLOSSARY_VERSION'),
+        TRANSLATION_CIRCUIT_BREAKER_THRESHOLD: readEnv('TRANSLATION_CIRCUIT_BREAKER_THRESHOLD'),
+        TRANSLATION_BUDGET_CHARS: readEnv('TRANSLATION_BUDGET_CHARS'),
     };
 
     const parsed = envSchema.safeParse(processEnv);

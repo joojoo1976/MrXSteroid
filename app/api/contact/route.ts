@@ -11,6 +11,60 @@
 import { createClient } from '@supabase/supabase-js';
 import { createTransport } from 'nodemailer';
 import { corsPreflightResponse } from '../../../server/cors/corsConfig';
+import { normalizeLang, pickAcceptLanguage, type SupportedLang } from '../../../shared/lib/localeMap';
+
+/**
+ * Resolve the visitor's language for user-facing validation messages.
+ *
+ * Priority: explicit body.locale > x-locale set by the edge middleware >
+ * Accept-Language > 'en'.
+ *
+ * The terminal fallback is ENGLISH, not Arabic. This endpoint is a public API
+ * that predates the middleware `x-locale` header, so older clients (and any
+ * non-browser caller such as curl, a server-side form post, or a bot) send no
+ * locale signal at all. Falling back to Arabic silently changed every
+ * validation message those clients had been receiving in English, which is a
+ * backward-compatibility break for no benefit. English is the documented
+ * fallback; Arabic still wins whenever any signal actually says so.
+ */
+function resolveLocale(req: Request, bodyLocale: unknown): SupportedLang {
+    const fromBody = normalizeLang(typeof bodyLocale === 'string' ? bodyLocale : null);
+    if (fromBody) return fromBody;
+    const fromHeader = normalizeLang(req.headers.get('x-locale'));
+    if (fromHeader) return fromHeader;
+    return pickAcceptLanguage(req.headers.get('accept-language')) ?? 'en';
+}
+
+type ContactStrings = {
+    invalidJson: string;
+    nameTooShort: string;
+    invalidEmail: string;
+    subjectTooShort: string;
+    messageTooShort: string;
+    success: string;
+    softWarning: string;
+};
+
+const CONTACT_STRINGS: Record<SupportedLang, ContactStrings> = {
+    ar: {
+        invalidJson: 'صيغة الطلب غير صالحة.',
+        nameTooShort: 'الاسم يجب أن يكون حرفين على الأقل.',
+        invalidEmail: 'البريد الإلكتروني غير صالح.',
+        subjectTooShort: 'الموضوع يجب أن يكون حرفين على الأقل.',
+        messageTooShort: 'الرسالة يجب أن تكون 3 أحرف على الأقل.',
+        success: 'تم استلام رسالتك بنجاح.',
+        softWarning: 'تم استلام رسالتك مع تنبيه.',
+    },
+    en: {
+        invalidJson: 'Invalid JSON body',
+        nameTooShort: 'Name must be at least 2 characters',
+        invalidEmail: 'Invalid email address',
+        subjectTooShort: 'Subject must be at least 2 characters',
+        messageTooShort: 'Message must be at least 3 characters',
+        success: 'Transmission received successfully',
+        softWarning: 'Transmission received with soft warning',
+    },
+};
 
 const mapMissionType = (topic: string): string => {
     const map: Record<string, string> = {
@@ -135,8 +189,11 @@ export async function POST(req: Request) {
         try {
             body = await req.json();
         } catch {
-            return Response.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
+            const fallback = CONTACT_STRINGS[resolveLocale(req, undefined)];
+            return Response.json({ ok: false, error: fallback.invalidJson }, { status: 400 });
         }
+
+        const t = CONTACT_STRINGS[resolveLocale(req, body.locale)];
 
         const operatorName = String(body.name ?? body.operator_name ?? '').trim();
         const email = String(body.email ?? '').trim();
@@ -148,16 +205,16 @@ export async function POST(req: Request) {
 
         // Validation
         if (!operatorName || operatorName.length < 2) {
-            return Response.json({ ok: false, error: 'Name must be at least 2 characters' }, { status: 400 });
+            return Response.json({ ok: false, error: t.nameTooShort }, { status: 400 });
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return Response.json({ ok: false, error: 'Invalid email address' }, { status: 400 });
+            return Response.json({ ok: false, error: t.invalidEmail }, { status: 400 });
         }
         if (subject.length < 2) {
-            return Response.json({ ok: false, error: 'Subject must be at least 2 characters' }, { status: 400 });
+            return Response.json({ ok: false, error: t.subjectTooShort }, { status: 400 });
         }
         if (message.length < 3) {
-            return Response.json({ ok: false, error: 'Message must be at least 3 characters' }, { status: 400 });
+            return Response.json({ ok: false, error: t.messageTooShort }, { status: 400 });
         }
 
         const missionType = mapMissionType(missionTypeRaw);
@@ -311,7 +368,7 @@ export async function POST(req: Request) {
 
         return Response.json({
             ok: true,
-            message: 'Transmission received successfully',
+            message: t.success,
             saved: savedId !== null,
             emailSent,
             emailProvider,
@@ -325,7 +382,7 @@ export async function POST(req: Request) {
         console.error('💥 [Contact] Server error:', msg);
         return Response.json({
             ok: true,
-            message: 'Transmission received with soft warning',
+            message: CONTACT_STRINGS[resolveLocale(req, undefined)].softWarning,
             saved: false,
             emailSent: false,
             details: msg

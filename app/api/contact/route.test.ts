@@ -28,10 +28,15 @@ vi.mock('@supabase/supabase-js', () => ({
 
 import { POST, OPTIONS } from './route';
 
+/**
+ * These cases assert the English message text, so they request English
+ * explicitly. Localization itself (including the Arabic default) is covered by
+ * tests/unit/contactLocalization.test.ts.
+ */
 const req = (body: unknown) =>
     new Request('http://localhost/api/contact', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', 'x-locale': 'en' },
         body: typeof body === 'string' ? body : JSON.stringify(body),
     });
 
@@ -92,6 +97,38 @@ describe('/api/contact', () => {
         const res = await POST(req({ ...validBody, message: 'ab' }));
         expect(res.status).toBe(400);
         expect((await res.json()).error).toMatch(/Message/);
+    });
+
+    it('falls back to ENGLISH when no locale signal exists (backward compatible)', async () => {
+        // The terminal fallback is English, not Arabic. This endpoint predates
+        // the middleware `x-locale` header, so callers such as curl, a
+        // server-side form post, or a bot send no locale signal at all and have
+        // always received English. Arabic still wins on any real signal.
+        setEnv({});
+        const res = await POST(
+            new Request('http://localhost/api/contact', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ ...validBody, name: 'x' }),
+            })
+        );
+        expect(res.status).toBe(400);
+        const error = (await res.json()).error as string;
+        expect(error).not.toMatch(/[\u0600-\u06FF]/);
+        expect(error).toMatch(/at least 2 characters/i);
+    });
+
+    it('still answers in Arabic for an Arabic Accept-Language signal', async () => {
+        setEnv({});
+        const res = await POST(
+            new Request('http://localhost/api/contact', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'accept-language': 'ar-EG,ar;q=0.9' },
+                body: JSON.stringify({ ...validBody, name: 'x' }),
+            })
+        );
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toMatch(/[\u0600-\u06FF]/);
     });
 
     it('stores + sends via SMTP when configured (SendGrid absent)', async () => {

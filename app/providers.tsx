@@ -9,6 +9,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '../context/AuthContext';
 import { RegionProvider } from '../context/RegionContext';
 import { PreferencesProvider } from '../context/PreferencesProvider';
+import { RuntimeTranslationProvider } from '../context/RuntimeTranslationProvider';
 import PaymobModalHost from '../components/legacy/PaymobModalHost';
 
 interface RootProvidersProps {
@@ -24,9 +25,13 @@ export default function RootProviders({ children, initialLanguage, initialUnitSy
         <AuthProvider>
             <RegionProvider>
                 <PreferencesProvider initialLanguage={initialLanguage} initialUnitSystem={initialUnitSystem}>
-                    {children}
-                    <Toaster position="top-right" richColors />
-                    <PaymobModalHost />
+                    {/* L2 inline runtime translation. Mounted inside PreferencesProvider because it
+                        reads the L1 language to stay disabled whenever the page is in Arabic. */}
+                    <RuntimeTranslationProvider>
+                        {children}
+                        <Toaster position="top-right" richColors />
+                        <PaymobModalHost />
+                    </RuntimeTranslationProvider>
                 </PreferencesProvider>
             </RegionProvider>
         </AuthProvider>
