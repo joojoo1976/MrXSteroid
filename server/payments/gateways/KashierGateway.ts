@@ -8,7 +8,7 @@ import type {
     WebhookVerificationResult,
     PaymentDetailedStatus
 } from "./IPaymentGateway";
-import { resolveKashierPaymentOutcome } from "./kashierVerification";
+import { resolveKashierPaymentOutcome, buildKashierWebhookView } from "./kashierVerification";
 import { getMerchantConfig, BlockedGateError, type PaymentMethodId } from "../merchantResolver";
 import { buildKashierSessionRequest } from "../checkout/sessionRequest";
 
@@ -317,18 +317,19 @@ export class KashierGateway implements IPaymentGateway {
             };
         }
 
-        // 2. Resolve outcome with Kashier Verification Layer
+        // 2. Resolve outcome with Kashier Verification Layer. The documented
+        //    nested `data` envelope is unwrapped centrally so the status signal
+        //    and the provider identifiers always come from the same source.
+        const view = buildKashierWebhookView(payload);
         const resolution = resolveKashierPaymentOutcome(payload);
-        const rawInvoiceId = payload.orderId || payload.merchantOrderId;
-        const invoiceId = rawInvoiceId ? String(rawInvoiceId) : undefined;
-        const paidAmount = payload.amount ? parseFloat(String(payload.amount)) : undefined;
-        const transactionId = String(payload.transactionId || invoiceId || "");
+        const invoiceId = view.orderId;
+        const paidAmount = view.amount;
+        const transactionId = String(view.transactionId || invoiceId || "");
 
         // Phase 5 (C7): surface the provider's own status for de-dupe + replay detection.
         // C12: `data.hash` is an internal Kashier integrity field — explicitly NOT verified.
-        const rawProviderStatus = String(
-            payload.orderStatus ?? payload.status ?? payload.lastStatus ?? ""
-        ).toUpperCase();
+        // The status is the documented `data.status`, never the event name.
+        const rawProviderStatus = view.status;
         const rawEvent = String(payload.event ?? "").toLowerCase();
         const isReplay = rawEvent === "idempotency" || rawProviderStatus === "ORDER_PAID_BEFORE";
 

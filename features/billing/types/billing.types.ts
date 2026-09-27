@@ -10,7 +10,7 @@ export type CurrencyCode = 'USD' | 'EGP' | 'EUR' | 'GBP' | 'SAR' | 'AED';
 export type RegionalMarket = 'EG' | 'GLOBAL';
 export type SupportedLocale = 'ar' | 'en';
 
-export type PaymentGatewayType = 'stripe' | 'paymob' | 'paypal' | 'spaceremit' | 'instapay' | 'vodafone_cash';
+export type PaymentGatewayType = 'stripe' | 'paymob' | 'paypal' | 'spaceremit' | 'instapay' | 'vodafone_cash' | 'kashier';
 export type InvoiceStatus = 'pending' | 'success' | 'failed' | 'refunded' | 'cancelled';
 export type PlanTierId = 'digital' | 'bundle' | 'coaching' | 'digital_plus' | 'bundle_plus' | 'coaching_plus';
 
@@ -60,6 +60,17 @@ export interface PaymentMethodOption {
     supportedCurrencies: CurrencyCode[];
     supportedRegions: RegionalMarket[];
     isInstant: boolean;
+    /**
+     * Whether this method may appear in the customer-facing checkout selector.
+     *
+     * A method can be fully defined here and still be withheld from the UI when
+     * the provider is not approved for customer traffic. The server-side
+     * gateway remains fully implemented and fail-closed either way; this flag
+     * only controls what a customer is shown.
+     *
+     * Defaults to `true` when omitted.
+     */
+    isRenderableInCustomerUi?: boolean;
 }
 
 export interface InvoiceItem {

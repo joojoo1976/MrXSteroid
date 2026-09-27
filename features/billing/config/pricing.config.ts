@@ -20,7 +20,8 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         },
         coachingAddon: {
             EGP: 9999,
-            USD: 200.00
+            // D4: Global coaching add-on is 349.99 USD; 200.00 is cancelled.
+            USD: 349.99
         },
         featuresAr: [
             'الوصول الكامل لمحرك BioCalc الدقيق',
@@ -59,7 +60,7 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         },
         coachingAddon: {
             EGP: 9999,
-            USD: 200.00
+            USD: 349.99
         },
         featuresAr: [
             'جميع مزايا البروتوكول الرقمي بالكامل',
@@ -96,7 +97,7 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         },
         coachingAddon: {
             EGP: 9999,
-            USD: 200.00
+            USD: 349.99
         },
         featuresAr: [
             'كل ما تحتويه الباقة التكتيكية والكتاب المطبوع',
@@ -122,6 +123,23 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
 
 export const PAYMENT_METHODS: PaymentMethodOption[] = [
     // --- داخل مصر (EG) ---
+    // APPROVED EGYPT METHODS: Kashier + InstaPay.
+    // The two Paymob entries below stay defined (the gateway is not deleted and
+    // the server keeps rejecting Paymob fail-closed) but they are withheld from
+    // the customer selector: Paymob is NOT approved for Egypt customer traffic.
+    {
+        id: 'kashier_eg',
+        gateway: 'kashier',
+        nameAr: 'الدفع بالبطاقة البنكية (Kashier)',
+        nameEn: 'Bank Card Payment (Kashier)',
+        descriptionAr: 'دفع آمن وفوري بالجنيه المصري عبر بوابة Kashier المعتمدة، مع دعم كامل للمعاملات.',
+        descriptionEn: 'Secure instant EGP checkout through the Kashier gateway, fully transaction-backed.',
+        icon: 'CreditCard',
+        badge: 'معتمد وفوري',
+        supportedCurrencies: ['EGP'],
+        supportedRegions: ['EG'],
+        isInstant: true
+    },
     {
         id: 'paymob_card',
         gateway: 'paymob',
@@ -133,7 +151,9 @@ export const PAYMENT_METHODS: PaymentMethodOption[] = [
         badge: 'فوري وآمن',
         supportedCurrencies: ['EGP'],
         supportedRegions: ['EG'],
-        isInstant: true
+        isInstant: true,
+        // Not approved for customer traffic — defined, never rendered.
+        isRenderableInCustomerUi: false
     },
     {
         id: 'vodafone_cash',
@@ -146,7 +166,9 @@ export const PAYMENT_METHODS: PaymentMethodOption[] = [
         badge: 'الأكثر استخداماً في مصر',
         supportedCurrencies: ['EGP'],
         supportedRegions: ['EG'],
-        isInstant: true
+        isInstant: true,
+        // Not approved for customer traffic — defined, never rendered.
+        isRenderableInCustomerUi: false
     },
     {
         id: 'instapay',

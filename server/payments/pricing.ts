@@ -61,9 +61,18 @@ export const DEFAULT_PRICING: PricingConfig = {
         paperback:     { usd: 72.00, egp: 749 },
     },
     addons: {
-        coaching_plus: { usd: 200.00, egp: 9999 },
-        bundle_plus:   { usd: 200.00, egp: 9999 },
-        digital_plus:  { usd: 200.00, egp: 9999 },
+        // APPROVED BUSINESS PRICE — Global (USD) coaching add-on = 349.99 USD.
+        // Authority: PHASE1-DECISION-RECORD.md (D4); the previous 200.00 USD
+        // figure is cancelled. The Egypt add-on (9,999 EGP) is unchanged.
+        //
+        // These MUST equal COACHING_ADDON_USD / COACHING_ADDON_EGP in
+        // shared/lib/logic.ts. They are duplicated as literals rather than
+        // imported because logic.ts pulls in `sonner` and client types and must
+        // never be loaded by server code. tests/unit/coachingAddonUsdPrice.test.ts
+        // locks the two together and fails if they drift.
+        coaching_plus: { usd: 349.99, egp: 9999 },
+        bundle_plus:   { usd: 349.99, egp: 9999 },
+        digital_plus:  { usd: 349.99, egp: 9999 },
     },
     shipping: {
         // Local Egypt flat rate = 199 EGP (approved business price, D3).
@@ -427,6 +436,39 @@ export function computeAmount(cfg: PricingConfig, input: ComputeAmountInput): nu
 
     const total = baseUnit * quantity + addon + shipping - discount;
     return Math.max(0, round2(total));
+}
+
+/**
+ * Resolve the price of a coaching add-on ALONE, with no base product attached.
+ *
+ * WHY THIS EXISTS: `computeAmount` resolves a `*_plus` tier as
+ * `base × qty + addon`, because that is how the single-tier storefront sells a
+ * bundled product. A combined order instead lists the base product and the
+ * add-on as two separate lines, so pricing the add-on line through
+ * `computeAmount` would charge the base product a second time. This function
+ * returns only `cfg.addons[<plus tier>]` for the requested currency.
+ *
+ * The add-on is charged ONCE per order, mirroring `computeAmount`, which also
+ * adds the add-on a single time regardless of quantity.
+ *
+ * @throws ShippingConfigurationError is NOT used here; an unconfigured add-on is
+ *         a pricing-configuration gap and must fail closed rather than silently
+ *         resolve to 0 (a free add-on is a silent revenue and contract error).
+ */
+export function computeAddonAmount(
+    cfg: PricingConfig,
+    plusTierId: string,
+    currency: string
+): number {
+    const cur = toCurrencyKey(currency);
+    const addon = cfg.addons[plusTierId as TierId]?.[cur];
+    if (addon === undefined) {
+        throw new ShippingConfigurationError(
+            `No configured add-on price for "${plusTierId}" in ${String(cur).toUpperCase()}. ` +
+            'Configure the add-on before selling it; an unconfigured add-on must never be free.'
+        );
+    }
+    return round2(addon);
 }
 
 /**

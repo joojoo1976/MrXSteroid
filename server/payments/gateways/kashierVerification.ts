@@ -22,6 +22,91 @@ export interface KashierResolutionResult {
 }
 
 /**
+ * Kashier delivers the transaction envelope nested under `data`. The documented
+ * transaction-status signal is `data.status`, not the event name and not a
+ * top-level field. This is the single place that precedence is defined, so the
+ * outcome resolver and the gateway identifier extraction can never disagree
+ * about which field is authoritative.
+ */
+export function readKashierNestedData(
+    payload: Record<string, unknown>
+): Record<string, unknown> | null {
+    const data = payload.data;
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        return data as Record<string, unknown>;
+    }
+    return null;
+}
+
+/**
+ * A normalized read of a Kashier webhook body. Nested `data.*` values win over
+ * their top-level aliases because that is where Kashier documents them; the
+ * legacy top-level fields remain supported so historical payloads keep working.
+ */
+export interface KashierWebhookView {
+    status: string;
+    responseCode: string;
+    reconciliation: string;
+    orderId?: string;
+    transactionId?: string;
+    amount?: number;
+    currency?: string;
+    /** True when the status was read from the documented nested `data.status`. */
+    fromNestedEnvelope: boolean;
+}
+
+export function buildKashierWebhookView(payload: Record<string, unknown>): KashierWebhookView {
+    const nested = readKashierNestedData(payload);
+
+    const pick = (...candidates: unknown[]): unknown => {
+        for (const candidate of candidates) {
+            if (candidate !== undefined && candidate !== null && candidate !== '') {
+                return candidate;
+            }
+        }
+        return undefined;
+    };
+
+    const nestedStatus = String(nested?.status ?? '').toUpperCase().trim();
+    const legacyStatus = String(
+        pick(payload.orderStatus, payload.status, payload.lastStatus) ?? ''
+    ).toUpperCase().trim();
+
+    const amountRaw = pick(nested?.amount, payload.amount);
+    const parsedAmount = amountRaw === undefined ? undefined : Number(amountRaw);
+
+    return {
+        status: nestedStatus || legacyStatus,
+        responseCode: String(
+            pick(nested?.transactionResponseCode, nested?.responseCode, payload.transactionResponseCode, payload.responseCode) ?? ''
+        ).toUpperCase().trim(),
+        reconciliation: String(
+            pick(
+                nested?.reconcilation,
+                nested?.reconciliation,
+                payload.reconcilation,
+                payload.reconciliation,
+                payload.merchantWebhookReconciliation
+            ) ?? ''
+        ).trim(),
+        orderId: (() => {
+            const value = pick(nested?.orderId, nested?.merchantOrderId, payload.orderId, payload.merchantOrderId);
+            return value === undefined ? undefined : String(value);
+        })(),
+        transactionId: (() => {
+            const value = pick(nested?.transactionId, payload.transactionId);
+            return value === undefined ? undefined : String(value);
+        })(),
+        amount: parsedAmount !== undefined && Number.isFinite(parsedAmount) ? parsedAmount : undefined,
+        currency: (() => {
+            const value = pick(nested?.currency, payload.currency);
+            return value === undefined ? undefined : String(value);
+        })(),
+        fromNestedEnvelope: nestedStatus !== '',
+    };
+}
+
+/**
  * Resolves final payment outcome by evaluating primary transaction indicators
  * (status, lastStatus, transactionResponseCode) along with secondary
  * reconciliation verdict (reconcilation / reconciliation).
@@ -29,17 +114,14 @@ export interface KashierResolutionResult {
 export function resolveKashierPaymentOutcome(
     payload: Record<string, unknown>
 ): KashierResolutionResult {
-    // 1. Normalize primary status indicators
-    const rawStatus = String(payload.orderStatus || payload.status || payload.lastStatus || '').toUpperCase().trim();
-    const responseCode = String(payload.transactionResponseCode || payload.responseCode || '').toUpperCase().trim();
+    // 1. Normalize primary status indicators, reading the documented nested
+    //    `data.status` envelope first and falling back to legacy top-level fields.
+    const view = buildKashierWebhookView(payload);
+    const rawStatus = view.status;
+    const responseCode = view.responseCode;
 
     // 2. Normalize secondary reconciliation verdict (handle official Kashier spelling 'reconcilation')
-    const rawReconciliation = String(
-        payload.reconcilation ??
-        payload.reconciliation ??
-        payload.merchantWebhookReconciliation ??
-        ''
-    ).trim();
+    const rawReconciliation = view.reconciliation;
 
     const isReconciled = rawReconciliation.toUpperCase() === 'OK';
     const isReconciliationFailed = rawReconciliation.toUpperCase() === 'FAILED';

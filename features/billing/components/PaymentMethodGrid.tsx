@@ -19,7 +19,13 @@ export const PaymentMethodGrid: React.FC<PaymentMethodGridProps> = ({
     onSelectMethod,
     isRTL = true
 }) => {
-    const availableMethods = PAYMENT_METHODS.filter(m => m.supportedRegions.includes(market));
+    // Only methods the customer is actually allowed to see. A method that is
+    // defined but not approved for customer traffic sets
+    // `isRenderableInCustomerUi: false` and is filtered out here. The
+    // server-side gateway is unaffected and stays fail-closed.
+    const availableMethods = PAYMENT_METHODS.filter(
+        m => m.supportedRegions.includes(market) && m.isRenderableInCustomerUi !== false
+    );
 
     const renderIcon = (iconName: string) => {
         switch (iconName) {
