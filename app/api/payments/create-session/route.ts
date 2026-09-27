@@ -83,9 +83,13 @@ export async function POST(req: NextRequest) {
         if (err instanceof BlockedGateError) {
             return NextResponse.json({ error: err.message, gate: err.blockedItem }, { status: 503 });
         }
-        if (err instanceof KashierSessionError) {
-            return NextResponse.json({ error: err.message }, { status: err.status || 502 });
-        }
+          if (err instanceof KashierSessionError) {
+              console.error(`[CreateSession] payment_start_failed: ${err.message}`);
+              return NextResponse.json(
+                  { error: 'Payment could not be started. Please try again.' },
+                  { status: err.status && err.status >= 400 && err.status < 500 ? err.status : 502 },
+              );
+          }
 
         const message = err instanceof Error ? err.message : String(err);
         return NextResponse.json({ error: 'Failed to create payment session', details: message }, { status: 500 });

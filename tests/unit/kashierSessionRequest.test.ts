@@ -4,6 +4,7 @@ import {
     KASHIER_SESSION_REQUIRED_FIELDS,
     DEFAULT_MAX_FAILURE_ATTEMPTS,
     DEFAULT_SESSION_TTL_MINUTES,
+    KASHIER_DEFAULT_PAYMENT_TYPE,
 } from '../../server/payments/checkout/sessionRequest';
 
 const base = () => ({
@@ -13,7 +14,7 @@ const base = () => ({
     currency: 'EGP',
     merchantRedirect: 'https://www.mrxsteroid.com/api/payments/callback?txn=inv-abc-123',
     serverWebhook: 'https://www.mrxsteroid.com/api/payments/webhook',
-    customer: { name: 'Buyer', email: 'buyer@example.com' },
+    customer: { email: 'buyer@example.com' },
 });
 
 describe('buildKashierSessionRequest — K-2 C4/C6 session contract', () => {
@@ -80,7 +81,41 @@ describe('buildKashierSessionRequest — K-2 C4/C6 session contract', () => {
         expect(() => buildKashierSessionRequest({ ...base(), ...patch })).toThrow();
     });
 
-    it('rejects a customer without name/email', () => {
-        expect(() => buildKashierSessionRequest({ ...base(), customer: { name: '', email: '' } })).toThrow();
+    it('rejects a customer without email', () => {
+        expect(() => buildKashierSessionRequest({ ...base(), customer: { email: '' } })).toThrow();
+    });
+
+    it('sends the documented paymentType (credit) and lists it as required', () => {
+        const req = buildKashierSessionRequest(base());
+        expect(req.paymentType).toBe(KASHIER_DEFAULT_PAYMENT_TYPE);
+        expect(req.paymentType).toBe('credit');
+        expect(KASHIER_SESSION_REQUIRED_FIELDS).toContain('paymentType');
+    });
+
+    it('honours an explicit paymentType override', () => {
+        expect(buildKashierSessionRequest({ ...base(), paymentType: 'wallet' }).paymentType).toBe('wallet');
+    });
+
+    it('emits customer in the documented { email, reference } shape only', () => {
+        const req = buildKashierSessionRequest(base());
+        expect(req.customer).toEqual({ email: 'buyer@example.com', reference: 'inv-abc-123' });
+        expect(Object.keys(req.customer).sort()).toEqual(['email', 'reference']);
+    });
+
+    it('derives customer.reference from the stable order reference, never a fabricated id', () => {
+        const req = buildKashierSessionRequest({ ...base(), orderRef: 'inv-stable-uuid-9999' });
+        expect(req.customer.reference).toBe('inv-stable-uuid-9999');
+        expect(req.customer.reference).toBe(req.order);
+    });
+
+    it('leaves the merchant/order/amount/currency contract unchanged alongside the new fields', () => {
+        const req = buildKashierSessionRequest({ ...base(), amount: 948, currency: 'egp' });
+        expect(req.merchantId).toBe('MID-TEST-EG');
+        expect(req.order).toBe('inv-abc-123');
+        expect(req.amount).toBe('948.00');
+        expect(req.currency).toBe('EGP');
+        expect(req.type).toBe('one-time');
+        expect(req.serverWebhook).toBe('https://www.mrxsteroid.com/api/payments/webhook');
+        expect(req.merchantRedirect).toBe('https://www.mrxsteroid.com/api/payments/callback?txn=inv-abc-123');
     });
 });

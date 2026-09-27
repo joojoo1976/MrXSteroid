@@ -319,4 +319,39 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(supabase._db.invoices[0].kashier_session_url).toBeUndefined();
         expect(supabase._db.invoices[0].status).toBe('pending');
     });
+
+    it('a failed session mint moves the attempt to an explicit terminal state and keeps the records', async () => {
+        const supabase = createFakeSupabase();
+        const failingGateway = {
+            getGatewayName: () => 'KASHIER_EGYPT',
+            createInvoice: async () => { throw new Error('n/a'); },
+            verifyWebhook: async () => ({ valid: true }),
+            createPaymentSession: async () => { throw new Error('upstream down'); },
+        } as unknown as CheckoutSessionGateway;
+
+        await expect(createCheckoutSession(
+            { ...baseInput(), tierId: 'digital', idempotencyKey: 'k-term' },
+            { supabase, gatewayFactory: () => failingGateway, pricingRows: async () => [] },
+        )).rejects.toThrow('upstream down');
+
+        const intent = supabase._db.payment_intents[0];
+        const invoice = supabase._db.invoices[0];
+
+        expect(intent.status).toBe('failed');
+        expect(intent.status).not.toBe('initiated');
+        expect(intent.provider_order_id).toBeNull();
+        expect(intent.metadata.session_creation).toMatchObject({
+            outcome: 'failed',
+            error_type: 'Error',
+        });
+        expect(typeof intent.metadata.session_creation.failed_at).toBe('string');
+        expect(intent.metadata.session_creation.upstream_status).toBeNull();
+        expect(intent.metadata.tier).toBe('digital');
+
+        expect(invoice.payment_status).toBe('failed');
+        expect(invoice.kashier_session_id).toBeUndefined();
+
+        expect(supabase._db.invoices).toHaveLength(1);
+        expect(supabase._db.payment_intents).toHaveLength(1);
+    });
 });

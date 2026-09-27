@@ -28,6 +28,31 @@ export class KashierSessionError extends Error {
     }
 }
 
+const UPSTREAM_DETAIL_MAX_LENGTH = 120;
+const UPSTREAM_DETAIL_ALLOWED_KEYS = ['code', 'error', 'status'] as const;
+const UPSTREAM_DETAIL_CODE_PATTERN = /^[A-Za-z0-9_.:-]{1,64}$/;
+
+export function buildSanitizedUpstreamDetail(rawBody: string): string | undefined {
+    if (!rawBody) return undefined;
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(rawBody);
+    } catch {
+        return undefined;
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
+    const record = parsed as Record<string, unknown>;
+    const parts: string[] = [];
+    for (const key of UPSTREAM_DETAIL_ALLOWED_KEYS) {
+        const value = record[key];
+        if (typeof value !== 'string') continue;
+        const trimmed = value.trim();
+        if (!UPSTREAM_DETAIL_CODE_PATTERN.test(trimmed)) continue;
+        parts.push(`${key}=${trimmed}`);
+    }
+    return parts.length > 0 ? parts.join(' ').slice(0, UPSTREAM_DETAIL_MAX_LENGTH) : undefined;
+}
+
 export interface KashierConfig {
     merchantId: string;
     paymentApiKey: string;
@@ -136,7 +161,6 @@ export class KashierGateway implements IPaymentGateway {
             merchantRedirect: returnUrl,
             serverWebhook: webhookUrl,
             customer: {
-                name: params.customerName || "Customer",
                 email: params.customerEmail || "customer@example.com",
             },
             display: params.locale || "en",
@@ -166,8 +190,12 @@ export class KashierGateway implements IPaymentGateway {
                     signal: AbortSignal.timeout(10_000),
                 });
             } catch (err) {
+                const reason = err instanceof Error ? err.message : String(err);
+                console.error(
+                    `[KashierGateway:${this.config.merchantType}] session_create_unreachable orderRef=${params.orderRef} mode=${this.config.mode} reason=${reason}`
+                );
                 throw new KashierSessionError(
-                    `[KashierGateway:${this.config.merchantType}] Payment Session API unreachable: ${err instanceof Error ? err.message : String(err)}`
+                    `[KashierGateway:${this.config.merchantType}] Payment Session API unreachable (orderRef=${params.orderRef}).`
                 );
             }
 
@@ -176,8 +204,11 @@ export class KashierGateway implements IPaymentGateway {
                 const sessionUrl = data.sessionUrl || data.checkoutUrl || data.url;
                 const sessionId = data.sessionId || data.id;
                 if (!sessionUrl) {
+                    console.error(
+                        `[KashierGateway:${this.config.merchantType}] session_create_missing_url orderRef=${params.orderRef} mode=${this.config.mode}`
+                    );
                     throw new KashierSessionError(
-                        `[KashierGateway:${this.config.merchantType}] Payment Session response missing sessionUrl.`
+                        `[KashierGateway:${this.config.merchantType}] Payment Session response missing sessionUrl (orderRef=${params.orderRef}).`
                     );
                 }
                 return {
@@ -199,8 +230,12 @@ export class KashierGateway implements IPaymentGateway {
             );
         }
 
+        const sanitizedDetail = buildSanitizedUpstreamDetail(lastBody);
+        console.error(
+            `[KashierGateway:${this.config.merchantType}] session_create_failed orderRef=${params.orderRef} mode=${this.config.mode} status=${lastStatus ?? "n/a"}${sanitizedDetail ? ` detail="${sanitizedDetail}"` : ""}`
+        );
         throw new KashierSessionError(
-            `[KashierGateway:${this.config.merchantType}] Payment Session creation failed (HTTP ${lastStatus ?? "n/a"})${lastBody ? `: ${lastBody.slice(0, 300)}` : ""}`,
+            `[KashierGateway:${this.config.merchantType}] Payment Session creation failed (HTTP ${lastStatus ?? "n/a"}, orderRef=${params.orderRef}).`,
             lastStatus
         );
     }

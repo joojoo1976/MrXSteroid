@@ -16,6 +16,7 @@ import type { CurrencyCode, PaymentMethodId } from '../merchantResolver';
 export const KASHIER_SESSION_TYPE = 'one-time';
 export const DEFAULT_SESSION_TTL_MINUTES = 30;
 export const DEFAULT_MAX_FAILURE_ATTEMPTS = 3;
+export const KASHIER_DEFAULT_PAYMENT_TYPE = 'credit';
 
 export interface KashierSessionRequestInput {
     /** Merchant MID resolved server-side (never client supplied). */
@@ -29,11 +30,12 @@ export interface KashierSessionRequestInput {
     merchantRedirect: string;
     /** Per-merchant webhook destination (K-2 C6). */
     serverWebhook: string;
-    customer: { name: string; email: string };
+    customer: { email: string };
     display?: 'ar' | 'en';
     paymentMethods?: PaymentMethodId[];
     defaultMethod?: PaymentMethodId;
     type?: string;
+    paymentType?: string;
     expireAt?: string;
     maxFailureAttempts?: number;
 }
@@ -45,12 +47,13 @@ export interface KashierSessionRequest {
     amount: string;
     currency: string;
     type: string;
+    paymentType: string;
     expireAt: string;
     maxFailureAttempts: number;
     display: 'ar' | 'en';
     merchantRedirect: string;
     serverWebhook: string;
-    customer: { name: string; email: string };
+    customer: { email: string; reference: string };
     allowedMethods: string;
     defaultMethod: string;
 }
@@ -79,8 +82,8 @@ export function buildKashierSessionRequest(input: KashierSessionRequestInput): K
     if (!input.currency) throw new Error('[KashierSession] currency is required (server-resolved).');
     if (!input.merchantRedirect) throw new Error('[KashierSession] merchantRedirect is required.');
     if (!input.serverWebhook) throw new Error('[KashierSession] serverWebhook is required (K-2 C6).');
-    if (!input.customer?.email || !input.customer?.name) {
-        throw new Error('[KashierSession] customer name and email are required.');
+    if (!input.customer?.email) {
+        throw new Error('[KashierSession] customer email is required.');
     }
 
     const methods: PaymentMethodId[] = input.paymentMethods && input.paymentMethods.length > 0
@@ -99,12 +102,13 @@ export function buildKashierSessionRequest(input: KashierSessionRequestInput): K
         amount: input.amount.toFixed(2),
         currency: input.currency.toUpperCase(),
         type: input.type || process.env.KASHIER_SESSION_TYPE || KASHIER_SESSION_TYPE,
+        paymentType: input.paymentType || KASHIER_DEFAULT_PAYMENT_TYPE,
         expireAt,
         maxFailureAttempts: input.maxFailureAttempts ?? resolveMaxFailureAttempts(),
         display: input.display || 'en',
         merchantRedirect: input.merchantRedirect,
         serverWebhook: input.serverWebhook,
-        customer: { name: input.customer.name, email: input.customer.email },
+        customer: { email: input.customer.email, reference: input.orderRef },
         allowedMethods: methods.join(','),
         defaultMethod,
     };
@@ -119,6 +123,7 @@ export const KASHIER_SESSION_REQUIRED_FIELDS = [
     'order',
     'merchantId',
     'merchantRedirect',
+    'paymentType',
     'type',
     'display',
     'customer',

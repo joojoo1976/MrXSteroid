@@ -18,7 +18,7 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
-import { KashierGateway } from '../gateways/KashierGateway';
+import { KashierGateway, KashierSessionError } from '../gateways/KashierGateway';
 import {
     getMerchantConfig,
     resolveRegion,
@@ -125,6 +125,47 @@ function getSupabaseAdmin(): SupabaseClient {
 }
 
 const isUniqueViolation = (code?: string) => code === '23505';
+
+export async function markSessionCreationFailed(
+    supabase: SupabaseClient,
+    params: {
+        invoiceId: string;
+        intentId: string;
+        intentMetadata: Record<string, unknown>;
+        error: unknown;
+    },
+): Promise<void> {
+    const nowIso = new Date().toISOString();
+    const errorType = params.error instanceof Error ? params.error.name : 'UnknownError';
+    const upstreamStatus = params.error instanceof KashierSessionError ? params.error.status ?? null : null;
+
+    const failureMetadata = {
+        ...params.intentMetadata,
+        session_creation: {
+            outcome: 'failed',
+            failed_at: nowIso,
+            error_type: errorType,
+            upstream_status: upstreamStatus,
+        },
+    };
+
+    const { error: intentUpdateError } = await supabase
+        .from('payment_intents')
+        .update({ status: 'failed', metadata: failureMetadata, updated_at: nowIso })
+        .eq('id', params.intentId);
+
+    const { error: invoiceUpdateError } = await supabase
+        .from('invoices')
+        .update({ payment_status: 'failed', updated_at: nowIso })
+        .eq('id', params.invoiceId);
+
+    if (intentUpdateError || invoiceUpdateError) {
+        console.error(
+            `[CheckoutSession] session_creation_terminal_state_persist_failed orderRef=${params.invoiceId} ` +
+            `intentError=${intentUpdateError?.code ?? 'none'} invoiceError=${invoiceUpdateError?.code ?? 'none'}`
+        );
+    }
+}
 
 export async function createCheckoutSession(
     input: CreateCheckoutSessionInput,
@@ -334,17 +375,28 @@ export async function createCheckoutSession(
         ? deps.gatewayFactory(region)
         : new KashierGateway(region === 'EGYPT' ? 'egypt' : 'global');
 
-    const session = await gateway.createPaymentSession({
-        orderRef,
-        amount,
-        currency,
-        customerEmail: input.email,
-        customerName: input.fullName,
-        locale: input.locale || 'en',
-        paymentMethods: merchant.paymentMethods,
-        defaultMethod: merchant.defaultMethod,
-        serverWebhook: merchant.webhookUrl,
-    });
+    let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
+    try {
+        session = await gateway.createPaymentSession({
+            orderRef,
+            amount,
+            currency,
+            customerEmail: input.email,
+            customerName: input.fullName,
+            locale: input.locale || 'en',
+            paymentMethods: merchant.paymentMethods,
+            defaultMethod: merchant.defaultMethod,
+            serverWebhook: merchant.webhookUrl,
+        });
+    } catch (error) {
+        await markSessionCreationFailed(supabase, {
+            invoiceId,
+            intentId: intent.id,
+            intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
+            error,
+        });
+        throw error;
+    }
 
     // ── 7. Persist session linkage on invoice + payment intent ───────────────
     const { error: linkError } = await supabase

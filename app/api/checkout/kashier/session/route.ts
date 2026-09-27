@@ -216,7 +216,11 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: error.message, blocked: true }, { status: 409 });
         }
         if (error instanceof KashierSessionError) {
-            return NextResponse.json({ success: false, error: error.message }, { status: 502 });
+            console.error(`[CheckoutSession] payment_start_failed: ${error.message}`);
+            return NextResponse.json(
+                { success: false, error: 'Payment could not be started. Please try again.' },
+                { status: 502 },
+            );
         }
         const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('❌ [CheckoutSession] Unhandled error:', message);

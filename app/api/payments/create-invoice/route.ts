@@ -399,9 +399,10 @@ export async function POST(req: Request) {
                     if (err instanceof CheckoutConflictError) {
                         return json({ success: false, error: err.message, retry: true }, 409);
                     }
-                    if (err instanceof KashierSessionError) {
-                        return json({ success: false, error: err.message }, 502);
-                    }
+                      if (err instanceof KashierSessionError) {
+                          console.error(`[CreateInvoice] payment_start_failed: ${err.message}`);
+                          return json({ success: false, error: 'Payment could not be started. Please try again.' }, 502);
+                      }
                     if (err instanceof BlockedGateError) {
                         return json({ success: false, error: err.message, blocked: true }, 409);
                     }
