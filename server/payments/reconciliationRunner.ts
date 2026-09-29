@@ -380,12 +380,23 @@ export async function runReconciliation(
             });
 
             // Terminal outcomes stop the backoff clock.
-            switch (result.code) {
-                case 'applied':
-                    counts.resolved++;
-                    record.resolution = 'resolved';
-                    record.message = `${result.outcome} applied via shared state path`;
-                    break;
+                switch (result.code) {
+                    case 'applied':
+                        counts.resolved++;
+                        record.resolution = 'resolved';
+                        if (result.outcome === 'pending_claim') {
+                            // Settled financially, but the buyer was a guest so
+                            // product delivery is deferred behind a claim token.
+                            // Terminal for RECONCILIATION purposes: the capture is
+                            // fully settled and the claim is durable. The
+                            // entitlement is the guest's to redeem, not the
+                            // reconciler's to retry.
+                            record.message =
+                                'applied via shared state path; guest entitlement deferred pending order claim';
+                        } else {
+                            record.message = `${result.outcome} applied via shared state path`;
+                        }
+                        break;
                 case 'already_processed':
                     counts.already_processed++;
                     record.resolution = 'already_processed';

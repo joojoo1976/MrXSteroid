@@ -39,10 +39,17 @@ function createChainedSupaMock(invoiceRow: Record<string, any> | null = null, in
         }
         : null;
     const grossMinor = Math.round(Number(invoiceRow?.amount ?? 0) * 100);
-    const frozenSplits = grossMinor > 0
+    // A REAL gateway fee. §6.3 allocates on the NET basis N = G - F, so the
+    // frozen split must be grossMinor - FEE_MINOR. A fixture equal to the gross
+    // would encode the pre-fix defect and hide a regression.
+    const FEE_MINOR = 1500;
+    // Persisted on the intent: 6.3 worked example (NOT a commercial rate).
+    // Settlement reuses it verbatim via precedence 1.
+    if (paymentIntent) paymentIntent.gateway_fee_minor = FEE_MINOR;
+    const frozenSplits = grossMinor > FEE_MINOR
         ? [{
             beneficiary_id: 'v31-beneficiary',
-            allocated_amount_minor: grossMinor,
+            allocated_amount_minor: grossMinor - FEE_MINOR,
             destination_account: 'BENEFICIARY_PAYABLE',
         }]
         : [];
@@ -57,6 +64,8 @@ function createChainedSupaMock(invoiceRow: Record<string, any> | null = null, in
     chain.limit = vi.fn().mockReturnValue(chain);
     chain.in = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
+    chain.is = vi.fn().mockReturnValue(chain);
+    chain.gt = vi.fn().mockReturnValue(chain);
     chain.select = vi.fn((columns?: string) => { lastSelect = columns || ''; return chain; });
     chain.update = vi.fn().mockReturnValue(chain);
     chain.insert = vi.fn()
@@ -168,8 +177,14 @@ describe('POST /api/payments/webhook — Architecture v3.1 Integration', () => {
             })
         );
 
-        // Verify revenue split freeze was called
-        expect(freezeOrderSplitsMock).toHaveBeenCalledWith(currentSupaMock, 'inv-v31-01');
+        // Verify revenue split freeze was called WITH the real gateway fee.
+        // §6.3 allocates on N = G - F, so the fee must be threaded through;
+        // omitting it silently restores the gross-basis defect.
+        expect(freezeOrderSplitsMock).toHaveBeenCalledWith(
+            currentSupaMock,
+            'inv-v31-01',
+            1500
+        );
     });
 
     it('Scenario 2: orderStatus=SUCCESS + reconcilation=NA is treated as UNKNOWN without fulfilling order', async () => {

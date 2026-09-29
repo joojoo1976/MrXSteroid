@@ -13,18 +13,21 @@ import { SeoKeyword, SeoLanguage } from '../../../../server/seo/types';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * P0 fix (C1/C2): the update payload carries ONLY columns that actually exist
+ * in the production database (v1 schema — verified read-only 2026-09-28 via
+ * PostgREST: the v3-era timestamp/risk/score columns are absent there, and
+ * every write referencing them failed with 42703 while the run was still
+ * finalized 'completed'; full record:
+ * docs/superpowers/audits/2026-09-28-seo-audit.md). The v3 columns may only
+ * be re-introduced after the v3 migration is actually applied to production.
+ */
 interface KeywordUpdatePayload {
     id: string;
     score: number;
-    final_score: number;
-    raw_score: number;
     trend_status: string;
     score_components: Record<string, number>;
-    is_ymyl: boolean;
-    medical_risk_level: string;
-    requires_review: boolean;
-    last_analyzed_at: string;
-    last_scored_at: string;
+    last_observed_at: string;
 }
 
 interface SnapshotSummary {
@@ -155,6 +158,10 @@ export async function POST(req: NextRequest) {
         const currentMonth = now.getMonth() + 1;
 
         const updatedKeywords: KeywordUpdatePayload[] = [];
+        // P0 fix (C1): persistence failures are tracked, never swallowed.
+        const updateFailures: Array<{ id: string; message: string }> = [];
+        const snapshotFailures: Array<{ language: string; stage: string; message: string }> = [];
+        let ymylRequiresReviewCount = 0;
 
         for (const row of keywordsRows) {
             const lastObserved = row.last_observed_at ? new Date(row.last_observed_at) : now;
@@ -206,51 +213,48 @@ export async function POST(req: NextRequest) {
                 newTrendStatus = 'stable';
             }
 
-            // YMYL classification audit
+            // YMYL classification audit. P0 note: the is_ymyl /
+            // medical_risk_level / requires_review columns do not exist in the
+            // production database, so the classification cannot be persisted
+            // here; it is still computed and counted into the run summary so
+            // the audit trail stays alive (re-introduce persistence when the
+            // v3 migration is actually applied).
             const ymylClassification = classifyYmylRisk(row.original_keyword || row.keyword || '', row.language);
+            if (ymylClassification.requiresReview) ymylRequiresReviewCount++;
 
             const hasChanged =
-                Math.abs(Number(row.final_score ?? row.score) - v3ScoreResult.finalScore) > 0.5 ||
+                Math.abs(Number(row.score) - legacyScore) > 0.5 ||
                 row.trend_status !== newTrendStatus;
 
             if (hasChanged) {
-                updatedCount++;
-                if (newTrendStatus === 'retired') retiredCount++;
-
                 updatedKeywords.push({
                     id: row.id,
                     score: legacyScore,
-                    final_score: v3ScoreResult.finalScore,
-                    raw_score: v3ScoreResult.rawScore,
                     trend_status: newTrendStatus,
                     score_components: updatedComponents,
-                    is_ymyl: ymylClassification.isYmyl,
-                    medical_risk_level: ymylClassification.medicalRiskLevel,
-                    requires_review: ymylClassification.requiresReview,
-                    last_analyzed_at: now.toISOString(),
-                    last_scored_at: now.toISOString(),
+                    last_observed_at: now.toISOString(),
                 });
             }
         }
 
-        // Apply batch updates
-        if (updatedKeywords.length > 0) {
-            for (const item of updatedKeywords) {
-                await supabase
-                    .from('seo_keywords')
-                    .update({
-                        score: item.score,
-                        final_score: item.final_score,
-                        raw_score: item.raw_score,
-                        trend_status: item.trend_status,
-                        score_components: item.score_components,
-                        is_ymyl: item.is_ymyl,
-                        medical_risk_level: item.medical_risk_level,
-                        requires_review: item.requires_review,
-                        last_analyzed_at: item.last_analyzed_at,
-                        last_scored_at: item.last_scored_at,
-                    })
-                    .eq('id', item.id);
+        // Apply updates — P0 fix (C1): every update's error is checked and the
+        // counters only advance for writes that actually persisted.
+        for (const item of updatedKeywords) {
+            const { error: updateError } = await supabase
+                .from('seo_keywords')
+                .update({
+                    score: item.score,
+                    trend_status: item.trend_status,
+                    score_components: item.score_components,
+                    last_observed_at: item.last_observed_at,
+                })
+                .eq('id', item.id);
+
+            if (updateError) {
+                updateFailures.push({ id: item.id, message: updateError.message });
+            } else {
+                updatedCount++;
+                if (item.trend_status === 'retired') retiredCount++;
             }
         }
 
@@ -260,15 +264,24 @@ export async function POST(req: NextRequest) {
         const snapshotSummaries: Record<string, SnapshotSummary> = {};
 
         for (const lang of languages) {
-            const { data: langKeywords } = await supabase
-                .from('seo_keywords')
-                .select('*')
-                .eq('language', lang)
-                .eq('is_active', true)
-                .neq('trend_status', 'retired')
-                .order('score', { ascending: false });
+            try {
+                const { data: langKeywords, error: snapReadError } = await supabase
+                    .from('seo_keywords')
+                    .select('*')
+                    .eq('language', lang)
+                    .eq('is_active', true)
+                    .neq('trend_status', 'retired')
+                    .order('score', { ascending: false });
 
-            if (langKeywords && langKeywords.length > 0) {
+                if (snapReadError) {
+                    snapshotFailures.push({ language: lang, stage: 'read', message: snapReadError.message });
+                    continue;
+                }
+
+                // P0 fix: an empty corpus must NEVER replace the last good
+                // weekly snapshot — the upsert is skipped entirely.
+                if (!langKeywords || langKeywords.length === 0) continue;
+
                 const mapped: SeoKeyword[] = langKeywords.map(r => ({
                     id: r.id,
                     language: r.language,
@@ -278,7 +291,7 @@ export async function POST(req: NextRequest) {
                     cluster: r.cluster,
                     intent: r.intent,
                     trendStatus: r.trend_status,
-                    destinationPath: r.destination_path,
+                    destinationPath: r.destination_path || '/',
                     score: Number(r.score),
                     finalScore: Number(r.final_score ?? r.score),
                     scoreComponents: r.score_components || {},
@@ -289,7 +302,10 @@ export async function POST(req: NextRequest) {
 
                 const snapshot = buildSnapshotData(mapped, lang, year, weekNumber);
 
-                await supabase.from('seo_keyword_snapshots').upsert({
+                // Belt-and-braces: never persist an empty snapshot over a good one.
+                if (!snapshot || snapshot.totalKeywords === 0) continue;
+
+                const { error: snapUpsertError } = await supabase.from('seo_keyword_snapshots').upsert({
                     language: lang,
                     year,
                     week_number: weekNumber,
@@ -297,35 +313,82 @@ export async function POST(req: NextRequest) {
                     created_at: now.toISOString(),
                 }, { onConflict: 'year,week_number,language' });
 
+                if (snapUpsertError) {
+                    snapshotFailures.push({ language: lang, stage: 'upsert', message: snapUpsertError.message });
+                    continue;
+                }
+
                 snapshotSummaries[lang] = {
                     totalKeywords: snapshot.totalKeywords,
                     averageScore: snapshot.stats.averageScore,
                     trendingCount: snapshot.categories.trending.length,
                     toolsCount: snapshot.categories.tools.length,
                 };
+            } catch (e) {
+                // A malformed row (e.g. null destination) is isolated per
+                // language so the other language's snapshot still regenerates.
+                snapshotFailures.push({
+                    language: lang,
+                    stage: 'build',
+                    message: e instanceof Error ? e.message : String(e),
+                });
             }
         }
 
         const durationMs = Date.now() - startTime;
 
+        // P0 fix (C1): the run is finalized 'completed' ONLY when every
+        // persistence operation succeeded; any failure marks it 'failed' and
+        // the response reports the failure honestly (no fake success states).
+        const persistenceFailed = updateFailures.length > 0 || snapshotFailures.length > 0;
+
         // 5. Finalize audit run log
         if (runId) {
-            await supabase
+            const runPatch: Record<string, unknown> = {
+                status: persistenceFailed ? 'failed' : 'completed',
+                finished_at: new Date().toISOString(),
+                keywords_scanned: keywordsRows.length,
+                updated_keywords: updatedCount,
+                retired_keywords: retiredCount,
+                summary: {
+                    durationMs,
+                    snapshots: snapshotSummaries,
+                    year,
+                    weekNumber,
+                    ymylRequiresReviewCount,
+                    updateFailures: updateFailures.length,
+                    snapshotFailures: snapshotFailures.length,
+                },
+            };
+            if (persistenceFailed) {
+                runPatch.error_log = JSON.stringify({ updateFailures, snapshotFailures });
+            }
+            const { error: runUpdateError } = await supabase
                 .from('seo_keyword_refresh_runs')
-                .update({
-                    status: 'completed',
-                    finished_at: new Date().toISOString(),
-                    keywords_scanned: keywordsRows.length,
-                    updated_keywords: updatedCount,
-                    retired_keywords: retiredCount,
-                    summary: {
-                        durationMs,
-                        snapshots: snapshotSummaries,
-                        year,
-                        weekNumber,
-                    },
-                })
+                .update(runPatch)
                 .eq('id', runId);
+            if (runUpdateError) {
+                console.error('[SEO Refresh] Failed to finalize run log:', runUpdateError.message);
+            }
+        }
+
+        if (persistenceFailed) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'SEO refresh persistence failure',
+                    details: { updateFailures, snapshotFailures },
+                    runId,
+                    durationMs,
+                    keywordsScanned: keywordsRows.length,
+                    keywordsUpdated: updatedCount,
+                    keywordsRetired: retiredCount,
+                    snapshots: snapshotSummaries,
+                    year,
+                    weekNumber,
+                },
+                { status: 500 }
+            );
         }
 
         return NextResponse.json({

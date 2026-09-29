@@ -6,6 +6,16 @@ import { SeoLanguage } from '../../../../server/seo/types';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * P0 fix (H1): the report selects ONLY columns that actually exist in the
+ * production database (v1 schema — verified read-only 2026-09-28 via
+ * PostgREST: the six v3-era columns verified absent in production rejected
+ * the whole select with 42703 and silently forced the report into an
+ * unlabeled fallback; full record:
+ * docs/superpowers/audits/2026-09-28-seo-audit.md).
+ * `is_ymyl` is `boolean | null`: null means unclassified — the report must
+ * never present unclassified data as `false`.
+ */
 interface KeywordReportItem {
     id: string;
     keyword: string;
@@ -18,11 +28,11 @@ interface KeywordReportItem {
     final_score?: number;
     confidence_score?: number;
     lifecycle_status?: string;
-    is_ymyl?: boolean;
+    is_ymyl?: boolean | null;
     requires_review?: boolean;
     trend_status: string;
     is_active: boolean;
-    last_analyzed_at?: string;
+    fallback?: boolean;
 }
 
 interface SnapshotReportItem {
@@ -62,18 +72,26 @@ export async function GET(req: NextRequest) {
         let competitorsCount = 0;
         let seasonalEventsCount = 0;
         let cannibalizationAlertsCount = 0;
+        // P0 fix (H1): keyword-query failures are captured so the fallback is
+        // never mistaken for live database state.
+        let kwErrorMessage: string | null = null;
 
         if (supabase) {
+            // P0 fix (H1): only production-existing columns are requested.
             let kwQuery = supabase
                 .from('seo_keywords')
-                .select('id, original_keyword, normalized_keyword, language, cluster, intent, destination_path, score, final_score, confidence_score, lifecycle_status, is_ymyl, requires_review, trend_status, is_active, last_analyzed_at')
+                .select('id, original_keyword, normalized_keyword, language, cluster, intent, destination_path, score, trend_status, is_active')
                 .eq('is_active', true);
 
             if (lang === 'ar' || lang === 'en') {
                 kwQuery = kwQuery.eq('language', lang);
             }
 
-            const { data: keywords } = await kwQuery;
+            const { data: keywords, error: kwErr } = await kwQuery;
+            if (kwErr) {
+                kwErrorMessage = kwErr.message;
+                console.warn('[SEO Report] keywords query failed:', kwErr.message);
+            }
             if (keywords && keywords.length > 0) {
                 allKeywords = keywords.map(k => ({
                     ...k,
@@ -82,21 +100,27 @@ export async function GET(req: NextRequest) {
             }
 
             // Snapshots
-            const { data: snapData } = await supabase
+            const { data: snapData, error: snapError } = await supabase
                 .from('seo_keyword_snapshots')
                 .select('language, year, week_number, created_at, snapshot_data')
                 .eq('year', year)
                 .eq('week_number', weekNumber);
+            if (snapError) {
+                console.warn('[SEO Report] snapshots query failed:', snapError.message);
+            }
             snapshots = (snapData || []) as SnapshotReportItem[];
 
             // Telemetry: Internal search logs (Zero PII)
             const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-            const { data: searchLogs } = await supabase
+            const { data: searchLogs, error: searchLogsError } = await supabase
                 .from('seo_internal_search_logs')
                 .select('query, normalized_query, language, created_at')
                 .gte('created_at', fourteenDaysAgo)
                 .order('created_at', { ascending: false })
                 .limit(100);
+            if (searchLogsError) {
+                console.warn('[SEO Report] search logs query failed:', searchLogsError.message);
+            }
             recentSearches = (searchLogs || []) as SearchLogItem[];
 
             // Multi-system metadata counts
@@ -116,7 +140,15 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Tier 3 fallback if no database rows or client unavailable
+        // Tier 3 fallback if no database rows or client unavailable.
+        // P0 fix (H1): fallback data is the curated baseline seed corpus, never
+        // live database state — it must be explicitly labeled as such.
+        const usedFallback = !supabase || Boolean(kwErrorMessage) || allKeywords.length === 0;
+        const fallbackReason = !supabase
+            ? 'database_unavailable'
+            : kwErrorMessage
+                ? 'database_error'
+                : 'database_empty';
         if (allKeywords.length === 0) {
             const enSeeds = (lang === 'ar') ? [] : getBaselineKeywords('en');
             const arSeeds = (lang === 'en') ? [] : getBaselineKeywords('ar');
@@ -132,7 +164,8 @@ export async function GET(req: NextRequest) {
                 final_score: k.score,
                 confidence_score: 55,
                 lifecycle_status: 'active',
-                is_ymyl: false,
+                fallback: true,
+                is_ymyl: null,
                 requires_review: false,
                 trend_status: k.trendStatus,
                 is_active: true,
@@ -148,8 +181,13 @@ export async function GET(req: NextRequest) {
             ? Math.round((allKeywords.reduce((acc, k) => acc + Number(k.final_score ?? k.score ?? 0), 0) / totalCount) * 10) / 10
             : 0;
 
-        const avgConfidence = totalCount > 0
-            ? Math.round((allKeywords.reduce((acc, k) => acc + Number(k.confidence_score ?? 70), 0) / totalCount) * 10) / 10
+        // P0 fix (H1): average confidence over rows that actually carry the
+        // field — absent values must not fabricate a neutral 70.
+        const confidenceValues = allKeywords
+            .map(k => k.confidence_score)
+            .filter((v): v is number => typeof v === 'number');
+        const avgConfidence = confidenceValues.length > 0
+            ? Math.round((confidenceValues.reduce((acc, v) => acc + v, 0) / confidenceValues.length) * 10) / 10
             : 0;
 
         const trendBreakdown = {
@@ -187,6 +225,11 @@ export async function GET(req: NextRequest) {
             year,
             weekNumber,
             platformVersion: 'v3.0',
+            // P0 fix (H1): the provenance of this payload is explicit — an
+            // admin must never mistake fallback seeds for the live corpus.
+            dataSource: usedFallback ? 'fallback' : 'database',
+            fallbackUsed: usedFallback,
+            fallbackReason: usedFallback ? fallbackReason : null,
             summary: {
                 totalActiveKeywords: totalCount,
                 englishCount: enCount,

@@ -45,6 +45,21 @@ const seedIntent = (row: Record<string, unknown>) => {
 const seedEvent = (row: Record<string, unknown>) => {
     (ib.tables.webhook_events ??= []).push(row);
 };
+/**
+ * The §6.3 gateway fee for a capture. Settlement fails closed when no fee
+ * source exists, so a successful capture must state its fee somewhere real —
+ * here it is persisted on the intent (precedence 1), which is exactly the
+ * production replay-determinism path a reconciliation pass takes.
+ *
+ * There is deliberately no region or 'GLOBAL' default fee: the region-based fee
+ * model was removed because a region cannot tell you what Kashier charged for
+ * a specific payment method.
+ */
+const seedFeePolicy = (fixedMinor: number) => {
+    for (const intent of ib.tables.payment_intents ?? []) {
+        intent.gateway_fee_minor = fixedMinor;
+    }
+};
 
 async function loadRunner() {
     const mod = await import('../../server/payments/reconciliationRunner');
@@ -75,8 +90,11 @@ describe('Phase 7 — active reconciliation runner', () => {
     it('resolves a stale pending invoice via the shared state path on provider SUCCESS', async () => {
         seedInvoice({ id: 'inv-r1', status: 'pending', payment_status: 'pending', user_id: 'u1', tier_id: 't1', created_at: agoMinutes(40) });
         seedIntent({ id: 'pi-1', invoice_id: 'inv-r1', attempt_number: 1, is_current: true, status: 'initiated', provider_order_id: 'sess-1', provider_status: null, created_at: agoMinutes(38) });
+        // G = 100 EGP = 10000 minor; contracted F = 300; the frozen allocation is
+        // therefore the NET basis N = 9700, not the gross.
+        seedFeePolicy(300);
         (ib.tables.order_splits ??= []).push({
-            invoice_id: 'inv-r1', beneficiary_id: 'u1', allocated_amount_minor: 10000,
+            invoice_id: 'inv-r1', beneficiary_id: 'u1', allocated_amount_minor: 9700,
             destination_account: 'BENEFICIARY_PAYABLE', frozen: true,
         });
 

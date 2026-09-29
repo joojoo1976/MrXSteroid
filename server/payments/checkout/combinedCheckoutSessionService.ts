@@ -40,7 +40,9 @@ import {
 import {
     CheckoutConflictError,
     CheckoutValidationError,
+    markSessionCreationFailed,
     type CheckoutShippingAddress,
+    type CheckoutSessionGateway,
 } from './checkoutSessionService';
 
 export type { CombinedLineInput };
@@ -132,7 +134,7 @@ async function buildIdempotentResult(
         currency: string;
     }
 ): Promise<CombinedCheckoutSessionResult | null> {
-    if (!invoice.kashier_session_url || !invoice.kashier_session_id) return null;
+    if (!invoice.kashier_session_url) return null;
 
     const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -386,21 +388,33 @@ export async function createCombinedCheckoutSession(
         ? deps.gatewayFactory(region)
         : new KashierGateway(region === 'EGYPT' ? 'egypt' : 'global');
 
-    const session = await gateway.createPaymentSession({
-        orderRef,
-        amount,
-        currency,
-        customerEmail: input.email,
-        customerName: input.fullName,
-        locale: input.locale || 'en',
-        paymentMethods: merchant.paymentMethods,
-        defaultMethod: merchant.defaultMethod,
-        serverWebhook: merchant.webhookUrl,
-    });
+    let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
+    try {
+        session = await gateway.createPaymentSession({
+            orderRef,
+            amount,
+            currency,
+            customerEmail: input.email,
+            customerName: input.fullName,
+            locale: input.locale || 'en',
+            paymentMethods: merchant.paymentMethods,
+            defaultMethod: merchant.defaultMethod,
+            serverWebhook: merchant.webhookUrl,
+        });
+    } catch (error) {
+        await markSessionCreationFailed(supabase, {
+            invoiceId,
+            intentId: intent.id,
+            intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
+            error,
+        });
+        throw error;
+    }
 
     // ── 8. Link the session to the invoice, the order and the intent ─────────
     // Provider-identifier columns carry KASHIER's session id only, and stay
     // null when the provider exposes none. The application's own order
+    // reference belongs to kashier_order_id / invoices.id.
     // reference belongs to kashier_order_id / invoices.id.
     const providerSessionId = session.sessionId ?? null;
     const { error: linkError } = await supabase
@@ -421,7 +435,6 @@ export async function createCombinedCheckoutSession(
     await supabase
         .from('orders')
         .update({
-            external_provider: 'kashier',
             external_order_id: providerSessionId,
             external_payment_reference: providerSessionId,
         })

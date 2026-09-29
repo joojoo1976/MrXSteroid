@@ -11,7 +11,7 @@ const CANONICAL = 'https://mrxsteroid.com/smarttools/timeline';
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'Transformation Timeline Engine | Mr. X-Steroid',
+        title: 'Transformation Timeline Engine',
         description:
             'محرك جدول التغيير الزمني للتحول البدني — محاكاة أسبوعية لمسار تركيبة الجسم (الوزن، الكتلة العضلية، الكتلة الدهنية) مع التكيف الأيضي وتحذير الهضبة وفق كتاب Mr. X-Steroid.',
         alternates: {

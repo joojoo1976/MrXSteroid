@@ -60,6 +60,10 @@ export function createInMemorySupabase(): InMemorySupabase {
 
         chain.select = function (this: any) { return this; };
         chain.eq = function (this: any, col: string, val: unknown) { state.match[col] = val; return this; };
+        // `is(col, null)` / `gt(col, v)` support the settlement path's claim
+        // expiry CAS and fee-policy lookups.
+        chain.is = function (this: any, col: string, val: unknown) { state.match[col] = val; return this; };
+        chain.gt = function (this: any, col: string, val: unknown) { state.match[col] = val; return this; };
         chain.in = function (this: any, col: string, vals: unknown[]) { state.match[col] = vals; return this; };
         chain.order = function (this: any, col: string, opts?: { ascending?: boolean }) {
             state.order = { col, dir: opts?.ascending === false ? 'desc' : 'asc' };

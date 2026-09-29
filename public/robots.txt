@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
 
+# Crawl-blocked surfaces (admin/auth/diagnostic/API) — H4 decision (owner-approved).
+# These are NOT the noindex-only pages: pages that must be DE-indexed
+# (/login, /signup, /reset-password, /diagnostic, /checkout, /success,
+# /cancel, /payment-pending, /claim-order, /dashboard, /profile) stay
+# crawlable so Google can see their noindex meta.
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin-analytics
+Disallow: /auth/callback
+Disallow: /payment-diagnostic
+
 Sitemap: https://mrxsteroid.com/sitemap.xml

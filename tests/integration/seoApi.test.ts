@@ -179,8 +179,10 @@ describe('Live SEO API Integration Suite', () => {
 
             for (const opp of data.opportunities) {
                 expect(opp.keyword).toBeDefined();
-                expect(opp.opportunityScore).toBeGreaterThanOrEqual(0);
-                expect(opp.opportunityScore).toBeLessThanOrEqual(100);
+                // P1 (H2): no fabricated metrics — the unbacked numbers are null.
+                expect(opp.opportunityScore).toBeNull();
+                expect(opp.searchVolumeEstimate).toBeNull();
+                expect(opp.confidence).toBeNull();
                 expect(opp.recommendedDestination.startsWith('/')).toBe(true);
             }
         });

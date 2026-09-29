@@ -11,7 +11,7 @@ const CANONICAL = 'https://mrxsteroid.com/smarttools/pct-timing';
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'PCT Timing & Compound Washout Engine | Mr. X-Steroid',
+        title: 'PCT Timing & Compound Washout Engine',
         description:
             'محرك توقيت تطهير المركبات وجدولة علاج ما بعد الدورة (PCT) وفق نصف العمر الأُسّي ومنهجية كتاب Mr. X-Steroid.',
         alternates: {

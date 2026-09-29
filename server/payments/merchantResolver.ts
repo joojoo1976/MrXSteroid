@@ -14,7 +14,12 @@ export type CurrencyCode = 'EGP' | 'USD';
 export type PaymentMethodId = 'card' | 'wallet';
 export type Mode = 'test' | 'live';
 
-export type CanonicalProductId = 'MRX-PROTOCOL' | 'MRX-TACTICAL' | 'MRX-SMART-PRO';
+export type CanonicalProductId =
+    | 'MRX-PROTOCOL'
+    | 'MRX-TACTICAL'
+    | 'MRX-SMART-PRO'
+    | 'MRX-COACHING-ADDON'
+    | 'MRX-CONSULTATION';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ERROR TYPE — blocked register items must raise BlockedGateError (v5.1 §2)
@@ -104,7 +109,7 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         id: 'MRX-PROTOCOL',
         slug: 'protocol',
         nameAr: 'البروتوكول الرقمي',
-        nameEn: 'The Digital Protocol',
+        nameEn: 'Digital Protocol',
         egyptAmount: 499,
         egyptBaseAmount: 499,
         globalAmount: 49.99,
@@ -130,6 +135,26 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         globalAmount: 82.00,   // Base product USD price without Coaching Addon
         globalPlaceholder: 'USD_PRICE_3',
     },
+    'MRX-COACHING-ADDON': {
+        id: 'MRX-COACHING-ADDON',
+        slug: 'coaching-addon',
+        nameAr: 'تدريب 1-على-1 دورة كاملة',
+        nameEn: 'VIP 1-on-1 Anabolic Cycle Coaching (1 Full Cycle)',
+        egyptAmount: 0, // Not sold separately in Egypt
+        egyptBaseAmount: 0,
+        globalAmount: 349.99,
+        globalPlaceholder: 'USD_PRICE_COACHING',
+    },
+    'MRX-CONSULTATION': {
+        id: 'MRX-CONSULTATION',
+        slug: 'consultation',
+        nameAr: 'جلسة تقييم واستشارة مخصصة',
+        nameEn: 'Custom Consultation & Assessment Session — Mr. X-Steroid',
+        egyptAmount: 0, // Not sold separately in Egypt
+        egyptBaseAmount: 0,
+        globalAmount: 30.00,
+        globalPlaceholder: 'USD_PRICE_CONSULTATION',
+    },
 };
 
 export const DEFAULT_REGION_METHODS: Record<MerchantRegion, { paymentMethods: PaymentMethodId[]; defaultMethod: PaymentMethodId }> = {
@@ -146,6 +171,8 @@ const PRODUCT_ENV_KEY: Record<CanonicalProductId, string> = {
     'MRX-PROTOCOL': 'MRX_PROTOCOL',
     'MRX-TACTICAL': 'MRX_TACTICAL',
     'MRX-SMART-PRO': 'MRX_SMART_PRO',
+    'MRX-COACHING-ADDON': 'MRX_COACHING_ADDON',
+    'MRX-CONSULTATION': 'MRX_CONSULTATION',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -316,10 +343,17 @@ export function resolvePaymentContext(input: ResolvePaymentContextInput = {}): P
  * canonical catalog. GLOBAL never invents a price: it returns the placeholder
  * label (USD_PRICE_*) unless an official env override exists
  * (PRICING_GLOBAL_MRX_<PRODUCT>_USD).
+ *
+ * For GLOBAL-only add-ons (coaching, consultation), Egypt returns null amount
+ * to indicate not available in Egypt market.
  */
 export function resolveRegionalPrice(productId: CanonicalProductId, region: MerchantRegion): RegionalPrice {
     const def = CANONICAL_PRODUCTS[productId];
     if (region === 'EGYPT') {
+        // Coaching addon and consultation are GLOBAL-only (egyptAmount = 0)
+        if (def.egyptAmount === 0) {
+            return { currency: 'EGP', amount: null, placeholder: 'NOT_AVAILABLE_IN_EGYPT' };
+        }
         return { currency: 'EGP', amount: def.egyptAmount };
     }
     const override = Number(process.env[`PRICING_GLOBAL_${PRODUCT_ENV_KEY[productId]}_USD`]);
@@ -332,8 +366,31 @@ export function resolveRegionalPrice(productId: CanonicalProductId, region: Merc
 /**
  * v5.1 §31 — Kashier SKU mapping. KASHIER SKU ≠ CANONICAL PRODUCT:
  *   Egypt → MRX-EG-<SKU> · Global → MRX-GL-<SKU>
+ *
+ * Note: Coaching addon and consultation are not sold via Kashier (GLOBAL-only via Fourthwall).
+ * Returns null for unsupported combinations.
  */
-export function resolveKashierSku(productId: CanonicalProductId, region: MerchantRegion): string {
+export function resolveKashierSku(productId: CanonicalProductId, region: MerchantRegion): string | null {
+    const def = CANONICAL_PRODUCTS[productId];
+    if (region === 'EGYPT' && def.egyptAmount === 0) {
+        return null; // Not available in Egypt via Kashier
+    }
     const short = productId.replace('MRX-', '');
     return `${region === 'EGYPT' ? 'MRX-EG-' : 'MRX-GL-'}${short}`;
+}
+
+/**
+ * Fourthwall SKU mapping for GLOBAL/USD products.
+ * Maps canonical products to Fourthwall product IDs (from environment).
+ */
+export function resolveFourthwallProductId(productId: CanonicalProductId): string | null {
+    const envMap: Record<CanonicalProductId, string> = {
+        'MRX-PROTOCOL': 'FOURTHWALL_PRODUCT_DIGITAL_BOOK_ID',
+        'MRX-TACTICAL': 'FOURTHWALL_PRODUCT_PAPERBACK_ID',
+        'MRX-SMART-PRO': 'FOURTHWALL_PRODUCT_HARDCOVER_ID',
+        'MRX-COACHING-ADDON': 'FOURTHWALL_PRODUCT_COACHING_ID',
+        'MRX-CONSULTATION': 'FOURTHWALL_PRODUCT_CONSULTATION_ID',
+    };
+    const envKey = envMap[productId];
+    return envKey ? process.env[envKey] || null : null;
 }

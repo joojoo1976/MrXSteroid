@@ -108,6 +108,10 @@ export default defineConfig({
                         'lib/translation/**/*.dom.test.ts',
                         'context/**/*.test.tsx',
                         'shared/ui/**/*.test.tsx',
+                        // The guest-claim page (`/claim-order`) is a legacy page
+                        // with a DOM + fetch + auth lifecycle, so its suite runs
+                        // here. Not matched by any node-project include.
+                        'legacy-pages/**/*.test.tsx',
                     ],
                     exclude: ['node_modules', '_legacy_src', '.next'],
                 },

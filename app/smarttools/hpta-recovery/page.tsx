@@ -11,7 +11,7 @@ const CANONICAL = 'https://mrxsteroid.com/smarttools/hpta-recovery';
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'HPTA Suppression & Recovery Modeler | Mr. X-Steroid',
+        title: 'HPTA Suppression & Recovery Modeler',
         description:
             'محاكي التثبيط المحوري واستعادة نشاط الغدة النخامية والخصية الزمني بعد الكورسات الهرمونية وفق كتاب Mr. X-Steroid.',
         alternates: {

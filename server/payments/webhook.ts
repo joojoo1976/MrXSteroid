@@ -387,6 +387,24 @@ async function processWebhook(
             return respond(200, { status: 'ok', message: 'Event acknowledged' });
         }
 
+        if (fulfillment.code === 'applied' && fulfillment.outcome === 'pending_claim') {
+            // The capture IS financially settled (the §6.3 journal is persisted
+            // and the invoice is `paid`), but the buyer was a GUEST so product
+            // delivery is DEFERRED behind a single-use claim token. This must NOT
+            // be reported as a plain success: the order is paid and the product
+            // is not yet in the customer's hands.
+            console.warn(
+                `[Webhook] Guest settlement complete for ${invoiceId}; entitlement pending claim (expires ${fulfillment.expiresAt})`
+            );
+            return respond(200, {
+                status: 'pending_claim',
+                delivery: 'deferred',
+                message:
+                    'Capture settled; guest entitlement deferred pending order claim',
+                claimExpiresAt: fulfillment.expiresAt,
+            });
+        }
+
         return respond(200, { status: 'ok' });
     } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';

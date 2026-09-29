@@ -124,7 +124,8 @@ describe('Comprehensive SEO, Dynamic Keywords, Payments & Webhooks Integration S
             expect(data.opportunities.length).toBeGreaterThan(0);
 
             for (const opp of data.opportunities) {
-                expect(opp.opportunityScore).toBeGreaterThanOrEqual(80);
+                // P1 (H2): no fabricated metrics — the unbacked numbers are null.
+                expect(opp.opportunityScore).toBeNull();
                 expect(isValidDestination(opp.recommendedDestination)).toBe(true);
             }
         });

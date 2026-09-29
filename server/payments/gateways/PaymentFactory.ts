@@ -11,6 +11,7 @@ import { SpaceRemitGateway } from './SpaceRemitGateway';
 import { PaymobGateway } from './PaymobGateway';
 import { StripeGateway } from './StripeGateway';
 import { KashierGateway } from './KashierGateway';
+import { FourthwallGateway } from './FourthwallGateway';
 import { getMerchantConfig } from '../merchantResolver';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -46,20 +47,22 @@ let paymobInstance: PaymobGateway | null = null;
 let stripeInstance: StripeGateway | null = null;
 let kashierEgyptInstance: KashierGateway | null = null;
 let kashierGlobalInstance: KashierGateway | null = null;
+let fourthwallInstance: FourthwallGateway | null = null;
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 //                          FACTORY CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class PaymentFactory {
 
-    /**
+/**
      * Get the appropriate payment gateway for the given country.
      *
      * Routing Logic (used for non-Kashier flows via PaymentFactory.getGateway):
      *   1. Egypt → Paymob (EGP payments)
-     *   2. US, EU, Middle East, Global → Stripe (multi-currency)
-     *   3. Fallback → SpaceRemit
+     *   2. Global (US, EU, Middle East non-Egypt) → Fourthwall (USD payments via Fourthwall)
+     *   3. Other countries with Stripe key → Stripe (multi-currency)
+     *   4. Fallback → SpaceRemit
      *
      * NOTE: Kashier routing is handled upstream in create-invoice/route.ts
      * based on paymentMethod='kashier'. This factory does not select Kashier
@@ -78,6 +81,12 @@ export class PaymentFactory {
             return PaymentFactory.getPaymob();
         }
 
+        // GLOBAL/USD → Fourthwall (hosted checkout, Merchant of Record)
+        if (normalized === 'GLOBAL') {
+            console.log(`🌍 [PaymentFactory] Routing to Fourthwall for GLOBAL/USD`);
+            return PaymentFactory.getFourthwall();
+        }
+
         const hasStripeKey = !!process.env.STRIPE_SECRET_KEY;
         if (STRIPE_COUNTRIES.has(normalized) && hasStripeKey) {
             console.log(`💳 [PaymentFactory] Routing to Stripe for country: ${normalized}`);
@@ -88,15 +97,16 @@ export class PaymentFactory {
         return PaymentFactory.getSpaceRemit();
     }
 
-    /**
+/**
      * Detect the gateway from a webhook/callback request.
      *
      * Detection order (ONLY gateway-authenticated signals):
      *   1. x-kashier-signature → Kashier Egypt (initial; webhook handler does cross-account routing)
-     *   2. stripe-signature → Stripe
-     *   3. hmac header/query → Paymob
-     *   4. x-spaceremit-signature / SP_payment_code → SpaceRemit
-     *   5. Fallback → SpaceRemit
+     *   2. fourthwall-signature / x-fourthwall-signature → Fourthwall
+     *   3. stripe-signature → Stripe
+     *   4. hmac header/query → Paymob
+     *   5. x-spaceremit-signature / SP_payment_code → SpaceRemit
+     *   6. Fallback → SpaceRemit
      */
     static detectGatewayFromRequest(req: { headers: Record<string, string | string[] | undefined>; query: Record<string, string | string[] | undefined> }): IPaymentGateway {
         // 1. Kashier (checked BEFORE generic HMAC to avoid false-positive with Paymob)
@@ -105,22 +115,28 @@ export class PaymentFactory {
             return PaymentFactory.getKashierEgypt(); // webhook handler will cross-route if needed
         }
 
-        // 2. Stripe
+        // 2. Fourthwall
+        if (req.headers['fourthwall-signature'] || req.headers['x-fourthwall-signature']) {
+            console.log('🌍 [PaymentFactory] Fourthwall webhook detected');
+            return PaymentFactory.getFourthwall();
+        }
+
+        // 3. Stripe
         if (req.headers['stripe-signature']) {
             return PaymentFactory.getStripe();
         }
 
-        // 3. Paymob HMAC
+        // 4. Paymob HMAC
         if (req.headers['hmac'] || req.query?.hmac) {
             return PaymentFactory.getPaymob();
         }
 
-        // 4. SpaceRemit-specific
+        // 5. SpaceRemit-specific
         if (req.headers['x-spaceremit-signature'] || req.query?.SP_payment_code || req.query?.gateway === 'spaceremit') {
             return PaymentFactory.getSpaceRemit();
         }
 
-        // 5. Fallback
+        // 6. Fallback
         console.warn('⚠️ [PaymentFactory] Could not detect gateway from request, using SpaceRemit fallback');
         return PaymentFactory.getSpaceRemit();
     }
@@ -162,8 +178,13 @@ static detectKashierAccountFromMerchantId(merchantId: string): KashierGateway | 
         return kashierEgyptInstance;
     }
 
-    private static getKashierGlobal(): KashierGateway {
+private static getKashierGlobal(): KashierGateway {
         if (!kashierGlobalInstance) kashierGlobalInstance = new KashierGateway('global');
         return kashierGlobalInstance;
+    }
+
+    private static getFourthwall(): FourthwallGateway {
+        if (!fourthwallInstance) fourthwallInstance = new FourthwallGateway();
+        return fourthwallInstance;
     }
 }

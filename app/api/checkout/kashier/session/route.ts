@@ -17,6 +17,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { TierId } from '../../../../../server/payments/pricing';
 import {
     createCheckoutSession,
     CheckoutValidationError,
@@ -28,6 +29,9 @@ import { KashierSessionError } from '../../../../../server/payments/gateways/Kas
 import { enforceRateLimit, clientIp } from '../../../../../lib/ratelimit';
 import { corsPreflightResponse } from '../../../../../server/cors/corsConfig';
 import { resolveEffectiveUserId } from '../../../../../server/auth/resolveUser';
+import { createCombinedCheckoutSession } from '../../../../../server/payments/checkout/combinedCheckoutSessionService';
+import { FourthwallGateway } from '../../../../../server/payments/gateways/FourthwallGateway';
+import { KashierGateway } from '../../../../../server/payments/gateways/KashierGateway';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -63,6 +67,11 @@ const CheckoutSchema = z.object({
         zipCode: z.string().optional(),
         phone: z.string().optional(),
     }).optional(),
+    lines: z.array(z.object({
+        kind: z.enum(['product', 'addon', 'consultation']),
+        tierId: z.enum(['digital', 'bundle', 'coaching', 'coaching_plus', 'bundle_plus', 'digital_plus', 'pdf', 'paperback']),
+        quantity: z.number().int().min(1).optional(),
+    })).optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
     idempotencyKey: z.string().min(1).max(200).optional(),
 });
@@ -157,51 +166,103 @@ export async function POST(req: Request) {
     try {
         const { attribution, source } = await resolveAttribution(req, effectiveUserId);
 
-        const result = await createCheckoutSession(
-            {
-                tierId: input.tierId,
-                email: input.email,
-                fullName: input.fullName,
-                country: input.country,
-                userId: effectiveUserId,
-                locale: input.locale,
-                quantity: input.quantity,
-                shippingProviderId: input.shippingProviderId,
-                shippingCost: input.shippingCost,
-                promoCode: input.promoCode,
-                idempotencyKey,
-                attribution,
-                shippingAddress: input.shippingAddress || (input.phoneNumber ? { phone: input.phoneNumber } : undefined),
-                metadata: input.metadata,
-            },
-            { supabase: getSupabaseAdmin() },
-        );
+        // Choose between combined checkout (lines[]) and single-tier checkout
+        if (input.lines && input.lines.length > 0) {
+            // Determine gateway based on region
+            const gatewayFactory = input.country === 'EG'
+                ? () => new KashierGateway('egypt')
+                : () => new FourthwallGateway();
 
-        // Mark the DB attribution record as used once it is stamped on the invoice
-        // (idempotent; prevents reusing the same attribution on future invoices).
-        if (effectiveUserId && source === 'db' && attribution?.affiliateId) {
-            const { markAttributionUsed } = await import('../../../../../server/affiliate/attributionService');
-            await markAttributionUsed({
-                userId: effectiveUserId,
-                affiliateId: attribution.affiliateId,
+            const result = await createCombinedCheckoutSession(
+                {
+                    lines: input.lines,
+                    email: input.email,
+                    fullName: input.fullName,
+                    country: input.country,
+                    userId: effectiveUserId,
+                    locale: input.locale,
+                    shippingProviderId: input.shippingProviderId,
+                    shippingCost: input.shippingCost,
+                    shippingAddress: input.shippingAddress || (input.phoneNumber ? { phone: input.phoneNumber } : undefined),
+                    promoCode: input.promoCode,
+                    idempotencyKey,
+                    metadata: input.metadata,
+                },
+                {
+                    supabase: getSupabaseAdmin(),
+                    gatewayFactory,
+                    pricingRows: async () => [],
+                    generateIdempotencyKey: () => crypto.randomUUID(),
+                }
+            );
+
+            return NextResponse.json({
+                success: true,
                 invoiceId: result.invoiceId,
+                orderId: result.orderId,
+                orderRef: result.orderRef,
+                sessionId: result.sessionId,
+                sessionUrl: result.sessionUrl,
+                gateway: 'kashier',
+                region: result.region,
+                amount: result.amount,
+                currency: result.currency,
+                paymentMethods: result.paymentMethods,
+                environment: result.environment,
+                idempotent: result.idempotent,
+                lines: result.lines,
+                subtotal: result.subtotal,
+                shippingCost: result.shippingCost,
+                discount: result.discount,
+            });
+        } else {
+            // Single-tier checkout: use existing createCheckoutSession path
+            const result = await createCheckoutSession(
+                {
+                    tierId: input.tierId,
+                    email: input.email,
+                    fullName: input.fullName,
+                    country: input.country,
+                    userId: effectiveUserId,
+                    locale: input.locale,
+                    quantity: input.quantity,
+                    shippingProviderId: input.shippingProviderId,
+                    shippingCost: input.shippingCost,
+                    promoCode: input.promoCode,
+                    idempotencyKey,
+                    attribution,
+                    shippingAddress: input.shippingAddress || (input.phoneNumber ? { phone: input.phoneNumber } : undefined),
+                    metadata: input.metadata,
+                },
+                { supabase: getSupabaseAdmin() },
+            );
+
+            // Mark the DB attribution record as used once it is stamped on the invoice
+            // (idempotent; prevents reusing the same attribution on future invoices).
+            if (effectiveUserId && source === 'db' && attribution?.affiliateId) {
+                const { markAttributionUsed } = await import('../../../../../server/affiliate/attributionService');
+                await markAttributionUsed({
+                    userId: effectiveUserId,
+                    affiliateId: attribution.affiliateId,
+                    invoiceId: result.invoiceId,
+                });
+            }
+
+            return NextResponse.json({
+                success: true,
+                invoiceId: result.invoiceId,
+                orderRef: result.orderRef,
+                sessionId: result.sessionId,
+                redirectUrl: result.sessionUrl,
+                gateway: 'kashier',
+                region: result.region,
+                amount: result.amount,
+                currency: result.currency,
+                paymentMethods: result.paymentMethods,
+                environment: result.environment,
+                idempotent: result.idempotent,
             });
         }
-
-        return NextResponse.json({
-            success: true,
-            invoiceId: result.invoiceId,
-            orderRef: result.orderRef,
-            sessionId: result.sessionId,
-            redirectUrl: result.sessionUrl,
-            gateway: 'kashier',
-            region: result.region,
-            amount: result.amount,
-            currency: result.currency,
-            paymentMethods: result.paymentMethods,
-            environment: result.environment,
-            idempotent: result.idempotent,
-        });
     } catch (error) {
         if (error instanceof CheckoutValidationError) {
             return NextResponse.json({ success: false, error: error.message }, { status: 400 });

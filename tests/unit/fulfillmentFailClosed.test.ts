@@ -53,7 +53,25 @@ const INVOICE = {
 const seedFor = (table: string): unknown => {
     if (table === 'invoices') return INVOICE;
     if (table === 'payment_intents') {
-        return { id: 'pi-fc-001', invoice_id: INVOICE.id, status: 'processing', gate_version: 0 };
+        return {
+            id: 'pi-fc-001',
+            invoice_id: INVOICE.id,
+            status: 'processing',
+            gate_version: 0,
+            // §6.3 fee accounting is deliberately out of scope for this file
+            // (see the header) and is covered by
+            // tests/unit/gatewayFeeNet.test.ts. It is persisted as an EXPLICIT
+            // ZERO here — not left unresolved — so the frozen split fixtures
+            // below stay on a gross == net basis. An unresolved fee would fail
+            // closed at gateway_fee_unresolved and short-circuit the
+            // write-failure paths this file actually exists to prove.
+            //
+            // A persisted 0 is a legitimate value: precedence 1 accepts any
+            // integer F in [0, G). There is deliberately no region or 'GLOBAL'
+            // default fee to lean on any more, so the fixture states the zero
+            // on the intent, which is the production replay-determinism path.
+            gateway_fee_minor: 0,
+        };
     }
     if (table === 'profiles') return { id: INVOICE.user_id };
     if (table === 'order_splits') {
@@ -102,6 +120,7 @@ const makeChain = (table: string) => {
     c.in = () => c;
     c.gt = () => c;
     c.lt = () => c;
+    c.is = () => c;
     c.single = settle(true);
     c.maybeSingle = settle(true);
     c.then = (res: (v: unknown) => void) => {

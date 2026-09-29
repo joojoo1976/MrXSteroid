@@ -11,7 +11,7 @@ const CANONICAL = 'https://mrxsteroid.com/smarttools/multi-ester-pharmacokinetic
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'PharmaSim™ | حاسبة تراكم الإسترات وتجميع الهرمونات - Mr. X-Steroid',
+        title: 'PharmaSim™ | حاسبة تراكم الإسترات وتجميع الهرمونات',
         description:
             'حاسبة المحاكاة الحيوية الدقيقة لحرائك أدوية وإسترات الهرمونات البنائية (Bateman Pharmacokinetic Simulator). تحليل تراكم مصل الدم، الذروة، والقاع بدقة عالية.',
         alternates: {

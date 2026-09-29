@@ -36,6 +36,12 @@ interface DbShape {
     invoice?: Record<string, any>;
     intents?: Record<string, any>[];
     splits?: Record<string, any>[];
+    /**
+     * The DECLARED contracted gateway fee the merchant has configured. A
+     * successful capture must state its fee somewhere real: §6.3 settlement
+     * fails closed rather than defaulting F to 0.
+     */
+    feeMinor?: number;
 }
 
 let triggerAffiliateCommissionMock: ReturnType<typeof vi.fn>;
@@ -64,8 +70,19 @@ async function postWebhook(body: string): Promise<Response> {
 function seed(db: DbShape): void {
     Object.keys(ib.tables).forEach((k) => delete ib.tables[k]);
     if (db.invoice) ib.tables.invoices = [db.invoice];
-    ib.tables.payment_intents = db.intents || [];
     ib.tables.order_splits = db.splits || [];
+    if (db.feeMinor != null) {
+        // The §6.3 fee is persisted on each intent (precedence 1), which is the
+        // production replay-determinism path. There is deliberately no region
+        // or 'GLOBAL' default fee any more: a region cannot tell you what
+        // Kashier charged for a specific payment method.
+        ib.tables.payment_intents = (db.intents || []).map((intent) => ({
+            ...intent,
+            gateway_fee_minor: db.feeMinor,
+        }));
+    } else {
+        ib.tables.payment_intents = db.intents || [];
+    }
 }
 
 beforeEach(() => {
@@ -115,9 +132,12 @@ describe('Phase 5 — webhook provider_status persistence (C7)', () => {
                 status: 'initiated', provider: 'kashier',
             }],
             splits: [{
-                invoice_id: 'inv-p5-s', beneficiary_id: 'author-p5-s', allocated_amount_minor: 10000,
+                invoice_id: 'inv-p5-s', beneficiary_id: 'author-p5-s', allocated_amount_minor: 9700,
                 destination_account: 'BENEFICIARY_PAYABLE', frozen: true,
             }],
+            // G = 100 EGP = 10000 minor, contracted F = 300, so the frozen
+            // allocation above is the NET basis N = 9700.
+            feeMinor: 300,
         });
 
         const res = await postWebhook(signKashierBody({
@@ -148,9 +168,22 @@ describe('Phase 5 — webhook provider_status persistence (C7)', () => {
         expect(invoice.status).toBe('success');
         expect(triggerAffiliateCommissionMock).toHaveBeenCalledWith('inv-p5-s');
         expect(freezeOrderSplitsMock).toHaveBeenCalled();
-        expect(ib.tables.financial_ledger).toHaveLength(2);
+        // §6.3 capture journal with F = 300: the NET leg (N = 9700) plus the
+        // fee pair, which only exists because the contracted fee is declared.
+        // Dr = Cr = G = 10000.
+        const lines = ib.tables.financial_ledger;
+        expect(lines).toHaveLength(4);
         expect(new Set(ib.tables.financial_ledger.map(line => line.journal_entry_id)).size).toBe(1);
         expect(ib.tables.financial_ledger.every(line => line.payment_intent_id === 'pi-1')).toBe(true);
+        const sumBy = (entryType: string) =>
+            lines.filter(l => l.entry_type === entryType)
+                .reduce((s, l) => s + l.amount_minor, 0);
+        expect(sumBy('DEBIT')).toBe(10000);
+        expect(sumBy('CREDIT')).toBe(10000);
+        expect(lines.filter(l => l.account === 'GATEWAY_FEES'))
+            .toEqual([expect.objectContaining({ entry_type: 'DEBIT', amount_minor: 300 })]);
+        expect(lines.filter(l => l.account === 'BENEFICIARY_PAYABLE'))
+            .toEqual([expect.objectContaining({ entry_type: 'CREDIT', amount_minor: 9700 })]);
     });
 
     it('failure (DECLINED) marks the PaymentIntent failed + provider verdict', async () => {

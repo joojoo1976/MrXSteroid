@@ -20,6 +20,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { verifyPaidAmount } from './verifyPaidAmount';
 import { canApplyWebhookToIntent } from './paymentIntentService';
+import { resolveGatewayFee } from './gatewayFee';
 
 export interface ProviderVerdictInput {
     supabase: SupabaseClient;
@@ -64,16 +65,27 @@ export interface ProviderVerdictInput {
  */
 export type FinancialFailureStage =
     | 'payment_intent_unresolved'
+    | 'gateway_fee_unresolved'
     | 'split_freeze_failed'
     | 'split_read_failed'
     | 'splits_incomplete'
+    | 'split_allocation_mismatch'
     | 'ledger_idempotency_check_failed'
     | 'ledger_post_failed'
     | 'invoice_write_failed'
-    | 'payment_intent_write_failed';
+    | 'payment_intent_write_failed'
+    | 'guest_claim_failed';
 
 export type ProviderVerdictResult =
     | { code: 'applied'; outcome: 'success' | 'failed' }
+    /**
+     * The capture is financially settled, but the buyer was a GUEST, so the
+     * entitlement is DEFERRED behind a single-use claim token rather than
+     * granted. Deliberately NOT reported as `success`: the order is paid but the
+     * product has not been delivered yet, and returning `success` here is
+     * exactly the silent-delivery defect this outcome exists to prevent.
+     */
+    | { code: 'applied'; outcome: 'pending_claim'; claimId: string; expiresAt: string }
     | { code: 'quarantined'; reason: string }
     | { code: 'already_processed' }
     | { code: 'amount_mismatch' }
@@ -96,6 +108,10 @@ interface InvoiceRow {
     referral_code: string | null;
     amount: number | null;
     currency: string | null;
+    /** Guest email captured at checkout; NULL for an authenticated purchase. */
+    customer_email: string | null;
+    /** Region of the acquiring merchant, used to resolve the §6.3 fee policy. */
+    region: string | null;
 }
 
 const nowIso = () => new Date().toISOString();
@@ -354,15 +370,6 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             return { code: 'amount_mismatch' };
         }
 
-        // ── INVOICE FACTS (needed by the financial block below) ───────────────
-        // Read the paid-invoice payload BEFORE any write so the §6.3 gross and
-        // currency come from the same row that is about to be settled.
-        const { data: invoice } = await supabase
-            .from('invoices')
-            .select('user_id, tier_id, affiliate_id, referral_code, amount, currency')
-            .eq('id', invoiceId)
-            .single();
-
         // ══════════════════════════════════════════════════════════════════════
         // FINANCIAL SETTLEMENT — §6.3 fail-closed (BLOCKER 2)
         // ══════════════════════════════════════════════════════════════════════
@@ -387,6 +394,26 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             return { code: 'financial_failure', stage, reason };
         };
 
+        // ── INVOICE FACTS (needed by the financial block below) ───────────────
+        // Read the paid-invoice payload BEFORE any write so the §6.3 gross and
+        // currency come from the same row that is about to be settled.
+        // `customer_email` + `region` are required for the deferred guest-claim
+        // branch and for merchant fee-policy resolution respectively.
+        const { data: invoice, error: invoiceFactsError } = await supabase
+            .from('invoices')
+            .select('user_id, tier_id, affiliate_id, referral_code, amount, currency, customer_email, region')
+            .eq('id', invoiceId)
+            .single();
+
+        // A read ERROR is not the same as "no facts". A missing invoice would
+        // silently zero the gross and skip the fee, so fail closed instead.
+        if (invoiceFactsError || !invoice) {
+            return failFinancial(
+                'invoice_write_failed',
+                `could not read invoice facts for §6.3 settlement: ${invoiceFactsError?.message ?? 'invoice not found'}`
+            );
+        }
+
         // 1. BLOCKER 1 — the ledger/entitlement FK is `payment_intents(id)`.
         //    The invoice id is NOT a payment intent id. The authoritative id was
         //    resolved above from `payment_intents.invoice_id` (latest attempt);
@@ -399,13 +426,84 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             );
         }
 
-        // 2. Freeze the required §6.3 allocation. A throw OR a non-frozen
-        //    result is a financial failure — never "continue with zero splits"
-        //    and never derive `fee = gross`.
+        // 2. §6.3 GROSS (G) — resolved BEFORE the split freeze, because the NET
+        //    basis N = G - F must be known before the allocation is computed.
+        const grossMinor = Math.round(
+            Number(verdict.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100
+        );
+        if (!Number.isInteger(grossMinor) || grossMinor <= 0) {
+            return failFinancial(
+                'splits_incomplete',
+                `captured gross is not a positive integer minor unit: ${grossMinor}`
+            );
+        }
+
+        // 3. §6.3 GATEWAY FEE (F) — the real fee, resolved from an explicit
+        //    precedence chain (persisted intent fee > provider-reported >
+        //    approved Kashier schedule for the ACTUAL payment method). When no
+        //    source yields a fee we FAIL CLOSED. Silently defaulting to 0 is the
+        //    exact defect this replaces: it made N = G, left GATEWAY_FEES
+        //    unposted, and credited the beneficiaries with the fee that Kashier
+        //    actually charged. There is deliberately NO regional or 'GLOBAL'
+        //    default fee — see the header of server/payments/gatewayFee.ts.
+        let providerPayload: Record<string, unknown> | null = null;
+        if (input.rawBody) {
+            try {
+                const parsedRaw: unknown = JSON.parse(input.rawBody);
+                if (parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)) {
+                    providerPayload = parsedRaw as Record<string, unknown>;
+                }
+            } catch {
+                providerPayload = null;
+            }
+        }
+
+        let persistedFeeMinor: number | null = null;
+        {
+            const { data: intentFeeRow } = await supabase
+                .from('payment_intents')
+                .select('gateway_fee_minor')
+                .eq('id', currentIntentId)
+                .maybeSingle();
+            if (intentFeeRow && intentFeeRow.gateway_fee_minor !== null) {
+                persistedFeeMinor = Number(intentFeeRow.gateway_fee_minor);
+            }
+        }
+
+        const feeResolution = await resolveGatewayFee({
+            supabase,
+            grossMinor,
+            persistedFeeMinor,
+            providerPayload,
+        });
+        if (!feeResolution.ok) {
+            return failFinancial('gateway_fee_unresolved', feeResolution.reason);
+        }
+        const feeMinor = feeResolution.feeMinor;
+
+        // Persist F on the intent so a webhook replay or a reconciliation pass
+        // settles against the identical fee instead of re-deriving one.
+        if (persistedFeeMinor === null) {
+            const { error: feePersistError } = await supabase
+                .from('payment_intents')
+                .update({ gateway_fee_minor: feeMinor, updated_at: nowIso() })
+                .eq('id', currentIntentId)
+                .is('gateway_fee_minor', null);
+            if (feePersistError) {
+                return failFinancial(
+                    'payment_intent_write_failed',
+                    `could not persist the resolved §6.3 gateway fee: ${feePersistError.message}`
+                );
+            }
+        }
+
+        // 4. Freeze the required §6.3 allocation against the NET basis
+        //    N = G - F. A throw OR a non-frozen result is a financial failure —
+        //    never "continue with zero splits" and never derive `fee = gross`.
         let frozen: { frozen: boolean; splitsCount: number };
         try {
             const { freezeOrderSplits } = await import('./splitEngine');
-            frozen = await freezeOrderSplits(supabase, invoiceId);
+            frozen = await freezeOrderSplits(supabase, invoiceId, feeMinor);
         } catch (splitErr) {
             const detail = splitErr instanceof Error ? splitErr.message : String(splitErr);
             return failFinancial('split_freeze_failed', `freezeOrderSplits threw: ${detail}`);
@@ -417,7 +515,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             );
         }
 
-        // 3. Read the frozen allocation back. A query ERROR is a failure; it
+        // 5. Read the frozen allocation back. A query ERROR is a failure; it
         //    must never be collapsed into "[]".
         const { data: savedSplits, error: splitsReadError } = await supabase
             .from('order_splits')
@@ -442,10 +540,9 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             account: (s.destination_account ?? 'BENEFICIARY_PAYABLE') as LedgerSplitAccount,
         }));
 
-        // 4. Split completeness — the allocation must actually exist before a
-        //    journal is created. Every line must be a positive integer minor
-        //    unit (the ledger rejects anything else anyway, but we refuse to
-        //    derive a misleading fee from a malformed allocation).
+        // 6. Split completeness — the allocation must actually equal the NET
+        //    basis N = G - F before a journal is created. Every line must be a
+        //    positive integer minor unit.
         const malformed = ledgerSplits.find(
             (s) => !Number.isInteger(s.allocatedAmountMinor) || s.allocatedAmountMinor <= 0
         );
@@ -461,24 +558,27 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             return failFinancial('splits_incomplete', 'split allocations sum to zero');
         }
 
-        const grossMinor = Math.round(
-            Number(verdict.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100
-        );
-        if (!Number.isInteger(grossMinor) || grossMinor <= 0) {
+        if (feeMinor < 0 || feeMinor >= grossMinor) {
             return failFinancial(
-                'splits_incomplete',
-                `captured gross is not a positive integer minor unit: ${grossMinor}`
+                'gateway_fee_unresolved',
+                `resolved gateway fee ${feeMinor} is not a valid share of gross ${grossMinor}`
             );
         }
-        if (allocatedSplitsMinor > grossMinor) {
-            return failFinancial(
-                'splits_incomplete',
-                `split allocations (${allocatedSplitsMinor}) exceed captured gross (${grossMinor})`
-            );
-        }
-        const feeMinor = Math.max(0, grossMinor - allocatedSplitsMinor); // gateway fee F
 
-        // 5. Replay-safe idempotency. A recovery replay after a failure that
+        // The allocation MUST be exactly the NET basis. This is the assertion
+        // that the signed §6.3 journal balances:
+        //     sum(Cr splits) = N = G - F   and   Dr N + Dr F = G
+        // A mismatch means the split engine and the resolved fee disagree, which
+        // would silently post an unbalanced or mis-attributed journal.
+        const expectedNetMinor = grossMinor - feeMinor;
+        if (allocatedSplitsMinor !== expectedNetMinor) {
+            return failFinancial(
+                'split_allocation_mismatch',
+                `split allocations (${allocatedSplitsMinor}) do not equal the §6.3 net basis G-F (${grossMinor}-${feeMinor}=${expectedNetMinor})`
+            );
+        }
+
+        // 7. Replay-safe idempotency. A recovery replay after a failure that
         //    actually persisted the journal MUST NOT double-post, so the
         //    existing §6.3 capture journal is detected first.
         const { data: existingCapture, error: existingCaptureError } = await supabase
@@ -598,21 +698,6 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             );
         }
 
-        // 8. Activate subscription
-        if (invoice?.user_id) {
-            await supabase
-                .from('profiles')
-                .update({
-                    subscription_tier: invoice.tier_id,
-                    subscription_status: 'active',
-                    has_paid: true,
-                    plan_tier: invoice.tier_id,
-                    updated_at: nowIso(),
-                })
-                .eq('id', invoice.user_id);
-            console.log(`✅ [Fulfillment] Subscription activated — User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
-        }
-
         // 9. Trigger affiliate commission (non-blocking, non-fatal)
         if (invoice?.affiliate_id && invoice?.referral_code) {
             try {
@@ -624,20 +709,120 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             }
         }
 
-        // 10. Grant Product Entitlement (N-11) — only ever AFTER the §6.3
-        //     journal is durably persisted, so an entitlement is never granted
-        //     on a financially unsettled capture.
-        if (invoice?.user_id && invoice?.tier_id) {
-            try {
-                const { grantEntitlement } = await import('./entitlementService');
-                await grantEntitlement({ userId: invoice.user_id, productId: invoice.tier_id, invoiceId, paymentIntentId: currentIntentId }, supabase);
-            } catch (entitleErr) {
-                console.warn(`[Fulfillment] Entitlement grant notice for ${invoiceId}:`, entitleErr);
+        // ══════════════════════════════════════════════════════════════════════
+        // ENTITLEMENT DELIVERY — authenticated buyer vs deferred guest claim
+        // ══════════════════════════════════════════════════════════════════════
+        //
+        // The §6.3 journal is durably persisted and the invoice is `paid`, so
+        // from here on the only remaining question is WHO receives the product.
+        //
+        // `entitlements.user_id` is NOT NULL, so a guest — whose invoice has
+        // `user_id = NULL` — can never hold an entitlement. The previous code
+        // simply skipped both delivery steps for a guest and still returned
+        // `outcome: 'success'`, so a captured guest payment settled, reported
+        // success, and delivered nothing. That silent revenue loss is closed
+        // here: a guest payment now issues a single-use claim token and reports
+        // `pending_claim`, which the caller must surface as NOT-delivered-yet.
+        if (invoice?.user_id) {
+            // 8. Activate subscription (authenticated buyer).
+            await supabase
+                .from('profiles')
+                .update({
+                    subscription_tier: invoice.tier_id,
+                    subscription_status: 'active',
+                    has_paid: true,
+                    plan_tier: invoice.tier_id,
+                    updated_at: nowIso(),
+                })
+                .eq('id', invoice.user_id);
+            console.log(`✅ [Fulfillment] Subscription activated — User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
+
+            // 10. Grant Product Entitlement (N-11) — only ever AFTER the §6.3
+            //     journal is durably persisted, so an entitlement is never
+            //     granted on a financially unsettled capture.
+            if (invoice.tier_id) {
+                try {
+                    const { grantEntitlement } = await import('./entitlementService');
+                    await grantEntitlement({ userId: invoice.user_id, productId: invoice.tier_id, invoiceId, paymentIntentId: currentIntentId }, supabase);
+                } catch (entitleErr) {
+                    console.warn(`[Fulfillment] Entitlement grant notice for ${invoiceId}:`, entitleErr);
+                }
             }
+
+            await markWebhookProcessed(input);
+            return { code: 'applied', outcome: 'success' };
         }
 
+        // ── GUEST BUYER: defer delivery behind a single-use claim token ───────
+        const guestEmail = (invoice as InvoiceRow | null)?.customer_email ?? null;
+        if (!guestEmail) {
+            // A guest order with no captured email has no way to deliver a
+            // claim. Fail closed into the reconciler-visible 'unknown' state
+            // rather than settling a paid order that can never be delivered.
+            return failFinancial(
+                'guest_claim_failed',
+                'guest payment has no captured email, so the entitlement cannot be deferred to a claim'
+            );
+        }
+        if (!invoice?.tier_id) {
+            return failFinancial(
+                'guest_claim_failed',
+                'guest payment has no tier_id, so the entitlement cannot be deferred to a claim'
+            );
+        }
+
+        let claim: { claimId: string; token: string; expiresAt: string; email: string };
+        try {
+            const { createGuestOrderClaim, buildGuestClaimUrl } = await import('./guestClaimService');
+            claim = await createGuestOrderClaim({
+                supabase,
+                invoiceId,
+                paymentIntentId: currentIntentId,
+                email: guestEmail,
+                productId: invoice.tier_id,
+            });
+            // Delivery is a notification concern and must NEVER undo a settled
+            // capture, so a dispatch failure is logged, not thrown. The claim row
+            // is already durable and the token can be re-delivered by support.
+            const claimUrl = buildGuestClaimUrl(claim.token);
+            try {
+                const { sendGuestClaimEmail } = await import('./guestClaimEmail');
+                const delivery = await sendGuestClaimEmail({
+                    to: claim.email,
+                    productId: invoice.tier_id,
+                    claimUrl,
+                    expiresAt: claim.expiresAt,
+                });
+                if (!delivery.ok) {
+                    console.error(
+                        `[Fulfillment] Guest claim email NOT delivered for ${invoiceId} (${delivery.reason ?? 'unknown'}); claim ${claim.claimId} is durable and can be re-delivered`
+                    );
+                }
+            } catch (mailErr) {
+                console.error(`[Fulfillment] Guest claim email threw for ${invoiceId} (non-fatal):`, mailErr);
+            }
+        } catch (claimErr) {
+            const detail = claimErr instanceof Error ? claimErr.message : String(claimErr);
+            return failFinancial(
+                'guest_claim_failed',
+                `guest entitlement could not be deferred to a claim: ${detail}`
+            );
+        }
+
+        console.warn(
+            `⚠️ [Fulfillment] Guest payment settled for ${invoiceId} — entitlement DEFERRED behind claim ${claim.claimId} (expires ${claim.expiresAt}). Delivery is NOT complete.`
+        );
+
+        // The financial settlement AND the claim row are both durable at this
+        // point, so this event is fully handled and must be closed out. Leaving
+        // it `pending` would make the event look unreconciled and would let a
+        // redelivered webhook re-enter this path and revoke/reissue the claim
+        // that the guest is holding.
         await markWebhookProcessed(input);
-        return { code: 'applied', outcome: 'success' };
+
+        // Deliberately NOT `success`: the order is paid but the product has not
+        // been delivered. The caller must report pending delivery.
+        return { code: 'applied', outcome: 'pending_claim', claimId: claim.claimId, expiresAt: claim.expiresAt };
     }
 
     // ── FAILURE PATH ──────────────────────────────────────────────────────────

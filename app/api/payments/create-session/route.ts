@@ -15,12 +15,27 @@ import { BlockedGateError } from '../../../../server/payments/merchantResolver';
 import { KashierSessionError } from '../../../../server/payments/gateways/KashierGateway';
 import { enforceRateLimit, clientIp } from '../../../../lib/ratelimit';
 import type { TierId } from '../../../../server/payments/pricing';
-import type { CanonicalProductId } from '../../../../server/payments/merchantResolver';
+import {
+    CANONICAL_PRODUCTS,
+    type CanonicalProductId,
+} from '../../../../server/payments/merchantResolver';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const CANONICAL_TO_TIER: Record<CanonicalProductId, TierId> = {
+/**
+ * Only the checkout-eligible canonical products resolve to a tier here.
+ *
+ * The set is DERIVED from the authoritative `CanonicalProductId` union by
+ * excluding the AUP §13 service products (`MRX-COACHING-ADDON`,
+ * `MRX-CONSULTATION`), which are BLOCKED from checkout — and therefore from
+ * GLOBAL/USD (Fourthwall) — and must not be resolvable to any gateway tier.
+ * Because the blocked products are excluded at the type level, the map stays
+ * type-complete and those products can never be looked up to open a session.
+ */
+type CheckoutEligibleProductId = Exclude<CanonicalProductId, 'MRX-COACHING-ADDON' | 'MRX-CONSULTATION'>;
+
+const CANONICAL_TO_TIER: Record<CheckoutEligibleProductId, TierId> = {
     'MRX-PROTOCOL': 'digital',
     'MRX-TACTICAL': 'bundle',
     'MRX-SMART-PRO': 'coaching',
@@ -42,10 +57,24 @@ export async function POST(req: NextRequest) {
 
         // Support canonical product ID resolution (§60.1)
         if (body.productId && body.productId in CANONICAL_TO_TIER) {
-            tierId = CANONICAL_TO_TIER[body.productId as CanonicalProductId];
+            tierId = CANONICAL_TO_TIER[body.productId as CheckoutEligibleProductId];
             if (body.withCoaching) {
                 tierId = (tierId === 'coaching' ? 'coaching_plus' : `${tierId}_plus`) as TierId;
             }
+        } else if (
+            body.productId &&
+            typeof body.productId === 'string' &&
+            body.productId in CANONICAL_PRODUCTS
+        ) {
+            // A real canonical product that is NOT in the checkout-eligible map.
+            // Coaching add-on and consultation are AUP §13 service products
+            // BLOCKED from checkout (and hence from GLOBAL/USD/Fourthwall).
+            // Fail openly here rather than fall through to a legacy tier lookup
+            // that could route one of the blocked products to a gateway.
+            return NextResponse.json(
+                { error: `Product "${body.productId}" is not available for checkout.` },
+                { status: 400 }
+            );
         }
 
         if (!tierId) {

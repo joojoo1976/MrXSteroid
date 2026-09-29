@@ -29,10 +29,17 @@ function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insert
         }
         : null;
     const grossMinor = Math.round(Number(invoiceRow?.amount ?? 0) * 100);
-    const frozenSplits = grossMinor > 0
+    // A REAL gateway fee. §6.3 allocates on the NET basis N = G - F, so the
+    // frozen split must be grossMinor - FEE_MINOR. A fixture equal to the gross
+    // would encode the pre-fix defect and hide a regression.
+    const FEE_MINOR = 1500;
+    // Persisted on the intent: 6.3 worked example (NOT a commercial rate).
+    // Settlement reuses it verbatim via precedence 1.
+    if (paymentIntent) paymentIntent.gateway_fee_minor = FEE_MINOR;
+    const frozenSplits = grossMinor > FEE_MINOR
         ? [{
             beneficiary_id: 'route-beneficiary',
-            allocated_amount_minor: grossMinor,
+            allocated_amount_minor: grossMinor - FEE_MINOR,
             destination_account: 'BENEFICIARY_PAYABLE',
         }]
         : [];
@@ -56,6 +63,8 @@ function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insert
     chain.limit = vi.fn().mockReturnValue(chain);
     chain.in = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
+    chain.is = vi.fn().mockReturnValue(chain);
+    chain.gt = vi.fn().mockReturnValue(chain);
     chain.select = vi.fn((columns?: string) => { lastSelect = columns || ''; return chain; });
     chain.update = vi.fn().mockReturnValue(chain);
     chain.insert = vi.fn()
@@ -420,7 +429,16 @@ describe('POST /api/payments/webhook — Cross-Account & Edge Scenarios', () => 
 
     it('safely handles invoice without affiliate_id without throwing or breaking ledger', async () => {
         supabaseMock = buildSupaMock(
-            { id: 'inv-no-aff-1', status: 'pending', payment_status: 'pending', amount: 500, currency: 'EGP', affiliate_id: null, referral_code: null },
+            {
+                id: 'inv-no-aff-1',
+                user_id: 'user-no-aff-1',
+                status: 'pending',
+                payment_status: 'pending',
+                amount: 500,
+                currency: 'EGP',
+                affiliate_id: null,
+                referral_code: null,
+            },
             null
         );
         const fields = {

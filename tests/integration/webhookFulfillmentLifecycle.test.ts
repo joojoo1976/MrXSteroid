@@ -47,6 +47,12 @@ interface MockState {
     existingSplits: Record<string, any>[];
     savedSplits: Record<string, any>[];
     splitRules: Record<string, any>[];
+    /**
+     * DECLARED §6.3 fee policy for the active merchant. Null models a merchant
+     * with no configured fee terms, which must fail closed rather than assume a
+     * zero fee. Defaults to the §6.3 worked example (fixed 1500 minor units)
+     * so the journal exercises Dr GATEWAY_FEES instead of silently posting N = G.
+     */
     errors: Record<string, any>;
 }
 
@@ -162,6 +168,8 @@ function freshState(overrides: Partial<MockState> = {}): MockState {
             tier_id: TIER_ID,
             affiliate_id: AFFILIATE_ID,
             referral_code: REFERRAL_CODE,
+            customer_email: 'buyer@example.com',
+            region: 'EGYPT',
         },
         paymentIntent: {
             id: PAYMENT_INTENT_ID,
@@ -170,17 +178,21 @@ function freshState(overrides: Partial<MockState> = {}): MockState {
             is_current: true,
             status: 'initiated',
             provider: 'kashier',
+            // Left NULL on purpose: the fee is derived from the verified provider
+            // payload below and then PERSISTED, which is the path this test proves.
+            gateway_fee_minor: null,
         },
         existingSplits: [],
+        // §6.3 NET basis: G=49900, F=1500, N=48400 -> 41140 / 4840 / 2420.
         savedSplits: [
-            { beneficiary_id: 'author-1', allocated_amount_minor: 41140, rule_snapshot: { role: 'author' } },
-            { beneficiary_id: 'platform-1', allocated_amount_minor: 4840, rule_snapshot: { role: 'platform' } },
-            { beneficiary_id: 'reserve-1', allocated_amount_minor: 2420, rule_snapshot: { role: 'reserve' } },
+            { beneficiary_id: 'author-1', allocated_amount_minor: 41140, destination_account: 'BENEFICIARY_PAYABLE', rule_snapshot: { role: 'author' } },
+            { beneficiary_id: 'platform-1', allocated_amount_minor: 4840, destination_account: 'PLATFORM_REVENUE', rule_snapshot: { role: 'platform' } },
+            { beneficiary_id: 'reserve-1', allocated_amount_minor: 2420, destination_account: 'RESERVE', rule_snapshot: { role: 'reserve' } },
         ],
         splitRules: [
-            { id: 'r1', beneficiary_id: 'author-1', share_type: 'percentage', share_value: 85, priority: 0, tier_id: null, is_active: true },
-            { id: 'r2', beneficiary_id: 'platform-1', share_type: 'percentage', share_value: 10, priority: 0, tier_id: null, is_active: true },
-            { id: 'r3', beneficiary_id: 'reserve-1', share_type: 'percentage', share_value: 5, priority: 0, tier_id: null, is_active: true },
+            { id: 'r1', beneficiary_id: 'author-1', share_type: 'percentage', share_value: 85, priority: 0, tier_id: null, is_active: true, destination_account: 'BENEFICIARY_PAYABLE' },
+            { id: 'r2', beneficiary_id: null, share_type: 'percentage', share_value: 10, priority: 0, tier_id: null, is_active: true, destination_account: 'PLATFORM_REVENUE' },
+            { id: 'r3', beneficiary_id: 'reserve-1', share_type: 'percentage', share_value: 5, priority: 0, tier_id: null, is_active: true, destination_account: 'RESERVE' },
         ],
         errors: {},
         ...overrides,
@@ -203,6 +215,8 @@ function successBody(): string {
         orderStatus: 'SUCCESS',
         reconcilation: 'OK',
         amount: '499.00',
+        // Kashier reports the fee in major units, same convention as amount.
+        processingFee: '15.00',
         currency: 'EGP',
         transactionId: 'txn-life-001',
     });
@@ -267,14 +281,24 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
         // 3. Affiliate commission triggered
         expect(triggerAffiliateCommissionMock).toHaveBeenCalledWith(INVOICE_ID);
 
-        // 4. Revenue splits frozen (3 rules @ 85/10/5)
+        // 4. Revenue splits frozen (3 rules @ 85/10/5) against the NET basis.
+        //    G=49900, F=1500 => N=48400. The allocation must equal N, NOT the
+        //    gross: allocating the full 49900 is the §6.3 defect this guards.
         const splitInserts = callsFor('order_splits', 'insert');
         expect(splitInserts).toHaveLength(1);
         expect(splitInserts[0].payload).toHaveLength(3);
         const allocated = splitInserts[0].payload.reduce((s: number, r: any) => s + r.allocated_amount_minor, 0);
-        expect(allocated).toBe(49900);
+        expect(allocated).toBe(48400);
+        expect(allocated).toBe(49900 - 1500);
 
-        // 5. Double-entry ledger: single Â§6.3 posting journal (capture + splits + fee)
+        // The split engine must have been handed the REAL fee, not defaulted to 0.
+        const feeRowUpdates = callsFor('payment_intents', 'update')
+            .filter(c => c.payload.gateway_fee_minor !== undefined);
+        expect(feeRowUpdates.length).toBeGreaterThan(0);
+        expect(feeRowUpdates[0].payload.gateway_fee_minor).toBe(1500);
+
+        // 5. Double-entry ledger: single §6.3 posting journal.
+        //    Dr CUSTOMER_FUNDS 48400 + Dr GATEWAY_FEES 1500 = Cr ... = 49900.
         const ledgerInserts = callsFor('financial_ledger', 'insert');
         expect(ledgerInserts).toHaveLength(1);
         expect(ledgerInserts[0].payload.every((line: any) => line.payment_intent_id === PAYMENT_INTENT_ID)).toBe(true);
@@ -284,7 +308,19 @@ describe('POST /api/payments/webhook â€” Full Fulfillment Lifecycle', () =>
             const credit = entry.payload.filter((l: any) => l.entry_type === 'CREDIT')
                 .reduce((s: number, l: any) => s + l.amount_minor, 0);
             expect(debit).toBe(credit);
+            expect(debit).toBe(49900);
         }
+        // GATEWAY_FEES must actually be debited — under the old F=0 path this
+        // account was never touched at all. The journal debits GATEWAY_FEES and
+        // credits CUSTOMER_FUNDS for the same withheld amount.
+        const feeLines = ledgerInserts[0].payload.filter((l: any) => l.account === 'GATEWAY_FEES');
+        expect(feeLines).toHaveLength(1);
+        expect(feeLines[0]).toMatchObject({ entry_type: 'DEBIT', amount_minor: 1500 });
+        const feeCredit = ledgerInserts[0].payload.filter(
+            (l: any) => l.account === 'CUSTOMER_FUNDS' && l.amount_minor === 1500
+        );
+        expect(feeCredit).toHaveLength(1);
+        expect(feeCredit[0].entry_type).toBe('CREDIT');
 
         // 6. Entitlement granted for the canonical product
         const entitlementUpserts = callsFor('entitlements', 'upsert');

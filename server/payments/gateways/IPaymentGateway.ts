@@ -11,7 +11,7 @@ import type { VercelRequest } from './vercel-types';
 //                              TYPE DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE' | 'KASHIER_EGYPT' | 'KASHIER_GLOBAL';
+export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE' | 'KASHIER_EGYPT' | 'KASHIER_GLOBAL' | 'FOURTHWALL';
 
 /**
  * Granular payment status codes — primarily used by Kashier but shared across all gateways.
@@ -76,6 +76,12 @@ export interface WebhookVerificationResult {
     isReconciled?: boolean;
     /** Provider event kind (pay, authorize, capture, refund, void, reject, reversal, ...). */
     providerOperation?: string;
+    /** Provider's webhook event id — the deduplication key (Fourthwall: envelope `id`). */
+    eventId?: string;
+    /** Provider event type string (Fourthwall: envelope `type`, e.g. ORDER_PLACED). */
+    eventType?: string;
+    /** Currency reported by the provider (Fourthwall: OrderV1 amounts.currency). */
+    currency?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

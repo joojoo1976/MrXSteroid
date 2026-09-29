@@ -19,6 +19,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { KashierGateway, KashierSessionError } from '../gateways/KashierGateway';
+import { FourthwallGateway } from '../gateways/FourthwallGateway';
 import {
     assertRegionCredentials,
     resolveRegion,
@@ -63,6 +64,7 @@ export class CheckoutConflictError extends Error {
 export interface CheckoutShippingAddress {
     address?: string;
     city?: string;
+    country?: string;
     zipCode?: string;
     phone?: string;
 }
@@ -112,7 +114,7 @@ export interface CreateCheckoutSessionResult {
 }
 
 /** The only gateway capability Phase 4 checkout orchestration depends on. */
-export type CheckoutSessionGateway = Pick<KashierGateway, 'createPaymentSession'>;
+export type CheckoutSessionGateway = Pick<KashierGateway | FourthwallGateway, 'createPaymentSession'>;
 
 export interface CheckoutSessionDeps {
     supabase?: SupabaseClient;
@@ -379,24 +381,51 @@ export async function createCheckoutSession(
         supabase
     );
 
-    // ── 6. Mint the Kashier Payment Session (PRIMARY checkout path) ─────────
+    // ── 6. Mint the Payment Session (Kashier for EGYPT, Fourthwall for GLOBAL) ──
     const gateway = deps.gatewayFactory
         ? deps.gatewayFactory(region)
-        : new KashierGateway(region === 'EGYPT' ? 'egypt' : 'global');
+        : region === 'EGYPT'
+            ? new KashierGateway('egypt')
+            : new FourthwallGateway();
 
     let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
     try {
-        session = await gateway.createPaymentSession({
-            orderRef,
-            amount,
-            currency,
-            customerEmail: input.email,
-            customerName: input.fullName,
-            locale: input.locale || 'en',
-            paymentMethods: merchant.paymentMethods,
-            defaultMethod: merchant.defaultMethod,
-            serverWebhook: merchant.webhookUrl,
-        });
+        if (region === 'EGYPT') {
+            // Kashier session creation. Narrow to the concrete Kashier gateway
+            // the EGYPT branch owns (mirrors the GLOBAL branch's Fourthwall
+            // narrowing below) so each branch calls its own gateway's signature.
+            const kashierGateway = gateway as KashierGateway;
+            session = await kashierGateway.createPaymentSession({
+                orderRef,
+                amount,
+                currency,
+                customerEmail: input.email,
+                customerName: input.fullName,
+                locale: input.locale || 'en',
+                paymentMethods: merchant.paymentMethods,
+                defaultMethod: merchant.defaultMethod,
+                serverWebhook: merchant.webhookUrl,
+            });
+        } else {
+            // Fourthwall checkout session creation
+            const fourthwallGateway = gateway as FourthwallGateway;
+            const productMapping = fourthwallGateway['resolveProductMapping'](input.tierId);
+            if (!productMapping) {
+                throw new Error(`[CheckoutSession] No Fourthwall product mapping for tier: ${input.tierId}`);
+            }
+            session = await fourthwallGateway.createPaymentSession({
+                productId: productMapping.fourthwallProductId,
+                variantId: productMapping.fourthwallVariantId,
+                customerEmail: input.email,
+                customerName: input.fullName,
+                locale: input.locale || 'en',
+                metadata: {
+                    invoiceId,
+                    tierId: input.tierId,
+                    region: 'GLOBAL',
+                },
+            });
+        }
     } catch (error) {
         await markSessionCreationFailed(supabase, {
             invoiceId,
@@ -408,10 +437,8 @@ export async function createCheckoutSession(
     }
 
     // ── 7. Persist session linkage on invoice + payment intent ───────────────
-    // kashier_session_id / provider_order_id carry KASHIER's session id only.
-    // They stay null when the provider exposes none: the application's own
-    // order reference belongs to kashier_order_id and invoices.id, and must
-    // never be written into a provider-identifier column.
+    // For Kashier: kashier_session_id / kashier_session_url / kashier_order_id
+    // For Fourthwall: we reuse kashier_session_id for checkout_session_id, kashier_session_url for checkout URL
     const providerSessionId = session.sessionId ?? null;
     const { error: linkError } = await supabase
         .from('invoices')

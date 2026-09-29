@@ -32,6 +32,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { seedKashierFeeTables } from './kashierFeeFixtures';
 
 export interface DbFailure {
     code?: string;
@@ -137,6 +138,20 @@ function canonicalTables(options: DbOptions) {
                 provider_transaction_id: null,
                 gate_version: 0,
                 reconciliation_attempts: 0,
+                // The §6.3 fee is ALREADY resolved and persisted for this
+                // intent, which is the production replay-determinism path
+                // (precedence 1 in server/payments/gatewayFee.ts): settlement
+                // reuses the identical F rather than re-deriving it.
+                //
+                // F = 1500 on a G = 49900 capture is what makes the signed
+                // N = 48400 allocation below correct. It is a WORKED EXAMPLE
+                // from the §6.3 specification, NOT a commercial rate: neither
+                // approved Kashier schedule produces 1500 at this gross
+                // (card_settled 0.2% floors to 1000, instant_transfer 2.5%
+                // gives 1248). The approved schedules are exercised with their
+                // own exact arithmetic in tests/unit/gatewayFeeNet.test.ts and
+                // tests/integration/guestFulfillmentSettlement.test.ts.
+                gateway_fee_minor: 1500,
             }],
         beneficiaries: [
             { id: BENEFICIARY_AUTHOR, role: 'author', payout_method: null, payout_details: {} },
@@ -170,6 +185,16 @@ function canonicalTables(options: DbOptions) {
         }],
         profiles: [{ id: USER_ID, subscription_status: 'inactive', has_paid: false }],
         entitlements: [],
+        // The APPROVED Kashier fee schedules and the EXPLICIT method -> schedule
+        // mapping. These tables are seeded here so tests can prove the
+        // method-derived path works, and — more importantly — so that any test
+        // which omits a payment method FAILS CLOSED, which is the real
+        // regression guard now that no region or 'GLOBAL' default exists.
+        //
+        // Note there is deliberately NO `gateway_fee_percent` /
+        // `gateway_fee_fixed_minor` on merchant_configs any more: the region
+        // based fee model was removed in favour of method-derived schedules.
+        ...seedKashierFeeTables(),
     };
     return tables;
 }
@@ -329,6 +354,14 @@ export function createProductionConstraintSupabase(options: DbOptions = {}): Pro
 
         chain.select = function (this: any) { return this; };
         chain.eq = function (this: any, col: string, val: unknown) { state.match[col] = val; return this; };
+        // `is(col, null)` and `gt(col, v)` are supported so the Supabase query
+        // builders used by the settlement path (claim expiry CAS, global policy
+        // lookups) behave like the real client.
+        chain.is = function (this: any, col: string, val: unknown) {
+            state.match[col] = val;
+            return this;
+        };
+        chain.gt = function (this: any, col: string, val: unknown) { state.match[col] = val; return this; };
         chain.in = function (this: any, col: string, vals: unknown[]) { state.match[col] = vals; return this; };
         chain.order = function (this: any, col: string, o?: { ascending?: boolean }) {
             state.order = { col, dir: o?.ascending === false ? 'desc' : 'asc' };

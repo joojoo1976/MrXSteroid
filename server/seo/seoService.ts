@@ -14,6 +14,7 @@ import {
     KeywordFilterCategory,
 } from './types';
 import { getBaselineKeywords } from './baselineKeywords';
+import { internalBaselineAdapter, extractProvenanceFromBaseline } from './sources/internalBaselineAdapter';
 import { normalizeKeyword } from './normalization';
 
 export function getSupabaseAdmin(): SupabaseClient | null {
@@ -234,8 +235,11 @@ export async function getOrGenerateWeeklySnapshot(
         }
     }
 
-    // ── Tier 3: In-Memory Curated Baseline Fallback (Zero network failure) ─
-    const baseline = getBaselineKeywords(language);
+    // ── Tier 3: In-Memory Curated Baseline Fallback (Zero network failure) ──
+    // Connected via internalBaselineAdapter (PROVEN) — same data, provenance tracked
+    const adapterProvenance = extractProvenanceFromBaseline();
+    const baselineViaAdapter = await internalBaselineAdapter.fetchDiscoveredKeywords!(language);
+    const baseline = baselineViaAdapter as any[]; // preserves SeoKeyword shape + provenance
     return buildSnapshotData(baseline, language, year, weekNumber);
 }
 

@@ -11,7 +11,7 @@ const CANONICAL = 'https://mrxsteroid.com/smarttools/aromatization-risk';
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'Aromatization Risk & E2 Management Modeler | Mr. X-Steroid',
+        title: 'Aromatization Risk & E2 Management Modeler',
         description:
             'محاكي مخاطر الأروماتزة ومستوى الاستراديول (E2) أثناء الكورسات الهرمونية مع توصيات مثبطات الأروماتاز وفق كتاب Mr. X-Steroid.',
         alternates: {

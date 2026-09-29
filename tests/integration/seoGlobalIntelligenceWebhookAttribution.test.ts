@@ -156,7 +156,8 @@ describe('Global SEO Intelligence Platform v3.0 & Payments Webhook Cross-System 
             expect(data.opportunities.length).toBeGreaterThan(0);
 
             for (const opp of data.opportunities) {
-                expect(opp.confidence).toBeGreaterThanOrEqual(70);
+                // P1 (H2): no fabricated metrics — the unbacked numbers are null.
+                expect(opp.confidence).toBeNull();
                 expect(['missing', 'covered', 'low_ranking']).toContain(opp.status);
             }
         });
