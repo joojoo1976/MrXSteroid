@@ -4,6 +4,15 @@ import { requireAdmin } from '../../../../../server/auth/require-admin';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * NOTE (T1): this route exposes MANUALLY REGISTERED source rows
+ * (`seo_keyword_sources`) — it is a registry-of-record for imported/linked
+ * sources, NOT a health/verification feed.
+ *
+ * Real provider health (with honest PLANNED/IMPLEMENTED/CONFIGURED/CONNECTED/
+ * VERIFIED/FAILED/DISABLED states and exact blocked reasons) is served by
+ * `GET /api/admin/seo/source-health`, which reads the in-code source registry.
+ */
 export async function GET(req: NextRequest) {
     const authResult = await requireAdmin(req);
     if (!authResult.authorized) return authResult.response;

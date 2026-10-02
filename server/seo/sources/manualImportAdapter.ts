@@ -8,6 +8,8 @@
  */
 
 import { SourceAdapterContract, SourceAdapterResult, SourceEvidenceType } from './adapterContract';
+import { getBaselineKeywords } from '../baselineKeywords';
+import { normalizeKeyword } from '../normalization';
 
 /**
  * Manual import row schema — validated fields.
@@ -135,9 +137,10 @@ export async function integrateManualImport(language: 'en' | 'ar' = 'en'): Promi
     }
   }
 
-  // 3. Normalize and deduplicate
-  const normalizedRows: ManualImportRow[] = validRows.map(normalizeManualImportRow);
-  const uniqueRows = deduplicateManualImportRows(normalizedRows);
+  // 3. Deduplicate the validated rows.
+  // normalizeManualImportRow() below re-derives provenance for each row; it does
+  // not rewrite the keyword, so deduplication works on the validated rows.
+  const uniqueRows = deduplicateManualImportRows(validRows);
 
   // 4. Enrich with provenance and filter already-existing keywords
   const added: string[] = [];
@@ -163,7 +166,7 @@ export async function integrateManualImport(language: 'en' | 'ar' = 'en'): Promi
     // They carry provenance only; metrics remain unavailable
     augmentedKeywords.push({
       originalKeyword: row.originalKeyword,
-      normalizedKeyword: normalizeManualImportRow(row).normalizedKeyword,
+      normalizedKeyword: normalizeKeyword(row.originalKeyword, row.language),
       language: row.language,
       market: row.market || 'global',
       intent: 'unknown',

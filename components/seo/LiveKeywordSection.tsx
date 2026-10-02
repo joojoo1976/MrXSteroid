@@ -29,6 +29,16 @@ export interface LiveKeywordSectionProps {
     fallbackPool?: string[];
 }
 
+/**
+ * T1 TRUTH FIX — the response provenance of the LAST successful fetch.
+ *
+ * `dynamic`  -> served by a database/snapshot backed payload (real intelligence)
+ * `fallback` -> the API failed or returned nothing; the UI is rendering the
+ *               emergency curated pool. This is a DEGRADED state and the UI is
+ *               required to label it as such instead of calling it dynamic.
+ */
+type KeywordFeedState = 'loading' | 'dynamic' | 'fallback';
+
 type TabType = 'all' | 'trending' | 'rising' | 'guides' | 'tools' | 'plans';
 
 interface RawKeywordResponseItem {
@@ -75,6 +85,9 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
             }));
     });
     const [isExpanded, setIsExpanded] = useState(false);
+    // T1: the feed state is explicit. `fallback` means "we are NOT showing
+    // dynamic intelligence right now" and must be surfaced, not hidden.
+    const [feedState, setFeedState] = useState<KeywordFeedState>('loading');
     // Fetch weekly dynamic keywords for active language
     useEffect(() => {
         let isMounted = true;
@@ -85,6 +98,13 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (!isMounted) return;
+
+                // T1: trust the server's declared tier, not the mere presence of
+                // rows. A 200 carrying sourceTier='baseline' IS a fallback even
+                // though the HTTP status says success.
+                const tier = (data?.sourceTier ?? 'baseline') as 'snapshot' | 'database' | 'baseline';
+                const isDynamicPayload = tier === 'snapshot' || tier === 'database';
+
                 const rawItems: RawKeywordResponseItem[] = Array.isArray(data) ? data : (data?.keywords || []);
                 if (rawItems.length > 0) {
                     const parsed: LiveKeywordItem[] = rawItems
@@ -113,11 +133,21 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
 
                     if (parsed.length > 0) {
                         setKeywords(parsed);
+                        // T1: rows rendered from a baseline-tier payload are still a
+                        // fallback. Never let a populated list imply a healthy feed.
+                        setFeedState(isDynamicPayload ? 'dynamic' : 'fallback');
+                    } else {
+                        setFeedState('fallback');
                     }
+                } else {
+                    setFeedState('fallback');
                 }
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : String(err);
-                console.warn('[LiveKeywordSection] Using baseline fallback keywords:', msg);
+                // T1: log the real reason. The pool below is an emergency UX
+                // fallback only — it is not dynamic keyword intelligence.
+                console.warn('[LiveKeywordSection] Keyword feed unavailable, rendering emergency curated pool:', msg);
+                if (isMounted) setFeedState('fallback');
             }
         };
 
@@ -165,6 +195,10 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     const initialDisplayLimit = 28;
     const visibleKeywords = isExpanded ? filteredKeywords : filteredKeywords.slice(0, initialDisplayLimit);
     const hasMore = filteredKeywords.length > initialDisplayLimit;
+
+    // T1: a fallback feed must never be presented as live intelligence. This
+    // flag drives the heading, the badge colour and the description copy.
+    const isFallback = feedState === 'fallback';
 
     // Click handler: non-blocking search logging + safe navigation
     const handleKeywordClick = (item: LiveKeywordItem) => {
@@ -217,16 +251,36 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                 <Sparkles className="w-4 h-4" />
                             </div>
                             <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                                {isAr ? "دليل الكلمات المفتاحية والبحث الذكي" : "Live Search Intelligence & Topical Index"}
+                                {isFallback
+                                    ? (isAr ? "دليل الكلمات (نسخة احتياطية)" : "Keyword Directory (Fallback)")
+                                    : (isAr ? "دليل الكلمات المفتاحية والبحث الذكي" : "Live Search Intelligence & Topical Index")}
                             </h3>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-400 border border-gold-500/20">
-                                {isAr ? `تحديث أسبوعي (${filteredKeywords.length})` : `Weekly Refresh (${filteredKeywords.length})`}
+                            <span
+                                data-testid="keyword-feed-state"
+                                data-feed-state={feedState}
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                    isFallback
+                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                        : 'bg-gold-500/10 text-gold-400 border-gold-500/20'
+                                }`}
+                            >
+                                {isFallback
+                                    ? (isAr
+                                        ? `نسخة احتياطية (${filteredKeywords.length})`
+                                        : `Curated fallback (${filteredKeywords.length})`)
+                                    : (isAr
+                                        ? `تحديث أسبوعي (${filteredKeywords.length})`
+                                        : `Weekly Refresh (${filteredKeywords.length})`)}
                             </span>
                         </div>
                         <p className="text-xs text-zinc-400 font-medium">
-                            {isAr
-                                ? "استكشف أهم المصطلحات، الأدلة العلمية، والحاسبات الأكثر بحثاً في كمال الأجسام والهرمونات."
-                                : "Explore top verified bodybuilding protocols, scientific research queries, and precision tools."}
+                            {isFallback
+                                ? (isAr
+                                    ? "تعذر جلب البيانات الحية من مصادر الذكاء — تُعرض الكلمات المحفوظة محلياً كنسخة احتياطية."
+                                    : "Live keyword data could not be fetched from the intelligence sources — showing the locally stored curated set as a fallback.")
+                                : (isAr
+                                    ? "استكشف أهم المصطلحات، الأدلة العلمية، والحاسبات الأكثر بحثاً في كمال الأجسام والهرمونات."
+                                    : "Explore top verified bodybuilding protocols, scientific research queries, and precision tools.")}
                         </p>
                     </div>
 

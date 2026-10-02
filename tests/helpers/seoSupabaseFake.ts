@@ -27,6 +27,18 @@ export interface SeoFakeConfig {
     langKeywordRows?: Array<Record<string, any>>;
     /** Error injected into seo_keyword_snapshots upserts. */
     snapshotUpsertError?: { message: string } | null;
+
+    /**
+     * Prior-week rows returned for `seo_keyword_weekly_states` SELECTs. The
+     * runtime reads them to compute the historical diff, so a test can seed real
+     * history and assert the NEW/RISING/LOST states the route actually emits.
+     */
+    weeklyStateRows?: Array<Record<string, unknown>>;
+
+    /** Error injected into `seo_keyword_weekly_states` upserts. */
+    weeklyStateUpsertError?: { message: string } | null;
+    /** Error injected into every provenance RPC call. */
+    provenanceError?: { message: string } | null;
 }
 
 export interface SeoFakeOp {
@@ -41,10 +53,31 @@ export interface SeoFakeSupabase {
     from: (table: string) => any;
     /** Every completed operation, in order. */
     ops: SeoFakeOp[];
+    /** Provenance RPC calls, in order (seo_record_keyword_provenance). */
+    rpcCalls: Array<{ fn: string; args: Record<string, unknown> }>;
+    /** Error injected into every provenance RPC call. */
+    provenanceError: { message: string } | null;
 }
 
 export function createSeoSupabaseFake(cfg: SeoFakeConfig = {}): SeoFakeSupabase {
     const ops: SeoFakeOp[] = [];
+    const rpcCalls: SeoFakeSupabase['rpcCalls'] = [];
+    const provenanceError: { message: string } | null =
+        cfg.provenanceError ?? null;
+
+    const rpc = vi.fn(async (fn: string, args: Record<string, unknown> = {}) => {
+        rpcCalls.push({ fn, args });
+        if (provenanceError) return { data: null, error: provenanceError };
+        return {
+            data: {
+                keyword_id: args.p_keyword_id ?? 'kw-1',
+                source_id: 'source-editorial',
+                provenance_inserted: true,
+                source_backed: true,
+            },
+            error: null,
+        };
+    });
 
     const makeBuilder = (table: string) => {
         const state: any = { table, methods: [], eqs: [] };
@@ -66,6 +99,13 @@ export function createSeoSupabaseFake(cfg: SeoFakeConfig = {}): SeoFakeSupabase 
             }
             if (table === 'seo_keyword_pins' && state.methods.includes('select')) {
                 return { data: null, error: null };
+            }
+            if (table === 'seo_keyword_weekly_states') {
+                if (state.methods.includes('upsert')) {
+                    return { data: null, error: cfg.weeklyStateUpsertError ?? null };
+                }
+                // Prior-week history for COMPARE_WITH_HISTORY + the diff.
+                return { data: cfg.weeklyStateRows ?? [], error: null };
             }
             if (table === 'seo_keyword_snapshots' && state.methods.includes('upsert')) {
                 return { data: null, error: cfg.snapshotUpsertError ?? null };
@@ -110,5 +150,5 @@ export function createSeoSupabaseFake(cfg: SeoFakeConfig = {}): SeoFakeSupabase 
     };
 
     const from = vi.fn((table: string) => makeBuilder(table));
-    return { from, ops };
+    return { from, rpc, ops, rpcCalls, provenanceError };
 }

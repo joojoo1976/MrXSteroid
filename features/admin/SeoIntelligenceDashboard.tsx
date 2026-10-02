@@ -103,6 +103,64 @@ interface ClusterRow {
     description: string;
 }
 
+/**
+ * T1 TRUTH FIX — Source Health is rendered from the REAL registry state
+ * returned by `GET /api/admin/seo/source-health`.
+ *
+ * The previous implementation shipped a hardcoded table claiming
+ * `google_search_console = 95 / Verified` and `semrush / ahrefs = 85 / Verified`
+ * while there was no adapter credential, no live request and no connection for
+ * either provider (prompt §1.2 / §43 / §44). Those rows were fabricated and are
+ * removed. Nothing may be labelled VERIFIED here unless the registry itself
+ * reports a verified state backed by execution evidence.
+ */
+interface SourceHealthRow {
+    provider: string;
+    source_class: string | null;
+    status: string;
+    evidence_level: string | null;
+    auth_required: boolean;
+    auth_present: boolean;
+    blocked_reason: string | null;
+    last_attempt_at: string | null;
+    last_success_at: string | null;
+    last_failure_at: string | null;
+    last_error: string | null;
+    markets: string[];
+    languages: string[];
+}
+
+interface SourceHealthSummary {
+    byStatus?: Record<string, number>;
+    total?: number;
+    verified?: number;
+    connected?: number;
+    verifiedIsEvidenceBacked?: boolean;
+    runtimeExecutableCount?: number;
+    blocked?: number;
+}
+
+/** Colour mapping is driven by the DECLARED status only — never by a number. */
+const sourceStatusCls = (status: string): string => {
+    switch (status) {
+        case 'VERIFIED':
+            return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        case 'CONNECTED':
+        case 'CONFIGURED':
+            return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+        case 'IMPLEMENTED':
+            return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+        case 'PLANNED':
+            return 'bg-zinc-700/40 text-zinc-400 border-zinc-700';
+        case 'FAILED':
+            return 'bg-red-500/10 text-red-400 border-red-500/20';
+        case 'DISABLED':
+        case 'BLOCKED':
+        default:
+            return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+    }
+};
+
 // ── shared styles ───────────────────────────────────────────────────────────
 const tabCls = (active: boolean) =>
     `px-3 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all border ${
@@ -139,6 +197,34 @@ const OverviewPanel: React.FC<{ onRefreshSeo: () => void; refreshing: boolean }>
         total: number; active: number; pending: number; ymyl: number; blocked: number;
     } | null>(null);
 
+    // T1: source health comes from the registry endpoint, never from a literal.
+    const [sourceHealth, setSourceHealth] = useState<SourceHealthRow[]>([]);
+    const [sourceSummary, setSourceSummary] = useState<SourceHealthSummary | null>(null);
+    const [sourceHealthLoading, setSourceHealthLoading] = useState(true);
+    const [sourceHealthError, setSourceHealthError] = useState<string | null>(null);
+
+    const loadSourceHealth = useCallback(() => {
+        setSourceHealthLoading(true);
+        fetch('/api/admin/seo/source-health')
+            .then(async (r) => {
+                const body = await r.json();
+                if (!r.ok) throw new Error(body?.error || `HTTP ${r.status}`);
+                return body;
+            })
+            .then((d) => {
+                const rows: SourceHealthRow[] = Array.isArray(d?.sources) ? d.sources : [];
+                setSourceHealth(rows);
+                setSourceSummary((d?.summary as SourceHealthSummary) ?? null);
+                setSourceHealthError(null);
+            })
+            .catch((e: unknown) => {
+                setSourceHealth([]);
+                setSourceSummary(null);
+                setSourceHealthError(e instanceof Error ? e.message : String(e));
+            })
+            .finally(() => setSourceHealthLoading(false));
+    }, []);
+
     useEffect(() => {
         fetch('/api/admin/seo/keywords?limit=1')
             .then(r => r.json())
@@ -155,6 +241,10 @@ const OverviewPanel: React.FC<{ onRefreshSeo: () => void; refreshing: boolean }>
             })
             .catch(() => {});
     }, []);
+
+    useEffect(() => {
+        loadSourceHealth();
+    }, [loadSourceHealth]);
 
     return (
         <div className="space-y-6">
@@ -190,29 +280,70 @@ const OverviewPanel: React.FC<{ onRefreshSeo: () => void; refreshing: boolean }>
                 ))}
             </div>
 
+            {/* T1: real Source Health from the registry — replaces the fabricated
+                "95 / Verified" data-quality table. Nothing here is hardcoded. */}
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-5">
-                <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gold-400" /> Data Quality Framework
-                </h3>
-                <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
-                    {[
-                        ['google_search_console', '95', 'Verified'],
-                        ['internal_search', '85', 'Internal'],
-                        ['semrush / ahrefs', '85', 'Verified'],
-                        ['google_trends', '75', 'Modeled'],
-                        ['competitor_page', '65', 'Inferred'],
-                        ['editorial / admin', '55', 'Editorial'],
-                        ['ai_suggested', '30', 'AI Suggested'],
-                        ['unknown', '10', 'Unknown'],
-                    ].map(([src, conf, quality]) => (
-                        <div key={src} className="flex items-center justify-between bg-zinc-950/60 rounded-lg px-3 py-2">
-                            <span className="font-mono text-[10px] text-zinc-400">{src}</span>
-                            <span className={`text-[10px] font-bold ${Number(conf) >= 80 ? 'text-emerald-400' : Number(conf) >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>
-                                {conf}% · {quality}
-                            </span>
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-black text-white flex items-center gap-2">
+                        <Database className="w-4 h-4 text-gold-400" /> Source Health
+                    </h3>
+                    <button
+                        onClick={loadSourceHealth}
+                        disabled={sourceHealthLoading}
+                        className="text-[10px] font-bold text-zinc-400 hover:text-white disabled:opacity-50"
+                    >
+                        {sourceHealthLoading ? 'Loading...' : 'Reload'}
+                    </button>
+                </div>
+
+                {sourceHealthError && (
+                    <p className="text-[11px] text-red-400 mb-2">
+                        Source health unavailable: {sourceHealthError}
+                    </p>
+                )}
+
+                {!sourceHealthError && sourceHealth.length === 0 && !sourceHealthLoading && (
+                    <p className="text-[11px] text-zinc-500">
+                        No source registry state available.
+                    </p>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-zinc-400">
+                    {sourceHealth.map((s) => (
+                        <div key={s.provider} className="bg-zinc-950/60 rounded-lg px-3 py-2 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="font-mono text-[10px] text-zinc-300 truncate">{s.provider}</span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${sourceStatusCls(s.status)}`}>
+                                    {s.status}
+                                </span>
+                            </div>
+                            <div className="text-[10px] text-zinc-500 leading-relaxed">
+                                <span className="font-bold text-zinc-400">{s.source_class}</span>
+                                {' · '}evidence: {s.evidence_level}
+                                {' · '}auth: {s.auth_required ? (s.auth_present ? 'present' : 'missing') : 'not required'}
+                            </div>
+                            <div className="text-[10px] text-zinc-600">
+                                last attempt: {s.last_attempt_at ?? 'never'}
+                                {' · '}last success: {s.last_success_at ?? 'never'}
+                            </div>
+                            {(s.blocked_reason || s.last_error) && (
+                                <div className="text-[10px] text-amber-400/90 break-words">
+                                    {s.blocked_reason || s.last_error}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
+
+                <p className="text-[10px] text-zinc-600 mt-3">
+                    A source is only shown as VERIFIED when the registry recorded a real successful
+                    execution.
+                    {sourceSummary
+                        ? ` Currently VERIFIED: ${sourceSummary.verified ?? 0}, CONNECTED: ${sourceSummary.connected ?? 0}, runtime-executable: ${sourceSummary.runtimeExecutableCount ?? 0}.`
+                        : ''}
+                    {' '}No confidence or quality percentage is displayed because no provider in this
+                    deployment currently returns a measured value.
+                </p>
             </div>
         </div>
     );

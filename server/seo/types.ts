@@ -7,6 +7,36 @@
 
 export type SeoLanguage = 'en' | 'ar';
 
+/**
+ * T1 TRUTH FIX (Dynamic Keyword Intelligence).
+ *
+ * `sourceTier` states WHICH physical store actually served the response.
+ * It exists so that "the user sees keywords" can never be mistaken for
+ * "the dynamic keyword system works" (prompt §5 / §62).
+ *
+ *   snapshot  -> precomputed row in `seo_keyword_snapshots` for this ISO week
+ *   database  -> live read of active rows in `seo_keywords`
+ *   baseline  -> in-memory curated seed corpus (DEGRADED, never "dynamic")
+ *
+ * There is deliberately no `unknown`/`mixed` value: every response must
+ * declare exactly one tier so the false-pass tests can assert on it.
+ */
+export type KeywordSourceTier = 'snapshot' | 'database' | 'baseline';
+
+/**
+ * `dataKind` declares the epistemic status of the served rows, never a number.
+ * A `baseline` tier is always `curated`; a `snapshot`/`database` tier inherits
+ * the kind recorded at persistence time and degrades to `unavailable` when the
+ * upstream source produced no verifiable metric.
+ */
+export type KeywordDataKind =
+    | 'observed'
+    | 'estimated'
+    | 'generated'
+    | 'imported'
+    | 'curated'
+    | 'unavailable';
+
 export type SearchIntent =
     | 'informational'
     | 'commercial'
@@ -139,6 +169,13 @@ export interface SeoKeywordSnapshotData {
     weekNumber: number;
     generatedAt: string;
     totalKeywords: number;
+    /**
+     * T1: which store produced this snapshot. Optional so that snapshots
+     * persisted before this field existed still deserialize cleanly; readers
+     * must treat `undefined` as `unavailable`, never as "dynamic".
+     */
+    sourceTier?: KeywordSourceTier;
+    dataKind?: KeywordDataKind;
     categories: {
         all: SeoKeyword[];
         trending: SeoKeyword[];

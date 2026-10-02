@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { SeoLanguage, KeywordFilterCategory } from '../../../../server/seo/types';
+import { SeoLanguage, KeywordFilterCategory, KeywordSourceTier, KeywordDataKind } from '../../../../server/seo/types';
 import {
     getOrGenerateWeeklySnapshot,
     filterKeywordsByCategory,
@@ -29,6 +29,12 @@ export async function GET(req: NextRequest) {
         const limitParam = parseInt(searchParams.get('limit') || '100', 10);
         const limit = Math.min(Math.max(limitParam, 1), 200);
 
+        // T1: `market` is accepted and echoed for forward compatibility with the
+        // market-aware engine (T7). It is NOT used to filter yet, because the
+        // persisted identity is still (language, normalized_keyword) — silently
+        // pretending to filter by market would be a fabricated capability.
+        const marketParam = searchParams.get('market') || null;
+
         // Retrieve snapshot (Tier 1 Snapshot -> Tier 2 Live DB -> Tier 3 Baseline)
         const snapshot = await getOrGenerateWeeklySnapshot(language);
         let rawKeywords = filterKeywordsByCategory(snapshot, category, limit);
@@ -37,6 +43,13 @@ export async function GET(req: NextRequest) {
         if (routeParam && routeParam !== '/') {
             rawKeywords = filterKeywordsForRoute(rawKeywords, routeParam, limit);
         }
+
+        // T1 TRUTH FIX: declare which store actually served this response.
+        // A `baseline` tier is an explicit DEGRADED state (emergency UX
+        // fallback), NOT working Dynamic Keyword Intelligence (§5 / §62).
+        const sourceTier: KeywordSourceTier = snapshot.sourceTier ?? 'baseline';
+        const dataKind: KeywordDataKind = snapshot.dataKind ?? 'unavailable';
+        const isDynamic = sourceTier !== 'baseline';
 
         const keywords = rawKeywords.map((k, idx) => ({
             id: k.id || `kw-${language}-${idx}`,
@@ -60,6 +73,7 @@ export async function GET(req: NextRequest) {
             {
                 ok: true,
                 language,
+                market: marketParam,
                 category,
                 route: routeParam || null,
                 year: snapshot.year,
@@ -68,12 +82,30 @@ export async function GET(req: NextRequest) {
                 totalKeywords: keywords.length,
                 keywords,
                 stats: snapshot.stats,
+                // ── T1 provenance-of-response contract ──────────────────────
+                // `sourceTier` is the ONLY truthful answer to "did the dynamic
+                // keyword system work?" — a 200 with sourceTier='baseline' is a
+                // degraded response. `dynamicAvailable` mirrors it as a boolean
+                // so the UI never has to re-derive the rule.
+                sourceTier,
+                dataKind,
+                dynamicAvailable: isDynamic,
+                degraded: !isDynamic,
+                degradedReason: isDynamic
+                    ? null
+                    : 'Served from curated baseline seed corpus: no database-backed or source-backed weekly snapshot was available.',
             },
             {
                 status: 200,
                 headers: {
-                    'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+                    // A degraded (baseline) response must never be cached by a CDN
+                    // as if it were the healthy dynamic payload.
+                    'Cache-Control': isDynamic
+                        ? 'public, s-maxage=3600, stale-while-revalidate=86400'
+                        : 'no-store',
                     'Content-Type': 'application/json',
+                    'X-SEO-Source-Tier': sourceTier,
+                    'X-SEO-Data-Kind': dataKind,
                 },
             }
         );

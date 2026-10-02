@@ -220,4 +220,54 @@ describe('POST /api/seo/refresh — P0 persistence verification', () => {
         expect(runPayloads.length).toBe(1);
         expect(runPayloads[0].status).toBe('failed');
     });
+
+    // ── STEP 4: provenance (seo_keyword_source_links write path) ──────────
+
+    it('records an explicit EDITORIAL provenance row for every scanned keyword', async () => {
+        const fake = createSeoSupabaseFake({ keywordsRows: [v1KeywordRow()] });
+        h.current = fake;
+
+        const res = await callRefresh();
+        expect(res.status).toBe(200);
+        const body = await res.json();
+
+        expect(body.provenanceRowsWritten).toBe(1);
+        expect(body.provenanceFailures).toEqual([]);
+
+        expect(fake.rpcCalls.length).toBe(1);
+        expect(fake.rpcCalls[0].fn).toBe('seo_record_keyword_provenance');
+        expect(fake.rpcCalls[0].args.p_keyword_id).toBe('kw-1');
+
+        // The EDITORIAL source identity travels with the link.
+        const source = fake.rpcCalls[0].args.p_source as Record<string, unknown>;
+        expect(source.source_type).toBe('editorial');
+        expect(source.source_name).toBe('internal_editorial_seeds');
+
+        const link = fake.rpcCalls[0].args.p_provenance as Record<string, unknown>;
+        expect(link.evidence_type).toBe('baseline');
+        expect(link.source_reference).toBe('internal://baseline-keywords');
+        expect(link.generation_method).toBe('seed');
+    });
+
+    it('reports a provenance failure instead of claiming the keyword is verified', async () => {
+        const fake = createSeoSupabaseFake({
+            keywordsRows: [v1KeywordRow()],
+            provenanceError: { message: 'function seo_record_keyword_provenance does not exist' },
+        });
+        h.current = fake;
+
+        const res = await callRefresh();
+        // The keyword/snapshot behaviour is unchanged; provenance failures are
+        // surfaced, never silently swallowed into a "verified" claim.
+        expect(res.status).toBe(200);
+        const body = await res.json();
+        expect(body.success).toBe(true);
+        expect(body.provenanceRowsWritten).toBe(0);
+        expect(body.provenanceFailures.length).toBe(1);
+        expect(body.provenanceFailures[0].id).toBe('kw-1');
+        expect(body.provenanceFailures[0].message).toContain('does not exist');
+
+        const runPayloads = runUpdatePayloadsOf(fake);
+        expect(String(runPayloads[0].error_log)).toContain('provenanceFailures');
+    });
 });
