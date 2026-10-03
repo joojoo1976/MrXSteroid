@@ -303,14 +303,45 @@ describe('Google Ads · request targets v25 and honours the access path', () => 
         expect(seenHeaders['login-customer-id']).toBe('5555555555');
     });
 
-    it('the request body still uses the documented field names', () => {
+    it('the request body matches the LIVE v25 REST/JSON contract', () => {
+        // Proven against the real endpoint. The REST/JSON API takes camelCase
+        // names and enum strings; the previous snake_case/protobuf body was
+        // rejected live with:
+        //   400 INVALID_ARGUMENT  Unknown name "languageConstant": Cannot find field.
         const body = buildGenerateKeywordIdeaRequest(
-            { language: 'en', market: 'en-US', seeds: ['testosterone'] },
-            '1234567890'
+            { language: 'en', market: 'en-US', seeds: ['testosterone'] }
         );
-        expect(body.customer_id).toBe('1234567890');
-        expect(body.keyword_and_page_seed).toBeDefined();
-        expect(body.geo_target_constants).toEqual([2840]);
+
+        // camelCase, not snake_case.
+        expect(body.language).toBe('languageConstants/1000');
+        expect(body.keywordPlanNetwork).toBe('GOOGLE_SEARCH');
+        expect(body.geoTargetConstants).toEqual(['geoTargetConstants/2840']);
+        expect(body.keywordSeed).toEqual({ keywords: ['testosterone'] });
+
+        // `customerId` travels in the URL path, never in the body.
+        expect(body.customer_id).toBeUndefined();
+        expect(body.customerId).toBeUndefined();
+
+        // And none of the protobuf spellings may creep back in.
+        for (const snake of [
+            'language_constant',
+            'keyword_plan_network',
+            'geo_target_constants',
+            'include_page_topics',
+            'keyword_and_page_seed',
+        ]) {
+            expect(body[snake], `${snake} must not be sent`).toBeUndefined();
+        }
+    });
+
+    it('Arabic markets send the Arabic language constant', () => {
+        const body = buildGenerateKeywordIdeaRequest({
+            language: 'ar',
+            market: 'ar-EG',
+            seeds: ['計算'],
+        });
+        expect(body.language).toBe('languageConstants/1001');
+        expect(body.geoTargetConstants).toEqual(['geoTargetConstants/818']);
     });
 });
 

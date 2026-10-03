@@ -477,35 +477,46 @@ export function buildGoogleAdsHeaders(params: {
 /**
  * Build the `GenerateKeywordIdeaRequest` body from the documented fields.
  *
+ * `customerId` is deliberately NOT a parameter: it travels in the URL path
+ * (`customers/{id}:generateKeywordIdeas`), and the request message has no such
+ * field. The caller normalizes it and puts it in the endpoint.
+ *
  * Exported so a test can assert the wire contract without a live call.
  */
 export function buildGenerateKeywordIdeaRequest(
-    query: GoogleAdsQuery,
-    resolvedCustomerId?: string,
+    query: GoogleAdsQuery
 ): Record<string, unknown> {
     const geo = marketToGeoTargetConstant(query.market);
+    // WIRE FORMAT — proven live against googleads.googleapis.com/v25.
+    //
+    // The REST/JSON API accepts camelCase field names and enum STRINGS. The
+    // previous body used protobuf snake_case (`language: { language_constant }`,
+    // `keyword_plan_network`, `geo_target_constants`) and a `customer_id` field
+    // that does not exist in the request message at all. A live call returned:
+    //
+    //     400 INVALID_ARGUMENT  Unknown name "languageConstant": Cannot find field.
+    //
+    // i.e. every request failed on shape before authorization was ever checked,
+    // so this provider could never have produced a single row. `customerId`
+    // belongs in the URL path (`customers/{id}:generateKeywordIdeas`), not the
+    // body.
     const body: Record<string, unknown> = {
-        customer_id: normalizeCustomerId(resolvedCustomerId ?? query.customerId ?? ''),
-        language: {
-            // `languageConstant` is the documented wrapper field name.
-            language_constant: LANGUAGE_CODES[query.language],
-        },
-        // Real Google Ads on network, so the statistics are the ones an
-        // advertiser would actually bid against.
-        keyword_plan_network: 'GOOGLE_SEARCH',
-        include_page_topics: false,
+        // LanguageConstant enum, as a resource-name string.
+        language: `languageConstants/${LANGUAGE_CODES[query.language]}`,
+        // Real Google Ads network, so the statistics are the ones an advertiser
+        // would actually bid against.
+        keywordPlanNetwork: 'GOOGLE_SEARCH',
+        includePageTopics: false,
     };
     if (geo !== null) {
-        body.geo_target_constants = [geo];
+        body.geoTargetConstants = [`geoTargetConstants/${geo}`];
     }
     const seeds = (query.seeds ?? []).map((s) => s.trim()).filter(Boolean);
     const urls = (query.urlSeeds ?? []).map((s) => s.trim()).filter(Boolean);
     if (urls.length > 0) {
-        body.url_seed = { urls };
+        body.urlSeed = { urls };
     } else {
-        body.keyword_and_page_seed = {
-            keywords: seeds,
-        };
+        body.keywordSeed = { keywords: seeds };
     }
     return body;
 }
@@ -698,7 +709,7 @@ export async function collectGoogleAdsKeywordIdeas(
                 loginCustomerId,
                 accessPath,
             }),
-            body: JSON.stringify(buildGenerateKeywordIdeaRequest(query, customerId)),
+            body: JSON.stringify(buildGenerateKeywordIdeaRequest(query)),
             signal: query.signal,
         });
         if (!response.ok) {

@@ -109,6 +109,14 @@ export const DEFAULT_USER_AGENT =
     'MrXSteroidResearchBot/1.0 (+https://mrxsteroid.example/bot; respects robots.txt)';
 
 /** Absolute floor on the per-host inter-request delay. Non-negotiable. */
+/** True for AbortError-shaped errors from fetch / AbortController. */
+function isAbortError(error: unknown): boolean {
+    return Boolean(
+        error &&
+        typeof error === 'object' &&
+        (error as { name?: string }).name === 'AbortError'
+    );
+}
 export const MIN_THROTTLE_MS = 1000;
 
 /** Conditional-request validators remembered between runs. */
@@ -1019,6 +1027,31 @@ export class PoliteCrawler {
     }
 
     /**
+     * Serialize requests per host so only one is in flight against a given
+     * origin at a time.
+     *
+     * `request()` delegates here, which is why this method must exist: without
+     * it the very first real request threw `this.enqueueOnHost is not a
+     * function`, so the crawler had never actually run over HTTP — its tests
+     * only exercised the pure parsing helpers.
+     *
+     * The queue resolves (never rejects) with the inner result, so one failed
+     * request cannot poison the queue for the rest of the run.
+     */
+    private enqueueOnHost<T>(origin: string, task: () => Promise<T>): Promise<T> {
+        const previous = this.hostQueues.get(origin) ?? Promise.resolve();
+        const run = previous.then(task, task);
+        // Store a promise that always settles, so a rejection in `task` does
+        // not become an unhandled rejection on the stored chain.
+        const settled = run.then(
+            (value) => value,
+            () => undefined
+        );
+        this.hostQueues.set(origin, settled);
+        return run;
+    }
+
+    /**
      * Perform one polite, robots-checked, throttled, conditional HTTP GET.
      *
      * Never throws: every failure mode is returned as a value with an exact
@@ -1046,11 +1079,20 @@ export class PoliteCrawler {
         }
         const origin = normalizeOrigin(parsed.origin);
 
+        // robots.txt is ALWAYS retrievable (RFC 9309 §2). It must not be
+        // filtered by a robots policy, because the policy is exactly what we
+        // are trying to fetch here: on a cold origin there is no policy yet,
+        // `getRobotsPolicy` returns CLOSED, and the crawler denied its own
+        // robots.txt on every single domain — which is why every crawl produced
+        // 0 URLs and 1 blocked entry each, with no error ever surfacing.
+        const isRobotsTxt = /\/robots\.txt$/i.test(parsed.pathname);
+        const shouldRespectRobots = respectRobots && !isRobotsTxt;
+
         return this.enqueueOnHost(origin, async () => {
             const startedAt = this.options.now();
 
             if (
-                respectRobots &&
+                shouldRespectRobots &&
                 !isUrlAllowed(url, this.getRobotsPolicy(origin), this.options.userAgent)
             ) {
                 this.stats.blockedByRobots++;
@@ -1116,7 +1158,27 @@ export class PoliteCrawler {
                 await this.options.sleep(backoff);
             }
 
-            return result;
+            // `result` is scoped to the retry loop; after it, the last outcome is
+            // `last`. Returning `result` threw `ReferenceError: result is not
+            // defined` on EVERY exhausted request, so a failing URL took down
+            // the whole crawl instead of being reported as a failure value.
+            // The shape matches the success return so callers stay uniform.
+            if (last === null) {
+                return this.failure(
+                    url,
+                    'network_error',
+                    'no attempt was made',
+                    0,
+                    {},
+                    startedAt
+                );
+            }
+            return {
+                ...last,
+                attempts: attempt,
+                startedAt,
+                finishedAt: this.options.now(),
+            };
         });
     }
 
@@ -1231,6 +1293,14 @@ export class PoliteCrawler {
                 previous,
                 startedAt
             );
+        } finally {
+            // The timeout timer was created but NEVER cleared, so it stayed
+            // pending for the full `requestTimeoutMs` after every successful
+            // request too. That keeps the Node event loop alive after a crawl
+            // finished — which on a serverless function delays the response and
+            // holds the invocation open. Clearing it is also what makes the
+            // timer "used" rather than dead weight.
+            clearTimeout(timer);
         }
     }
 
@@ -1457,9 +1527,16 @@ export async function crawlCompetitor(
         blockedUrls,
         failures,
         stats: crawler.stats,
-        robotsStatus,
-        startedAt: new Date(runStartedAt).toISOString(),
-        finishedAt: new Date(crawler.options.now()).toISOString(),
+        // `robotsStatus` was referenced but never bound, so assembling a
+        // CrawlResult threw `ReferenceError: robotsStatus is not defined` and
+        // the crawler could not return a result at all. The real value is the
+        // status the robots.txt fetch produced, already carried on the policy.
+        robotsStatus: policy.status ?? null,
+        // The bound variable is `startedAt`; `runStartedAt` was never declared, so
+        // assembling the result threw a ReferenceError and the crawl could
+        // never return. Use the real start timestamp.
+        startedAt: new Date(startedAt).toISOString(),
+        finishedAt: new Date(resolved.now()).toISOString(),
         // "Real" means an actual HTTP round-trip returned a body we read. A run
         // that only discovered robots/sitemap entries did NOT make real requests,
         // and must not be counted as a verified observation.

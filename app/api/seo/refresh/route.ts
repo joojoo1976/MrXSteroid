@@ -1,5 +1,6 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { crawlAndPersistCompetitors } from '../../../../server/seo/sources/competitorPersistence';
 import { getSupabaseAdmin, getIsoWeek, buildSnapshotData } from '../../../../server/seo/seoService';
 import {
     calculateKeywordScore,
@@ -571,9 +572,63 @@ export async function POST(req: NextRequest) {
         let weeklyStateRowsWritten = 0;
 let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }> = [];
         let defaultMarketRows = 0;
+        // Real competitor-crawl counters for this run, surfaced in the response.
+        let competitorCrawlStats = {
+            domainsCrawled: 0,
+            urlsDiscovered: 0,
+            observationsPersisted: 0,
+            duplicates: 0,
+            failures: 0,
+        };
 
         try {
             const previousStates = await readPreviousWeekStates(supabase, year, weekNumber);
+
+            // ---- Competitor crawl: ONCE per run ----------------------------
+            // `competitor_web` needs no credential, so it is crawled for real
+            // instead of being hardcoded BLOCKED. Its own errors are captured:
+            // one dead competitor must never fail the weekly run.
+            let competitorOutcome: ProviderOutcome;
+            try {
+                const crawl = await crawlAndPersistCompetitors(supabase);
+                competitorCrawlStats = {
+                    domainsCrawled: crawl.domainsCrawled,
+                    urlsDiscovered: crawl.urlsDiscovered,
+                    observationsPersisted: crawl.observationsPersisted,
+                    duplicates: crawl.duplicates,
+                    failures: crawl.failures.length,
+                };
+                // Observed pages are persisted to seo_competitor_observations.
+                // They are NOT emitted as keyword records: a competitor page
+                // proves what a competitor targets, never how much demand it
+                // has, so injecting it as a keyword record would invent volume.
+                competitorOutcome = {
+                    provider: 'competitor_web',
+                    // `SourceStatus` has no PARTIAL. Honest mapping: we crawled
+                    // and persisted real observations -> CONNECTED; the crawl
+                    // ran but yielded nothing -> FAILED (never a silent pass).
+                    status: crawl.observationsPersisted > 0 ? 'CONNECTED' : 'FAILED',
+                    dataKind: 'observed',
+                    records: [],
+                    error:
+                        crawl.observationsPersisted > 0
+                            ? undefined
+                            : `competitor crawl produced 0 persisted observations from ${crawl.domainsCrawled} domains (${crawl.failures.length} failures)`,
+                    partial: crawl.failures.length > 0 || crawl.observationsPersisted === 0,
+                };
+            } catch (crawlError) {
+                // Isolation: a crawler fault degrades this ONE provider only.
+                competitorOutcome = {
+                    provider: 'competitor_web',
+                    status: 'BLOCKED',
+                    dataKind: 'unavailable',
+                    records: [],
+                    error: `competitor crawl failed: ${
+                        crawlError instanceof Error ? crawlError.message : String(crawlError)
+                    }`,
+                    partial: false,
+                };
+            }
 
             weeklyRun = await runWeeklyEngine({
                 market: 'en-US',
@@ -622,7 +677,9 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                     // so each is reported BLOCKED with its exact missing
                     // dependency. The engine records these as values and the run
                     // finishes PARTIAL_SUCCESS rather than failing.
-                    const blocked = BLOCKED_EXTERNAL_SOURCES.map((src) => ({
+                    const blocked = BLOCKED_EXTERNAL_SOURCES.filter(
+                        (src) => src.provider !== 'competitor_web'
+                    ).map((src) => ({
                         provider: src.provider,
                         status: 'BLOCKED' as const,
                         dataKind: 'unavailable' as const,
@@ -631,7 +688,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         partial: false,
                     }));
 
-                    return [corpus, ...blocked];
+                    return [corpus, ...blocked, competitorOutcome];
                 },
                 existingKeywords: keywordsRows.map((row) => ({
                     keyword: String(row.original_keyword ?? ''),
@@ -749,6 +806,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         byState: diffByState,
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
+            competitorCrawl: competitorCrawlStats,
                     },
                 },
             };
@@ -802,6 +860,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         byState: diffByState,
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
+            competitorCrawl: competitorCrawlStats,
                     },
                 },
                 { status: 500 }
@@ -839,6 +898,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                 byState: diffByState,
                 rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                 rowsWithDefaultedMarket: defaultMarketRows,
+            competitorCrawl: competitorCrawlStats,
             },
         });
     } catch (error: unknown) {
