@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { crawlAndPersistCompetitors } from '../../../../server/seo/sources/competitorPersistence';
+import {
+    verifyDestinations,
+    summariseVerification,
+    toVerifiedFlag,
+} from '../../../../server/seo/destinationVerification';
 import { getSupabaseAdmin, getIsoWeek, buildSnapshotData } from '../../../../server/seo/seoService';
 import {
     calculateKeywordScore,
@@ -197,6 +202,88 @@ export async function POST(req: NextRequest) {
 
         if (kwError || !keywordsRows) {
             throw new Error(`Failed to load keywords: ${kwError?.message || 'Unknown error'}`);
+        }
+
+        // ------------------------------------------------------------------
+        // 1b. DESTINATION VERIFICATION (real HTTP against our own site)
+        // ------------------------------------------------------------------
+        // `destination_verified` was false on all 234 rows because
+        // `destinationVerification.ts` was never called by any runtime code —
+        // only by its own unit test. `false` there means "checked, missing",
+        // which was never true, so the column was actively misleading.
+        //
+        // The three-state design is preserved exactly:
+        //   verified   -> destination_verified = true
+        //   missing    -> destination_verified = false
+        //   unverified -> destination_verified stays NULL (never coerced)
+        //
+        // A destination of '/' is NOT auto-verified and no substitute route is
+        // invented: it is a placeholder needing a human decision, so it is
+        // reported under `reviewRequired` and deliberately left unverified.
+        let destinationStats: {
+            checked: number;
+            verified: number;
+            missing: number;
+            unverified: number;
+            reviewRequired: number;
+            persisted: number;
+            error: string | null;
+        } = {
+            checked: 0,
+            verified: 0,
+            missing: 0,
+            unverified: 0,
+            reviewRequired: 0,
+            persisted: 0,
+            error: null,
+        };
+        try {
+            const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || 'https://mrxsteroid.com';
+            const paths = keywordsRows
+                .map((r) => String(r.destination_path ?? '').trim())
+                .filter((p) => p.length > 0);
+            const reviewPaths = new Set(paths.filter((p) => p === '/'));
+            const checkable = paths.filter((p) => p !== '/');
+
+            const checks = await verifyDestinations(checkable, {
+                siteOrigin,
+                fetchImpl: globalThis.fetch,
+            });
+            const summary = summariseVerification(checks);
+
+            // Persist the honest per-row flag. Only rows whose path was really
+            // checked are written; '/' rows are left untouched on purpose.
+            const flagByPath = new Map(
+                checks.map((c) => [c.path, toVerifiedFlag(c.verification)] as const)
+            );
+            let persisted = 0;
+            for (const row of keywordsRows) {
+                const p = String(row.destination_path ?? '').trim();
+                if (!p || p === '/') continue;
+                const flag = flagByPath.get(p);
+                if (flag === undefined) continue;
+                if (row.destination_verified === flag) continue;
+                const { error: upErr } = await supabase
+                    .from('seo_keywords')
+                    .update({ destination_verified: flag })
+                    .eq('id', row.id);
+                if (!upErr) persisted += 1;
+            }
+
+            destinationStats = {
+                checked: checks.length,
+                verified: summary.verified,
+                missing: summary.missing,
+                unverified: summary.unverified,
+                reviewRequired: reviewPaths.size,
+                persisted,
+                error: null,
+            };
+        } catch (destErr) {
+            // Isolation: an unreachable site must not fail the weekly run, and
+            // the reason is recorded rather than swallowed.
+            destinationStats.error =
+                destErr instanceof Error ? destErr.message : String(destErr);
         }
 
         // 2a. DISCOVER + COLLECT (read-only, additive)
@@ -807,6 +894,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
                         competitorCrawl: competitorCrawlStats,
+                        destinationVerification: destinationStats,
                     },
                 },
             };
@@ -861,6 +949,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
                         competitorCrawl: competitorCrawlStats,
+                        destinationVerification: destinationStats,
                     },
                 },
                 { status: 500 }
