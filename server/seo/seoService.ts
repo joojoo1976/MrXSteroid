@@ -12,6 +12,8 @@ import {
     SeoKeywordSnapshotData,
     SeoLanguage,
     KeywordFilterCategory,
+    KeywordSourceTier,
+    KeywordDataKind,
 } from './types';
 import { getBaselineKeywords } from './baselineKeywords';
 import { internalBaselineAdapter, extractProvenanceFromBaseline } from './sources/internalBaselineAdapter';
@@ -124,11 +126,20 @@ export function buildSnapshotData(
 
 /**
  * Fetch or compute the current weekly snapshot with multi-tier fallback.
+ *
+ * T1 TRUTH FIX: the tier that actually served the response is recorded on the
+ * returned snapshot (`sourceTier`) instead of being swallowed by the fallback.
+ * A 200 response carrying `sourceTier: 'baseline'` is a DEGRADED response and
+ * must never be reported as working Dynamic Keyword Intelligence (§5, §62).
+ *
+ * Backward compatible: callers that only read `categories`/`stats` are
+ * unaffected, and pre-existing persisted snapshots (written before this field
+ * existed) are re-stamped on read rather than rejected.
  */
 export async function getOrGenerateWeeklySnapshot(
     language: SeoLanguage,
     client: SupabaseClient | null = getSupabaseAdmin()
-): Promise<SeoKeywordSnapshotData> {
+): Promise<SeoKeywordSnapshotData & { sourceTier: KeywordSourceTier }> {
     const { year, weekNumber } = getIsoWeek();
 
     // ── Tier 1: Try reading existing weekly snapshot from DB ────────────────
@@ -143,7 +154,14 @@ export async function getOrGenerateWeeklySnapshot(
                 .single();
 
             if (!snapErr && snapshotRow?.snapshot_data) {
-                return snapshotRow.snapshot_data as SeoKeywordSnapshotData;
+                const persisted = snapshotRow.snapshot_data as SeoKeywordSnapshotData;
+                // A snapshot persisted before T1 carries no tier. Re-stamp it on
+                // read so the API can never emit an undeclared tier.
+                return {
+                    ...persisted,
+                    sourceTier: persisted.sourceTier ?? 'snapshot',
+                    dataKind: persisted.dataKind ?? inferDataKind(persisted),
+                };
             }
         } catch {
             // Proceed to Tier 2
@@ -217,7 +235,14 @@ export async function getOrGenerateWeeklySnapshot(
                         isActive: r.is_active,
                     }));
 
-                const snapshot = buildSnapshotData(mapped, language, year, weekNumber);
+                // Typed with the guaranteed-tier intersection so every return path
+                // of this function satisfies the contract (T1: a caller must never
+                // receive a snapshot whose sourceTier is optional).
+                const snapshot: SeoKeywordSnapshotData & { sourceTier: KeywordSourceTier } = {
+                    ...buildSnapshotData(mapped, language, year, weekNumber),
+                    sourceTier: 'database',
+                    dataKind: inferDataKind({ categories: { all: mapped } } as SeoKeywordSnapshotData),
+                };
 
                 // Save snapshot asynchronously in background
                 client.from('seo_keyword_snapshots').upsert({
@@ -239,8 +264,71 @@ export async function getOrGenerateWeeklySnapshot(
     // Connected via internalBaselineAdapter (PROVEN) — same data, provenance tracked
     const adapterProvenance = extractProvenanceFromBaseline();
     const baselineViaAdapter = await internalBaselineAdapter.fetchDiscoveredKeywords!(language);
-    const baseline = baselineViaAdapter as any[]; // preserves SeoKeyword shape + provenance
-    return buildSnapshotData(baseline, language, year, weekNumber);
+    // The adapter returns `unknown[]`; the baseline adapter spreads the SeoKeyword
+    // seed shape, so the narrowing cast is safe and removes a pre-existing
+    // `no-explicit-any` error without changing runtime behaviour.
+    const baseline = baselineViaAdapter as SeoKeyword[];
+    return {
+        ...buildSnapshotData(baseline, language, year, weekNumber),
+        sourceTier: 'baseline',
+        dataKind: 'curated',
+    };
+}
+
+/**
+ * T1: infer the epistemic kind of a snapshot WITHOUT inventing any metric.
+ *
+ * The rule is deliberately conservative — it looks only at the `source` field
+ * that was persisted with each keyword:
+ *   - `internal_search` / `google_search_console` / `bing` / `trend` /
+ *     `competitor_page` etc. -> `observed` (a real provider row exists)
+ *   - `baseline` / `editorial` / `admin` -> `curated`
+ *   - `ai_suggested`          -> `generated`
+ *   - anything unknown/absent -> `unavailable`  (NEVER silently `observed`)
+ *
+ * It returns `unavailable` for an empty snapshot: an empty result is not
+ * evidence of anything.
+ */
+export function inferDataKind(snapshot: Pick<SeoKeywordSnapshotData, 'categories'>): KeywordDataKind {
+    const rows = snapshot?.categories?.all ?? [];
+    if (!Array.isArray(rows) || rows.length === 0) return 'unavailable';
+
+    const kinds = new Set<KeywordDataKind>();
+    for (const row of rows) {
+        const source = String((row as { source?: unknown })?.source ?? '').trim();
+        switch (source) {
+            case 'baseline':
+            case 'editorial':
+            case 'admin':
+                kinds.add('curated');
+                break;
+            case 'ai_suggested':
+                kinds.add('generated');
+                break;
+            case 'internal_search':
+            case 'google_search_console':
+            case 'google_trends':
+            case 'keyword_planner':
+            case 'bing_webmaster':
+            case 'competitor':
+            case 'competitor_page':
+            case 'analytics':
+                kinds.add('observed');
+                break;
+            default:
+                // Unknown provenance is NOT upgraded to `observed`.
+                kinds.add('unavailable');
+                break;
+        }
+    }
+
+    // Mixed provenance: report the weakest claim present so the response can
+    // never overstate its own evidence level.
+    const order: KeywordDataKind[] = ['unavailable', 'generated', 'estimated', 'imported', 'curated', 'observed'];
+    for (const kind of order) {
+        if (kinds.has(kind)) return kind;
+    }
+    return 'unavailable';
 }
 
 /**

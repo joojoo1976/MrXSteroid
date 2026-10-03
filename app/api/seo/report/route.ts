@@ -62,6 +62,111 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const lang = (url.searchParams.get('lang') || 'all') as SeoLanguage | 'all';
 
+    // ---------------------------------------------------------------------
+    // competitor-intelligence, from REAL crawled observations.
+    //
+    // The snapshot payload below is keyword-centric and ignored `type`
+    // entirely, so `?type=competitors` returned the same keyword summary as
+    // every other request and the persisted competitor observations were
+    // invisible to the reader. This branch serves the actual rows.
+    //
+    // HONESTY: every field here is something the crawl observed about a page.
+    // There is no volume, rank or traffic field, because none was measured.
+    // ---------------------------------------------------------------------
+    const type = url.searchParams.get('type');
+    if (type === 'competitors' || type === 'competitor-intelligence') {
+        const { year, weekNumber } = getIsoWeek();
+        if (!supabase) {
+            return NextResponse.json(
+                { error: 'Database service role client unavailable', dataSource: 'unavailable' },
+                { status: 503 }
+            );
+        }
+        const { data: obsRows, error: obsErr } = await supabase
+            .from('seo_competitor_observations')
+            .select(
+                'id, competitor_id, url, title, headings, observed_at, content_hash, signals, ' +
+                    'seo_competitors!inner(domain, name)'
+            )
+            .order('observed_at', { ascending: false })
+            .limit(500);
+
+        if (obsErr) {
+            return NextResponse.json(
+                { error: 'Failed to read competitor observations', details: obsErr.message },
+                { status: 500 }
+            );
+        }
+
+        // The service client is untyped, so the joined row is described here
+        // rather than being inferred as a generic error shape.
+        interface CompetitorObservationRow {
+            url: string | null;
+            title: string | null;
+            observed_at: string | null;
+            content_hash: string | null;
+            signals: Record<string, unknown> | null;
+            headings: Record<string, unknown> | null;
+            seo_competitors:
+                | { domain?: string | null; name?: string | null }
+                | Array<{ domain?: string | null; name?: string | null }>
+                | null;
+        }
+        const typedRows = (obsRows ?? []) as unknown as CompetitorObservationRow[];
+
+        const observations = typedRows.map((r) => {
+            const c = Array.isArray(r.seo_competitors) ? r.seo_competitors[0] : r.seo_competitors;
+            const signals = r.signals ?? {};
+            const headings = r.headings ?? {};
+            return {
+                url: r.url,
+                title: r.title,
+                domain: c?.domain ?? null,
+                observedAt: r.observed_at,
+                contentHash: r.content_hash,
+                market: signals.market ?? null,
+                language: signals.language ?? null,
+                evidenceType: signals.evidenceType ?? null,
+                dataKind: signals.dataKind ?? 'observed',
+                sourceReference: signals.sourceReference ?? r.url,
+                h1: (headings.h1 as string[] | undefined) ?? [],
+                h2Count: Array.isArray(headings.h2) ? headings.h2.length : 0,
+                h3Count: Array.isArray(headings.h3) ? headings.h3.length : 0,
+                faqCount: Array.isArray(headings.faq) ? headings.faq.length : 0,
+                articleCount: Array.isArray(headings.article) ? headings.article.length : 0,
+                themes: (headings.themes as string[] | undefined) ?? [],
+                // Stated explicitly so no reader mistakes this for demand data.
+                measuredDemand: null,
+                measuredRank: null,
+                measuredTraffic: null,
+            };
+        });
+
+        const domains = Array.from(
+            new Set(observations.map((o) => o.domain).filter((d): d is string => Boolean(d)))
+        );
+
+        return NextResponse.json({
+            type: 'competitor-intelligence',
+            year,
+            weekNumber,
+            dataSource: 'database',
+            summary: {
+                observations: observations.length,
+                domainsObserved: domains.length,
+                domains,
+                markets: Array.from(
+                    new Set(observations.map((o) => o.market).filter((m): m is string => Boolean(m)))
+                ),
+                note:
+                    'These are pages we actually fetched from competitor sites. ' +
+                    'No search volume, ranking or traffic figure is reported, because ' +
+                    'none of them was measured.',
+            },
+            observations,
+        });
+    }
+
     try {
         const { year, weekNumber } = getIsoWeek();
 

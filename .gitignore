@@ -122,3 +122,19 @@ dev.log
 
 .vercel
 .env*
+
+# local vercel/build logs
+dep.txt
+bld.txt
+ls.txt
+i.txt
+t.txt
+s.txt
+l.txt
+f.txt
+b.txt
+v.txt
+c.txt
+a.txt
+d.txt
+r.txt
