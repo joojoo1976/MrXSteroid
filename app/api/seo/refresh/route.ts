@@ -49,7 +49,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * P0 fix (C1/C2): the update payload carries ONLY columns that actually exist
- * in the production database (v1 schema — verified read-only 2026-09-28 via
+ * in the production database (v1 schema â€” verified read-only 2026-09-28 via
  * PostgREST: the v3-era timestamp/risk/score columns are absent there, and
  * every write referencing them failed with 42703 while the run was still
  * finalized 'completed'; full record:
@@ -120,7 +120,7 @@ return false;
  * A vercel.json cron entry makes an HTTP **GET** request to the path with
  * `Authorization: Bearer $CRON_SECRET`. This route previously exported only
  * POST, so the scheduled run returned 405 every Monday and the weekly refresh
- * never happened automatically — the cron was registered but inert.
+ * never happened automatically â€” the cron was registered but inert.
  *
  * GET delegates to the exact same handler as POST, so there is one
  * implementation, one authorization path and one set of counters. The auth
@@ -452,7 +452,7 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Apply updates — P0 fix (C1): every update's error is checked and the
+        // Apply updates â€” P0 fix (C1): every update's error is checked and the
         // counters only advance for writes that actually persisted.
         for (const item of updatedKeywords) {
             const { error: updateError } = await supabase
@@ -494,7 +494,7 @@ export async function POST(req: NextRequest) {
                 }
 
                 // P0 fix: an empty corpus must NEVER replace the last good
-                // weekly snapshot — the upsert is skipped entirely.
+                // weekly snapshot â€” the upsert is skipped entirely.
                 if (!langKeywords || langKeywords.length === 0) continue;
 
                 const mapped: SeoKeyword[] = langKeywords.map(r => ({
@@ -634,7 +634,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                 market: 'en-US',
                 language: 'en',
                 collect: async (): Promise<ProviderOutcome[]> => {
-                    // First-party, and REAL — but it is the existing editorial corpus, not a
+                    // First-party, and REAL â€” but it is the existing editorial corpus, not a
                     // live external observation. Labelling it `observed` would
                     // claim we measured something; `curated` is the truthful
                     // kind for an in-repo seed, and `CONNECTED` correctly says
@@ -806,7 +806,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         byState: diffByState,
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
-            competitorCrawl: competitorCrawlStats,
+                        competitorCrawl: competitorCrawlStats,
                     },
                 },
             };
@@ -860,7 +860,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         byState: diffByState,
                         rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                         rowsWithDefaultedMarket: defaultMarketRows,
-            competitorCrawl: competitorCrawlStats,
+                        competitorCrawl: competitorCrawlStats,
                     },
                 },
                 { status: 500 }
@@ -898,7 +898,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                 byState: diffByState,
                 rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                 rowsWithDefaultedMarket: defaultMarketRows,
-            competitorCrawl: competitorCrawlStats,
+                competitorCrawl: competitorCrawlStats,
             },
         });
     } catch (error: unknown) {

@@ -83,7 +83,28 @@ export async function crawlAndPersistCompetitors(
     };
 
     for (const seed of limited) {
-        const result = await crawlCompetitor(seed, options.crawl ?? {});
+        // The crawler refuses to run without an explicit fetch implementation
+        // ("this crawler never fabricates a response") — a deliberate guard that
+        // stops a mock silently becoming the evidence. The RUNTIME fetch is
+        // therefore supplied here by default: this module is only ever called
+        // from a real server, and calling `crawlAndPersistCompetitors(supabase)`
+        // without options previously threw the guard, so the weekly run
+        // reported competitor_web as BLOCKED with zero domains crawled.
+        // We still let the guard fire when the runtime genuinely has no fetch.
+        const crawlOptions: CrawlOptions = {
+            fetchImpl: globalThis.fetch,
+            ...(options.crawl ?? {}),
+        };
+        if (typeof crawlOptions.fetchImpl !== 'function') {
+            out.failures.push({
+                domain: seed.domain,
+                url: seed.startUrl,
+                message: 'no fetch implementation is available in this runtime',
+            });
+            continue;
+        }
+
+        const result = await crawlCompetitor(seed, crawlOptions);
 
         out.domainsCrawled += 1;
         out.urlsDiscovered += result.observations.length;

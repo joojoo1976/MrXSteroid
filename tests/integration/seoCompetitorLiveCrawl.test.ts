@@ -30,6 +30,7 @@ import {
     resolveCrawlOptions,
     type CompetitorSeed,
 } from '../../server/seo/sources/competitorCrawler';
+import { crawlAndPersistCompetitors } from '../../server/seo/sources/competitorPersistence';
 
 const SEED: CompetitorSeed = {
     domain: 'example.test',
@@ -206,6 +207,62 @@ describe('competitor crawler — regressions found only by a live crawl', () => 
             'User-agent: *\nDisallow: /wp-admin/\nAllow: /wp-admin/admin-ajax.php\n\nSitemap: https://coachfathi.com/sitemap.xml\n'
         );
         expect(policy.sitemaps).toContain('https://coachfathi.com/sitemap.xml');
+    });
+
+    it('supplies the runtime fetch when the caller passes no crawl options', async () => {
+        // Regression, caught only in PRODUCTION: the weekly route called
+        // `crawlAndPersistCompetitors(supabase)` with no options, the crawler's
+        // fetchImpl guard threw, and the route caught it — so the live run
+        // reported competitor_web BLOCKED with domainsCrawled = 0, while the
+        // same code path worked in tests that passed fetchImpl explicitly.
+        // The route must be able to call it with no options at all.
+        const inserted: unknown[] = [];
+        const supabase = {
+            from: (table: string) => {
+                if (table === 'seo_competitors') {
+                    return {
+                        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+                        insert: () => ({
+                            select: () => ({
+                                single: async () => {
+                                    if (inserted.length > 0) return { data: { id: 'c1' }, error: null };
+                                    return { data: { id: 'c1' }, error: null };
+                                },
+                            }),
+                        }),
+                    };
+                }
+                return {
+                    select: () => ({ eq: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }) }),
+                    insert: (row: unknown) => {
+                        inserted.push(row);
+                        return { error: null };
+                    },
+                };
+            },
+        } as unknown as Parameters<typeof crawlAndPersistCompetitors>[0];
+
+        const realFetch = globalThis.fetch;
+        // Point the runtime fetch at the stub so no real network is touched.
+        globalThis.fetch = stubFetch({
+            'https://example.test/robots.txt': { status: 200, body: 'User-agent: *\n' },
+            'https://example.test/': { status: 200, body: HOME },
+        }) as unknown as typeof fetch;
+
+        try {
+            const out = await crawlAndPersistCompetitors(supabase, {
+                seeds: [SEED],
+                maxSeeds: 1,
+                // `sleep` is stubbed to skip the 1s politeness delay, but
+                // `fetchImpl` is deliberately NOT supplied — supplying it here
+                // is exactly what the production route failed to do.
+                crawl: { sleep: async () => {} },
+            });
+            expect(out.domainsCrawled).toBe(1);
+            expect(out.observationsGenerated).toBeGreaterThan(0);
+        } finally {
+            globalThis.fetch = realFetch;
+        }
     });
 });
 import { createClient } from '@supabase/supabase-js';
