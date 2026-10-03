@@ -16,11 +16,22 @@ export interface AuthResponse {
     error: AuthError | string | null;
 }
 
+function normalizeArabicNumerals(str: string): string {
+    return str
+        .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48))
+        .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776 + 48));
+}
+
 /**
  * Enterprise Auth Service for Mr. X Steroid
  * Handles User Registration with Metadata, Phone Number, Dual Login and Error Safety
  */
 export const authService = {
+    /**
+     * Normalizes Eastern Arabic numerals to standard digits
+     */
+    normalizeArabicNumerals,
+
     /**
      * Validates email format
      */
@@ -35,10 +46,11 @@ export const authService = {
      */
     isValidPhone(phone: string): boolean {
         if (!phone) return false;
+        const normalized = normalizeArabicNumerals(phone);
         // Strip spaces, dashes, parentheses
-        const cleanPhone = phone.replace(/[\s\-()]/g, '');
-        // Must contain 7-15 digits, optional leading +
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
+        const cleanPhone = normalized.replace(/[\s\-()]/g, '');
+        // Must contain 7-20 digits, optional leading +
+        const phoneRegex = /^\+?[0-9]{7,20}$/;
         return phoneRegex.test(cleanPhone);
     },
 
@@ -184,36 +196,59 @@ export const authService = {
             let targetEmail = cleanInput;
 
             if (idType === 'phone') {
-                const cleanPhone = cleanInput.replace(/[\s\-()]/g, '');
+                const normalized = normalizeArabicNumerals(cleanInput);
+                const cleanPhone = normalized.replace(/[\s\-()]/g, '');
                 const phoneVariants = Array.from(new Set([
                     cleanPhone,
                     cleanPhone.startsWith('+') ? cleanPhone.slice(1) : '+' + cleanPhone,
                     cleanPhone.startsWith('00') ? '+' + cleanPhone.slice(2) : cleanPhone,
+                    cleanPhone.startsWith('+') ? cleanPhone.slice(1) : cleanPhone,
                 ]));
 
                 let foundEmail: string | null = null;
 
-                // 1. Try to find profile by phone number variants
-                const { data: profiles } = await supabase
-                    .from('profiles')
-                    .select('email, phone_number')
-                    .in('phone_number', phoneVariants)
-                    .limit(1);
-
-                if (profiles && profiles.length > 0 && profiles[0].email) {
-                    foundEmail = profiles[0].email;
-                } else {
-                    // 2. Try RPC function get_email_by_phone
-                    try {
-                        const { data: rpcEmail } = await supabase.rpc('get_email_by_phone', { p_phone: cleanPhone });
-                        if (rpcEmail) foundEmail = rpcEmail;
-                    } catch { /* ignore if RPC not present */ }
+                // 1. Primary: Try database RPC get_email_by_phone (SECURITY DEFINER)
+                try {
+                    const { data: rpcEmail, error: rpcErr } = await supabase.rpc('get_email_by_phone', { p_phone: cleanPhone });
+                    if (!rpcErr && rpcEmail) {
+                        foundEmail = rpcEmail;
+                    } else {
+                        // Try with other variants if primary didn't resolve immediately
+                        for (const variant of phoneVariants) {
+                            if (variant !== cleanPhone) {
+                                const { data: vEmail } = await supabase.rpc('get_email_by_phone', { p_phone: variant });
+                                if (vEmail) {
+                                    foundEmail = vEmail;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (rpcCatch) {
+                    console.warn('RPC phone lookup error, falling back to server route:', rpcCatch);
                 }
 
-                if (foundEmail) {
-                    targetEmail = foundEmail;
-                } else {
-                    // 3. Try direct phone auth via Supabase Native Phone Auth (E.164)
+                // 2. Secondary fallback: Internal API route /api/auth/resolve-phone (server-side service role fallback)
+                if (!foundEmail && typeof window !== 'undefined') {
+                    try {
+                        const res = await fetch('/api/auth/resolve-phone', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phone: cleanPhone }),
+                        });
+                        if (res.ok) {
+                            const resData = await res.json();
+                            if (resData.success && resData.email) {
+                                foundEmail = resData.email;
+                            }
+                        }
+                    } catch (apiErr) {
+                        console.warn('Internal phone resolution API fallback error:', apiErr);
+                    }
+                }
+
+                // 3. Tertiary fallback: Direct phone auth via Supabase Native Phone Auth (E.164)
+                if (!foundEmail) {
                     const e164Phone = cleanPhone.startsWith('+') ? cleanPhone : '+' + cleanPhone;
                     const { data: phoneAuthData, error: phoneAuthError } = await supabase.auth.signInWithPassword({
                         phone: e164Phone,
@@ -230,6 +265,8 @@ export const authService = {
 
                     return { user: null, session: null, error: 'No account found with this phone number' };
                 }
+
+                targetEmail = foundEmail;
             } else if (idType === 'invalid') {
                 return { user: null, session: null, error: 'Please enter a valid email address or phone number' };
             }

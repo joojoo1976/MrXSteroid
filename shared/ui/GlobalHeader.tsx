@@ -48,6 +48,7 @@ import RuntimeLanguageSelector from './RuntimeLanguageSelector';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import ThemeSwitcher from './ThemeSwitcher';
+import { useTheme } from '../../hooks/useTheme';
 import { DROPDOWN_CONFIGS, MenuItem } from '@/shared/config/menuConfig';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -116,6 +117,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
     disableThemeSwitcher = false,
 }) => {
     const { language: lang, isRTL, setLanguage, unitSystem, setUnitSystem } = usePreferences();
+    const { theme: currentTheme, setTheme: applyTheme } = useTheme();
     const { profileData } = useAuth();
     const profilePic = getProfilePic(user, profileData?.avatar_url);
 
@@ -315,18 +317,8 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                         {/* Theme Switcher */}
                         {!disableThemeSwitcher && (
                             <ThemeSwitcher
-                                theme={(typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light') as any}
-                                resolvedTheme="dark"
-                                setTheme={(mode) => {
-                                    // Lightweight theme toggle to avoid coupling to parent props.
-                                    const root = document.documentElement;
-                                    if (mode === 'dark') root.classList.add('dark');
-                                    else if (mode === 'light') root.classList.remove('dark');
-                                    else {
-                                        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                                        root.classList.toggle('dark', prefersDark);
-                                    }
-                                }}
+                                theme={currentTheme}
+                                setTheme={applyTheme}
                                 isRTL={isRTL}
                                 variant="icon"
                             />
@@ -620,17 +612,8 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                 </button>
                                 {!disableThemeSwitcher && (
                                     <ThemeSwitcher
-                                        theme={(typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light') as any}
-                                        resolvedTheme="dark"
-                                        setTheme={(mode) => {
-                                            const root = document.documentElement;
-                                            if (mode === 'dark') root.classList.add('dark');
-                                            else if (mode === 'light') root.classList.remove('dark');
-                                            else {
-                                                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                                                root.classList.toggle('dark', prefersDark);
-                                            }
-                                        }}
+                                        theme={currentTheme}
+                                        setTheme={applyTheme}
                                         isRTL={isRTL}
                                     />
                                 )}

@@ -140,10 +140,27 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
         document.body.classList.add(isRTL ? 'font-noto-sans-arabic' : 'font-inter');
     }, [language]);
 
-    // Side Effects: Theme
+    // Side Effects: Theme — apply CSS classes + sync all storage keys
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
+        const root = document.documentElement;
+        root.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme-mode', theme);
+        // Toggle Tailwind dark/light classes so dark: variants work everywhere
+        root.classList.remove('light', 'dark');
+        const resolved: 'light' | 'dark' =
+            theme === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : (theme as 'light' | 'dark');
+        root.classList.add(resolved);
+        root.setAttribute('data-resolved-theme', resolved);
+        // Sync all storage keys so useTheme hook stays consistent
         localStorage.setItem('mrx_theme', theme);
+        localStorage.setItem('mrx_ui_theme', theme);
+        localStorage.setItem('theme', theme);
+        // Notify other components
+        window.dispatchEvent(new CustomEvent('mrx_theme_change', {
+            detail: { mode: theme, resolved }
+        }));
     }, [theme]);
 
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);

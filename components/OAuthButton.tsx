@@ -34,6 +34,7 @@ export default function OAuthButton({ provider, name, icon, labelAr, labelEn, cl
     const [loading, setLoading] = useState(false);
 
     const handleClick = async () => {
+        if (loading) return; // prevent double-click while in progress
         try {
             setLoading(true);
             const { error } = await supabase.auth.signInWithOAuth({
@@ -44,6 +45,9 @@ export default function OAuthButton({ provider, name, icon, labelAr, labelEn, cl
                 },
             });
             if (error) throw error;
+            // Successful OAuth initiates a redirect — loading stays true during navigation.
+            // If for any reason no redirect occurs (e.g. popup blocked), reset after timeout.
+            setTimeout(() => setLoading(false), 8000);
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             console.error(`${provider} sign-in error:`, msg);
