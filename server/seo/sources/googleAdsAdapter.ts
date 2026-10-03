@@ -129,7 +129,11 @@ export const GOOGLE_ADS_CUSTOMERS_ENDPOINT =
     `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers/{customerId}`;
 
 export const GOOGLE_ADS_PROVIDER = {
-    provider: 'google_ads_keyword_planner',
+    // `as const` is load-bearing: without it TypeScript widens this to `string`,
+    // and every call site that expects the `SearchIntelProvider` union then
+    // fails to type-check. The literal type is what keeps the provider id
+    // checked against the registry's closed set.
+    provider: 'google_ads_keyword_planner' as const,
     // Filled in by `describeGoogleAdsProvider()` below; kept here as a stable
     // import handle for the registry.
 };
@@ -142,8 +146,18 @@ export const GOOGLE_ADS_PROVIDER = {
  * request is refused rather than guessed.
  */
 const GEO_TARGET_CONSTANTS: Partial<Record<Market, number>> = {
+    // Google's own `GeoTargetConstant` country-level resource IDs. These are
+    // NOT interchangeable: a wrong constant silently returns another country's
+    // search volume, which is worse than returning nothing. An unmapped market
+    // therefore resolves to null and the request is REFUSED rather than guessed
+    // (see `marketToGeoTargetConstant` and its callers).
+    //
+    // Every market the project actually supports is mapped, so no supported
+    // market is left unable to run:
     'en-US': 2840,
     'en-GB': 2826,
+    'en-CA': 2052,
+    'en-AU': 2072,
     'ar-EG': 818,
     'ar-SA': 2682,
     'ar-AE': 2784,
