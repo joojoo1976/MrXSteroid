@@ -988,6 +988,7 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                 rowsCompared: Object.values(diffByState).reduce((a, b) => a + b, 0),
                 rowsWithDefaultedMarket: defaultMarketRows,
                 competitorCrawl: competitorCrawlStats,
+                destinationVerification: destinationStats,
             },
         });
     } catch (error: unknown) {
