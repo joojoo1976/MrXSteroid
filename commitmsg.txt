@@ -1,0 +1,17 @@
+seo: serve real competitor observations from the report endpoint
+
+/api/seo/report ignored its `type` query parameter entirely and always returned
+the same keyword-centric snapshot payload. `?type=competitors` therefore showed
+the 234-keyword summary rather than the 15 competitor observations the weekly
+crawl had persisted, so the collected intelligence was invisible to readers.
+
+Adds a competitor-intelligence branch backed by
+seo_competitor_observations joined to seo_competitors, exposing per observation:
+url, title, domain, observedAt, contentHash, market, language, evidenceType,
+sourceReference, heading/FAQ/article counts and themes.
+
+The payload deliberately carries measuredDemand, measuredRank and
+measuredTraffic as explicit nulls: a competitor page proves what a competitor
+targets, and nothing about demand was measured, so no such figure is emitted.
+
+No other report type changes behaviour.
