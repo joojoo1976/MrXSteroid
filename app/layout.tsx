@@ -57,6 +57,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang={lang} dir={isRTL ? 'rtl' : 'ltr'} suppressHydrationWarning>
+            <head>
+                {/* ── Anti-FOUC theme script ─────────────────────────────────────────────
+                    Runs synchronously before first paint. Reads the stored theme preference
+                    and applies 'dark' or 'light' class to <html> so Tailwind dark: variants
+                    are correct from the very first pixel, with zero flash.
+                    ─────────────────────────────────────────────────────────────────────── */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `(function(){try{var t=localStorage.getItem('mrx_ui_theme')||localStorage.getItem('mrx_theme')||localStorage.getItem('theme')||'dark';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(r);document.documentElement.setAttribute('data-theme-mode',t);document.documentElement.setAttribute('data-resolved-theme',r);}catch(e){}})();`,
+                    }}
+                />
+            </head>
             <body className="min-h-screen bg-background font-sans antialiased">
                 <RootProviders initialLanguage={lang} initialUnitSystem={units}>
                     {children}

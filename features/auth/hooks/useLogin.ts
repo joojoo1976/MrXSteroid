@@ -13,11 +13,16 @@ import { supabase } from '../../../shared/lib/supabase';
 
 import { authService } from '../../../shared/lib/auth-service';
 
+const normalizeArabicNumerals = (val: string) =>
+    val
+        .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48))
+        .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776 + 48));
+
 // Dual login schema (Email OR Phone Number)
 const createLoginSchema = (isRTL: boolean) => z.object({
     identifier: z.string().min(1, isRTL ? 'البريد الإلكتروني أو رقم الهاتف مطلوب' : 'Email or phone number is required')
         .refine((val) => {
-            const clean = val.trim();
+            const clean = normalizeArabicNumerals(val.trim());
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
             return emailRegex.test(clean) || phoneRegex.test(clean);
