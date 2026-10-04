@@ -3,16 +3,24 @@
  * ============================================================================
  * GSC live verification — attempt + honest record of the attempt
  * ============================================================================
- * THIS SUITE CANNOT PASS GSC. It exists to make the BLOCKED state provable and
- * to pin the ORDER of the live probe, so the moment credentials appear the
- * verification is mechanical rather than improvised.
+ * THIS SUITE PINS THE BLOCKED STATE AND THE VERIFIED THRESHOLD. It asserts the
+ * seam's verdict with no credentials configured, and it pins the order of the
+ * live probe, so the moment credentials appear the verification is mechanical
+ * rather than improvised.
  *
- * WHY NO FAKE CREDENTIALS ARE USED ANYWHERE HERE
- * ----------------------------------------------
+ * NO FAKE CREDENTIALS ARE USED ANYWHERE HERE
+ * ------------------------------------------
  * A synthetic token sent to Google returns 401. That proves nothing about
  * authorization, and a test that "expects 401" would be a green suite that looks
  * like progress. Without credentials the only honest assertion is the seam's
  * BLOCKED verdict.
+ *
+ * THE OAUTH LIFECYCLE IS NOW REAL
+ * -------------------------------
+ * The token is minted per request from a service-account assertion
+ * (`gscServiceAccountAuth.ts`), so nothing stored here expires silently. The
+ * assertions below were updated to reflect that; the adapter is still
+ * credential-agnostic and still holds no OAuth code.
  *
  * THE REQUIRED ORDER (cannot be reordered):
  *   1. authorization probe   - is the token accepted at all?
@@ -62,28 +70,24 @@ describe('GSC · current state (no credentials in this environment)', () => {
     });
 });
 
-describe('GSC · OAuth lifecycle is NOT implemented (recorded, not hidden)', () => {
+describe('GSC · OAuth lifecycle is implemented, per request, with no stored token', () => {
     it('the adapter contains no token-refresh logic', async () => {
         const fs = await import('node:fs');
         const source = fs.readFileSync('server/seo/sources/gscAdapter.ts', 'utf8');
-        // Google access tokens are short-lived. Nothing renews one, so a
-        // configured deployment WILL degrade to BLOCKED on expiry.
+        // The adapter stays credential-agnostic on purpose: it receives an
+        // opaque token. Minting one is the STRATEGY's job, so re-authenticating
+        // never requires touching the adapter.
         expect(source).not.toMatch(/refresh_token/i);
         expect(source).not.toMatch(/grant_type/i);
+        expect(source).not.toMatch(/BEGIN PRIVATE KEY|createSign/i);
     });
 
-    it('the project contains no Google OAuth refresh client', async () => {
+    it('the OAuth client lives in its own module, not inside the adapter', async () => {
         const fs = await import('node:fs');
-        const path = await import('node:path');
-        // Recorded as PARTIAL/BLOCKED: deliberately NOT hidden and NOT faked.
-        const candidates = [
-            'server/oauth',
-            'server/seo/sources/oauth',
-            'lib/oauth',
-            'server/seo/sources/googleOAuth',
-        ];
-        const found = candidates.filter((p) => fs.existsSync(path.resolve(p)));
-        expect(found).toEqual([]);
+        // The lifecycle is now REAL and separated: a service-account JWT
+        // assertion exchanged per call. Recorded here so the location is
+        // pinned — a client hidden in the adapter would re-couple the two.
+        expect(fs.existsSync('server/seo/sources/gscServiceAccountAuth.ts')).toBe(true);
     });
 
     it('a static token is a PARTIAL lifecycle, not a permanent one', async () => {

@@ -34,6 +34,76 @@ vi.mock('../../server/seo/seoService', () => ({
 }));
 
 import { POST as postRefresh } from '../../app/api/seo/refresh/route';
+import { setLiveProviderCollector } from '../../server/seo/liveProviderCollection';
+import { setRefreshSleep, setRefreshTransport } from '../../server/seo/refreshRuntime';
+import type { ProviderOutcome } from '../../server/seo/weeklyEngine';
+
+/**
+ * This suite now drives a route that performs REAL provider collection.
+ *
+ * The stub below is not cosmetic: without it every case would call Google and
+ * Bing with the credentials present in the developer's `.env.local`. That made
+ * the suite slow (network round-trips inside a 5s test timeout) and would push
+ * a local credential to a third party during a unit test.
+ *
+ * The stub reports the honest "no credentials configured" verdict, which is what
+ * these cases have always assumed. The collection's OWN behaviour — that a
+ * configured provider is genuinely called — is proved separately, with an
+ * injected transport, in `seoLiveProviderCollection.test.ts`.
+ */
+const stubbedProviders: ProviderOutcome[] = [
+    {
+        provider: 'google_search_console',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing GSC_SITE_URL — not configured in this test',
+        partial: false,
+    },
+    {
+        provider: 'google_ads_keyword_planner',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing GOOGLE_ADS_CUSTOMER_ID — not configured in this test',
+        partial: false,
+    },
+    {
+        provider: 'bing_web_search',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing BING_WEBMASTER_SITE_URL — not configured in this test',
+        partial: false,
+    },
+];
+
+let restoreCollector: (() => void) | null = null;
+let restoreTransport: (() => void) | null = null;
+let restoreSleep: (() => void) | null = null;
+
+/**
+ * A transport that answers NOTHING over the network.
+ *
+ * The route does three kinds of outbound work: live provider calls, the
+ * competitor crawl, and destination verification. Each is bounded by a provider
+ * timeout measured in seconds, so a suite that reached the real internet blew
+ * the 5s test timeout on every single case — which is what these eleven failures
+ * were: NOT broken logic, but a missing seam, plus an unintended dependency on
+ * whatever credentials happen to sit in `.env.local`.
+ *
+ * This transport fails fast and offline. Destination verification therefore
+ * reports UNREACHABLE, which is an honest, real outcome of "the host did not
+ * answer" — not a fabricated success, and not a skipped check.
+ */
+function offlineTransport(): typeof fetch {
+    return (async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : String(input);
+        // The Supabase fake intercepts its own traffic, so anything reaching
+        // here is a genuine outbound call. Refuse it loudly and immediately.
+        throw new Error(`offline test transport refused an outbound request: ${url}`);
+    }) as typeof fetch;
+}
 
 function keywordRow(id: string, keyword: string, score: number) {
     return {
@@ -77,11 +147,30 @@ const ORIGINAL_DEV_BYPASS = process.env.NODE_ENV;
 beforeEach(() => {
     process.env.CRON_SECRET = 'test-cron-secret';
     process.env.NODE_ENV = 'production';
+    // Install the stub BEFORE any case runs, and restore it afterwards so a
+    // failure can never leave the real (network-calling) collector installed.
+    restoreCollector = setLiveProviderCollector(async () => stubbedProviders);
+    // Also cut the two remaining outbound paths (competitor crawl, destination
+    // verification), which were reaching the real internet in this suite.
+    restoreTransport = setRefreshTransport(offlineTransport());
+    // The crawler waits >=1000ms between requests by design (robots.txt
+    // Crawl-delay floor). That politeness is correct in production and costs
+    // ~12s per run here, so the WAIT is skipped in tests and kept in prod.
+    restoreSleep = setRefreshSleep(async () => undefined);
     vi.clearAllMocks();
 });
 
 describe('RUNTIME · POST /api/seo/refresh invokes the weekly engine', () => {
     afterEach(() => {
+        // Always restore, including after a failure: leaving the real collector
+        // or the real transport installed would send the NEXT case to
+        // Google's servers.
+        restoreCollector?.();
+        restoreCollector = null;
+        restoreTransport?.();
+        restoreTransport = null;
+        restoreSleep?.();
+        restoreSleep = null;
         process.env.CRON_SECRET = ORIGINAL_SECRET;
         process.env.NODE_ENV = ORIGINAL_DEV_BYPASS;
     });
@@ -157,6 +246,10 @@ describe('RUNTIME · POST /api/seo/refresh invokes the weekly engine', () => {
     });
 
     afterEach(() => {
+        // Always restore, including after a failure: leaving the real collector
+        // installed would send the NEXT case to Google's servers.
+        restoreCollector?.();
+        restoreCollector = null;
         process.env.CRON_SECRET = ORIGINAL_SECRET;
         process.env.NODE_ENV = ORIGINAL_DEV_BYPASS;
     });

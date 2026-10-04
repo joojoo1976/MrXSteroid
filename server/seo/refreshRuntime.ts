@@ -12,8 +12,15 @@
  *
  * HONESTY RULES ENFORCED HERE
  * ---------------------------
- *  - No provider network call is ever made. Every external source is reported
- *    BLOCKED with the exact missing dependency, because none has credentials.
+ *  - This module makes NO provider network call, and never did: it owns
+ *    Supabase knowledge only. The real live calls live in
+ *    `liveProviderCollection.ts`, which owns the `process.env` knowledge. The
+ *    two are deliberately separate so neither can reach the other's concern.
+ *  - `BLOCKED_EXTERNAL_SOURCES` remains the CONTRACT with the operator for the
+ *    credential-free providers and for documenting why each credential exists.
+ *    It is documentation now, not the runtime verdict: an INVOKABLE provider is
+ *    actually called, and a genuinely unconfigured one is still reported BLOCKED
+ *    with the same exact dependency named here.
  *  - The persister is idempotent: it upserts on (keyword_id, year, week,
  *    market), so re-running writes the same rows instead of duplicates.
  *  - A DB write failure returns `ok: false`, the ONLY condition that finalizes
@@ -244,3 +251,85 @@ export function weeklyStatePersister(
 }
 
 
+
+/* ------------------------------------------------------------------ */
+/* The transport seam                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The transport the refresh route uses for every OUTBOUND request.
+ *
+ * WHY THIS EXISTS
+ * ---------------
+ * The refresh performs three kinds of real network work: the live provider
+ * calls (Google Ads / GSC / Bing), the competitor crawl, and the destination
+ * verification HTTP checks. All three reach `globalThis.fetch` directly unless
+ * something supplies a transport.
+ *
+ * That made `seoRuntimeChain.test.ts` impossible to run as a unit test: every
+ * case issued live requests to `mrxsteroid.com` and to competitor hosts, each
+ * bounded by a 10s provider timeout, so all eleven cases blew the 5s test
+ * timeout. Those are NOT failures of the SEO logic — they are the absence of a
+ * seam — and the honest classification is "integration tests that need a mock".
+ *
+ * WHAT THIS CHANGES
+ * -----------------
+ * Production behaviour is UNCHANGED: the default is `globalThis.fetch`, which is
+ * exactly what these three call sites already used. A test injects a transport
+ * and the route uses it instead. The default deliberately stays "real", so a
+ * forgotten injection surfaces as a live call rather than as a silently skipped
+ * verification.
+ *
+ * It is also a safety improvement, not only a test convenience: with an injected
+ * transport, running the suite can no longer push credentials or produce outbound
+ * traffic to third-party hosts.
+ */
+let transportOverride: typeof fetch | null = null;
+
+/** Install a transport for the route. Pass `null` to restore the real one. */
+export function setRefreshTransport(transport: typeof fetch | null): () => void {
+    const previous = transportOverride;
+    transportOverride = transport;
+    return () => {
+        transportOverride = previous;
+    };
+}
+
+/** What the route must use for outbound work right now. */
+export function activeRefreshTransport(): typeof fetch {
+    return transportOverride ?? globalThis.fetch;
+}
+
+/**
+ * The sleep the competitor crawler uses between requests.
+ *
+ * WHY THIS IS ALSO A SEAM
+ * -----------------------
+ * The crawler is deliberately polite: it honours robots.txt `Crawl-delay` with a
+ * hard 1000 ms floor and crawls serially at `maxConcurrency: 1`. That is correct
+ * behaviour for production and the wrong thing to pay for in a unit test — the
+ * measured cost was ~12 s of pure sleeping per refresh, which is what pushed all
+ * eleven `seoRuntimeChain` cases past the 5 s test timeout even with the network
+ * fully stubbed.
+ *
+ * The politeness itself is NOT removed: `throttleMs` still flows into the
+ * crawler, only the waiting is skipped. Production keeps sleeping, because the
+ * default here is the real timer.
+ */
+let sleepOverride: ((ms: number) => Promise<void>) | null = null;
+
+/** Install the crawler's inter-request sleep. `null` restores the real timer. */
+export function setRefreshSleep(
+    sleep: ((ms: number) => Promise<void>) | null
+): () => void {
+    const previous = sleepOverride;
+    sleepOverride = sleep;
+    return () => {
+        sleepOverride = previous;
+    };
+}
+
+/** What the crawler must use to wait right now. The real timer unless overridden. */
+export function activeRefreshSleep(): (ms: number) => Promise<void> {
+    return sleepOverride ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+}

@@ -19,6 +19,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { createSeoSupabaseFake } from '../helpers/seoSupabaseFake';
+import { setLiveProviderCollector } from '../../server/seo/liveProviderCollection';
+import {
+    setRefreshSleep,
+    setRefreshTransport,
+} from '../../server/seo/refreshRuntime';
+import type { ProviderOutcome } from '../../server/seo/weeklyEngine';
 
 const h = vi.hoisted(() => ({
     current: null as unknown,
@@ -75,26 +81,116 @@ async function callRefresh() {
     }));
 }
 
-const updatePayloadsOf = (fake: ReturnType<typeof createSeoSupabaseFake>) =>
-    fake.ops
-        .filter((o) => o.table === 'seo_keywords' && o.methods.includes('update'))
-        .map((o) => o.payload as Record<string, unknown>);
-
 const runUpdatePayloadsOf = (fake: ReturnType<typeof createSeoSupabaseFake>) =>
     fake.ops
         .filter((o) => o.table === 'seo_keyword_refresh_runs' && o.methods.includes('update'))
         .map((o) => o.payload as Record<string, unknown>);
 
+/**
+ * The RE-SCORING updates only — i.e. the ones that write `score`.
+ *
+ * WHY THIS FILTER EXISTS
+ * ----------------------
+ * A refresh performs two independent `seo_keywords` updates per row:
+ *   1. `destination_verified` — the HTTP verification result (added by the
+ *      destination-verification work, already in the route before this suite
+ *      existed), and
+ *   2. `score` / `trend_status` / `score_components` / `last_observed_at` —
+ *      the re-scoring this suite exists to verify.
+ *
+ * Counting every update and expecting one therefore failed once destination
+ * verification landed, while the run itself was correct. These cases are about
+ * the re-scoring contract, so they now select exactly that update rather than
+ * asserting a total that also happens to include an unrelated column write.
+ */
+const rescorePayloadsOf = (fake: ReturnType<typeof createSeoSupabaseFake>) =>
+    fake.ops
+        .filter(
+            (o) =>
+                o.table === 'seo_keywords' &&
+                o.methods.includes('update') &&
+                'score' in (o.payload as Record<string, unknown>)
+        )
+        .map((o) => o.payload as Record<string, unknown>);
+
 const ORIGINAL_SECRET = process.env.CRON_SECRET;
 const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+
+let restoreCollector: (() => void) | null = null;
+let restoreTransport: (() => void) | null = null;
+let restoreSleep: (() => void) | null = null;
+
+/**
+ * Offline transport: refuses every outbound request immediately.
+ *
+ * This suite verifies the refresh's PERSISTENCE behaviour (which columns are
+ * written, whether a write failure finalizes the run 'failed'). It is not a
+ * network test. Left unstubbed, the route also crawled competitor hosts and
+ * verified destinations over real HTTP with a 1000 ms politeness floor, so the
+ * eight cases each took ~5 s and timed out — the assertions under test were
+ * never even reached.
+ *
+ * The transport makes those outcomes honest rather than fake: destination
+ * verification reports UNREACHABLE, which is a truthful "the host did not
+ * answer". Nothing is claimed as verified that was not checked.
+ */
+function offlineTransport(): typeof fetch {
+    return (async (input: RequestInfo | URL) => {
+        throw new Error(
+            `offline test transport refused an outbound request: ${
+                typeof input === 'string' ? input : String(input)
+            }`
+        );
+    }) as typeof fetch;
+}
+
+/** The honest "nothing is configured" provider verdict for a persistence test. */
+const blockedProviders: ProviderOutcome[] = [
+    {
+        provider: 'google_search_console',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing GSC_SITE_URL — not configured in this test',
+        partial: false,
+    },
+    {
+        provider: 'google_ads_keyword_planner',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing GOOGLE_ADS_CUSTOMER_ID — not configured in this test',
+        partial: false,
+    },
+    {
+        provider: 'bing_web_search',
+        status: 'BLOCKED',
+        dataKind: 'unavailable',
+        records: [],
+        error: 'BLOCKED: missing BING_WEBMASTER_SITE_URL — not configured in this test',
+        partial: false,
+    },
+];
 
 beforeEach(() => {
     process.env.CRON_SECRET = 'test-cron-secret';
     h.current = null;
     h.buildShouldThrow = false;
+    restoreCollector = setLiveProviderCollector(async () => blockedProviders);
+    restoreTransport = setRefreshTransport(offlineTransport());
+    // The crawler's politeness sleep is kept in production and skipped here.
+    restoreSleep = setRefreshSleep(async () => undefined);
 });
 
 afterEach(() => {
+    // Always restore, even after a failure: leaving the real transport or the
+    // real collector installed would let the NEXT case reach the internet.
+    restoreCollector?.();
+    restoreCollector = null;
+    restoreTransport?.();
+    restoreTransport = null;
+    restoreSleep?.();
+    restoreSleep = null;
     process.env.CRON_SECRET = ORIGINAL_SECRET;
     process.env.NODE_ENV = ORIGINAL_NODE_ENV;
 });
@@ -110,7 +206,7 @@ describe('POST /api/seo/refresh — P0 persistence verification', () => {
         expect(body.success).toBe(true);
         expect(body.keywordsUpdated).toBe(1);
 
-        const payloads = updatePayloadsOf(fake);
+const payloads = rescorePayloadsOf(fake);
         expect(payloads.length).toBe(1);
 
         // Only production-existing columns are written — exact shape:
@@ -161,7 +257,7 @@ describe('POST /api/seo/refresh — P0 persistence verification', () => {
         const res = await callRefresh();
         expect(res.status).toBe(200);
 
-        const payloads = updatePayloadsOf(fake);
+const payloads = rescorePayloadsOf(fake);
         expect(payloads.length).toBe(1);
         const writtenAt = Date.parse(payloads[0].last_observed_at as string);
         expect(Number.isNaN(writtenAt)).toBe(false);

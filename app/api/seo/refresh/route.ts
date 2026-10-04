@@ -42,12 +42,20 @@ import {
     type WeeklyState,
 } from '../../../../server/seo/snapshotDiff';
 import {
+    activeLiveProviderCollector,
+    summariseLiveCollection,
+} from '../../../../server/seo/liveProviderCollection';
+import {
+    gscServiceAccountAuth,
+} from '../../../../server/seo/sources/gscServiceAccountAuth';
+import {
+    activeRefreshSleep,
+    activeRefreshTransport,
     marketOf,
     marketWasDefaulted,
     readPreviousWeekStates,
     toHistorySnapshot,
     weeklyStatePersister,
-    BLOCKED_EXTERNAL_SOURCES,
 } from '../../../../server/seo/refreshRuntime';
 
 export const dynamic = 'force-dynamic';
@@ -237,6 +245,7 @@ export async function POST(req: NextRequest) {
             persisted: 0,
             error: null,
         };
+
         try {
             const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || 'https://mrxsteroid.com';
             const paths = keywordsRows
@@ -247,7 +256,10 @@ export async function POST(req: NextRequest) {
 
             const checks = await verifyDestinations(checkable, {
                 siteOrigin,
-                fetchImpl: globalThis.fetch,
+                // Through the seam, so a test can run the whole route with no
+                // outbound request. Defaults to `globalThis.fetch`, i.e. exactly
+                // the real behaviour.
+                fetchImpl: activeRefreshTransport(),
             });
             const summary = summariseVerification(checks);
 
@@ -659,6 +671,10 @@ export async function POST(req: NextRequest) {
         let weeklyStateRowsWritten = 0;
 let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }> = [];
         let defaultMarketRows = 0;
+        // Per-provider outcome of the REAL external collection, surfaced in the
+        // response so an operator can see per-provider evidence instead of a
+        // single aggregate that could hide three different failures.
+        let liveCollectionSummary: ReturnType<typeof summariseLiveCollection> = [];
         // Real competitor-crawl counters for this run, surfaced in the response.
         let competitorCrawlStats = {
             domainsCrawled: 0,
@@ -677,7 +693,14 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
             // one dead competitor must never fail the weekly run.
             let competitorOutcome: ProviderOutcome;
             try {
-                const crawl = await crawlAndPersistCompetitors(supabase);
+                const crawl = await crawlAndPersistCompetitors(supabase, {
+                    // Through the same seam, for the same reason: the crawl must
+                    // not escape a test run to competitor hosts.
+                    crawl: {
+                        fetchImpl: activeRefreshTransport(),
+                        sleep: activeRefreshSleep(),
+                    },
+                });
                 competitorCrawlStats = {
                     domainsCrawled: crawl.domainsCrawled,
                     urlsDiscovered: crawl.urlsDiscovered,
@@ -760,22 +783,46 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                         partial: false,
                     };
 
-                    // External sources: no credential exists in this environment,
-                    // so each is reported BLOCKED with its exact missing
-                    // dependency. The engine records these as values and the run
-                    // finishes PARTIAL_SUCCESS rather than failing.
-                    const blocked = BLOCKED_EXTERNAL_SOURCES.filter(
-                        (src) => src.provider !== 'competitor_web'
-                    ).map((src) => ({
-                        provider: src.provider,
-                        status: 'BLOCKED' as const,
-                        dataKind: 'unavailable' as const,
-                        records: [] as never[],
-                        error: `BLOCKED: missing ${src.dependency}`,
-                        partial: false,
-                    }));
+                    // External sources: these are now CALLED FOR REAL.
+                    //
+                    // This block used to return a hardcoded BLOCKED list, which
+                    // meant a fully credentialed deployment still reported every
+                    // source blocked — the "setting environment variables alone
+                    // activates nothing" defect the readiness package named.
+                    // `collectLiveProviders` resolves each provider through the
+                    // DI seam and, only for the ones it clears as INVOKABLE,
+                    // invokes the real adapter under the resilience runner.
+                    //
+                    // A provider that is genuinely unconfigured still comes back
+                    // BLOCKED, with the exact variable the adapter reads — so the
+                    // honest-BLOCKED behaviour is preserved for the case it is
+                    // actually true, and only that case.
+                    const liveOutcomes = await activeLiveProviderCollector()({
+                        env: process.env,
+                        language: 'en',
+                        market: 'en-US',
+                        // Seeded from the corpus already approved in the database.
+                        // These are REAL keywords we hold, not invented prompts:
+                        // Google Ads requires at least one seed, and using the
+                        // existing corpus keeps the request inside what the
+                        // operator has already approved.
+                        seeds: keywordsRows
+                            .map((row) => String(row.original_keyword ?? '').trim())
+                            .filter(Boolean)
+                            .slice(0, 10),
+                        now: () => startTime,
+                        auth: {
+                            // GSC authenticates as a service account, injected
+                            // through the seam's documented extension point. No
+                            // adapter and no seam code changes.
+                            google_search_console: gscServiceAccountAuth({
+                                env: process.env,
+                            }),
+                        },
+                    });
+                    liveCollectionSummary = summariseLiveCollection(liveOutcomes);
 
-                    return [corpus, ...blocked, competitorOutcome];
+                    return [corpus, ...liveOutcomes, competitorOutcome];
                 },
                 existingKeywords: keywordsRows.map((row) => ({
                     keyword: String(row.original_keyword ?? ''),
@@ -873,6 +920,13 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                     // candidate is not a measurement and must not be written
                     // as though it were one.
                     intelligence: intelligenceSummary,
+                    // Per-provider live-collection evidence, on the run-log path
+                    // too: a persisted run record that cannot explain why a
+                    // provider was blocked is exactly the false-silence being
+                    // removed here.
+                    liveProviders: liveCollectionSummary.length
+                        ? liveCollectionSummary
+                        : null,
                     // STEP 12/13 runtime evidence: the weekly engine and the
                     // historical diff now actually execute in this route.
                     weeklyEngine: {
@@ -930,6 +984,9 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
                     // 500 would hide the reason the run failed, which is exactly
                     // the false-silence this task set out to remove.
                     intelligence: intelligenceSummary,
+                    liveProviders: liveCollectionSummary.length
+                        ? liveCollectionSummary
+                        : null,
                     weeklyEngine: {
                         invoked: weeklyRun !== null,
                         status: weeklyRun?.status ?? null,
@@ -972,6 +1029,13 @@ let weeklyStateWriteFailures: Array<{ idempotencyKey: string; message: string }>
             // reports discover/collect/compare counts and states plainly that
             // no route was created.
             intelligence: intelligenceSummary,
+            // Per-provider evidence for the REAL external collection: status,
+            // row count, and the exact missing dependency where one applies.
+            // `null` when the weekly block threw before collecting, so an absent
+            // summary is never mistaken for "all providers connected".
+            liveProviders: liveCollectionSummary.length
+                ? liveCollectionSummary
+                : null,
             // Additive: proof that the weekly engine and the historical diff
             // executed in THIS request, not only in a test.
             weeklyEngine: {

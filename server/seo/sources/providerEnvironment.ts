@@ -274,6 +274,18 @@ export interface ProviderEnvironmentOptions {
      * this seam needs to change again.
      */
     auth?: Partial<Record<ProviderId, ProviderAuthStrategy>>;
+    /**
+     * Transport handed to any auth strategy THIS module constructs itself.
+     *
+     * WHY IT EXISTS: `strategyFor` builds the Google Ads refresh strategy via
+     * `resolveGoogleAdsAuthStrategy`, and that factory accepts an injected
+     * transport. Without threading it through here, the strategy silently fell
+     * back to `globalThis.fetch` and the injected transport was bypassed — so a
+     * caller supplying a test double got a strategy that reached the REAL token
+     * endpoint. An `auth` OVERRIDE still wins: an explicitly supplied strategy
+     * is fully the caller's own and this never touches it.
+     */
+    fetchImpl?: typeof fetch;
 }
 
 const ACCESS_TOKEN_VAR: Partial<Record<ProviderId, string>> = {
@@ -303,14 +315,18 @@ export const ALL_SEAM_ENV_VARS: readonly string[] = [
 async function strategyFor(
     provider: ProviderId,
     env: Record<string, string | undefined>,
-    overrides?: Partial<Record<ProviderId, ProviderAuthStrategy>>
+    overrides?: Partial<Record<ProviderId, ProviderAuthStrategy>>,
+    fetchImpl?: typeof fetch
 ): Promise<ProviderAuthStrategy> {
     const override = overrides?.[provider];
     if (override) return override;
 
     if (provider === 'google_ads_keyword_planner') {
         const { resolveGoogleAdsAuthStrategy } = await import('./googleAdsAdapter');
-        return resolveGoogleAdsAuthStrategy(env);
+        // The transport is threaded through so the refresh strategy uses the
+        // caller's injected fetch rather than reaching the real token endpoint
+        // behind their back.
+        return resolveGoogleAdsAuthStrategy(env, fetchImpl);
     }
 
     const variable = ACCESS_TOKEN_VAR[provider];
@@ -355,7 +371,9 @@ export async function resolveProvider(
     }
 
     // 2. Obtain a live token through the strategy — per request, never cached.
-    const token = await (await strategyFor(request.provider, env, options.auth)).getAccessToken();
+    const token = await (
+        await strategyFor(request.provider, env, options.auth, options.fetchImpl)
+    ).getAccessToken();
 
     // 3. Build a provider-scoped env. The whole process env is never handed out.
     const scoped: Record<string, string | undefined> = {};
