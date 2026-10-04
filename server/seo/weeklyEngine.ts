@@ -38,6 +38,7 @@ import { detectGaps, GapInput, GapRecord, GapReport, GapState } from './gapEngin
 import { classifySearchIntent } from './intentClassifier';
 import { classifyYmylRisk } from './intentClassifier';
 import { resolveDestination } from './destinationMapper';
+import { buildWeeklyHistoryKey } from './weeklyIdentity';
 import { calculateKeywordScore, calculateKeywordScoreV3 } from './scoringEngine';
 import { normalizeKeyword } from './normalization';
 import type { ScoreComponents, SearchIntent, TrendStatus } from './types';
@@ -153,6 +154,12 @@ export interface PipelineKeyword {
     destinationPath?: string;
     /** Set by COMPARE_WITH_HISTORY. */
     historyComparison?: HistoryComparison;
+    /**
+     * PHASE 1C (DEFECT 3): the weekly movement label, derived ONLY from a real
+     * prior-week reading. Deliberately NOT the same field as `trendStatus`
+     * (lifecycle/score-age state) — see `classifyWeeklyMovement`.
+     */
+    weeklyMovement?: WeeklyMovement;
     /** A real prior-week reading, when one exists. */
     previousScore?: number | null;
 }
@@ -167,6 +174,55 @@ export interface HistoryComparison {
 
 /** Which way a keyword moved against the prior snapshot. */
 export type HistoryComparisonDirection = 'new' | 'up' | 'down' | 'flat' | 'unknown';
+
+/**
+ * PHASE 1C (DEFECT 3) — WEEKLY MOVEMENT, as a first-class label.
+ *
+ * WHY THIS IS NOT `trendStatus`
+ * -----------------------------
+ * The system carries two genuinely different ideas and Phase 1A proved they were
+ * being conflated:
+ *
+ *   1. LIFECYCLE / SCORE-AGE STATE — `seo_keywords.trend_status`, written by
+ *      `determineTrendStatus` (scoringEngine.ts). It answers "how healthy does
+ *      this keyword look right now?" from calendar age, trendScore and
+ *      overallScore. A `rising` there means "trendScore >= 85 and seen within
+ *      14 days" — NOT "it went up this week".
+ *
+ *   2. WEEKLY MOVEMENT — this type. It answers "did it move against LAST
+ *      WEEK?" and it can only be answered from a real prior-week reading.
+ *
+ * Overloading one field with both meanings is what made the published
+ * `trend_status` misleading. They are now separate, and neither is derived
+ * from the other.
+ *
+ * NO INVENTED THRESHOLD
+ * ---------------------
+ * The RISING / DECLINING boundaries are the SAME constants `diffWeeklyStates`
+ * already uses (snapshotDiff.ts RISE_THRESHOLD = 1, FALL_THRESHOLD = 1). They
+ * are imported rather than re-declared so the two classifiers can never drift
+ * apart or be silently given different numbers. No 5% / 10% was invented.
+ */
+export type WeeklyMovement = 'NEW' | 'STABLE' | 'RISING' | 'DECLINING' | 'NO_HISTORY';
+
+import { RISE_THRESHOLD, FALL_THRESHOLD } from './snapshotDiff';
+
+export function classifyWeeklyMovement(input: {
+    hasHistory: boolean;
+    previousScore: number | null;
+    currentScore: number | null;
+}): WeeklyMovement {
+    if (!input.hasHistory) return 'NO_HISTORY';
+    if (input.previousScore === null) return 'NEW';
+    // A missing score is missing EVIDENCE, not "no change". Mirrors
+    // diffWeeklyStates, which reports NEEDS_REVIEW for the same situation.
+    if (input.currentScore === null) return 'STABLE';
+
+    const delta = input.currentScore - input.previousScore;
+    if (delta > RISE_THRESHOLD) return 'RISING';
+    if (delta < -FALL_THRESHOLD) return 'DECLINING';
+    return 'STABLE';
+}
 
 /* ------------------------------------------------------------------ */
 /* Persister contract                                                  */
@@ -714,7 +770,15 @@ function stageCompareWithHistory(ctx: RunContext): { keywords: PipelineKeyword[]
     let flat = 0;
 
     const keywords = ctx.keywords.map((keyword) => {
-        const previous = hasHistory ? history!.previousScores.get(keyword.normalizedKeyword) ?? null : null;
+        // PHASE 1C (DEFECT 1): the lookup MUST use the canonical weekly identity,
+        // the same key `toHistorySnapshot` writes. This used to be a bare
+        // `history.previousScores.get(keyword.normalizedKeyword)` — no market
+        // prefix — against a map whose keys all began with a market, so every
+        // lookup missed and every keyword was reported NEW forever.
+        const identityKey = buildWeeklyHistoryKey(keyword.market, keyword.normalizedKeyword);
+        const previous = hasHistory && identityKey
+            ? history!.previousScores.get(identityKey) ?? null
+            : null;
         const current = keyword.score ?? null;
         const hasBoth = previous !== null && current !== null;
         const delta = hasBoth ? Math.round(((current as number) - (previous as number)) * 100) / 100 : null;
@@ -740,6 +804,15 @@ function stageCompareWithHistory(ctx: RunContext): { keywords: PipelineKeyword[]
             ...keyword,
             previousScore: previous,
             historyComparison: { hasHistory, previousScore: previous, delta, direction },
+            // PHASE 1C (DEFECT 3): the WEEKLY MOVEMENT label, kept strictly
+            // separate from `trendStatus` (which is a lifecycle/score-age state
+            // produced by `determineTrendStatus` and does NOT mean "moved this
+            // week"). See classifyWeeklyMovement for why both exist.
+            weeklyMovement: classifyWeeklyMovement({
+                hasHistory,
+                previousScore: previous,
+                currentScore: current,
+            }),
         };
     });
 

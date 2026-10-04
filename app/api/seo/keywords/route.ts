@@ -11,7 +11,9 @@ import {
     getOrGenerateWeeklySnapshot,
     filterKeywordsByCategory,
     filterKeywordsForRoute,
+    getSupabaseAdmin,
 } from '../../../../server/seo/seoService';
+import { getWeeklyKeywordIntelligence } from '../../../../server/seo/weeklyIntelligence';
 
 export const revalidate = 3600; // 1 hour ISR cache
 
@@ -51,8 +53,27 @@ export async function GET(req: NextRequest) {
         const dataKind: KeywordDataKind = snapshot.dataKind ?? 'unavailable';
         const isDynamic = sourceTier !== 'baseline';
 
-        const keywords = rawKeywords.map((k, idx) => ({
-            id: k.id || `kw-${language}-${idx}`,
+        // PHASE 1C (DEFECT 2): join the persisted WEEKLY state onto the serving
+        // list so the Dynamic Keyword UI finally receives real week-over-week
+        // intelligence. This is the consumer that did not exist in Phase 1A.
+        //
+        // It is an ENRICHMENT, never a replacement: `seo_keyword_snapshots` still
+        // decides WHICH keywords are served and at what rank, and the 3-tier
+        // fallback above is untouched. A failure here degrades to
+        // `weeklyTier: 'unavailable'` and every row carries a null movement —
+        // which the UI must render as "unknown", never as a trend.
+        const weekly = await getWeeklyKeywordIntelligence(getSupabaseAdmin(), {
+            language: language as 'en' | 'ar',
+        });
+        // Indexed by the stable uuid the weekly engine persisted, so the join
+        // cannot silently match two different keywords that share display text.
+        const weeklyByKeywordId = new Map(weekly.keywords.map((w) => [w.keywordId, w]));
+
+        const keywords = rawKeywords.map((k, idx) => {
+            const id = k.id || `kw-${language}-${idx}`;
+            const weeklyRow = weeklyByKeywordId.get(id) ?? null;
+            return {
+            id,
             keyword: k.keyword || k.originalKeyword || k.normalizedKeyword || '',
             originalKeyword: k.originalKeyword || k.keyword || '',
             language: k.language,
@@ -67,7 +88,18 @@ export async function GET(req: NextRequest) {
             isPinned: k.isPinned ?? false,
             isYmyl: k.isYmyl ?? false,
             medicalRiskLevel: k.medicalRiskLevel || 'low',
-        }));
+            // ── Weekly intelligence (PHASE 1C) ─────────────────────────────
+            // `weeklyMovement` is the WEEK-OVER-WEEK answer and is deliberately
+            // separate from `trendStatus`, which is a lifecycle/score-age state
+            // and does not mean "moved this week". Null means UNKNOWN and is
+            // never to be rendered as a trend.
+            weeklyMovement: weeklyRow?.weeklyMovement ?? null,
+            previousScore: weeklyRow?.previousScore ?? null,
+            weeklySource: weeklyRow?.source ?? null,
+            weeklyMarket: weeklyRow?.market ?? null,
+            weeklyObservedAt: weeklyRow?.recordedAt ?? null,
+            };
+        });
 
         return NextResponse.json(
             {
@@ -94,6 +126,17 @@ export async function GET(req: NextRequest) {
                 degradedReason: isDynamic
                     ? null
                     : 'Served from curated baseline seed corpus: no database-backed or source-backed weekly snapshot was available.',
+                // ── Weekly intelligence provenance (PHASE 1C) ────────────────
+                // `weeklyTier` answers a DIFFERENT question from `sourceTier`:
+                //   sourceTier — was this keyword LIST built from live data?
+                //   weeklyTier — is this keyword's week-over-week MOVEMENT real?
+                // A response can be dynamic (`sourceTier: 'database'`) while its
+                // movement is still unknown (`weeklyTier: 'no_history'`), and the
+                // client must be able to tell those apart rather than assume.
+                weeklyTier: weekly.tier,
+                weeklyYear: weekly.year,
+                weeklyWeek: weekly.weekNumber,
+                weeklyPreviousWeek: weekly.previousWeek,
             },
             {
                 status: 200,

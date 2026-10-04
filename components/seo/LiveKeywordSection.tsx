@@ -22,12 +22,38 @@ export interface LiveKeywordItem {
     isRising?: boolean;
     isPinned?: boolean;
     isYmyl?: boolean;
+    /**
+     * PHASE 1C: the REAL week-over-week movement, served by the API from
+     * `seo_keyword_weekly_states`. `null` means UNKNOWN — it must never be
+     * rendered as a trend. Deliberately distinct from `trendStatus`, which is a
+     * lifecycle/score-age state and does not mean "moved this week".
+     */
+    weeklyMovement?: WeeklyMovementLabel;
+    previousScore?: number | null;
+    weeklySource?: string | null;
+    weeklyObservedAt?: string | null;
 }
+
+/**
+ * PHASE 1C — the weekly movement vocabulary. Mirrors `WeeklyMovement` in
+ * server/seo/weeklyEngine.ts, plus `null` for "no history to compare against".
+ */
+export type WeeklyMovementLabel = 'NEW' | 'STABLE' | 'RISING' | 'DECLINING' | null;
 
 export interface LiveKeywordSectionProps {
     navigateTo?: (page: Page) => void;
     fallbackPool?: string[];
 }
+
+/**
+ * Whether the last fetch produced REAL week-over-week movement data.
+ *
+ * PHASE 1C: a dynamic keyword LIST is not the same as a real weekly
+ * comparison. `weekly_states` means movements were computed from genuine
+ * prior-week rows; `no_history` means rows exist but there is nothing to
+ * compare against, so every movement is unknown. The two must not collapse.
+ */
+type WeeklyTierState = 'weekly_states' | 'no_history' | 'unavailable';
 
 /**
  * T1 TRUTH FIX — the response provenance of the LAST successful fetch.
@@ -56,6 +82,12 @@ interface RawKeywordResponseItem {
     isRising?: boolean;
     isPinned?: boolean;
     isYmyl?: boolean;
+    /** PHASE 1C — week-over-week movement + its provenance. */
+    weeklyMovement?: 'NEW' | 'STABLE' | 'RISING' | 'DECLINING' | null;
+    previousScore?: number | null;
+    weeklySource?: string | null;
+    weeklyMarket?: string | null;
+    weeklyObservedAt?: string | null;
 }
 
 export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
@@ -88,6 +120,10 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     // T1: the feed state is explicit. `fallback` means "we are NOT showing
     // dynamic intelligence right now" and must be surfaced, not hidden.
     const [feedState, setFeedState] = useState<KeywordFeedState>('loading');
+    // PHASE 1C: the weekly tier is tracked separately from the feed tier. A
+    // response can be a perfectly good dynamic LIST while carrying no weekly
+    // comparison at all, and the UI must be able to say so.
+    const [weeklyTier, setWeeklyTier] = useState<WeeklyTierState>('unavailable');
     // Fetch weekly dynamic keywords for active language
     useEffect(() => {
         let isMounted = true;
@@ -104,6 +140,15 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                 // though the HTTP status says success.
                 const tier = (data?.sourceTier ?? 'baseline') as 'snapshot' | 'database' | 'baseline';
                 const isDynamicPayload = tier === 'snapshot' || tier === 'database';
+                // PHASE 1C: read the weekly tier the server declares. Anything
+                // unrecognised is treated as unavailable, never as "rising".
+                const declaredWeeklyTier = data?.weeklyTier;
+                const resolvedWeeklyTier: WeeklyTierState =
+                    declaredWeeklyTier === 'weekly_states' ||
+                    declaredWeeklyTier === 'no_history' ||
+                    declaredWeeklyTier === 'unavailable'
+                        ? declaredWeeklyTier
+                        : 'unavailable';
 
                 const rawItems: RawKeywordResponseItem[] = Array.isArray(data) ? data : (data?.keywords || []);
                 if (rawItems.length > 0) {
@@ -124,9 +169,20 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                 destinationType: k.destinationType || 'page',
                                 score: typeof k.score === 'number' ? k.score : 70,
                                 trendStatus: k.trendStatus || 'stable',
-                                isRising: k.trendStatus === 'rising' || k.isRising === true,
+                                // PHASE 1C (DEFECT 3): `isRising` used to be derived
+                                // from `trendStatus === 'rising'`, which is a
+                                // lifecycle/score-age state and does NOT mean the
+                                // keyword rose this week. It is now driven ONLY by
+                                // the real weekly comparison, so the "Rising" tab can
+                                // never show an age-based label as a weekly trend.
+                                isRising: k.weeklyMovement === 'RISING',
                                 isPinned: k.isPinned === true,
                                 isYmyl: k.isYmyl === true,
+                                // PHASE 1C: carry the real weekly intelligence.
+                                weeklyMovement: k.weeklyMovement ?? null,
+                                previousScore: typeof k.previousScore === 'number' ? k.previousScore : null,
+                                weeklySource: k.weeklySource ?? null,
+                                weeklyObservedAt: k.weeklyObservedAt ?? null,
                             };
                         })
                         .filter(k => k.keyword.length > 0 && k.language === lang);
@@ -136,11 +192,14 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                         // T1: rows rendered from a baseline-tier payload are still a
                         // fallback. Never let a populated list imply a healthy feed.
                         setFeedState(isDynamicPayload ? 'dynamic' : 'fallback');
+                        setWeeklyTier(resolvedWeeklyTier);
                     } else {
                         setFeedState('fallback');
+                        setWeeklyTier(resolvedWeeklyTier);
                     }
                 } else {
                     setFeedState('fallback');
+                    setWeeklyTier(resolvedWeeklyTier);
                 }
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : String(err);
@@ -178,7 +237,14 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                 case 'trending':
                     return item.score >= 75 || item.trendStatus === 'rising' || item.trendStatus === 'new';
                 case 'rising':
-                    return item.trendStatus === 'rising' || item.isRising === true;
+                    // PHASE 1C (DEFECT 3): the "Rising" tab is a WEEKLY claim, so
+                    // it must be answered by the real week-over-week movement.
+                    // It previously matched `trendStatus === 'rising'`, which is a
+                    // score/age state — so this tab could list keywords that never
+                    // moved this week at all. `weeklyMovement === null` (no
+                    // history) now correctly excludes a keyword from this tab
+                    // rather than guessing.
+                    return item.weeklyMovement === 'RISING';
                 case 'guides':
                     return item.intent === 'informational' || item.intent === 'question' || item.destinationType === 'article' || item.cluster.includes('pct') || item.cluster.includes('safety');
                 case 'tools':
@@ -199,6 +265,11 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
     // T1: a fallback feed must never be presented as live intelligence. This
     // flag drives the heading, the badge colour and the description copy.
     const isFallback = feedState === 'fallback';
+
+    // PHASE 1C: whether real week-over-week movement is available at all.
+    // `false` means any movement shown must be treated as UNKNOWN, so the
+    // section says so explicitly rather than implying a weekly trend exists.
+    const hasWeeklyIntelligence = weeklyTier === 'weekly_states';
 
     // Click handler: non-blocking search logging + safe navigation
     const handleKeywordClick = (item: LiveKeywordItem) => {
@@ -271,6 +342,23 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                     : (isAr
                                         ? `تحديث أسبوعي (${filteredKeywords.length})`
                                         : `Weekly Refresh (${filteredKeywords.length})`)}
+                            </span>
+                            {/* PHASE 1C: the WEEKLY tier is reported separately from
+                                the feed tier. Without this, a dynamic keyword list
+                                would look identical whether or not any real
+                                week-over-week comparison existed behind it. */}
+                            <span
+                                data-testid="keyword-weekly-tier"
+                                data-weekly-tier={weeklyTier}
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                    hasWeeklyIntelligence
+                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                        : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30'
+                                }`}
+                            >
+                                {hasWeeklyIntelligence
+                                    ? (isAr ? 'حركة أسبوعية موثّقة' : 'Verified weekly movement')
+                                    : (isAr ? 'لا توجد مقارنة أسبوعية' : 'No weekly comparison')}
                             </span>
                         </div>
                         <p className="text-xs text-zinc-400 font-medium">

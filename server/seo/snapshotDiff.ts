@@ -6,10 +6,22 @@
  * ---------------
  * Before this file the system's notion of "trend" was `determineTrendStatus`,
  * which judges ONE keyword in isolation from its own first/last-seen dates. That
- * cannot answer "did this change since last week?", which is the question the
- * prompt's Definition of Done actually asks. Historical comparison is therefore
- * the PRIMARY signal, and `determineTrendStatus` is used only as a fallback when
- * no prior state exists.
+ * cannot answer "did this change since last week?".
+ *
+ * PHASE 1C (DEFECT 3) — CORRECTION TO THE PARAGRAPH ABOVE.
+ * This file previously went on to claim that historical comparison "is the
+ * PRIMARY signal" and that `determineTrendStatus` "is used only as a fallback".
+ * That was false in production and the code now matches the truth:
+ *
+ *   - The only writer of `seo_keywords.trend_status` IS `determineTrendStatus`
+ *     (app/api/seo/refresh/route.ts). It is the primary LIFECYCLE classifier.
+ *   - This file's historical comparison produces a DIFFERENT, separately
+ *     stored value: `weeklyMovement` (see `classifyWeeklyMovement` in
+ *     weeklyEngine.ts and the read path in weeklyIntelligence.ts).
+ *
+ * So both are primary, each answering a different question, and neither is a
+ * fallback for the other. See `trendStatusFallback` below for the full
+ * statement of the relationship.
  *
  * MARKET IDENTITY (§23, §24)
  * --------------------------
@@ -121,9 +133,16 @@ export type DiffState =
     | 'CLOSED_GAP'
     | 'NEEDS_REVIEW';
 
-/** Threshold for calling a score movement a real trend rather than noise. */
-const RISE_THRESHOLD = 1;
-const FALL_THRESHOLD = 1;
+/**
+ * Threshold for calling a score movement a real trend rather than noise.
+ *
+ * PHASE 1C (DEFECT 1/3): these were module-private. They are now exported so
+ * `classifyWeeklyMovement` (weeklyEngine.ts) imports the SAME numbers instead of
+ * re-declaring its own. One threshold, one meaning — the two classifiers cannot
+ * be silently given different boundaries.
+ */
+export const RISE_THRESHOLD = 1;
+export const FALL_THRESHOLD = 1;
 
 /**
  * Compare this week's states against last week's.
@@ -205,12 +224,38 @@ export function markReactivated(
 }
 
 /**
- * Fallback trend determination for a keyword with NO history.
+ * Lifecycle / score-age trend determination, for a keyword with NO history.
  *
- * Delegates to the existing, untouched `determineTrendStatus` rather than
- * reimplementing it, and forwards the EXACT parameter shape that function
- * declares. This is deliberately the fallback, not the primary path: the
- * historical diff above is what answers "what changed since last week?".
+ * PHASE 1C (DEFECT 3) — FATE OF THIS FUNCTION: KEPT AND NOW TRUTHFULLY LABELLED.
+ *
+ * PROVEN UNUSED: a repository-wide search finds exactly one occurrence of the
+ * name `trendStatusFallback` — its own definition here. No caller, no test, no
+ * import. It was deleted-or-kept on the question of taste; it is kept because
+ * `determineTrendStatus` is live and correct, and this is a legitimate public
+ * entry point to it. What was WRONG was the documentation below, not the code.
+ *
+ * THE DOC BUG THIS FIXES
+ * ----------------------
+ * The previous comment claimed historical comparison "is the PRIMARY signal"
+ * and that this function "is deliberately the fallback, not the primary path".
+ * Phase 1A proved that was FALSE in production: the only writer of
+ * `seo_keywords.trend_status` is `determineTrendStatus` (refresh/route.ts), and
+ * the weekly engine's historical comparison feeds a SEPARATE field,
+ * `weeklyMovement`. A reader who trusted the old comment would conclude that a
+ * `rising` in the database meant "rose this week", which it never did.
+ *
+ * THE HONEST RELATIONSHIP (both concepts are required, so both are kept)
+ * -----------------------------------------------------------------------
+ *   weeklyMovement (this module + weeklyEngine) — WEEK-OVER-WEEK movement.
+ *       Requires a real prior-week reading. Returns NO_HISTORY without one.
+ *       Never derived from age, score, or this function.
+ *
+ *   trendStatus / this function (scoringEngine)  — LIFECYCLE / SCORE-AGE state.
+ *       Answers "how healthy is this keyword now?" from calendar age, trendScore
+ *       and overallScore. Available with no history at all.
+ *
+ * They are different questions and must never be substituted for one another.
+ * `weeklyMovement` is the only field that may be presented as a weekly trend.
  */
 export function trendStatusFallback(params: Parameters<typeof determineTrendStatus>[0]): string {
     return determineTrendStatus(params);

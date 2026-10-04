@@ -30,6 +30,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Market, SourceLanguage } from './sources/types';
 import type { PersistOutcome, PersistRow, WeeklyPersister } from './weeklyEngine';
+import { buildWeeklyHistoryKey } from './weeklyIdentity';
+import { normalizeKeyword } from './normalization';
 
 const SUPPORTED_MARKETS = new Set([
     'ar-EG',
@@ -166,7 +168,26 @@ export function toHistorySnapshot(rows: readonly WeeklyStateRow[]): {
     const previousScores = new Map<string, number>();
     for (const row of rows) {
         if (row.score == null) continue;
-        previousScores.set(`${row.market}::${row.keyword.toLowerCase()}`, Number(row.score));
+        // PHASE 1C (DEFECT 1): the key MUST be built by the same canonical
+        // function the engine reads with. This line used to inline
+        // `${row.market}::${row.keyword.toLowerCase()}` — display TEXT rather
+        // than the normalized identity — while weeklyEngine.ts looked the value
+        // up by normalized keyword with no market prefix. The two could never
+        // match, so COMPARE_WITH_HISTORY saw "no history" for every keyword on
+        // every run and classified all of them NEW.
+        //
+        // `normalized_keyword` is preferred when the row carries it; otherwise
+        // the display text is normalized here through the language-aware
+        // normalizer. Either way the identity is identical to the reader's.
+        const normalized =
+            String((row as { normalized_keyword?: string | null }).normalized_keyword ?? '') ||
+            normalizeKeyword(String(row.keyword ?? ''), row.language);
+        const key = buildWeeklyHistoryKey(row.market, normalized);
+        // A row whose market cannot be resolved honestly contributes NO history
+        // rather than an invented one. It is reported separately by
+        // `marketWasDefaulted`, so the omission stays visible.
+        if (!key) continue;
+        previousScores.set(key, Number(row.score));
     }
     const first = rows[0];
     return {
