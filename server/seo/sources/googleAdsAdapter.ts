@@ -506,8 +506,27 @@ export function buildGenerateKeywordIdeaRequest(
         // Real Google Ads network, so the statistics are the ones an advertiser
         // would actually bid against.
         keywordPlanNetwork: 'GOOGLE_SEARCH',
-        includePageTopics: false,
     };
+    // REMOVED: `includePageTopics: false`.
+    //
+    // It is not a field of GenerateKeywordIdeasRequest. Google's own
+    // documentation for the operation lists exactly these body fields —
+    // language, geoTargetConstants, keywordPlanNetwork, includeAdultKeywords,
+    // keywordAnnotation, historicalMetricsOptions, and the keyword_seed /
+    // url_seed / keyword_and_url_seed / site_seed oneof — and its REST example
+    // body is:
+    //
+    //   { "language": "...", "geoTargetConstants": ["..."],
+    //     "includeAdultKeywords": false, "keywordPlanNetwork": "GOOGLE_SEARCH",
+    //     "keywordAndUrlSeed": { "keywords": ["..."], "url": "..." } }
+    //
+    // Sending an unknown name makes the server reject the request with
+    // `400 INVALID_ARGUMENT  Unknown name "includePageTopics"`, i.e. it fails
+    // on shape BEFORE authorization is ever evaluated. With it present this
+    // provider could not return a single row regardless of credentials.
+    //
+    // Deliberately NOT replaced with a substitute field: inventing a
+    // replacement would reintroduce the same class of failure.
     if (geo !== null) {
         body.geoTargetConstants = [`geoTargetConstants/${geo}`];
     }

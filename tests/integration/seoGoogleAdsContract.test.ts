@@ -322,6 +322,11 @@ describe('Google Ads · request targets v25 and honours the access path', () => 
         expect(body.customer_id).toBeUndefined();
         expect(body.customerId).toBeUndefined();
 
+        // PHASE 2 — the guard that was missing. The camelCase spelling is the
+        // one that actually shipped and caused the live 400; the snake_case
+        // guard below never covered it.
+        expect('includePageTopics' in body).toBe(false);
+
         // And none of the protobuf spellings may creep back in.
         for (const snake of [
             'language_constant',
@@ -332,6 +337,74 @@ describe('Google Ads · request targets v25 and honours the access path', () => 
         ]) {
             expect(body[snake], `${snake} must not be sent`).toBeUndefined();
         }
+
+        // The body may contain ONLY fields the v25 contract documents. This is
+        // an allow-list assertion so a future unsupported name cannot slip in
+        // unnoticed, which is exactly how includePageTopics got through.
+        const allowed = new Set([
+            'language',
+            'keywordPlanNetwork',
+            'geoTargetConstants',
+            'keywordSeed',
+            'urlSeed',
+            'keywordAndUrlSeed',
+            'siteSeed',
+            'includeAdultKeywords',
+            'keywordAnnotation',
+            'historicalMetricsOptions',
+        ]);
+        const unexpected = Object.keys(body).filter((k) => !allowed.has(k));
+        expect(unexpected, `unexpected request body fields: ${unexpected.join(', ')}`)
+            .toEqual([]);
+    });
+
+    it('the ACTUAL request body sent on the wire has only v25-valid fields', async () => {
+        // The highest-value assertion: capture what is really transmitted, not
+        // just what the builder returns in isolation. This is the exact check
+        // that would have caught `includePageTopics` before it reached Google.
+        clearGoogleAdsCache();
+        let seenUrl = '';
+        let seenBody: Record<string, unknown> = {};
+        let seenHeaders: Record<string, string> = {};
+
+        const fetchImpl = vi.fn(async (url: unknown, init: RequestInit) => {
+            seenUrl = String(url);
+            seenHeaders = init.headers as Record<string, string>;
+            if (typeof init.body === 'string') {
+                seenBody = JSON.parse(init.body) as Record<string, unknown>;
+            }
+            return new Response(JSON.stringify({ results: [] }), { status: 200 });
+        });
+
+        await collectGoogleAdsKeywordIdeas(
+            { language: 'en', market: 'en-US', seeds: ['testosterone'], accessPath: 'DIRECT' },
+            { env: NO_DEV_TOKEN, fetchImpl: fetchImpl as unknown as typeof fetch }
+        );
+
+        // Request URL: /v25/customers/{normalizedCustomerId}:generateKeywordIdeas
+        expect(seenUrl).toBe(
+            'https://googleads.googleapis.com/v25/customers/1234567890:generateKeywordIdeas'
+        );
+        // customer_id must NOT be smuggled into the body.
+        expect(seenBody.customer_id).toBeUndefined();
+        expect(seenBody.customerId).toBeUndefined();
+        // The unsupported field that caused the live HTTP 400.
+        expect('includePageTopics' in seenBody).toBe(false);
+
+        // Every transmitted field is on the documented contract.
+        const allowed = new Set([
+            'language', 'keywordPlanNetwork', 'geoTargetConstants',
+            'keywordSeed', 'urlSeed', 'keywordAndUrlSeed', 'siteSeed',
+            'includeAdultKeywords', 'keywordAnnotation', 'historicalMetricsOptions',
+        ]);
+        expect(Object.keys(seenBody).filter((k) => !allowed.has(k))).toEqual([]);
+        expect(seenBody.language).toBe('languageConstants/1000');
+        expect(seenBody.keywordPlanNetwork).toBe('GOOGLE_SEARCH');
+        expect(seenBody.keywordSeed).toEqual({ keywords: ['testosterone'] });
+
+        // Headers: Bearer present, no login-customer-id on DIRECT.
+        expect(seenHeaders.Authorization).toMatch(/^Bearer\s+\S+/);
+        expect(seenHeaders['login-customer-id']).toBeUndefined();
     });
 
     it('Arabic markets send the Arabic language constant', () => {

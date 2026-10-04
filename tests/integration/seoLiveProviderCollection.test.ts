@@ -105,9 +105,9 @@ describe('live collection · a configured provider is genuinely CALLED', () => {
     it('returns CONNECTED rows for Bing with only an API key and a site URL', async () => {
         const fetchImpl = vi.fn(async (url: string) => {
             expect(String(url)).toContain('GetQueryStats');
-            return jsonResponse([
-                { Query: 'ffmi calculator', Impressions: 90, Clicks: 4 },
-            ]);
+            return jsonResponse({
+                d: [{ Query: 'ffmi calculator', Impressions: 90, Clicks: 4 }],
+            });
         });
 
         const outcomes = await collectLiveProviders({
@@ -300,6 +300,28 @@ describe('live collection · Google Ads sends only the headers its access path n
             env: { ...ADS_ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: '9876543210' },
         });
         expect(headers['login-customer-id']).toBe('9876543210');
+    });
+
+    it('an INFERRED manager call carries the manager id (single inference)', async () => {
+        // THE BUG THIS PINS. An earlier revision inferred the access path from
+        // configuration but selected the login id from the explicit option —
+        // so an inferred MANAGER call owned NO id and hit the CLIENT account
+        // directly. A call that "succeeded" on the wrong account looked green.
+        // The path and the id must come from the SAME resolution, always.
+        const headers = await adsCall({
+            env: { ...ADS_ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: '987-654-3210' },
+        });
+        expect(headers['login-customer-id']).toBe('9876543210');
+    });
+
+    it('a DIRECT call never carries a manager id, even when one is configured', async () => {
+        // The reverse disagreement: an explicit DIRECT call must not inherit a
+        // configured id, which would silently turn it into a manager read.
+        const headers = await adsCall({
+            env: { ...ADS_ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: '9876543210' },
+            googleAdsAccessPath: 'DIRECT',
+        });
+        expect(headers['login-customer-id']).toBeUndefined();
     });
 });
 

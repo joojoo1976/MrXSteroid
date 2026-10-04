@@ -134,10 +134,29 @@ function finiteOrNull(value: unknown): number | null {
 }
 
 /**
- * Validate a Bing response. The endpoint returns a bare JSON array of stats
- * objects, so a non-array (or an object carrying an `error`) is a failure.
+ * Validate a Bing response.
+ *
+ * The `/json/` endpoints wrap their rows in a `d` envelope. Microsoft's own
+ * documented example for GetQueryStats is:
+ *
+ *     {"d":[{"__type":"QueryStats:#Microsoft.Bing.Webmaster.Api",
+ *            "AvgClickPosition":0,"AvgImpressionPosition":27,"Clicks":0,
+ *            "Date":"\/Date(1399100400000)\/","Impressions":1,
+ *            "Query":"www.getevents.co"}, ...]}
+ *
+ * The previous revision asserted the body was a BARE array, so every real
+ * response — which is an object carrying `d` — was rejected with
+ * "Bing response is an object; a stats array was expected". That made this
+ * provider structurally incapable of returning a row.
+ *
+ * This validates the envelope EXPLICITLY rather than casting whatever object
+ * arrives into an array: `body` must be an object, `body.d` must be an array,
+ * and every entry of `body.d` must be a non-null object. A malformed envelope
+ * is reported honestly, and a genuine Bing error object keeps its own message.
  */
 export function validateBingResponse(body: unknown): string | null {
+    // A bare array is still accepted: it is a valid (if undocumented) shape and
+    // rejecting it would be a needless regression.
     if (Array.isArray(body)) {
         for (const row of body) {
             if (row === null || typeof row !== 'object') {
@@ -146,13 +165,46 @@ export function validateBingResponse(body: unknown): string | null {
         }
         return null;
     }
-    if (body && typeof body === 'object') {
-        // Bing signals some failures with a 200 + error object.
-        const err = (body as { error?: unknown }).error;
-        if (err !== undefined) return `Bing returned an error object: ${String(err)}`;
-        return 'Bing response is an object; a stats array was expected';
+
+    if (body === null || typeof body !== 'object') {
+        return 'Bing response is neither an array nor an object';
     }
-    return 'Bing response is neither an array nor an object';
+
+    const record = body as { d?: unknown; error?: unknown };
+
+    // Bing signals some failures with a 200 + error object.
+    if (record.error !== undefined) {
+        return `Bing returned an error object: ${String(record.error)}`;
+    }
+
+    // The documented envelope: { d: [...] }.
+    if (!('d' in record)) {
+        return 'Bing response object has no "d" envelope; a stats array was expected';
+    }
+    if (!Array.isArray(record.d)) {
+        return 'Bing response "d" envelope is not an array; a stats array was expected';
+    }
+    for (const row of record.d) {
+        if (row === null || typeof row !== 'object') {
+            return 'Bing response contains a non-object entry';
+        }
+    }
+    return null;
+}
+
+/**
+ * Extract the stats rows from a validated Bing response.
+ *
+ * Returns the rows from the documented `d` envelope, or the body itself when it
+ * was already a bare array. Only valid after `validateBingResponse` has passed.
+ */
+export function extractBingRows(body: unknown): BingQueryStatRow[] {
+    if (Array.isArray(body)) return body as BingQueryStatRow[];
+    if (body && typeof body === 'object') {
+        const envelope = (body as { d?: unknown }).d;
+        if (Array.isArray(envelope)) return envelope as BingQueryStatRow[];
+    }
+    return [];
 }
 
 
@@ -257,6 +309,10 @@ export function mapBingRow(
 /**
  * Collect Bing Webmaster query stats, paging via the documented `Page` cursor.
  *
+ * Runs against the documented JSON endpoint,
+ * `https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats`, whose rows are
+ * enclosed in a `d` envelope (`{"d":[ ... ]}`) — see `validateBingResponse`.
+ *
  * Resolves with a BLOCKED/FAILED envelope instead of throwing. Pages until a
  * short page proves the end or the caller's cap is reached.
  */
@@ -323,7 +379,11 @@ export async function collectBingQueryStats(
             const shapeError = validateBingResponse(parsed);
             if (shapeError) throw new Error(`invalid_response: ${shapeError}`);
 
-            const rows = parsed as BingQueryStatRow[];
+            // The rows live inside the documented `d` envelope, not at the top
+            // level. Casting the whole body to an array (the previous
+            // behaviour) yielded a non-array for every real response, so the
+            // loop below never ran and the provider returned zero rows.
+            const rows = extractBingRows(parsed);
             for (const row of rows) {
                 const record = mapBingRow(row, {
                     language: query.language,

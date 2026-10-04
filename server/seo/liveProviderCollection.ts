@@ -359,6 +359,14 @@ async function invokeProvider(
     // conservative floor on top of the `first_incomplete_date` Google reports.
     const startDate = isoDaysBefore(ctx.now, ctx.windowDays);
 
+    // Resolved ONCE for this invocation and used by both the access path AND
+    // the login id below: inferring them on separate lines let the two
+    // disagree (inferred MANAGER path with no MANAGER id, so the CLIENT
+    // account was read directly and a wrong-account success looked green).
+    const resolvedGoogleAdsAccessPath =
+        options.googleAdsAccessPath ??
+        (adapterEnv.GOOGLE_ADS_LOGIN_CUSTOMER_ID ? 'MANAGER' : 'DIRECT');
+
     switch (provider) {
         case 'google_search_console':
             return collectGscSearchAnalytics(
@@ -402,14 +410,16 @@ async function invokeProvider(
                     // `GOOGLE_ADS_LOGIN_CUSTOMER_ID` means MANAGER, which is the
                     // same inference the seam's probe uses, so the probe and this
                     // call cannot disagree.
-                    accessPath:
-                        options.googleAdsAccessPath ??
-                        (adapterEnv.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-                            ? 'MANAGER'
-                            : 'DIRECT'),
-                    loginCustomerId: options.googleAdsAccessPath === 'MANAGER'
-                        ? adapterEnv.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-                        : undefined,
+                    //
+                    // The login id travels with the resolved path itself, never
+                    // with the option that selected it: an inferred MANAGER call
+                    // without an id would hit the CLIENT account directly, and a
+                    // DIRECT call carrying one would silently change the account.
+                    accessPath: resolvedGoogleAdsAccessPath,
+                    loginCustomerId:
+                        resolvedGoogleAdsAccessPath === 'MANAGER'
+                            ? adapterEnv.GOOGLE_ADS_LOGIN_CUSTOMER_ID
+                            : undefined,
                 },
                 {
                     env: adapterEnv,

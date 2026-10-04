@@ -8,7 +8,7 @@
  * prove the adapter refuses to invent anything.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import {
     collectGscSearchAnalytics,
@@ -40,8 +40,10 @@ import {
     bingCountryToMarket,
     marketToBingCountry,
     validateBingResponse,
+    extractBingRows,
     buildBingQueryStatsUrl,
     BING_PROVIDER,
+    BING_API_BASE,
 } from '../../server/seo/sources/bingAdapter';
 
 import {
@@ -622,3 +624,179 @@ describe('Google Ads adapter — historical signal naming', () => {
     });
 });
 // __SECTION_ADS_3__
+
+/* =====================================================================
+ * Bing Webmaster — documented `{"d":[ ... ]}` JSON envelope
+ *
+ * Microsoft's own documented GetQueryStats example is:
+ *   {"d":[{"__type":"QueryStats:#Microsoft.Bing.Webmaster.Api",
+ *          "AvgClickPosition":0,"AvgImpressionPosition":27,"Clicks":0,
+ *          "Date":"/Date(1399100400000)/","Impressions":1,
+ *          "Query":"www.getevents.co"}, ...]}
+ *
+ * The adapter previously required a BARE array, so every real response — an
+ * object carrying `d` — was rejected with "Bing response is an object; a stats
+ * array was expected". These tests pin the corrected contract.
+ * ===================================================================== */
+describe('Bing adapter — response envelope contract', () => {
+    it('accepts the documented {"d":[ ... ]} envelope', () => {
+        expect(
+            validateBingResponse({
+                d: [{ Query: 'example', Impressions: 10, Clicks: 2 }],
+            })
+        ).toBeNull();
+    });
+
+    it('extracts rows from the envelope', () => {
+        const rows = extractBingRows({
+            d: [
+                {
+                    Query: 'example',
+                    Impressions: 10,
+                    Clicks: 2,
+                    AvgClickPosition: 3,
+                    AvgImpressionPosition: 4,
+                },
+            ],
+        });
+        expect(rows).toHaveLength(1);
+        expect(rows[0].Query).toBe('example');
+        expect(rows[0].Impressions).toBe(10);
+        expect(rows[0].Clicks).toBe(2);
+        expect(rows[0].AvgClickPosition).toBe(3);
+        expect(rows[0].AvgImpressionPosition).toBe(4);
+    });
+
+    it('an empty envelope is a valid empty result, not a protocol failure', () => {
+        expect(validateBingResponse({ d: [] })).toBeNull();
+        expect(extractBingRows({ d: [] })).toEqual([]);
+    });
+
+    it('a non-array `d` envelope is rejected honestly', () => {
+        const err = validateBingResponse({ d: {} });
+        expect(typeof err).toBe('string');
+        expect(err).toContain('"d"');
+        expect(err).toContain('not an array');
+        expect(extractBingRows({ d: {} })).toEqual([]);
+    });
+
+    it('an object with no `d` envelope is rejected honestly', () => {
+        expect(validateBingResponse({ rows: [1, 2] })).toContain('no "d" envelope');
+    });
+
+    it('a non-object entry inside `d` is rejected', () => {
+        expect(validateBingResponse({ d: ['not-an-object'] })).toContain('non-object entry');
+    });
+
+    it('a bare array still validates (no regression)', () => {
+        expect(validateBingResponse([{ Query: 'x' }])).toBeNull();
+        expect(extractBingRows([{ Query: 'x' }])).toHaveLength(1);
+    });
+
+    it('a true Bing error object stays an actionable provider error', () => {
+        const err = validateBingResponse({ error: 'Invalid api key' });
+        expect(err).toContain('error object');
+        expect(err).toContain('Invalid api key');
+        // It must be reported as an error, never mistaken for a stats envelope.
+        expect(err).not.toBe(null);
+    });
+
+    it('a non-object, non-array body is rejected', () => {
+        expect(validateBingResponse('boom')).toContain('neither an array nor an object');
+        expect(validateBingResponse(null)).toContain('neither an array nor an object');
+    });
+
+    it('the documented JSON endpoint is still the one we call', () => {
+        // Microsoft retires SOAP/POX; the JSON/HTTP endpoint stays the target
+        // for this operation. Do not silently migrate to a different endpoint.
+        expect(BING_API_BASE).toBe('https://ssl.bing.com/webmaster/api.svc/json');
+        const url = buildBingQueryStatsUrl({
+            siteUrl: 'https://example.com/',
+            apiKey: 'synthetic-key-not-real',
+        });
+        expect(url).toContain('/json/GetQueryStats?');
+    });
+});
+
+describe('Bing adapter — a documented envelope response produces a real record', () => {
+    const BING_ENV = {
+        BING_WEBMASTER_SITE_URL: 'https://example.com/',
+        BING_WEBMASTER_API_KEY: 'synthetic-key-not-real',
+    };
+
+    it('the documented envelope yields exactly one mapped record', async () => {
+        const fetchImpl = vi.fn(async () =>
+            jsonResponse({
+                d: [
+                    {
+                        __type: 'QueryStats:#Microsoft.Bing.Webmaster.Api',
+                        Query: 'example',
+                        Impressions: 10,
+                        Clicks: 2,
+                        AvgClickPosition: 3,
+                        AvgImpressionPosition: 4,
+                    },
+                ],
+            })
+        );
+
+        const r = await collectBingQueryStats(
+            { language: 'en', market: 'en-US', pageSize: 10 },
+            { env: BING_ENV, fetchImpl: fetchImpl as unknown as typeof fetch }
+        );
+
+        expect(r.status).toBe('CONNECTED');
+        expect(r.records).toHaveLength(1);
+        expect(r.error).toBeUndefined();
+
+        const rec = r.records[0];
+        expect(rec.keyword).toBe('example');
+        // Bing numbers land ONLY in Bing fields — never in Google ones.
+        expect(rec.metrics.bingImpressions).toBe(10);
+        expect(rec.metrics.bingClicks).toBe(2);
+        expect(rec.metrics.googleImpressions).toBeNull();
+        expect(rec.metrics.googleClicks).toBeNull();
+        expect(rec.sourceStatus).toBe('CONNECTED');
+        expect(rec.dataKind).toBe('observed');
+        expect(rec.attribution.searchEngine).toBe('bing');
+    });
+
+    it('an empty envelope returns CONNECTED with zero records', async () => {
+        const fetchImpl = vi.fn(async () => jsonResponse({ d: [] }));
+        const r = await collectBingQueryStats(
+            { language: 'en', market: 'en-US', pageSize: 10 },
+            { env: BING_ENV, fetchImpl: fetchImpl as unknown as typeof fetch }
+        );
+        expect(r.status).toBe('CONNECTED');
+        expect(r.records).toHaveLength(0);
+        expect(r.error).toBeUndefined();
+    });
+
+    it('a malformed envelope returns FAILED with invalid_response, not fake data', async () => {
+        const fetchImpl = vi.fn(async () => jsonResponse({ d: {} }));
+        const r = await collectBingQueryStats(
+            { language: 'en', market: 'en-US', pageSize: 10 },
+            { env: BING_ENV, fetchImpl: fetchImpl as unknown as typeof fetch }
+        );
+        expect(r.status).toBe('FAILED');
+        expect(r.records).toHaveLength(0);
+        expect(r.error).toContain('invalid_response');
+    });
+
+    it('a true error object is reported as a provider error and leaks no credential', async () => {
+        const fetchImpl = vi.fn(async () => jsonResponse({ error: 'Api key is invalid' }));
+        const r = await collectBingQueryStats(
+            { language: 'en', market: 'en-US', pageSize: 10 },
+            { env: BING_ENV, fetchImpl: fetchImpl as unknown as typeof fetch }
+        );
+        expect(r.status).toBe('FAILED');
+        expect(r.records).toHaveLength(0);
+        // Actionable, and never carrying the configured key or site into the error.
+        expect(r.error).toContain('invalid_response');
+        expect(r.error).toContain('error object');
+        expect(r.error).not.toContain(BING_ENV.BING_WEBMASTER_API_KEY);
+        expect(r.error).not.toContain(BING_ENV.BING_WEBMASTER_SITE_URL);
+    });
+});
+
+
