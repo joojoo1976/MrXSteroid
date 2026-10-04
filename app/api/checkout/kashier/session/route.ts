@@ -17,7 +17,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { TierId } from '../../../../../server/payments/pricing';
 import {
     createCheckoutSession,
     CheckoutValidationError,

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { requireAdmin } from '../../../../../server/auth/require-admin';
-import { applyProviderVerdict } from '../../../../../server/payments/fulfillmentService';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -102,7 +101,6 @@ export async function PATCH(
 
     try {
         const supabase = getSupabaseAdmin();
-        const now = new Date().toISOString();
         const adminId = authResult.user.id;
 
         // ─── 1. Load receipt with all linked records ──────────────────────────
