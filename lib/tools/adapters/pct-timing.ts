@@ -81,56 +81,76 @@ export function buildPctTimingKeyFindings(
     input: EngineInput,
 ): KeyFinding[] {
     const noPct = input.pctProtocol === 'none';
-    const longEster = input.compoundHalfLifeDays >= LONG_ESTER_THRESHOLD_DAYS;
+    const effectiveHl = result.effectiveHalfLifeDays ?? input.compoundHalfLifeDays;
+    const longEster = effectiveHl >= LONG_ESTER_THRESHOLD_DAYS;
     const recovered = result.fullRecoveryWeek > 0;
 
-    return [
-        {
-            code: 'WASHOUT_WINDOW',
-            labelAr: `نافذة التطهير: ${result.washoutWeeks} أسبوع قبل بدء PCT`,
-            labelEn: `Washout window: ${result.washoutWeeks} weeks before PCT start`,
-            value: `${result.washoutWeeks}w`,
-            severity: 'info',
-        },
-        {
-            code: 'PCT_START',
-            labelAr: `بدء PCT مؤهل عند الأسبوع ${result.pctStartWeek} (بعد انخفاض المركب تحت العتبة)`,
-            labelEn: `PCT eligible at week ${result.pctStartWeek} (compound below threshold)`,
-            value: `wk${result.pctStartWeek}`,
-            severity: 'info',
-        },
-        {
-            code: 'PCT_DURATION',
-            labelAr:
-                result.pctDurationWeeks > 0
-                    ? `نافذة PCT: ${result.pctDurationWeeks} أسابيع`
-                    : 'لا يوجد بروتوكول PCT — التعافي طبيعي بطيء',
-            labelEn:
-                result.pctDurationWeeks > 0
-                    ? `PCT window: ${result.pctDurationWeeks} weeks`
-                    : 'No PCT protocol — slow natural recovery',
-            value: result.pctDurationWeeks > 0 ? `${result.pctDurationWeeks}w` : NO_PCT_LONG_ESTER,
-            severity: noPct && longEster ? 'important' : noPct ? 'monitor' : 'info',
-        },
-        {
-            code: 'RECOVERY_STATUS',
-            labelAr: recovered
-                ? `استعادة التستوستيرون الداخلي ≥ ٩٠٪ عند الأسبوع ${result.fullRecoveryWeek}`
-                : 'التستوستيرون الداخلي لم يصل إلى ٩٠٪ ضمن نافذة المراقبة',
-            labelEn: recovered
-                ? `Endogenous T restored ≥ 90% at week ${result.fullRecoveryWeek}`
-                : 'Endogenous T did not reach 90% within the observation window',
-            value: recovered ? `wk${result.fullRecoveryWeek}` : 'at-risk',
-            severity: recovered ? 'info' : 'monitor',
-        },
-        {
-            code: 'FINAL_TESTOSTERONE',
-            labelAr: `التستوستيرون الداخلي النهائي: ${result.finalTestosteronePct}% من الخط الأساسي (وفق كتاب Mr. X-Steroid)`,
-            labelEn: `Final endogenous testosterone: ${result.finalTestosteronePct}% of baseline (per Mr. X-Steroid Book)`,
-            value: `${result.finalTestosteronePct}%`,
-            severity: 'info',
-        },
-    ];
+    const findings: KeyFinding[] = [];
+
+    // Conflicting esters warning if detected
+    if (result.hasConflictingEsters) {
+        findings.push({
+            code: 'ESTER_INTERFERENCE',
+            labelAr: result.conflictWarningAr ?? 'تداخل إسترات سريعة وبطيئة في نفس الكورس',
+            labelEn: result.conflictWarningEn ?? 'Conflicting short and long esters detected in stack',
+            value: `${result.limitingCompoundName} (bottleneck)`,
+            severity: 'important',
+        });
+    }
+
+    findings.push({
+        code: 'WASHOUT_WINDOW',
+        labelAr: `نافذة التطهير: ${result.washoutWeeks} أسبوع (${result.washoutDays} يوم) لمركب ${result.limitingCompoundName}`,
+        labelEn: `Washout window: ${result.washoutWeeks} weeks (${result.washoutDays} days) for ${result.limitingCompoundName}`,
+        value: `${result.washoutWeeks}w`,
+        severity: 'info',
+    });
+
+    findings.push({
+        code: 'PCT_START',
+        labelAr: `بدء PCT مؤهل عند تاريخ ${result.pctLaunchDateIso} (انخفاض الحمل تحت عتبة ${result.hptaThresholdNgDl} ng/dL)`,
+        labelEn: `PCT eligible on ${result.pctLaunchDateIso} (load under ${result.hptaThresholdNgDl} ng/dL threshold)`,
+        value: `wk${result.pctStartWeek}`,
+        severity: 'info',
+    });
+
+    findings.push({
+        code: 'PCT_DURATION',
+        labelAr:
+            result.pctDurationWeeks > 0
+                ? `نافذة PCT: ${result.pctDurationWeeks} أسابيع`
+                : 'لا يوجد بروتوكول PCT — التعافي طبيعي بطيء',
+        labelEn:
+            result.pctDurationWeeks > 0
+                ? `PCT window: ${result.pctDurationWeeks} weeks`
+                : 'No PCT protocol — slow natural recovery',
+        value: result.pctDurationWeeks > 0 ? `${result.pctDurationWeeks}w` : NO_PCT_LONG_ESTER,
+        severity: noPct && longEster ? 'important' : noPct ? 'monitor' : 'info',
+    });
+
+    findings.push({
+        code: 'RECOVERY_STATUS',
+        labelAr: recovered
+            ? `استعادة التستوستيرون الداخلي ≥ ٩٠٪ عند الأسبوع ${result.fullRecoveryWeek}`
+            : 'التستوستيرون الداخلي لم يصل إلى ٩٠٪ ضمن نافذة المراقبة',
+        labelEn: recovered
+            ? `Endogenous T restored ≥ 90% at week ${result.fullRecoveryWeek}`
+            : 'Endogenous T did not reach 90% within the observation window',
+        value: recovered ? `wk${result.fullRecoveryWeek}` : 'at-risk',
+        severity: recovered ? 'info' : 'monitor',
+    });
+
+    findings.push({
+        code: 'FINAL_TESTOSTERONE',
+        labelAr: `التستوستيرون الداخلي النهائي: ${result.finalTestosteronePct}% من الخط الأساسي (وفق كتاب Mr. X-Steroid)`,
+        labelEn: `Final endogenous testosterone: ${result.finalTestosteronePct}% of baseline (per Mr. X-Steroid Book)`,
+        value: `${result.finalTestosteronePct}%`,
+        severity: 'info',
+    });
+
+    // Invariant: Sort by severity ('important' -> 'monitor' -> 'info')
+    const severityRank: Record<string, number> = { important: 0, monitor: 1, info: 2 };
+    return findings.sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);
 }
 
 /**

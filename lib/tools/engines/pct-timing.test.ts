@@ -170,3 +170,76 @@ describe('Tool #004 — determinism & hostile input', () => {
         expect(PCT_BOOST_FACTORS.none).toBeLessThan(PCT_BOOST_FACTORS.standard);
     });
 });
+
+describe('Tool #004 v2.0 — Multi-compound stack, ester interference & bio-modifiers', () => {
+    it('bottlenecks washout window on the slowest ester in a multi-compound stack', async () => {
+        const { calculateDynamicPctWashout } = await import('./pct-timing');
+        const res = calculateDynamicPctWashout({
+            stack: [
+                { id: '1', presetKey: 'test_propionate', halfLifeDays: 1.5, doseMgPerWeek: 350, isLipophilic: false },
+                { id: '2', presetKey: 'trenbolone_acetate', halfLifeDays: 1.0, doseMgPerWeek: 300, isLipophilic: false },
+                { id: '3', presetKey: 'nandrolone_decanoate', halfLifeDays: 15.0, doseMgPerWeek: 400, isLipophilic: true },
+            ],
+            weeksOnCycle: 12,
+            lastInjectionDateIso: '2026-10-01',
+            bioModifiers: {
+                bodyFatPct: 15,
+                organHealth: 'normal',
+                cycleHistory: 'intermediate',
+            },
+            pctProtocol: 'standard',
+        });
+
+        expect(res.limitingHalfLifeDays).toBe(15.0);
+        expect(res.limitingCompoundName).toContain('Nandrolone Decanoate');
+        expect(res.hasConflictingEsters).toBe(true);
+        expect(res.washoutWeeks).toBeGreaterThanOrEqual(5);
+        expect(res.washoutDays).toBeGreaterThan(30);
+        expect(res.dailyWashout.length).toBeGreaterThan(45);
+    });
+
+    it('extends effective half-life for lipophilic compounds when body fat > 20%', async () => {
+        const { calculateDynamicPctWashout } = await import('./pct-timing');
+        const lean = calculateDynamicPctWashout({
+            stack: [{ id: '1', presetKey: 'test_enanthate', halfLifeDays: 4.5, doseMgPerWeek: 500, isLipophilic: true }],
+            weeksOnCycle: 12,
+            lastInjectionDateIso: '2026-10-01',
+            bioModifiers: { bodyFatPct: 12, organHealth: 'normal', cycleHistory: 'intermediate' },
+            pctProtocol: 'standard',
+        });
+
+        const highBf = calculateDynamicPctWashout({
+            stack: [{ id: '1', presetKey: 'test_enanthate', halfLifeDays: 4.5, doseMgPerWeek: 500, isLipophilic: true }],
+            weeksOnCycle: 12,
+            lastInjectionDateIso: '2026-10-01',
+            bioModifiers: { bodyFatPct: 30, organHealth: 'normal', cycleHistory: 'intermediate' },
+            pctProtocol: 'standard',
+        });
+
+        expect(highBf.effectiveHalfLifeDays).toBeGreaterThan(lean.effectiveHalfLifeDays);
+        expect(highBf.washoutDays).toBeGreaterThan(lean.washoutDays);
+    });
+
+    it('lowers inhibitory threshold to 100 ng/dL for veteran/long-term users', async () => {
+        const { calculateDynamicPctWashout } = await import('./pct-timing');
+        const standard = calculateDynamicPctWashout({
+            stack: [{ id: '1', presetKey: 'test_enanthate', halfLifeDays: 4.5, doseMgPerWeek: 500, isLipophilic: true }],
+            weeksOnCycle: 12,
+            lastInjectionDateIso: '2026-10-01',
+            bioModifiers: { bodyFatPct: 15, organHealth: 'normal', cycleHistory: 'first_cycle' },
+            pctProtocol: 'standard',
+        });
+
+        const veteran = calculateDynamicPctWashout({
+            stack: [{ id: '1', presetKey: 'test_enanthate', halfLifeDays: 4.5, doseMgPerWeek: 500, isLipophilic: true }],
+            weeksOnCycle: 12,
+            lastInjectionDateIso: '2026-10-01',
+            bioModifiers: { bodyFatPct: 15, organHealth: 'normal', cycleHistory: 'veteran_long_term' },
+            pctProtocol: 'standard',
+        });
+
+        expect(veteran.hptaThresholdNgDl).toBe(100);
+        expect(standard.hptaThresholdNgDl).toBe(150);
+        expect(veteran.washoutDays).toBeGreaterThanOrEqual(standard.washoutDays);
+    });
+});
