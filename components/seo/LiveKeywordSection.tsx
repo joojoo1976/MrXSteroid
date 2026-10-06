@@ -401,7 +401,7 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                 {/* Keyword Chips Grid */}
                 <div className="flex flex-wrap gap-2.5 transition-all">
                     {visibleKeywords.map((item) => {
-                        const isRising = item.trendStatus === 'rising' || item.isRising;
+                        const isRising = item.isRising === true;
                         const isNew = item.trendStatus === 'new';
 
                         return (
@@ -419,6 +419,8 @@ export const LiveKeywordSection: React.FC<LiveKeywordSectionProps> = ({
                                 }`}
                                 title={`${item.keyword} (${item.destinationPath})`}
                             >
+                                <span>{item.keyword}</span>
+
                                 {item.isPinned && (
                                     <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-gold-500/20 text-gold-400 border border-gold-500/30">
                                         {isAr ? 'مثبت 📌' : 'PINNED 📌'}
