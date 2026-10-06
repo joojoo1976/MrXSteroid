@@ -302,6 +302,7 @@ export interface BioModifiersInput {
     bodyFatPct: number; // 5..45%
     organHealth: OrganHealthStatus; // optimal (+15%), normal (0%), compromised (-15%)
     cycleHistory: CycleHistoryExperience; // adjusts threshold (100 vs 150 ng/dL)
+    bodyWeightKg?: number; // optional body weight in kg (for dynamic scaling & display)
 }
 
 export interface DynamicWashoutInput {

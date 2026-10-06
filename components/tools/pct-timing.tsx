@@ -38,7 +38,6 @@ import {
     PCT_PROTOCOLS,
     type CycleHistoryExperience,
     type DynamicWashoutInput,
-    type EngineInput,
     type EsterPresetKey,
     type OrganHealthStatus,
     type PctProtocol,
@@ -63,6 +62,25 @@ const NMOL_PER_NGDL = 0.0347;
 const BASELINE_NGDL = 600;
 const BASELINE_NMOL = BASELINE_NGDL * NMOL_PER_NGDL;
 
+/** Measurement conversion constants */
+const KG_TO_LBS = 2.20462;
+const kgToLbs = (kg: number): number => Math.round(kg * KG_TO_LBS);
+const lbsToKg = (lbs: number): number => Math.round((lbs / KG_TO_LBS) * 10) / 10;
+
+const formatDateLocalized = (iso: string, locale: 'ar' | 'en'): string => {
+    try {
+        const date = new Date(iso + 'T00:00:00Z');
+        return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            timeZone: 'UTC',
+        }).format(date);
+    } catch {
+        return iso;
+    }
+};
+
 interface PctTimingDraftInputs {
     compoundHalfLifeDays: number;
     weeksOnCycle: number;
@@ -72,6 +90,7 @@ interface PctTimingDraftInputs {
     bodyFatPct?: number;
     organHealth?: OrganHealthStatus;
     cycleHistory?: CycleHistoryExperience;
+    bodyWeightKg?: number;
     lastInjectionDateIso?: string;
 }
 
@@ -117,6 +136,7 @@ export default function PctTimingToolComponent() {
 
     // Bio-Modifiers State
     const [bodyFatPct, setBodyFatPct] = useState<number>(14);
+    const [bodyWeightKg, setBodyWeightKg] = useState<number>(85);
     const [organHealth, setOrganHealth] = useState<OrganHealthStatus>('normal');
     const [cycleHistory, setCycleHistory] = useState<CycleHistoryExperience>('intermediate');
 
@@ -128,8 +148,31 @@ export default function PctTimingToolComponent() {
 
     const isRtl = locale === 'ar';
 
-    // Draft restore on mount
+    // Measurement system toggle with localStorage persistence
+    const handleToggleUnitSystem = useCallback((system: 'metric' | 'imperial') => {
+        setUnitSystem(system);
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('measurementSystem', system);
+            } catch {
+                // Ignore localStorage errors in private browsing/sandboxes
+            }
+        }
+    }, []);
+
+    // Draft & Settings restore on mount
     useEffect(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const savedSystem = localStorage.getItem('measurementSystem');
+                if (savedSystem === 'metric' || savedSystem === 'imperial') {
+                    setUnitSystem(savedSystem);
+                }
+            } catch {
+                // Ignore localStorage errors
+            }
+        }
+
         const draft = loadDraft<PctTimingDraftInputs>(TOOL_SLUG);
         if (!draft) return;
         const i = draft.inputs;
@@ -138,6 +181,7 @@ export default function PctTimingToolComponent() {
             setPctProtocol(i.pctProtocol);
         }
         if (typeof i.bodyFatPct === 'number') setBodyFatPct(i.bodyFatPct);
+        if (typeof i.bodyWeightKg === 'number') setBodyWeightKg(i.bodyWeightKg);
         if (i.organHealth && ['optimal', 'normal', 'compromised'].includes(i.organHealth)) {
             setOrganHealth(i.organHealth);
         }
@@ -197,29 +241,16 @@ export default function PctTimingToolComponent() {
             lastInjectionDateIso: lastInjectionDate,
             bioModifiers: {
                 bodyFatPct,
+                bodyWeightKg,
                 organHealth,
                 cycleHistory,
             },
             pctProtocol,
         }),
-        [stack, weeksOnCycle, lastInjectionDate, bodyFatPct, organHealth, cycleHistory, pctProtocol],
+        [stack, weeksOnCycle, lastInjectionDate, bodyFatPct, bodyWeightKg, organHealth, cycleHistory, pctProtocol],
     );
 
     const result = useMemo(() => calculateDynamicPctWashout(dynamicInput), [dynamicInput]);
-
-    // Backward-compatible input for engine contract
-    const engineInput: EngineInput = useMemo(
-        () => ({
-            compoundHalfLifeDays: result.effectiveHalfLifeDays,
-            weeksOnCycle,
-            clearanceThresholdPct: DEFAULT_CLEARANCE_THRESHOLD_PCT,
-            pctProtocol,
-            stack,
-            bioModifiers: { bodyFatPct, organHealth, cycleHistory },
-            lastInjectionDateIso: lastInjectionDate,
-        }),
-        [result.effectiveHalfLifeDays, weeksOnCycle, pctProtocol, stack, bodyFatPct, organHealth, cycleHistory, lastInjectionDate],
-    );
 
     // Chart Data Preparation
     const dailyChartData = useMemo(() => {
@@ -258,6 +289,7 @@ export default function PctTimingToolComponent() {
                     pctProtocol,
                     stack,
                     bodyFatPct,
+                    bodyWeightKg,
                     organHealth,
                     cycleHistory,
                     lastInjectionDateIso: lastInjectionDate,
@@ -276,7 +308,7 @@ export default function PctTimingToolComponent() {
             );
         }, AUTO_DRAFT_DEBOUNCE_MS);
         return () => clearTimeout(timer);
-    }, [result.effectiveHalfLifeDays, weeksOnCycle, pctProtocol, stack, bodyFatPct, organHealth, cycleHistory, lastInjectionDate, locale, unitSystem, isRtl]);
+    }, [result.effectiveHalfLifeDays, weeksOnCycle, pctProtocol, stack, bodyFatPct, bodyWeightKg, organHealth, cycleHistory, lastInjectionDate, locale, unitSystem, isRtl]);
 
     // Dashboard commit
     const handleSaveToDashboard = useCallback(async () => {
@@ -286,7 +318,7 @@ export default function PctTimingToolComponent() {
             clearanceThresholdPct: DEFAULT_CLEARANCE_THRESHOLD_PCT,
             pctProtocol,
             stack,
-            bioModifiers: { bodyFatPct, organHealth, cycleHistory },
+            bioModifiers: { bodyFatPct, bodyWeightKg, organHealth, cycleHistory },
             lastInjectionDateIso: lastInjectionDate,
         });
 
@@ -329,7 +361,7 @@ export default function PctTimingToolComponent() {
         } finally {
             setIsSaving(false);
         }
-    }, [result.effectiveHalfLifeDays, weeksOnCycle, pctProtocol, stack, bodyFatPct, organHealth, cycleHistory, lastInjectionDate, locale, unitSystem, isRtl]);
+    }, [result.effectiveHalfLifeDays, weeksOnCycle, pctProtocol, stack, bodyFatPct, bodyWeightKg, organHealth, cycleHistory, lastInjectionDate, locale, unitSystem, isRtl]);
 
     const formatTesto = (pct: number) =>
         unitSystem === 'metric'
@@ -363,7 +395,7 @@ export default function PctTimingToolComponent() {
                             : 'Pharmacokinetic simulation calculating exact serum decay curves and pinpointing the HPTA recovery window to prevent early suppression or catabolic lag.'}
                     </p>
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
                     <button
                         type="button"
                         onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
@@ -371,13 +403,35 @@ export default function PctTimingToolComponent() {
                     >
                         {isRtl ? 'English' : 'العربية'}
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
-                        className="px-3 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-lime-400 rounded-xl border border-slate-700 transition"
-                    >
-                        {unitSystem === 'metric' ? 'Metric (ng/dL)' : 'Imperial (nmol/L)'}
-                    </button>
+                    <div className="measurement-toggle flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
+                        <label className="text-[10px] text-slate-400 font-bold px-2 hidden sm:inline">
+                            {isRtl ? 'نظام القياس:' : 'Measurement System:'}
+                        </label>
+                        <button
+                            id="metric-btn"
+                            type="button"
+                            onClick={() => handleToggleUnitSystem('metric')}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                                unitSystem === 'metric'
+                                    ? 'active bg-lime-500 text-slate-950 shadow-sm'
+                                    : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            {isRtl ? 'متري (كغ/سم)' : 'Metric (mg/kg/cm)'}
+                        </button>
+                        <button
+                            id="imperial-btn"
+                            type="button"
+                            onClick={() => handleToggleUnitSystem('imperial')}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                                unitSystem === 'imperial'
+                                    ? 'active bg-lime-500 text-slate-950 shadow-sm'
+                                    : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            {isRtl ? 'إمبراطوري (رطل/إنش)' : 'Imperial (mg/lb/in)'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -401,9 +455,12 @@ export default function PctTimingToolComponent() {
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                             {isRtl ? 'التاريخ الفعلي الموصى به للبدء' : 'Optimal Launch Date'}
                         </span>
-                        <div className="text-xl font-extrabold text-white mt-1">
-                            {result.pctLaunchDateIso}
+                        <div className="text-lg font-extrabold text-white mt-1">
+                            {formatDateLocalized(result.pctLaunchDateIso, locale)}
                         </div>
+                        <span className="text-[11px] font-mono text-slate-400 block">
+                            {result.pctLaunchDateIso}
+                        </span>
                         <span className="text-xs text-amber-400/90 mt-0.5 block">
                             {isRtl ? 'الأسبوع' : 'Week'} {result.pctStartWeek} {isRtl ? 'من بدء الخطة' : 'post-cycle'}
                         </span>
@@ -418,6 +475,11 @@ export default function PctTimingToolComponent() {
                         </div>
                         <span className="text-xs text-slate-400 mt-0.5 block">
                             t½: {result.limitingHalfLifeDays}d → {result.effectiveHalfLifeDays}d ({isRtl ? 'معدل بالدهون' : 'adjusted'})
+                        </span>
+                        <span className="text-[11px] text-lime-400/90 mt-0.5 block font-medium">
+                            {isRtl
+                                ? `محسوب لوزن ${unitSystem === 'metric' ? `${bodyWeightKg} كغ` : `${kgToLbs(bodyWeightKg)} رطل`}`
+                                : `Adjusted for ${unitSystem === 'metric' ? `${bodyWeightKg}kg` : `${kgToLbs(bodyWeightKg)}lbs`} body weight`}
                         </span>
                     </div>
 
@@ -586,6 +648,52 @@ export default function PctTimingToolComponent() {
                             <span className="w-2 h-2 rounded-full bg-lime-400" />
                             {isRtl ? '3. المعدلات الحيوية الفردية (Bio-Modifiers)' : '3. Personal Bio-Modifiers'}
                         </h2>
+
+                        {/* Body Weight Input (Dynamic Unit System) */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-1">
+                                <label id="weight-label" className="text-[11px] text-slate-400 font-semibold">
+                                    {unitSystem === 'metric'
+                                        ? isRtl ? 'وزن الجسم (كغ):' : 'Body Weight (kg):'
+                                        : isRtl ? 'وزن الجسم (رطل):' : 'Body Weight (lbs):'}
+                                </label>
+                                <span className="text-xs font-black text-lime-400 font-mono">
+                                    {unitSystem === 'metric' ? `${bodyWeightKg} kg` : `${kgToLbs(bodyWeightKg)} lbs`}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="range"
+                                    min={unitSystem === 'metric' ? 40 : 88}
+                                    max={unitSystem === 'metric' ? 160 : 352}
+                                    value={unitSystem === 'metric' ? bodyWeightKg : kgToLbs(bodyWeightKg)}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setBodyWeightKg(unitSystem === 'metric' ? val : lbsToKg(val));
+                                    }}
+                                    className="flex-1 accent-lime-500 bg-slate-800 rounded-lg cursor-pointer"
+                                />
+                                <input
+                                    id="weight-input"
+                                    type="number"
+                                    min={unitSystem === 'metric' ? 40 : 88}
+                                    max={unitSystem === 'metric' ? 160 : 352}
+                                    value={unitSystem === 'metric' ? bodyWeightKg : kgToLbs(bodyWeightKg)}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        if (!isNaN(val) && val > 0) {
+                                            setBodyWeightKg(unitSystem === 'metric' ? val : lbsToKg(val));
+                                        }
+                                    }}
+                                    className="w-20 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-mono text-center focus:border-lime-500"
+                                />
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-1">
+                                {isRtl
+                                    ? 'حجم توزيع الدواء (Vd) ومعدلات التصريف تتناسب مع إجمالي كتلة الجسم.'
+                                    : 'Volume of distribution (Vd) and baseline clearance scale with total body weight.'}
+                            </p>
+                        </div>
 
                         {/* Body Fat Slider */}
                         <div className="mb-4">
@@ -856,7 +964,7 @@ export default function PctTimingToolComponent() {
                                             {isRtl ? 'إعادة تشغيل المحور (HPTA Kickstart)' : 'Phase 2: HPTA Kickstart'}
                                         </h3>
                                         <span className="text-[10px] font-mono text-purple-400">
-                                            {isRtl ? 'تاريخ البدء:' : 'Starts:'} {result.pctLaunchDateIso}
+                                            {isRtl ? 'تاريخ البدء:' : 'Starts:'} {formatDateLocalized(result.pctLaunchDateIso, locale)} ({result.pctLaunchDateIso})
                                         </span>
                                     </div>
                                     <p className="text-[11px] text-slate-400 mt-1">
@@ -890,7 +998,12 @@ export default function PctTimingToolComponent() {
 
                         {/* Save to Bio-Dashboard action bar */}
                         <div className="flex flex-col sm:flex-row justify-between items-center pt-3 mt-3 border-t border-slate-800 gap-3">
-                            <span className="text-xs text-slate-400 font-mono">{saveStatus}</span>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-xs text-slate-400 font-mono">{saveStatus}</span>
+                                {validationError && (
+                                    <span className="text-xs text-rose-400 font-bold">{validationError}</span>
+                                )}
+                            </div>
                             <button
                                 type="button"
                                 onClick={handleSaveToDashboard}
@@ -915,20 +1028,22 @@ export default function PctTimingToolComponent() {
                 </p>
             </div>
 
-            {/* Navigation & Tool Interlinking (#3 Accumulation Simulator <-> #4 PCT Timing <-> #5 Protocol Generator) */}
+            {/* SEO Internal Link Graph (registry-driven) */}
             <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center text-xs gap-3">
                 <a
-                    href="/smarttools/multi-ester-pharmacokinetics"
+                    href={requireTool(neighbors.prevTool.slug).href}
+                    rel="prev"
                     className="flex items-center gap-2 text-slate-400 hover:text-lime-400 transition font-medium"
                 >
                     <span>←</span>
-                    <span>{isRtl ? 'الأداة السابقة: محاكي تراكم الإسترات (PharmaSim™)' : 'Prev Tool (#3): Multi-Ester PK Accumulator'}</span>
+                    <span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span>
                 </a>
                 <a
-                    href="/smarttools/hpta-recovery"
+                    href={requireTool(neighbors.nextTool.slug).href}
+                    rel="next"
                     className="flex items-center gap-2 text-slate-400 hover:text-lime-400 transition font-medium"
                 >
-                    <span>{isRtl ? 'الأداة التالية: محاكي استعادة وتثبيط محور HPTA' : 'Next Tool (#5): HPTA Recovery Modeler'}</span>
+                    <span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span>
                     <span>→</span>
                 </a>
             </div>

@@ -15,7 +15,6 @@ import {
     ORGAN_HEALTH_OPTIONS,
     PCT_PROTOCOLS,
     type CycleHistoryExperience,
-    type EsterPresetKey,
     type OrganHealthStatus,
     type PctProtocol,
 } from '../engines/pct-timing';
@@ -48,6 +47,12 @@ export const BioModifiersSchema = z
             .max(50, 'أقصى نسبة دهون 50%'),
         organHealth: z.enum(ORGAN_HEALTH_OPTIONS as unknown as [OrganHealthStatus, ...OrganHealthStatus[]]),
         cycleHistory: z.enum(CYCLE_HISTORY_OPTIONS as unknown as [CycleHistoryExperience, ...CycleHistoryExperience[]]),
+        bodyWeightKg: z
+            .number()
+            .finite('وزن الجسم يجب أن يكون رقماً محدوداً')
+            .min(30, 'أدنى وزن 30 كغ')
+            .max(300, 'أقصى وزن 300 كغ')
+            .optional(),
     })
     .strict();
 
