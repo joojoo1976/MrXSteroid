@@ -69,6 +69,7 @@ export enum Page {
   HPTA_RECOVERY = 'hpta-recovery',
   PCT_TIMING = 'pct-timing',
   AROMATIZATION_RISK = 'aromatization-risk',
+  HCG_SERM_PROTOCOL = 'hcg-serm-protocol',
   AFFILIATE = 'affiliate'
 }
 

@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Cardiovascular Health Monitor",
+    "overall_risk": "Overall Risk",
+    "risk_score": "Risk Score (0-100)",
+    "cholesterol_ratio": "Cholesterol Ratio (Total/HDL)",
+    "risk_factors": "Risk Factors",
+    "compound_warnings": "Compound Warnings",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "مراقب صحة القلب والأوعية الدموية",
+    "overall_risk": "مخاطر عامة",
+    "risk_score": "درجة المخاطر (0-100)",
+    "cholesterol_ratio": "نسبة الكوليسترول (اجمالي/HDL)",
+    "risk_factors": "عوامل الخطر",
+    "compound_warnings": "تحذيرات المركبات",
+    "recommendations": "التوصيات"
+  }
+}

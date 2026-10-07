@@ -15,6 +15,7 @@
  *   - Tool #3 Accumulator and Tool #5 Protocol Generator interlinking
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDebounce } from '@/lib/hooks/useToolState';
 import {
     ResponsiveContainer,
     LineChart,

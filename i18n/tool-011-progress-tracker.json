@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "Progress Tracker",
+    "weight": "Weight (kg)",
+    "strength": "Strength (kg)",
+    "body_fat": "Body Fat %",
+    "add_entry": "Add Entry",
+    "trend_analyzer": "Trend Analyzer"
+  },
+  "ar": {
+    "tool_name": "متابع التقدم",
+    "weight": "الوزن (كجم)",
+    "strength": "القوة (كجم)",
+    "body_fat": "نسبة الدهون %",
+    "add_entry": "إضافة entrée",
+    "trend_analyzer": "محلل الاتجاهات"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "en": {
+    "tool_name": "Water Retention Calculator",
+    "e2_level": "Estradiol Level (pg/mL)",
+    "retention_severity": "Retention Severity",
+    "target_weight_loss": "Target Water Weight Loss (kg)"
+  },
+  "ar": {
+    "tool_name": "حاسبة احتباس الماء",
+    "e2_level": "مستوى الإسترadiol (pg/mL)",
+    "retention_severity": "شدة الاحتباس",
+    "target_weight_loss": "فقدان الوزن المستهدف (كجم)"
+  }
+}

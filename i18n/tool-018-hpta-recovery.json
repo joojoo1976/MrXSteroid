@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "HPTA Recovery Monitor",
+    "stage": "Recovery Stage",
+    "start_date": "Start Date",
+    "markers": "Markers logged",
+    "expected_recovery": "Expected Recovery (weeks)",
+    "predicted_completion": "Predicted Completion",
+    "improvement_rate": "Improvement Rate"
+  },
+  "ar": {
+    "tool_name": "متابع استرداد محور HPTA",
+    "stage": "مرحلة الاسترداد",
+    "start_date": "تاريخ البداية",
+    "markers": "المarkers المسجلة",
+    "expected_recovery": "الأسبوع المتوقع للاسترداد",
+    "predicted_completion": "الإكمال المتوقع",
+    "improvement_rate": "معدل التحسن"
+  }
+}

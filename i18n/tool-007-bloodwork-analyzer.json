@@ -1,0 +1,16 @@
+{
+  "en": {
+    "tool_name": "Bloodwork Analyzer",
+    "overall_assessment": "Overall Assessment",
+    "hpta_status": "HPTA Status",
+    "baseline": "Baseline",
+    "current": "Current"
+  },
+  "ar": {
+    "tool_name": "محلل الفحو호다ق",
+    "overall_assessment": "التقييم العام",
+    "hpta_status": "حالة محور HPTA",
+    "baseline": "النقطة baselines",
+    "current": "الحالة الحالية"
+  }
+}

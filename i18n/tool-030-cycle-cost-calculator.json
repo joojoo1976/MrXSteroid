@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Cycle Cost Calculator",
+    "total_compound_cost_usd": "Total Compound Cost (USD)",
+    "total_ancillary_cost_usd": "Total Ancillary Cost (USD)",
+    "total_pct_cost_usd": "Total PCT Cost (USD)",
+    "grand_total_usd": "Grand Total (USD)",
+    "cost_breakdown": "Cost Breakdown",
+    "cost_per_week_usd": "Cost Per Week (USD)",
+    "most_expensive_compound": "Most Expensive Compound",
+    "budget_savings_tips": "Budget Savings Tips"
+  },
+  "ar": {
+    "tool_name": "حاسبة تكاليف الدورة",
+    "total_compound_cost_usd": "التكلفة الإجمالية للمركبات (دولار)",
+    "total_ancillary_cost_usd": "التكلفة الإجمالية للمساندة (دولار)",
+    "total_pct_cost_usd": "التكلفة الإجمالية لـ PCT (دولار)",
+    "grand_total_usd": "المجموع الإجمالي (دولار)",
+    "cost_breakdown": "تفاصيل التكلفة",
+    "cost_per_week_usd": "التكلفة الأسبوعية (دولار)",
+    "most_expensive_compound": "أغلى مركب",
+    "budget_savings_tips": "نصائح توفير الميزانية"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "en": {
+    "tool_name": "Drug Interaction Checker",
+    "overall_safety": "Overall Safety",
+    "requires_medical_approval": "Requires Medical Approval",
+    "summary": "Summary"
+  },
+  "ar": {
+    "tool_name": "متChecker相互作用",
+    "overall_safety": "السلامة العامة",
+    "requires_medical_approval": "يحتاج موافقة طبية",
+    "summary": "الملخص"
+  }
+}

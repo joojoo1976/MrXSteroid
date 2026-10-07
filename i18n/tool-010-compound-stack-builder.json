@@ -1,0 +1,16 @@
+{
+  "en": {
+    "tool_name": "Compound Stack Builder",
+    "stack": "Stack",
+    "compound": "Compound",
+    "synergy": "Synergy Score",
+    "build_stack": "Build Stack"
+  },
+  "ar": {
+    "tool_name": "بناء حزمة المركبات",
+    "stack": "حزمة المركبات",
+    "compound": "مركب",
+    "synergy": "در synergia",
+    "build_stack": "بناء الحزمة"
+  }
+}

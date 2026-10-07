@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Peptide Protocol Planner",
+    "daily_dose_mcg": "Daily Dose (mcg)",
+    "total_cycle_dose_mg": "Total Cycle Dose (mg)",
+    "injection_frequency_days": "Injection Frequency (days)",
+    "total_injections": "Total Injections",
+    "protocol_weeks": "Protocol Duration (weeks)",
+    "timing_recommendations": "Timing Recommendations",
+    "storage_requirements": "Storage Requirements",
+    "side_effect_warnings": "Side Effect Warnings",
+    "post_protocol_therapy": "Post-Protocol Therapy"
+  },
+  "ar": {
+    "tool_name": "خطط بروتوكول الببتييدات",
+    "daily_dose_mcg": "جرعة يومية (مكج)",
+    "total_cycle_dose_mg": "جرعة الدورة الإجمالية (مغ)",
+    "injection_frequency_days": "تكرار الحقن (أيام)",
+    "total_injections": "إجمالي الحقن",
+    "protocol_weeks": "مدة البروتوكول (أسابيع)",
+    "timing_recommendations": "توصيات التوقيت",
+    "storage_requirements": "متطلبات التخزين",
+    "side_effect_warnings": "تحذيرات الآثار الجانبية",
+    "post_protocol_therapy": "علاج ما بعد البروتوكول"
+  }
+}

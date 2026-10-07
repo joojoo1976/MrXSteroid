@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "Drug Interaction Checker Pro",
+    "total_interactions": "Total Interactions",
+    "critical_interactions": "Critical Interactions",
+    "moderate_interactions": "Moderate Interactions",
+    "safety_score": "Safety Score",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "مُسَخِّر تفاعلات الأدوية Professional",
+    "total_interactions": "إجمالي التفاعلات",
+    "critical_interactions": "تفاعلات حرجة",
+    "moderate_interactions": "تفاعلات معتدلة",
+    "safety_score": "درية السلامة",
+    "recommendations": "التوصيات"
+  }
+}

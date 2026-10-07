@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Side Effect Early Warning",
+    "predicted_side_effects": "Predicted Side Effects",
+    "overall_risk_level": "Overall Risk Level",
+    "risk_score": "Risk Score",
+    "monitoring_recommendations": "Monitoring Recommendations",
+    "immediate_actions": "Immediate Actions",
+    "when_to_concerned": "When to Be Concerned"
+  },
+  "ar": {
+    "tool_name": "تحذير مبكر للآثار الجانبية",
+    "predicted_side_effects": "تأثيرات جانبية متوقعة",
+    "overall_risk_level": "مستوى المخاطر العام",
+    "risk_score": "دراية المخاطر",
+    "monitoring_recommendations": "توصيات المتابعة",
+    "immediate_actions": "إجراءات فورية",
+    "when_to_concerned": "متى تقلق"
+  }
+}

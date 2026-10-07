@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Genetic Potential Calculator",
+    "potential_score": "Potential Score (0-100)",
+    "body_type_assessment": "Body Type Assessment",
+    "recommended_cycle_length": "Recommended Cycle (weeks)",
+    "recommended_dosage_multiplier": "Dosage Multiplier",
+    "risk_factors": "Risk Factors",
+    "recommended_compounds": "Recommended Compounds",
+    "avoided_compounds": "Avoided Compounds",
+    "personalized_tips": "Personalized Tips"
+  },
+  "ar": {
+    "tool_name": "حاسبة القدرة الوراثية",
+    "potential_score": "الدرجات الوراثية (0-100)",
+    "body_type_assessment": "التقييم sort الجسم",
+    "recommended_cycle_length": "الدورة الموصى بها (أسابيع)",
+    "recommended_dosage_multiplier": "مُكَمِّل dosage",
+    "risk_factors": "عوامل الخطر",
+    "recommended_compounds": "مركبات موصى بها",
+    "avoided_compounds": "مركبات يجب تجنبها",
+    "personalized_tips": "نصائح شخصية"
+  }
+}

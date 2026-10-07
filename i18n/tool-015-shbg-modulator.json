@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "SHBG Modulator",
+    "shbg": "SHBG (nmol/L)",
+    "free_testosterone": "Free Testosterone (ng/dL)",
+    "percentage": "Free %",
+    "bioavailable": "Bioavailable T (ng/dL)",
+    "interpretation": "Interpretation"
+  },
+  "ar": {
+    "tool_name": "م modulator SHBG",
+    "shbg": "SHBG (nmol/L)",
+    "free_testosterone": "تستوستيرون حر (ng/dL)",
+    "percentage": "% حر",
+    "bioavailable": "تستوستيرون حيوي (ng/dL)",
+    "interpretation": "التفسير"
+  }
+}

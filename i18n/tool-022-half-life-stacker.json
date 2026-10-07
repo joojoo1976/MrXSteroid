@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Compound Half-Life Stacker",
+    "peak_platform_days": "Peak Platform Days",
+    "total_cycle_half_lives": "Total Cycle Half-Lives",
+    "recommended_pct_start_days": "Recommended PCT Start (days)",
+    "washout_complete_days": "Washout Complete (days)",
+    "ester_bottleneck": "Ester Bottleneck",
+    "optimal_injection_schedule": "Optimal Injection Schedule",
+    "compound_peak_times": "Compound Peak Times",
+    "confidence_score": "Confidence Score",
+    "cycle_length_weeks": "Cycle Length (weeks)"
+  },
+  "ar": {
+    "tool_name": "معالج نصف العمر للمركبات",
+    "peak_platform_days": "أيام الوصول للقمة",
+    "total_cycle_half_lives": "نصف عمر الدورة الإجمالي",
+    "recommended_pct_start_days": "توصية start PCT (أيام)",
+    "washout_complete_days": "غسيل كامل (أيام)",
+    "ester_bottleneck": "زجاجة Ester",
+    "optimal_injection_schedule": "جدول الحقن الأمثل",
+    "compound_peak_times": "أوقات الذروة المركبة",
+    "confidence_score": "درونة الثقة",
+    "cycle_length_weeks": "مدة الدورة (أسابيع)"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "en": {
+    "tool_name": "Estrogen & Prolactin Control",
+    "risk_level": "Aromatization Risk",
+    "recommended_ai_dose": "Recommended AI Dose",
+    "recommended_da_dose": "Recommended DA Dose",
+    "key_findings": "Key Findings"
+  },
+  "ar": {
+    "tool_name": "التحكم في الإستروجين والبرولاكتين",
+    "risk_level": "خطر الأروماتيزيشن",
+    "recommended_ai_dose": "جرعة AI الموصى بها",
+    "recommended_da_dose": "جرعة DA الموصى بها",
+    "key_findings": "النتائج الهامة"
+  }
+}

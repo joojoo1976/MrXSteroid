@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "Macro Optimizer",
+    "protein": "Protein (g)",
+    "fats": "Fats (g)",
+    "carbs": "Carbs (g)",
+    "total_calories": "Total Calories",
+    "meal_breakdown": "Meal Breakdown"
+  },
+  "ar": {
+    "tool_name": "المحسّن المغذي",
+    "protein": "بروتين (جم)",
+    "fats": "دهون (جم)",
+    "carbs": "كربوهيدرات (جم)",
+    "total_calories": "السعرات الحرارية الكلية",
+    "meal_breakdown": "تقسيم الوجبات"
+  }
+}

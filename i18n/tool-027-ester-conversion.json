@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Ester Conversion Calculator",
+    "ester_mg": "Ester (mg)",
+    "base_hormone_mg": "Base Hormone (mg)",
+    "conversion_to_target": "Conversion to Target (mg)",
+    "potency_factor": "Potency Factor",
+    "molecular_weight_adjustment": "Molecular Weight Adjustment",
+    "notes": "Notes"
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل الإستر",
+    "ester_mg": "الإستر (مغ)",
+    "base_hormone_mg": "هرمون أساسي (مغ)",
+    "conversion_to_target": "التحويل للهدف (مغ)",
+    "potency_factor": "عامل الفعالية",
+    "molecular_weight_adjustment": "تعديل الوزن الجزيئي",
+    "notes": "ملاحظات"
+  }
+}

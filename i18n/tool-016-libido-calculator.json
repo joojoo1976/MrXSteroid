@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Libido & Sexual Function",
+    "libido_level": "Libido Level",
+    "libido_score": "Libido Score (0-100)",
+    "symptom_severity": "Severity",
+    "recommendations": "Recommendations",
+    "compound_adjustments": "Compound Adjustments",
+    "timeline": "Expected Timeline"
+  },
+  "ar": {
+    "tool_name": "المحافظة على الرغبة الجنسية",
+    "libido_level": "مستوى الرغبة الجنسية",
+    "libido_score": "درجات الرغبة (0-100)",
+    "symptom_severity": "شدة الأعراض",
+    "recommendations": "التوصيات",
+    "compound_adjustments": "تعديل المركبات",
+    "timeline": "المدة المتوقعة"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Injection Site Rotator",
+    "site": "Injection Site",
+    "location": "Location",
+    "oil_based": "Oil-Based",
+    "last_injection": "Last Injection",
+    "next_safe": "Next Safe Injection",
+    "rotation_plan": "Rotation Plan"
+  },
+  "ar": {
+    "tool_name": "دوران موقع الحقن",
+    "site": "موقع الحقن",
+    "location": "المكان",
+    "oil_based": "مبني على الزيت",
+    "last_injection": "آخر حقنة",
+    "next_safe": "الحقنة الآمنة التالية",
+    "rotation_plan": "خطة الدوران"
+  }
+}

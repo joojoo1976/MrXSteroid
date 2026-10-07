@@ -209,6 +209,18 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
         order: 47,
         stackStatus: 'layered',
     },
+    {
+        toolId: 'mrx.tool.hcg-serm-protocol',
+        slug: 'hcg-serm-protocol',
+        version: '1.0.0',
+        page: Page.HCG_SERM_PROTOCOL,
+        href: '/smarttools/hcg-serm-protocol',
+        titleAr: 'المولد الذكي لبروتوكولات HCG و SERM',
+        titleEn: 'Intelligent HCG & SERM Protocol Generator',
+        accessTier: 'free',
+        order: 95,
+        stackStatus: 'layered',
+    },
 ];
 
 export class ToolRegistryError extends Error {

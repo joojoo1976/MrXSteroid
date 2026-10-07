@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Post-Cycle Bloodwork Interpreter",
+    "overall_recovery_status": "Overall Recovery Status",
+    "hormonal_recovery": "Hormonal Recovery",
+    "liver_function": "Liver Function",
+    "cardiovascular": "Cardiovascular",
+    "estrogen_status": "Estrogen Status",
+    "recommendations": "Recommendations",
+    "followup_marker": "Follow-up Marker",
+    "days_to_next_test": "Days to Next Test"
+  },
+  "ar": {
+    "tool_name": "مفسّر فحوصات ما بعد الدورة",
+    "overall_recovery_status": "الحالة العامة للاسترداد",
+    "hormonal_recovery": "استرداد هرموني",
+    "liver_function": "وظيفة الكبد",
+    "cardiovascular": "cardiovascular",
+    "estrogen_status": "حالة الإستروجين",
+    "recommendations": "التوصيات",
+    "followup_marker": "علامة المتابعة",
+    "days_to_next_test": "أيام للفحص التالي"
+  }
+}

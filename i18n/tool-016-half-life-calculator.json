@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Half-Life Calculator",
+    "total_half_lives": "Total Compounds",
+    "effective_half_life_days": "Effective Half-Life (days)",
+    "washout_days": "Washout Days",
+    "washout_weeks": "Washout (weeks)",
+    "bottleneck_compound": "Bottleneck Compound",
+    "confidence_score": "Confidence Score",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "حاسبة نصف العمر",
+    "total_half_lives": "إجمالي المركبات",
+    "effective_half_life_days": "نصف العمر الفعال (أيام)",
+    "washout_days": "أيام غسيل",
+    "washout_weeks": "غسيل (أسابيع)",
+    "bottleneck_compound": "مركب العقبة",
+    "confidence_score": "درونة الثقة",
+    "recommendations": "التوصيات"
+  }
+}

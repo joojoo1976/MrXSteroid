@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "Side Effect Tracker",
+    "symptom": "Symptom",
+    "severity": "Severity",
+    "category": "Category",
+    "log_entry": "Log Entry",
+    "risk_level": "Risk Level"
+  },
+  "ar": {
+    "tool_name": "متابع الأعراض",
+    "symptom": "العَرَض",
+    "severity": "الشدة",
+    "category": "الصَنف",
+    "log_entry": "دِخْلَةُسجْل",
+    "risk_level": "مستوى الخطَر"
+  }
+}

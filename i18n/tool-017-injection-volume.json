@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Injection Volume Calculator",
+    "desired_dose_ml": "Desired Volume (mL)",
+    "max_recommended_ml": "Max Recommended Volume (mL)",
+    "injection_sites": "Injection Sites",
+    "rotation_schedule": "Rotation Schedule",
+    "warnings": "Warnings",
+    "measurement_system": "Measurement System",
+    "imperial_conversion": "Imperial Conversion (oz)"
+  },
+  "ar": {
+    "tool_name": "حاسبة حجم الحقن",
+    "desired_dose_ml": "الحجم المطلوب (مل)",
+    "max_recommended_ml": "الحجم الأقصى الموصى به (مل)",
+    "injection_sites": "أماكن الحقن",
+    "rotation_schedule": "جدول الدوران",
+    "warnings": "تنبيهات",
+    "measurement_system": "نظام القياس",
+    "imperial_conversion": "التحويل الإمبراطوري (أونصة)"
+  }
+}

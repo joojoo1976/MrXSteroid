@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Injection Pain Minimizer",
+    "desired_dose_ml": "Desired Volume (mL)",
+    "max_safe_volume_ml": "Max Safe Volume (mL)",
+    "pain_minimization_score": "Pain Minimization Score",
+    "recommended_site": "Recommended Site",
+    "rotation_schedule": "Rotation Schedule",
+    "solvent_ratio": "Solvent Ratio",
+    "temperature_recommendation": "Temperature Recommendation",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "مخفض آلام الحقن",
+    "desired_dose_ml": "الحجم المطلوب (مل)",
+    "max_safe_volume_ml": "الحجم الآمن الأقصى (مل)",
+    "pain_minimization_score": "درء ألم",
+    "recommended_site": "الموقع الموصى به",
+    "rotation_schedule": "جدول الدوران",
+    "solvent_ratio": "نسبة المذيب",
+    "temperature_recommendation": "توصية الحرارة",
+    "warnings": "تنبيهات"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Calorie Adjuster",
+    "tdee": "TDEE (Daily Calories)",
+    "maintenance": "Maintenance Calories",
+    "target": "Target Calories",
+    "bulk": "Bulk (+500cal)",
+    "cut": "Cut (-500cal)",
+    "maintain": "Maintain"
+  },
+  "ar": {
+    "tool_name": "معدل السعرات الحرارية",
+    "tdee": "الاحتياج اليومي الكلي (سعرة)",
+    "maintenance": "سعرة الصيانة",
+    "target": "السعرات المستهدفة",
+    "bulk": "زيادة (+500سعرة)",
+    "cut": "Cut (-500سعرة)",
+    "maintain": "الصيانة"
+  }
+}

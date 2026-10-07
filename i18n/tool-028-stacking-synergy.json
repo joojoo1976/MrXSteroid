@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Compound Stacking Synergy",
+    "synergy_score": "Synergy Score",
+    "overall_assessment": "Overall Assessment",
+    "compound_pair_interactions": "Compound Pair Interactions",
+    "recommended_additions": "Recommended Additions",
+    "avoided_pairs": "Avoided Pairs",
+    "protocol_tips": "Protocol Tips",
+    "best_for_goal": "Best For Goal"
+  },
+  "ar": {
+    "tool_name": "التآزر المركب",
+    "synergy_score": "درية التآزر",
+    "overall_assessment": "التقييم العام",
+    "compound_pair_interactions": "تفاعلات أزواج المركبات",
+    "recommended_additions": "إضافات موصى بها",
+    "avoided_pairs": "أزواج يجب تجنبها",
+    "protocol_tips": "نصائح البروتوكول",
+    "best_for_goal": "الأفضل للأهداف"
+  }
+}

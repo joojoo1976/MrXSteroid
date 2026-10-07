@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "TRT Optimization Engine",
+    "recommended_total_test_ng_dL": "Recommended Total T (ng/dL)",
+    "estimated_free_test_ratio": "Estimated Free T Ratio",
+    "recommended_dose_mg_weekly": "Recommended Dose (mg/week)",
+    "expected_hematocrit": "Expected Hematocrit (%)",
+    "e2_management": "E2 Management",
+    "monitoring_schedule": "Monitoring Schedule",
+    "risk_factors": "Risk Factors",
+    "protocol_tips": "Protocol Tips"
+  },
+  "ar": {
+    "tool_name": "محرّك تحسين TRT",
+    "recommended_total_test_ng_dL": "الإجمالي الموصى به T (نانوجرام/ديسيلتر)",
+    "estimated_free_test_ratio": "نسبة T مجاني推估",
+    "recommended_dose_mg_weekly": "الجرعة الموصى بها (ملغ/أسبوع)",
+    "expected_hematocrit": "الهيماتوكريت المتوقع (%)",
+    "e2_management": "إدارة E2",
+    "monitoring_schedule": "جدولة المتابعة",
+    "risk_factors": "عوامل الخطر",
+    "protocol_tips": "نصائح البروتوكول"
+  }
+}
