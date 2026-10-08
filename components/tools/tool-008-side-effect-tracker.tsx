@@ -1,9 +1,13 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-008-side-effect-tracker.json';
+import i18nJson from '@/i18n/tool-008-side-effect-tracker.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool008SideEffectTracker() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -19,11 +23,11 @@ export default function Tool008SideEffectTracker() {
     severity: string;
     category: string;
     notes: string;
-  }>>([]));
+  }>>([])
 
   useEffect(() => {
-    if (savedState?.side_effects?.logEntries) {
-      setLogEntries(savedState.side_effects.logEntries);
+    if ((savedState?.side_effects as any)?.logEntries) {
+      setLogEntries((savedState!.side_effects as any).logEntries);
     }
   }, [savedState]);
 
@@ -45,7 +49,7 @@ export default function Tool008SideEffectTracker() {
       debouncedSave({
         ...savedState,
         side_effects: {
-          total_logs: (savedState?.side_effects?.total_logs || 0) + 1,
+          total_logs: ((savedState?.side_effects as any)?.total_logs || 0) + 1,
           logEntries: [...logEntries, newEntry],
         },
       });
@@ -62,7 +66,7 @@ export default function Tool008SideEffectTracker() {
             <label className="block text-sm font-medium mb-2" dir="ltr">Symptom:</label>
             <input
               value={symptom}
-              onChange={(e) => setSymptom(e.target.value)}
+              onChange={(e) => setSymptom(e.target.value as any)}
               placeholder="e.g., Gynecomastia, Mood changes, Low libido"
               className="w-full rounded border p-2"
               dir="ltr"
@@ -85,7 +89,7 @@ export default function Tool008SideEffectTracker() {
           <label className="block text-sm font-medium mb-2" dir="ltr">Category:</label>
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => setCategory(e.target.value as any)}
             className="w-full rounded border p-2"
           >
             <option value="estrogenic">Estrogenic</option>
@@ -100,12 +104,12 @@ export default function Tool008SideEffectTracker() {
           <label className="block text-sm font-medium mb-2" dir="ltr">Notes:</label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => setNotes(e.target.value as any)}
             placeholder="Additional details..."
             rows={2}
             className="w-full rounded border p-2 resize-y"
             dir="ltr"
-          /></textarea>
+          />
         </div>
         <button
           onClick={() => {

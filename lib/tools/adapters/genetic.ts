@@ -22,7 +22,7 @@ import {
   type ToolOutput,
   type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import { calculateGeneticPotential, type GeneticInput, type GeneticOutput } from '../engines/genetic';
 
 /** Reference ranges for FFMI (drug‑free males). */
@@ -121,13 +121,17 @@ export function buildGeneticOutput(
   const tool = requireTool('genetic');
   const result = calculateGeneticPotential(rawInput);
 
-  return buildToolOutput(tool.slug, {
+  return buildToolOutput<GeneticOutput>({
+    toolId: tool.toolId,
+    toolSlug: tool.slug,
     calculatedAt: options.calculatedAt,
     locale: options.locale,
     unitSystem: options.unitSystem,
     snapshotType: options.snapshotType,
+    accessTier: 'free',
     result,
     provenance: buildGeneticProvenance(options),
     keyFindings: buildGeneticKeyFindings(result),
+    seoLinks: buildSeoLinks(tool),
   });
 }

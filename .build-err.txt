@@ -1,0 +1,939 @@
+Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+
+Failed to compile.
+
+./app/smarttools/[category]/[tool]/page.tsx
+6:42  Warning: 'SMART_TOOL_CATEGORIES' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./components/tools/MeasurementToggle.tsx
+20:14  Warning: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.  react-refresh/only-export-components
+21:14  Warning: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.  react-refresh/only-export-components
+23:14  Warning: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.  react-refresh/only-export-components
+34:14  Warning: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.  react-refresh/only-export-components
+
+./components/tools/pct-timing.tsx
+18:10  Warning: 'useDebounce' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+34:5  Warning: 'calculatePctTiming' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+39:5  Warning: 'PCT_PROTOCOLS' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+117:11  Warning: 'tool' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./components/tools/tool-006-estrogen-prolactin.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'Compound' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+14:41  Warning: 'compoundsLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+15:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:36  Warning: 'isPending' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:9  Warning: 'availableCompounds' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+25:17  Warning: 'setState' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:10  Warning: 'aromResult' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+48:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-006-estrogen-prolactin.tsx:48:7
+  46 |
+  47 |       const result = calculateAromatizationRisk(input);
+> 48 |       setAromResult(result);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |
+  50 |       debouncedSave({
+  51 |         ...savedState,  react-hooks/set-state-in-effect
+55:6  Warning: React Hook useEffect has missing dependencies: 'debouncedSave', 'savedState', 'state.currentAI', 'state.currentDA', 'state.e2Level', 'state.measurementSystem', and 'state.prolactinLevel'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/tools/tool-007-bloodwork-analyzer.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+23:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:6  Warning: React Hook useEffect has a missing dependency: 'testDate'. Either include it or remove the dependency array. You can also do a functional update 'setTestDate(t => ...)' if you only need 'testDate' in the 'setTestDate' call.  react-hooks/exhaustive-deps
+52:6  Warning: React Hook useEffect has missing dependencies: 'debouncedSave', 'hptaStatus', 'overallAssessment', 'recommendations', 'savedState', and 'testDate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+59:176  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-008-side-effect-tracker.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+29:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-008-side-effect-tracker.tsx:30:7
+  28 |   useEffect(() => {
+  29 |     if ((savedState?.side_effects as any)?.logEntries) {
+> 30 |       setLogEntries((savedState!.side_effects as any).logEntries);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |     }
+  32 |   }, [savedState]);
+  33 |  react-hooks/set-state-in-effect
+30:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-008-side-effect-tracker.tsx:44:7
+  42 |         notes: notes || '',
+  43 |       };
+> 44 |       setLogEntries(prev => [...prev, newEntry]);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  45 |       
+  46 |       setSymptom('');
+  47 |       setNotes('');  react-hooks/set-state-in-effect
+52:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:6  Warning: React Hook useEffect has missing dependencies: 'debouncedSave' and 'logEntries'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+69:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+92:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+107:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-009-injection-site-rotator.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+28:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-009-injection-site-rotator.tsx:29:7
+  27 |   useEffect(() => {
+  28 |     if ((savedState?.injection_sites as any)?.logEntries) {
+> 29 |       setLogEntries((savedState!.injection_sites as any).logEntries);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |     }
+  31 |   }, [savedState]);
+  32 |  react-hooks/set-state-in-effect
+29:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:5  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-009-injection-site-rotator.tsx:44:5
+  42 |       rotation_priority: 1,
+  43 |     };
+> 44 |     setLogEntries(prev => [...prev, { id: site.id, date: lastInjection, site: siteName || 'Unknown', location, oil_based: oilBased }]);
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  45 |     
+  46 |     setSiteName('');
+  47 |     setLastInjection(new Date().toISOString().split('T')[0]);  react-hooks/set-state-in-effect
+53:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:6  Warning: React Hook useEffect has missing dependencies: 'debouncedSave', 'logEntries', and 'savedState'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+69:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+95:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+107:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-010-compound-stack-builder.tsx
+77:86  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+82:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+86:111  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:101  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-011-progress-tracker.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'calculateProgress' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+29:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-011-progress-tracker.tsx:29:7
+  27 |   useEffect(() => {
+  28 |     if (savedState?.progress_entries) {
+> 29 |       setEntries((savedState.progress_entries as any) || []);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |     }
+  31 |   }, [savedState]);
+  32 |  react-hooks/set-state-in-effect
+29:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:6  Warning: React Hook useEffect has missing dependencies: 'debouncedSave' and 'savedState'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+83:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:76  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+105:78  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:75  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+126:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-012-calorie-adjuster.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+25:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+28:37  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-012-calorie-adjuster.tsx:28:37
+  26 |
+  27 |   useEffect(() => {
+> 28 |     if (savedState?.calorie_target) setResult(savedState.calorie_target);
+     |                                     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [savedState]);
+  30 |
+  31 |   const calculate = () => {  react-hooks/set-state-in-effect
+42:195  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:182  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:233  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:206  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:176  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-013-macro-optimizer.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+23:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+26:36  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-013-macro-optimizer.tsx:26:36
+  24 |
+  25 |   useEffect(() => {
+> 26 |     if (savedState?.macro_targets) setResult(savedState.macro_targets);
+     |                                    ^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |   }, [savedState]);
+  28 |
+  29 |   const calculate = () => {  react-hooks/set-state-in-effect
+40:217  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:176  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+42:230  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:221  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:206  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:225  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-014-water-retention.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:25  Warning: 'setCompoundStack' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:38  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-014-water-retention.tsx:25:38
+  23 |
+  24 |   useEffect(() => {
+> 25 |     if (savedState?.water_retention) setResult(savedState.water_retention);
+     |                                      ^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [savedState]);
+  27 |
+  28 |   const calculate = () => {  react-hooks/set-state-in-effect
+47:195  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:191  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:210  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+51:219  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-015-shbg-modulator.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+22:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:34  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-015-shbg-modulator.tsx:25:34
+  23 |
+  24 |   useEffect(() => {
+> 25 |     if (savedState?.shbg_result) setResult(savedState.shbg_result);
+     |                                  ^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [savedState]);
+  27 |
+  28 |   const calculate = () => {  react-hooks/set-state-in-effect
+29:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:262  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:223  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:173  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-016-half-life-calculator.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:39  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-016-half-life-calculator.tsx:23:39
+  21 |
+  22 |   useEffect(() => {
+> 23 |     if (savedState?.half_life_result) setResult(savedState.half_life_result);
+     |                                       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, [savedState]);
+  25 |
+  26 |   const addCompound = () => {  react-hooks/set-state-in-effect
+27:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:185  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+67:173  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:218  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-016-libido-calculator.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:25  Warning: 'setCompoundStack' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:36  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-016-libido-calculator.tsx:25:36
+  23 |
+  24 |   useEffect(() => {
+> 25 |     if (savedState?.libido_result) setResult(savedState.libido_result);
+     |                                    ^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [savedState]);
+  27 |
+  28 |   const calculate = () => {  react-hooks/set-state-in-effect
+47:171  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:172  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:218  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:198  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+51:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-017-drug-interaction.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:21  Warning: 'setCompounds' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:39  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-017-drug-interaction.tsx:23:39
+  21 |
+  22 |   useEffect(() => {
+> 23 |     if (savedState?.drug_interaction) setResult(savedState.drug_interaction);
+     |                                       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, [savedState]);
+  25 |
+  26 |   const check = () => {  react-hooks/set-state-in-effect
+43:171  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:222  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:246  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:275  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:230  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:254  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:283  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+52:90  Error: Irregular whitespace not allowed.  no-irregular-whitespace
+55:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-017-injection-volume.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:39  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-017-injection-volume.tsx:25:39
+  23 |
+  24 |   useEffect(() => {
+> 25 |     if (savedState?.injection_result) setResult(savedState.injection_result);
+     |                                       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [savedState]);
+  27 |
+  28 |   const addSite = () => {  react-hooks/set-state-in-effect
+29:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:177  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:192  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:209  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:201  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62:198  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-018-hpta-recovery.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:7  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-018-hpta-recovery.tsx:25:7
+  23 |   useEffect(() => {
+  24 |     if (savedState?.hpta_markers) {
+> 25 |       setMarkers(savedState.hpta_markers as any);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |       const assessment = assessHPTARecovery(savedState.hpta_markers as any);
+  27 |       setStage(assessment.stage);
+  28 |       setExpectedRecovery(assessment.expected_recovery_weeks);  react-hooks/set-state-in-effect
+25:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+26:72  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62:155  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+63:219  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+65:186  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-019-cardio-monitor.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+23:21  Warning: 'setCompounds' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+23:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+28:34  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-019-cardio-monitor.tsx:28:34
+  26 |
+  27 |   useEffect(() => {
+> 28 |     if (savedState?.cardio_risk) setResult(savedState.cardio_risk);
+     |                                  ^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [savedState]);
+  30 |
+  31 |   const check = () => {  react-hooks/set-state-in-effect
+53:196  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+54:199  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:196  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:219  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:213  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:213  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:209  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+76:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+76:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-020-genetic-potential.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+24:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+27:40  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-020-genetic-potential.tsx:27:40
+  25 |
+  26 |   useEffect(() => {
+> 27 |     if (savedState?.genetic_potential) setResult(savedState.genetic_potential);
+     |                                        ^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |   }, [savedState]);
+  29 |
+  30 |   const calculate = () => {  react-hooks/set-state-in-effect
+44:171  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:215  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:196  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+47:180  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:165  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:152  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:207  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+51:185  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+67:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+67:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-021-peptide-protocol.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+21:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:37  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-021-peptide-protocol.tsx:24:37
+  22 |
+  23 |   useEffect(() => {
+> 24 |     if (savedState?.peptide_result) setResult(savedState.peptide_result);
+     |                                     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, [savedState]);
+  26 |
+  27 |   const addCompound = () => {  react-hooks/set-state-in-effect
+28:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:198  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:152  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62:219  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+63:195  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+83:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+83:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-022-half-life-stacker.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:45  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-022-half-life-stacker.tsx:23:45
+  21 |
+  22 |   useEffect(() => {
+> 23 |     if (savedState?.half_life_stack_result) setResult(savedState.half_life_stack_result);
+     |                                             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, [savedState]);
+  25 |
+  26 |   const addCompound = () => {  react-hooks/set-state-in-effect
+27:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:195  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:165  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-023-trt-optimization.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+13:36  Warning: 'isPending' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:28  Warning: 'setCurrentTotalTest' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:27  Warning: 'setCurrentFreeTest' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:20  Warning: 'setSymptoms' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:29  Warning: 'setHematocritCurrent' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+22:21  Warning: 'setE2Current' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+23:23  Warning: 'setTrtDuration' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+24:26  Warning: 'setAdministration' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+25:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+28:33  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-023-trt-optimization.tsx:28:33
+  26 |
+  27 |   useEffect(() => {
+> 28 |     if (savedState?.trt_result) setResult(savedState.trt_result);
+     |                                 ^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [savedState]);
+  30 |
+  31 |   const calculate = () => {  react-hooks/set-state-in-effect
+33:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:171  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:188  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-024-bloodwork-interpreter.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:39  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-024-bloodwork-interpreter.tsx:23:39
+  21 |
+  22 |   useEffect(() => {
+> 23 |     if (savedState?.bloodwork_result) setResult(savedState.bloodwork_result);
+     |                                       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, [savedState]);
+  25 |
+  26 |   const addMarker = () => {  react-hooks/set-state-in-effect
+27:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:204  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-025-drug-interaction-pro.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:28  Warning: 'setHealthConditions' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:23  Warning: 'setMedications' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:46  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-025-drug-interaction-pro.tsx:24:46
+  22 |
+  23 |   useEffect(() => {
+> 24 |     if (savedState?.drug_interaction_result) setResult(savedState.drug_interaction_result);
+     |                                              ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, [savedState]);
+  26 |
+  27 |   const addCompound = () => {  react-hooks/set-state-in-effect
+28:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+63:171  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:185  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-026-injection-pain.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+21:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:44  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-026-injection-pain.tsx:24:44
+  22 |
+  23 |   useEffect(() => {
+> 24 |     if (savedState?.injection_pain_result) setResult(savedState.injection_pain_result);
+     |                                            ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, [savedState]);
+  26 |
+  27 |   const addSite = () => {  react-hooks/set-state-in-effect
+28:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:176  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:209  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:187  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:162  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+74:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+74:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+77:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-027-ester-conversion.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+21:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:46  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-027-ester-conversion.tsx:24:46
+  22 |
+  23 |   useEffect(() => {
+> 24 |     if (savedState?.ester_conversion_result) setResult(savedState.ester_conversion_result);
+     |                                              ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, [savedState]);
+  26 |
+  27 |   const calculate = () => {  react-hooks/set-state-in-effect
+44:183  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:168  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:193  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+47:185  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:106  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-028-stacking-synergy.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:46  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-028-stacking-synergy.tsx:22:46
+  20 |
+  21 |   useEffect(() => {
+> 22 |     if (savedState?.stacking_synergy_result) setResult(savedState.stacking_synergy_result);
+     |                                              ^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |   }, [savedState]);
+  24 |
+  25 |   const addCompound = () => {  react-hooks/set-state-in-effect
+26:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:152  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:170  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-029-side-effect-early-warning.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+24:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+27:41  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-029-side-effect-early-warning.tsx:27:41
+  25 |
+  26 |   useEffect(() => {
+> 27 |     if (savedState?.side_effect_result) setResult(savedState.side_effect_result);
+     |                                         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |   }, [savedState]);
+  29 |
+  30 |   const analyze = () => {  react-hooks/set-state-in-effect
+40:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:190  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:214  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:243  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+54:187  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:179  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:170  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:202  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:190  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+59:199  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:158  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+71:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+71:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/tools/tool-030-cycle-cost-calculator.tsx
+3:38  Warning: 'useCallback' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'stateLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:40  Error: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\MrXSteroid-main\components\tools\tool-030-cycle-cost-calculator.tsx:23:40
+  21 |
+  22 |   useEffect(() => {
+> 23 |     if (savedState?.cycle_cost_result) setResult(savedState.cycle_cost_result);
+     |                                        ^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, [savedState]);
+  25 |
+  26 |   const addCompound = () => {  react-hooks/set-state-in-effect
+27:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+42:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:152  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+76:202  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/hooks/useToolState.ts
+71:3  Error: Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+E:\MrXSteroid-main\lib\hooks\useToolState.ts:71:3
+  69 |   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  70 |   const cbRef = useRef(callback);
+> 71 |   cbRef.current = callback;
+     |   ^^^^^^^^^^^^^ Cannot update ref during render
+  72 |
+  73 |   return useCallback((...args: Parameters<T>) => {
+  74 |     if (timeoutRef.current) clearTimeout(timeoutRef.current);  react-hooks/refs
+
+./lib/tools/adapters/googleAdsKeywordPlannerAdapter.ts
+53:5  Warning: 'NormalizedIntelligenceRecord' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-006-estrogen-prolactin.ts
+50:47  Warning: 'from' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+54:54  Warning: 'from' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-012-calorie-adjuster.ts
+73:7  Error: 'maintenanceCalories' is never reassigned. Use 'const' instead.  prefer-const
+
+./lib/tools/engines/tool-013-macro-optimizer.ts
+45:57  Warning: 'activity_level' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-014-water-retention.ts
+19:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/tools/engines/tool-016-half-life-calculator.ts
+99:9  Warning: 'washoutDays' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-016-libido-calculator.ts
+18:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+35:11  Warning: 'age' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-017-drug-interaction.ts
+17:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+38:54  Warning: 'age' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-019-cardio-monitor.ts
+24:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+38:129  Warning: 'cycle_length_weeks' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+41:9  Warning: 'calculatedLDL' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-021-peptide-protocol.ts
+64:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/tools/engines/tool-022-half-life-stacker.ts
+135:30  Warning: 'i' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-027-ester-conversion.ts
+42:11  Warning: 'compound_name' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/engines/tool-030-cycle-cost-calculator.ts
+53:11  Warning: 'goal' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+53:82  Warning: 'user_weight_kg' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+98:9  Warning: 'pctWeeks' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/i18nHelper.ts
+26:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:72  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+31:77  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:94  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:72  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+38:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:77  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/tools/schemas/hcg-serm-protocol.ts
+13:10  Warning: 'HcgSermEngineInput' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/tools/search.ts
+30:29  Error: Unexpected combined character in character class.  no-misleading-character-class
+
+./lib/tools/validation.ts
+8:16  Warning: 'relative' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+60:9  Warning: 'redirectSources' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/types/database.ts
+133:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+142:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+151:11  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:11  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+181:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+190:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/utils/guestState.ts
+15:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:13  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

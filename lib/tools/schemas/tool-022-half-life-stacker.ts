@@ -36,7 +36,7 @@ export const StackTimingResultSchema = z.object({
   washout_complete_days: z.number().min(1).max(365),
   ester_bottleneck: EsterCompoundSchema,
   optimal_injection_schedule: z.array(z.string()).min(0).max(52),
-  compound_peak_times: z.record(z.number()),
+  compound_peak_times: z.record(z.string(), z.number()),
   confidence_score: z.number().min(0).max(100),
 });
 

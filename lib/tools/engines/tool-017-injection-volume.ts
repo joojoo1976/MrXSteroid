@@ -1,41 +1,50 @@
 /**
- * Tool #017 — Injection Volume Calculator
- * Schema Validation using Zod
+ * Tool #017b — Injection Volume Calculator (engine)
+ * Computes injection volume per site from concentration and desired dose.
  */
 
-import { z } from 'zod';
+import type {
+  InjectionVolumeInput,
+  InjectionVolumeResult,
+  InjectionSite,
+} from '../schemas/tool-017-injection-volume';
 
-export const InjectionSiteSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  muscle_group: z.enum(['deltoid', 'glutes', 'quads', 'pectorals', 'triceps', 'biceps']),
-  is_lipophilic_preference: z.boolean(),
-  current_volume_ml: z.number().optional(),
-  last_injection_date: z.string().optional(),
-});
+const MAX_VOLUME_ML: Record<InjectionSite['muscle_group'], number> = {
+  deltoid: 1,
+  glutes: 3,
+  quads: 2,
+  pectorals: 1,
+  triceps: 1,
+  biceps: 1,
+};
 
-export type InjectionSite = z.infer<typeof InjectionSiteSchema>;
+export function calculateInjectionVolume(input: InjectionVolumeInput): InjectionVolumeResult {
+  const { target_muscle, compound_viscosity, concentration_mg_ml, desired_dose_mg, current_sites } = input;
 
-export const InjectionVolumeInputSchema = z.object({
-  target_muscle: z.enum(['deltoid', 'glutes', 'quads', 'pectorals', 'triceps', 'biceps']),
-  compound_viscosity: z.enum(['low', 'medium', 'high']),
-  concentration_mg_ml: z.number().min(1).max(500),
-  desired_dose_mg: z.number().min(1).max(1000),
-  current_sites: z.array(InjectionSiteSchema).min(0).max(10),
-  user_body_weight_kg: z.number().min(40).max(300},
-});
+  const desired_dose_ml = Math.round((desired_dose_mg / Math.max(concentration_mg_ml, 1)) * 100) / 100;
+  const viscosityFactor = compound_viscosity === 'high' ? 0.8 : compound_viscosity === 'low' ? 1.1 : 1.0;
+  const max_recommended_ml =
+    Math.round(Math.min(5, (MAX_VOLUME_ML[target_muscle] ?? 1) * viscosityFactor) * 100) / 100;
 
-export type InjectionVolumeInput = z.infer<typeof InjectionVolumeInputSchema>;
+  const warnings: string[] = [];
+  if (desired_dose_ml > max_recommended_ml) {
+    warnings.push(
+      `Desired volume ${desired_dose_ml} mL exceeds ${max_recommended_ml} mL safe limit for ${target_muscle} — split the dose across sites.`
+    );
+  }
+  if (compound_viscosity === 'high') {
+    warnings.push('High-viscosity oil: warm the vial, inject slowly, use a 23G needle.');
+  }
 
-export const InjectionVolumeResultSchema = z.object({
-  desired_dose_ml: z.number().min(0.1).max(10),
-  max_recommended_ml: z.number().min(0.1).max(5),
-  injection_sites: z.array(InjectionSiteSchema),
-  rotation_schedule: z.array(z.string()),
-  warnings: z.array(z.string()),
-  measurement_system: z.enum(['metric', 'imperial']),
-  imperial_conversion: z.number().min(0).max(1),
-});
+  const rotation_schedule = current_sites.map((s) => `${s.name_en}: last used ${s.last_injection_date ?? 'unknown'}`);
 
-export type InjectionVolumeResult = z.infer<typeof InjectionVolumeResultSchema>;
+  return {
+    desired_dose_ml,
+    max_recommended_ml,
+    injection_sites: current_sites,
+    rotation_schedule,
+    warnings,
+    measurement_system: 'metric',
+    imperial_conversion: Math.round(desired_dose_ml * 0.033814 * 1000) / 1000,
+  };
+}

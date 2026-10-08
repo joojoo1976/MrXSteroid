@@ -1,0 +1,118 @@
+components/tools/tool-007-bloodwork-analyzer.tsx(23,44): error TS2339: Property 'markers' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(24,54): error TS2339: Property 'overall_assessment' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(25,47): error TS2339: Property 'hpta_status' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(26,52): error TS2339: Property 'recommendations' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(27,45): error TS2339: Property 'test_date' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(29,35): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(30,45): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(52,50): error TS2339: Property 'total_logs' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(28,38): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(29,48): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-011-progress-tracker.tsx(29,18): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]>'.
+components/tools/tool-011-progress-tracker.tsx(59,16): error TS2345: Argument of type '(prev: { id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]) => ({ ...; } | { ...; })[]' is not assignable to parameter of type 'SetStateAction<{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]>'.
+  Type '(prev: { id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]) => ({ ...; } | { ...; })[]' is not assignable to type '(prevState: { id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]) => { ...; }[]'.
+    Type '({ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; } | { ...; })[]' is not assignable to type '{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]'.
+      Type '{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; } | { ...; }' is not assignable to type '{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }'.
+        Type '{ id: string; date: string; weight_kg: number | undefined; weight_lbs: number | undefined; strength_kg: number | undefined; strength_lbs: number | undefined; body_fat_pct: number | null; notes: string | undefined; }' is not assignable to type '{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }'.
+          Types of property 'body_fat_pct' are incompatible.
+            Type 'number | null' is not assignable to type 'number | undefined'.
+              Type 'null' is not assignable to type 'number | undefined'.
+components/tools/tool-014-water-retention.tsx(61,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(61,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(64,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(64,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-015-shbg-modulator.tsx(53,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-015-shbg-modulator.tsx(53,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-half-life-calculator.tsx(89,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-half-life-calculator.tsx(89,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(37,28): error TS2345: Argument of type '{ age: number; compound_stack: any[]; test_level_ng_dL: number | null; shbg_nmol_L: number | null; symptoms: "normal" | "low" | "high" | "hyper"; duration_weeks: number; }' is not assignable to parameter of type 'LibidoInput'.
+  Types of property 'test_level_ng_dL' are incompatible.
+    Type 'number | null' is not assignable to type 'number | undefined'.
+      Type 'null' is not assignable to type 'number | undefined'.
+components/tools/tool-016-libido-calculator.tsx(61,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(61,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(64,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(64,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(45,242): error TS7006: Parameter 'm' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(45,264): error TS7006: Parameter 'm' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(46,250): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(46,272): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(55,32): error TS7006: Parameter 'f' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(55,35): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(75,42): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(75,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(78,44): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(78,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(81,35): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(81,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-018-hpta-recovery.tsx(25,18): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<never[]>'.
+components/tools/tool-018-hpta-recovery.tsx(26,45): error TS2345: Argument of type '{}' is not assignable to parameter of type 'HPTAMarker[]'.
+  Type '{}' is missing the following properties from type 'HPTAMarker[]': length, pop, push, concat, and 29 more.
+components/tools/tool-018-hpta-recovery.tsx(37,16): error TS2345: Argument of type '(prev: never[]) => { date: string; symptoms: string; }[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+  Type '(prev: never[]) => { date: string; symptoms: string; }[]' is not assignable to type '(prevState: never[]) => never[]'.
+    Type '{ date: string; symptoms: string; }[]' is not assignable to type 'never[]'.
+      Type '{ date: string; symptoms: string; }' is not assignable to type 'never'.
+components/tools/tool-018-hpta-recovery.tsx(38,43): error TS2304: Cannot find name 'prev'.
+components/tools/tool-019-cardio-monitor.tsx(70,39): error TS7006: Parameter 'f' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(70,42): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(73,44): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(73,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(76,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(76,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(61,39): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(61,42): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(64,48): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(64,51): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(67,44): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(67,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(70,44): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(70,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(77,49): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(77,52): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(80,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(80,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(83,47): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(83,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-022-half-life-stacker.tsx(76,136): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/tools/tool-022-half-life-stacker.tsx(79,53): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-022-half-life-stacker.tsx(79,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-023-trt-optimization.tsx(33,40): error TS2345: Argument of type '{ age: number; body_weight_kg: number; current_total_test_ng_dL: number; current_free_test_pg_mL: number; symptoms: string; hematocrit_current: number; e2_current_pg_mL: number; trt_duration_months: number; administration: string; }' is not assignable to parameter of type 'TrtInput'.
+  Types of property 'symptoms' are incompatible.
+    Type 'string' is not assignable to type '"mild" | "moderate" | "severe" | "none"'.
+components/tools/tool-024-bloodwork-interpreter.tsx(73,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-024-bloodwork-interpreter.tsx(73,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(77,39): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(77,42): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(80,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(80,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(74,35): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(74,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(77,44): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(77,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(69,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(69,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(72,48): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(72,51): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(75,40): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(75,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(78,40): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(78,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(43,34): error TS2345: Argument of type '{ compounds: string[]; cycle_day: number; user_age: number; experience_level: string; health_markers: { blood_pressure: number; heart_rate: number; recent_weight: number; libido: any; }; }' is not assignable to parameter of type '{ compounds: string[]; cycle_day: number; user_age: number; experience_level: "intermediate" | "beginner" | "advanced" | "pro"; health_markers: { blood_pressure?: number | undefined; heart_rate?: number | undefined; recent_weight?: number | undefined; libido?: "normal" | ... 2 more ... | undefined; }; }'.
+  Types of property 'experience_level' are incompatible.
+    Type 'string' is not assignable to type '"intermediate" | "beginner" | "advanced" | "pro"'.
+components/tools/tool-029-side-effect-early-warning.tsx(53,210): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(53,232): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(68,49): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(68,52): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(71,44): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(71,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(75,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(75,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(87,51): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(87,54): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(90,53): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(90,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(93,45): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(93,48): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(96,46): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(96,49): error TS7006: Parameter 'i' implicitly has an 'any' type.

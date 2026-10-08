@@ -1,0 +1,3 @@
+components/tools/tool-017-drug-interaction.tsx(45,230): error TS1005: ',' expected.
+components/tools/tool-017-drug-interaction.tsx(46,238): error TS1005: ',' expected.
+components/tools/tool-029-side-effect-early-warning.tsx(53,198): error TS1005: ',' expected.

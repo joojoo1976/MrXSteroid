@@ -1,51 +1,92 @@
 /**
- * Tool #025 — Drug Interaction Checker Pro
- * Schema Validation using Zod
+ * Tool #025 — Drug Interaction Checker Pro (engine)
+ * Pairwise interaction scoring matching the existing schema contract.
  */
 
-import { z } from 'zod';
+import type {
+  DrugCompound,
+  DrugInteraction,
+  DrugInteractionInput,
+  DrugInteractionResult,
+} from '../schemas/tool-025-drug-interaction-pro';
 
-export const DrugCompoundSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  family: z.string(),
-  dosage_mg: z.number().min(1),
-  is_lipophilic: z.boolean(),
-  primary_target: z.enum(['androgen', 'estrogen', 'cortisol', 'other']),
-  half_life_hours: z.number().min(0.5).max(720),
-});
+function pairInteraction(a: DrugCompound, b: DrugCompound): DrugInteraction {
+  const sameFamily = a.family === b.family;
+  const bothLipo = a.is_lipophilic && b.is_lipophilic;
+  const sameTarget = a.primary_target !== 'other' && a.primary_target === b.primary_target;
 
-export type DrugCompound = z.infer<typeof DrugCompoundSchema>;
+  if (sameFamily && bothLipo) {
+    return {
+      compound1: a.name_en,
+      compound2: b.name_en,
+      interaction_type: 'contraindicated',
+      severity: 'critical',
+      description: `Duplicate ${a.family} family with dual lipophilic load — compounded liver and lipid strain.`,
+      recommendation: 'Do not stack together; pick one and re-evaluate.',
+    };
+  }
+  if (sameTarget) {
+    return {
+      compound1: a.name_en,
+      compound2: b.name_en,
+      interaction_type: 'enhanced_side_effect',
+      severity: 'moderate',
+      description: `Both compounds drive ${a.primary_target} signaling — amplified target effects.`,
+      recommendation: 'Monitor target-related side effects and consider dose reduction.',
+    };
+  }
+  if (sameFamily || bothLipo) {
+    return {
+      compound1: a.name_en,
+      compound2: b.name_en,
+      interaction_type: 'additive',
+      severity: 'moderate',
+      description: `${a.name_en} + ${b.name_en} show additive load — monitor closely.`,
+      recommendation: 'Standard monitoring with tighter bloodwork cadence.',
+    };
+  }
+  return {
+    compound1: a.name_en,
+    compound2: b.name_en,
+    interaction_type: 'additive',
+    severity: 'mild',
+    description: `${a.name_en} + ${b.name_en}: no major interaction signal.`,
+    recommendation: 'Standard monitoring.',
+  };
+}
 
-export const DrugInteractionInputSchema = z.object({
-  compounds: z.array(DrugCompoundSchema).min(2).max(6),
-  user_age: z.number().min(18).max(80),
-  user_weight_kg: z.number().min(40).max(300),
-  health_conditions: z.array(z.enum(['liver', 'heart', 'prostate', 'high_bp'])),
-  current_medications: z.array(z.string()).min(0).max(10),
-});
+export function checkDrugInteractions(input: DrugInteractionInput): DrugInteractionResult {
+  const { compounds, user_age, health_conditions } = input;
 
-export type DrugInteractionInput = z.infer<typeof DrugInteractionInputSchema>;
+  const interactions: DrugInteraction[] = [];
+  for (let i = 0; i < compounds.length; i++) {
+    for (let j = i + 1; j < compounds.length; j++) {
+      interactions.push(pairInteraction(compounds[i], compounds[j]));
+    }
+  }
 
-export const DrugInteractionSchema = z.object({
-  compound1: z.string(),
-  compound2: z.string(),
-  interaction_type: z.enum(['additive', 'antagonist', 'enhanced_side_effect', 'contraindicated']),
-  severity: z.enum(['mild', 'moderate', 'severe', 'critical']),
-  description: z.string(),
-  recommendation: z.string(),
-});
+  const critical_interactions = interactions.filter((x) => x.severity === 'critical').length;
+  const moderate_interactions = interactions.filter((x) => x.severity === 'moderate').length;
 
-export type DrugInteraction = z.infer<typeof DrugInteractionSchema>;
+  let safety_score = 100 - critical_interactions * 30 - moderate_interactions * 10;
+  if (user_age >= 45) safety_score -= 5;
+  if (health_conditions.includes('liver') || health_conditions.includes('heart')) safety_score -= 10;
+  safety_score = Math.max(0, Math.min(100, safety_score));
 
-export const DrugInteractionResultSchema = z.object({
-  total_interactions: z.number().min(0).max(50),
-  critical_interactions: z.number().min(0).max(20),
-  moderate_interactions: z.number().min(0).max(50),
-  interactions: z.array(DrugInteractionSchema).min(0).max(50),
-  safety_score: z.number().min(0).max(100),
-  recommendations: z.array(z.string()).min(0).max(15),
-});
+  const recommendations: string[] = [];
+  if (critical_interactions > 0) recommendations.push('Critical interaction present — revise the stack before starting.');
+  else if (moderate_interactions > 0) recommendations.push('Moderate interactions present — tighten monitoring cadence.');
+  else recommendations.push('No major interaction signal — proceed with standard monitoring.');
+  if (health_conditions.length > 0) {
+    recommendations.push(`Pre-existing conditions (${health_conditions.join(', ')}) require medical clearance.`);
+  }
 
-export type DrugInteractionResult = z.infer<typeof DrugInteractionResultSchema>;
+  return {
+    total_interactions: interactions.length,
+    critical_interactions,
+    moderate_interactions,
+    interactions,
+    safety_score,
+    recommendations,
+  };
+}

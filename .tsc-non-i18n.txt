@@ -1,0 +1,234 @@
+﻿components/tools/hcg-serm-protocol.tsx(19,68): error TS2305: Module '"react"' has no exported member 'useDebounce'.
+components/tools/tool-006-estrogen-prolactin.tsx(4,10): error TS2305: Module '"@/lib/tools/engines/tool-006-estrogen-prolactin"' has no exported member 'calculateAromatizationRisk'.
+components/tools/tool-007-bloodwork-analyzer.tsx(19,44): error TS2339: Property 'markers' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(20,54): error TS2339: Property 'overall_assessment' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(21,47): error TS2339: Property 'hpta_status' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(22,52): error TS2339: Property 'recommendations' does not exist on type '{}'.
+components/tools/tool-007-bloodwork-analyzer.tsx(23,45): error TS2339: Property 'test_date' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(25,35): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(26,45): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(48,50): error TS2339: Property 'total_logs' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(88,42): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"other" | "estrogenic" | "androgenic" | "cardiovascular" | "hepatotoxic" | "psychological">'.
+components/tools/tool-009-injection-site-rotator.tsx(24,38): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(25,48): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(30,17): error TS2304: Cannot find name 'InjectionSite'.
+components/tools/tool-009-injection-site-rotator.tsx(40,112): error TS2552: Cannot find name 'oil_based'. Did you mean 'oilBased'?
+components/tools/tool-009-injection-site-rotator.tsx(49,60): error TS2339: Property 'total_sites_rotated' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(50,112): error TS2552: Cannot find name 'oil_based'. Did you mean 'oilBased'?
+components/tools/tool-009-injection-site-rotator.tsx(90,13): error TS2322: Type 'boolean' is not assignable to type 'string | number | readonly string[] | undefined'.
+components/tools/tool-011-progress-tracker.tsx(3,10): error TS2305: Module '"@/lib/tools/engines/tool-011-progress-tracker"' has no exported member 'calculateProgress'.
+components/tools/tool-011-progress-tracker.tsx(25,18): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]>'.
+components/tools/tool-011-progress-tracker.tsx(55,16): error TS2345: Argument of type '(prev: { id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]) => ({ ...; } | { ...; })[]' is not assignable to parameter of type 'SetStateAction<{ id: string; date: string; weight_kg?: number | undefined; weight_lbs?: number | undefined; strength_kg?: number | undefined; strength_lbs?: number | undefined; body_fat_pct?: number | undefined; notes?: string | undefined; }[]>'.
+components/tools/tool-012-calorie-adjuster.tsx(3,10): error TS2305: Module '"@/lib/tools/engines/tool-012-calorie-adjuster"' has no exported member 'calculateCalorieAdjustment'.
+components/tools/tool-012-calorie-adjuster.tsx(24,47): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-012-calorie-adjuster.tsx(28,15): error TS2552: Cannot find name 'calculateTDEE'. Did you mean 'calculate'?
+components/tools/tool-012-calorie-adjuster.tsx(39,156): error TS2322: Type 'string' is not assignable to type '"male" | "female"'.
+components/tools/tool-012-calorie-adjuster.tsx(41,172): error TS2322: Type 'string' is not assignable to type '"active" | "light" | "moderate" | "sedentary" | "very_active"'.
+components/tools/tool-012-calorie-adjuster.tsx(42,152): error TS2322: Type 'string' is not assignable to type '"cut" | "maintain" | "bulk"'.
+components/tools/tool-013-macro-optimizer.tsx(3,10): error TS2305: Module '"@/lib/tools/engines/tool-013-macro-optimizer"' has no exported member 'optimizeMacros'.
+components/tools/tool-013-macro-optimizer.tsx(22,46): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-013-macro-optimizer.tsx(26,15): error TS2304: Cannot find name 'calculateMacros'.
+components/tools/tool-013-macro-optimizer.tsx(37,152): error TS2322: Type 'string' is not assignable to type '"cut" | "maintain" | "bulk"'.
+components/tools/tool-013-macro-optimizer.tsx(40,172): error TS2322: Type 'string' is not assignable to type '"active" | "light" | "moderate" | "sedentary" | "very_active"'.
+components/tools/tool-014-water-retention.tsx(3,10): error TS2305: Module '"@/lib/tools/engines/tool-014-water-retention"' has no exported member 'assessWaterRetention'.
+components/tools/tool-014-water-retention.tsx(21,48): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-014-water-retention.tsx(33,15): error TS2304: Cannot find name 'calculateWaterRetention'.
+components/tools/tool-014-water-retention.tsx(57,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(57,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(60,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-014-water-retention.tsx(60,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-015-shbg-modulator.tsx(3,10): error TS2305: Module '"@/lib/tools/engines/tool-015-shbg-modulator"' has no exported member 'calculateSHBGModulation'.
+components/tools/tool-015-shbg-modulator.tsx(21,44): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-015-shbg-modulator.tsx(25,15): error TS2552: Cannot find name 'calculateSHBG'. Did you mean 'calculate'?
+components/tools/tool-015-shbg-modulator.tsx(37,150): error TS2322: Type 'string' is not assignable to type '"male" | "female"'.
+components/tools/tool-015-shbg-modulator.tsx(49,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-015-shbg-modulator.tsx(49,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-half-life-calculator.tsx(19,49): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-016-half-life-calculator.tsx(45,15): error TS2345: Argument of type 'HalfLifeResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-016-half-life-calculator.tsx(85,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-half-life-calculator.tsx(85,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(21,46): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-016-libido-calculator.tsx(31,7): error TS2552: Cannot find name 'duration_weeks'. Did you mean 'durationWeeks'?
+components/tools/tool-016-libido-calculator.tsx(33,28): error TS2345: Argument of type '{ age: number; compound_stack: any[]; test_level_ng_dL: number | null; shbg_nmol_L: number | null; symptoms: "normal" | "low" | "high" | "hyper"; duration_weeks: any; }' is not assignable to parameter of type 'LibidoInput'.
+components/tools/tool-016-libido-calculator.tsx(34,15): error TS2345: Argument of type 'LibidoResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-016-libido-calculator.tsx(57,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(57,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(60,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-016-libido-calculator.tsx(60,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(19,49): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-017-drug-interaction.tsx(26,7): error TS2552: Cannot find name 'health_conditions'. Did you mean 'healthConditions'?
+components/tools/tool-017-drug-interaction.tsx(30,15): error TS2345: Argument of type 'DrugInteractionResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-017-drug-interaction.tsx(51,32): error TS7006: Parameter 'f' implicitly has an 'any' type.
+components/tools/tool-017-drug-interaction.tsx(51,35): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(21,49): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-017-injection-volume.tsx(45,15): error TS2345: Argument of type '{ desired_dose_ml: number; max_recommended_ml: number; injection_sites: { id: number; name_en: string; name_ar: string; muscle_group: "deltoid" | "glutes" | "quads" | "pectorals" | "triceps" | "biceps"; is_lipophilic_preference: boolean; current_volume_ml?: number | undefined; last_injection_date?: string | undefine...' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-017-injection-volume.tsx(54,159): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"deltoid" | "glutes" | "quads" | "pectorals" | "triceps" | "biceps">'.
+components/tools/tool-017-injection-volume.tsx(55,174): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"low" | "medium" | "high">'.
+components/tools/tool-017-injection-volume.tsx(71,42): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(71,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(74,44): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(74,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(77,35): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-017-injection-volume.tsx(77,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-018-hpta-recovery.tsx(21,18): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<never[]>'.
+components/tools/tool-018-hpta-recovery.tsx(22,45): error TS2345: Argument of type '{}' is not assignable to parameter of type 'HPTAMarker[]'.
+components/tools/tool-018-hpta-recovery.tsx(25,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-018-hpta-recovery.tsx(33,16): error TS2345: Argument of type '(prev: never[]) => { date: string; symptoms: string; }[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+components/tools/tool-018-hpta-recovery.tsx(34,43): error TS2304: Cannot find name 'prev'.
+components/tools/tool-018-hpta-recovery.tsx(37,28): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-018-hpta-recovery.tsx(47,28): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-019-cardio-monitor.tsx(24,44): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-019-cardio-monitor.tsx(40,15): error TS2345: Argument of type 'CardioRisk' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-019-cardio-monitor.tsx(66,39): error TS7006: Parameter 'f' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(66,42): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(69,44): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(69,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(72,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-019-cardio-monitor.tsx(72,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(23,50): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-020-genetic-potential.tsx(31,15): error TS2345: Argument of type '{ potential_score: number; body_type_assessment: string; recommended_cycle_length: number; recommended_dosage_multiplier: number; risk_factors: string[]; recommended_compounds: string[]; avoided_compounds: string[]; personalized_tips: string[]; }' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-020-genetic-potential.tsx(43,162): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"none" | "other" | "baldness" | "heart_disease" | "liver_disease">'.
+components/tools/tool-020-genetic-potential.tsx(44,147): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"mixed" | "ectomorph" | "mesomorph" | "endomorph">'.
+components/tools/tool-020-genetic-potential.tsx(45,134): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"cut" | "bulk" | "recomp" | "strength">'.
+components/tools/tool-020-genetic-potential.tsx(57,39): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(57,42): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(60,48): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(60,51): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(63,44): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(63,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(66,44): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/tools/tool-020-genetic-potential.tsx(66,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(20,47): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-021-peptide-protocol.tsx(47,15): error TS2345: Argument of type 'PeptideProtocolResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-021-peptide-protocol.tsx(57,134): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"recovery" | "fat_loss" | "muscle_growth" | "anti_aging">'.
+components/tools/tool-021-peptide-protocol.tsx(59,177): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"every-other-day" | "daily" | "3x-week" | "weekly">'.
+components/tools/tool-021-peptide-protocol.tsx(73,49): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(73,52): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(76,47): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(76,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(79,47): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-021-peptide-protocol.tsx(79,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-022-half-life-stacker.tsx(19,55): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-022-half-life-stacker.tsx(46,15): error TS2345: Argument of type 'StackTimingResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-022-half-life-stacker.tsx(56,177): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"every-other-day" | "daily" | "2x-week" | "1x-week">'.
+components/tools/tool-022-half-life-stacker.tsx(57,147): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"cut" | "bulk" | "recomp" | "strength">'.
+components/tools/tool-022-half-life-stacker.tsx(72,136): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/tools/tool-022-half-life-stacker.tsx(75,53): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-022-half-life-stacker.tsx(75,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-023-trt-optimization.tsx(24,43): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-023-trt-optimization.tsx(29,40): error TS2345: Argument of type '{ age: number; body_weight_kg: number; current_total_test_ng_dL: number; current_free_test_pg_mL: number; symptoms: string; hematocrit_current: number; e2_current_pg_mL: number; trt_duration_months: number; administration: string; }' is not assignable to parameter of type 'TrtInput'.
+components/tools/tool-023-trt-optimization.tsx(30,15): error TS2345: Argument of type 'TrtResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-024-bloodwork-interpreter.tsx(19,49): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-024-bloodwork-interpreter.tsx(44,15): error TS2345: Argument of type '{ overall_recovery_status: "partial" | "excellent" | "good" | "poor"; hormonal_recovery: "none" | "complete" | "incomplete"; liver_function: "normal" | "elevated" | "concerning"; ... 4 more ...; days_to_next_test: number; }' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-024-bloodwork-interpreter.tsx(69,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-024-bloodwork-interpreter.tsx(69,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(20,56): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-025-drug-interaction-pro.tsx(42,7): error TS18004: No value exists in scope for the shorthand property 'health_conditions'. Either declare one or provide an initializer.
+components/tools/tool-025-drug-interaction-pro.tsx(46,15): error TS2345: Argument of type '{ total_interactions: number; critical_interactions: number; moderate_interactions: number; interactions: { compound1: string; compound2: string; interaction_type: "additive" | "contraindicated" | "antagonist" | "enhanced_side_effect"; severity: "mild" | ... 2 more ... | "severe"; description: string; recommendation...' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-025-drug-interaction-pro.tsx(73,39): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(73,42): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(76,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-025-drug-interaction-pro.tsx(76,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(20,54): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-026-injection-pain.tsx(43,15): error TS2345: Argument of type 'InjectionPainResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-026-injection-pain.tsx(52,158): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"low" | "medium" | "high">'.
+components/tools/tool-026-injection-pain.tsx(55,144): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"deltoid" | "glutes" | "quads" | "pectorals" | "triceps" | "biceps">'.
+components/tools/tool-026-injection-pain.tsx(70,35): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(70,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(73,44): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-026-injection-pain.tsx(73,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-027-ester-conversion.tsx(20,56): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-027-ester-conversion.tsx(25,7): error TS18004: No value exists in scope for the shorthand property 'compound_name'. Either declare one or provide an initializer.
+components/tools/tool-027-ester-conversion.tsx(26,7): error TS18004: No value exists in scope for the shorthand property 'ester_type'. Either declare one or provide an initializer.
+components/tools/tool-027-ester-conversion.tsx(31,15): error TS2345: Argument of type 'EsterConversionResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-027-ester-conversion.tsx(41,150): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"other" | "acetate" | "propionate" | "phenylpropionate" | "enanthate" | "cypionate" | "decanoate" | "undecanoate" | "heptanoate">'.
+components/tools/tool-027-ester-conversion.tsx(43,167): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"other" | "acetate" | "propionate" | "phenylpropionate" | "enanthate" | "cypionate" | "decanoate" | "undecanoate" | "heptanoate">'.
+components/tools/tool-028-stacking-synergy.tsx(18,56): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-028-stacking-synergy.tsx(44,15): error TS2345: Argument of type '{ synergy_score: number; overall_assessment: "excellent" | "good" | "poor" | "fair"; compound_pair_interactions: string[]; recommended_additions: string[]; avoided_pairs: string[]; protocol_tips: string[]; best_for_goal: string; }' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-028-stacking-synergy.tsx(53,134): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"cut" | "bulk" | "recomp" | "strength">'.
+components/tools/tool-028-stacking-synergy.tsx(54,152): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"pro" | "intermediate" | "advanced" | "beginner">'.
+components/tools/tool-028-stacking-synergy.tsx(65,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(65,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(68,48): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(68,51): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(71,40): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(71,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(74,40): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-028-stacking-synergy.tsx(74,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(23,51): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-029-side-effect-early-warning.tsx(39,34): error TS2345: Argument of type '{ compounds: string[]; cycle_day: number; user_age: number; experience_level: string; health_markers: { blood_pressure: number; heart_rate: number; recent_weight: number; libido: any; }; }' is not assignable to parameter of type '{ compounds: string[]; cycle_day: number; user_age: number; experience_level: "pro" | "intermediate" | "advanced" | "beginner"; health_markers: { blood_pressure?: number | undefined; heart_rate?: number | undefined; recent_weight?: number | undefined; libido?: "normal" | ... 2 more ... | undefined; }; }'.
+components/tools/tool-029-side-effect-early-warning.tsx(40,15): error TS2345: Argument of type '{ predicted_side_effects: { id: number; name_en: string; name_ar: string; category: "other" | "estrogenic" | "androgenic" | "cardiovascular" | "hepatotoxic" | "suppressive"; severity: "mild" | ... 2 more ... | "severe"; days_noticed: number; compound_triggers: string[]; action_required: "monitor" | ... 2 more ... | ...' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-029-side-effect-early-warning.tsx(64,49): error TS7006: Parameter 's' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(64,52): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(67,44): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(67,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(71,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+components/tools/tool-029-side-effect-early-warning.tsx(71,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(19,50): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-030-cycle-cost-calculator.tsx(58,7): error TS18004: No value exists in scope for the shorthand property 'ancillary_compounds'. Either declare one or provide an initializer.
+components/tools/tool-030-cycle-cost-calculator.tsx(62,15): error TS2345: Argument of type 'CycleCostResult' is not assignable to parameter of type 'SetStateAction<null>'.
+components/tools/tool-030-cycle-cost-calculator.tsx(71,134): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"cut" | "bulk" | "recomp" | "strength">'.
+components/tools/tool-030-cycle-cost-calculator.tsx(83,51): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(83,54): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(86,53): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(86,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(89,45): error TS7006: Parameter 'c' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(89,48): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(92,46): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/tools/tool-030-cycle-cost-calculator.tsx(92,49): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/legacy-routes.ts(8,14): error TS2741: Property '[Page.HCG_SERM_PROTOCOL]' is missing in type '{ home: string; dashboard: string; diagnostic: string; login: string; signup: string; profile: string; about: string; sitemap: string; accessibility: string; gdpr: string; ccpa: string; blog: string; ... 37 more ...; affiliate: string; }' but required in type 'Record<Page, string>'.
+lib/tools/adapters/hcg-serm-protocol.ts(68,9): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'KeyFinding'.
+lib/tools/adapters/hcg-serm-protocol.ts(79,13): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'KeyFinding'.
+lib/tools/adapters/hcg-serm-protocol.ts(91,13): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'KeyFinding'.
+lib/tools/engines/tool-006-estrogen-prolactin.ts(22,18): error TS2304: Cannot find name 'CompoundItem'.
+lib/tools/engines/tool-012-calorie-adjuster.ts(55,16): error TS18048: 'weightKg' is possibly 'undefined'.
+lib/tools/engines/tool-012-calorie-adjuster.ts(55,34): error TS18048: 'heightCm' is possibly 'undefined'.
+lib/tools/engines/tool-012-calorie-adjuster.ts(57,16): error TS18048: 'weightKg' is possibly 'undefined'.
+lib/tools/engines/tool-012-calorie-adjuster.ts(57,34): error TS18048: 'heightCm' is possibly 'undefined'.
+lib/tools/engines/tool-013-macro-optimizer.ts(111,5): error TS18004: No value exists in scope for the shorthand property 'total_calories'. Either declare one or provide an initializer.
+lib/tools/engines/tool-013-macro-optimizer.ts(112,5): error TS18004: No value exists in scope for the shorthand property 'meal_breakdown'. Either declare one or provide an initializer.
+lib/tools/engines/tool-014-water-retention.ts(99,5): error TS18004: No value exists in scope for the shorthand property 'diuretic_suggestions'. Either declare one or provide an initializer.
+lib/tools/engines/tool-015-shbg-modulator.ts(96,3): error TS2741: Property 'total_testosterone_ng_dL' is missing in type '{ shbg_nmol_L: number; shbg_reference_range: [number, number]; free_testosterone_ng_dL: number; free_testosterone_percentage: number; bioavailable_testosterone_ng_dL: number; interpretation: "normal" | ... 1 more ... | "high"; recommendations: string[]; }' but required in type 'SHBGResult'.
+lib/tools/engines/tool-016-half-life-calculator.ts(78,9): error TS2532: Object is possibly 'undefined'.
+lib/tools/engines/tool-016-half-life-calculator.ts(79,7): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+lib/tools/engines/tool-016-half-life-calculator.ts(93,20): error TS18048: 'compound.half_life_days_adjusted' is possibly 'undefined'.
+lib/tools/engines/tool-016-half-life-calculator.ts(144,5): error TS18004: No value exists in scope for the shorthand property 'bottleneck_compound'. Either declare one or provide an initializer.
+lib/tools/engines/tool-016-libido-calculator.ts(88,19): error TS2304: Cannot find name 'map'.
+lib/tools/engines/tool-016-libido-calculator.ts(120,5): error TS2304: Cannot find name 'timeline'.
+lib/tools/engines/tool-016-libido-calculator.ts(137,5): error TS18004: No value exists in scope for the shorthand property 'compound_adjustments'. Either declare one or provide an initializer.
+lib/tools/engines/tool-016-libido-calculator.ts(138,5): error TS18004: No value exists in scope for the shorthand property 'timeline'. Either declare one or provide an initializer.
+lib/tools/engines/tool-018-hpta-recovery.ts(44,7): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+lib/tools/engines/tool-018-hpta-recovery.ts(45,7): error TS2322: Type '"unknown"' is not assignable to type '"moderate" | "slow" | "fast"'.
+lib/tools/engines/tool-018-hpta-recovery.ts(103,49): error TS2304: Cannot find name 'changePerWeek'.
+lib/tools/engines/tool-018-hpta-recovery.ts(114,5): error TS18004: No value exists in scope for the shorthand property 'predicted_completion'. Either declare one or provide an initializer.
+lib/tools/engines/tool-019-cardio-monitor.ts(122,5): error TS18004: No value exists in scope for the shorthand property 'risk_factors'. Either declare one or provide an initializer.
+lib/tools/engines/tool-019-cardio-monitor.ts(123,5): error TS18004: No value exists in scope for the shorthand property 'compound_warnings'. Either declare one or provide an initializer.
+lib/tools/engines/tool-021-peptide-protocol.ts(150,5): error TS18004: No value exists in scope for the shorthand property 'timing_recommendations'. Either declare one or provide an initializer.
+lib/tools/engines/tool-021-peptide-protocol.ts(151,5): error TS18004: No value exists in scope for the shorthand property 'storage_requirements'. Either declare one or provide an initializer.
+lib/tools/engines/tool-021-peptide-protocol.ts(152,5): error TS18004: No value exists in scope for the shorthand property 'side_effect_warnings'. Either declare one or provide an initializer.
+lib/tools/engines/tool-021-peptide-protocol.ts(153,5): error TS18004: No value exists in scope for the shorthand property 'post_protocol_therapy'. Either declare one or provide an initializer.
+lib/tools/engines/tool-022-half-life-stacker.ts(126,5): error TS18004: No value exists in scope for the shorthand property 'ester_bottleneck'. Either declare one or provide an initializer.
+lib/tools/engines/tool-022-half-life-stacker.ts(128,5): error TS18004: No value exists in scope for the shorthand property 'compound_peak_times'. Either declare one or provide an initializer.
+lib/tools/engines/tool-023-trt-optimization.ts(128,44): error TS18048: 'estimatedFreeTest' is possibly 'undefined'.
+lib/tools/engines/tool-023-trt-optimization.ts(130,5): error TS18004: No value exists in scope for the shorthand property 'expected_hematocrit'. Either declare one or provide an initializer.
+lib/tools/engines/tool-023-trt-optimization.ts(133,5): error TS18004: No value exists in scope for the shorthand property 'risk_factors'. Either declare one or provide an initializer.
+lib/tools/engines/tool-023-trt-optimization.ts(134,5): error TS18004: No value exists in scope for the shorthand property 'protocol_tips'. Either declare one or provide an initializer.
+lib/tools/engines/tool-026-injection-pain.ts(85,9): error TS2451: Cannot redeclare block-scoped variable 'today'.
+lib/tools/engines/tool-026-injection-pain.ts(89,18): error TS2532: Object is possibly 'undefined'.
+lib/tools/engines/tool-026-injection-pain.ts(89,18): error TS2769: No overload matches this call.
+lib/tools/engines/tool-026-injection-pain.ts(118,9): error TS2451: Cannot redeclare block-scoped variable 'today'.
+lib/tools/engines/tool-027-ester-conversion.ts(68,5): error TS2304: Cannot find name 'conversionTo_target'.
+lib/tools/index.ts(23,3): error TS2724: '"./smartToolsCatalog4"' has no exported member named 'SMART_TOOLS_CATALOG'. Did you mean 'SMART_TOOLS_CATALOG_4'?
+lib/tools/index.ts(24,3): error TS2724: '"./smartToolsCatalog4"' has no exported member named 'SMART_TOOLS_CATALOG_2'. Did you mean 'SMART_TOOLS_CATALOG_4'?
+lib/tools/index.ts(25,3): error TS2724: '"./smartToolsCatalog4"' has no exported member named 'SMART_TOOLS_CATALOG_3'. Did you mean 'SMART_TOOLS_CATALOG_4'?
+lib/tools/index.ts(27,3): error TS2724: '"./smartToolsCatalog4"' has no exported member named 'SMART_TOOLS_CATALOG_5'. Did you mean 'SMART_TOOLS_CATALOG_4'?
+lib/tools/index.ts(38,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/tools/index.ts(39,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/tools/index.ts(50,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/tools/index.ts(61,61): error TS2307: Cannot find module './loaders' or its corresponding type declarations.
+lib/tools/index.ts(66,48): error TS2307: Cannot find module './search' or its corresponding type declarations.
+lib/tools/schemas/tool-007-bloodwork-analyzer.ts(33,13): error TS2693: 'BloodworkResult' only refers to a type, but is being used as a value here.
+lib/tools/schemas/tool-007-bloodwork-analyzer.ts(34,12): error TS2693: 'BloodworkResult' only refers to a type, but is being used as a value here.
+lib/tools/schemas/tool-022-half-life-stacker.ts(39,26): error TS2554: Expected 2-3 arguments, but got 1.
+lib/tools/validation.ts(23,50): error TS2307: Cannot find module '../lib/tools/smartToolsCatalog4' or its corresponding type declarations.
+lib/tools/validation.ts(24,31): error TS2307: Cannot find module '../lib/tools/registry' or its corresponding type declarations.

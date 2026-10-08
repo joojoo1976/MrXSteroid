@@ -1,12 +1,16 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCompounds } from '@/lib/hooks/useToolState';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { calculateAromatizationRisk, type EstrogenProlactinInput, type AromatizationScore } from '@/lib/tools/engines/tool-006-estrogen-prolactin';
 import { Compound } from '@/lib/types/database';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-006-estrogen-prolactin.json';
+import i18nJson from '@/i18n/tool-006-estrogen-prolactin.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool006EstrogenProlactin() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: dbCompounds, isLoading: compoundsLoading } = useCompounds();
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();

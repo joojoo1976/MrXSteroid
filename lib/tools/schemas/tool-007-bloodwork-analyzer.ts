@@ -30,8 +30,8 @@ export const BloodworkResultSchema = z.object({
 export type BloodworkResult = z.infer<typeof BloodworkResultSchema>;
 
 export const BloodworkComparisonSchema = z.object({
-  baseline: BloodworkResult,
-  current: BloodworkResult,
+  baseline: BloodworkResultSchema,
+  current: BloodworkResultSchema,
   changes: z.array(z.object({
     marker_name: z.string(),
     direction: z.enum(['increased', 'decreased', 'stable']),

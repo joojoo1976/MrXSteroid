@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateWaterRetention } from '@/lib/tools/engines/tool-014-water-retention';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-014-water-retention.json';
+import i18nJson from '@/i18n/tool-014-water-retention.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool014WaterRetention() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -14,7 +19,7 @@ export default function Tool014WaterRetention() {
   const [carbIntake, setCarbIntake] = useState<number>(300);
   const [potassiumIntake, setPotassiumIntake] = useState<number>(3500);
   const [compoundStack, setCompoundStack] = useState<any[]>([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.water_retention) setResult(savedState.water_retention);
@@ -39,11 +44,11 @@ export default function Tool014WaterRetention() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Estradiol (pg/mL):</label> <input type="number" value={e2Level} onChange={(e) => setE2Level(parseFloat(e.target.value))} min="0" max="500" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Weight (kg):</label> <input type="number" value={weightKg} onChange={(e) => setWeightKg(parseFloat(e.target.value))} min="30" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Sodium Intake (mg/day):</label> <input type="number" value={sodiumIntake} onChange={(e) => setSodiumIntake(parseFloat(e.target.value))} min="0" max="10000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Carbs Intake (g/day):</label> <input type="number" value={carbIntake} onChange={(e) => setCarbIntake(parseFloat(e.target.value))} min="0" max="1000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Potassium Intake (mg/day):</label> <input type="number" value={potassiumIntake} onChange={(e) => setPotassiumIntake(parseFloat(e.target.value))} min="0" max="10000" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Estradiol (pg/mL):</label> <input type="number" value={e2Level} onChange={(e) => setE2Level(parseFloat(e.target.value as any))} min="0" max="500" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Weight (kg):</label> <input type="number" value={weightKg} onChange={(e) => setWeightKg(parseFloat(e.target.value as any))} min="30" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Sodium Intake (mg/day):</label> <input type="number" value={sodiumIntake} onChange={(e) => setSodiumIntake(parseFloat(e.target.value as any))} min="0" max="10000" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Carbs Intake (g/day):</label> <input type="number" value={carbIntake} onChange={(e) => setCarbIntake(parseFloat(e.target.value as any))} min="0" max="1000" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Potassium Intake (mg/day):</label> <input type="number" value={potassiumIntake} onChange={(e) => setPotassiumIntake(parseFloat(e.target.value as any))} min="0" max="10000" className="w-full rounded border p-2" dir="ltr" /></div>
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Stack:</label> <input type="text" value={compoundStack.length > 0 ? compoundStack.map(c => c.name_en).join(', ') : 'No compounds selected'} readOnly className="w-full rounded border p-2 border-dashed text-zinc-500" dir="ltr" /></div>
         <button onClick={calculate} className="mt-4 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? 'Calculating...' : 'Calculate Retention'} </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
@@ -53,13 +58,14 @@ export default function Tool014WaterRetention() {
           <p className="text-zinc-500">Estimated Retention: {result.estimated_retention_liters} liters</p>
           <p className="text-zinc-500">{i18nData.target_weight_loss}: {result.target_weight_loss_kg} kg</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+            {result.recommendations.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.diuretic_suggestions.map((r, i) => <li key={i}>{r}</li>)}
+            {result.diuretic_suggestions.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

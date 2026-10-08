@@ -1,45 +1,84 @@
 /**
- * Tool #029 — Side Effect Early Warning
- * Schema Validation using Zod
+ * Tool #029 — Side Effect Early Warning (engine)
+ * Produces early-warning predictions matching the existing schema contract.
  */
 
-import { z } from 'zod';
+import type {
+  SideEffectStackInput,
+  SideEffectEarlyWarningResult,
+  SideEffectSymptom,
+} from '../schemas/tool-029-side-effect-early-warning';
 
-export const SideEffectSymptomSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  category: z.enum(['androgenic', 'estrogenic', 'cardiovascular', 'hepatotoxic', 'suppressive', 'other']),
-  severity: z.enum(['mild', 'moderate', 'severe', 'critical']),
-  days_noticed: z.number().min(0).max(365),
-  compound_triggers: z.array(z.string()),
-  action_required: z.enum(['monitor', 'ai_support', 'dosage_reduce', 'cycle_stop']),
-});
+const KNOWN_SIGNALS: Record<string, Omit<SideEffectSymptom, 'id' | 'compound_triggers' | 'days_noticed'>> = {
+  testosterone: {
+    name_en: 'Estrogenic water retention / gynecomastia risk',
+    name_ar: 'احتباس سوائل / خطر تثدي',
+    category: 'estrogenic',
+    severity: 'moderate',
+    action_required: 'monitor',
+  },
+  trenbolone: {
+    name_en: 'Cardiovascular strain and sleep disruption',
+    name_ar: 'إجهاد قلبي واضطراب نوم',
+    category: 'cardiovascular',
+    severity: 'severe',
+    action_required: 'dosage_reduce',
+  },
+  dianabol: {
+    name_en: 'Hepatotoxicity and blood pressure elevation',
+    name_ar: 'سمية كبدية وارتفاع ضغط',
+    category: 'hepatotoxic',
+    severity: 'severe',
+    action_required: 'dosage_reduce',
+  },
+};
 
-export type SideEffectSymptom = z.infer<typeof SideEffectSymptomSchema>;
+export function predictSideEffects(input: SideEffectStackInput): SideEffectEarlyWarningResult {
+  const { compounds, cycle_day, user_age, experience_level, health_markers } = input;
 
-export const SideEffectStackInputSchema = z.object({
-  compounds: z.array(z.string()).min(1).max(6),
-  cycle_day: z.number().min(1).max(365),
-  user_age: z.number().min(18).max(80),
-  experience_level: z.enum(['beginner', 'intermediate', 'advanced', 'pro']),
-  health_markers: z.object({
-    blood_pressure: z.number().optional().min(60).max(200),
-    heart_rate: z.number().optional().min(40).max(200),
-    recent_weight: z.number().optional().min(30).max(300),
-    libido: z.enum(['increased', 'normal', 'decreased']).optional(),
-  }),
-});
+  const predicted_side_effects: SideEffectSymptom[] = compounds.map((name, idx) => {
+    const key = name.toLowerCase();
+    const base =
+      KNOWN_SIGNALS[key] ??
+      ({
+        name_en: `Monitor ${name} tolerance`,
+        name_ar: `راقب تحمل ${name}`,
+        category: 'other',
+        severity: 'mild',
+        action_required: 'monitor',
+      } as const);
+    return { id: idx + 1, days_noticed: cycle_day, compound_triggers: [name], ...base };
+  });
 
-export type SideEffectStackInput = z.infer<typeof SideEffectStackInputSchema>;
+  let risk_score = predicted_side_effects.reduce(
+    (sum, s) => sum + (s.severity === 'critical' ? 30 : s.severity === 'severe' ? 20 : s.severity === 'moderate' ? 10 : 5),
+    0
+  );
+  if (user_age >= 45) risk_score += 10;
+  if (experience_level === 'beginner') risk_score += 10;
+  if (health_markers.blood_pressure && health_markers.blood_pressure >= 140) risk_score += 15;
+  if (health_markers.heart_rate && health_markers.heart_rate >= 100) risk_score += 10;
+  if (health_markers.libido === 'decreased') risk_score += 5;
+  risk_score = Math.max(0, Math.min(100, risk_score));
 
-export const SideEffectEarlyWarningResultSchema = z.object({
-  predicted_side_effects: z.array(SideEffectSymptomSchema).min(0).max(30),
-  overall_risk_level: z.enum(['low', 'moderate', 'high', 'critical']),
-  risk_score: z.number().min(0).max(100),
-  monitoring_recommendations: z.array(z.string()).min(0).max(15),
-  immediate_actions: z.array(z.string()).min(0).max(10),
-  when_to_concerned: z.string(),
-});
+  const overall_risk_level: SideEffectEarlyWarningResult['overall_risk_level'] =
+    risk_score >= 70 ? 'critical' : risk_score >= 45 ? 'high' : risk_score >= 20 ? 'moderate' : 'low';
 
-export type SideEffectEarlyWarningResult = z.infer<typeof SideEffectEarlyWarningResultSchema>;
+  return {
+    predicted_side_effects,
+    overall_risk_level,
+    risk_score,
+    monitoring_recommendations: [
+      'Log blood pressure, sleep, mood, and libido daily.',
+      'Repeat bloodwork if any severe signal persists beyond 72 hours.',
+    ],
+    immediate_actions:
+      overall_risk_level === 'critical' || overall_risk_level === 'high'
+        ? ['Reduce dose or pause the cycle and seek medical review.']
+        : ['Continue monitoring; no immediate action required.'],
+    when_to_concerned:
+      overall_risk_level === 'low'
+        ? 'No concerning pattern yet.'
+        : 'Escalate if symptoms worsen or new severe signals appear.',
+  };
+}

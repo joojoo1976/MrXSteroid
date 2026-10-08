@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateStackTiming } from '@/lib/tools/engines/tool-022-half-life-stacker';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-022-half-life-stacker.json';
+import i18nJson from '@/i18n/tool-022-half-life-stacker.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool022HalfLifeStacker() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -12,7 +17,7 @@ export default function Tool022HalfLifeStacker() {
   const [injectionFrequency, setInjectionFrequency] = useState('every-other-day' as 'daily' | 'every-other-day' | '2x-week' | '1x-week');
   const [userGoal, setUserGoal] = useState('bulk' as 'bulk' | 'cut' | 'recomp' | 'strength');
   const [selectedCompounds, setSelectedCompounds] = useState<any[]>([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.half_life_stack_result) setResult(savedState.half_life_stack_result);
@@ -51,9 +56,9 @@ export default function Tool022HalfLifeStacker() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Cycle Length (weeks):</label> <input type="number" value={cycleLength} onChange={(e) => setCycleLength(parseInt(e.target.value))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Frequency:</label> <select value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="daily">Daily</option><option value="every-other-day">Every Other Day</option><option value="2x-week">2x Per Week</option><option value="1x-week">Weekly</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">User Goal:</label> <select value={userGoal} onChange={(e) => setUserGoal(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">Bulk</option><option value="cut">Cut</option><option value="recomp">Recomp</option><option value="strength">Strength</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Cycle Length (weeks):</label> <input type="number" value={cycleLength} onChange={(e) => setCycleLength(parseInt(e.target.value as any))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Frequency:</label> <select value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="daily">Daily</option><option value="every-other-day">Every Other Day</option><option value="2x-week">2x Per Week</option><option value="1x-week">Weekly</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">User Goal:</label> <select value={userGoal} onChange={(e) => setUserGoal(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">Bulk</option><option value="cut">Cut</option><option value="recomp">Recomp</option><option value="strength">Strength</option></select></div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Compound </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
 
@@ -68,13 +73,14 @@ export default function Tool022HalfLifeStacker() {
           <p className="text-zinc-500">{i18nData.ester_bottleneck}: {result.ester_bottleneck.name_en} ({result.ester_bottleneck.ester_type})</p>
           <p className="text-zinc-500">{i18nData.confidence_score}: {result.confidence_score}%</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.compound_peak_times && Object.entries(result.compound_peak_times).map(([name, peakDays]) => <li key={name}>{name}: {peakDays} days peak</li>)}
+            {result.compound_peak_times && Object.entries(result.compound_peak_times as Record<string, number>).map(([name, peakDays]) => <li key={name}>{name}: {peakDays} days peak</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.optimal_injection_schedule.map((s, i) => <li key={i}>{s}</li>)}
+            {result.optimal_injection_schedule.map((s: any, i: any) => <li key={i}>{s}</li>)}
           </ul>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

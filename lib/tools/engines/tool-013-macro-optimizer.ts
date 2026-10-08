@@ -108,7 +108,7 @@ export function calculateMacros(input: MacroInput): MacroTargets {
     protein_per_meal: proteinPerMeal,
     fats_g,
     carbs_g,
-    total_calories,
-    meal_breakdown,
+    total_calories: totalCalories,
+    meal_breakdown: mealBreakdown,
   };
 }

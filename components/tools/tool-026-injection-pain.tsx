@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateInjectionPainMinimizer } from '@/lib/tools/engines/tool-026-injection-pain';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-026-injection-pain.json';
+import i18nJson from '@/i18n/tool-026-injection-pain.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool026InjectionPainMinimizer() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -13,7 +18,7 @@ export default function Tool026InjectionPainMinimizer() {
   const [dose, setDose] = useState(500);
   const [site, setSite] = useState('glutes' as 'deltoid' | 'glutes' | 'quads' | 'pectorals' | 'triceps' | 'biceps');
   const [currentSites, setCurrentSites] = useState<any[]>([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.injection_pain_result) setResult(savedState.injection_pain_result);
@@ -48,10 +53,10 @@ export default function Tool026InjectionPainMinimizer() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Viscosity:</label> <select value={viscosity} onChange={(e) => setViscosity(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Concentration (mg/mL):</label> <input type="number" value={concentration} onChange={(e) => setConcentration(parseInt(e.target.value))} min="1" max="500" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Desired Dose (mg):</label> <input type="number" value={dose} onChange={(e) => setDose(parseInt(e.target.value))} min="1" max="1000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Site:</label> <select value={site} onChange={(e) => setSite(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="deltoid">Deltoid</option><option value="glutes">Glutes</option><option value="quads">Quads</option><option value="pectorals">Pectorals</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Viscosity:</label> <select value={viscosity} onChange={(e) => setViscosity(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Concentration (mg/mL):</label> <input type="number" value={concentration} onChange={(e) => setConcentration(parseInt(e.target.value as any))} min="1" max="500" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Desired Dose (mg):</label> <input type="number" value={dose} onChange={(e) => setDose(parseInt(e.target.value as any))} min="1" max="1000" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Site:</label> <select value={site} onChange={(e) => setSite(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="deltoid">Deltoid</option><option value="glutes">Glutes</option><option value="quads">Quads</option><option value="pectorals">Pectorals</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option></select></div>
         <button onClick={addSite} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Site </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
 
@@ -66,13 +71,14 @@ export default function Tool026InjectionPainMinimizer() {
           <p className="text-zinc-500">{i18nData.solvent_ratio}: {result.solvent_ratio}</p>
           <p className="text-zinc-500">{i18nData.temperature_recommendation}: {result.temperature_recommendation}</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
+            {result.warnings.map((w: any, i: any) => <li key={i}>{w}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.rotation_schedule.map((r, i) => <li key={i}>{r}</li>)}
+            {result.rotation_schedule.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

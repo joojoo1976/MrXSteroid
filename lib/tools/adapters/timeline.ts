@@ -21,7 +21,7 @@ import {
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculateTimeline,
     type EngineInput,
@@ -136,13 +136,17 @@ export function buildTimelineOutput(
     const tool = requireTool('timeline');
     const result = calculateTimeline(rawInput);
 
-    return buildToolOutput(tool.slug, {
+    return buildToolOutput<TimelineResult>({
+        toolId: tool.toolId,
+        toolSlug: tool.slug,
         calculatedAt: options.calculatedAt,
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
+        accessTier: 'free',
         result,
         provenance: buildTimelineProvenance(options),
         keyFindings: buildTimelineKeyFindings(result),
+        seoLinks: buildSeoLinks(tool),
     });
 }

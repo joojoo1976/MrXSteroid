@@ -13,10 +13,24 @@
  * - Debounced state persistence
  */
 
+export interface CompoundItem {
+  id: number;
+  name_en: string;
+  name_ar: string;
+  family: string;
+  suppression_factor: number;
+  half_life_days: number;
+  is_lipophilic: boolean;
+  bioavailability: number;
+  default_dose_mg: number;
+  description_text: string;
+  aromatization_factor?: number;
+}
+
 export interface WaterRetentionInput {
   e2_level: number;        // Estradiol (pg/mL)
   weight_kg: number;
-  compound_stack: any[];   // Compound items from DB
+  compound_stack: CompoundItem[]; // Compound items from DB
   sodium_intake_mg?: number; // Daily sodium (mg)
   carb_intake_g?: number;  // Daily carbs (g)
   potassium_intake_mg?: number; // Daily potassium (mg)
@@ -36,7 +50,9 @@ export function calculateWaterRetention(input: WaterRetentionInput): WaterRetent
   // Estimate aromatization risk from compound stack
   let totalAromatizingDose = 0;
   for (const compound of compound_stack) {
-    totalAromatizingDose += (compound.default_dose_mg || 0) * (compound.aromatization_factor || 0);
+    const dose = (compound as unknown as Record<string, unknown>).default_dose_mg;
+    const arom = (compound as unknown as Record<string, unknown>).aromatization_factor;
+    totalAromatizingDose += (typeof dose === 'number' ? dose : 0) * (typeof arom === 'number' ? arom : 0);
   }
   
   // Determine retention severity based on E2 and aromatization
@@ -96,7 +112,7 @@ export function calculateWaterRetention(input: WaterRetentionInput): WaterRetent
     estimated_retention_liters: retentionLiters,
     retention_severity: severity,
     recommendations,
-    diuretic_suggestions,
+    diuretic_suggestions: diureticSuggestions,
     target_weight_loss_kg: targetWeightLossKg,
   };
 }

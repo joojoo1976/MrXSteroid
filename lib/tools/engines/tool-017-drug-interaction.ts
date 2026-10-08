@@ -14,7 +14,7 @@
  */
 
 export interface DrugInteractionInput {
-  compounds: any[]; // Compound items from DB
+  compounds: Array<{ family: string; is_lipophilic: boolean }>; // Compound items from DB
   medications: string[]; // User's current medications
   health_conditions: string[]; // e.g., 'liver_disease', 'heart_condition'
   age: number;
@@ -54,7 +54,7 @@ export function checkDrugInteractions(input: DrugInteractionInput): DrugInteract
         });
       }
       
-      #1.5. Severe liver stress from compound combo
+      //1.5. Severe liver stress from compound combo
       if (c1.is_lipophilic && c2.is_lipophilic) {
         flags.push({
           severity: 'warning',

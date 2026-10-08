@@ -18,10 +18,11 @@ import {
     type KeyFinding,
     type Locale,
     type SnapshotType,
+    type SeoLinks,
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculateAromatizationRisk,
     E2_CRITICAL_THRESHOLD,
@@ -151,13 +152,17 @@ export function buildAromatizationRiskOutput(
     const tool = requireTool('aromatization-risk');
     const result = calculateAromatizationRisk(rawInput);
 
-    return buildToolOutput(tool.slug, {
+    return buildToolOutput<AromatizationRiskResult>({
+        toolId: tool.toolId,
+        toolSlug: tool.slug,
         calculatedAt: options.calculatedAt,
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
+        accessTier: 'free',
         result,
         provenance: buildAromatizationRiskProvenance(options),
         keyFindings: buildAromatizationRiskKeyFindings(result, rawInput),
+        seoLinks: buildSeoLinks(tool),
     });
 }

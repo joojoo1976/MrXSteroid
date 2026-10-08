@@ -1,53 +1,54 @@
 /**
- * Tool #028 — Compound Stacking Synergy
- * Schema Validation using Zod
+ * Tool #028 — Compound Stacking Synergy (engine)
+ * Scores compound combinations against the existing schema contract.
  */
 
-import { z } from 'zod';
+import type {
+  StackingCompound,
+  StackingSynergyInput,
+  StackingSynergyResult,
+} from '../schemas/tool-028-stacking-synergy';
 
-export const StackingCompoundSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  family: z.string(),
-  anabolic_score: z.number().min(0).max(500),
-  androgenic_score: z.number().min(0).max(500),
-  primary_action: z.enum(['mass', 'definition', 'strength', 'recovery', 'fat_loss']),
-  liver_toxicity: z.enum(['low', 'moderate', 'high']),
-  estrogenic: z.enum(['none', 'mild', 'moderate', 'high']),
-  description_text: z.string(),
-});
+function pairScore(a: StackingCompound, b: StackingCompound): number {
+  let score = 50;
+  if (a.primary_action !== b.primary_action) score += 15;
+  else score -= 10;
+  if (a.liver_toxicity === 'high' && b.liver_toxicity === 'high') score -= 20;
+  if (a.estrogenic !== 'none' && b.estrogenic !== 'none') score -= 10;
+  if (a.family === b.family) score -= 5;
+  return Math.max(0, Math.min(100, score));
+}
 
-export type StackingCompound = z.infer<typeof StackingCompoundStackingCompoundSchema>;
+export function calculateStackingSynergy(input: StackingSynergyInput): StackingSynergyResult {
+  const { compounds, goal } = input;
 
-export const StackingGoalSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  target: z.enum(['bulk', 'cut', 'recomp', 'strength']),
-  min_score: z.number().min(0).max(100),
-  preferred_compounds: z.array(z.string()).min(0).max(10),
-  avoided_compounds: z.array(z.string()).min(0).max(10),
-});
+  const pairs: string[] = [];
+  let total = 0;
+  let count = 0;
+  for (let i = 0; i < compounds.length; i++) {
+    for (let j = i + 1; j < compounds.length; j++) {
+      const s = pairScore(compounds[i], compounds[j]);
+      total += s;
+      count++;
+      pairs.push(`${compounds[i].name_en} + ${compounds[j].name_en}: synergy ${Math.round(s)}/100`);
+    }
+  }
 
-export type StackingGoal = z.infer<typeof StackingGoalSchema>;
+  const synergy_score = count > 0 ? Math.round(total / count) : 50;
+  const overall_assessment: StackingSynergyResult['overall_assessment'] =
+    synergy_score >= 75 ? 'excellent' : synergy_score >= 60 ? 'good' : synergy_score >= 40 ? 'fair' : 'poor';
 
-export const StackingSynergyInputSchema = z.object({
-  compounds: z.array(StackingCompoundSchema).min(2).max(6),
-  goal: z.enum(['bulk', 'cut', 'recomp', 'strength']),
-  user_experience: z.enum(['beginner', 'intermediate', 'advanced', 'pro']),
-});
-
-export type StackingSynergyInput = z.infer<typeof StackingSynergyInputSchema>;
-
-export const StackingSynergyResultSchema = z.object({
-  synergy_score: z.number().min(0).max(100),
-  overall_assessment: z.enum(['poor', 'fair', 'good', 'excellent']),
-  compound_pair_interactions: z.array(z.string()).min(0).max(30),
-  recommended_additions: z.array(z.string()).min(0).max(10),
-  avoided_pairs: z.array(z.string()).min(0).max(10),
-  protocol_tips: z.array(z.string()).min(0).max(10),
-  best_for_goal: z.string(),
-});
-
-export type StackingSynergyResult = z.infer<typeof StackingSynergyResultSchema>;
+  return {
+    synergy_score,
+    overall_assessment,
+    compound_pair_interactions: pairs,
+    recommended_additions: [`Goal-aligned base: prioritize compounds supporting ${goal}.`],
+    avoided_pairs: synergy_score < 40 ? ['Review overlapping hepatotoxic or estrogenic pairs.'] : [],
+    protocol_tips: [
+      'Keep testosterone as the cycle base unless contraindicated.',
+      'Limit overlapping liver-toxic orals.',
+      'Re-check synergy after any dose change.',
+    ],
+    best_for_goal: goal,
+  };
+}

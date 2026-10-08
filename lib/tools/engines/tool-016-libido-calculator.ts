@@ -41,9 +41,11 @@ export function assessLibido(input: LibidoInput): LibidoResult {
   // Compound effects
   let totalAromatizing = 0;
   for (const compound of compound_stack) {
-    totalAromatizing += (compound.default_dose_mg || 0) * (compound.aromatization_factor || 0);
+    const dose = (compound as Record<string, unknown>).default_dose_mg;
+    const arom = (compound as Record<string, unknown>).aromatization_factor;
+    totalAromatizing += (typeof dose === 'number' ? dose : 0) * (typeof arom === 'number' ? arom : 0);
   }
-  
+
   // Testosterone impact
   if (test_level_ng_dL) {
     if (test_level_ng_dL < 300) {
@@ -85,7 +87,7 @@ export function assessLibido(input: LibidoInput): LibidoResult {
     high: +10,
     hyper: +20,
   };
-  libidoScore += (map[symptoms] || 0);
+  libidoScore += (symptomMap[symptoms] || 0);
   if (symptoms !== 'normal') factors.push(`Current symptom level: ${symptoms}`);
   
   // Duration adjustment
@@ -106,6 +108,7 @@ export function assessLibido(input: LibidoInput): LibidoResult {
   // Generate recommendations
   const recommendations: string[] = [];
   const compoundAdjustments: string[] = [];
+  let timeline: LibidoResult['timeline'] = 'immediate';
   
   if (libidoLevel === 'low') {
     recommendations.push('Libido suppression detected - take action');
@@ -134,7 +137,7 @@ export function assessLibido(input: LibidoInput): LibidoResult {
     libido_score: libidoScore,
     symptom_severity: symptoms === 'low' ? 'moderate' : symptoms === 'high' ? 'severe' : 'mild',
     recommendations,
-    compound_adjustments,
+    compound_adjustments: compoundAdjustments,
     timeline,
   };
 }

@@ -41,8 +41,8 @@ export function assessHPTARecovery(markers: HPTAMarker[]): HPTARecoveryState {
       start_date: new Date().toISOString().split('T')[0],
       markers: [],
       expected_recovery_weeks: 0,
-      predicted_completion: null,
-      improvement_rate: 'unknown',
+      predicted_completion: undefined,
+      improvement_rate: 'slow',
     };
   }
   
@@ -58,7 +58,8 @@ export function assessHPTARecovery(markers: HPTAMarker[]): HPTARecoveryState {
   // Determine stage based on hormone levels
   let stage: 'suppressed' | 'partial' | 'fully_recovered' | 'unknown' = 'unknown';
   let improvementRate: 'slow' | 'moderate' | 'fast' = 'slow';
-  let predictedCompletion: string | null = null;
+  let predictedCompletion: string | undefined = undefined;
+  let changePerWeek = 0;
   
   // Simple assessment logic
   let lhNormalized = false;
@@ -88,7 +89,7 @@ export function assessHPTARecovery(markers: HPTAMarker[]): HPTARecoveryState {
     const firstT = firstMarker.total_test_ng_dL || 0;
     const lastT = lastMarker.total_test_ng_dL || 0;
     const tChange = ((lastT - firstT) / Math.max(firstT, 1)) * 100;
-    const changePerWeek = tChange / Math.max(durationWeeks, 1);
+    changePerWeek = tChange / Math.max(durationWeeks, 1);
     
     if (changePerWeek > 20) improvementRate = 'fast';
     else if (changePerWeek > 10) improvementRate = 'moderate';
@@ -111,7 +112,7 @@ export function assessHPTARecovery(markers: HPTAMarker[]): HPTARecoveryState {
     start_date: firstMarker.date,
     markers,
     expected_recovery_weeks: Math.max(4, Math.round(durationWeeks * 1.5)),
-    predicted_completion,
+    predicted_completion: predictedCompletion,
     improvement_rate: improvementRate,
   };
 }

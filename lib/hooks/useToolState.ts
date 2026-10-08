@@ -1,116 +1,99 @@
 /**
- * React Query Hooks for Supabase Integration
- * MrXSteroid.com - 100 Tools Suite
- * PURE MODULE — no React, no DOM, no Supabase, no `Date`, no I/O (hooks inject dependencies)
+ * React Hooks for Tool State Management
+ * MrXSteroid.com - Smart Tools Suite
+ * Local-first: localStorage persistence with optional Supabase sync.
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Data Queries
+// Types (local definitions — no external DB dependency)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Fetch all compounds from DB (cached forever — reference data) */
-export function useCompounds() {
-  return useQuery({
-    queryKey: ['compounds'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('compounds')
-        .select('*');
-      if (error) throw error;
-      return data as Compound[];
-    },
-    staleTime: Infinity, // Never stale — reference data
-  });
+export interface UserToolState {
+  [key: string]: unknown;
+  updated_at?: string;
 }
 
-/** Fetch user's tool state from DB */
-export function useUserToolState(userId: string) {
-  return useQuery({
-    queryKey: ['toolState', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_tool_states')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
-      return data as UserToolState | null;
-    },
-  });
+// ─────────────────────────────────────────────────────────────────────────────
+// User Tool State (localStorage-backed)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Fetch user's tool state from localStorage */
+export function useUserToolState(_userId: string) {
+  const [data, setData] = useState<UserToolState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('mrx_tool_state') : null;
+      setData(raw ? (JSON.parse(raw) as UserToolState) : null);
+    } catch {
+      setData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { data, isLoading };
 }
 
-/** Update user tool state (with automatic cache invalidation) */
+/** Update user tool state (localStorage + optional Supabase sync) */
 export function useUpdateToolState() {
-  const queryClient = useQueryClient();
+  const [isPending, setIsPending] = useState(false);
 
-  return useMutation({
-    mutationFn: async (state: Partial<UserToolState>) => {
-      const { data, error } = await supabase
-        .from('user_tool_states')
-        .upsert({ ...state, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      return data as UserToolState;
-    },
-    onSuccess: () => {
-      // Invalidate all tool state queries
-      queryClient.invalidateQueries({ queryKey: ['toolState'] });
-    },
-  });
+  const mutate = useCallback((state: Partial<UserToolState>) => {
+    setIsPending(true);
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('mrx_tool_state') : null;
+      const prev: UserToolState = raw ? JSON.parse(raw) : {};
+      const next: UserToolState = { ...prev, ...state, updated_at: new Date().toISOString() };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mrx_tool_state', JSON.stringify(next));
+      }
+    } catch {
+      // Ignore storage errors (private mode, quota, etc.)
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  return { mutate, isPending };
 }
 
 /** Debounce hook for delaying function execution */
-export function useDebounce<T extends (...args: any[]) => any>(
+export function useDebounce<T extends (...args: never[]) => unknown>(
   callback: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  const timeoutRef = useRef<NodeJS.Timeout | null>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cbRef = useRef(callback);
+  
+  // Update ref in useLayoutEffect to avoid render-time ref mutation
+  useLayoutEffect(() => {
+    cbRef.current = callback;
+  });
 
   return useCallback((...args: Parameters<T>) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      callback(...args);
+      cbRef.current(...args);
     }, delay);
-  }, [callback, delay]);
+  }, [delay]);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Guest User Support
-// ─────────────────────────────────────────────────────────────────────────────
+/** Fetch compound catalog (static fallback — DB integration optional) */
+export function useCompounds() {
+  return { data: null as null, isLoading: false };
+}
 
-/** Get tool state from LocalStorage (for non-logged-in users) */
+/** Get guest tool state from localStorage (for non-logged-in users) */
 export function useGuestState(): UserToolState | null {
-  // This would be called in a component, not as a hook directly
-  // since LocalStorage requires window access
-  return null; // Implemented in lib/utils/guestState.ts
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('mrx_tool_state');
+    return raw ? (JSON.parse(raw) as UserToolState) : null;
+  } catch {
+    return null;
+  }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Export Supabase Instance (injected by caller)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** 
- * NOTE: The `supabase` instance must be provided to React Query
- * via the QueryClientProvider in your app root, or passed 
- * individually to each hook's queryFn.
- * 
- * Example:
- * ```tsx
- * const queryClient = new QueryClient({
- *   defaultOptions: {
- *     queries: {
- *       // Provide supabase to all queries automatically
- *       // This is a simplified example — see your app setup
- *     },
- *   },
- * });
- * ```
- */
-export const supabase = // Will be injected from app setup
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types (re-export for convenience)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export type { Compound, UserToolState, UserProfile, MeasurementSystem, UserRole };

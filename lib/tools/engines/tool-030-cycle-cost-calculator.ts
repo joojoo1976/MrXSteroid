@@ -52,8 +52,8 @@ export interface CycleCostResult {
 export function calculateCycleCost(input: CycleCostInput): CycleCostResult {
   const { goal, cycle_weeks, compounds, pct_duration_weeks, ancillary_compounds, user_weight_kg } = input;
   
-  #30.1. Compound cost calculations
-  # Base pricing: $5 per mg as standard (adjustable)
+  //30.1. Compound cost calculations
+  // Base pricing: $5 per mg as standard (adjustable)
   const PRICE_PER_MG = 5;
   
   let totalCompoundCost = 0;
@@ -70,7 +70,7 @@ export function calculateCycleCost(input: CycleCostInput): CycleCostResult {
     });
   }
   
-  #30.2. Ancillary compounds cost
+  //30.2. Ancillary compounds cost
   let totalAncillaryCost = 0;
   const ancillaryCostBreakdown: { name: string; cost: number }[] = [];
   
@@ -93,20 +93,20 @@ export function calculateCycleCost(input: CycleCostInput): CycleCostResult {
     });
   }
   
-  #30.3. PCT cost calculation
-  # Standard PCT: Clomid + Nolvadex estimate
+  //30.3. PCT cost calculation
+  // Standard PCT: Clomid + Nolvadex estimate
   const pctWeeks = pct_duration_weeks || 4;
   const clomidCost = Math.round(4 * 50 * 100) / 100; // 4 weeks @ $50/week
   const nolvadexCost = Math.round(4 * 60 * 100) / 100; // 4 weeks @ $60/week
   const totalPctCost = clomidCost + nolvadexCost;
   
-  #30.4. Cost per week
+  //30.4. Cost per week
   const costPerWeek = Math.round((totalCompoundCost + totalAncillaryCost + totalPctCost) / cycle_weeks * 100) / 100;
   
-  #30.5. Most expensive compound
+  //30.5. Most expensive compound
   const mostExpensive = compoundCostBreakdown.reduce((prev, curr) => curr.cost > prev.cost ? curr : prev, compoundCostBreakdown[0] || { name: '', cost: 0 });
   
-  #30.6. Budget savings tips
+  //30.6. Budget savings tips
   const savingsTips: string[] = [];
   
   if (totalCompoundCost > 200) {
@@ -118,7 +118,7 @@ export function calculateCycleCost(input: CycleCostInput): CycleCostResult {
     savingsTips.push('Consider shorter HCG usage');
   }
   if (totalPctCost > 100) {
-    savingsTips.use shorter PCT protocols where appropriate');
+    savingsTips.push('Use shorter PCT protocols where appropriate');
   }
   savingsTips.push('Buy in bulk quantities for better pricing');
   savingsTips.push('Share costs with cycling partner when safe');

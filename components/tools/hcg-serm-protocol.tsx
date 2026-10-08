@@ -16,7 +16,7 @@
  *   - 4-Phase Protocol Roadmap (HCG Priming -> Kickstart -> Stabilization -> Weaning)
  *   - Auto-drafting + Bio-Dashboard snapshot commit
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState, useDebounce } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import i18nData from '@/i18n/hcg-serm-protocol.json';
 import MeasurementToggle, {
     kgToLbs,

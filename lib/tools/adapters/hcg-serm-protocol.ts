@@ -14,7 +14,7 @@ import {
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculateHcgSermProtocol,
     type HcgSermEngineInput,
@@ -65,22 +65,20 @@ export function buildHcgSermProtocolKeyFindings(
 
     // 1. Suppression score finding
     findings.push({
-        id: 'suppression_score',
-        titleAr: `مؤشر التثبيط المحوري: ${result.sScore} (${result.severityLabelAr})`,
-        titleEn: `Suppression Score: ${result.sScore} (${result.severityLabelEn})`,
-        detailAr: `تم حساب الحمل التثبيطي لـ ${input.compounds.length} مركبات على مدار ${input.cycleWeeks} أسبوعاً. الخطة المقررة تمتد لـ ${result.totalDurationWeeks} أسابيع.`,
-        detailEn: `Calculated suppressive load for ${input.compounds.length} compounds across ${input.cycleWeeks} weeks. Protocol duration is ${result.totalDurationWeeks} weeks.`,
+        code: 'suppression_score',
+        labelAr: `مؤشر التثبيط المحوري: ${result.sScore} (${result.severityLabelAr}) — تم حساب الحمل التثبيطي لـ ${input.compounds.length} مركبات على مدار ${input.cycleWeeks} أسبوعاً. الخطة المقررة تمتد لـ ${result.totalDurationWeeks} أسابيع.`,
+        labelEn: `Suppression Score: ${result.sScore} (${result.severityLabelEn}) — Calculated suppressive load for ${input.compounds.length} compounds across ${input.cycleWeeks} weeks. Protocol duration is ${result.totalDurationWeeks} weeks.`,
+        value: result.sScore,
         severity: result.severity === 'severe' ? 'important' : result.severity === 'moderate' ? 'monitor' : 'info',
     });
 
     // 2. HCG Priming finding
     if (result.hcgRequired) {
         findings.push({
-            id: 'hcg_priming_required',
-            titleAr: 'تنبيه سريري: مطلوب تهيئة الخصية بواسطة HCG',
-            titleEn: 'Clinical Alert: HCG Testicular Priming Required',
-            detailAr: `${result.hcgReasonAr ?? 'تنشيط مستقبلات خلايا لايديغ ضروري قبل إعطاء SERMs.'} تحذير: يجب إيقاف HCG قبل 48 ساعة من المرحلة 1.`,
-            detailEn: `${result.hcgReasonEn ?? 'Leydig cell reactivation is required before initiating SERMs.'} Caution: Stop HCG at least 48 hours before Phase 1.`,
+            code: 'hcg_priming_required',
+            labelAr: `تنبيه سريري: مطلوب تهيئة الخصية بواسطة HCG — ${result.hcgReasonAr ?? 'تنشيط مستقبلات خلايا لايديغ ضروري قبل إعطاء SERMs.'} تحذير: يجب إيقاف HCG قبل 48 ساعة من المرحلة 1.`,
+            labelEn: `Clinical Alert: HCG Testicular Priming Required — ${result.hcgReasonEn ?? 'Leydig cell reactivation is required before initiating SERMs.'} Caution: Stop HCG at least 48 hours before Phase 1.`,
+            value: 'HCG priming',
             severity: 'important',
         });
     }
@@ -88,11 +86,10 @@ export function buildHcgSermProtocolKeyFindings(
     // 3. Auto-switch finding if triggered
     if (result.isAutoSwitched) {
         findings.push({
-            id: 'serm_auto_switch',
-            titleAr: 'تبديل آلي للمركب الوقائي (Auto-Switch)',
-            titleEn: 'Automated SERM Selection Adaptation',
-            detailAr: result.autoSwitchReasonAr ?? 'تم تبديل مركب SERM لحمايتك من الأعراض الجانبية.',
-            detailEn: result.autoSwitchReasonEn ?? 'SERM compound auto-switched to protect against documented sensitivities.',
+            code: 'serm_auto_switch',
+            labelAr: `تبديل آلي للمركب الوقائي (Auto-Switch) — ${result.autoSwitchReasonAr ?? 'تم تبديل مركب SERM لحمايتك من الأعراض الجانبية.'}`,
+            labelEn: `Automated SERM Selection Adaptation — ${result.autoSwitchReasonEn ?? 'SERM compound auto-switched to protect against documented sensitivities.'}`,
+            value: 'SERM auto-switch',
             severity: 'monitor',
         });
     }
@@ -108,13 +105,17 @@ export function buildHcgSermProtocolOutput(
     const validatedInput = parseHcgSermEngineInput(rawInput);
     const result = calculateHcgSermProtocol(validatedInput);
 
-    return buildToolOutput(tool.slug, {
+    return buildToolOutput<HcgSermResult>({
+        toolId: tool.toolId,
+        toolSlug: tool.slug,
         calculatedAt: options.calculatedAt,
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
+        accessTier: 'free',
         result,
         provenance: buildHcgSermProtocolProvenance(options),
         keyFindings: buildHcgSermProtocolKeyFindings(result, validatedInput),
+        seoLinks: buildSeoLinks(tool),
     });
 }

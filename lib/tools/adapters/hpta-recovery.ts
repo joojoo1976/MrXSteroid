@@ -21,7 +21,7 @@ import {
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculateHptaRecovery,
     RECOVERY_COMPLETE_THRESHOLD,
@@ -141,13 +141,17 @@ export function buildHptaRecoveryOutput(
     const tool = requireTool('hpta-recovery');
     const result = calculateHptaRecovery(rawInput);
 
-    return buildToolOutput(tool.slug, {
+    return buildToolOutput<HptaRecoveryResult>({
+        toolId: tool.toolId,
+        toolSlug: tool.slug,
         calculatedAt: options.calculatedAt,
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
+        accessTier: 'free',
         result,
         provenance: buildHptaRecoveryProvenance(options),
         keyFindings: buildHptaRecoveryKeyFindings(result, rawInput),
+        seoLinks: buildSeoLinks(tool),
     });
 }

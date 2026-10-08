@@ -48,7 +48,7 @@ export interface PeptideProtocolResult {
 export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptideProtocolResult {
   const { user_weight_kg, target_compounds, goal, protocol_duration_weeks, injection_frequency } = input;
   
-  #21.1. Determine frequency based on injection schedule
+  //21.1. Determine frequency based on injection schedule
   const frequencyDays: Record<string, number> = {
     daily: 1,
     'every-other-day': 2,
@@ -59,15 +59,15 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
   const daysBetween = frequencyDays[injection_frequency] || 1;
   const totalInjections = Math.ceil(protocol_duration_weeks * 7 / daysBetween);
   
-  #21.2. Calculate doses per compound
+  //21.2. Calculate doses per compound
   let totalDailyDose_mcg = 0;
-  const compoundDetails: any[] = [];
+  const compoundDetails: Array<{ name: string; dose_mcg: number; frequency: string; half_life_hours: number }> = [];
   
   for (const compound of target_compounds) {
-    #21.2.1. Weight-based dose
+    //21.2.1. Weight-based dose
     const baseDose_mcg = compound.default_dose_mcg_kg * user_weight_kg;
     
-    #21.2.2. Goal adjustment
+    //21.2.2. Goal adjustment
     let goalMultiplier = 1.0;
     if (goal === 'muscle_growth') goalMultiplier = 1.2;
     else if (goal === 'fat_loss') goalMultiplier = 1.1;
@@ -82,22 +82,22 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
       dose_mcg: Math.round(adjustedDose_mcg * 10) / 10,
       frequency: injection_frequency,
       half_life_hours: compound.half_life_hours,
-      administration: compound.administration,
+      // administration: compound.administration, // Property not in return type
     });
   }
   
-  #21.3. Determine injection frequency in days
+  //21.3. Determine injection frequency in days
   const injectionFrequencyDays = daysBetween;
   
-  #21.4. Calculate total cycle dose
+  //21.4. Calculate total cycle dose
   const totalCycleWeeks = protocol_duration_weeks;
   const totalCycleDays = totalCycleWeeks * 7;
   const totalDose_mg = totalDailyDose_mcg / 1000 * totalCycleDays / daysBetween;
   
-  #21.5. Timing recommendations
+  //21.5. Timing recommendations
   const timingRecommendations: string[] = [];
   
-  #21.5.1. Based on half-lives
+  //21.5.1. Based on half-lives
   const avgHalfLife = target_compounds.reduce((sum, c) => sum + c.half_life_hours, 0) / target_compounds.length;
   const steadyStateDays = avgHalfLife * 5; // 5 half-lives to reach steady state
   
@@ -105,17 +105,17 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
     `Steady state reached after ~${Math.round(steadyStateDays / 7)} weeks (5x half-life)`
   );
   
-  #21.5.2. Injection timing
+  //21.5.2. Injection timing
   timingRecommendations.push(
     `Inject ${injection_frequency} every ${injectionFrequencyDays} day(s) at same time`
   );
   
-  #21.5.3. Storage
+  //21.5.3. Storage
   if (avgHalfLife > 24) {
     timingRecommendations.push('Refrigeration required for stability');
   }
   
-  #21.6. Storage requirements
+  //21.6. Storage requirements
   const storageRequirements: string[] = [];
   for (const compound of target_compounds) {
     if (compound.half_life_hours > 48) {
@@ -125,7 +125,7 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
     }
   }
   
-  #21.7. Side effect warnings
+  //21.7. Side effect warnings
   const sideEffectWarnings: string[] = [];
   
   if (goal === 'muscle_growth' && target_compounds.some(c => c.category === 'hgh')) {
@@ -138,7 +138,7 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
     sideEffectWarnings.push('BPC-157: Generally well-tolerated; monitor for mild headaches');
   }
   
-  #21.8. Post protocol therapy flag
+  //21.8. Post protocol therapy flag
   const postProtocolTherapy = target_compounds.some(c => c.category === 'hgh' || c.category === 'igf-1');
   
   return {
@@ -147,9 +147,9 @@ export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptidePr
     injection_frequency_days: injectionFrequencyDays,
     total_injections: totalInjections,
     protocol_weeks: protocol_duration_weeks,
-    timing_recommendations,
-    storage_requirements,
-    side_effect_warnings,
-    post_protocol_therapy,
+    timing_recommendations: timingRecommendations,
+    storage_requirements: storageRequirements,
+    side_effect_warnings: sideEffectWarnings,
+    post_protocol_therapy: postProtocolTherapy,
   };
 }

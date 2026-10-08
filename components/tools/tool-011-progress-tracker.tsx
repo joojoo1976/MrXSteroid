@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateProgress } from '@/lib/tools/engines/tool-011-progress-tracker';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-011-progress-tracker.json';
+import i18nJson from '@/i18n/tool-011-progress-tracker.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool011ProgressTracker() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -17,11 +22,11 @@ export default function Tool011ProgressTracker() {
     strength_lbs?: number;
     body_fat_pct?: number;
     notes?: string;
-  }>>([]));
+  }>>([])
 
   useEffect(() => {
     if (savedState?.progress_entries) {
-      setEntries(savedState.progress_entries);
+      setEntries((savedState.progress_entries as any) || []);
     }
   }, [savedState]);
 
@@ -48,7 +53,7 @@ export default function Tool011ProgressTracker() {
       weight_lbs: newWeightKg > 0 ? newWeightKg * 2.20462 : undefined,
       strength_kg: newStrengthKg > 0 ? newStrengthKg : undefined,
       strength_lbs: newStrengthKg > 0 ? newStrengthKg * 2.20462 : undefined,
-      body_fat_pct: newBodyFat,
+      body_fat_pct: newBodyFat ?? undefined,
       notes: newNotes || undefined,
     };
     setEntries(prev => [...prev, newEntry]);
@@ -75,7 +80,7 @@ export default function Tool011ProgressTracker() {
             <input
               type="date"
               value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
+              onChange={(e) => setNewDate(e.target.value as any)}
               className="w-full rounded border p-2"
               dir="ltr"
             />
@@ -85,7 +90,7 @@ export default function Tool011ProgressTracker() {
             <input
               type="number"
               value={newWeightKg}
-              onChange={(e) => setNewWeightKg(parseFloat(e.target.value))}
+              onChange={(e) => setNewWeightKg(parseFloat(e.target.value as any))}
               className="w-full rounded border p-2"
               dir="ltr"
             />
@@ -97,7 +102,7 @@ export default function Tool011ProgressTracker() {
             <input
               type="number"
               value={newStrengthKg}
-              onChange={(e) => setNewStrengthKg(parseFloat(e.target.value))}
+              onChange={(e) => setNewStrengthKg(parseFloat(e.target.value as any))}
               className="w-full rounded border p-2"
               dir="ltr"
             />
@@ -107,7 +112,7 @@ export default function Tool011ProgressTracker() {
             <input
               type="number"
               value={newBodyFat ?? ''}
-              onChange={(e) => setNewBodyFat(parseFloat(e.target.value))}
+              onChange={(e) => setNewBodyFat(parseFloat(e.target.value as any))}
               min="1" max="50"
               className="w-full rounded border p-2"
               dir="ltr"
@@ -118,12 +123,12 @@ export default function Tool011ProgressTracker() {
           <label className="block text-sm font-medium mb-2" dir="ltr">Notes:</label>
           <textarea
             value={newNotes}
-            onChange={(e) => setNewNotes(e.target.value)}
+            onChange={(e) => setNewNotes(e.target.value as any)}
             placeholder="e.g., Felt strong today, Good pump..."
             rows={2}
             className="w-full rounded border p-2 resize-y"
             dir="ltr"
-          /></textarea>
+          />
         </div>
         <button
           onClick={addEntry}

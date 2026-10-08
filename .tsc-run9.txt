@@ -1,0 +1,2 @@
+components/tools/tool-008-side-effect-tracker.tsx(29,35): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-018-hpta-recovery.tsx(44,63): error TS2304: Cannot find name 'newMarker'.

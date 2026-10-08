@@ -12,7 +12,7 @@ import {
   type ToolOutput,
   type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import { calculateCycleArchitect, type CycleInput, type CycleOutput } from '../engines/cycle';
 
 export const CYCLE_REFERENCE = {
@@ -138,13 +138,49 @@ export function buildCycleOutput(
   const tool = requireTool('cycle');
   const result = calculateCycleArchitect(rawInput as CycleInput);
 
-  return buildToolOutput(tool.slug, {
+  return buildToolOutput<{
+  totalWeeklyMg: number;
+  totalCycleMg: number;
+  mgPerKgPerWeek?: number;
+  longestHalfLifeDays: number;
+  averageHalfLifeWeightedDays: number;
+  pctStartDayAfterLastPin: number;
+  peakTroughRatio: number;
+  compoundsSummary: Array<{
+    compound: string;
+    nameAr: string;
+    nameEn: string;
+    weeklyMg: number;
+    totalMg: number;
+    halfLifeDays: number;
+    activeWeeks: number;
+  }>;
+  warnings: string[];
+  pctProtocol: {
+    startDay: number;
+    clomidMgDay1_14: number;
+    clomidMgDay15_28: number;
+    nolvaMgDay1_14: number;
+    nolvaMgDay15_28: number;
+    hcgIuPerWeek?: number;
+    hcgWeeks?: number;
+  };
+  aiRecommendation: {
+    compound: 'exemestane' | 'anastrozole' | 'letrozole' | 'none';
+    doseMg: number;
+    frequency: 'eod' | 'e3d' | 'weekly';
+  };
+}>({
+    toolId: tool.toolId,
+    toolSlug: tool.slug,
     calculatedAt: options.calculatedAt,
     locale: options.locale,
     unitSystem: options.unitSystem,
     snapshotType: options.snapshotType,
+    accessTier: 'free',
     result,
     provenance: buildCycleProvenance(options),
     keyFindings: buildCycleKeyFindings(result),
-  });
+    seoLinks: buildSeoLinks(tool),
+});
 }

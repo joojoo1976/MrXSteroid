@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateCycleCost } from '@/lib/tools/engines/tool-030-cycle-cost-calculator';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-030-cycle-cost-calculator.json';
+import i18nJson from '@/i18n/tool-030-cycle-cost-calculator.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool030CycleCostCalculator() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -12,7 +17,7 @@ export default function Tool030CycleCostCalculator() {
   const [cycleWeeks, setCycleWeeks] = useState(8);
   const [compounds, setCompounds] = useState<any[]>([]);
   const [ancillaryCompounds, setAncillaryCompounds] = useState<any[]>([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.cycle_cost_result) setResult(savedState.cycle_cost_result);
@@ -54,7 +59,7 @@ export default function Tool030CycleCostCalculator() {
       cycle_weeks: cycleWeeks,
       compounds,
       pct_duration_weeks: 4,
-      ancillary_compounds,
+      ancillary_compounds: ancillaryCompounds,
       user_weight_kg: 85,
     };
     const r = calculateCycleCost(input);
@@ -67,10 +72,10 @@ export default function Tool030CycleCostCalculator() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Goal:</label> <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">Bulk</option><option value="cut">Cut</option><option value="recomp">Recomp</option><option value="strength">Strength</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Cycle Length (weeks):</label> <input type="number" value={cycleWeeks} onChange={(e) => setCycleWeeks(parseInt(e.target.value))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compounds:</label> <p className="text-zinc-500 text-sm dir="ltr">{compounds.length} compounds</p> <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Compound </button></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Ancillary Compounds:</label> <p className="text-zinc-500 text-sm dir="ltr">{ancillaryCompounds.length} ancillaries</p> <button onClick={addAncillary} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Ancillary </button></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Goal:</label> <select value={goal} onChange={(e) => setGoal(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">Bulk</option><option value="cut">Cut</option><option value="recomp">Recomp</option><option value="strength">Strength</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Cycle Length (weeks):</label> <input type="number" value={cycleWeeks} onChange={(e) => setCycleWeeks(parseInt(e.target.value as any))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compounds:</label> <p className="text-zinc-500 text-sm" dir="ltr">{compounds.length} compounds</p> <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Compound </button></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Ancillary Compounds:</label> <p className="text-zinc-500 text-sm" dir="ltr">{ancillaryCompounds.length} ancillaries</p> <button onClick={addAncillary} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Ancillary </button></div>
         <button onClick={calculate} className="mt-6 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending || compounds.length === 0}> {isPending ? 'Calculating...' : 'Calculate Cost'} </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
 
@@ -79,19 +84,20 @@ export default function Tool030CycleCostCalculator() {
           <p className="text-zinc-500">{i18nData.cost_per_week_usd}: ${result.cost_per_week_usd}/week</p>
           <p className="text-zinc-500">{i18nData.most_expensive_compound}: {result.most_expensive_compound}</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.cost_breakdown.compounds.map((c, i) => <li key={i}>{c.name}: ${c.cost}</li>)}
+            {result.cost_breakdown.compounds.map((c: any, i: any) => <li key={i}>{c.name}: ${c.cost}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.cost_breakdown.ancillaries.map((c, i) => <li key={i}>{c.name}: ${c.cost}</li>)}
+            {result.cost_breakdown.ancillaries.map((c: any, i: any) => <li key={i}>{c.name}: ${c.cost}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.cost_breakdown.pct.map((c, i) => <li key={i}>{c.name}: ${c.cost}</li>)}
+            {result.cost_breakdown.pct.map((c: any, i: any) => <li key={i}>{c.name}: ${c.cost}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.budget_savings_tips.map((t, i) => <li key={i}>{t}</li>)}
+            {result.budget_savings_tips.map((t: any, i: any) => <li key={i}>{t}</li>)}
           </ul>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

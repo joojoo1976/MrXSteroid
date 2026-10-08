@@ -11,7 +11,7 @@
  *   - AR / EN bilingual RTL support
  *   - Pure mathematical conversion helpers: kg ↔ lbs
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export type MeasurementSystem = 'metric' | 'imperial';
 
@@ -41,8 +41,8 @@ export const storeMeasurementSystem = (system: MeasurementSystem): void => {
 };
 
 export interface MeasurementToggleProps {
-    unitSystem: MeasurementSystem;
-    onChange: (system: MeasurementSystem) => void;
+    unitSystem?: MeasurementSystem;
+    onChange?: (system: MeasurementSystem) => void;
     isRtl?: boolean;
     className?: string;
     showLabel?: boolean;
@@ -55,19 +55,24 @@ export default function MeasurementToggle({
     className = '',
     showLabel = true,
 }: MeasurementToggleProps) {
+    const [internal, setInternal] = useState<MeasurementSystem>(() => getStoredMeasurementSystem());
+    const current = unitSystem ?? internal;
+
     // Initial mount sync if not yet aligned with localStorage
     useEffect(() => {
         const stored = getStoredMeasurementSystem();
-        if (stored !== unitSystem) {
-            onChange(stored);
+        if (stored !== current) {
+            setInternal(stored);
+            onChange?.(stored);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSelect = (system: MeasurementSystem) => {
-        if (system === unitSystem) return;
+        if (system === current) return;
         storeMeasurementSystem(system);
-        onChange(system);
+        setInternal(system);
+        onChange?.(system);
     };
 
     return (
@@ -85,7 +90,7 @@ export default function MeasurementToggle({
                 type="button"
                 onClick={() => handleSelect('metric')}
                 className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
-                    unitSystem === 'metric'
+                    current === 'metric'
                         ? 'active bg-lime-500 text-slate-950 shadow-sm'
                         : 'text-slate-400 hover:text-white'
                 }`}
@@ -97,7 +102,7 @@ export default function MeasurementToggle({
                 type="button"
                 onClick={() => handleSelect('imperial')}
                 className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
-                    unitSystem === 'imperial'
+                    current === 'imperial'
                         ? 'active bg-lime-500 text-slate-950 shadow-sm'
                         : 'text-slate-400 hover:text-white'
                 }`}

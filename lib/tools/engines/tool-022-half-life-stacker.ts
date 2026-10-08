@@ -60,7 +60,7 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
     };
   }
   
-  #22.1. Identify ester bottleneck (longest half-life)
+  //22.1. Identify ester bottleneck (longest half-life)
   let maxHalfLife = 0;
   let bottleneckIndex = 0;
   
@@ -73,24 +73,24 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
   
   const esterBottleneck = compounds[bottleneckIndex];
   
-  #22.2. Calculate peak platform days (time to reach peak concentration)
-  # For simplicity: assume peak at 2-3 half-lives for most compounds
+  //22.2. Calculate peak platform days (time to reach peak concentration)
+  // For simplicity: assume peak at 2-3 half-lives for most compounds
   const peakPlatformDays = Math.ceil(maxHalfLife * 2.5);
   
-  #22.3. Total cycle half-lives
+  //22.3. Total cycle half-lives
   const totalHalfLifeSum = compounds.reduce((sum, c) => sum + c.half_life_days, 0);
   const totalCycleHalfLives = totalHalfLifeSum / maxHalfLife;
   
-  #22.4. Recommended PCT start days
-  # Standard: start PCT when last long-ester is ~50% cleared
-  # That's ~1 half-life after cycle end for the bottleneck
+  //22.4. Recommended PCT start days
+  // Standard: start PCT when last long-ester is ~50% cleared
+  // That's ~1 half-life after cycle end for the bottleneck
   const pctStartDays = Math.ceil(maxHalfLife + (cycle_length_weeks * 7) * 0.1); // 10% of cycle as buffer
   
-  #22.5. Washout complete days
-  # 4-5 half-lives to clear almost completely
+  //22.5. Washout complete days
+  // 4-5 half-lives to clear almost completely
   const washoutCompleteDays = Math.ceil(maxHalfLife * 4.5);
   
-  #22.6. Optimal injection schedule
+  //22.6. Optimal injection schedule
   const freqMap: Record<string, number> = {
     daily: 1,
     'every-other-day': 2,
@@ -105,13 +105,13 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
     optimalSchedule.push(`Day ${day} of cycle`);
   }
   
-  #22.7. Compound peak times
+  //22.7. Compound peak times
   const compoundPeakTimes: Record<string, number> = {};
   for (const compound of compounds) {
     compoundPeakTimes[compound.name_en] = Math.round(compound.half_life_days * 2.5);
   }
   
-  #22.8. Confidence score
+  //22.8. Confidence score
   let confidence = 50;
   if (compounds.length >= 2) confidence += 20;
   if (cycle_length_weeks > 0) confidence += 15;
@@ -123,9 +123,9 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
     total_cycle_half_lives: Math.round(totalCycleHalfLives * 10) / 10,
     recommended_pct_start_days: pctStartDays,
     washout_complete_days: washoutCompleteDays,
-    ester_bottleneck,
+    ester_bottleneck: esterBottleneck,
     optimal_injection_schedule: optimalSlice(optimalSchedule, cycle_length_weeks),
-    compound_peak_times,
+    compound_peak_times: compoundPeakTimes,
     confidence_score: confidenceScore,
   };
 }

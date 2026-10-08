@@ -12,7 +12,8 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:watch": "vitest --watch",
-    "test:perf": "vitest run tests/perf"
+    "test:perf": "vitest run tests/perf",
+    "validate-tools": "vitest run tests/unit/validateTools.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

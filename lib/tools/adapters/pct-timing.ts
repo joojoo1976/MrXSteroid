@@ -21,7 +21,7 @@ import {
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculatePctTiming,
     type EngineInput,
@@ -165,13 +165,17 @@ export function buildPctTimingOutput(
     const tool = requireTool('pct-timing');
     const result = calculatePctTiming(rawInput);
 
-    return buildToolOutput(tool.slug, {
+    return buildToolOutput<PctTimingResult>({
+        toolId: tool.toolId,
+        toolSlug: tool.slug,
         calculatedAt: options.calculatedAt,
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
+        accessTier: 'free',
         result,
         provenance: buildPctTimingProvenance(options),
         keyFindings: buildPctTimingKeyFindings(result, rawInput),
+        seoLinks: buildSeoLinks(tool),
     });
 }

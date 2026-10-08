@@ -1,9 +1,13 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-007-bloodwork-analyzer.json';
+import i18nJson from '@/i18n/tool-007-bloodwork-analyzer.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool007BloodworkAnalyzer() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -16,11 +20,12 @@ export default function Tool007BloodworkAnalyzer() {
 
   useEffect(() => {
     if (savedState?.last_bloodwork) {
-      setMarkers(savedState.last_bloodwork.markers || []);
-      setOverallAssessment(savedState.last_bloodwork.overall_assessment || 'optimal');
-      setHPTAStatus(savedState.last_bloodwork.hpta_status || 'fully_recovered');
-      setRecommendations(savedState.last_bloodwork.recommendations || []);
-      setTestDate(savedState.last_bloodwork.test_date || testDate);
+      const bw = savedState.last_bloodwork as any;
+      setMarkers(bw.markers || []);
+      setOverallAssessment(bw.overall_assessment || 'optimal');
+      setHPTAStatus(bw.hpta_status || 'fully_recovered');
+      setRecommendations(bw.recommendations || []);
+      setTestDate(bw.test_date || testDate);
     }
   }, [savedState]);
 
@@ -51,7 +56,7 @@ export default function Tool007BloodworkAnalyzer() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Test Date:</label> <input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Test Date:</label> <input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value as any)} className="w-full rounded border p-2" dir="ltr" /></div>
         <div>
           <p className="text-zinc-600 font-medium">{i18nData.overall_assessment}: {overallAssessment}</p>
           <p className="text-zinc-500 text-sm">{i18nData.hpta_status}: {hptaStatus}</p>

@@ -21,7 +21,7 @@ export interface CardioInput {
   hdl_cholesterol: number; // mg/dL
   ldl_cholesterol?: number; // mg/dL (calculated if not provided)
   triglycerides?: number; // mg/dL
-  compounds: any[];       // Compound items from DB
+  compounds: Array<{ name_en: string; is_lipophilic: boolean; aromatization_factor?: number }>; // Compound items from DB
   cycle_length_weeks: number;
 }
 
@@ -119,8 +119,8 @@ export function calculateCardioRisk(input: CardioInput): CardioRisk {
     overall_risk: overallRisk,
     risk_score: riskScore,
     cholesterol_ratio: Math.round(cholesterolRatio * 10) / 10,
-    risk_factors,
-    compound_warnings,
+    risk_factors: riskFactors,
+    compound_warnings: compoundWarnings,
     recommendations,
   };
 }

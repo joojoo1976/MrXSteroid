@@ -1,0 +1,13 @@
+app/smarttools/[category]/[tool]/page.tsx(11,3): error TS2322: Type '{ category: "nutrition" | "body-composition" | "pharmacokinetics" | "hormonal-health" | "medical-monitoring" | "injection-formulation" | "cycle-management" | "training-recovery" | "reproductive-wellbeing" | "platform-ai" | null; tool: string; }[]' is not assignable to type '{ category: string; tool: string; }[]'.
+  Type '{ category: "nutrition" | "body-composition" | "pharmacokinetics" | "hormonal-health" | "medical-monitoring" | "injection-formulation" | "cycle-management" | "training-recovery" | "reproductive-wellbeing" | "platform-ai" | null; tool: string; }' is not assignable to type '{ category: string; tool: string; }'.
+    Types of property 'category' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+app/smarttools/[category]/[tool]/page.tsx(13,23): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Type '{ category: string; tool: string; }' is not assignable to type '{ category: "nutrition" | "body-composition" | "pharmacokinetics" | "hormonal-health" | "medical-monitoring" | "injection-formulation" | "cycle-management" | "training-recovery" | "reproductive-wellbeing" | "platform-ai" | null; tool: string; }'.
+    Types of property 'category' are incompatible.
+      Type 'string' is not assignable to type '"nutrition" | "body-composition" | "pharmacokinetics" | "hormonal-health" | "medical-monitoring" | "injection-formulation" | "cycle-management" | "training-recovery" | "reproductive-wellbeing" | "platform-ai" | null'.
+components/tools/tool-008-side-effect-tracker.tsx(29,35): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-008-side-effect-tracker.tsx(30,45): error TS2339: Property 'logEntries' does not exist on type '{}'.
+components/tools/tool-009-injection-site-rotator.tsx(29,22): error TS18047: 'savedState' is possibly 'null'.
+components/tools/tool-018-hpta-recovery.tsx(44,63): error TS2304: Cannot find name 'newMarker'.

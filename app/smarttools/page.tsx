@@ -8,12 +8,22 @@ import {
 } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { Language } from '@/shared/types/types';
-import { getAllToolLinks } from '@/shared/config/menuConfig';
+import { getCatalogTools } from '@/lib/tools/smartToolsCatalog4';
+import { toHierarchicalHref } from '@/lib/tools/categories';
 
 const SmartToolsPage = () => {
     const { language: lang, isRTL } = usePreferences();
 
-    const tools = getAllToolLinks(lang);
+    const catalog = getCatalogTools();
+    const tools = catalog.map((t) => ({
+        // Canonical hierarchical URL: /smarttools/<category>/<tool> (SPEC §1.3).
+        // Flat legacy hrefs stay live as 301 redirects (see flat pages).
+        href: toHierarchicalHref(t.slug) ?? t.href,
+        label: lang === Language.AR ? t.titleAr : t.titleEn,
+        description: lang === Language.AR ? t.descriptionAr : t.descriptionEn,
+        icon: t.icon,
+        toolId: t.toolId,
+    }));
 
     const iconMap: Record<string, ComponentType<{ className?: string }>> = {
         Flame, Scale, Syringe, Timer, Beaker, Dna,

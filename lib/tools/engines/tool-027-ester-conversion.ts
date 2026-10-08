@@ -41,7 +41,7 @@ export interface EsterConversionResult {
 export function calculateEsterConversion(input: EsterConversionInput): EsterConversionResult {
   const { compound_name, ester_type, ester_mg, target_ester } = input;
   
-  #27.1. Ester ratio table (percentage of base hormone by weight)
+  //27.1. Ester ratio table (percentage of base hormone by weight)
   const esterRatios: Record<string, number> = {
     acetate: 0.85,
     phenylpropionate: 0.8,
@@ -56,22 +56,22 @@ export function calculateEsterConversion(input: EsterConversionInput): EsterConv
   
   const ratio = esterRatios[ester_type] || 0.75;
   
-  #27.2. Calculate base hormone weight
+  //27.2. Calculate base hormone weight
   const baseHormone_mg = Math.round(ester_mg * ratio * 10) / 10;
   
-  #27.3. Calculate conversion to target ester
+  //27.3. Calculate conversion to target ester
   let conversionToTarget = ester_mg;
   if (target_ester) {
     const targetRatio = esterRatios[target_ester] || 0.75;
-    # To get equivalent base hormone, then convert back to target ester
+    // To get equivalent base hormone, then convert back to target ester
     const equivalentBase = ester_mg * ratio;
-    conversionTo_target = Math.round(equivalentBase / targetRatio * 100) / 100;
+    conversionToTarget = Math.round(equivalentBase / targetRatio * 100) / 100;
   }
   
-  #27.4. Potency factor
+  //27.4. Potency factor
   const potencyFactor = ratio;
   
-  #27.5. Molecular weight adjustment note
+  //27.5. Molecular weight adjustment note
   const notes: string[] = [];
   
   if (ratio < 0.6) {

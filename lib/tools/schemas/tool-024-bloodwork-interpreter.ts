@@ -21,8 +21,8 @@ export const PostCycleBloodworkInputSchema = z.object({
   markers: z.array(BloodworkMarkerSchema).min(1).max(30),
   cycle_duration_weeks: z.number().min(1).max(52),
   pct_compounds: z.array(z.string()).min(0).max(10),
-  pct_duration_weeks: z.number().min(1).max(26},
-  days_since_pct_end: z.number().min(0).max(365},
+  pct_duration_weeks: z.number().min(1).max(26),
+  days_since_pct_end: z.number().min(0).max(365),
 });
 
 export type PostCycleBloodworkInput = z.infer<typeof PostCycleBloodworkInputSchema>;
@@ -35,7 +35,7 @@ export const PostCycleBloodworkResultSchema = z.object({
   estrogen_status: z.enum(['low', 'normal', 'high', 'critical']),
   recommendations: z.array(z.string()).min(0).max(15),
   followup_marker: z.string(),
-  days_to_next_test: z.number().min(0).max(90},
+  days_to_next_test: z.number().min(0).max(90),
 });
 
 export type PostCycleBloodworkResult = z.infer<typeof PostCycleBloodworkResultSchema>;

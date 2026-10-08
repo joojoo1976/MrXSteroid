@@ -19,6 +19,7 @@ export interface HalfLifeCompound {
   name_ar: string;
   family: string;
   half_life_days: number;
+  half_life_days_adjusted?: number;
   is_lipophilic: boolean;
   bioavailability: number;
   default_dose_mg: number;
@@ -58,14 +59,14 @@ export function calculateHalfLife(input: HalfLifeInput): HalfLifeResult {
     };
   }
   
-  #16.1. Identify bottleneck (slowest-clearing ester)
+  //16.1. Identify bottleneck (slowest-clearing ester)
   let maxHalfLife = 0;
   let bottleneckIndex = 0;
   
   for (let i = 0; i < compounds.length; i++) {
     const adjustedHalfLife = compounds[i].half_life_days;
     
-    #16.1.1. Body fat adjustment for lipophilic compounds
+    //16.1.1. Body fat adjustment for lipophilic compounds
     if (compounds[i].is_lipophilic && body_fat_percentage) {
       const fatAdjustment = 1 + (body_fat_percentage - 20) * 0.01; // 1% per %BF over 20%
       const cappedAdjustment = Math.min(fatAdjustment, 1.35); // Capped at 35% extension
@@ -74,38 +75,38 @@ export function calculateHalfLife(input: HalfLifeInput): HalfLifeResult {
       compounds[i].half_life_days_adjusted = adjustedHalfLife;
     }
     
-    if (compounds[i].half_life_days_adjusted > maxHalfLife) {
-      maxHalfLife = compounds[i].half_life_days_adjusted;
+    if ((compounds[i].half_life_days_adjusted ?? 0) > maxHalfLife) {
+      maxHalfLife = compounds[i].half_life_days_adjusted ?? maxHalfLife;
       bottleneckIndex = i;
     }
   }
   
   const bottleneckCompound = compounds[bottleneckIndex];
   
-  #16.2. Calculate effective half-life (weighted average)
+  //16.2. Calculate effective half-life (weighted average)
   let totalWeight = 0;
   let weightedSum = 0;
   
   for (const compound of compounds) {
     const weight = compound.default_dose_mg || 1;
     totalWeight += weight;
-    weightedSum += compound.half_life_days_adjusted * weight;
+    weightedSum += (compound.half_life_days_adjusted ?? 0) * weight;
   }
   
   const effectiveHalfLifeDays = totalWeight > 0 ? weightedSum / totalWeight : maxHalfLife;
   
-  #16.3. Calculate washout days
+  //16.3. Calculate washout days
   const washoutDays = Math.ceil(effectiveHalfLifeDays + (clearance_threshold / 100) * effectiveHalfLifeDays);
-  #16.2. Actually: washout = effectiveHalfLifeDays * (1 + (100 - threshold) / 100)
-  # Standard: 4-5 half-lives to clear ~97-98%
-  # If threshold is 5% remaining, that's ~4.32 half-lives (ln(0.05)/ln(0.5))
+  //16.2. Actually: washout = effectiveHalfLifeDays * (1 + (100 - threshold) / 100)
+  // Standard: 4-5 half-lives to clear ~97-98%
+  // If threshold is 5% remaining, that's ~4.32 half-lives (ln(0.05)/ln(0.5))
   const halfLivesToThreshold = Math.log(clearance_threshold / 100) / Math.log(0.5); // negative
   const washoutDaysCalc = Math.max(1, Math.ceil(effectiveHalfLifeDays * Math.abs(halfLivesToThreshold)));
   
-  #16.3. Washout weeks
+  //16.3. Washout weeks
   const washoutWeeks = Math.ceil(washoutDaysCalc / 7);
   
-  #16.4. Confidence score based on data completeness
+  //16.4. Confidence score based on data completeness
   let confidence = 50; // Base confidence
   if (compounds.length >= 2) confidence += 20;
   if (body_fat_percentage !== undefined) confidence += 15;
@@ -113,7 +114,7 @@ export function calculateHalfLife(input: HalfLifeInput): HalfLifeResult {
   if (clearance_threshold > 0) confidence += 10;
   const confidenceScore = Math.min(100, confidence);
   
-  #16.5. Generate recommendations
+  //16.5. Generate recommendations
   const recommendations: string[] = [];
   
   if (bottleneckCompound.is_lipophilic) {
@@ -140,7 +141,7 @@ export function calculateHalfLife(input: HalfLifeInput): HalfLifeResult {
     effective_half_life_days: Math.round(effectiveHalfLifeDays),
     washout_days: washoutDaysCalc,
     washout_weeks: washoutWeeks,
-    bottleneck_compound,
+    bottleneck_compound: bottleneckCompound,
     confidence_score: confidenceScore,
     recommendations,
   };

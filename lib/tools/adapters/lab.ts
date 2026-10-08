@@ -22,7 +22,7 @@ import {
   type ToolOutput,
   type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool } from '../registry';
+import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import { calculateLab, type LabInput, type LabOutput } from '../engines/lab';
 
 /** Reference ranges for simulated lab values (simplified). */
@@ -131,13 +131,17 @@ export function buildLabOutput(
   const tool = requireTool('lab');
   const result = calculateLab(rawInput);
 
-  return buildToolOutput(tool.slug, {
+  return buildToolOutput<LabOutput>({
+    toolId: tool.toolId,
+    toolSlug: tool.slug,
     calculatedAt: options.calculatedAt,
     locale: options.locale,
     unitSystem: options.unitSystem,
     snapshotType: options.snapshotType,
+    accessTier: 'free',
     result,
     provenance: buildLabProvenance(options),
     keyFindings: buildLabKeyFindings(result),
+    seoLinks: buildSeoLinks(tool),
   });
 }

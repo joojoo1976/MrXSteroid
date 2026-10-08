@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculateSHBG } from '@/lib/tools/engines/tool-015-shbg-modulator';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-015-shbg-modulator.json';
+import i18nJson from '@/i18n/tool-015-shbg-modulator.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool015SHBGModulator() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -14,7 +19,7 @@ export default function Tool015SHBGModulator() {
     sex: 'male' as 'male' | 'female',
   });
 
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.shbg_result) setResult(savedState.shbg_result);
@@ -31,9 +36,9 @@ export default function Tool015SHBGModulator() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Total Testosterone (ng/dL):</label> <input type="number" value={input.total_testosterone_ng_dL} onChange={(e) => setInput({...input, total_testosterone_ng_dL: parseFloat(e.target.value)})} min="50" max="2000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">SHBG (nmol/L):</label> <input type="number" value={input.shbg_nmol_L} onChange={(e) => setInput({...input, shbg_nmol_L: parseFloat(e.target.value)})} min="1" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Sex:</label> <select value={input.sex} onChange={(e) => setInput({...input, sex: e.target.value})} className="w-full rounded border p-2" dir="ltr"><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Total Testosterone (ng/dL):</label> <input type="number" value={input.total_testosterone_ng_dL} onChange={(e) => setInput({...input, total_testosterone_ng_dL: parseFloat(e.target.value as any)})} min="50" max="2000" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">SHBG (nmol/L):</label> <input type="number" value={input.shbg_nmol_L} onChange={(e) => setInput({...input, shbg_nmol_L: parseFloat(e.target.value as any)})} min="1" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Sex:</label> <select value={input.sex} onChange={(e) => setInput({...input, sex: e.target.value as any})} className="w-full rounded border p-2" dir="ltr"><option value="male">Male</option><option value="female">Female</option></select></div>
         <button onClick={calculate} className="mt-4 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? 'Calculating...' : 'Calculate Free T'} </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
 
@@ -45,10 +50,11 @@ export default function Tool015SHBGModulator() {
           <p className="text-zinc-500">{i18nData.bioavailable}: {result.bioavailable_testosterone_ng_dL} ng/dL</p>
           <p className="text-zinc-600">{i18nData.interpretation}: {result.interpretation}</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+            {result.recommendations.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

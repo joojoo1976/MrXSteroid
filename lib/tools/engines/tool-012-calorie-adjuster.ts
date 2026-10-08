@@ -52,9 +52,9 @@ export function calculateTDEE(input: CalorieInput): CalorieResult {
   // Mifflin-St Jeor Equation
   let bmr: number;
   if (gender === 'male') {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+    bmr = 10 * (weightKg ?? 0) + 6.25 * (heightCm ?? 0) - 5 * age + 5;
   } else {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+    bmr = 10 * (weightKg ?? 0) + 6.25 * (heightCm ?? 0) - 5 * age - 161;
   }
   
   // Activity multiplier

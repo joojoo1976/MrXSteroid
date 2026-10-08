@@ -26,9 +26,9 @@ describe('Tool #005 Layer 3 Adapter — HCG & SERM Protocol Generator', () => {
         const findings = buildHcgSermProtocolKeyFindings(result, sampleInput);
 
         expect(findings.length).toBeGreaterThanOrEqual(2);
-        expect(findings.some((f) => f.id === 'suppression_score')).toBe(true);
-        expect(findings.some((f) => f.id === 'hcg_priming_required')).toBe(true);
-        expect(findings.some((f) => f.id === 'serm_auto_switch')).toBe(true);
+        expect(findings.some((f) => f.code === 'suppression_score')).toBe(true);
+        expect(findings.some((f) => f.code === 'hcg_priming_required')).toBe(true);
+        expect(findings.some((f) => f.code === 'serm_auto_switch')).toBe(true);
     });
 
     it('builds canonical ToolOutput envelope adhering to MrXSteroid contract', () => {

@@ -95,6 +95,7 @@ export function calculateSHBG(input: SHBGInput): SHBGResult {
   
   return {
     shbg_nmol_L,
+    total_testosterone_ng_dL,
     shbg_reference_range: [shbgReferenceLow, shbgReferenceHigh],
     free_testosterone_ng_dL: Math.round(freeTestosterone_ng_dL * 10) / 10,
     free_testosterone_percentage: Math.round(freePercentage * 10) / 10,

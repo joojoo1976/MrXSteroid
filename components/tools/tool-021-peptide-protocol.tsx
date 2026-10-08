@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { calculatePeptideProtocol } from '@/lib/tools/engines/tool-021-peptide-protocol';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-021-peptide-protocol.json';
+import i18nJson from '@/i18n/tool-021-peptide-protocol.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool021PeptideProtocolPlanner() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -13,7 +18,7 @@ export default function Tool021PeptideProtocolPlanner() {
   const [protocolDuration, setProtocolDuration] = useState(8);
   const [injectionFrequency, setInjectionFrequency] = useState('every-other-day' as 'daily' | 'every-other-day' | '3x-week' | 'weekly');
   const [selectedCompounds, setSelectedCompounds] = useState<any[]>([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
     if (savedState?.peptide_result) setResult(savedState.peptide_result);
@@ -52,10 +57,10 @@ export default function Tool021PeptideProtocolPlanner() {
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">User Weight (kg):</label> <input type="number" value={userWeight} onChange={(e) => setUserWeight(parseInt(e.target.value))} min="40" max="300" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Goal:</label> <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="recovery">Recovery</option><option value="muscle_growth">Muscle Growth</option><option value="fat_loss">Fat Loss</option><option value="anti_aging">Anti-Aging</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Protocol Duration (weeks):</label> <input type="number" value={protocolDuration} onChange={(e) => setProtocolDuration(parseInt(e.target.value))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Frequency:</label> <select value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value)} className="w-full rounded border p-2" dir="ltr"><option value="daily">Daily</option><option value="every-other-day">Every Other Day</option><option value="3x-week">3x Per Week</option><option value="weekly">Weekly</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">User Weight (kg):</label> <input type="number" value={userWeight} onChange={(e) => setUserWeight(parseInt(e.target.value as any))} min="40" max="300" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Goal:</label> <select value={goal} onChange={(e) => setGoal(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="recovery">Recovery</option><option value="muscle_growth">Muscle Growth</option><option value="fat_loss">Fat Loss</option><option value="anti_aging">Anti-Aging</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Protocol Duration (weeks):</label> <input type="number" value={protocolDuration} onChange={(e) => setProtocolDuration(parseInt(e.target.value as any))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Frequency:</label> <select value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="daily">Daily</option><option value="every-other-day">Every Other Day</option><option value="3x-week">3x Per Week</option><option value="weekly">Weekly</option></select></div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Peptide Compound </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
 
@@ -69,17 +74,18 @@ export default function Tool021PeptideProtocolPlanner() {
           <p className="text-zinc-500">{i18nData.total_injections}: {result.total_injections} total</p>
           <p className="text-zinc-500">{i18nData.protocol_weeks}: {result.protocol_weeks} weeks</p>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.timing_recommendations.map((r, i) => <li key={i}>{r}</li>)}
+            {result.timing_recommendations.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.storage_requirements.map((r, i) => <li key={i}>{r}</li>)}
+            {result.storage_requirements.map((r: any, i: any) => <li key={i}>{r}</li>)}
           </ul>
           <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.side_effect_warnings.map((w, i) => <li key={i}>{w}</li>)}
+            {result.side_effect_warnings.map((w: any, i: any) => <li key={i}>{w}</li>)}
           </ul>
           <p className="text-zinc-500 mt-2">{i18nData.post_protocol_therapy ? 'Post-protocol therapy recommended' : 'No post-protocol therapy required'}</p>
-        </div>)}
+        </div>}
       </div>
     </div>
   );
 }
+

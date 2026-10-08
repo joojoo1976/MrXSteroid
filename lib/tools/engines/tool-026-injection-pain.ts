@@ -46,10 +46,10 @@ export interface InjectionPainResult {
 export function calculateInjectionPainMinimizer(input: InjectionPainInput): InjectionPainResult {
   const { compound_viscosity, concentration_mg_ml, desired_dose_mg, current_sites, injection_site } = input;
   
-  #26.1. Calculate desired volume
+  //26.1. Calculate desired volume
   const desired_dose_ml = desired_dose_mg / concentration_mg_ml;
   
-  #26.2. Determine max safe volume based on muscle group
+  //26.2. Determine max safe volume based on muscle group
   const maxVolumes: Record<string, number> = {
     deltoid: 0.5,
     glutes: 3.0,
@@ -61,19 +61,19 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
   
   const baseMax = maxVolumes[injection_site] || 1.0;
   
-  #26.2.1. Viscosity adjustment
+  //26.2.1. Viscosity adjustment
   const viscosityFactor: Record<string, number> = {
     low: 0.9,
     medium: 1.0,
-    high: 1.25, # High viscosity = reduce volume to minimize pain
+    high: 1.25,
   };
   
   const maxSafeVolume = Math.min(baseMax * viscosityFactor[compound_viscosity], 5.0);
   
-  #26.3. Pain minimization score
+  //26.3. Pain minimization score
   let painScore = 100;
   
-  # Volume factor: exceeding safe volume drops score
+  // Volume factor: exceeding safe volume drops score
   if (desired_dose_ml > maxSafeVolume) {
     painScore -= 30;
   }
@@ -81,12 +81,13 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
     painScore -= 20;
   }
   
-  # Site freshness factor
+  // Site freshness factor
   const today = new Date();
   let freshnessBonus = 0;
   if (current_sites.some(s => s.muscle_group === injection_site)) {
-    const lastDate = current_sites.find(s => s.muscle_group === injection_site)?.last_injection_date 
-      ? new Date(current_sites.find(s => s.muscle_group === injection_site).last_injection_date) 
+    const matchSite = current_sites.find(s => s.muscle_group === injection_site);
+    const lastDate = matchSite?.last_injection_date
+      ? new Date(matchSite.last_injection_date)
       : new Date(0);
     const daysSinceLast = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
     if (daysSinceLast > 7) {
@@ -97,10 +98,10 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
   }
   painScore += freshnessBonus;
   
-  # Cap at 100
+  // Cap at 100
   const painMinimizationScore = Math.min(100, Math.max(0, painScore));
   
-  #26.4. Recommend optimal site
+  //26.4. Recommend optimal site
   const prioritizedSites: ('deltoid' | 'glutes' | 'quads' | 'pectorals' | 'triceps' | 'biceps')[] = [
     'glutes', 'quads', 'deltoid', 'pectorals', 'triceps', 'biceps'
   ];
@@ -113,9 +114,8 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
     }
   }
   
-  #26.5. Generate rotation schedule
+  //26.5. Generate rotation schedule
   const rotationSchedule: string[] = [];
-  const today = new Date();
   
   for (const site of current_sites) {
     const lastDate = site.last_injection_date ? new Date(site.last_injection_date) : new Date(0);
@@ -128,11 +128,11 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
     );
   }
   
-  #26.6. Solvent ratio recommendation
+  //26.6. Solvent ratio recommendation
   const solventRatio = compound_viscosity === 'high' ? '10% BA / 20% BB' : 
                        compound_viscosity === 'medium' ? '5% BA / 10% BB' : '1% BA / 5% BB';
   
-  #26.7. Temperature recommendation
+  //26.7. Temperature recommendation
   let tempRec: string;
   if (painMinimizationScore < 50) {
     tempRec = 'Warm the oil to body temperature (37°C) before injection';
@@ -140,7 +140,7 @@ export function calculateInjectionPainMinimizer(input: InjectionPainInput): Inje
     tempRec = 'Room temperature (20-25°C) is acceptable';
   }
   
-  #26.8. Warnings
+  //26.8. Warnings
   const warnings: string[] = [];
   
   if (desired_dose_ml > maxSafeVolume) {

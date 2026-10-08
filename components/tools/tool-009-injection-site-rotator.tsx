@@ -1,9 +1,13 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import MeasurementToggle from './MeasurementToggle';
-import i18nData from '@/i18n/tool-009-injection-site-rotator.json';
+import i18nJson from '@/i18n/tool-009-injection-site-rotator.json';
+import { useToolI18n } from '@/lib/tools/i18nHelper';
 
 export default function Tool009InjectionSiteRotator() {
+  const i18nData = useToolI18n(i18nJson);
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -18,16 +22,16 @@ export default function Tool009InjectionSiteRotator() {
     site: string;
     location: string;
     oil_based: boolean;
-  }>>([]));
+  }>>([])
 
   useEffect(() => {
-    if (savedState?.injection_sites?.logEntries) {
-      setLogEntries(savedState.injection_sites.logEntries);
+    if ((savedState?.injection_sites as any)?.logEntries) {
+      setLogEntries((savedState!.injection_sites as any).logEntries);
     }
   }, [savedState]);
 
   useEffect(() => {
-    const site: InjectionSite = {
+    const site = {
       id: crypto.randomUUID(),
       name_en: siteName || 'New Site',
       name_ar: siteName || 'موقع جديد',
@@ -37,7 +41,7 @@ export default function Tool009InjectionSiteRotator() {
       next_safe_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days later
       rotation_priority: 1,
     };
-    setLogEntries(prev => [...prev, { id: site.id, date: lastInjection, site: siteName || 'Unknown', location, oil_based }]);
+    setLogEntries(prev => [...prev, { id: site.id, date: lastInjection, site: siteName || 'Unknown', location, oil_based: oilBased }]);
     
     setSiteName('');
     setLastInjection(new Date().toISOString().split('T')[0]);
@@ -46,8 +50,8 @@ export default function Tool009InjectionSiteRotator() {
     debouncedSave({
       ...savedState,
       injection_sites: {
-        total_sites_rotated: (savedState?.injection_sites?.total_sites_rotated || 0) + 1,
-        logEntries: [...logEntries, { id: site.id, date: lastInjection, site: siteName || 'Unknown', location, oil_based }],
+        total_sites_rotated: ((savedState?.injection_sites as any)?.total_sites_rotated || 0) + 1,
+        logEntries: [...logEntries, { id: site.id, date: lastInjection, site: siteName || 'Unknown', location, oil_based: oilBased }],
       },
     });
   }, [siteName, location, oilBased, lastInjection]);
@@ -62,7 +66,7 @@ export default function Tool009InjectionSiteRotator() {
             <label className="block text-sm font-medium mb-2" dir="ltr">Site Name:</label>
             <input
               value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
+              onChange={(e) => setSiteName(e.target.value as any)}
               placeholder="e.g., Deltoid Left, Glute Right"
               className="w-full rounded border p-2"
               dir="ltr"
@@ -87,8 +91,8 @@ export default function Tool009InjectionSiteRotator() {
         <div>
           <label className="block text-sm font-medium mb-2" dir="ltr">Oil-Based Compound:</label>
           <select
-            value={oilBased}
-            onChange={(e) => setOilBased(e.target.value === 'true')}
+            value={oilBased ? 'true' : 'false'}
+            onChange={(e) => setOilBased(e.target.value as any === 'true')}
             className="w-full rounded border p-2"
           >
             <option value="false">Water-Based</option>
@@ -100,7 +104,7 @@ export default function Tool009InjectionSiteRotator() {
           <input
             type="date"
             value={lastInjection}
-            onChange={(e) => setLastInjection(e.target.value)}
+            onChange={(e) => setLastInjection(e.target.value as any)}
             className="w-full rounded border p-2"
             dir="ltr"
           /></div>
