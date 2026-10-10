@@ -4,6 +4,10 @@ import { SMART_TOOLS_CATALOG_2 } from './smartToolsCatalog2';
 import { SMART_TOOLS_CATALOG_3 } from './smartToolsCatalog3';
 import { SMART_TOOLS_CATALOG_5 } from './smartToolsCatalog5';
 import { SMART_TOOLS_CATALOG_6 } from './smartToolsCatalog6';
+import { SMART_TOOLS_CATALOG_7 } from './smartToolsCatalog7';
+import { SMART_TOOLS_CATALOG_8 } from './smartToolsCatalog8';
+import { SMART_TOOLS_CATALOG_9 } from './smartToolsCatalog9';
+import { SMART_TOOLS_CATALOG_10 } from './smartToolsCatalog10';
 
 export const SMART_TOOLS_CATALOG_4: readonly SmartToolEntry[] = [
   { toolId: 'mrx.tool.016-half-life', slug: 'tool-016-half-life-calculator', href: '/smarttools/tool-016-half-life-calculator', order: 300, titleEn: 'Half-Life Calculator', titleAr: 'حاسبة نصف العمر', descriptionEn: 'Multi-compound clearance optimizer', descriptionAr: 'محسن تطهير المركبات المتعددة', icon: 'Timer', accessTier: 'free', componentPath: '@/components/tools/tool-016-half-life-calculator', enginePath: 'lib/tools/engines/tool-016-half-life-calculator', schemaPath: 'lib/tools/schemas/tool-016-half-life-calculator', bookContext: { chapterAr: 'الفصل 4: الحرائك الدوائية', chapterEn: 'Chapter 4: Pharmacokinetics', topicAr: 'حساب نصف العمر وتطهير المركبات', topicEn: 'Half-Life Calculation and Compound Clearance' } },
@@ -41,7 +45,7 @@ export function catalogAll(): SmartToolEntry[] {
   // implementation. Hub/route generators filter `planned` at their own layer.
   // Future catalogs (original #051-#100 + unique additions past #100) append here.
   const catalog6: readonly SmartToolEntry[] = [...SMART_TOOLS_CATALOG_6];
-  return [...SMART_TOOLS_CATALOG, ...SMART_TOOLS_CATALOG_2, ...SMART_TOOLS_CATALOG_3, ...SMART_TOOLS_CATALOG_4, ...SMART_TOOLS_CATALOG_5, ...catalog6].sort((a, b) => a.order - b.order);
+  return [...SMART_TOOLS_CATALOG, ...SMART_TOOLS_CATALOG_2, ...SMART_TOOLS_CATALOG_3, ...SMART_TOOLS_CATALOG_4, ...SMART_TOOLS_CATALOG_5, ...catalog6, ...SMART_TOOLS_CATALOG_7, ...SMART_TOOLS_CATALOG_8, ...SMART_TOOLS_CATALOG_9, ...SMART_TOOLS_CATALOG_10].sort((a, b) => a.order - b.order);
 }
 
 export function getCatalogTools(): SmartToolEntry[] {

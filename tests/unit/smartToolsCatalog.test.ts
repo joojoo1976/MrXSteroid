@@ -25,16 +25,15 @@ describe('Smart Tools catalog', () => {
     expect(ok).toBe(true);
   });
 
-  it('exposes 50 implemented user-facing tools with an empty planned queue', () => {
+  it('exposes the full approved roadmap: 50 implemented + 100 planned = 150 identities', () => {
     const tools = getCatalogTools();
     const implemented = tools.filter((t) => t.status !== 'planned');
     const planned = tools.filter((t) => t.status === 'planned');
-    // 30 baseline tools (#1-#30) + 20 shipped tools (#031-#050, each with
-    // engine/schema/component/adapter/i18n/route/category/registry + tests).
+    // 30 baseline tools (#1-#30) + 20 shipped tools (#031-#050) + 100 registered
+    // roadmap identities #051-#150 (SPEC §4, planned until TDD batches ship them).
     expect(implemented.length).toBe(50);
-    // Roadmap #046-#050 shipped — no planned entries remain in catalog6.
-    expect(planned.length).toBe(0);
-    expect(tools.length).toBe(50);
+    expect(planned.length).toBe(100);
+    expect(tools.length).toBe(150);
   });
 
   it('every implemented entry has component, engine, schema and route on disk', () => {
