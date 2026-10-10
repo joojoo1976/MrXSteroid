@@ -99,6 +99,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.PROLACTIN_MANAGEMENT]: '/smarttools/tool-043-prolactin-management',
     [Page.DHT_SIDE_EFFECTS]: '/smarttools/tool-044-dht-side-effects',
     [Page.CYCLE_BREAK_PLANNER]: '/smarttools/tool-045-cycle-break-planner',
+
+    [Page.TRT_LIFETIME]: '/smarttools/tool-046-trt-lifetime',
+    [Page.FERTILITY_PRESERVATION]: '/smarttools/tool-047-fertility-preservation',
+    [Page.CARDIOVASCULAR_RISK]: '/smarttools/tool-048-cardiovascular-risk',
+    [Page.BONE_DENSITY]: '/smarttools/tool-049-bone-density',
+    [Page.MENTAL_HEALTH]: '/smarttools/tool-050-mental-health',
 };
 
 export function pageToPath(page: Page): string {

@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Bone Density Optimizer",
+    "age": "Age",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "uses_ai_years": "Years of AI (aromatase inhibitor) exposure",
+    "weekly_resistance_sessions": "Weekly resistance sessions",
+    "calcium_mg_daily": "Daily calcium (mg)",
+    "vitamin_d_iu_daily": "Daily vitamin D (IU)",
+    "smoker": "Smoker",
+    "score": "Bone health score",
+    "band": "Band",
+    "risk_factors": "Risk factors",
+    "interventions": "Interventions",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening — bone health needs a DXA scan and a physician for real diagnosis."
+  },
+  "ar": {
+    "tool_name": "محسّن كثافة العظام",
+    "age": "العمر",
+    "sex": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "uses_ai_years": "سنوات استخدام مثبطات الأروماتاز",
+    "weekly_resistance_sessions": "حصص المقاومة الأسبوعية",
+    "calcium_mg_daily": "الكالسيوم اليومي (ملغ)",
+    "vitamin_d_iu_daily": "فيتامين د اليومي (وحدة)",
+    "smoker": "مدخّن",
+    "score": "درجة صحة العظام",
+    "band": "التصنيف",
+    "risk_factors": "عوامل الخطر",
+    "interventions": "إجراءات وقائية",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي — صحة العظام تحتاج أشعة DXA وطبيبًا للتشخيص الحقيقي."
+  }
+}

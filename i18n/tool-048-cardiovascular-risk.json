@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Cardiovascular Risk Assessor",
+    "age": "Age",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "smoker": "Smoker",
+    "systolic_bp": "Systolic BP (mmHg)",
+    "total_cholesterol": "Total cholesterol (mg/dL)",
+    "hdl": "HDL (mg/dL)",
+    "on_cycle": "Currently on cycle",
+    "risk": "10-year risk (educational)",
+    "band": "Band",
+    "drivers": "Risk drivers",
+    "mitigations": "Mitigations",
+    "warnings": "Warnings",
+    "disclaimer": "Educational heuristic — not the clinical ASCVD calculator. See a physician for a real assessment."
+  },
+  "ar": {
+    "tool_name": "مقيّم خطر القلب",
+    "age": "العمر",
+    "sex": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "smoker": "مدخّن",
+    "systolic_bp": "الضغط الانقباضي (mmHg)",
+    "total_cholesterol": "الكوليسترول الكلي (mg/dL)",
+    "hdl": "HDL (mg/dL)",
+    "on_cycle": "في منتصف دورة حاليًا",
+    "risk": "خطر 10 سنوات (تقديري)",
+    "band": "التصنيف",
+    "drivers": "عوامل الخطر",
+    "mitigations": "إجراءات التخفيف",
+    "warnings": "تحذيرات",
+    "disclaimer": "نموذج تعليمي — ليس حاسبة ASCVD السريرية. الطبيب هو مرجع التقييم الحقيقي."
+  }
+}

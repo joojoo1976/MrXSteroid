@@ -95,6 +95,12 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-043-prolactin-management': 'hormonal-health',
   'tool-044-dht-side-effects': 'medical-monitoring',
   'tool-045-cycle-break-planner': 'cycle-management',
+
+  'tool-046-trt-lifetime': 'hormonal-health',
+  'tool-047-fertility-preservation': 'hormonal-health',
+  'tool-048-cardiovascular-risk': 'medical-monitoring',
+  'tool-049-bone-density': 'medical-monitoring',
+  'tool-050-mental-health': 'medical-monitoring',
 };
 
 /** Catégorie d'un outil (accepte slug ou href '/smarttools/<slug>'). */

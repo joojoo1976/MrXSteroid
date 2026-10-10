@@ -114,6 +114,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   PROLACTIN_MANAGEMENT = 'tool-043-prolactin-management',
   DHT_SIDE_EFFECTS = 'tool-044-dht-side-effects',
   CYCLE_BREAK_PLANNER = 'tool-045-cycle-break-planner',
+
+  TRT_LIFETIME = 'tool-046-trt-lifetime',
+  FERTILITY_PRESERVATION = 'tool-047-fertility-preservation',
+  CARDIOVASCULAR_RISK = 'tool-048-cardiovascular-risk',
+  BONE_DENSITY = 'tool-049-bone-density',
+  MENTAL_HEALTH = 'tool-050-mental-health',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

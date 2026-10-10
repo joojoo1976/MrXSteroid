@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Fertility Preservation Guide",
+    "age": "Age",
+    "suppression_level": "Suppression level",
+    "level_1": "1 — Mild (single ester)",
+    "level_2": "2 — Moderate",
+    "level_3": "3 — Heavy (19-nor style stack)",
+    "uses_hcg": "Using HCG",
+    "planning_horizon_months": "Family-planning horizon (months)",
+    "impact": "Estimated suppression impact",
+    "recovery": "Projected recovery",
+    "within_horizon": "Fits your horizon",
+    "yes": "Yes",
+    "no": "No",
+    "protocol_hints": "Informational protocol structures",
+    "warnings": "Warnings",
+    "disclaimer": "Educational guidance only — fertility medicine and semen analysis own the decisions."
+  },
+  "ar": {
+    "tool_name": "دليل الحفاظ على الخصوبة",
+    "age": "العمر",
+    "suppression_level": "مستوى القمع",
+    "level_1": "1 — خفيف (إستر واحد)",
+    "level_2": "2 — متوسط",
+    "level_3": "3 — ثقيل (مركبات 19-nor)",
+    "uses_hcg": "يستخدم HCG",
+    "planning_horizon_months": "أفق التخطيط للإنجاب (أشهر)",
+    "impact": "أثر القمع التقديري",
+    "recovery": "التعافي المتوقع",
+    "within_horizon": "يتناسب مع أفقك",
+    "yes": "نعم",
+    "no": "لا",
+    "protocol_hints": "هياكل بروتوكولية معلوماتية",
+    "warnings": "تحذيرات",
+    "disclaimer": "إرشاد تعليمي فقط — طب الخصوبة وتحليل السائل المنوي هما صاحبا القرار."
+  }
+}

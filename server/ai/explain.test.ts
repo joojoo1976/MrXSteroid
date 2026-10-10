@@ -4,7 +4,8 @@
  *  - deterministic fallback is the DEFAULT (no provider configured)
  *  - the model path is used only when a provider succeeds
  *  - any provider failure falls back (calculations never depend on the model)
- *  - only PUBLISHED tools are explainable (planned roadmap entries 404)
+ *  - only PUBLISHED tools are explainable (anything outside the published
+ *    catalog — unknown or planned — 404s)
  *  - explanations restate provided engine values only — never invent numbers
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -60,8 +61,11 @@ describe('AI explain runtime', () => {
     await expect(explainRequest({ ...BASE, toolSlug: 'nope' }, { provider: null })).rejects.toBeInstanceOf(AiExplainError);
   });
 
-  it('rejects PLANNED roadmap tools (published-only surface)', async () => {
-    await expect(explainRequest({ ...BASE, toolSlug: 'tool-046-trt-lifetime' }, { provider: null })).rejects.toBeInstanceOf(AiExplainError);
+  it('rejects slugs absent from the published catalog (unknown or planned)', async () => {
+    // #046-trt-lifetime was the planned fixture until it shipped; a slug that
+    // is not in the catalog exercises the same published-only gate (planned
+    // entries never appear in getPublishedCatalogTools).
+    await expect(explainRequest({ ...BASE, toolSlug: 'tool-999-not-in-catalog' }, { provider: null })).rejects.toBeInstanceOf(AiExplainError);
   });
 
   it('deterministic explanation does not invent numbers absent from context', async () => {

@@ -1,0 +1,43 @@
+{
+  "en": {
+    "tool_name": "TRT Lifetime Calculator",
+    "age": "Age",
+    "method": "Delivery method",
+    "injection": "Injection",
+    "gel": "Gel",
+    "cream": "Cream",
+    "weekly_testosterone_mg": "Weekly testosterone (mg)",
+    "years_on_trt": "Years on TRT",
+    "monthly_med_cost_usd": "Monthly medication cost (USD)",
+    "monitoring_annual_cost_usd": "Annual monitoring cost (USD)",
+    "interval": "Dosing interval",
+    "days": "days",
+    "panels": "Bloodwork panels / year",
+    "age_band": "Age band",
+    "cost_10": "10-year cost",
+    "cost_20": "20-year cost",
+    "cost_30": "30-year cost",
+    "panels_10": "Panels over 10 years",
+    "warnings": "Notes"
+  },
+  "ar": {
+    "tool_name": "حاسبة عمر TRT",
+    "age": "العمر",
+    "method": "طريقة الاستخدام",
+    "injection": "حقن",
+    "gel": "جل",
+    "cream": "كريم",
+    "weekly_testosterone_mg": "التستوستيرون الأسبوعي (ملغ)",
+    "years_on_trt": "سنوات على TRT",
+    "monthly_med_cost_usd": "تكلفة الدواء الشهرية (دولار)",
+    "monitoring_annual_cost_usd": "تكلفة المتابعة السنوية (دولار)",
+    "interval": "فاصل الجرعة",
+    "panels": "لوحات التحاليل / سنة",
+    "age_band": "الفئة العمرية",
+    "cost_10": "تكلفة 10 سنوات",
+    "cost_20": "تكلفة 20 سنة",
+    "cost_30": "تكلفة 30 سنة",
+    "panels_10": "لوحات التحاليل خلال 10 سنوات",
+    "warnings": "ملاحظات"
+  }
+}

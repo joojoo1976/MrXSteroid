@@ -66,8 +66,10 @@ describe('/api/smarttools/ai/explain', () => {
     expect(res.status).toBe(404);
   });
 
-  it('404 for PLANNED roadmap tools (never explainable before launch)', async () => {
-    const res = await POST(req({ ...VALID, toolSlug: 'tool-046-trt-lifetime' }));
+  it('404 for slugs absent from the published catalog (unknown or planned)', async () => {
+    // #046-trt-lifetime was the planned fixture until it shipped; the gate is
+    // published-only (planned entries never appear in getPublishedCatalogTools).
+    const res = await POST(req({ ...VALID, toolSlug: 'tool-999-not-in-catalog' }));
     expect(res.status).toBe(404);
   });
 });
