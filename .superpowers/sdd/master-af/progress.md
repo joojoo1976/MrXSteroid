@@ -19,9 +19,17 @@ BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git hist
 
 ## Remaining roadmap (honest)
 - #051-#150: not started; §50 table + §ONBOARDING pattern is the onboarding path.
+  **UPDATE (session 3):** superseded — roadmap #051–#150 registered (commit `01a3d82`) and #051–#055 shipped (commit `062528d`). Remaining: #056–#150.
 
 ## Lessons (recurring)
 - Long-file one-shot writes polluted tails with stale fragments → hard rule: compose full final content before write; grep for duplicate declarations right after each write. (Applied this session: one stray `的生活` fragment caught + fixed in 048 test.)
 - PowerShell mangles quotes/Arabic → always via script files (node fs), verify Arabic via node not console.
 - Parallel tsc runs raced with edits → re-run after edit completes.
 - NEW: hand-computed goldens drift from engine rules (046 long-term <5y, 047 age>28 +1, 048 max-sum 53 not 60, 049 age>65 −5 not −8) → recompute goldens carefully; when the test expresses *desired* behavior (050 declining-19nor flag), fix the engine, not the test.
+- NEW: truncated writes recur under fatigue — after any long `write`, immediately verify the file's tail (grep for expected final lines: closing brace / helper) before moving on. (Session 3: 054 + 055 components caught truncated and rewritten complete.)
+
+## Session 3 (2026-10-11) — roadmap #051–#150 + batch #051–#055
+- [x] Roadmap registration → commit `01a3d82`: catalogs 7/8/9/10 planned identities verbatim from SPEC §4 (orders num×10+160 → 670…1660), TOOL_CATEGORY +100, counters 50+100=150, gates 18/18. `bookContext` omitted from planned (no invented chapter refs).
+- [x] Batch #051–#055 → commit `062528d` (41 files): engines TDD RED→GREEN 15/15 (`tmp/green2-051-055.log`); golden-deviation rule applied both directions (tests fixed: 051 test-3 vol 0.15/units 15/doses 6, 053 U-40 goldens, 054 reading-20; engine fixed: 052 `>= 6`); schemas ×5; adapters ×5 + batch 8/8; i18n AR/EN ×5; components ×5 (AI-context panel; 053 red mismatch banner; 054/055 rewritten complete after catching truncated writes); 301 routes ×5; Page enum +5 (enum-member rename INSULIN_CONVERSION→INSULIN_CONVERSION_CALCULATOR caught by PAGE_TO_PATH completeness test); PAGE_TO_PATH +5; registry orders 670–710; catalog7 flip **55 implemented / 95 planned / 150 total**, published=55 (bookContext omitted — optional type, no gate/page dependency).
+- [x] Verification: gates 23/23 + 9/9; full suite **3068 pass** / 16 payments pre-existing (8+1+3+1+1+1+1, byte-identical) / 5 skipped; tsc EXIT=0; lint EXIT=0; `next build` → **199 static pages** (+10).
+- [x] Matrix updated: batch #051–#055 detail section + commits 7–9.
