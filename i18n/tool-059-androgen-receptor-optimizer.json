@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Androgen Receptor Optimizer",
+    "training_days_per_week": "Training days per week",
+    "sleep_hours": "Average sleep (h)",
+    "weeks_since_last_break": "Weeks since last cycle break",
+    "current_cycle_week": "Current cycle week (0 = off)",
+    "score": "Responsiveness score",
+    "band": "Band",
+    "recommendations": "Recommendations",
+    "warnings": "Warnings",
+    "disclaimer": "Educational guidance model — receptor dynamics are not directly measurable in a standard blood panel."
+  },
+  "ar": {
+    "tool_name": "محسّن مستقبلات الأندروجين",
+    "training_days_per_week": "أيام التدريب أسبوعيًا",
+    "sleep_hours": "متوسط ساعات النوم",
+    "weeks_since_last_break": "أسابيع منذ آخر استراحة",
+    "current_cycle_week": "الأسبوع الحالي للدورة (0 = خارجها)",
+    "score": "درجة استجابة المستقبلات",
+    "band": "التصنيف",
+    "recommendations": "توصيات",
+    "warnings": "تحذيرات",
+    "disclaimer": "نموذج إرشادي تعليمي — ديناميكيات المستقبلات لا تُقاس مباشرة في تحاليل الدم الاعتيادية."
+  }
+}

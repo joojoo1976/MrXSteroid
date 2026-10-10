@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "5-Alpha Conversion Calculator",
+    "testosterone_ng_dl": "Testosterone (ng/dL)",
+    "inhibitor": "5-alpha reductase inhibitor",
+    "inh_none": "None",
+    "inh_fin_1": "Finasteride 1 mg/day",
+    "inh_fin_5": "Finasteride 5 mg/day",
+    "inh_dut": "Dutasteride 0.5 mg/day",
+    "dht_estimate": "Estimated DHT",
+    "conversion": "Conversion share",
+    "suppression": "Suppression vs baseline",
+    "band": "Band",
+    "warnings": "Warnings",
+    "disclaimer": "Population-level estimate for education — individual 5-ARI response varies; do not self-prescribe inhibitors."
+  },
+  "ar": {
+    "tool_name": "حاسبة التحويل 5-ألفا",
+    "testosterone_ng_dl": "التستوستيرون (ng/dL)",
+    "inhibitor": "مثبّط 5-ألفا ريدكتاز",
+    "inh_none": "بدون",
+    "inh_fin_1": "فيناسترايد 1 ملغ/يوم",
+    "inh_fin_5": "فيناسترايد 5 ملغ/يوم",
+    "inh_dut": "دوتاسترايد 0.5 ملغ/يوم",
+    "dht_estimate": "تقدير DHT",
+    "conversion": "نسبة التحويل",
+    "suppression": "الكبح عن الأساس",
+    "band": "التصنيف",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير سكاني تعليمي — استجابة الأفراد لمثبطات 5-ARI تختلف؛ لا تصرف مثبطات لنفسك."
+  }
+}

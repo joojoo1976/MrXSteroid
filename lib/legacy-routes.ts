@@ -111,6 +111,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.INSULIN_CONVERSION_CALCULATOR]: '/smarttools/tool-053-insulin-conversion-calculator',
     [Page.GLUCOSE_TRACKER]: '/smarttools/tool-054-glucose-tracker',
     [Page.INSULIN_SENSITIVITY_OPTIMIZER]: '/smarttools/tool-055-insulin-sensitivity-optimizer',
+
+    [Page.MINI_PCT_CALCULATOR]: '/smarttools/tool-056-mini-pct-calculator',
+    [Page.FREE_TESTOSTERONE_MANAGER]: '/smarttools/tool-057-free-testosterone-manager',
+    [Page.ANDROGENIC_BALANCE_CALCULATOR]: '/smarttools/tool-058-androgenic-balance-calculator',
+    [Page.ANDROGEN_RECEPTOR_OPTIMIZER]: '/smarttools/tool-059-androgen-receptor-optimizer',
+    [Page.FIVE_ALPHA_CONVERSION_CALCULATOR]: '/smarttools/tool-060-5-alpha-conversion-calculator',
 };
 
 export function pageToPath(page: Page): string {

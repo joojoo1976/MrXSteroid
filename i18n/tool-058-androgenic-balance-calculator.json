@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Androgenic Balance Calculator",
+    "dht_ng_dl": "DHT (ng/dL)",
+    "testosterone_ng_dl": "Testosterone (ng/dL)",
+    "estradiol_pg_ml": "Estradiol E2 (pg/mL)",
+    "dht_t": "DHT / T ratio",
+    "e2_t": "E2 / T ratio",
+    "dht_band": "Androgenic skew",
+    "e2_band": "Estrogenic skew",
+    "warnings": "Warnings",
+    "disclaimer": "Ratio screening for education — hormonal balance decisions require bloodwork trends and medical supervision."
+  },
+  "ar": {
+    "tool_name": "حاسبة التوازن الأندروجيني",
+    "dht_ng_dl": "DHT (ng/dL)",
+    "testosterone_ng_dl": "التستوستيرون (ng/dL)",
+    "estradiol_pg_ml": "الإستراديول E2 (pg/مل)",
+    "dht_t": "نسبة DHT/T",
+    "e2_t": "نسبة E2/T",
+    "dht_band": "الميل الأندروجيني",
+    "e2_band": "الميل الإستروجيني",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص نسب تعليمي — قرارات التوازن الهرموني تحتاج اتجاهات تحاليل وإشرافًا طبيًا."
+  }
+}

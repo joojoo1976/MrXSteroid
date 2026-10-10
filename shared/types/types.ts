@@ -126,6 +126,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   INSULIN_CONVERSION_CALCULATOR = 'tool-053-insulin-conversion-calculator',
   GLUCOSE_TRACKER = 'tool-054-glucose-tracker',
   INSULIN_SENSITIVITY_OPTIMIZER = 'tool-055-insulin-sensitivity-optimizer',
+
+  MINI_PCT_CALCULATOR = 'tool-056-mini-pct-calculator',
+  FREE_TESTOSTERONE_MANAGER = 'tool-057-free-testosterone-manager',
+  ANDROGENIC_BALANCE_CALCULATOR = 'tool-058-androgenic-balance-calculator',
+  ANDROGEN_RECEPTOR_OPTIMIZER = 'tool-059-androgen-receptor-optimizer',
+  FIVE_ALPHA_CONVERSION_CALCULATOR = 'tool-060-5-alpha-conversion-calculator',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

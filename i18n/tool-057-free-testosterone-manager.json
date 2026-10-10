@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Free Testosterone Manager",
+    "total_test_ng_dl": "Total testosterone (ng/dL)",
+    "shbg_nmol_l": "SHBG (nmol/L)",
+    "albumin_g_dl": "Albumin (g/dL)",
+    "free_t": "Free testosterone (estimated)",
+    "free_pct": "Free / total share",
+    "band": "Band",
+    "warnings": "Warnings",
+    "disclaimer": "Vermeulen simplified estimate for education — it is not a direct lab measurement and cannot replace LC-MS free-T testing."
+  },
+  "ar": {
+    "tool_name": "مدير التستوستيرون الحر",
+    "total_test_ng_dl": "التستوستيرون الكلي (ng/dL)",
+    "shbg_nmol_l": "SHBG (nmol/لتر)",
+    "albumin_g_dl": "الألبومين (جم/دل)",
+    "free_t": "التستوستيرون الحر (تقديري)",
+    "free_pct": "نسبة الحر من الكلي",
+    "band": "التصنيف",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير Vermeulen المبسّط للأغراض التعليمية — ليس قياسًا مخبريًا مباشرًا ولا يغني عن تحليل Free-T الدقيق."
+  }
+}

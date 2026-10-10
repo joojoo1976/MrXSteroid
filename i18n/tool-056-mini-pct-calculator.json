@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Mini PCT Calculator",
+    "compound_class": "Compound class",
+    "class_19nor": "19-nor (nandrolone/trenbolone family)",
+    "class_aromatizing": "Aromatizing injectable",
+    "class_oral": "Oral",
+    "cycle_weeks": "Cycle length (weeks)",
+    "last_dose_days_ago": "Days since last dose",
+    "washout": "Washout window",
+    "start_in": "PCT starts in",
+    "duration": "Suggested PCT duration",
+    "band": "Window status",
+    "warnings": "Warnings",
+    "disclaimer": "Educational scheduling estimate only — real PCT design (SERMs, doses, labs) belongs to a physician."
+  },
+  "ar": {
+    "tool_name": "حاسبة الـ PCT المصغّرة",
+    "compound_class": "عائلة المركب",
+    "class_19nor": "عائلة 19-نور (ناندرولون/ترينبولون)",
+    "class_aromatizing": "حقن مؤرّمَة",
+    "class_oral": "فموي",
+    "cycle_weeks": "مدة الدورة (أسابيع)",
+    "last_dose_days_ago": "أيام منذ آخر جرعة",
+    "washout": "نافذة الغسيل",
+    "start_in": "بدء PCT بعد",
+    "duration": "مدة PCT المقترحة",
+    "band": "حالة النافذة",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير تعليمي للجدولة فقط — تصميم PCT الفعلي (SERM والجرعات والتحاليل) قرار طبي."
+  }
+}
