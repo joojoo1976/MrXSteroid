@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "DHT Side Effect Predictor",
+    "dht": "DHT ng/dL",
+    "derivative": "Using a DHT-derivative compound",
+    "five_ari": "5-alpha-reductase inhibitor",
+    "family_history": "Family history of hair loss",
+    "age": "Age",
+    "hair_risk": "Hair-loss risk",
+    "prostate_risk": "Prostate symptom risk",
+    "overall": "Overall burden",
+    "band": "Band",
+    "mitigations": "Mitigations"
+  },
+  "ar": {
+    "tool_name": "متنبئ آثار DHT",
+    "dht": "DHT (ng/dL)",
+    "derivative": "أستخدم مشتقات DHT",
+    "five_ari": "مثبط 5-ألفا ريدكتاز",
+    "family_history": "تاريخ عائلي لتساقط الشعر",
+    "age": "العمر",
+    "hair_risk": "خطر تساقط الشعر",
+    "prostate_risk": "خطر أعراض البروستاتا",
+    "overall": "العبء الكلي",
+    "band": "التصنيف",
+    "mitigations": "إجراءات وقائية"
+  }
+}

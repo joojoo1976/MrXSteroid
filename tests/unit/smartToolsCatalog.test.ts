@@ -25,15 +25,15 @@ describe('Smart Tools catalog', () => {
     expect(ok).toBe(true);
   });
 
-  it('exposes 40 implemented user-facing tools + 10 planned roadmap entries', () => {
+  it('exposes 45 implemented user-facing tools + 5 planned roadmap entries', () => {
     const tools = getCatalogTools();
     const implemented = tools.filter((t) => t.status !== 'planned');
     const planned = tools.filter((t) => t.status === 'planned');
-    // 30 baseline tools (#1-#30) + 10 shipped tools (#031-#040, each with
+    // 30 baseline tools (#1-#30) + 15 shipped tools (#031-#045, each with
     // engine/schema/component/adapter/i18n/route/category/registry + tests).
-    expect(implemented.length).toBe(40);
-    // Remaining roadmap #041-#050 preserved by the merge policy (not yet built).
-    expect(planned.length).toBe(10);
+    expect(implemented.length).toBe(45);
+    // Remaining roadmap #046-#050 preserved by the merge policy (not yet built).
+    expect(planned.length).toBe(5);
     expect(tools.length).toBe(50);
   });
 
@@ -62,7 +62,8 @@ describe('Smart Tools catalog', () => {
   it('planned roadmap entries never leak into Hub/route generators', () => {
     const tools = getCatalogTools();
     const planned = tools.filter((t) => t.status === 'planned');
-    expect(planned.length).toBeGreaterThan(0);
+    // Guard is conditional: when the roadmap is empty every entry ships; when
+    // planned entries exist they must have NO component/route on disk yet.
     for (const t of planned) {
       expect(existsSync(toFsPath(t.componentPath)), `planned tool must have no component yet: ${t.toolId}`).toBe(false);
       const slug = t.href.replace(/^\//, '');
@@ -73,11 +74,11 @@ describe('Smart Tools catalog', () => {
   it('published views (category pages, sitemap, tool params) exclude planned entries', () => {
     const published = getPublishedCatalogTools();
     expect(published.some((t) => t.status === 'planned')).toBe(false);
-    expect(published.length).toBe(40);
+    expect(published.length).toBe(45);
     for (const cat of SMART_TOOL_CATEGORIES) {
       expect(getPublishedToolsByCategory(cat.slug).some((t) => t.status === 'planned'), cat.slug).toBe(false);
     }
-    // The planned batch #041-#050 must be invisible in every published view.
+    // The remaining planned batch (#046-#050) must be invisible in every published view.
     for (const t of getCatalogTools().filter((x) => x.status === 'planned')) {
       expect(published.includes(t), t.toolId).toBe(false);
     }

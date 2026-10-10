@@ -1,0 +1,36 @@
+{
+  "en": {
+    "tool_name": "Hematocrit Monitor",
+    "readings": "Hematocrit readings",
+    "add_reading": "Add reading",
+    "hct": "HCT %",
+    "date": "Draw date",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "on_cycle": "Currently on cycle",
+    "weeks_remaining": "Weeks remaining",
+    "band": "Band",
+    "trend": "30-day trend",
+    "projected": "Projected intervention crossing",
+    "donate": "Therapeutic-donation eligible",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "متتبع الهيماتوكريت",
+    "readings": "قراءات الهيماتوكريت",
+    "add_reading": "إضافة قراءة",
+    "hct": "الهيماتوكريت %",
+    "date": "تاريخ التحليل",
+    "sex": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "on_cycle": "في منتصف دورة حاليًا",
+    "weeks_remaining": "الأسابيع المتبقية",
+    "band": "التصنيف",
+    "trend": "اتجاه 30 يومًا",
+    "projected": "التقاطع المتوقع لخط التدخل",
+    "donate": "مؤهل للتبرع العلاجي",
+    "warnings": "تنبيهات"
+  }
+}

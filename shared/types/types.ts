@@ -108,6 +108,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   STACK_COMPATIBILITY = 'tool-038-stack-compatibility',
   LIVER_ENZYME_TRACKER = 'tool-039-liver-enzyme-tracker',
   LIPID_PROFILE_OPTIMIZER = 'tool-040-lipid-profile-optimizer',
+
+  HEMATOCRIT_MONITOR = 'tool-041-hematocrit-monitor',
+  ESTROGEN_MANAGEMENT = 'tool-042-estrogen-management',
+  PROLACTIN_MANAGEMENT = 'tool-043-prolactin-management',
+  DHT_SIDE_EFFECTS = 'tool-044-dht-side-effects',
+  CYCLE_BREAK_PLANNER = 'tool-045-cycle-break-planner',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

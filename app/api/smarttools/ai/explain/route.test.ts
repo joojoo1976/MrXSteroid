@@ -67,7 +67,7 @@ describe('/api/smarttools/ai/explain', () => {
   });
 
   it('404 for PLANNED roadmap tools (never explainable before launch)', async () => {
-    const res = await POST(req({ ...VALID, toolSlug: 'tool-041-hematocrit-monitor' }));
+    const res = await POST(req({ ...VALID, toolSlug: 'tool-046-trt-lifetime' }));
     expect(res.status).toBe(404);
   });
 });

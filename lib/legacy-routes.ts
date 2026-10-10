@@ -93,6 +93,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.STACK_COMPATIBILITY]: '/smarttools/tool-038-stack-compatibility',
     [Page.LIVER_ENZYME_TRACKER]: '/smarttools/tool-039-liver-enzyme-tracker',
     [Page.LIPID_PROFILE_OPTIMIZER]: '/smarttools/tool-040-lipid-profile-optimizer',
+
+    [Page.HEMATOCRIT_MONITOR]: '/smarttools/tool-041-hematocrit-monitor',
+    [Page.ESTROGEN_MANAGEMENT]: '/smarttools/tool-042-estrogen-management',
+    [Page.PROLACTIN_MANAGEMENT]: '/smarttools/tool-043-prolactin-management',
+    [Page.DHT_SIDE_EFFECTS]: '/smarttools/tool-044-dht-side-effects',
+    [Page.CYCLE_BREAK_PLANNER]: '/smarttools/tool-045-cycle-break-planner',
 };
 
 export function pageToPath(page: Page): string {

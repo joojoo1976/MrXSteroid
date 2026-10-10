@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Estrogen Management Pro",
+    "e2": "Estradiol (E2) pg/mL",
+    "weekly_test": "Testosterone mg/week",
+    "taking_ai": "Currently taking an aromatase inhibitor",
+    "ai_dose": "AI dose mg/week",
+    "symptoms": "Symptoms",
+    "body_fat": "Body fat %",
+    "band": "E2 band",
+    "optimal": "Optimal range",
+    "delta": "Suggested AI change",
+    "action": "Action",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "إدارة الإستروجين الاحترافية",
+    "e2": "الإستراديول E2 (pg/mL)",
+    "weekly_test": "التستوستيرون mg/أسبوع",
+    "taking_ai": "أستخدم مثبط أروماتاز حاليًا",
+    "ai_dose": "جرعة المثبط mg/أسبوع",
+    "symptoms": "الأعراض",
+    "body_fat": "نسبة الدهون %",
+    "band": "النطاق",
+    "optimal": "النطاق الأمثل",
+    "delta": "التغيير المقترح للمثبط",
+    "action": "الإجراء",
+    "warnings": "تنبيهات"
+  }
+}

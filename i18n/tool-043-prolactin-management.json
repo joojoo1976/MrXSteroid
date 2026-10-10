@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Prolactin Management Pro",
+    "prolactin": "Prolactin ng/mL",
+    "uses_19nor": "Using 19-nor compounds (nandrolone/trenbolone)",
+    "caber_dose": "Current cabergoline mcg/week",
+    "symptoms": "Symptoms",
+    "band": "Band",
+    "suggested": "Suggested cabergoline dose",
+    "action": "Action",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "إدارة البرولاكتين",
+    "prolactin": "البرولاكتين ng/mL",
+    "uses_19nor": "أستخدم مشتقات 19-nor (ناندرولون/ترينبولون)",
+    "caber_dose": "جرعة الكابرجولين الحالية mcg/أسبوع",
+    "symptoms": "الأعراض",
+    "band": "التصنيف",
+    "suggested": "الجرعة المقترحة",
+    "action": "الإجراء",
+    "warnings": "تنبيهات"
+  }
+}

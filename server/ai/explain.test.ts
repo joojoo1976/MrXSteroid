@@ -61,7 +61,7 @@ describe('AI explain runtime', () => {
   });
 
   it('rejects PLANNED roadmap tools (published-only surface)', async () => {
-    await expect(explainRequest({ ...BASE, toolSlug: 'tool-041-hematocrit-monitor' }, { provider: null })).rejects.toBeInstanceOf(AiExplainError);
+    await expect(explainRequest({ ...BASE, toolSlug: 'tool-046-trt-lifetime' }, { provider: null })).rejects.toBeInstanceOf(AiExplainError);
   });
 
   it('deterministic explanation does not invent numbers absent from context', async () => {

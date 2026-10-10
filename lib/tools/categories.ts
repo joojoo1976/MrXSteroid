@@ -89,6 +89,12 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-038-stack-compatibility': 'cycle-management',
   'tool-039-liver-enzyme-tracker': 'medical-monitoring',
   'tool-040-lipid-profile-optimizer': 'medical-monitoring',
+
+  'tool-041-hematocrit-monitor': 'medical-monitoring',
+  'tool-042-estrogen-management': 'hormonal-health',
+  'tool-043-prolactin-management': 'hormonal-health',
+  'tool-044-dht-side-effects': 'medical-monitoring',
+  'tool-045-cycle-break-planner': 'cycle-management',
 };
 
 /** Catégorie d'un outil (accepte slug ou href '/smarttools/<slug>'). */

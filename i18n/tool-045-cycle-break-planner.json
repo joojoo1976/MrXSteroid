@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Cycle Break Planner",
+    "cycle_weeks": "Cycle length used (weeks)",
+    "compounds": "Compounds used",
+    "add_compound": "Add compound",
+    "name": "Compound name",
+    "half_life": "Half-life (days)",
+    "suppression": "Suppression (1-3)",
+    "bloodwork": "I have baseline bloodwork",
+    "clear_days": "Days to full clearance",
+    "pct_window": "PCT window",
+    "baseline": "Baseline recovery",
+    "milestones": "Recovery milestones",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "مخطط فترة الراحة بين الدورات",
+    "cycle_weeks": "مدة الدورة المستخدمة (أسابيع)",
+    "compounds": "المركبات المستخدمة",
+    "add_compound": "إضافة مركب",
+    "name": "اسم المركب",
+    "half_life": "نصف العمر (أيام)",
+    "suppression": "قوة الكبت (1-3)",
+    "bloodwork": "لدي تحاليل أساسية",
+    "clear_days": "أيام التطهير الكامل",
+    "pct_window": "نافذة ما بعد الدورة",
+    "baseline": "العودة لخط الأساس",
+    "milestones": "محطات التعافي",
+    "warnings": "تنبيهات"
+  }
+}
