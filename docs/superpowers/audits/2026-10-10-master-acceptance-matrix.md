@@ -69,6 +69,21 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 | next build | **PASS** | 199 static pages (was 189) |
 
 
+## Batch #056–#060 detail (2026-10-11, commit `1ba881c`)
+| Item | Status | Evidence |
+|---|---|---|
+| Engines 056–060 (TDD golden) | **PASS** | RED: 5 files failed (module-not-found) → GREEN 15/15 (`tmp/green2-056-060.log`): 056 (washout 21/14/7 +7 long-cycle, duration 28+14 @ ≥12w, start=max(0,…)), 057 (Vermeulen simplified: T 500/SHBG 30 → 93.1 pg/mL, 1.9%; bands 1.5/2.5), 058 (DHT/T 10–25 balanced; E2/T ≤0.6 balanced), 059 (score 60±: sleep+10, training 4-5 +8/>6 −8, break +12/+6, cycle>12 −10; bands 50/75), 060 (DHT=T×0.10; fin5 0.03, dut 0.01; bands 30/85; suppression 70/90) |
+| Golden-deviation rule applied | **PASS** | engine fixed where test expresses intended behavior (056 `>= 12` duration; 059 partial-credit break keeps the 8-week recommendation); test goldens recomputed where hand math drifted (057 exact Vermeulen values 93.1/1.9/2.6/1.2; 058 E2/T extra ×100 caught by goldens; 060 dotted enum key `'dutasteride_0.5mg'` needed quoting) |
+| Schemas 056–060 | **PASS** | zod in/out contracts; tsc EXIT=0 |
+| Adapters + batch test | **PASS** | RED (module-not-found) → GREEN 5/5 (`tmp/green-adapter5.log` 8/8 incl. legacyRoutes); canonical buildXProvenance/KeyFindings/Output; registry orders 720–760; DataSource 'lab' union-invalid (055 lesson) — defaults 'manual' |
+| i18n AR/EN ×5 | **PASS** | i18n/tool-056..060-*.json; Arabic via write-tool (no console mojibake) |
+| Components ×5 | **PASS** | draft autosave + zod + Bio-Dashboard save + prev/next + RTL/LTR + AI-context `<details>` panel written in from the start; all five composed complete (no truncated writes this batch); stray `.keep` junk file caught and deleted |
+| Routes 301 ×5 | **PASS** | app/smarttools/tool-056..060-*/page.tsx → toHierarchicalHref |
+| Catalog flip | **PASS** | catalog7 #056–#060 planned→implemented; counts 60/90/150; published=60 |
+| AI explain gate | **PASS** | published-only gate unchanged; ai-registry tests pass |
+| Full suite | **PASS (SmartTools domain)** | 3088 passed / 16 payments (documented pre-existing) / 5 skipped |
+| next build | **PASS** | 209 static pages (was 199) |
+
 ## Commits
 1. `374a923` — batch #031-#040 complete + platform hardening (published gate).
 2. `572409c` — superpowers docs (plan, Phase A audit, ledger).
@@ -79,3 +94,5 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 7. `1cfd356` — matrix + session ledger update for batch #046–#050.
 8. `01a3d82` — roadmap #051–#150 registered as planned identities (catalogs 7–10, TOOL_CATEGORY +100).
 9. `062528d` — tools #051–#055 full stack (41 files): 55 implemented / 95 planned / 150 total.
+10. `20fd04b` — matrix + ledger for batch #051–#055 and roadmap registration.
+11. `1ba881c` — tools #056–#060 full stack (41 files): 60 implemented / 90 planned / 150 total.
