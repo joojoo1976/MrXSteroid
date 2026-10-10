@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Insulin Sensitivity Optimizer",
+    "fasting_glucose": "Fasting glucose (mg/dL)",
+    "fasting_insulin": "Fasting insulin (µIU/mL)",
+    "weekly_training_sessions": "Weekly training sessions",
+    "sleep_hours": "Average sleep (h)",
+    "homa_ir": "HOMA-IR index",
+    "band": "Band",
+    "interventions": "Modifiable factors",
+    "warnings": "Warnings",
+    "disclaimer": "HOMA-IR is a screening estimate — insulin dynamics require medical supervision and proper labs."
+  },
+  "ar": {
+    "tool_name": "محسّن حساسية الأنسولين",
+    "fasting_glucose": "جلوكوز الصائم (mg/dL)",
+    "fasting_insulin": "الأنسولين الصائم (µIU/مل)",
+    "weekly_training_sessions": "حصص التدريب الأسبوعية",
+    "sleep_hours": "متوسط ساعات النوم",
+    "homa_ir": "مؤشر HOMA-IR",
+    "band": "التصنيف",
+    "interventions": "إجراءات قابلة للتعديل",
+    "warnings": "تحذيرات",
+    "disclaimer": "مؤشر فحص فقط — ديناميكيات الأنسولين تتطلب إشرافًا طبيًا."
+  }
+}

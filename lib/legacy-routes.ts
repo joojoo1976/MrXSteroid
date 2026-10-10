@@ -105,6 +105,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.CARDIOVASCULAR_RISK]: '/smarttools/tool-048-cardiovascular-risk',
     [Page.BONE_DENSITY]: '/smarttools/tool-049-bone-density',
     [Page.MENTAL_HEALTH]: '/smarttools/tool-050-mental-health',
+
+    [Page.PEPTIDE_DOSAGE_CALCULATOR]: '/smarttools/tool-051-peptide-dosage-calculator',
+    [Page.GROWTH_HORMONE_PROTOCOL_PLANNER]: '/smarttools/tool-052-growth-hormone-protocol-planner',
+    [Page.INSULIN_CONVERSION_CALCULATOR]: '/smarttools/tool-053-insulin-conversion-calculator',
+    [Page.GLUCOSE_TRACKER]: '/smarttools/tool-054-glucose-tracker',
+    [Page.INSULIN_SENSITIVITY_OPTIMIZER]: '/smarttools/tool-055-insulin-sensitivity-optimizer',
 };
 
 export function pageToPath(page: Page): string {

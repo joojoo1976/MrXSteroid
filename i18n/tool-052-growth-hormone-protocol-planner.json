@@ -1,0 +1,36 @@
+{
+  "en": {
+    "tool_name": "Growth Hormone Protocol Planner",
+    "bodyweight_kg": "Bodyweight (kg)",
+    "weekly_iu_total": "Weekly total (IU)",
+    "protocol_pattern": "Protocol pattern",
+    "5on2off": "5 on / 2 off",
+    "daily": "Daily",
+    "months": "Duration (months)",
+    "cost_per_iu_usd": "Cost per IU (USD)",
+    "daily_iu": "Daily dose (on-days)",
+    "rest_days": "Rest days / week",
+    "monthly_iu": "Monthly total (IU)",
+    "cost_3m": "3-month cost",
+    "cost_6m": "6-month cost",
+    "warnings": "Warnings",
+    "disclaimer": "Educational planning only — GH requires medical supervision and labs."
+  },
+  "ar": {
+    "tool_name": "مخطط بروتوكول GH",
+    "bodyweight_kg": "الوزن (كجم)",
+    "weekly_iu_total": "الإجمالي الأسبوعي (وحدة)",
+    "protocol_pattern": "نمط البروتوكول",
+    "pattern_5on2off": "5 أيام استخدام / 2 راحة",
+    "pattern_daily": "يومي",
+    "months": "المدة (أشهر)",
+    "cost_per_iu_usd": "سعر الوحدة الدولية (دولار)",
+    "daily_iu": "الجرعة اليومية",
+    "rest_days": "أيام الراحة / أسبوع",
+    "monthly_iu": "الإجمالي الشهري (وحدة)",
+    "cost_3m": "تكلفة 3 أشهر",
+    "cost_6m": "تكلفة 6 أشهر",
+    "warnings": "تنبيهات",
+    "disclaimer": "تخطيط تعليمي فقط — GH يتطلب إشرافًا طبيًا وتحاليل."
+  }
+}

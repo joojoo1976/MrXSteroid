@@ -120,6 +120,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   CARDIOVASCULAR_RISK = 'tool-048-cardiovascular-risk',
   BONE_DENSITY = 'tool-049-bone-density',
   MENTAL_HEALTH = 'tool-050-mental-health',
+
+  PEPTIDE_DOSAGE_CALCULATOR = 'tool-051-peptide-dosage-calculator',
+  GROWTH_HORMONE_PROTOCOL_PLANNER = 'tool-052-growth-hormone-protocol-planner',
+  INSULIN_CONVERSION_CALCULATOR = 'tool-053-insulin-conversion-calculator',
+  GLUCOSE_TRACKER = 'tool-054-glucose-tracker',
+  INSULIN_SENSITIVITY_OPTIMIZER = 'tool-055-insulin-sensitivity-optimizer',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

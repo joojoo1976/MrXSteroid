@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Peptide Dosage Calculator",
+    "vial_mg": "Vial strength (mg)",
+    "bac_water_ml": "Bacteriostatic water (ml)",
+    "desired_dose_mg": "Desired dose (mg)",
+    "concentration": "Concentration",
+    "volume": "Draw volume",
+    "units": "Draw units (U-100)",
+    "doses": "Doses per vial",
+    "clamped": "Below syringe resolution — clamped to 2 IU",
+    "warnings": "Warnings",
+    "disclaimer": "Educational math only — verify compound identity and lab results; peptides are research compounds."
+  },
+  "ar": {
+    "tool_name": "حاسبة جرعة الببتيدات",
+    "vial_mg": "محتوى الفيال (ملغ)",
+    "bac_water_ml": "الماء البكتيريستاتيكي (مل)",
+    "desired_dose_mg": "الجرعة المطلوبة (ملغ)",
+    "concentration": "التركيز بعد التشكيل",
+    "volume": "حجم السحب",
+    "units": "وحدات السحب (U-100)",
+    "doses_per_vial": "جرعات لكل فيال",
+    "clamped": "أقل من دقة السرنجة — حُدّدت إلى وحدتين",
+    "warnings": "تحذيرات",
+    "disclaimer": "حساب تعليمي فقط — تحقق من هوية المركب ونتائج المختبر."
+  }
+}

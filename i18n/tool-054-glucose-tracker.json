@@ -1,0 +1,33 @@
+{
+  "en": {
+    "tool_name": "Glucose Tracker",
+    "readings": "Glucose readings (mg/dL)",
+    "mg_dl": "Glucose (mg/dL)",
+    "date": "Date",
+    "fasting": "Fasting",
+    "add_reading": "Add reading",
+    "avg": "Overall average",
+    "fasting_avg": "Fasting average",
+    "in_range": "In-range share",
+    "hypo": "Hypoglycemia episodes (<70)",
+    "hyper": "Fasting ≥ 126 episodes",
+    "band": "Band",
+    "warnings": "Warnings",
+    "disclaimer": "Screening log only — glucose diagnosis and treatment belong to a physician."
+  },
+  "ar": {
+    "tool_name": "متتبع الجلوكوز",
+    "mg_dl": "الجلوكوز (mg/dL)",
+    "date": "التاريخ",
+    "fasting": "صائم",
+    "add_reading": "إضافة قراءة",
+    "avg": "المتوسط العام",
+    "fasting_avg": "متوسط الصائم",
+    "in_range": "داخل النطاق",
+    "hypo": "نوبات الهبوط",
+    "hyper": "قراءات مرتفعة صائمة",
+    "band": "التصنيف",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي فقط — تشخيص وعلاج سكر الدم قرار الطبيب."
+  }
+}

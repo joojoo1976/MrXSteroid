@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Insulin Conversion Calculator",
+    "concentration": "Insulin concentration",
+    "u100": "U-100 (100 units/ml)",
+    "u40": "U-40 (40 units/ml)",
+    "dose_iu": "Dose (IU)",
+    "volume": "Physical volume",
+    "reading_u100": "Reading on a U-100 syringe",
+    "reading_u40": "Reading on a U-40 syringe",
+    "warnings": "Critical safety warnings",
+    "disclaimer": "Insulin requires medical supervision. The two syringe scales are NOT interchangeable — a mismatched draw can be fatal."
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل الأنسولين",
+    "concentration": "تركيز الأنسولين",
+    "u100": "U-100 (100 وحدة/مل)",
+    "u40": "U-40 (40 وحدة/مل)",
+    "dose_iu": "الجرعة (وحدة دولية)",
+    "volume": "الحجم الفعلي (مل)",
+    "reading_u100": "القراءة على سرنجة U-100",
+    "reading_u40": "القراءة على سرنجة U-40",
+    "warnings": "تحذيرات حرجة",
+    "disclaimer": "الأنسولين يتطلب إشرافًا طبيًا. المقاييس غير قابلة للتبديل — الخطأ بين سرنجة U-100 وU-40 قد يكون قاتلًا."
+  }
+}
