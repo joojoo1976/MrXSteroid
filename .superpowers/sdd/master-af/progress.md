@@ -1,31 +1,21 @@
 # SDD ledger — plan: docs/superpowers/plans/2026-10-10-master-phases-AF.md
 
 Governing: SMARTTOOLS_SPEC.md (in-repo) + user directive 2026-10-10 (phases A–F, AI §11, acceptance matrix).
-BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git history. "Second merge list" absent. SMARTTOOLS_SPEC.md + user directive are the governing pair.
-Worktree ruling: continue on `main` working tree — the 88 uncommitted files ARE the in-progress batch.
+BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git history. SMARTTOOLS_SPEC.md + user directive are the governing pair.
 
-## Done
-- [x] T1 Phase A audit → docs/superpowers/audits/2026-10-10-master-phaseA-audit.md.
-- [x] B1 PAGE_TO_PATH: tests/unit/legacyRoutes.test.ts RED→GREEN; 5 keys added (INJECTION_SCHEDULE…LIPID_PROFILE_OPTIMIZER).
-- [x] B3 schemas hygiene: tests/unit/schemasClean.test.ts RED→GREEN; junk `` `nexport `` lines removed from schemas 036–040 (036 also had stray lone backtick).
-- [x] B2 component 036 completed from truncation: useEffect import, rotation_sites string→array (parseSites), full JSX per 031 pattern, commitDashboardSnapshot {submitted,projection} pattern.
-- [x] Hidden defects fixed (revealed once parse error cleared):
-  * adapters 036–040: replaced `tool.schema.safeParse` (ToolDefinition has no schema) + `unknown` input + null-result with the canonical 031–035 pattern (typed input, direct engine call).
-  * adapter 036 BUSIEST_DAY finding had unreachable `?? `; fixed.
-  * adapter 037 mitigations.map widened severity → `(m): KeyFinding =>` annotation.
-  * engine 037 `acc: Record<string, number>` broke BASE_RATES indexing → RiskKey/RiskRates typing.
-  * schema 036 max_ml_per_site optional vs engine required → `.default(3)`.
-  * adapter Arabic labels verified intact (earlier `?????` was console display only).
-- [x] B4 components 037–040 created (037 side-effect probability, 038 stack compatibility, 039 liver enzyme tracker, 040 lipid profile optimizer) with drafts/AI-context/save/prev-next/AR-EN RTL; compile errors fixed (duplicate decls, extra paren, sbp/systolic_bp mismatch).
-- tsc --noEmit = GREEN (EXIT 0).
+## Session complete — final state (all committed)
+- [x] A audit → docs/superpowers/audits/2026-10-10-master-phaseA-audit.md.
+- [x] B (B1–B7) → commit 374a923: batch #031-#040 complete end-to-end, published-gate (getPublished*), validation gate planned-status contract, legacy routes fix, schemas hygiene + guards.
+- [x] C regression: full suite 3028 pass; 16 failures = payments only, PROVEN pre-existing on baseline worktree C:/MrXSBaseline @ 6a84b3d. Payments out of scope (user rule #4).
+- [x] E (E1+E2) → commit e1d9762: server/ai stack + /api/smarttools/ai/explain + 12 tests; ai-registry real-category fix (latent AIToolNavigation bugs surfaced by typing + fixed); AIInsightPanel wired to all published tool pages.
+- [x] D-1 → commit cf3180f: tools #041-#045 shipped end-to-end (44 files; TDD golden engine tests; adapters batch test; i18n AR/EN; components; routes; registry/Page/PAGE_TO_PATH/TOOL_CATEGORY wiring; catalog6 flip 45 implemented / 5 planned).
+- [x] F → next build SUCCESS (179 static pages, AI route present); acceptance matrix: docs/superpowers/audits/2026-10-10-master-acceptance-matrix.md.
 
-## Next
-- B5: flip catalog6 #036–#040 → 'implemented'; RED-first count update in tests/unit/smartToolsCatalog.test.ts (implemented 35→40, planned 15→10).
-- B6: planned-leak filtering for app/smarttools/[category]/page.tsx, app/smarttools/sitemap.ts, app/smarttools/[category]/[tool]/page.tsx generateStaticParams + tests.
-- B7: batch adapter test 036–040 + full vitest + validate-tools + eslint delta; commit Phase B.
-- C regression #001–#030. D: tools #041–#050. E: AI explain service + route + tests. F: matrix + build.
+## Remaining roadmap (honest)
+- #046-#050: registered planned, gated, invisible to users (counts test 45/5).
+- #051-#150: not started; §50 table + §ONBOARDING pattern is the onboarding path.
 
-## Notes
-- pickToolI18n(i18nJson, locale) returns flat dict + dir; i18n JSONs 037–040 exist with EN+AR keys verified via node (Arabic never through PowerShell).
-- commitDashboardSnapshot(output, parsed.data) → {submitted, projection} with .ok checks (031 pattern).
-- windows/PowerShell mojibake = display only; verify with node fs reads.
+## Lessons (recurring)
+- Long-file one-shot writes polluted tails with stale fragments → hard rule: compose full final content before write; grep for duplicate declarations right after each write.
+- PowerShell mangles quotes/Arabic → always via script files (node fs), verify Arabic via node not console.
+- Parallel tsc runs raced with edits → re-run after edit completes.
