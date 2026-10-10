@@ -6,6 +6,7 @@ import { getPublishedCatalogTools } from '@/lib/tools/smartToolsCatalog4';
 import { getCategory, getCategoryOfSlug, SMART_TOOL_CATEGORIES } from '@/lib/tools/categories';
 import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
+import AIInsightPanel from '@/components/smarttools/AIInsightPanel';
 
 export function generateStaticParams(): Array<{ category: string; tool: string }> {
   return getPublishedCatalogTools()
@@ -75,6 +76,7 @@ export default async function ToolPage({
         </nav>
         <SafetyNotice category={cat.slug} />
         <ToolComponent />
+        <AIInsightPanel toolSlug={entry.slug} />
       </div>
     </>
   );

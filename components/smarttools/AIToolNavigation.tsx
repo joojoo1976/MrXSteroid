@@ -57,11 +57,11 @@ export function AIToolNavigation({ currentTool, totalTools }: ToolNavigationProp
               {aiRecommendations.map(tool => (
                 <button
                   key={tool.id}
-                  onClick={() => router.push(`/smarttools/${tool.category}/${tool.slug}`)}
+                  onClick={() => router.push(tool.category === 'uncategorized' ? `/smarttools/${tool.slug}` : `/smarttools/${tool.category}/${tool.slug}`)}
                   className="p-3 bg-zinc-900/50 hover:bg-zinc-800/50 rounded-xl border border-white/10 text-left"
                 >
                   <div className="text-[#39FF14] text-xs font-bold mb-1">#{tool.id}</div>
-                  <div className="text-white text-sm line-clamp-2">{tool.nameEn}</div>
+                  <div className="text-white text-sm line-clamp-2">{tool.titleEn}</div>
                 </button>
               ))}
             </div>
