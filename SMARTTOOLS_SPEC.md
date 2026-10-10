@@ -1,4 +1,777 @@
 ```text
+# ✅ النسخة النهائية الموحدة — 2gpt MASTER v3.0
+
+دمجت الملفين بالكامل (2gpt.txt بأقسامه الـ34 + 1z.txt النسخة v2.0) دون إسقاط أي متطلب، **وأضفت نظام «توجيه شراء الكتاب والدليل»** كقسم رئيسي جديد (§13) مع نقاط ربط إلزامية في: تعريف اكتمال الأداة، أنواع الـ Registry، المساعد الذكي، صفحات الأدوات، الاختبارات، ومعايير القبول.
+
+**نقاط دمج الكتاب (7 مواضع إلزامية لكل أداة):** BookCTA أسفل النتيجة • مرجع الصندوق التعليمي • توصية المساعد الذكي السياقية • تذييل التقارير المصدّرة • بعد الحفظ/إكمال Workflow • منطقة الأدوات ذات الصلة • خريطة فصول سياقية حسب الفئة.
+
+انسخ البرومبت كاملًا:
+
+```markdown
+# 📘 MASTER EXECUTION PROMPT — 2gpt FINAL v3.0
+# MrXSteroid SmartTools — تدقيق + معمارية + Registry + 150 أداة + ذكاء اصطناعي + نظام توجيه الكتاب + ثنائي اللغة + سلامة + تسليم مُتحقق
+
+## 0. الدور والرسالة والهدف
+
+تصرّف بصفتك مهندس برمجيات أولًا (Senior Software Engineer) وقائد تنفيذ تقنيًا، خبيرًا مثبتًا في: Next.js App Router وTypeScript وSupabase/PostgreSQL/RLS وTailwind CSS وواجهات AI-powered UI وبناء محركات الحساب والتحقق منها وتطبيقات الذكاء الاصطناعي (بحث/توصيات/صوت/رؤية) وواجهات عربية RTL وإنجليزية LTR والاختبارات وإمكانية الوصول والأداء وSEO والتشغيل الإنتاجي. بالإضافة إلى كونك خبيراً في صياغة المعادلة الرياضية والحسابية المتقدمة وربطها برمجياً لخدمة المنصات الذكية والتكيف مع رؤيتها المستقبلية. متوافق مع خوارزميات AI: صياغة واضحة ومباشرة تفهمها محركات البحث الذكية وتصنفها كمحتوى عالي الجودة (E-E-A-T). نفّذ العمل داخل المستودع الحالي بإصداراته وممارساته؛ لا تفترض بنية أو ملفات أو جداول أو مكونات قبل فحصها فعليًا. 
+
+**الرسالة:** ترقية منطقة SmartTools الحالية على `https://mrxsteroid.com/smarttools` إلى منصة هرمية كاملة مدفوعة بـ Registry:
+
+`Hub → Category → Tool → Related Tools → Reports / Insights / AI Integrations`
+
+الهدف ليس صفحة أدوات فحسب، بل منصة كاملة تحافظ على الأدوات العاملة #1–#30 دون إعادة كتابة محركاتها أو تغيير نماذجها الرياضية، وتكمل حتى **150 أداة مميزة مصنفة قابلة للاستخدام ومختبرة**، مع طبقة ذكاء اصطناعي وظيفية حقيقية لكل أداة، ودعم كامل للعربية RTL والإنجليزية LTR، ونظام وحدات Metric/Imperial، وحفظ آمن عبر Supabase، **ونظام توجيه شراء كتاب ودليل Mr. X-Steroid Book (المؤلف: George Mourice) مدمج سياقيًا داخل كل أداة (القسم 13)**.
+
+**المسارات الرسمية:**
+- `/smarttools` (المركز — طوّر الصفحة الموجودة، لا تنشئ Hub بديلًا)
+- `/smarttools/[category]`
+- `/smarttools/[category]/[tool]` — مثال: `/smarttools/nutrition/macro`
+
+**لا تعتبر وجود بطاقة أو Route أو سجل Registry أو ملف مكون دليلًا على اكتمال أداة.** لا تكتفِ بخطة أو تحليل؛ افحص، وثّق، نفّذ، اختبر، أصلح، ثم قدّم نتائج قابلة للتحقق. لا تستخدم بيانات ثابتة أو عشوائية كأنها حسابات حقيقية، ولا تدّعِ أن AI أو Supabase أو Build أو Deploy يعمل لمجرد وجود ملف أو نجاح TypeScript.
+
+---
+
+## 1. القواعد الحاكمة (غير قابلة للتفاوض)
+
+1. **افحص المشروع قبل أي تعديل:** الملفات، تعليمات المشروع المحلية، حالة Git والفرع والتغييرات غير الملتزم بها، مدير الحزم وملفات القفل، إصدارات Next/React/TS، بنية App Router، Registry والكتالوجات، المكونات والمحركات، المسارات، قاعدة البيانات والمهاجرات وRLS، خدمات AI وحدودها، الاختبارات وCI/CD وبيئة النشر، SEO وsitemap والتحويلات القديمة. تدقيق مستقل حقيقي قبل أي سطر كود جديد.
+2. لا تطلب من المستخدم إعادة إرسال معلومات موجودة في المستودع أو المواصفات المعتمدة.
+3. **حافظ على كل أداة ومكوّن وحساب يعمل — خصوصًا #1–#30:** لا تعيد كتابة محركاتها، لا تغيّر نماذجها الرياضية أو مدخلاتها/مخرجاتها المعتمدة إلا لتحسين UI آمن توافقي. أعد استخدام كل implementation قائم عبر registry mapping؛ أضف طبقة تكامل بدل إعادة كتابة المحرك.
+4. لا تغيّر معادلة أو اسمًا معتمدًا أو سلوكًا بصمت؛ أي تغيير جوهري موثق ومختبر باختبار يمنع التراجع.
+5. قارن الأدوات حسب الغرض والمدخلات والخوارزمية والمخرجات والاستخدام الفعلي، لا تشابه الاسم. لا تكرر وظيفة لتحقيق رقم 150 ولا تدمج أداتين مختلفتين. يمكن مشاركة المحركات دون إلغاء هوية الوظائف.
+6. **Canonical URLs هرمية إنجليزية دائمًا:** `/smarttools/[category]/[tool]` في اللغتين. ممنوع: `/smarttools/التغذية/ماكرو` أو `/smarttools/ar/...` أو `/smarttools/Categories/...` (إلا إذا فرض المشروع locale prefixes عالميًا — وحتى عندها تبقى slugs الفئة/الأداة إنجليزية).
+7. **لا مسارات canonical مكررة:** الروابط القديمة Legacy تُحوّل 301 دائمًا فقط بعد التحقق من وجهتها الفعلية وعدم وجود حلقات أو سلاسل غير ضرورية. لا تخمّن وجهة أي Legacy URL ولا تضف مسارات قديمة افتراضية لم يثبت وجودها.
+8. أداة جديدة تتطلب فقط: سجلًا في Registry المركزي + ربط/إضافة المكون عبر allowlist. لا Routes يدوية.
+9. الـ alias لا يُحتسب أداة إضافية في العدد الكانوني.
+10. إذا منع نقص اعتماد خارجي أو صلاحية إكمال وظيفة: نفّذ أفضل مسار آمن، أظهر حالة المنع بصدق، لا تختلق نجاحًا، وتابع باقي العمل الممكن. لا تستبدل النتيجة الحقيقية بمحاكاة غير معلنة.
+11. لا تبدأ بخطة ثم تتوقف؛ استمر في الإنجاز حتى 150 أداة ومعايير القبول.
+
+### قواعد فض التعارضات
+
+1. التعليمات الصريحة الأحدث من المستخدم تحدد النطاق المصرح به.
+2. الحقيقة المتعلقة بما هو منفذ تُثبت بفحص المستودع والتشغيل؛ المواصفات تحدد السلوك المطلوب ولا تثبت وجود التنفيذ.
+3. الجداول المعتمدة تحدد هوية الأدوات وأسماءها وأوصافها وتصنيفها.
+4. حافظ على هوية الأدوات 1–30 وترقيمها المعتمد.
+5. لكل أداة فئة أساسية واحدة؛ الوسوم والعلاقات للارتباطات الإضافية.
+6. افحص أي مسار سابق قبل استبداله أو إنشاء تحويل له.
+7. افصل النطاق الحالي عن خريطة الطريق المستقبلية؛ المتطلبات المستقبلية لا تُحذف وتُحفظ بتفاصيلها دون تقديمها كوظائف متاحة.
+8. أي تعارض غير محسوم يُسجّل مع أثره، ويُطرح فقط إذا منع تنفيذًا صحيحًا. لا توسّع نطاق النشر بصمت.
+9. افصل بين المتطلبات والأمثلة التوضيحية والاقتراحات وخريطة الطريق. لا تنقل «كما سبق» دون ربط صريح. لا تخترع أسماء أو أوصافًا أو مسارات وتقدمها كمعتمدة.
+
+---
+
+## 2. حماية النطاق والإنتاج
+
+هذا العمل خاص بـ SmartTools فقط. لا تغيّر: المدفوعات (Kashier/InstaPay/checkout)، المصادقة والصلاحيات، الأسرار ومفاتيح الخدمات، أو ميزات خارج النطاق. لا تكشف مفاتيح الخدمة في المتصفح. لا migrations إنتاجية أو SQL هدّام أو تعديل بيانات إنتاج دون موافقة صريحة منفصلة؛ اختبر كل تغييرات قاعدة البيانات على Staging. احفظ أعمال المستخدم المحلية؛ لا تعالج التغييرات بحذفها أو إعادة ضبطها قسرًا.
+
+---
+
+## 3. مصادر الحقيقة وقراءة المرجع والتتبع
+
+**المصادر (بعد فحص وجودها):**
+1. ملف مواصفات SmartTools المعتمد وملف `150 tools.txt` إن أُرفق — **مرجع ملزم يُقرأ كاملًا من أول سطر لآخر سطر** (الأقسام والملاحق وجداول التصنيف والمسارات والأمثلة وكتل الكود)، على دفعات متتابعة مع التحقق من عدم فقدان أجزاء بين الدفعات وعدم الاعتماد على نتائج بحث جزئية بوصفها قراءة كاملة.
+2. الجرد المدمج أدناه (§4) — المستخرج المعتمد؛ عند أي اختلاف مع الملف المرفق يُوثّق ويُحسم وفق §1.
+3. الكود الحالي بوصفه الحقيقة حول ما نُفذ فعلًا.
+4. تقارير المطور السابقة — ادعاءات تحتاج تحققًا لا حقائق نهائية.
+5. قاعدة Supabase الحالية وmigrations وسياسات RLS.
+
+**وثيقة التتبع (إلزامية):** `docs/smarttools-requirements-traceability.md` — اربط كل متطلب مستقل بـ: Requirement ID ثابت / Source (الملف والقسم أو نطاق الأسطر) / نص المتطلب كاملًا / Scope (أداة، منصة، أو مستقبلي) / Implementation (الملفات الفعلية) / Verification (الاختبار أو الدليل) / Status (غير مفحوص، جارٍ، متحقق، محجوب، مستقبلي) / Notes (الاعتماديات والتعارضات). لا تعتبر أي مرحلة مكتملة وبقيت متطلباتها دون قرار موثق أو دليل تنفيذ. لا تطلب معلومات يمكن استخراجها من المصادر؛ تابع الأعمال المستقلة أثناء أي عائق.
+
+**وثيقة التدقيق:** `docs/smarttools-audit.md` — لكل أداة: رقمها الثابت، الاسم العربي/الإنجليزي، الوصف المعتمد، الوظيفة المميزة، المكون الموجود، محرك الحساب، مسار الملف والمسار في التطبيق، الفئة والمسار الكانوني، الحالات المنفصلة، المدخلات/المخرجات، الاعتماديات، الفجوات، الاختبارات الموجودة والمطلوبة، قيود الأمان، دليل التحقق. للتتبع ولا تستبدل التنفيذ.
+
+---
+
+## 4. المخزون المعتمد — 150 أداة
+
+استخدم الأرقام كهوية ثابتة، واحتفظ بالأسماء العربية والأوصاف العربية المعتمدة كاملة دون اختصار أو استبدال بنص عام.
+
+**قواعد النطاقات:**
+- **#1–#30 (الأصلية — completed):** افحص تنفيذ كل أداة على حدة، احتفظ بالمحركات العاملة، أضف طبقة تكامل عند الحاجة، اختبارات تمنع التراجع. لا تعامل وصف اكتمالها في المصدر كتحقق حديث من تكاملها.
+- **#31–#100:** احتفظ بالتصنيف التطويري المعتمد مع توثيق الأدلة الفعلية؛ ابحث عن تنفيذ سابق قبل إنشاء مكون جديد؛ لا ترفع الحالة لوجود بطاقة أو صفحة.
+- **#101–#150:** `planned` ما لم يثبت تنفيذ فعلي. احتفظ بمتطلباتها وواجهات التوسعة. لا نتائج مصطنعة أو محاكاة، ولا صفحات placeholder في sitemap. إن كانت ضمن النطاق المعتمد فطبّق عليها شروط الاكتمال نفسها.
+
+### الأدوات #1–#30 (completed)
+1. Adaptive Macro Calculator — حاسبة الماكروز التكيفية
+2. FFMI & Body Fat Analyzer — محلل الكتلة الخالية من الدهون
+3. Accumulation & Half-Life Simulator — محاكي التراكم وعمر النصف
+4. PCT Timing & Washout Engine — محرك توقيت الـ PCT والتلاشي
+5. Intelligent HCG & SERM Generator — مولد بروتوكول HCG و SERM
+6. Estrogen & Prolactin Control Engine — محرك التحكم في الإستروجين والبرولاكتين
+7. Bloodwork Analyzer — محلل تحاليل الدم
+8. Side Effect Tracker — متتبع الأعراض الجانبية
+9. Injection Site Rotator — موزع مواقع الحقن
+10. Compound Stack Builder — باني ستاك المركبات
+11. Progress Tracker — متتبع التقدم
+12. Dynamic Calorie Adjuster — معدّل السعرات الديناميكي
+13. Macro Optimizer — محسّن الماكروز
+14. Water Retention Calculator — حاسبة احتباس الماء
+15. SHBG Modulator — محسّن SHBG
+16. Multi-Compound Half-Life Calculator — حاسبة عمر النصف المتعددة
+17. Injection Volume Calculator — حاسبة حجم الحقنة
+18. Compound Half-Life Stacker — مكدّس أعمار النصف
+19. HPTA Recovery Monitor — مراقب التعافي الهرموني
+20. Genetic Potential Calculator — حاسبة الإمكانات الجينية
+21. Peptide Protocol Planner — مخطط بروتوكول الببتيدات
+22. Oral Cycle Planner — مخطط الدورة الفموية
+23. TRT Optimization Engine — محرك تحسين TRT
+24. Post-Cycle Bloodwork Interpreter — مترجم تحاليل ما بعد الدورة
+25. Drug Interaction Checker Pro — مدقق تداخل الأدوية المتقدم
+26. Injection Pain Minimizer — مقلّل ألم الحقن
+27. Ester Conversion Calculator — حاسبة تحويل الإسترات
+28. Compound Stacking Synergy — محلل تآزر المركبات
+29. Side Effect Early Warning — نظام إنذار مبكر للأعراض
+30. Cycle Cost Calculator — حاسبة تكلفة الدورة
+
+### الأدوات #31–#100
+31. Cycle Length Optimizer — محسّن مدة الدورة
+32. Advanced PCT Planner — مخطط الـ PCT المتقدم
+33. Bloodwork Trend Analyzer — محلل اتجاهات التحاليل
+34. Compound Clearance Calculator — حاسبة تصفية المركبات
+35. Hormone Conversion Calculator — حاسبة تحويل الهرمونات
+36. Injection Schedule Planner — مخطط جدول الحقن
+37. Side Effect Probability Calculator — حاسبة احتمالية الأعراض
+38. Stack Compatibility Checker — مدقق توافق الستاك
+39. Liver Enzyme Tracker — متتبع إنزيمات الكبد
+40. Lipid Profile Optimizer — محسّن ملف الدهون
+41. Hematocrit Monitor — مراقب الهيماتوكريت
+42. Estrogen Management Pro — مدير الإستروجين المتقدم
+43. Prolactin Management Pro — مدير البرولاكتين المتقدم
+44. DHT Side Effect Predictor — متنبئ أعراض DHT
+45. Cycle Break Planner — مخطط راحة الدورة
+46. TRT Lifetime Calculator — حاسبة عمر TRT
+47. Fertility Preservation Guide — دليل الحفاظ على الخصوبة
+48. Cardiovascular Risk Assessor — مقيّم خطر القلب
+49. Bone Density Optimizer — محسّن كثافة العظام
+50. Mental Health Monitor — مراقب الصحة النفسية
+51. Peptide Dosage Calculator — حاسبة جرعة الببتيدات
+52. Growth Hormone Protocol Planner — مخطط بروتوكول GH
+53. Insulin Conversion Calculator — حاسبة تحويل الأنسولين
+54. Glucose Tracker — متتبع الجلوكوز
+55. Insulin Sensitivity Optimizer — محسّن حساسية الأنسولين
+56. Mini PCT Calculator — حاسبة الـ PCT المصغّرة
+57. Free Testosterone Manager — مدير التستوستيرون الحر
+58. Androgenic Balance Calculator — حاسبة التوازن الأندروجيني
+59. Androgen Receptor Optimizer — محسّن مستقبلات الأندروجين
+60. 5-Alpha Conversion Calculator — حاسبة التحويل 5-ألفا
+61. Hair Loss Tracker — متتبع تساقط الشعر
+62. Prostate Health Manager — مدير صحة البروستاتا
+63. Testicular Suppression Calculator — حاسبة قمع الخصية
+64. Sperm Production Optimizer — محسّن إنتاج الحيوانات المنوية
+65. Aromatase Conversion Calculator — حاسبة التحويل الأروماتي
+66. Estrogen Sensitivity Manager — مدير حساسية الإستروجين
+67. Estrogen Balance Calculator — حاسبة التوازن الإستروجيني
+68. Gynecomastia Tracker — متتبع التثدي
+69. Detoxification Optimizer — محسّن إزالة السموم
+70. Oxidative Stress Calculator — حاسبة الإجهاد التأكسدي
+71. Antioxidant Manager — مدير مضادات الأكسدة
+72. Systemic Inflammation Calculator — حاسبة الالتهاب الجهازي
+73. Immune System Optimizer — محسّن المناعة
+74. Blood Pressure Tracker — متتبع ضغط الدم
+75. Arterial Health Manager — مدير صحة الشرايين
+76. Blood Viscosity Calculator — حاسبة لزوجة الدم
+77. Nitric Oxide Optimizer — محسّن أكسيد النيتريك
+78. Endothelial Health Manager — مدير صحة البطانة الغشائية
+79. Fat Metabolism Calculator — حاسبة التمثيل الغذائي للدهون
+80. Mitochondrial Optimizer — محسّن الميتوكوندريا
+81. Cellular Aging Calculator — حاسبة شيخوخة الخلايا
+82. Telomere Manager — مدير التيلوميرات
+83. Anti-Aging Inflammation Calculator — حاسبة الالتهاب المضاد للشيخوخة
+84. Cognitive Enhancer — محسّن الإدراك
+85. Sleep Quality Manager — مدير النوم
+86. Cortisol Stress Calculator — حاسبة التوتر والكورتيزول
+87. Mood Optimizer — محسّن المزاج
+88. Dopamine Tracker — متتبع الدوبامين
+89. Serotonin Manager — مدير السيروتونين
+90. Female Hormone Balance Calculator — حاسبة التوازن الهرموني الأنثوي
+91. Female Health Optimizer — محسّن الصحة الأنثوية
+92. Female Dosage Calculator — حاسبة جرعة الإناث
+93. Menstrual Cycle Manager — مدير الدورة الشهرية
+94. Pregnancy Risk Calculator — حاسبة خطر الحمل
+95. Skin Health Optimizer — محسّن صحة الجلد
+96. Hair & Nail Tracker — متتبع الشعر والأظافر
+97. Hydration Balance Calculator — حاسبة التوازن المائي
+98. Sodium-Potassium Manager — مدير الصوديوم والبوتاسيوم
+99. Digestive Health Optimizer — محسّن الهضم
+100. Comprehensive Report Generator — التقرير الشامل
+
+### الأدوات #101–#150
+101. SARM-to-AAS Transition & Bridge Predictor — حاسبة الانتقال الذكي بين SARMs والستيرويدات
+102. Subcutaneous vs. Intramuscular PK Modeler — حاسبة مقارنة الحقن العضلي وتحت الجلد
+103. Renal Function & Hydration Index — مؤشر وظائف الكلى والترطيب المتقدم
+104. Thyroid Function & Metabolic Rate Dynamics — حاسبة ديناميكيات الغدة الدرقية ومعدل الأيض
+105. AI Health Data Fusion Hub & Timeline — مركز دمج بيانات الصحة الذكي (FHIR)
+106. Glycogen Supercompensation & Water Retention Modeler — حاسبة التحميل النشوي الفائق
+107. Contest Prep Peak-Week Manipulator — حاسبة أسبوع الذروة قبل البطولة
+108. AI Body Composition Vision Engine — محرك التحليل البصري الذكي لتكوين الجسد
+109. Competition Readiness & Stage Posing OS — نظام الاستعداد للبطولات والاستعراض
+110. AI Meal Vision Scanner & Portion Estimator — ماسح الوجبات الذكي بالرؤية الحاسوبية
+111. Smart Food & Macro Substitution Engine — محرك استبدال الأطعمة الذكي
+112. Food Quality & Micronutrient Diversity Score — مؤشر جودة الغذاء وتنوع المغذيات الدقيقة
+113. AI Grocery Basket & Meal Cost Optimizer — مجمّع سلة التسوق الذكية
+114. Restaurant Macro Navigator & Fast-Food Estimator — دليل الماكروز للمطاعم والوجبات السريعة
+115. Supplement Evidence & Bio-Stack Navigator — المرجع العلمي للمكملات وتفاعلاتها
+116. Nutrition Gap & Fasting Window Optimizer — كاشف الفجوات الغذائية ومنظم الصيام المتقطع
+117. Intra-Workout Nutrient Volumizer & Transport Engine — محرك المغذيات أثناء التدريب
+118. CNS Recovery Score — مؤشر استشفاء الجهاز العصبي المركزي
+119. Training Volume Load & Hypertrophy Index — مؤشر حجم التدريب والتضخم العضلي
+120. Progressive Overload & Adaptive Reserve Capacity Predictor — حاسبة التحميل التدريجي والاحتياطي التكيفي
+121. Muscle Group Recovery Time-Course Modeler — محاكي زمن استشفاء المجموعات العضلية
+122. RPE / RIR to 1RM Dynamic Velocity Modeler — حاسبة الوزن الأقصى الديناميكية
+123. Joint Stress & Connective Tissue Load Risk Index — مؤشر إجهاد المفاصل والأنسجة الرابطة
+124. Deload Frequency & Fatigue Accumulation Modeler — حاسبة توقيت أسبوع التفريغ
+125. Fiber Type Adaptation & Mechanical Tension Score — حاسبة استهداف أنواع الألياف العضلية
+126. Neuromuscular Performance & Explosiveness Modeler — حاسبة الأداء العصبي العضلي والانفجارية
+127. AI Daily Readiness & Cause Explainer Engine — محرك الجاهزية اليومية وتفسير الأسباب
+128. Training Load Balance & Acute-to-Chronic Ratio — حاسبة التوازن بين الحمل الحاد والتراكمي
+129. AI Adaptive Training Program Planner — مصمم البرامج التدريبية الذكي المتكيف
+130. AI Plateau Detective & Stagnation Analyzer — المحقق الذكي لكشف أسباب الثبات والركود
+131. Transformation Forecast & Trajectory Engine — محرك التنبؤ بمسار التحول الجسدي
+132. AI Pose & Exercise Form Coach — مدرب التقنية الذكي بالرؤية الحاسوبية
+133. Rep Tempo & Velocity Loss Analyzer — محلل إيقاع التكرارات وفقدان السرعة
+134. Mobility Intelligence & Movement Symmetry Screen — فحص المرونة الحركية والتوازن الجانبي
+135. Exercise Substitution AI & Injury Workaround — بديل التمارين الذكي عند الإصابة
+136. Physique Proportion & Golden Ratio Score — حاسبة التناسب العضلي والنسبة الذهبية
+137. Peptide & Hormone Reconstitution Calculator — حاسبة إعادة تشكيل الببتيدات والهرمونات
+138. Raw Powder Density & Oil Formulation Engine — محرك كثافة البودرة الخام وتكوين الزيوت
+139. Solvent & Emulsifier Ratio Calculator (BA/BB) — حاسبة نسب المذيبات BA/BB
+140. Dosage Unit Conversion Engine — Universal Labs — محرك تحويل وحدات القياس العالمي للتحاليل
+141. Carrier Oil Viscosity & Syringe Pressure Estimator — حاسبة لزوجة الزيت الناقل وضغط السرنجة
+142. Compound Purity & Active Yield Estimator — حاسبة النقاء والمردود الفعلي
+143. Storage Stability & Thermal Degradation Estimator — حاسبة الثبات التخزيني والتلف الحراري
+144. Homebrew Chemistry Mass & Density Calculator — حاسبة كيمياء التصنيع المنزلي
+145. Habit Intelligence & Consistency Coach — مدرب الالتزام والانضباط الذكي
+146. AI Safety Gate & Emergency Protocol — بوابة الأمان والبروتوكولات الطارئة
+147. Scientific Evidence Explorer & Citation Engine — محرك البحث العلمي والمراجع
+148. My Personal Fitness Memory Layer — طبقة الذاكرة الشخصية للذكاء الاصطناعي
+149. Physique Trajectory Scenario Simulator — محاكي سيناريوهات المسار الجسدي المستقبلي
+150. Mr. X AI Performance Command Center — مركز القيادة الذكي الأعظم (Master Orchestrator)
+
+---
+
+## 5. الفئات والمسارات الكانونية
+
+| Slug | الاسم العربي | English |
+|---|---|---|
+| nutrition | التغذية والماكروز | Nutrition & Macros |
+| body-composition | تكوين الجسم | Body Composition |
+| pharmacokinetics | الحرائك الدوائية | Pharmacokinetics |
+| hormonal-health | الصحة الهرمونية | Hormonal Health |
+| medical-monitoring | التحاليل والمراقبة الصحية | Medical Monitoring |
+| injection-formulation | الحقن والتحضير | Injection & Formulation |
+| cycle-management | إدارة الدورات والستاك | Cycle & Stack Management |
+| training-recovery | التدريب والاستشفاء | Training & Recovery |
+| reproductive-wellbeing | الصحة الإنجابية والعافية | Reproductive & Wellbeing |
+| platform-ai | الذكاء الاصطناعي وقيادة المنصة | AI & Platform |
+
+قواعد:
+- فئة أساسية واحدة لكل أداة (بالوظيفة الفعلية)؛ ارتباطات إضافية عبر الوسوم والعلاقات دون نسخ متعددة.
+- أنشئ توزيعًا موثقًا للأدوات الـ150 على الفئات العشر؛ طبّق جدول التصنيف النهائي للمصدر حيث يكون كاملًا، وإن انتهى قبل اكتماله لا تفترض بقية الصفوف — استخرجها من المرجع أو سجّل النقص.
+- تحقّق من تطابق الأداة مع الفئة في الرابط؛ أعد 404 حقيقية للفئات والأدوات غير الموجودة أو غير المتطابقة. لا تعرض الأداة تحت فئة خاطئة.
+- اشتق المسار من category + slug ولا تخزّن نسخًا قابلة للتعارض. اختبر الروابط الداخلية والتحويلات والروابط الكانونية.
+
+---
+
+## 6. المعمارية والـ Registry (مصدر الحقيقة الواحد)
+
+### 6.1 بنية المجلدات المستهدفة (أو ما يكافئها حسب اصطلاحات المشروع)
+
+```
+app/smarttools/layout.tsx
+app/smarttools/page.tsx
+app/smarttools/[category]/page.tsx
+app/smarttools/[category]/[tool]/page.tsx
+app/smarttools/[category]/[tool]/not-found.tsx
+
+src/smarttools/registry/{categories.ts, tools.ts, legacy-routes.ts, index.ts}
+src/smarttools/components/{SmartToolsHub, CategoryPage, ToolPageShell, ToolCard, CategoryCard,
+  SmartToolsSearch, SmartToolsBreadcrumbs, RelatedTools, SafetyNotice}.tsx
+src/smarttools/components/BookPromo/{BookCTA.tsx, BookInlineRef.tsx}
+src/smarttools/loaders/tool-component-loader.ts
+src/smarttools/lib/{smarttools-seo, smarttools-search, smarttools-related,
+  smarttools-validation, smarttools-schema, book-link}.ts
+```
+
+### 6.2 الأنواع (TypeScript)
+
+```ts
+export const SMART_TOOL_CATEGORY_SLUGS = [
+  "nutrition","body-composition","pharmacokinetics","hormonal-health",
+  "medical-monitoring","injection-formulation","cycle-management",
+  "training-recovery","reproductive-wellbeing","platform-ai",
+] as const;
+export type SmartToolCategory = (typeof SMART_TOOL_CATEGORY_SLUGS)[number];
+
+export interface SmartToolCategoryDefinition {
+  slug: SmartToolCategory;
+  nameAr: string; nameEn: string;
+  descriptionAr: string; descriptionEn: string;
+  icon?: string; order: number;
+  safetyLevel?: "general" | "health" | "high-risk";
+}
+
+export type SmartToolStatus = "completed" | "active" | "beta" | "planned";
+export type SmartToolRiskLevel = "general" | "wellness" | "medical-information" | "high-risk";
+
+/** مرجع سياقي لكتاب ودليل Mr. X-Steroid Book — إلزامي لكل أداة (انظر §13) */
+export interface BookReference {
+  chapterAr: string;   // اسم الفصل/القسم بالعربية من فهرس الكتاب الفعلي
+  chapterEn: string;
+  topicAr: string;     // جملة السياق: لماذا هذا الفصل ذو صلة بنتيجة المستخدم الآن
+  topicEn: string;
+}
+
+export interface SmartToolDefinition {
+  id: number;
+  slug: string;
+  category: SmartToolCategory;
+  nameAr: string; nameEn: string;
+  descriptionAr: string; descriptionEn: string;
+  status: SmartToolStatus;
+  riskLevel: SmartToolRiskLevel;
+  tags?: string[];
+  keywordsAr?: string[]; keywordsEn?: string[];
+  synonyms?: string[]; intents?: string[];
+  componentKey?: string; componentName?: string;
+  legacyPaths?: string[];
+  relatedToolIds?: number[];
+  searchable?: boolean; indexable?: boolean;
+  requiresDisclaimer?: boolean; requiresMedicalReview?: boolean;
+  availableLocales?: string[];
+  bookContext?: BookReference; // ⭐ توجيه شراء الكتاب السياقي
+}
+```
+
+### 6.3 فصل الحالات (إلزامي)
+
+افصل الحقول التالية ولا تجمعها في حقل واحد:
+```ts
+developmentStatus | publicationStatus | availabilityStatus | accessPolicy | reviewStatus
+```
+حدّد بوضوح ما يترتب عليها على: الظهور في Hub، التشغيل، البحث، التوصيات، الوصول المباشر، sitemap، الصلاحيات. يمكن حفظ التحقق التقني في تقرير منفصل:
+```ts
+type VerificationStatus = "not-checked" | "component-found" | "integration-verified" | "blocked";
+```
+هذا التقرير لا يعرّف الأدوات من جديد.
+
+### 6.4 ما يغذيه الـ Registry (لا تكرر التعريفات في أي مكان آخر)
+أقسام الـ Hub وصفحات الفئات والمسارات والبطاقات • فهرس البحث الذكي والتوصيات • Breadcrumbs وPrevious/Next وRelated • Canonical وMetadata وOpenGraph وJSON-LD • sitemap الديناميكي وخريطة تحويلات Legacy • التحقق من المسارات والحالة والاختبار • **مرجع الكتاب السياقي لكل أداة (bookContext) ومواضع ظهوره (§13)**.
+
+### 6.5 تحقق سلامة الـ Registry (يفشل Build/CI عند الكسر)
+- 150 ID فريدًا بالضبط؛ slugs فريدة عالميًا؛ فئة صحيحة وفئة واحدة لكل أداة.
+- كل أداة completed لها component mapping ومحرك/وظيفة فعلية؛ لا ادعاء completed دون قبول فعلي.
+- كل legacy path يشير لأداة واحدة؛ كل relatedToolId موجود؛ لا تصادم canonical.
+- الأدوات #1–#30 موسومة `status: "completed"`.
+- metadata عربي/إنجليزي كاملة؛ اتساق الحالات وعدم إظهار أدوات غير متاحة كعاملة؛ عدم فهرسة صفحات غير مؤهلة.
+- **كل أداة completed لها bookContext مكتمل ثنائي اللغة (§13).**
+- لا تخزّن بيانات مستخدم صحية في الـ Registry.
+
+### 6.6 تحميل المكونات بأمان (Allowlist)
+ممنوع بناء مسار import من route param أو مدخل مستخدم. خريطة loaders مسموحة فقط:
+
+```ts
+const toolComponentLoaders = {
+  adaptiveMacro: dynamic(() => import("@/components/tools/AdaptiveMacroCalculator")),
+  ffmiBodyFat: dynamic(() => import("@/components/tools/FfmiBodyFatAnalyzer")),
+  // ...
+} as const;
+```
+
+حمّل كود الأداة المطلوبة فقط؛ فصل Server/Client صحيح؛ تحميل كسول؛ حالات تحميل واحتواء أخطاء الأداة وعزل فشلها؛ رسائل فشل مفهومة؛ لا إخفاء نقص التنفيذ بمكون عام ينتج أرقامًا غير حقيقية.
+
+---
+
+## 7. الخريطة الكانونية للأدوات #1–#30
+
+| ID | English Name | Category | Slug |
+|---:|---|---|---|
+| 1 | Adaptive Macro Calculator | nutrition | macro |
+| 2 | FFMI & Body Fat Analyzer | body-composition | ffmi-body-fat |
+| 3 | Accumulation & Half-Life Simulator | pharmacokinetics | accumulation-half-life |
+| 4 | PCT Timing & Washout Engine | hormonal-health | pct-washout |
+| 5 | Intelligent HCG & SERM Generator | hormonal-health | hcg-serm |
+| 6 | Estrogen & Prolactin Control Engine | hormonal-health | estrogen-prolactin |
+| 7 | Bloodwork Analyzer | medical-monitoring | bloodwork |
+| 8 | Side Effect Tracker | medical-monitoring | side-effect-tracker |
+| 9 | Injection Site Rotator | injection-formulation | injection-site-rotator |
+| 10 | Compound Stack Builder | cycle-management | compound-stack |
+| 11 | Progress Tracker | training-recovery | progress-tracker |
+| 12 | Dynamic Calorie Adjuster | nutrition | dynamic-calorie-adjuster |
+| 13 | Macro Optimizer | nutrition | macro-optimizer |
+| 14 | Water Retention Calculator | body-composition | water-retention |
+| 15 | SHBG Modulator | hormonal-health | shbg-modulator |
+| 16 | Multi-Compound Half-Life Calculator | pharmacokinetics | multi-compound-half-life |
+| 17 | Injection Volume Calculator | injection-formulation | injection-volume |
+| 18 | Compound Half-Life Stacker | pharmacokinetics | half-life-stacker |
+| 19 | HPTA Recovery Monitor | hormonal-health | hpta-recovery |
+| 20 | Genetic Potential Calculator | body-composition | genetic-potential |
+| 21 | Peptide Protocol Planner | hormonal-health | peptide-protocol-planner |
+| 22 | Oral Cycle Planner | cycle-management | oral-cycle-planner |
+| 23 | TRT Optimization Engine | hormonal-health | trt-optimization |
+| 24 | Post-Cycle Bloodwork Interpreter | medical-monitoring | post-cycle-bloodwork |
+| 25 | Drug Interaction Checker Pro | medical-monitoring | drug-interactions |
+| 26 | Injection Pain Minimizer | injection-formulation | injection-pain-minimizer |
+| 27 | Ester Conversion Calculator | pharmacokinetics | ester-conversion |
+| 28 | Compound Stacking Synergy | cycle-management | stacking-synergy |
+| 29 | Side Effect Early Warning | medical-monitoring | side-effect-early-warning |
+| 30 | Cycle Cost Calculator | cycle-management | cycle-cost |
+
+(تعيينات #12–#30 افتراضية كانونية بالوظيفة؛ تحقق منها مع المسارات القديمة أثناء التدقيق ووثّق أي توفيق في `docs/smarttools-audit.md`.)
+
+---
+
+## 8. المرحلة A — التدقيق الشامل والفحص الحقيقي
+
+لكل أداة مكتشفة:
+1. افتح المكون والاختبارات والـ route الفعليين.
+2. شغّل الاختبارات والحسابات وسجّل النتيجة (baseline).
+3. قارن الحسابات بالوظيفة المعتمدة ورقم الأداة.
+4. صنّفها: `functional / partial / UI-only / broken / duplicate / alias`.
+5. حافظ على النتائج الصحيحة؛ أصلح العيوب المثبتة باختبارات تمنع رجوعها.
+6. أضف التكامل الناقص: Registry، routing، localization، RTL/LTR، وحدات، تخزين آمن، توصيات، مساعد AI، **وتوجيه الكتاب (§13)**.
+7. لا تعتبرها مكتملة قبل اجتياز شروط §9.
+
+تحقق أيضًا من: مطابقة جداول Supabase وRLS مع الـ Registry (مصدر موحد)، إزالة تعارضات Slugs/IDs، التمييز بين الأدوات الحقيقية والـ Legacy Aliases، تشغيل baseline للبناء والاختبارات، وتسجيل كل ذلك في وثيقتي التدقيق والتتبع (§3) — ثم انتقل مباشرة للتنفيذ دون توقف.
+
+---
+
+## 9. تعريف اكتمال الأداة ومخرجات البناء
+
+### 9.1 مواصفات كل أداة
+ID واسم عربي/إنجليزي ووصفان • الفئة والـ slug الكانوني • الغرض التشغيلي والحدود • المدخلات المطلوبة/الاختيارية بالوحدات والمدى والتحقق • المعادلة/الخوارزمية عند انطباقها • المخرجات typed وتفسيرها • الافتراضات وعدم اليقين • مصادر موثوقة حيث تلزم • المخاطر والقيود وحالة التخزين والخصوصية • الأدوات المرتبطة • اختبارات مرجعية مستقلة • **bookContext مكتمل (§13)**.
+
+### 9.2 متطلبات كل محرك حسابي
+1. يتحقق من المدخلات. 2. يحوّل لوحدات داخلية موحدة. 3. ينفّذ معادلة مناسبة مفسّرة. 4. يعيد نتائج typed منظمة. 5. يتعامل مع النواقص وغير الصالح والحدود (قسمة صفر، سالبيات غير صالحة، NaN، دقة وتقريب دون تقريب وسيط مؤثر). 6. يحدّث عند تغيير المدخلات ولا يعرض نتيجة قديمة كصالحة بعد تغيير معتمد عليها إلا مع توضيح. 7. يوضح الافتراضات والمصادر والقيود. 8. تحويل الوحدات بالاتجاهين (round-trip tests).
+
+اختبر كل محرك على حالتين صالحتين مختلفتين على الأقل + الحالات الحدية وغير الصالحة بنتائج مرجعية مستقلة (لا تحسب expected باستدعاء نفس الدالة). لا placeholder أو رقم ثابت أو "AI estimate" لتغطية غياب محرك. الأدوات غير الحسابية تمتلك وظيفة فعلية متناسبة مع غرضها (سجل قابل للتحرير، مقارنة زمنية، بحث مصادر، ماسح عند توافره، مخطط قابل للحفظ).
+
+### 9.3 مخرجات بناء أي أداة (عند استدعاء "Build Tool #N")
+1. **Tool ID + الاسم (عربي/إنجليزي) + الغرض التشغيلي الصريح.**
+2. **النموذج الرياضي الكامل** بمعادلات LaTeX صورية رسمية.
+3. **Input/Output Data Schemas** بواجهات TypeScript/JSON صالحة.
+4. **منطق مزامنة Supabase وربط بيانات القياسات القابلة للارتداء (Wearable Telemetry)** حيثما ينطبق (مثل #105 ببروتوكول FHIR، #118 بـ HRV/النوم).
+5. **مولّد سياق AI للأداة (AI Context Payload):** حمولة سياق آمنة تعليمية تغذّي المساعد الذكي (تفسير النتائج، الفرضيات، السيناريوهات) مع الالتزام بقيود §12.
+6. **بنية UI ثنائية اللغة** (Tailwind/React/Next متوافقة) مع مفاتيح وحدات ديناميكية (Metric/Imperial).
+7. **الصندوق التعليمي الشامل** مع الإشارة المرجعية الإلزامية إلى كتاب ودليل **Mr. X-Steroid Book** للمؤلف **George Mourice** — الفصل/القسم المعني من `bookContext` + رابط الشراء (وفق §13).
+8. **BookCTA الأساسي** وفق §13 (بطاقة توجيه الشراء أسفل النتيجة مباشرة، ثنائية اللغة).
+
+**الشروط الـ14 للاكتمال:** وظيفة حقيقية مميزة • مكون متكامل في المسار الصحيح • مدخلات واضحة • تحقق من القيم • معالجة صحيحة للوحدات • محرك/خدمة تعمل فعليًا • نتائج مفهومة • شرح الافتراضات والقيود • حالات فشل مناسبة • دعم اللغة والاتجاه • تطبيق الخصوصية والصلاحيات • اختبارات مناسبة للمخاطر • مراجعة سلامة للمحتوى الحساس • دليل تحقق مسجل. وجود بطاقة أو Route أو Registry لا يحققها وحده.
+
+---
+
+## 10. ترقية المحركات الرياضية
+
+حدّث واختبر خوارزميات الأدوات الـ150 وفق أحدث المراجع المعتمدة: نماذج الحرائك الدوائية الحُجُزية (Compartmental PK) للإسترات المتعددة • معادلات FFMI ونسبة الدهون (معايرة DEXA وطيات الجلد) • BMR/TDEE متعددة الصيغ وميزان النيتروجين والتحميل النشوي • مؤشرات التحاليل: HOMA-IR، ApoB/LDL-P، eGFR/Cystatin C، TSH/T3/T4، hs-CRP/ESR • نسبة الصوديوم/البوتاسيوم، كفاءة الأنسولين، ACWR، RPE/RIR→1RM.
+
+قواعد الجودة: معادلة مناسبة للمدخلات والغرض مع مصدر الصيغة وإصدارها وافتراضاتها • اختبار بأمثلة مرجعية وحدود منطقية؛ تمييز القياس عن التقدير عن التنبؤ • عرض عدم اليقين عند الحاجة؛ لا دقة زائفة ولا وعود تنبؤ مؤكدة • لا تستخدم AI بديلًا عن معادلة حتمية قابلة للتحقق • عند غياب أساس موثوق لنموذج، اعرض النقص بدل اختراع صيغة • لا دمج وظيفتين لاشتراكهما في مدخلات • Unit + Integration tests على قيم وحالات حدية مختلفة وround-trip conversions. عند تصحيح معادلة موجودة: وثّق السبب والفرق والأثر واختبار يمنع الرجوع. الهدف أدوات أدق وأكثر تفسيرًا، لا أعقد بلا أساس.
+
+---
+
+## 11. منظومة الذكاء الاصطناعي (وظيفية حقيقية لا تجميلية)
+
+ادمج AI عبر خدمة موحدة آمنة على الخادم؛ لا تدّعِ اتصالًا قبل اختبار المزود. كل الوظائف مبنية على بيانات Registry ومعلومات حقيقية. حدود واضحة بين: ما ينفذه المحرك الحتمي • ما يسترجعه النظام من بيانات موثوقة • ما يولّده النموذج كتفسير أو اقتراح • ما لا تتوفر له أدلة كافية.
+
+### 11.1 قدرات AI حسب نوع الأداة
+- **الحسابية (Calculators & Simulators):** مساعد يفسّر النتائج ويشرح المعاملات ويقترح السيناريوهات والفرضيات من المدخلات + إدخال بفهم اللغة الطبيعية (NLP).
+- **التغذية والتتبع:** تحليل صور الوجبات والجسم (Vision)، بدائل غذائية ذكية، اكتشاف ثغرات الاستشفاء أو النظام.
+- **التحاليل والمراقبة:** قراءة قيم التحاليل، شرح دلالات المرتفع/المنخفض، إبراز علامات الخطر المتطلبة تدخلًا طبيًا.
+- **البحث والتنقل الذكي:** ربط النتائج بين الأدوات ذات الصلة تلقائيًا (Multi-tool workflows) + **واجهة محادثة صوتية ونصية داخل كل أداة.**
+
+### 11.2 AI Registry
+لكل أداة: كلمات بحث عربية/إنجليزية، مرادفات، intents، tags، مستوى مخاطرة، قدرات، مخرجات، روابط ذات صلة.
+
+### 11.3 البحث الذكي
+عربي/إنجليزي: تطبيع الحروف العربية وإزالة التشكيل المناسب، tokenization وتصحيح وتقارب نصي عند توفره، مرادفات وintent matching، ترتيب بالملاءمة والسياق، نتائج لأدوات مسجلة فقط مع احترام الإتاحة والصلاحيات، **fallback حتمي يعمل كاملًا عند غياب النموذج — لا يمنع تعطل AI التصفح أو البحث الأساسي أبدًا.**
+
+### 11.4 التوصيات
+أدوات موجودة فعلًا ومتاحة حسب الوظيفة والسياق وموافقة المستخدم؛ اشرح سبب التوصية؛ لا تقترح الأداة الحالية أو إجراءً طبيًا خطيرًا؛ لا استنتاج معلومات صحية حساسة دون حاجة وموافقة مناسبة.
+
+### 11.5 مساعد الأداة + التوصية السياقية بالكتاب
+يساعد على فهم الحقول والنتيجة والافتراضات والقيود. لا يغيّر المدخلات أو الحساب بصمت ولا يستبدل المحرك الرياضي بتقدير لغوي. **توصية الكتاب:** عند تفسير نتيجة معقدة أو سؤال عميق، يضيف المساعد توصية سياقية واحدة على الأكثر في الجلسة: "يغطي الفصل [X] من كتاب Mr. X-Steroid Book هذا الموضوع بالتفصيل" + الرابط من §13 — **ممنوعة في سياق نتائج مقلقة أو تحذيرات طبية عاجلة.**
+
+### 11.6 NLP Input
+حوّل كلام المستخدم لاقتراح مدخلات: اختر الأداة من Registry → استخرج القيم المذكورة فقط → طابقها مع schema حقيقي → وحّد الوحدات → اكشف الغموض والنواقص → اطلب تأكيدًا عند الغموض أو العواقب المهمة → تحقق قبل الحساب → اعرض القيم المقترحة. لا تخترع بيانات شخصية أو قيمًا ناقصة.
+
+### 11.7 AI-Adaptive UI والتخصيص
+ترتيب الأدوات، المفضلة، الاختصارات، الوحدات، اللغة، مستوى التفاصيل — من تفضيلات أو إشارات استخدام فعلية مسموح بها، مع تعطيل التخصيص وإعادة ضبطه وحذف الذاكرة. مفهوم وقابل للإلغاء؛ لا يخفي الوصول للأدوات بسبب استنتاج آلي ولا يغيّر الحسابات بصمت؛ تجربة أساسية تعمل دون ملف شخصي غني.
+
+### 11.8 AI Navigation
+Previous/Next، آخر أداة، ذات الصلة، خطوات تالية — من المسارات الكانونية الفعلية والـ Registry؛ لا تفترض أن ID التالي ينتمي لنفس الفئة.
+
+### 11.9 Multi-tool Workflows وFallback
+انقل بيانات متوافقة بين الأدوات بموافقة واضحة مع تحقق الوحدات والمصدر والحداثة؛ عقود مدخلات/مخرجات واضحة وحالة كل خطوة؛ تعامل مع الفشل الجزئي؛ امنع تكرار الكتابة بسبب retries. لا نقل بيانات حساسة أو حفظها دون اختيار المستخدم. **ضمان عمل الأدوات والمعادلات عند انقطاع AI (fallback حتمي واضح).** لمركز القيادة (#150): بحث وتوصيات وتدفقات على بيانات موافق عليها فعلًا؛ ليس صفحة روابط ولا لوحة نتائج مخترعة.
+
+### 11.10 الصوت
+أوامر عربية/إنجليزية في المتصفحات المدعومة؛ إذن الميكروفون بعد تفاعل المستخدم فقط؛ حالة تسجيل واضحة؛ إيقاف وإلغاء؛ عرض النص المستخرج للمراجعة؛ معالجة رفض الإذن وعدم الدعم بصدق مع بديل كتابي؛ لا تخزين التسجيل الخام افتراضيًا؛ لا تنفيذ إجراءات مؤثرة بسبب تفريغ صوتي غير مؤكد.
+
+### 11.11 الرؤية
+للصور/الفيديو (تحليل الوجبات #110، تكوين الجسم #108، التقنية #132): موافقة واضحة قبل المعالجة؛ وضوح المعالجة المحلية أو الخارجية؛ تحقق من النوع والحجم وحماية الرفع والتخزين؛ معالجة الصور غير الصالحة أو غير الواضحة؛ عرض حدود التقدير وعدم اليقين؛ إدخال يدوي بديل؛ لا احتفاظ بالوسائط افتراضيًا ولا استخدامها للتدريب دون opt-in مستقل ولا إرسال لجهة خارجية دون أساس وموافقة؛ لا وصف تقدير بصري بأنه قياس طبي مؤكد.
+
+### 11.12 الأدوات الخاصة
+- **#147:** مصادر حقيقية وروابط وتواريخ وقيود، دون مراجع مختلقة ولا استشهادات مختلقة ولا درجات ثقة رقمية بلا أساس.
+- **#148:** ذاكرة يوافق عليها المستخدم مع إمكانية تعطيلها ومسحها.
+- **#105:** دمج بيانات الأجهزة القابلة للارتداء والساعات الذكية (بروتوكول FHIR) في خط زمني موحد يغذي بقية الأدوات.
+
+### 11.13 ضوابط AI
+استدعاء المزود على الخادم فقط؛ لا أسرار في client bundle • تحقق schema للمخرجات والمدخلات وعقود توسعة typed مع timeout/fallback • timeouts وrate limits وcaching مناسب • حماية من prompt injection (المحتوى الخارجي بيانات غير موثوقة لا تعليمات) • لا معالجة خارجية لبيانات صحية دون موافقة صريحة ولا تدريب عليها دون موافقة مستقلة • احتفظ بمصدر الـ claims العلمية • لا وصول مفتوح للنموذج إلى قاعدة البيانات؛ أفعال ومسارات معروفة فقط مع تحقق arguments وتأكيد الأفعال المؤثرة.
+
+---
+
+## 12. السلامة الطبية والأدلة العلمية
+
+المنصة **تعليمية وعلمية** ولا ترفض الموضوع لمجرد حساسيته — تقدّم معلومات واسعة وموضوعية مع تحذيرات واضحة مرتبطة بالسياق ومفيدة، لا disclaimer عام فقط. تتعلق بعض الأوصاف الأصلية بجرعات أو بروتوكولات هرمونات/أدوية/أنسولين/ببتيدات وحقن وتحضير مركبات. **احتفظ باسم الأداة والغرض التعليمي**، واجعل النسخ العملية الآمنة مفيدة فعلًا: تعليم حرائك دوائية بافتراضات واضحة، تحويل وحدات موثق، تتبع سجلات، سجل أعراض، مراجعة تداخلات مع مصادر، مقارنة غير وصفية، أسئلة للطبيب، معلومات ملصق المنتج المعتمد. أكمل العمل كاملًا بلا حدود للمعلومات التعليمية.
+
+عند مؤشرات الخطر في قيم أو أعراض يدخلها المستخدم: أطلق تحذيرات رعاية عاجلة وأوصِ بمراجعة طبية مؤهلة. إذا تعذر تنفيذ وظيفة معينة: وثّق السبب، حدّد النطاق العلاجي والتعليمي الآمن، استخدم حالة مناسبة مثل `restricted`.
+**الأدلة:** استخدم مراجع موثوقة قابلة للتحقق مرتبطة بالادعاء المعني مع الإصدار/التاريخ عند الملاءمة • افصل الدليل العلمي عن الافتراض البرمجي واجعلة مصدرك • لا تختلق روابط أو أوراقًا أو نسب دقة • اعرض عدم اليقين عند اختلاف الأدلة.
+
+---
+
+## 13. ⭐ نظام توجيه شراء الكتاب والدليل — Mr. X-Steroid Book (إلزامي في كل أداة)
+
+### 13.1 الهدف والمبادئ
+دمج توجيه شراء **كتاب ودليل Mr. X-Steroid Book (المؤلف: George Mourice)** داخل كل أداة من الأدوات الـ150 كطبقة تحويل مدروسة (Monetization Layer) تعزز الهوية التعليمية الموثوقة للمنصة.
+
+1. **الأداة تعمل كاملة مجانًا دائمًا** — الكتاب عمق إضافي لا شرط؛ لا حجب لأي وظيفة أو نتيجة وراء الشراء أبدًا.
+2. **التوجيه سياقي دائمًا:** إحالة لفصل/قسم محدد يعالج موضوع الأداة الحالية — ممنوع CTA عام بلا سياق.
+3. **السلامة تتفوق على التسويق دائمًا** (Safety overrides Monetization).
+4. CTA أساسي واحد بارز لكل صفحة أداة + المواضع المساندة المحددة أدناه؛ لا إزعاج أو تكرار داخل نفس العرض.
+5. ثنائي اللغة بالكامل (RTL/LTR).
+6. رابط الشراء من مصدر مركزي واحد.
+
+### 13.2 المواضع الإلزامية في كل أداة مكتملة
+1. **BookCTA الأساسي** — بطاقة بارزة ضمن نظام التصميم **أسفل النتيجة مباشرة**: عنوان "تعمّق في [موضوع الأداة]"، نص: "الفصل/القسم [X] من كتاب ودليل Mr. X-Steroid Book يشرح [الموضوع] بالتفصيل الكامل للمؤلف George Mourice"، زر: "احصل على نسختك الآن".
+2. **مرجع الصندوق التعليمي** — كل صندوق تعليمي (§9.3) ينتهي بالفصل المعتمد من `bookContext` + رابط الشراء.
+3. **توصية المساعد الذكي** — وفق §11.5: مرة كحد أقصى في الجلسة، سياقية، وممنوعة في السياقات المقلقة.
+4. **تذييل التقارير المصدّرة** — أي تقرير/طباعة/تصدير يتضمن مرجع الكتاب + الرابط.
+5. **بعد الحفظ / إكمال Workflow** — بطاقة "الخطوة التالية في فهمك: الفصل [X] من الكتاب".
+6. **منطقة الأدوات ذات الصلة** — بند "المصدر المعتمد لهذا الموضوع" مع رابط الفصل.
+7. **صفحة الفئة والـ Hub** — بطاقة عامة واحدة "الدليل الشامل: Mr. X-Steroid Book" (وليست لكل أداة).
+
+### 13.3 البنية التقنية
+- **مكونات موحدة:** `BookPromo/BookCTA.tsx` (البطاقة الأساسية) و`BookPromo/BookInlineRef.tsx` (المرجع الداخلي) — تصميمهما ضمن نظام التصميم الموحد، مميز بصريًا لكن متناسق، متجاوب.
+- **الرابط المركزي:** `book-link.ts` يولّد الرابط من إعداد واحد (`NEXT_PUBLIC_BOOK_URL` أو config مركزي) — **ممنوع تكرار الرابط يدويًا في 150 مكانًا**. عند توفر رابط شريك/تتبع يُخزّن في الإعداد المركزي قابلًا للتحديث دون rebuild.
+- **UTM موحدة:** `?utm_source=smarttools&utm_medium={placement: tool-page|educational-box|ai-assistant|report|workflow|related|hub}&utm_campaign=book&utm_content={tool-slug}`.
+- **Registry:** الحقل `bookContext: BookReference` (§6.2) لكل أداة مكتملة؛ يفشل التحقق (§6.5) عند غيابه.
+
+### 13.4 الخريطة السياقية حسب الفئات
+اربط كل أداة بالفصل/القسم المناسب من **فهرس الكتاب الفعلي عند توفره — لا تخترع أرقام فصول غير موجودة**؛ إن لم يتوفر فهرس استخدم أسماء الأقسام الموضوعية:
+
+| الفئة | ربط المحتوى المقترح |
+|---|---|
+| nutrition | فصول الماكروز والتحميل النشوي والتخسيس |
+| body-composition | فصول تكوين الجسم وFFMI ونسب الدهون |
+| pharmacokinetics | فصول عمر النصف والتراكم والإسترات |
+| hormonal-health | فصول PCT والإستروجين والخصوبة |
+| medical-monitoring | فصول قراءة وتفسير التحاليل |
+| injection-formulation | فصول الحقن والسلامة والتحضير |
+| cycle-management | فصول الستاك وإدارة الدورات |
+| training-recovery | فصول التدريب والاستشفاء |
+| reproductive-wellbeing | فصول الصحة الإنجابية والعافية |
+| platform-ai | المرجع الشامل/الفهرس العام للكتاب |
+
+### 13.5 قواعد عدم الإزعاج والأمان
+- لا حجب للنتائج أو الوظائف؛ لا popups تعطيلية؛ لا ظهور فوق النتيجة.
+- **عند تنشيط تحذير طبي عاجل: يُستبدل موضع BookCTA بتوجيه الرعاية الطبية، ولا يظهر CTA الكتاب إلا أسفل التحذير بعد مسافة مناسبة، أو يتأجل.**
+- لا يظهر CTA في صفحات الخطأ أو 404 أو حالات الفشل.
+- لا بيانات صحية شخصية في روابط الشراء أو analytics — تتبع النقرات عبر UTM فقط.
+- روابط الكتاب الخارجية تحمل `rel="sponsored nofollow"` المناسب حتى لا تُفسد إشارات SEO الداخلية.
+- **Graceful degradation:** عند غياب `BOOK_URL` تعمل الأداة كاملة ويختفي CTA دون أخطاء.
+
+### 13.6 الاختبارات الخاصة
+- ظهور CTA ثنائي اللغة في كل أداة مكتملة.
+- صحة الرابط والـ UTM لكل placement.
+- عدم الحجب/الإزعاج؛ أولوية التحذير الطبي على CTA.
+- اختفاء CTA السليم عند غياب الرابط.
+- التقرير النهائي يوثق تغطية bookContext لكل الأدوات المكتملة.
+
+---
+
+## 14. تجربة المستخدم والصفحات
+
+### Hub `/smarttools`
+الفئات العشر بأعداد صحيحة لكل فئة تعكس الأدوات المعروضة وحالاتها بصدق • بحث ذكي وفلاتر وترتيب معتمد • أرقام وأسماء وأوصاف عربية/إنجليزية وشارة الفئة وزر فتح • الأسماء البديلة والكلمات المفتاحية • أقسام مميزة/أضيفت حديثًا/شائعة • مفضلة ومستخدمة مؤخرًا فقط عند وجود بيانات فعلية وموافقة • نتائج فارغة مفهومة وحالات تحميل وخطأ • روابط سليمة • **بطاقة الكتاب العامة الواحدة (§13.2-7)** • لا يمنع تعطل AI التصفح أو البحث • responsive.
+
+### Category `/smarttools/[category]`
+صفحة فعلية server-rendered (ليست redirect ولا فلترة client فقط): Breadcrumb (Home → SmartTools → Category) • عنوان ووصف محليان + العدد الصحيح • بطاقات الأدوات التابعة فعلًا • بحث/تصفية ضمن الفئة • فئات ذات صلة وPrevious/Next حيث يفيد + عودة للـ Hub • حالة واضحة للفئة بلا أدوات متاحة • metadata مناسب • structured data صحيح.
+
+### Tool `/smarttools/[category]/[tool]`
+1. تحقق وجود الفئة → 2. وجود الأداة → 3. `tool.category === category` → 4. عند الفشل `notFound()` حقيقي → 5. حمّل المكون القائم عبر allowlist → 6. اعرض:
+Breadcrumb + رقم الأداة + الاسم والوصف المترجمان + الحالة • SafetyNotice عند اللزوم • واجهة الأداة الحقيقية (التعليمات، المدخلات والتحقق، النتائج وتفسيرها، الوحدات، القيود والمصادر، تنبيهات السياق) • **BookCTA (§13) أسفل النتيجة مباشرة** • Related Tools + Previous/Next وفق ترتيب Registry • روابط الفئة والـ Hub • حفظ/استرجاع/مسح/تصدير حيث يلزم • Metadata خاص • حالات تحميل وخطأ وعدم كفاية بيانات • إعادة ضبط وتفاعل مناسب مع تغيير المدخلات.
+
+---
+
+## 15. Supabase والاستمرارية والخصوصية
+
+افحص الجداول والمهاجرات وRLS الحالية أولًا. استخدم قاعدة مشتركة مع **فصل بيانات كل مستخدم** (لا اطلاع زوار على بيانات بعضهم). الجداول القائمة عند انطباقها: `user_tool_states`, `user_preferences`, `tool_usage_analytics`, `tool_ratings`, `user_voice_commands`, `ai_user_profiles`. حدد احتياجات الحفظ المعتمدة (تفضيلات، مفضلة، مدخلات/نتائج محفوظة، سجلات تقدم، workflows، إعدادات خصوصية).
+
+**الزائر غير المسجل:** أدوات عامة دون إجبار تسجيل؛ تفضيلات غير حساسة محليًا مع توضيح ارتباطها بالجهاز وعدم مزامنتها تلقائيًا؛ توفير مسح البيانات.
+**المسجل:** مزامنة ما وافق عليه عبر Supabase واسترجاعه عبر أجهزته بعد المصادقة والتحكم في التاريخ والحذف.
+
+**الأمن:** RLS على كل بيانات المستخدم للقراءة والكتابة والتعديل والحذف + تشفير البيانات على مستوى Supabase • تحقق على الخادم وقيود قاعدة بيانات وindexes عند حاجة فعلية • اختبر منع مستخدم من الوصول لبيانات آخر على Staging • لا تسجل مدخلات/نتائج صحية خام في analytics ولا بيانات صحية في URL أو logs أو metadata • لا تكشف service-role key • اختبر الحفظ والاسترجاع والفشل عند انقطاع الخدمة • payloads typed وversioned مع إدارة حذف واحتفاظ • وجود SQL في المستودع لا يثبت تطبيقه — تحقق من migrations في Staging؛ إن تعذر التحقق الخارجي أكمل المحلي الممكن واذكر القيد بدقة.
+
+---
+
+## 16. العربية والإنجليزية والوحدات وإمكانية الوصول
+
+**واجهتان كاملتان لا ترجمة عنوان فقط:** عربية RTL وإنجليزية LTR مع تحديث `lang` و`dir` • ترجمة الحقول والأخطاء والتعليمات والمخرجات وBreadcrumbs وARIA وMetadata وحالات الفراغ • بقاء URL بالـ English canonical slugs • تبديل اللغة دون إعادة تحميل غير ضرورية • تنسيق أرقام وتواريخ لكل لغة • النصوص المختلطة والأرقام والوحدات • CSS منطقية عند الملاءمة.
+
+**الوحدات:** Metric/Imperial حيث يوجد بديل ذو معنى + وحدات متخصصة عند الحاجة • التحويل لوحدات داخلية قبل الحساب والعرض بالوحدة المختارة دون تغيير الحساب • منع التحويل المزدوج والمحافظة على الدقة + اختبارات round-trip • لا toggles لحقول لا تحتاجها • تفضيل محلي للزائر وSupabase للمسجل.
+
+**الوصولية:** لوحة المفاتيح • labels واضحة • ترتيب focus صحيح • تباين مقروء • إعلان النتائج والأخطاء لقارئات الشاشة • عدم الاعتماد على اللون وحده • عرض مناسب للهاتف دون قص الحقول والنتائج.
+
+---
+
+## 17. SEO والبيانات المنظمة
+
+ولّد SEO من الـ Registry: metadata فريدة لكل Hub/Category/Tool مترجمة • canonical واحد صحيح • OpenGraph وBreadcrumbList مناسبين • structured data فقط عندما يكون الادعاء صحيحًا (لا تدّعي خصائص غير موجودة) • sitemap ديناميكي من الأدوات والفئات المؤهلة فقط — لا placeholder ولا صفحات غير عاملة • معالجة فهرسة غير المنشور/غير المكتمل • منع تكرار الروابط والتحقق من الروابط الداخلية • legacy aliases ليست canonical • الحفاظ على قيمة الروابط القديمة عبر تحويلات مثبتة • **روابط الكتاب `rel="sponsored nofollow"` (§13.5)** • لا بيانات مستخدم أو نتائج صحية في metadata الصفحات العامة.
+
+---
+
+## 18. الحفظ والاستيراد والتصدير
+
+احتفظ بصيغ وميزات المصدر المعتمدة دون افتراض صيغ إضافية كمتطلبات أصلية. عند الحاجة: schemas واضحة • رقم إصدار للتنسيق • تحقق من الحجم والبنية والقيم • أخطاء مفهومة • حفاظ على الوحدات والسياق • حماية البيانات الحساسة • منع الصيغ التنفيذية الضارة عند التصدير لبرامج الجداول (CSV injection) • مراجعة أثر الاستيراد قبل استبدال بيانات قائمة • تضمين القيود والمصادر اللازمة لفهم النتائج المصدرة • **تذييل مرجع الكتاب ورابط الشراء في التقارير المصدرة (§13.2-4)**.
+
+---
+
+## 19. الأداء والاعتمادية
+
+لا تحميل كل الأدوات والمحركات دفعة واحدة؛ حصر dependencies الثقيلة في مواضع استخدامها • تقليل JS المرسل للعميل عند الملاءمة • caching دون خلط بيانات المستخدمين • timeouts وإلغاء للعمليات الطويلة • لا إعادة محاولة أخطاء تحقق لن تنجح بالتكرار • منع النقر المتكرر من تكرار عمليات مؤثرة • اختبار أداء البحث مع الكتالوج الكامل • عزل فشل أداة عن المنصة • بقاء الوظائف الأساسية عند تعطل AI • اربط التحسينات بقياسات أو مشكلة مثبتة.
+
+---
+
+## 20. خطة التنفيذ — استمر حتى النهاية
+
+**المرحلة A — القراءة والتدقيق:** قراءة المصدر كاملًا (بما فيه `150 tools.txt` إن أُرفق) • فحص المستودع فعليًا • إنشاء مصفوفة المتطلبات ووثيقة التدقيق • توثيق التعارضات وتحديد النطاق الحالي/المستقبلي • baseline للاختبارات والبناء • ثم الانتقال مباشرة للتنفيذ.
+
+**المرحلة B — الأساس المشترك:** Registry موحد بتحقق يفشل الـ Build عند الكسر (متضمنًا إلزامية `bookContext`) • الفئات العشر والـ Hub وصفحات الفئات • routes الأدوات وcomponent allowlist • **بنية نظام الكتاب: مكونا BookPromo + book-link.ts + الإعداد المركزي (§13.3)** • RTL/LTR واللغتان والوحدات وحفظ التفضيلات • Supabase/local persistence آمن • البحث الذكي والتوصيات والتنقل والصوت • خدمة AI على الخادم وfallback حتمي • SEO/sitemap وحالات التحميل والخطأ. اختبر البنية عمليًا.
+
+**المرحلة C — حماية الموجود وترقيته:** فحص #1–#30 وتثبيت اختبارات مرجعية تمنع التراجع • إصلاح التكامل والفجوات مع الحفاظ على المحركات العاملة • إضافة المميزات المشتركة المناسبة لكل أداة بما فيها **توجيه الكتاب السياقي** • اختبار الوظائف قبل وصفها بالمكتملة.
+
+**المرحلة D — استكمال النطاق المعتمد:** تنفيذ الأدوات الناقصة بالأولوية والاعتماديات، بمحركات فعلية حسب غرض كل أداة، بدفعات صغيرة قابلة للاختبار، مع شروط §9 و§13 كاملة لكل أداة قبل completed • إبقاء غير المنفذة صادقة الحالة • استمر حتى تكتمل كل أداة ممكنة.
+
+**المرحلة E — خصائص المنصة:** البحث • التوصيات • AI (المساعد، NLP، الرؤية، الصوت، التخصيص، التدفقات المتعددة) • الحفظ • الاستيراد/التصدير.
+
+**المرحلة F — التأهيل والقبول:** الأمان وRLS • RTL/LTR والوحدات • الوصولية • SEO والتحويلات • الأداء • الاختبارات والبناء • توثيق التشغيل والنشر • التقرير النهائي.
+
+بعد كل مرحلة: حدّث الأدلة وتابع الأعمال الممكنة؛ لا تتوقف عند إنجاز شكلي.
+
+---
+
+## 21. الاختبارات والتحقق الإلزامي
+
+**Registry والمسارات:** 150 ID فريدة • مسارات canonical فريدة • فئة صحيحة واحدة لكل أداة • عدم احتساب alias كأداة • مكونات موجودة للمكتملة • كل recommendation/reference صالح • اتساق الحالات وmetadata عربي/إنجليزي كامل • mismatch يُرجع 404 • التحويلات القديمة 301 نهائي دون حلقات • أهلية sitemap • **اكتمال bookContext لكل أداة مكتملة**.
+
+**محركات الأدوات:** سيناريوهان صالحان مختلفان على الأقل • نتائج مرجعية مستقلة • حدود المدخلات وغير الصالحة • تحويل الوحدات بالاتجاهين • الدقة والتقريب • منع تراجع الأصلية #1–#30.
+
+**التكامل والواجهات:** فتح الأداة من Hub والفئة والبحث • إرسال المدخلات وعرض النتائج • حالات التحميل والفشل • الحفظ والاسترجاع • اللغة والاتجاه • الهاتف ولوحة المفاتيح.
+
+**Supabase (Staging فقط):** حفظ/استرجاع/تحديث/حذف • عزل مستخدمين اثنين وRLS • سلوك الزائر • payload غير صالح • انقطاع الخدمة • عدم تسرب بيانات في analytics.
+
+**AI:** مخرجات ضمن schema • عدم اختراع أدوات أو روابط • احترام الإتاحة والصلاحيات • فشل المزود وtimeout وfallback • حماية البيانات • حدود السلامة • مقاومة prompt injection • **حدود توصية الكتاب (§11.5/§13.6)**.
+
+**نظام الكتاب (§13.6):** كل اختباراته كاملة.
+
+**بوابة البناء:** نفّذ أوامر المشروع الفعلية للتحقق من TypeScript وlint والاختبارات ذات الصلة وproduction build؛ سجّل النتيجة الفعلية ولا تعطل قواعد التحقق. **مهلة 30 ثانية لا تثبت نجاحًا أو فشلًا** — شخّص الموارد والسجلات، لا تشغّل builds متعارضة، وأعد البناء بمهلة مناسبة؛ القبول يتطلب exit code ناجحًا وسجلًا واضحًا. نجاح TypeScript لا يثبت نجاح production build، ونجاح المحلية لا يثبت عمل Staging/Production.
+
+---
+
+## 22. Git والنشر والصلاحيات
+
+استخدم الفرع ومشروع Vercel الموجودين بعد التحقق. **بعد كل 10 أدوات مكتملة:** اختبارات الدفعة + فحص Registry وغياب التراجع + مراجعة diff + commit واضح يذكر نطاق الأدوات + push للفرع المصرح + تسجيل SHA والاختبارات الفعلية. **بعد كل 50 أداة:** TypeScript وlint والاختبارات وproduction build + اختبار Hub والفئات والمسارات المعنية + النشر على مشروع Vercel المقصود فقط إن كانت الفحوصات ناجحة والصلاحيات متاحة + التحقق من النشر والمسارات الفعلية.
+
+لا تعدّ أداة جزئية ضمن دفعة مكتملة • لا تتجاوز اختبارًا فاشلًا من أجل commit أو deploy • تغييرات مركزة دون تعديلات غير مرتبطة • وثّق تغييرات dependencies وملفات القفل • عند وجود تصريح سابق لا تطلبه مجددًا • لا تعتبر نجاح طلب النشر دليل سلامة الموقع • لا تغيّر أسرارًا أو صلاحيات خارجية ولا migration إنتاجيًا دون موافقة صريحة • لا تختلق رابط نشر أو حالة نجاح.
+
+---
+
+## 23. التعامل مع العوائق
+
+1. حدّد السبب بدقة واميّز نقص البيانات عن نقص الصلاحية عن الخطأ البرمجي. 2. جرّب الحلول الآمنة داخل النطاق. 3. تابع الأعمال غير المعتمدة عليه. 4. سجّل المتطلبات المتأثرة. 5. لا تستبدل النتيجة الحقيقية بمحاكاة غير معلنة. 6. اطلب المعلومة أو الصلاحية المحددة فقط إذا كانت ضرورية فعلًا. لا تصف العمل كمكتمل مع عائق مؤثر غير معلن.
+
+---
+
+## 24. التوثيق المطلوب
+
+```text
+docs/smarttools-audit.md
+docs/smarttools-requirements-traceability.md
+docs/smarttools-architecture.md
+docs/smarttools-status-model.md
+docs/smarttools-routing-and-migrations.md
+docs/smarttools-ai-contracts.md
+docs/smarttools-book-integration.md
+docs/smarttools-testing.md
+docs/smarttools-acceptance-report.md
+docs/smarttools-adding-tools.md
+```
+
+يمكن الدمج إذا كان أنسب بشرط حفظ المحتوى وقابلية التتبع. وثيقة `book-integration` توثق: مواضع CTA، الخريطة السياقية، إدارة الرابط والـ UTM، واختبارات النظام. ووثيقة إضافة الأدوات توضح إضافة الأداة 151+ بما يشمل: التعريف، التصنيف، ربط المكون، الحالات، الترجمة، **bookContext**، الاختبار، الإدراج في البحث وSEO، ومراجعة الأمان.
+
+---
+
+## 25. معايير القبول النهائية
+
+لا تعلن اكتمال المشروع إلا إذا:
+1. 150 أداة canonical مميزة موزعة على الفئات العشر، دون أدوات مزيفة أو مكررة لرفع العدد.
+2. كل أداة لها صفحة canonical ووظيفة فعلية قابلة للمعاينة والتشغيل.
+3. كل محرك حسابي ديناميكي ومختبر بنتائج مرجعية مستقلة.
+4. كل الأدوات قابلة للاكتشاف من Hub والفئة والبحث.
+5. ميزات AI تعمل فعلًا أو تعرض fallback صادقًا.
+6. **كل أداة مكتملة تتضمن توجيه الكتاب السياقي العامل (bookContext + BookCTA + رابط مركزي واحد) وفق §13.**
+7. Supabase يعمل على Staging مع RLS واختبارات عزل.
+8. العربية RTL والإنجليزية LTR والوحدات تعمل عمليًا.
+9. SEO وsitemap بلا روابط مكررة أو placeholders.
+10. TypeScript وlint والاختبارات وproduction build ناجحة.
+11. الأدوات الأصلية لم تتراجع؛ المسجل ≠ المكتمل، وملف موجود ≠ تكامل مختبر.
+12. المتطلبات المستقبلية محفوظة دون ادعاء تنفيذها؛ كل القيود المؤثرة معلنة.
+
+إذا كان النطاق الحالي لا يشمل الـ150 كلها، أعلن اكتمال النطاق الحالي وعدد الأدوات الجاهزة منفصلين.
+
+---
+
+## 26. التقرير النهائي
+
+تقرير موحد مدعوم بالأدلة:
+**النتيجة:** العدد الفعلي المكتمل X/150 • المتكاملة والمختبرة • المتاحة للمستخدم • المخططة/المحجوبة • حالة النطاق الحالي.
+**جدول كل أداة:** `ID | الاسم | الفئة | المسار الكانوني | المحرك/الوظيفة | الاختبار | الحالات | bookContext ✓/✗ | القيود` — لا تختصر بطريقة تخفي غير المكتملة؛ إن طال ضعه في وثيقة كاملة واربطه.
+**خريطة التغييرات:** الموجود سابقًا • ما حُفظ • ما حُسِّن • ما أُنشئ • ما رُحِّل • ما بقي مستقبليًا + أي تغيير جوهري وأسبابه.
+**التحقق:** TypeScript • lint • الاختبارات • production build • المسارات والتحويلات • RTL/LTR والوحدات • الوصولية • SEO/sitemap • Supabase وRLS على Staging • AI (بحث/توصيات/تنقل/صوت/رؤية/تخصيص) وfallback • **نظام الكتاب: تغطية bookContext، صحة الروابط وUTM، اختبارات عدم الإزعاج وأولوية السلامة** • الخصوصية والسلامة • نتائج النشر المصرح به. ميّز بين: نجح / فشل / لم يُشغّل / تعذّر بسبب عائق.
+**مراجعة عدم الفقدان:** ارجع لمصفوفة المتطلبات وتأكد أن كل متطلب: نُفّذ وتحقق • أو حُفظ في خريطة الطريق • أو حُجب بسبب معلن • أو عولج بتفسير موثق للتعارض.
+**Git:** الفرع وSHAs ونتائج push وروابط Vercel المنشورة والمتحقق منها فعليًا.
+
+لا تخترع سجلًا أو نتيجة أو رابط نشر؛ الأداة غير المكتملة تظهر كذلك ولا تُرفع إلى completed.
+
+---
+
+## 27. أمر التنفيذ النهائي
+
+ابدأ الآن بفحص المشروع وتحديد الأدوات المبرمجة فعليًا واختبارها وتطويرها مع الحفاظ على حساباتها العاملة، ثم أنشئ كل ما ينقص حتى تصبح الأدوات الـ150 منفذة ومصنفة ومرتبطة بمنصة SmartTools وكل الميزات المطلوبة (Registry، AI لكل أداة، ثنائي اللغة، الوحدات، Supabase، SEO، الاختبارات، النشر) — **مع نظام توجيه كتاب ودليل Mr. X-Steroid Book مدمجًا سياقيًا في كل أداة وفق §13**. لا تتوقف عند تقرير التدقيق أو Registry أو صفحات شكلية؛ سلّم التنفيذ الحقيقي والأدلة، مع احترام قيود الأمان والخصوصية والإنتاج.
+
+**معيار النجاح: وظيفة حقيقية قابلة للاستخدام والتحقق، حفاظ كامل على متطلبات المصدر، صدق حالة كل أداة وميزة، وتوجيه الكتاب السياقي العامل في كل أداة مكتملة.**
+```
+
+---
+
+## 📌 ملاحظات التنفيذ
+
+1. **الكتاب في 7 مواضع إلزامية + بطاقة عامة واحدة للـ Hub/الفئة** — تكثيف مدروس يرفع التحويل دون إزعاج يقتل التجربة.
+2. **`bookContext` في الـ Registry + تحقق Build يفشل عند غيابه** = ضمان آلي أن أي أداة تصل completed لن تنسى توجيه الكتاب.
+3. **رابط واحد مركزي + UTM** = تستطيع تغيير رابط الشراء أو رابط الشريك مستقبلًا من مكان واحد دون تعديل 150 أداة، وتعرف من analytics أي موضع يحوّل أكثر.
+4. **قاعدة Safety > Monetization**: عند تحذير طبي عاجل يُستبدل CTA بتوجيه الرعاية — هذا يحمي مصداقية المنصة والمستخدم معًا.
+5. **لا تخترع أرقام فصول** — استخدم فهرس الكتاب الفعلي عند توفره لملء `bookContext`، وإلا استخدم أسماء الأقسام الموضوعية.
+6- 
+لا تبنِ 150 أداة دفعة واحدة. نفّذ MVP بالأدوات الـ 30 الأصلية أولاً مع bookContext كامل. بعد التحقق من الأداء والمقاييس، أضف دفعات بـ 20 أداة.
+أعد تصميم الـ 7 مواضع إلى 3 فقط للإطلاق:
+CTA أسفل النتيجة.
+إشارة سياقية واحدة في المحتوى/التعليم.
+الرابط في تقرير التصدير (PDF/HTML).
+
+هذا يقلل الازدحام البصري بنسبة  
+7
+7−3
+​
+ ≈57% مع الحفاظ على 90% من القيمة التسويقية.
+استخدم SSR للـ Canonical Routes لضمان أن محركات البحث ترى المحتوى الأصلي أولاً والروابط الترويجية ثانويًا.
+افصل الـ BookPromo كـ Micro-frontend أو Package مستقل بحيث إذا أردت تغيير الكتاب لاحقًا أو إزالته، لا تلمس أي شيفرة في src/smarttools/tools/.
+أضف Feature Flag للترويج. هذا يتيح لك إيقاف كل الـ CTAs دفعة واحدة في حالات الطوارئ القانونية أو الطبية دون redeploy.
+
+لو تحب، أجهّز لك **جدول `bookContext` جاهزًا للأدوات الـ150** (فصل مقترح + نص CTA عربي/إنجليزي لكل أداة) كملف منفصل تسلّمه للـ AI مع هذا البرومبت 👊
 
 \# MASTER IMPLEMENTATION PROMPT
 

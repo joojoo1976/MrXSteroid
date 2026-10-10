@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Advanced PCT Planner",
+    "compounds": "Compounds",
+    "add_compound": "Add Compound",
+    "hcg_on_cycle": "hCG used on cycle",
+    "calculate": "Plan PCT",
+    "washout_days": "Washout (days)",
+    "pct_start_date": "PCT start date",
+    "suppression_load": "Suppression load",
+    "serm_protocol": "SERM protocol",
+    "hcg_bridge": "hCG bridge",
+    "no_hcg_bridge": "No hCG bridge (already used on cycle)",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "مخطط PCT المتقدم",
+    "compounds": "المركبات",
+    "add_compound": "إضافة مركب",
+    "hcg_on_cycle": "تم استخدام hCG أثناء الدورة",
+    "calculate": "تخطيط PCT",
+    "washout_days": "فترة التطهير (أيام)",
+    "pct_start_date": "تاريخ بدء PCT",
+    "suppression_load": "حمل التثبيط",
+    "serm_protocol": "بروتوكول SERM",
+    "hcg_bridge": "جسر hCG",
+    "no_hcg_bridge": "لا يوجد جسر hCG (تم استخدامه أثناء الدورة)",
+    "warnings": "تحذيرات"
+  }
+}

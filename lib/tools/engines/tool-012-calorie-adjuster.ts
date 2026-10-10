@@ -70,7 +70,7 @@ export function calculateTDEE(input: CalorieInput): CalorieResult {
   const tdee = Math.round(bmr * multiplier);
   
   // Calculate target calories based on goal
-  let maintenanceCalories = tdee;
+  const maintenanceCalories = tdee;
   let targetCalories: number;
   let weeklyAdjustment: number;
   

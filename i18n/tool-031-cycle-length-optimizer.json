@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Cycle Length Optimizer",
+    "goal": "Goal",
+    "experience": "Experience",
+    "previous_cycles": "Previous cycles",
+    "compounds": "Compounds",
+    "add_compound": "Add Compound",
+    "calculate": "Optimize Length",
+    "min_weeks": "Minimum (weeks)",
+    "optimal_weeks": "Optimal (weeks)",
+    "max_weeks": "Maximum (weeks)",
+    "suppression_load": "Suppression load",
+    "ester_bottleneck_days": "Ester bottleneck (days)",
+    "rationale": "Rationale"
+  },
+  "ar": {
+    "tool_name": "محسّن مدة الدورة",
+    "goal": "الهدف",
+    "experience": "الخبرة",
+    "previous_cycles": "الدورات السابقة",
+    "compounds": "المركبات",
+    "add_compound": "إضافة مركب",
+    "calculate": "حساب المدة المثلى",
+    "min_weeks": "الحد الأدنى (أسابيع)",
+    "optimal_weeks": "المدة المثلى (أسابيع)",
+    "max_weeks": "الحد الأقصى (أسابيع)",
+    "suppression_load": "حمل التثبيط",
+    "ester_bottleneck_days": "عنق الإستر (أيام)",
+    "rationale": "الأسباب"
+  }
+}

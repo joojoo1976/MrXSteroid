@@ -58,7 +58,10 @@ describe('Tool registry — integrity', () => {
 
     it('uses the mrx.tool.<slug> identity convention and semver versions', () => {
         for (const tool of TOOL_REGISTRY) {
-            expect(tool.toolId).toBe(`mrx.tool.${tool.slug}`);
+            // Canonical identity strips the redundant `tool-` prefix so registry
+            // IDs stay byte-identical to the smartToolsCatalog identities
+            // (tool-006-… → mrx.tool.006-…; legacy slugs map 1:1).
+            expect(tool.toolId).toBe(`mrx.tool.${tool.slug.replace(/^tool-/, '')}`);
             expect(tool.version).toMatch(/^\d+\.\d+\.\d+$/);
             expect(tool.titleAr.length).toBeGreaterThan(0);
             expect(tool.titleEn.length).toBeGreaterThan(0);

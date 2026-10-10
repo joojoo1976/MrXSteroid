@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Liver Enzyme Tracker",
+    "marker": "Marker",
+    "value": "Value",
+    "date": "Date",
+    "add_reading": "Add Reading",
+    "oral_steroids": "On oral steroids",
+    "alcohol": "Alcohol drinks / week",
+    "tudca": "Using TUDCA",
+    "markers": "Markers",
+    "overall_status": "Overall status",
+    "stop_orals": "STOP orals",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "متتبع إنزيمات الكبد",
+    "marker": "المؤشر",
+    "value": "القيمة",
+    "date": "التاريخ",
+    "add_reading": "إضافة قراءة",
+    "oral_steroids": "يستخدم ستيرويدات فموية",
+    "alcohol": "مشروبات كحولية / أسبوع",
+    "tudca": "يستخدم TUDCA",
+    "markers": "المؤشرات",
+    "overall_status": "الحالة العامة",
+    "stop_orals": "أوقف الفمويات",
+    "recommendations": "التوصيات"
+  }
+}

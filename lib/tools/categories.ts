@@ -2,7 +2,7 @@
  * lib/tools/categories.ts — PART 1: category registry (SPEC 3.1).
  */
 import type { SmartToolEntry } from './smartToolsCatalog';
-import { getCatalogTools } from './smartToolsCatalog4';
+import { getCatalogTools, getPublishedCatalogTools } from './smartToolsCatalog4';
 
 export const SMART_TOOL_CATEGORY_SLUGS = [
   'nutrition',
@@ -79,6 +79,16 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-028-stacking-synergy': 'cycle-management',
   'tool-029-side-effect-early-warning': 'medical-monitoring',
   'tool-030-cycle-cost-calculator': 'cycle-management',
+  'tool-031-cycle-length-optimizer': 'cycle-management',
+  'tool-032-advanced-pct-planner': 'hormonal-health',
+  'tool-033-bloodwork-trend-analyzer': 'medical-monitoring',
+  'tool-034-compound-clearance': 'pharmacokinetics',
+  'tool-035-hormone-conversion': 'pharmacokinetics',
+  'tool-036-injection-schedule': 'injection-formulation',
+  'tool-037-side-effect-probability': 'medical-monitoring',
+  'tool-038-stack-compatibility': 'cycle-management',
+  'tool-039-liver-enzyme-tracker': 'medical-monitoring',
+  'tool-040-lipid-profile-optimizer': 'medical-monitoring',
 };
 
 /** Catégorie d'un outil (accepte slug ou href '/smarttools/<slug>'). */
@@ -92,8 +102,13 @@ export function getToolsByCategory(category: SmartToolCategory): SmartToolEntry[
   return getCatalogTools().filter((t) => TOOL_CATEGORY[t.slug] === category);
 }
 
-/** URL canonique hiérarchique : /smarttools/<category>/<tool-slug> (ou null). */
-export function toHierarchicalHref(slugOrHref: string): string | null {
+/** Published (non-'planned') tools of a category — used by user-facing
+ * generators (category page, sitemap) so planned roadmap entries never leak. */
+export function getPublishedToolsByCategory(category: SmartToolCategory): SmartToolEntry[] {
+  return getPublishedCatalogTools().filter((t) => TOOL_CATEGORY[t.slug] === category);
+}
+
+/** URL canonique hiérarchique : /smarttools/<category>/<tool-slug> (ou null). */export function toHierarchicalHref(slugOrHref: string): string | null {
   const slug = slugOrHref.replace(/^\/smarttools\//, '').replace(/^\//, '');
   const cat = TOOL_CATEGORY[slug];
   return cat ? `/smarttools/${cat}/${slug}` : null;

@@ -83,6 +83,16 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.STACKING_SYNERGY]: '/smarttools/tool-028-stacking-synergy',
     [Page.SIDE_EFFECT_EARLY_WARNING]: '/smarttools/tool-029-side-effect-early-warning',
     [Page.CYCLE_COST_CALCULATOR]: '/smarttools/tool-030-cycle-cost-calculator',
+    [Page.CYCLE_LENGTH_OPTIMIZER]: '/smarttools/tool-031-cycle-length-optimizer',
+    [Page.ADVANCED_PCT_PLANNER]: '/smarttools/tool-032-advanced-pct-planner',
+    [Page.BLOODWORK_TREND_ANALYZER]: '/smarttools/tool-033-bloodwork-trend-analyzer',
+    [Page.COMPOUND_CLEARANCE]: '/smarttools/tool-034-compound-clearance',
+    [Page.HORMONE_CONVERSION]: '/smarttools/tool-035-hormone-conversion',
+    [Page.INJECTION_SCHEDULE]: '/smarttools/tool-036-injection-schedule',
+    [Page.SIDE_EFFECT_PROBABILITY]: '/smarttools/tool-037-side-effect-probability',
+    [Page.STACK_COMPATIBILITY]: '/smarttools/tool-038-stack-compatibility',
+    [Page.LIVER_ENZYME_TRACKER]: '/smarttools/tool-039-liver-enzyme-tracker',
+    [Page.LIPID_PROFILE_OPTIMIZER]: '/smarttools/tool-040-lipid-profile-optimizer',
 };
 
 export function pageToPath(page: Page): string {

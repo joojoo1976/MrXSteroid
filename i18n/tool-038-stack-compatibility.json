@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Stack Compatibility Checker",
+    "items": "Stack items",
+    "add_item": "Add Item",
+    "score": "Compatibility score",
+    "verdict": "Verdict",
+    "androgen_burden": "Androgen burden (mg/wk)",
+    "flags": "Findings"
+  },
+  "ar": {
+    "tool_name": "مدقق توافق الستاك",
+    "items": "عناصر الستاك",
+    "add_item": "إضافة عنصر",
+    "score": "درجة التوافق",
+    "verdict": "الحكم",
+    "androgen_burden": "العبء الأندروجيني (ملغ/أسبوع)",
+    "flags": "النتائج"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Hormone Conversion Calculator",
+    "weekly_test_mg": "Weekly testosterone (mg)",
+    "body_fat_pct": "Body fat (%)",
+    "age": "Age",
+    "ai_dose": "Current AI (mg/week, 0 if none)",
+    "calculate": "Estimate Conversion",
+    "estimated_total_t": "Estimated total T (ng/dL)",
+    "estimated_e2": "Estimated E2 (pg/mL)",
+    "e2_status": "E2 status",
+    "test_to_e2_ratio": "T:E2 ratio",
+    "ai_suggestion": "Suggested AI (mg/week)",
+    "warnings": "Guidance"
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل الهرمونات",
+    "weekly_test_mg": "التستوستيرون الأسبوعي (ملغ)",
+    "body_fat_pct": "نسبة الدهون (%)",
+    "age": "العمر",
+    "ai_dose": "مثبط الأروماتاز الحالي (ملغ/أسبوع، 0 إن وجد)",
+    "calculate": "تقدير التحويل",
+    "estimated_total_t": "التستوستيرون الكلي التقديري (نانوغرام/ديسيلتر)",
+    "estimated_e2": "الإستراديول التقديري (بيكوغرام/مل)",
+    "e2_status": "حالة الإستراديول",
+    "test_to_e2_ratio": "نسبة T:E2",
+    "ai_suggestion": "مثبط الأروماتاز المقترح (ملغ/أسبوع)",
+    "warnings": "إرشادات"
+  }
+}

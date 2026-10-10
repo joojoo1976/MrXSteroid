@@ -97,6 +97,17 @@ export enum Page {
   STACKING_SYNERGY = 'stacking-synergy',
   SIDE_EFFECT_EARLY_WARNING = 'side-effect-early-warning',
   CYCLE_COST_CALCULATOR = 'cycle-cost-calculator',
+  CYCLE_LENGTH_OPTIMIZER = 'tool-031-cycle-length-optimizer',
+  ADVANCED_PCT_PLANNER = 'tool-032-advanced-pct-planner',
+  BLOODWORK_TREND_ANALYZER = 'tool-033-bloodwork-trend-analyzer',
+  COMPOUND_CLEARANCE = 'tool-034-compound-clearance',
+HORMONE_CONVERSION = 'tool-035-hormone-conversion',
+
+  INJECTION_SCHEDULE = 'tool-036-injection-schedule',
+  SIDE_EFFECT_PROBABILITY = 'tool-037-side-effect-probability',
+  STACK_COMPATIBILITY = 'tool-038-stack-compatibility',
+  LIVER_ENZYME_TRACKER = 'tool-039-liver-enzyme-tracker',
+  LIPID_PROFILE_OPTIMIZER = 'tool-040-lipid-profile-optimizer',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

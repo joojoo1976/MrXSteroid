@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import {
   SMART_TOOL_CATEGORIES,
   getCategory,
-  getToolsByCategory,
+  getPublishedToolsByCategory,
   toHierarchicalHref,
   type SmartToolCategory,
 } from '@/lib/tools/categories';
@@ -21,11 +21,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category } = await params;
   const def = getCategory(category);
-  if (!def) return { title: 'Category not found | Mr. X-Steroid' };
+  if (!def) return { title: 'Category not found' };
 
   const canonical = `https://mrxsteroid.com/smarttools/${def.slug}`;
   return {
-    title: `${def.nameEn} Tools | Mr. X-Steroid`,
+    title: `${def.nameEn} Tools`,
     description: def.descriptionEn,
     alternates: { canonical, languages: { 'ar-EG': canonical } },
     openGraph: {
@@ -43,7 +43,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const def = getCategory(category);
   if (!def) notFound();
 
-  const tools = getToolsByCategory(def!.slug);
+  const tools = getPublishedToolsByCategory(def!.slug);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-black dark:to-zinc-900">

@@ -15,7 +15,9 @@ const SmartToolsPage = () => {
     const { language: lang, isRTL } = usePreferences();
 
     const catalog = getCatalogTools();
-    const tools = catalog.map((t) => ({
+    // Roadmap entries (status 'planned', baseline #031+) have no implementation
+    // or route yet — only implemented tools render as cards (no dead links).
+    const tools = catalog.filter((t) => t.status !== 'planned').map((t) => ({
         // Canonical hierarchical URL: /smarttools/<category>/<tool> (SPEC §1.3).
         // Flat legacy hrefs stay live as 301 redirects (see flat pages).
         href: toHierarchicalHref(t.slug) ?? t.href,

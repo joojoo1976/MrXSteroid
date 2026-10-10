@@ -118,7 +118,7 @@ export function buildMultiEsterPKOutput(
         locale: options.locale,
         unitSystem: options.unitSystem,
         snapshotType: options.snapshotType,
-        accessTier: 'free',
+        accessTier: tool.accessTier, // registry is the single source of truth
         result,
         provenance: buildSerumProvenance(options),
         keyFindings: buildSerumKeyFindings(result),

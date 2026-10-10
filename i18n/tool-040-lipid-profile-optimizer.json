@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Lipid Profile Optimizer",
+    "ldl": "LDL (mg/dL)",
+    "hdl": "HDL (mg/dL)",
+    "tg": "Triglycerides (mg/dL)",
+    "age": "Age",
+    "smoker": "Smoker",
+    "sbp": "Systolic BP",
+    "on_cycle": "On cycle",
+    "weeks_remaining": "Weeks remaining",
+    "overall_band": "Overall band",
+    "non_hdl": "Non-HDL",
+    "interventions": "Interventions"
+  },
+  "ar": {
+    "tool_name": "محسّن ملف الدهون",
+    "ldl": "LDL (ملغ/ديسيلتر)",
+    "hdl": "HDL (ملغ/ديسيلتر)",
+    "tg": "الدهون الثلاثية (ملغ/ديسيلتر)",
+    "age": "العمر",
+    "smoker": "مدخن",
+    "sbp": "الضغط الانقباضي",
+    "on_cycle": "أثناء الدورة",
+    "weeks_remaining": "الأسابيع المتبقية",
+    "overall_band": "النطاق العام",
+    "non_hdl": "غير HDL",
+    "interventions": "التدخلات"
+  }
+}

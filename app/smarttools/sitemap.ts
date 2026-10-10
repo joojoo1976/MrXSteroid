@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SMART_TOOL_CATEGORIES, getToolsByCategory } from '@/lib/tools/categories';
+import { SMART_TOOL_CATEGORIES, getPublishedToolsByCategory } from '@/lib/tools/categories';
 import { toHierarchicalHref } from '@/lib/tools/categories';
 
 const BASE = 'https://mrxsteroid.com';
@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.8,
     });
-    for (const tool of getToolsByCategory(cat.slug)) {
+    for (const tool of getPublishedToolsByCategory(cat.slug)) {
       const href = toHierarchicalHref(tool.slug) ?? tool.href;
       entries.push({
         url: `${BASE}${href}`,

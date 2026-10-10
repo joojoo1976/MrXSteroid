@@ -2,13 +2,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCatalogTools } from '@/lib/tools/smartToolsCatalog4';
+import { getPublishedCatalogTools } from '@/lib/tools/smartToolsCatalog4';
 import { getCategory, getCategoryOfSlug, SMART_TOOL_CATEGORIES } from '@/lib/tools/categories';
 import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
 
 export function generateStaticParams(): Array<{ category: string; tool: string }> {
-  return getCatalogTools()
+  return getPublishedCatalogTools()
     .map((t) => ({ category: getCategoryOfSlug(t.slug) as string | null, tool: t.slug }))
     .filter((p): p is { category: string; tool: string } => p.category !== null);
 }
@@ -19,18 +19,17 @@ export async function generateMetadata({
   params: Promise<{ category: string; tool: string }>;
 }): Promise<Metadata> {
   const { category, tool } = await params;
-  const entry = getCatalogTools().find((t) => t.slug === tool);
+  const entry = getPublishedCatalogTools().find((t) => t.slug === tool);
   const cat = getCategory(category);
   if (!entry || !cat || getCategoryOfSlug(entry.slug) !== cat.slug) {
-    return { title: 'Tool not found | Mr. X-Steroid' };
+    return { title: 'Tool not found' };
   }
   const canonical = `https://mrxsteroid.com/smarttools/${cat.slug}/${entry.slug}`;
-  const title = `${entry.titleEn} | Mr. X-Steroid`;
   return {
-    title,
+    title: entry.titleEn, // root layout template appends the brand — never inline it here (H12)
     description: entry.descriptionEn,
     alternates: { canonical, languages: { 'ar-EG': canonical } },
-    openGraph: { title, description: entry.descriptionEn, url: canonical, siteName: 'Mr. X-Steroid', type: 'website' },
+    openGraph: { title: `${entry.titleEn} | Mr. X-Steroid`, description: entry.descriptionEn, url: canonical, siteName: 'Mr. X-Steroid', type: 'website' },
   };
 }
 
@@ -40,7 +39,7 @@ export default async function ToolPage({
   params: Promise<{ category: string; tool: string }>;
 }) {
   const { category, tool } = await params;
-  const entry = getCatalogTools().find((t) => t.slug === tool);
+  const entry = getPublishedCatalogTools().find((t) => t.slug === tool);
   const cat = getCategory(category);
   if (!entry || !cat || getCategoryOfSlug(entry.slug) !== cat.slug) notFound();
 

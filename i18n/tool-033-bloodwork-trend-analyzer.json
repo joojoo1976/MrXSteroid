@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Bloodwork Trend Analyzer",
+    "marker": "Marker",
+    "value": "Value",
+    "unit": "Unit",
+    "date": "Date",
+    "add_reading": "Add Reading",
+    "analyze": "Analyze Trends",
+    "markers": "Markers",
+    "direction": "Direction",
+    "in_range": "In range",
+    "velocity_alert": "Rapid move",
+    "summary": "Summary"
+  },
+  "ar": {
+    "tool_name": "محلل اتجاهات التحاليل",
+    "marker": "المؤشر",
+    "value": "القيمة",
+    "unit": "الوحدة",
+    "date": "التاريخ",
+    "add_reading": "إضافة قراءة",
+    "analyze": "تحليل الاتجاهات",
+    "markers": "المؤشرات",
+    "direction": "الاتجاه",
+    "in_range": "ضمن النطاق",
+    "velocity_alert": "تغير سريع",
+    "summary": "الملخص"
+  }
+}

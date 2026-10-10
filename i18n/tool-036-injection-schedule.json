@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Injection Schedule Planner",
+    "compounds": "Compounds",
+    "add_compound": "Add Compound",
+    "rotation_sites": "Rotation sites (comma separated)",
+    "shots": "Weekly shots",
+    "total_volume": "Total volume / week (mL)",
+    "busiest_day": "Busiest day",
+    "warnings": "Warnings"
+  },
+  "ar": {
+    "tool_name": "مخطط جدول الحقن",
+    "compounds": "المركبات",
+    "add_compound": "إضافة مركب",
+    "rotation_sites": "مواقع التدوير (مفصولة بفاصلة)",
+    "shots": "حقن الأسبوع",
+    "total_volume": "إجمالي الحجم / أسبوع (مل)",
+    "busiest_day": "أكثر يوم ازدحامًا",
+    "warnings": "تحذيرات"
+  }
+}

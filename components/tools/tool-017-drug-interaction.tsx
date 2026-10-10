@@ -49,7 +49,7 @@ export default function Tool017DrugInteraction() {
 
         {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
           <p className="text-zinc-600 font-bold">{i18nData.overall_safety}: {result.overall_safety}</p>
-          {result.requires_medical_approval && <p className="text-red-500 font-medium">âš ï¸ {i18nData.requires_medical_approval}</p>}
+          {result.requires_medical_approval && <p className="text-red-500 font-medium">{i18nData.requires_medical_approval}</p>}
           <p className="text-zinc-500">{i18nData.summary}: {result.summary}</p>
           <div className="mt-4 space-y-2 text-sm text-zinc-600">
             {result.flags.map((f: any, i: any) => 

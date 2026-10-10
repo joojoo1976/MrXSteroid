@@ -4,35 +4,39 @@
  * Defect (Gap Audit 2026-09-28): the root layout template
  * '%s | Mr. X-Steroid' composes child titles through Next.js metadata
  * inheritance; child titles that already carried the suffix rendered as
- * "… | Mr. X-Steroid | Mr. X-Steroid" on all five smarttools pages.
+ * "… | Mr. X-Steroid | Mr. X-Steroid" on all smarttools pages.
  *
- * Fix: the literal brand suffix was removed from the five generateMetadata
- * titles ONLY (the layout template is unchanged — the general metadata
- * strategy is untouched; openGraph titles never compose and keep their own
- * single suffix).
+ * Architecture note: after the hierarchical migration (SPEC §1.4) the five
+ * legacy flat pages became 301 redirect stubs that emit no titles, so the
+ * metadata carriers are now the segment layout + the two dynamic routes.
+ * Composing titles (everything up to the openGraph block) must be brand-free;
+ * openGraph titles never compose and keep their own single suffix.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PAGES = [
-    'app/smarttools/timeline/page.tsx',
-    'app/smarttools/hpta-recovery/page.tsx',
-    'app/smarttools/pct-timing/page.tsx',
-    'app/smarttools/aromatization-risk/page.tsx',
-    'app/smarttools/multi-ester-pharmacokinetics/page.tsx',
+const METADATA_CARRIERS = [
+    'app/smarttools/layout.tsx',
+    'app/smarttools/[category]/page.tsx',
+    'app/smarttools/[category]/[tool]/page.tsx',
 ];
 
+/** Slice of the file holding COMPOSING titles (metadata block up to openGraph). */
+function composingZone(src: string): string {
+    const gm = src.indexOf('generateMetadata');
+    const start = gm >= 0 ? gm : src.indexOf('metadata');
+    const og = src.indexOf('openGraph');
+    return src.slice(start >= 0 ? start : 0, og > start ? og : src.length);
+}
+
 describe('smarttools page titles — P1 (H12) no double brand suffix', () => {
-    for (const page of PAGES) {
-        it(`${page} metadata title carries no literal brand suffix (the layout template appends it)`, () => {
+    for (const page of METADATA_CARRIERS) {
+        it(`${page} composing metadata title carries no literal brand suffix (the layout template appends it)`, () => {
             const src = readFileSync(join(process.cwd(), page), 'utf8');
-            // The first `title:` occurrence in each file is the
-            // generateMetadata title (openGraph.title comes later and never
-            // composes through the template).
-            const match = src.match(/title: '([^']+)'/);
-            expect(match).not.toBeNull();
-            expect(match![1]).not.toContain('Mr. X-Steroid');
+            const zone = composingZone(src);
+            expect(zone).toContain('title');
+            expect(zone).not.toContain('Mr. X-Steroid');
         });
     }
 

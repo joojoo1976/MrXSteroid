@@ -1,36 +1,34 @@
 /**
  * lib/tools/validation.ts
- * Vérifications statiques et de liaison pour la plateforme SmartTools.
- * Exécutée par scripts/validate-tools.ts (npm run validate-tools).
+ * Verifications statiques et de liaison pour la plateforme SmartTools.
+ * Executee par scripts/validate-tools.ts (npm run validate-tools).
  *
- * Règle forte conservée : les 30 outils déjà réalisés (#1-#30) ne sont ni
- * supprimés, ni fusionnés, ni recadrés : leurs moteurs/schemas/composants et
+ * Regle forte conservee : les 30 outils deja realises (#1-#30) ne sont ni
+ * supprimes, ni fusionnes, ni recadres : leurs moteurs/schemas/composants et
  * leur route plate (/smarttools/<slug>) restent sur le disque, et leur url
- * plate devient une 301 (permanent) vers le canonique hiérarchique
- * /smarttools/<category>/<tool> (SPEC §1.4). L'identité mrx.tool.<slug> est
- * inchangée. Aucune fonctionnalité unique n'est supprimée.
+ * plate devient une 301 (permanent) vers le canonique hierarchique
+ * /smarttools/<category>/<tool> (SPEC 1.4). L'identite mrx.tool.<slug> est
+ * inchangee. Aucune fonctionnalite unique n'est supprimee.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-// Racine résolue de la REPO (process.cwd) : compatible Node script ET vitest
+import { getCatalogTools } from './smartToolsCatalog4';
+import { TOOL_REGISTRY } from './registry';
+import { toHierarchicalHref } from './categories';
+
+// Racine resolue de la REPO (process.cwd) : compatible Node script ET vitest
 // (sous vitest, import.meta.url pointe vers un fichier temp, ce qui briserait
-// la résolution des chemins de diagnostic).
+// la resolution des chemins de diagnostic).
 const ROOT = process.cwd();
 
-// -- helpers de résolution de chemins (diagnostics seul) --------------------
+// -- helpers de resolution de chemins (diagnostics seul) --------------------
 function toFsPath(p: string): string {
   const normalized = p.startsWith('@/') ? p.slice(2) : p;
   const suffix = normalized.startsWith('components/') ? '.tsx' : (p.endsWith('.ts') ? '' : '.ts');
   return join(ROOT, normalized + suffix);
 }
 const exists = (p: string): boolean => existsSync(toFsPath(p));
-
-// -- imports depuis le catalogue
-import { getCatalogTools } from './smartToolsCatalog4';
-import { TOOL_REGISTRY } from './registry';
-import { toHierarchicalHref } from './categories';
 
 export type ValidationResult = {
   ok: boolean;
@@ -44,7 +42,7 @@ export type ValidationResult = {
     componentPath: string;
     enginePath: string;
     schemaPath: string;
-    size: 'ok' | 'missing';
+    size: 'ok' | 'missing' | 'planned';
   }>;
 };
 
@@ -69,13 +67,22 @@ export function runValidation(): ValidationResult {
 
   for (const t of cat) {
     smarttoolsSlugs.add(t.slug);
+    const planned = (t as { status?: string }).status === 'planned';
     const component = exists(t.componentPath) ? 'ok' : 'missing';
     const engine = exists(t.enginePath) ? 'ok' : 'missing';
     const schema = exists(t.schemaPath) ? 'ok' : 'missing';
 
-    if (component === 'missing') errors.push('component manquant: ' + t.toolId + ' (' + t.componentPath + ')');
-    if (engine === 'missing') errors.push('engine manquant: ' + t.toolId + ' (' + t.enginePath + ')');
-    if (schema === 'missing') errors.push('schema manquant: ' + t.toolId + ' (' + t.schemaPath + ')');
+    // 'planned' roadmap entries are, by contract, NOT built yet (their files
+    // must NOT exist — enforced by tests/unit/smartToolsCatalog.test.ts).
+    // The filesystem gate therefore applies to implemented entries only;
+    // planned entries are validated for identity/uniqueness below.
+    if (!planned) {
+      if (component === 'missing') errors.push('component manquant: ' + t.toolId + ' (' + t.componentPath + ')');
+      if (engine === 'missing') errors.push('engine manquant: ' + t.toolId + ' (' + t.enginePath + ')');
+      if (schema === 'missing') errors.push('schema manquant: ' + t.toolId + ' (' + t.schemaPath + ')');
+    } else if (component === 'ok' || engine === 'ok' || schema === 'ok') {
+      errors.push('planned doit etre introuvable sur disque: ' + t.toolId);
+    }
 
     if (!t.titleAr || !t.titleEn) errors.push('titres manquants: ' + t.toolId);
     if (!['free', 'premium'].includes(t.accessTier)) errors.push('tier invalide: ' + t.toolId);
@@ -83,24 +90,24 @@ export function runValidation(): ValidationResult {
     if (t.slug !== toSlug(t.href)) {
       errors.push('slug != href: ' + t.toolId + ' (slug=' + t.slug + ', href=' + t.href + ')');
     }
-    if (seenSlug.has(t.slug)) errors.push('slug dupliqué: ' + t.slug);
+    if (seenSlug.has(t.slug)) errors.push('slug duplique: ' + t.slug);
     seenSlug.add(t.slug);
-    if (seenHref.has(t.href)) errors.push('href dupliqué: ' + t.href);
+    if (seenHref.has(t.href)) errors.push('href duplique: ' + t.href);
     seenHref.add(t.href);
-    if (seenOrder.has(t.order)) errors.push('order dupliquée: ' + t.order);
+    if (seenOrder.has(t.order)) errors.push('order dupliquee: ' + t.order);
     seenOrder.add(t.order);
 
     entries.push({
       toolId: t.toolId, slug: t.slug, href: t.href, order: t.order,
       componentPath: t.componentPath, enginePath: t.enginePath, schemaPath: t.schemaPath,
-      size: component === 'ok' && engine === 'ok' && schema === 'ok' ? 'ok' : 'missing',
+      size: planned ? 'planned' : (component === 'ok' && engine === 'ok' && schema === 'ok' ? 'ok' : 'missing'),
     });
   }
 
   // registry legacy
   for (const tool of TOOL_REGISTRY) {
     const legacy = toSlug(tool.href);
-    if (seenLegacy.has(legacy)) errors.push('route legacy dupliquée: /' + legacy);
+    if (seenLegacy.has(legacy)) errors.push('route legacy dupliquee: /' + legacy);
     seenLegacy.add(legacy);
 
     if (!tool.titleAr || !tool.titleEn) errors.push('title manquant dans registry: ' + tool.toolId);
@@ -119,14 +126,14 @@ export function runValidation(): ValidationResult {
   const directSlugs = new Set<string>();
   for (const t of cat) {
     if (t.href.startsWith('/smarttools/') && !t.href.includes('/')) {
-      if (directSlugs.has(t.href)) errors.push('route directe dupliquée: ' + t.href);
+      if (directSlugs.has(t.href)) errors.push('route directe dupliquee: ' + t.href);
       directSlugs.add(t.href);
     }
   }
 
-  lines.push('Catalogue: ' + cat.length + ' outils');
-  lines.push('Registry : ' + TOOL_REGISTRY.length + ' entrées');
-  lines.push('Filesystem verifié: ' + entries.filter((e) => e.size === 'ok').length + '/' + cat.length);
+  lines.push('Catalogue: ' + cat.length + ' outils (' + cat.filter((t) => (t as { status?: string }).status === 'planned').length + ' planned roadmap)');
+  lines.push('Registry : ' + TOOL_REGISTRY.length + ' entrees');
+  lines.push('Filesystem verifie: ' + entries.filter((e) => e.size === 'ok').length + '/' + cat.length);
   lines.push('Erreurs: ' + errors.length);
 
   return { ok: errors.length === 0, errors, lines, entries };

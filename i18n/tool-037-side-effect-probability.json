@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Side Effect Probability Calculator",
+    "compounds": "Compounds",
+    "add_compound": "Add Compound",
+    "age": "Age",
+    "body_fat_pct": "Body fat (%)",
+    "cycle_weeks": "Cycle (weeks)",
+    "uses_ai": "Using AI",
+    "uses_liver_support": "Using liver support",
+    "risks": "Risks",
+    "overall_burden": "Overall burden (%)",
+    "mitigations": "Mitigations"
+  },
+  "ar": {
+    "tool_name": "حاسبة احتمالية الأعراض",
+    "compounds": "المركبات",
+    "add_compound": "إضافة مركب",
+    "age": "العمر",
+    "body_fat_pct": "نسبة الدهون (%)",
+    "cycle_weeks": "الدورة (أسابيع)",
+    "uses_ai": "يستخدم مثبط أروماتاز",
+    "uses_liver_support": "يستخدم دعم الكبد",
+    "risks": "المخاطر",
+    "overall_burden": "العبء الإجمالي (%)",
+    "mitigations": "إجراءات التخفيف"
+  }
+}

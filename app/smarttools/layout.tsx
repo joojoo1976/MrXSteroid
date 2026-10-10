@@ -3,7 +3,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Smart Tools | Mr. X-Steroid',
+    title: 'Smart Tools',
     description: 'Access all professional bodybuilding calculators: Macro Calculator, Body Fat Calculator, Injection Map, Half-Life Simulator, Smart Lab Reference, and Genetic Potential Calculator. Bilingual (Arabic & English).',
     keywords: ['macro calculator', 'body fat calculator', 'injection map', 'half-life simulator', 'lab reference', 'genetic potential', 'Mr. X Steroid', 'bodybuilding tools', 'حاسبة الماكروز', 'حاسبة الدهون', 'خريطة الحقن'],
     openGraph: {

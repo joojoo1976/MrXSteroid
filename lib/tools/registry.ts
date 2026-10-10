@@ -34,10 +34,15 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
   { toolId: 'mrx.tool.bodyfat', slug: 'bodyfat', version: '1.0.0', page: Page.BODYFAT, href: '/bodyfat', titleAr: 'حاسبة نسبة الدهون', titleEn: 'Body Fat Calculator', accessTier: 'free', order: 20, stackStatus: 'legacy' },
   { toolId: 'mrx.tool.injection', slug: 'injection', version: '1.0.0', page: Page.INJECTION, href: '/injection', titleAr: 'خريطة الحقن التفاعلية', titleEn: 'Interactive Injection Map', accessTier: 'free', order: 30, stackStatus: 'legacy' },
   { toolId: 'mrx.tool.halflife', slug: 'halflife', version: '1.0.0', page: Page.HALFLIFE, href: '/halflife', titleAr: 'محاكي نصف العمر', titleEn: 'Half-Life Simulator', accessTier: 'free', order: 40, stackStatus: 'legacy' },
-  { toolId: 'mrx.tool.multi-ester-pharmacokinetics', slug: 'multi-ester-pharmacokinetics', version: '1.0.0', page: Page.MULTI_ESTER_PK, href: '/smarttools/multi-ester-pharmacokinetics', titleAr: 'محاكي تراكم الإسترات', titleEn: 'Multi-Ester PK Simulator', accessTier: 'free', order: 50, stackStatus: 'layered' },
-  { toolId: 'mrx.tool.hpta-recovery', slug: 'hpta-recovery', version: '1.0.0', page: Page.HPTA_RECOVERY, href: '/smarttools/hpta-recovery', titleAr: 'محاكي استعادة HPTA', titleEn: 'HPTA Recovery Modeler', accessTier: 'free', order: 60, stackStatus: 'layered' },
-  { toolId: 'mrx.tool.aromatization-risk', slug: 'aromatization-risk', version: '1.0.0', page: Page.AROMATIZATION_RISK, href: '/smarttools/aromatization-risk', titleAr: 'خطر الأروماتة', titleEn: 'Aromatization Risk', accessTier: 'free', order: 120, stackStatus: 'layered' },
-  { toolId: 'mrx.tool.pct-timing', slug: 'pct-timing', version: '1.0.0', page: Page.PCT_TIMING, href: '/smarttools/pct-timing', titleAr: 'محرك توقيت PCT', titleEn: 'PCT Timing Engine', accessTier: 'free', order: 130, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.lab', slug: 'lab', version: '1.0.0', page: Page.LAB, href: '/lab', titleAr: 'المرجع الذكي للتحاليل', titleEn: 'Smart Lab Reference', accessTier: 'free', order: 50, stackStatus: 'legacy' },
+  { toolId: 'mrx.tool.genetic', slug: 'genetic', version: '1.0.0', page: Page.GENETIC, href: '/genetic', titleAr: 'حاسبة الإمكانات الوراثية', titleEn: 'Genetic Potential Calculator', accessTier: 'free', order: 60, stackStatus: 'legacy' },
+  { toolId: 'mrx.tool.cycle', slug: 'cycle', version: '1.0.0', page: Page.CYCLE_ARCHITECT, href: '/cycle', titleAr: 'مهندس الدورة', titleEn: 'Cycle Architect', accessTier: 'premium', order: 70, stackStatus: 'legacy' },
+  { toolId: 'mrx.tool.timeline', slug: 'timeline', version: '1.0.0', page: Page.TIMELINE, href: '/smarttools/timeline', titleAr: 'الجدول الزمني للتحول', titleEn: 'Transformation Timeline', accessTier: 'free', order: 80, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.master-calculator', slug: 'master-calculator', version: '1.0.0', page: Page.MASTER_CALCULATOR, href: '/master-calculator', titleAr: 'الحاسبة الشاملة', titleEn: 'Master Calculator', accessTier: 'free', order: 90, stackStatus: 'legacy' },
+  { toolId: 'mrx.tool.multi-ester-pharmacokinetics', slug: 'multi-ester-pharmacokinetics', version: '1.0.0', page: Page.MULTI_ESTER_PK, href: '/smarttools/multi-ester-pharmacokinetics', titleAr: 'محاكي تراكم الإسترات', titleEn: 'Multi-Ester PK Simulator', accessTier: 'premium', order: 45, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.hpta-recovery', slug: 'hpta-recovery', version: '1.0.0', page: Page.HPTA_RECOVERY, href: '/smarttools/hpta-recovery', titleAr: 'محاكي التثبيط المحوري واستعادة HPTA', titleEn: 'HPTA Suppression & Recovery Modeler', accessTier: 'free', order: 46, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.aromatization-risk', slug: 'aromatization-risk', version: '1.0.0', page: Page.AROMATIZATION_RISK, href: '/smarttools/aromatization-risk', titleAr: 'محاكي مخاطر الأروماتزة والاستراديول', titleEn: 'Aromatization Risk & E2 Management Modeler', accessTier: 'free', order: 45.5, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.pct-timing', slug: 'pct-timing', version: '1.0.0', page: Page.PCT_TIMING, href: '/smarttools/pct-timing', titleAr: 'محرك توقيت PCT والتطهير', titleEn: 'PCT Timing & Compound Washout Engine', accessTier: 'free', order: 47, stackStatus: 'layered' },
   { toolId: 'mrx.tool.hcg-serm-protocol', slug: 'hcg-serm-protocol', version: '1.0.0', page: Page.HCG_SERM_PROTOCOL, href: '/smarttools/hcg-serm-protocol', titleAr: 'بروتوكول HCG وSERM', titleEn: 'HCG & SERM Protocol', accessTier: 'free', order: 140, stackStatus: 'layered' },
   { toolId: 'mrx.tool.006-estrogen-prolactin', slug: 'tool-006-estrogen-prolactin', version: '1.0.0', page: Page.ESTROGEN_PROLACTIN, href: '/smarttools/tool-006-estrogen-prolactin', titleAr: 'التحكم في الإستروجين والبرولاكتين', titleEn: 'Estrogen & Prolactin Control', accessTier: 'free', order: 200, stackStatus: 'layered' },
   { toolId: 'mrx.tool.007-bloodwork-analyzer', slug: 'tool-007-bloodwork-analyzer', version: '1.0.0', page: Page.BLOODWORK_ANALYZER, href: '/smarttools/tool-007-bloodwork-analyzer', titleAr: 'محلل الفحوصات', titleEn: 'Bloodwork Analyzer', accessTier: 'free', order: 210, stackStatus: 'layered' },
@@ -64,34 +69,120 @@ export const TOOL_REGISTRY: readonly ToolDefinition[] = [
   { toolId: 'mrx.tool.028-stacking-synergy', slug: 'tool-028-stacking-synergy', version: '1.0.0', page: Page.STACKING_SYNERGY, href: '/smarttools/tool-028-stacking-synergy', titleAr: 'تآزر الحزم', titleEn: 'Stacking Synergy', accessTier: 'free', order: 440, stackStatus: 'layered' },
   { toolId: 'mrx.tool.029-side-effect-early-warning', slug: 'tool-029-side-effect-early-warning', version: '1.0.0', page: Page.SIDE_EFFECT_EARLY_WARNING, href: '/smarttools/tool-029-side-effect-early-warning', titleAr: 'الإنذار المبكر', titleEn: 'Side Effect Early Warning', accessTier: 'free', order: 450, stackStatus: 'layered' },
   { toolId: 'mrx.tool.030-cycle-cost-calculator', slug: 'tool-030-cycle-cost-calculator', version: '1.0.0', page: Page.CYCLE_COST_CALCULATOR, href: '/smarttools/tool-030-cycle-cost-calculator', titleAr: 'حاسبة تكلفة الدورة', titleEn: 'Cycle Cost Calculator', accessTier: 'free', order: 460, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.031-cycle-length-optimizer', slug: 'tool-031-cycle-length-optimizer', version: '1.0.0', page: Page.CYCLE_LENGTH_OPTIMIZER, href: '/smarttools/tool-031-cycle-length-optimizer', titleAr: 'محسّن مدة الدورة', titleEn: 'Cycle Length Optimizer', accessTier: 'free', order: 470, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.032-advanced-pct-planner', slug: 'tool-032-advanced-pct-planner', version: '1.0.0', page: Page.ADVANCED_PCT_PLANNER, href: '/smarttools/tool-032-advanced-pct-planner', titleAr: 'مخطط PCT المتقدم', titleEn: 'Advanced PCT Planner', accessTier: 'free', order: 480, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.033-bloodwork-trend-analyzer', slug: 'tool-033-bloodwork-trend-analyzer', version: '1.0.0', page: Page.BLOODWORK_TREND_ANALYZER, href: '/smarttools/tool-033-bloodwork-trend-analyzer', titleAr: 'محلل اتجاهات التحاليل', titleEn: 'Bloodwork Trend Analyzer', accessTier: 'free', order: 490, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.034-compound-clearance', slug: 'tool-034-compound-clearance', version: '1.0.0', page: Page.COMPOUND_CLEARANCE, href: '/smarttools/tool-034-compound-clearance', titleAr: 'حاسبة تصفية المركبات', titleEn: 'Compound Clearance Calculator', accessTier: 'free', order: 500, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.036-injection-schedule', slug: 'tool-036-injection-schedule', version: '1.0.0', page: Page.INJECTION_SCHEDULE, href: '/smarttools/tool-036-injection-schedule', titleAr: 'مخطط جدول الحقن', titleEn: 'Injection Schedule Planner', accessTier: 'free', order: 520, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.037-side-effect-probability', slug: 'tool-037-side-effect-probability', version: '1.0.0', page: Page.SIDE_EFFECT_PROBABILITY, href: '/smarttools/tool-037-side-effect-probability', titleAr: 'حاسبة احتمالية الأعراض', titleEn: 'Side Effect Probability Calculator', accessTier: 'free', order: 530, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.038-stack-compatibility', slug: 'tool-038-stack-compatibility', version: '1.0.0', page: Page.STACK_COMPATIBILITY, href: '/smarttools/tool-038-stack-compatibility', titleAr: 'مدقق توافق الستاك', titleEn: 'Stack Compatibility Checker', accessTier: 'free', order: 540, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.039-liver-enzyme-tracker', slug: 'tool-039-liver-enzyme-tracker', version: '1.0.0', page: Page.LIVER_ENZYME_TRACKER, href: '/smarttools/tool-039-liver-enzyme-tracker', titleAr: 'متتبع إنزيمات الكبد', titleEn: 'Liver Enzyme Tracker', accessTier: 'free', order: 550, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.040-lipid-profile-optimizer', slug: 'tool-040-lipid-profile-optimizer', version: '1.0.0', page: Page.LIPID_PROFILE_OPTIMIZER, href: '/smarttools/tool-040-lipid-profile-optimizer', titleAr: 'محسّن ملف الدهون', titleEn: 'Lipid Profile Optimizer', accessTier: 'free', order: 560, stackStatus: 'layered' },
+  { toolId: 'mrx.tool.035-hormone-conversion', slug: 'tool-035-hormone-conversion', version: '1.0.0', page: Page.HORMONE_CONVERSION, href: '/smarttools/tool-035-hormone-conversion', titleAr: 'حاسبة تحويل الهرمونات', titleEn: 'Hormone Conversion Calculator', accessTier: 'free', order: 510, stackStatus: 'layered' },
 ];
-// Helper functions for tool lookup
-export function getTool(slug: string): ToolDefinition | undefined {
-  return TOOL_REGISTRY.find(t => t.slug === slug);
+// ─────────────────────────────────────────────────────────────────────────────
+// Registry integrity + resolution (contract: lib/tools/registry.test.ts)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export class ToolRegistryError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ToolRegistryError';
+    }
 }
 
-export function getToolByPage(page: Page): ToolDefinition | undefined {
-  return TOOL_REGISTRY.find(t => t.page === page);
+/**
+ * Canonical identity: `mrx.tool.` + slug with the redundant `tool-` prefix
+ * stripped (`tool-006-estrogen-prolactin` → `mrx.tool.006-estrogen-prolactin`).
+ * Keeps registry IDs byte-identical to the smartToolsCatalog identities used
+ * for persisted state (merge policy § identity); legacy slugs map 1:1.
+ */
+function canonicalToolId(slug: string): string {
+    return `mrx.tool.${slug.replace(/^tool-/, '')}`;
 }
 
-export function getToolByHref(href: string): ToolDefinition | undefined {
-  return TOOL_REGISTRY.find(t => t.href === href);
+/** `/ar/macro/` → `macro`. Locale prefixes and slashes are stripped. */
+export function normalizeSlug(input: string | null | undefined): string | null {
+    if (!input || typeof input !== 'string') return null;
+    const stripped = input
+        .trim()
+        .replace(/^(?:\/(?:ar|en))(?=\/|$)/i, '')
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
+    if (!stripped) return null;
+    return stripped.toLowerCase();
 }
 
-export function requireTool(slug: string): ToolDefinition {
-  const tool = getTool(slug);
-  if (!tool) {
-    throw new Error(`Tool not found: ${slug}`);
-  }
-  return tool;
+/** Registry in deterministic chain order (explicit `order`, never array index). */
+export function orderedTools(): ToolDefinition[] {
+    return [...TOOL_REGISTRY].sort((a, b) => a.order - b.order);
+}
+
+/** Fail-fast registry integrity check — executed on import and re-run in tests. */
+export function validateRegistry(tools: readonly ToolDefinition[] = TOOL_REGISTRY): true {
+    if (tools.length === 0) throw new ToolRegistryError('tool registry is empty');
+    const seen = { toolId: new Set<string>(), slug: new Set<string>(), href: new Set<string>(), order: new Set<number>() };
+    for (const t of tools) {
+        if (t.toolId !== canonicalToolId(t.slug)) {
+            throw new ToolRegistryError(`toolId "${t.toolId}" must equal "${canonicalToolId(t.slug)}"`);
+        }
+        if (!ACCESS_TIERS.includes(t.accessTier)) {
+            throw new ToolRegistryError(`tool "${t.slug}" has invalid accessTier "${String(t.accessTier)}"`);
+        }
+        if (!/^\d+\.\d+\.\d+$/.test(t.version)) {
+            throw new ToolRegistryError(`tool "${t.slug}" version "${t.version}" must be semver (x.y.z)`);
+        }
+        if (!t.href.startsWith('/') || t.href.length < 2) {
+            throw new ToolRegistryError(`tool "${t.slug}" href "${t.href}" must be an absolute app path`);
+        }
+        if (!t.titleAr || !t.titleEn) {
+            throw new ToolRegistryError(`tool "${t.slug}" requires both titleAr and titleEn`);
+        }
+        if (seen.toolId.has(t.toolId)) throw new ToolRegistryError(`duplicate toolId "${t.toolId}"`);
+        if (seen.slug.has(t.slug)) throw new ToolRegistryError(`duplicate slug "${t.slug}"`);
+        if (seen.href.has(t.href)) throw new ToolRegistryError(`duplicate href "${t.href}"`);
+        if (seen.order.has(t.order)) throw new ToolRegistryError(`duplicate order ${t.order} (chain order must be unique)`);
+        seen.toolId.add(t.toolId);
+        seen.slug.add(t.slug);
+        seen.href.add(t.href);
+        seen.order.add(t.order);
+    }
+    return true;
+}
+
+// The registry is a compile-time constant — an invalid one must never boot.
+validateRegistry();
+
+/** Resolve by slug (`macro`) or by href (`/macro`, `/ar/macro/`, `/smarttools/timeline`). */
+export function getTool(slugOrHref: string): ToolDefinition | null {
+    const key = normalizeSlug(slugOrHref);
+    if (!key) return null;
+    return orderedTools().find((t) => t.slug === key || t.href.toLowerCase() === `/${key}`) ?? null;
+}
+
+/** Resolve from the legacy `Page` enum used across `features/calculator`. */
+export function getToolByPage(page: Page): ToolDefinition | null {
+    return orderedTools().find((t) => t.page === page) ?? null;
+}
+
+/** Resolve from a Next.js pathname (locale prefix + trailing slash tolerant). */
+export function getToolByHref(href: string): ToolDefinition | null {
+    return getTool(href);
+}
+
+/** Throwing variant for engine/adapter call sites where a typo must fail loud. */
+export function requireTool(slugOrHref: string): ToolDefinition {
+    const tool = getTool(slugOrHref);
+    if (!tool) throw new ToolRegistryError(`unknown tool "${String(slugOrHref)}" — not present in TOOL_REGISTRY`);
+    return tool;
 }
 
 export function getDefaultTool(): ToolDefinition {
-  return TOOL_REGISTRY[0];
+    return orderedTools()[0];
 }
 
 export function getToolsByTier(tier: AccessTier): ToolDefinition[] {
-  return TOOL_REGISTRY.filter(t => t.accessTier === tier);
+    return orderedTools().filter((t) => t.accessTier === tier);
 }
 
 export function toToolLink(tool: ToolDefinition): ToolLink {
@@ -102,32 +193,66 @@ export function toToolLink(tool: ToolDefinition): ToolLink {
   };
 }
 
-export function getToolNeighbors(slug: string): { prevTool: ToolLink; nextTool: ToolLink } {
-  const idx = TOOL_REGISTRY.findIndex(t => t.slug === slug);
-  if (idx === -1) {
-    // Fallback to first tool if slug not found
-    return {
-      prevTool: toToolLink(TOOL_REGISTRY[TOOL_REGISTRY.length - 1]),
-      nextTool: toToolLink(TOOL_REGISTRY[0]),
-    };
-  }
-  const prevTool = idx > 0 ? toToolLink(TOOL_REGISTRY[idx - 1]) : toToolLink(TOOL_REGISTRY[TOOL_REGISTRY.length - 1]);
-  const nextTool = idx < TOOL_REGISTRY.length - 1 ? toToolLink(TOOL_REGISTRY[idx + 1]) : toToolLink(TOOL_REGISTRY[0]);
-  return { prevTool, nextTool };
+/**
+ * Circular neighbour pair for the prev/next footer links (SEO §7).
+ * The chain wraps around — no tool can ever render a dead link — and an
+ * unregistered slug throws `ToolRegistryError` instead of a silent fallback.
+ */
+export function getToolNeighbors(slugOrHref: string): SeoLinks {
+    const chain = orderedTools();
+    const index = chain.findIndex((t) => t.slug === requireTool(slugOrHref).slug);
+    const prevTool = chain[(index - 1 + chain.length) % chain.length];
+    const nextTool = chain[(index + 1) % chain.length];
+    return { prevTool: toToolLink(prevTool), nextTool: toToolLink(nextTool) };
 }
 
-export function buildSeoLinks(tool: ToolDefinition): SeoLinks {
-  const prevTool = tool.order > 10 
-    ? toToolLink(TOOL_REGISTRY.find(t => t.order < tool.order && t.order === Math.max(...TOOL_REGISTRY.filter(t => t.order < tool.order).map(t => t.order)))!)
-    : toToolLink(TOOL_REGISTRY[TOOL_REGISTRY.length - 1]);
-  const nextTool = tool.order < 460 
-    ? toToolLink(TOOL_REGISTRY.find(t => t.order > tool.order && t.order === Math.min(...TOOL_REGISTRY.filter(t => t.order > tool.order).map(t => t.order)))!)
-    : toToolLink(TOOL_REGISTRY[0]);
-  return { prevTool, nextTool };
+/** Accepts a `ToolDefinition` (adapters) or a slug/href string (tests, callers). */
+export function buildSeoLinks(tool: ToolDefinition): SeoLinks;
+export function buildSeoLinks(slugOrHref: string): SeoLinks;
+export function buildSeoLinks(input: string | ToolDefinition): SeoLinks {
+    return getToolNeighbors(typeof input === 'string' ? input : input.slug);
 }
 
-export function buildToolOutput<T>(params: ToolOutputParams<T>): ToolOutput<T> {
-  return createToolOutput(params);
+/** Envelope params with registry-injected identity fields (tuple form of `buildToolOutput`). */
+export type RegistryToolOutputParams<T> = Omit<
+    ToolOutputParams<T>,
+    'toolId' | 'toolSlug' | 'accessTier' | 'seoLinks'
+>;
+
+export function buildToolOutput<T>(slugOrHref: string, params: RegistryToolOutputParams<T>): ToolOutput<T>;
+export function buildToolOutput<T>(params: ToolOutputParams<T>): ToolOutput<T>;
+/**
+ * Canonical `ToolOutput` builder.
+ * - `(slug, params)`: identity, access tier and prev/next links are injected
+ *   from the registry — a tool author can never emit an inconsistent envelope.
+ * - `(params)`: full-envelope passthrough used by adapters that already
+ *   resolved the tool via `requireTool` (identity fields included).
+ */
+export function buildToolOutput<T>(
+    input: string | ToolOutputParams<T>,
+    params?: RegistryToolOutputParams<T>,
+): ToolOutput<T> {
+    if (typeof input === 'string') {
+        if (!params) {
+            throw new ToolRegistryError(`buildToolOutput("${input}") requires envelope params`);
+        }
+        const tool = requireTool(input);
+        try {
+            return createToolOutput<T>({
+                ...params,
+                toolId: tool.toolId,
+                toolSlug: tool.slug,
+                accessTier: tool.accessTier,
+                seoLinks: getToolNeighbors(tool.slug),
+            });
+        } catch (error) {
+            if (error instanceof ToolContractError) {
+                throw new ToolRegistryError(`tool "${tool.slug}" produced an invalid ToolOutput: ${error.message}`);
+            }
+            throw error;
+        }
+    }
+    return createToolOutput<T>(input);
 }
 
 // Re-export types

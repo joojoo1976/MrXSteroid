@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Compound Clearance Calculator",
+    "compound_name": "Compound",
+    "half_life_days": "Half-life (days)",
+    "last_dose_mg": "Last dose (mg)",
+    "last_dose_date": "Last dose date",
+    "calculate": "Calculate Clearance",
+    "days_to_clear": "Days to clear",
+    "clearance_date": "Clearance date",
+    "current_remaining": "Currently remaining",
+    "already_clear": "Already cleared",
+    "not_yet_clear": "Not yet cleared",
+    "curve": "Residual curve"
+  },
+  "ar": {
+    "tool_name": "حاسبة تصفية المركبات",
+    "compound_name": "المركب",
+    "half_life_days": "نصف العمر (أيام)",
+    "last_dose_mg": "آخر جرعة (ملغ)",
+    "last_dose_date": "تاريخ آخر جرعة",
+    "calculate": "حساب التصفية",
+    "days_to_clear": "أيام حتى التصفية",
+    "clearance_date": "تاريخ التصفية",
+    "current_remaining": "المتبقي حالياً",
+    "already_clear": "تمت التصفية",
+    "not_yet_clear": "لم تتم التصفية بعد",
+    "curve": "منحنى المتبقي"
+  }
+}
