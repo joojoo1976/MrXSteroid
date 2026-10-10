@@ -11,11 +11,17 @@ BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git hist
 - [x] D-1 → commit cf3180f: tools #041-#045 shipped end-to-end (44 files; TDD golden engine tests; adapters batch test; i18n AR/EN; components; routes; registry/Page/PAGE_TO_PATH/TOOL_CATEGORY wiring; catalog6 flip 45 implemented / 5 planned).
 - [x] F → next build SUCCESS (179 static pages, AI route present); acceptance matrix: docs/superpowers/audits/2026-10-10-master-acceptance-matrix.md.
 
+## Session 2 (2026-10-11) — batch #046-#050 shipped
+- [x] D-2 → commit `0aa2b40`: tools **#046–#050** full stack (45 files): engines TDD golden (trt-lifetime cost horizons / fertility recovery tiers / cardio factor model / bone score / mental-health red-flag escalation) + schemas + adapters (batch 5/5) + i18n AR/EN + components + 301 routes + Page enum +5 + PAGE_TO_PATH +5 + registry orders 620–660 + TOOL_CATEGORY +5 + catalog6 flip **50 implemented / 0 planned**.
+- [x] AI explain planned-fixture migrated (`tool-046-trt-lifetime` shipped) → `tool-999-not-in-catalog`; published-only gate unchanged; 12/12 AI tests.
+- [x] Full suite: **3048 pass** / 16 payments pre-existing (re-confirmed identical) / 5 skipped; tsc EXIT=0; eslint clean; `next build` ✓ **189 static pages**.
+- [x] Matrix updated: docs/superpowers/audits/2026-10-10-master-acceptance-matrix.md.
+
 ## Remaining roadmap (honest)
-- #046-#050: registered planned, gated, invisible to users (counts test 45/5).
 - #051-#150: not started; §50 table + §ONBOARDING pattern is the onboarding path.
 
 ## Lessons (recurring)
-- Long-file one-shot writes polluted tails with stale fragments → hard rule: compose full final content before write; grep for duplicate declarations right after each write.
+- Long-file one-shot writes polluted tails with stale fragments → hard rule: compose full final content before write; grep for duplicate declarations right after each write. (Applied this session: one stray `的生活` fragment caught + fixed in 048 test.)
 - PowerShell mangles quotes/Arabic → always via script files (node fs), verify Arabic via node not console.
 - Parallel tsc runs raced with edits → re-run after edit completes.
+- NEW: hand-computed goldens drift from engine rules (046 long-term <5y, 047 age>28 +1, 048 max-sum 53 not 60, 049 age>65 −5 not −8) → recompute goldens carefully; when the test expresses *desired* behavior (050 declining-19nor flag), fix the engine, not the test.
