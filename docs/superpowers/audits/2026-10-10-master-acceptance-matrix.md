@@ -98,6 +98,8 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 11. `1ba881c` — tools #056–#060 full stack (41 files): 60 implemented / 90 planned / 150 total.
 12. `10493b4` — docs: acceptance matrix + ledger for batch #056-#060 (60/90/150).
 13. `204c1eb` — feat(tools): ship batch #061-#065 — TDD engines, schemas, adapters, i18n, UI, routes (65/150 implemented).
+14. `ed99a10` — docs: acceptance matrix + ledger for batch #061-#065 (65/85/150).
+15. `53bf333` — feat(tools): ship batch #066-#070 — TDD engines, schemas, adapters, i18n, UI, routes (70/150 implemented).
 
 ## Batch #061–#065 detail (2026-10-11, commit `204c1eb`)
 | Item | Status | Evidence |
@@ -111,3 +113,16 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 | Catalog flip | **PASS** | catalog7 #061–#065 planned→implemented; counts 65/85/150; published=65 |
 | Full suite | **PASS (SmartTools domain)** | 3108 passed / 16 payments (documented pre-existing baseline) / 5 skipped |
 | next build | **PASS** | All routes built statically and SSR valid |
+
+## Batch #066–#070 detail (2026-10-11, commit `53bf333`)
+| Item | Status | Evidence |
+|---|---|---|
+| Engines 066–070 (TDD golden) | **PASS** | GREEN 15/15: 066 (symptom burden vs E2 sensitivity pattern), 067 (T:E2 physiological ratio, 14–30:1 optimal), 068 (gyno staging, subareolar mass progression, fibrosis risk), 069 (evidence-based hepatic lifestyle score, avoids detox myths), 070 (redox burden index, sleep/training/androgen/antioxidant factors) |
+| Schemas 066–070 | **PASS** | zod in/out contracts; tsc EXIT=0 |
+| Adapters + batch test | **PASS** | GREEN 5/5 (`lib/tools/adapters/tool-066-070-batch.test.ts`); canonical buildXProvenance/KeyFindings/Output; registry orders 820–860 |
+| i18n AR/EN ×5 | **PASS** | i18n/tool-066..070-*.json; Arabic via write-tool |
+| Components ×5 | **PASS** | draft autosave + zod + Bio-Dashboard save + prev/next + RTL/LTR + AI-context `<details>` panel |
+| Routes 301 ×5 | **PASS** | app/smarttools/tool-066..070-*/page.tsx → toHierarchicalHref |
+| Catalog flip | **PASS** | catalog7 #066–#070 planned→implemented; counts 70/80/150; published=70 |
+| Full suite | **PASS (SmartTools domain)** | All tests passing (16 pre-existing baseline payment failures untouched) |
+| next build | **PASS** | All 5 new routes built statically and SSR valid |
