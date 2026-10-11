@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Cognitive Enhancer",
+    "deep_work_hours": "Daily Focused Deep Work (hours)",
+    "aerobic_exercise": "Regular aerobic exercise (BDNF support)",
+    "caffeine_mg": "Daily Caffeine Intake (mg)",
+    "choline": "Choline-rich foods or Alpha-GPC / Citicoline intake",
+    "brain_fog": "Frequent subjective brain fog or sluggish recall",
+    "sleep_hours": "Average Nightly Sleep (hours)",
+    "cognitive_score": "Cognitive Readiness Score",
+    "cognitive_band": "Neurotrophic Acuity Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational cognitive performance screening evaluating lifestyle pillars of neuroplasticity and attention. Not a neuropsychological clinical diagnostic battery (e.g. MoCA). Consult a neurologist for cognitive impairment concerns."
+  },
+  "ar": {
+    "tool_name": "محسّن الإدراك",
+    "deep_work_hours": "ساعات التركيز العميق اليومية (ساعات)",
+    "aerobic_exercise": "تمارين هوائية منتظمة (دعم عامل BDNF العصبي)",
+    "caffeine_mg": "استهلاك الكافيين اليومي (ملغ)",
+    "choline": "أطعمة غنية بالكولين أو مكملات Alpha-GPC / Citicoline",
+    "brain_fog": "شكاوى متكررة من ضبابية الدماغ أو بطء التركيز",
+    "sleep_hours": "متوسط النوم الليلي (ساعات)",
+    "cognitive_score": "مؤشر الجاهزية الإدراكية",
+    "cognitive_band": "مستوى الحدة العصبية والإدراكية",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي للأداء الإدراكي يقيّم ركائز المرونة العصبية والتركيز. لا يمثل تقييماً عصبياً سريرياً (مثل اختبار MoCA). استشر طبيب الأعصاب عند مواجهة صعوبات إدراكية حقيقية."
+  }
+}

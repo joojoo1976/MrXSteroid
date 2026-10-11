@@ -141,6 +141,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.ENDOTHELIAL_HEALTH_MANAGER]: '/smarttools/tool-078-endothelial-health-manager',
     [Page.FAT_METABOLISM_CALCULATOR]: '/smarttools/tool-079-fat-metabolism-calculator',
     [Page.MITOCHONDRIAL_OPTIMIZER]: '/smarttools/tool-080-mitochondrial-optimizer',
+
+    [Page.CELLULAR_AGING_CALCULATOR]: '/smarttools/tool-081-cellular-aging-calculator',
+    [Page.TELOMERE_MANAGER]: '/smarttools/tool-082-telomere-manager',
+    [Page.ANTI_AGING_INFLAMMATION_CALCULATOR]: '/smarttools/tool-083-anti-aging-inflammation-calculator',
+    [Page.COGNITIVE_ENHANCER]: '/smarttools/tool-084-cognitive-enhancer',
+    [Page.SLEEP_QUALITY_MANAGER]: '/smarttools/tool-085-sleep-quality-manager',
 };
 
 export function pageToPath(page: Page): string {

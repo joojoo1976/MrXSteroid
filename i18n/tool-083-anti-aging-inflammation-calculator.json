@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Anti-Aging Inflammation Calculator",
+    "hscrp": "hs-CRP (mg/L, optional)",
+    "visceral_fat": "Visceral Adiposity (Waistline)",
+    "fat_low": "Low / Lean",
+    "fat_moderate": "Moderate",
+    "fat_high": "High / Abdominal Obesity",
+    "periodontal": "Diagnosed or active periodontal disease",
+    "stiffness_mins": "Morning joint stiffness duration (minutes)",
+    "polyphenols": "Daily anti-inflammatory polyphenols (berries, green tea)",
+    "inflammaging_score": "Inflammaging Index Score",
+    "inflammaging_tier": "Systemic Wear Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening for age-related sterile low-grade systemic inflammation (inflammaging). Does not diagnose autoimmune or systemic inflammatory diseases. Consult a rheumatologist or physician for persistent symptoms."
+  },
+  "ar": {
+    "tool_name": "حاسبة الالتهاب المضاد للشيخوخة",
+    "hscrp": "بروتين hs-CRP عالي الحساسية (mg/L، اختياري)",
+    "visceral_fat": "الدهون الحشوية (محيط الخصر)",
+    "fat_low": "منخفض / خصر نحيف",
+    "fat_moderate": "متوسط",
+    "fat_high": "مرتفع / سمنة بطنية",
+    "periodontal": "أمراض لثة نشطة أو مزمنة",
+    "stiffness_mins": "مدة تيبس المفاصل الصباحي (بالدقائق)",
+    "polyphenols": "تناول البوليفينولات المضادة للالتهاب يومياً (توت، شاي أخضر)",
+    "inflammaging_score": "مؤشر الالتهاب المرتبط بالشيخوخة (Inflammaging)",
+    "inflammaging_tier": "تصنيف الإجهاد الجهازي",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي للالتهاب المزمن منخفض الدرجة المرتبط بالتقدم في العمر (Inflammaging). لا يشخص أمراض المناعة الذاتية. استشر طبيب الروماتيزم أو الباطنة للأعراض المستمرة."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Telomere Manager",
+    "stress_level": "Perceived Chronic Stress Level",
+    "stress_low": "Low",
+    "stress_moderate": "Moderate",
+    "stress_high": "High",
+    "stress_severe": "Severe / Chronic Exhaustion",
+    "aerobic_hours": "Weekly Aerobic Exercise (hours)",
+    "mediterranean_diet": "Mediterranean Diet Adherence",
+    "diet_low": "Low",
+    "diet_moderate": "Moderate",
+    "diet_high": "High",
+    "omega3": "Regular Omega-3 or fatty fish intake",
+    "bmi": "Body Mass Index (BMI)",
+    "telomere_score": "Telomere Protection Score",
+    "telomere_band": "Telomere Maintenance Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational telomere maintenance lifestyle assessment based on clinical literature. Does not measure quantitative leukocyte telomere length (Q-PCR/Flow-FISH). Consult a physician for formal biomarker diagnostics."
+  },
+  "ar": {
+    "tool_name": "مدير التيلوميرات",
+    "stress_level": "مستوى التوتر المزمن الملحوظ",
+    "stress_low": "منخفض",
+    "stress_moderate": "متوسط",
+    "stress_high": "مرتفع",
+    "stress_severe": "شديد / إرهاق مزمن",
+    "aerobic_hours": "التمارين الهوائية الأسبوعية (ساعات)",
+    "mediterranean_diet": "الالتزام بالنظام الغذائي المتوسطي",
+    "diet_low": "منخفض",
+    "diet_moderate": "متوسط",
+    "diet_high": "مرتفع",
+    "omega3": "تناول أوميغا-3 أو الأسماك الدهنية بانتظام",
+    "bmi": "مؤشر كتلة الجسم (BMI)",
+    "telomere_score": "مؤشر حماية التيلوميرات",
+    "telomere_band": "تصنيف صيانة التيلوميرات",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي لعوامل الحفاظ على التيلوميرات بناءً على الأبحاث الطبية المنشورة. لا يقيس طول تيلوميرات خلايا الدم البيضاء الفعلي مختبرياً. استشر الطبيب للتشخيص السريري."
+  }
+}

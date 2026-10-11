@@ -156,6 +156,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   ENDOTHELIAL_HEALTH_MANAGER = 'tool-078-endothelial-health-manager',
   FAT_METABOLISM_CALCULATOR = 'tool-079-fat-metabolism-calculator',
   MITOCHONDRIAL_OPTIMIZER = 'tool-080-mitochondrial-optimizer',
+
+  CELLULAR_AGING_CALCULATOR = 'tool-081-cellular-aging-calculator',
+  TELOMERE_MANAGER = 'tool-082-telomere-manager',
+  ANTI_AGING_INFLAMMATION_CALCULATOR = 'tool-083-anti-aging-inflammation-calculator',
+  COGNITIVE_ENHANCER = 'tool-084-cognitive-enhancer',
+  SLEEP_QUALITY_MANAGER = 'tool-085-sleep-quality-manager',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

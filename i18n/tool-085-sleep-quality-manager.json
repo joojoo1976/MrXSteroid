@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Sleep Quality Manager",
+    "sleep_duration": "Nightly Sleep Duration (hours)",
+    "latency": "Sleep Onset Latency (minutes)",
+    "awakenings": "Night Awakenings Count",
+    "caffeine_late": "Caffeine consumed within 6 hours of bed",
+    "room_opt": "Dark, quiet, and cool room environment (< 19°C)",
+    "rested_score": "Morning Rested Feeling (1–10)",
+    "sleep_index": "Sleep Quality Index",
+    "sleep_efficiency": "Estimated Sleep Efficiency",
+    "sleep_tier": "Restoration Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational sleep quality assessment evaluating sleep architecture pillars. Not a clinical polysomnography (PSG) test and does not diagnose Obstructive Sleep Apnea (OSA). Consult a sleep specialist for chronic sleep disorders."
+  },
+  "ar": {
+    "tool_name": "مدير النوم",
+    "sleep_duration": "مدة النوم الليلي (ساعات)",
+    "latency": "فترة الاستغراق في النوم (دقائق)",
+    "awakenings": "عدد مرات الاستيقاظ الليلي",
+    "caffeine_late": "تناول كافيين خلال 6 ساعات قبل النوم",
+    "room_opt": "غرفة مظلمة وباردة وهادئة (< 19 درجة مئوية)",
+    "rested_score": "الشعور بالانتعاش صباحاً (1–10)",
+    "sleep_index": "مؤشر جودة النوم",
+    "sleep_efficiency": "كفاءة النوم التقديرية",
+    "sleep_tier": "مستوى الاستشفاء والراحة",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي لجودة النوم يقيّم ركائز بنية النوم. لا يمثل دراسة نوم سريرية (PSG) ولا يشخص انقطاع النفس الانسدادي النومي (OSA). استشر أخصائي طب النوم للاضطرابات المزمنة."
+  }
+}

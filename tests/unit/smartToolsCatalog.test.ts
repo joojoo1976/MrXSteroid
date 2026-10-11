@@ -25,13 +25,13 @@ describe('Smart Tools catalog', () => {
     expect(ok).toBe(true);
   });
 
-  it('exposes the full approved roadmap: 80 implemented + 70 planned = 150 identities', () => {
+  it('exposes the full approved roadmap: 85 implemented + 65 planned = 150 identities', () => {
     const tools = getCatalogTools();
     const implemented = tools.filter((t) => t.status !== 'planned');
     const planned = tools.filter((t) => t.status === 'planned');
-    // 30 baseline (#1-#30) + 30 shipped (#031-#060) + 15 shipped (#061-#075) + 5 shipped (#076-#080) + 70 roadmap (#081-#150).
-    expect(implemented.length).toBe(80);
-    expect(planned.length).toBe(70);
+    // 30 baseline (#1-#30) + 30 shipped (#031-#060) + 15 shipped (#061-#075) + 5 shipped (#076-#080) + 5 shipped (#081-#085) + 65 roadmap (#086-#150).
+    expect(implemented.length).toBe(85);
+    expect(planned.length).toBe(65);
     expect(tools.length).toBe(150);
   });
 
@@ -72,7 +72,7 @@ describe('Smart Tools catalog', () => {
   it('published views (category pages, sitemap, tool params) exclude planned entries', () => {
     const published = getPublishedCatalogTools();
     expect(published.some((t) => t.status === 'planned')).toBe(false);
-    expect(published.length).toBe(80);
+    expect(published.length).toBe(85);
     for (const cat of SMART_TOOL_CATEGORIES) {
       expect(getPublishedToolsByCategory(cat.slug).some((t) => t.status === 'planned'), cat.slug).toBe(false);
     }
