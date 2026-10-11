@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Blood Pressure Tracker",
+    "systolic": "Systolic Blood Pressure SBP (mmHg)",
+    "diastolic": "Diastolic Blood Pressure DBP (mmHg)",
+    "on_meds": "Currently on antihypertensive medication",
+    "category": "AHA/ACC Blood Pressure Category",
+    "map": "Mean Arterial Pressure (MAP)",
+    "pulse_pressure": "Pulse Pressure (PP)",
+    "escalation": "Emergency Medical Advisory",
+    "warnings": "Warnings",
+    "disclaimer": "Resting blood pressure tracking based on AHA/ACC 2017 clinical standards. Immediate medical care is mandatory if experiencing hypertensive crisis readings."
+  },
+  "ar": {
+    "tool_name": "متتبع ضغط الدم",
+    "systolic": "ضغط الدم الانقباضي SBP (mmHg)",
+    "diastolic": "ضغط الدم الانبساطي DBP (mmHg)",
+    "on_meds": "يتناول حالياً أدوية لخفض ضغط الدم",
+    "category": "تصنيف ضغط الدم وفق AHA/ACC",
+    "map": "متوسط الضغط الشرياني (MAP)",
+    "pulse_pressure": "ضغط النبض (PP)",
+    "escalation": "تنبيه طبي طارئ",
+    "warnings": "تحذيرات",
+    "disclaimer": "تتبع ضغط الدم في وضع الراحة وفق معايير AHA/ACC لعام 2017. يلزم التوجه للطوارئ فوراً عند تسجيل قراءات أزمة ارتفاع ضغط الدم."
+  }
+}

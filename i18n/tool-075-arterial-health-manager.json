@@ -1,0 +1,34 @@
+{
+  "en": {
+    "tool_name": "Arterial Health Manager",
+    "age": "Age (years)",
+    "systolic": "Systolic Blood Pressure (mmHg)",
+    "diastolic": "Diastolic Blood Pressure (mmHg)",
+    "total_chol": "Total Cholesterol (mg/dL, optional)",
+    "hdl": "HDL Cholesterol (mg/dL, optional)",
+    "triglycerides": "Triglycerides (mg/dL, optional)",
+    "smoker": "Active smoker or tobacco user",
+    "arterial_score": "Arterial Stiffness Risk Score",
+    "stiffness_band": "Vascular Compliance Tier",
+    "tc_hdl": "TC / HDL Ratio",
+    "tg_hdl": "Triglyceride / HDL Ratio",
+    "warnings": "Warnings",
+    "disclaimer": "Educational cardiovascular compliance and lipid atherogenicity screening. Consult a cardiologist for definitive vascular diagnostics (e.g. CAC score, CIMT)."
+  },
+  "ar": {
+    "tool_name": "مدير صحة الشرايين",
+    "age": "العمر (سنة)",
+    "systolic": "الضغط الانقباضي (mmHg)",
+    "diastolic": "الضغط الانبساطي (mmHg)",
+    "total_chol": "الكوليسترول الكلي (mg/dL، اختياري)",
+    "hdl": "كوليسترول HDL النافع (mg/dL، اختياري)",
+    "triglycerides": "الدهون الثلاثية Triglycerides (mg/dL، اختياري)",
+    "smoker": "مدخن سجائر أو مستهلك للتبغ",
+    "arterial_score": "درجة خطر تصلب الشرايين",
+    "stiffness_band": "مستوى مرونة الشرايين",
+    "tc_hdl": "نسبة الكوليسترول الكلي إلى HDL",
+    "tg_hdl": "نسبة الدهون الثلاثية إلى HDL",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي لمرونة الأوعية الدموية ومؤشرات تصلب الشرايين الدهنية. استشر طبيب القلب لإجراء الفحوصات التصويرية الدقيقة (مثل CAC و CIMT)."
+  }
+}

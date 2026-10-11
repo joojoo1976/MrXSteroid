@@ -1,0 +1,34 @@
+{
+  "en": {
+    "tool_name": "Immune System Optimizer",
+    "vitamin_d": "Serum 25(OH)D Vitamin D Level (ng/mL, optional)",
+    "sleep_average": "Average Sleep Hours per Night",
+    "training_strain": "Current Training Strain Level",
+    "strain_light": "Light to Moderate",
+    "strain_hard": "Hard / Structured",
+    "strain_extreme": "Extreme Overreaching / Overtraining",
+    "recurrent_infections": "Recurrent upper respiratory infections / colds (past 6 months)",
+    "takes_zinc_c": "Regular Zinc & Vitamin C supplementation",
+    "resilience_score": "Immune Resilience Score",
+    "resilience_band": "Immune Resilience Tier",
+    "priorities": "Immune Enhancement Priorities",
+    "warnings": "Warnings",
+    "disclaimer": "Educational neuroendocrine and immune resilience index — balances training load with restorative sleep and endocrine micronutrients."
+  },
+  "ar": {
+    "tool_name": "محسّن المناعة",
+    "vitamin_d": "مستوى فيتامين د 25(OH)D في المصل (ng/mL، اختياري)",
+    "sleep_average": "معدل ساعات النوم بالليلة",
+    "training_strain": "مستوى إجهاد التدريب الحالي",
+    "strain_light": "خفيف إلى معتدل",
+    "strain_hard": "شاق / منظم",
+    "strain_extreme": "إجهاد مفرط وتجاوز لقدرة الاستشفاء",
+    "recurrent_infections": "تكرار نزلات البرد أو عدوى الجهاز التنفسي (آخر 6 أشهر)",
+    "takes_zinc_c": "تناول مكملات الزنك وفيتامين C بانتظام",
+    "resilience_score": "درجة المرونة المناعية",
+    "resilience_band": "مستوى المناعة الفسيولوجي",
+    "priorities": "أولويات تعزيز الجهاز المناعي",
+    "warnings": "تحذيرات",
+    "disclaimer": "مؤشر تعليمي للمرونة المناعية والغدد العصبية — يوازن بين جهد التدريب وساعات النوم والمغذيات الدقيقة."
+  }
+}

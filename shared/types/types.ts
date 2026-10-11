@@ -144,6 +144,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   GYNECOMASTIA_TRACKER = 'tool-068-gynecomastia-tracker',
   DETOXIFICATION_OPTIMIZER = 'tool-069-detoxification-optimizer',
   OXIDATIVE_STRESS_CALCULATOR = 'tool-070-oxidative-stress-calculator',
+
+  ANTIOXIDANT_MANAGER = 'tool-071-antioxidant-manager',
+  SYSTEMIC_INFLAMMATION_CALCULATOR = 'tool-072-systemic-inflammation-calculator',
+  IMMUNE_SYSTEM_OPTIMIZER = 'tool-073-immune-system-optimizer',
+  BLOOD_PRESSURE_TRACKER = 'tool-074-blood-pressure-tracker',
+  ARTERIAL_HEALTH_MANAGER = 'tool-075-arterial-health-manager',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

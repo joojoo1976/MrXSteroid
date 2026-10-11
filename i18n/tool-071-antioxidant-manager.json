@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Antioxidant Manager",
+    "daily_fruit_veg": "Daily Fruit & Veg Servings (Colorful Plants)",
+    "takes_coq10": "Takes CoQ10 / Ubiquinol (Mitochondrial Defense)",
+    "takes_vit_c_e": "Takes Vitamin C & E (Lipid & Aqueous Defense)",
+    "takes_zinc_sel": "Takes Zinc & Selenium (SOD & GPx Cofactors)",
+    "high_oxidative": "High Oxidative Strain (Smoking, Extreme Volume, Supraphysiological AAS)",
+    "defense_score": "Antioxidant Defense Score",
+    "defense_tier": "Cellular Defense Tier",
+    "recommendations": "Nutritional Priorities",
+    "warnings": "Warnings",
+    "disclaimer": "Educational nutrient and antioxidant defense evaluation — whole colorful plants form the core defense foundation. Not a prescription."
+  },
+  "ar": {
+    "tool_name": "مدير مضادات الأكسدة",
+    "daily_fruit_veg": "الحصص اليومية من الفواكه والخضار (نباتات ملونة)",
+    "takes_coq10": "تناول CoQ10 / يوبيكوينول (دفاع الميتوكوندريا)",
+    "takes_vit_c_e": "تناول فيتامين C و E (حماية مائية ودهنية)",
+    "takes_zinc_sel": "تناول الزنك والسيلينيوم (عوامل مساعدة لإنزيمات SOD و GPx)",
+    "high_oxidative": "إجهاد تأكسدي مرتفع (تدخين، تدريب فائق، جرعات هرمونية عالية)",
+    "defense_score": "درجة الدفاع بمضادات الأكسدة",
+    "defense_tier": "مستوى الحماية الخلوية",
+    "recommendations": "الأولويات الغذائية",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي للدفاع بمضادات الأكسدة — تشكل الأطعمة الكاملة الملونة الركيزة الأساسية للحماية الحيوية. ليس وصفة طبية."
+  }
+}

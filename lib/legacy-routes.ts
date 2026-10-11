@@ -129,6 +129,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.GYNECOMASTIA_TRACKER]: '/smarttools/tool-068-gynecomastia-tracker',
     [Page.DETOXIFICATION_OPTIMIZER]: '/smarttools/tool-069-detoxification-optimizer',
     [Page.OXIDATIVE_STRESS_CALCULATOR]: '/smarttools/tool-070-oxidative-stress-calculator',
+
+    [Page.ANTIOXIDANT_MANAGER]: '/smarttools/tool-071-antioxidant-manager',
+    [Page.SYSTEMIC_INFLAMMATION_CALCULATOR]: '/smarttools/tool-072-systemic-inflammation-calculator',
+    [Page.IMMUNE_SYSTEM_OPTIMIZER]: '/smarttools/tool-073-immune-system-optimizer',
+    [Page.BLOOD_PRESSURE_TRACKER]: '/smarttools/tool-074-blood-pressure-tracker',
+    [Page.ARTERIAL_HEALTH_MANAGER]: '/smarttools/tool-075-arterial-health-manager',
 };
 
 export function pageToPath(page: Page): string {

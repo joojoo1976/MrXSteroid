@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Systemic Inflammation Calculator",
+    "hs_crp": "High-Sensitivity C-Reactive Protein hs-CRP (mg/L, optional)",
+    "waist_circ": "Waist Circumference (cm)",
+    "sleep_hours": "Sleep Hours per Night",
+    "smoker_alcohol": "Regular smoking or heavy alcohol consumption",
+    "joint_pain": "Chronic joint, tendon, or systemic inflammatory pain",
+    "inflammation_score": "Systemic Inflammation Risk Score",
+    "risk_band": "Inflammatory Burden Tier",
+    "crp_status": "hs-CRP Clinical Context",
+    "warnings": "Warnings",
+    "disclaimer": "Educational systemic inflammatory burden evaluation — hs-CRP is the definitive clinical biomarker. Consult a physician for persistent inflammation."
+  },
+  "ar": {
+    "tool_name": "حاسبة الالتهاب الجهازي",
+    "hs_crp": "بروتين سي التفاعلي عالي الحساسية hs-CRP (ملغ/لتر، اختياري)",
+    "waist_circ": "محيط الخصر (سم)",
+    "sleep_hours": "ساعات النوم بالليلة",
+    "smoker_alcohol": "التدخين بانتظام أو استهلاك الكحول المفرط",
+    "joint_pain": "آلام التهابية مزمنة في المفاصل أو الأوتار",
+    "inflammation_score": "درجة خطر الالتهاب الجهازي",
+    "risk_band": "مستوى العبء الالتهابي",
+    "crp_status": "السياق السريري لتحليل hs-CRP",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي للعبء الالتهابي الجهازي — يعتبر تحليل hs-CRP المعيار السريري الأساسي. راجع طبيباً في حالات الالتهاب المزمن."
+  }
+}
