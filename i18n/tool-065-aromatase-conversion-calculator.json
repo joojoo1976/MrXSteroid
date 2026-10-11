@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Aromatase Conversion Calculator",
+    "testosterone_mg_week": "Weekly Testosterone (mg)",
+    "body_fat_pct": "Body Fat %",
+    "aromatase_inhibitor": "Aromatase Inhibitor",
+    "ai_none": "None",
+    "ai_ana05": "Anastrozole 0.5 mg",
+    "ai_ana1": "Anastrozole 1 mg",
+    "ai_let": "Letrozole 2.5 mg",
+    "e2_estimate": "Estimated E2",
+    "band": "E2 band",
+    "warnings": "Warnings",
+    "disclaimer": "Population-level aromatization estimate — individual E2 response varies; do not adjust AIs without lab confirmation."
+  },
+  "ar": {
+    "tool_name": "حاسبة التحويل الأروماتي",
+    "testosterone_mg_week": "التستوستيرون الأسبوعي (ملغ)",
+    "body_fat_pct": "نسبة الدهون %",
+    "aromatase_inhibitor": "مثبّط الأروماتاز",
+    "ai_none": "بدون",
+    "ai_ana05": "أناستروزول 0.5 ملغ",
+    "ai_ana1": "أناستروزول 1 ملغ",
+    "ai_let": "ليتروزول 2.5 ملغ",
+    "e2_estimate": "تقدير الإستراديول E2",
+    "band": "تصنيف E2",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير أروماتة سكاني — يتفاوت تحويل الإستراديول بين الأفراد؛ لا تعدّل مثبطات AI بدون تأكيد مختبري."
+  }
+}

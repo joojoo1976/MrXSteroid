@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Hair Loss Tracker",
+    "norwood_stage": "Norwood Stage (1–7)",
+    "weekly_shed_counts": "Weekly shed counts (comma-separated, min 3)",
+    "on_5ari": "On 5-ARI (Finasteride / Dutasteride)",
+    "weeks_since_start": "Weeks Since Start",
+    "avg_shed": "Avg weekly shed",
+    "trend": "Trend band",
+    "stage_band": "Stage band",
+    "warnings": "Warnings",
+    "disclaimer": "Educational tracking — individual hair loss varies widely; consult a dermatologist or trichologist."
+  },
+  "ar": {
+    "tool_name": "متتبع تساقط الشعر",
+    "norwood_stage": "مرحلة Norwood (1–7)",
+    "weekly_shed_counts": "أعداد التساقط الأسبوعية (مفصولة بفواصل، الحد الأدنى 3)",
+    "on_5ari": "يتناول 5-ARI (فيناسترايد / دوتاسترايد)",
+    "weeks_since_start": "عدد الأسابيع منذ البداية",
+    "avg_shed": "متوسط التساقط الأسبوعي",
+    "trend": "اتجاه التساقط",
+    "stage_band": "مرحلة النمط",
+    "warnings": "تحذيرات",
+    "disclaimer": "متتبع تعليمي — تساقط الشعر يختلف اختلافاً كبيراً؛ استشر طبيب جلدية أو متخصص في الشعر."
+  }
+}

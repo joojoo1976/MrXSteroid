@@ -132,6 +132,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   ANDROGENIC_BALANCE_CALCULATOR = 'tool-058-androgenic-balance-calculator',
   ANDROGEN_RECEPTOR_OPTIMIZER = 'tool-059-androgen-receptor-optimizer',
   FIVE_ALPHA_CONVERSION_CALCULATOR = 'tool-060-5-alpha-conversion-calculator',
+
+  HAIR_LOSS_TRACKER = 'tool-061-hair-loss-tracker',
+  PROSTATE_HEALTH_MANAGER = 'tool-062-prostate-health-manager',
+  TESTICULAR_SUPPRESSION_CALCULATOR = 'tool-063-testicular-suppression-calculator',
+  SPERM_PRODUCTION_OPTIMIZER = 'tool-064-sperm-production-optimizer',
+  AROMATASE_CONVERSION_CALCULATOR = 'tool-065-aromatase-conversion-calculator',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

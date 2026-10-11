@@ -1,0 +1,24 @@
+{
+  "en": {
+    "tool_name": "Prostate Health Manager",
+    "age": "Age (years)",
+    "psa_ng_ml": "Current PSA (ng/mL)",
+    "psa_prev_1y_ng_ml": "1-Year Ago PSA (ng/mL, optional)",
+    "psa_ceiling": "Age-specific ceiling",
+    "band": "PSA band",
+    "delta": "1-year rise",
+    "warnings": "Warnings",
+    "disclaimer": "Educational PSA context — individual results vary; always follow physician guidance for prostate screening."
+  },
+  "ar": {
+    "tool_name": "مدير صحة البروستاتا",
+    "age": "العمر (سنة)",
+    "psa_ng_ml": "PSA الحالي (ng/mL)",
+    "psa_prev_1y_ng_ml": "PSA قبل سنة (ng/mL، اختياري)",
+    "psa_ceiling": "الحد المرجعي العمري",
+    "band": "تصنيف PSA",
+    "delta": "الارتفاع السنوي",
+    "warnings": "تحذيرات",
+    "disclaimer": "سياق تعليمي لـ PSA — النتائج تختلف بين الأفراد؛ اتبع دائماً توجيهات طبيبك."
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Sperm Production Optimizer",
+    "months_since": "Months Since Last Cycle",
+    "age": "Age (years)",
+    "hcg_used": "HCG Used During Cycle",
+    "weekly_training": "Weekly Training Hours",
+    "sleep_hours": "Sleep Hours/Night",
+    "recovery_score": "Recovery score",
+    "band": "Recovery phase",
+    "recommendations": "Recommendations",
+    "warnings": "Warnings",
+    "disclaimer": "Educational spermatogenesis model (74-day cycle basis) — not a fertility treatment; consult a reproductive endocrinologist."
+  },
+  "ar": {
+    "tool_name": "محسّن إنتاج الحيوانات المنوية",
+    "months_since": "أشهر منذ آخر دورة",
+    "age": "العمر (سنة)",
+    "hcg_used": "تم استخدام HCG خلال الدورة",
+    "weekly_training": "ساعات التدريب الأسبوعية",
+    "sleep_hours": "ساعات النوم/الليلة",
+    "recovery_score": "درجة التعافي",
+    "band": "مرحلة التعافي",
+    "recommendations": "التوصيات",
+    "warnings": "تحذيرات",
+    "disclaimer": "نموذج تعليمي للحيوانات المنوية (أساس 74 يوماً) — ليس علاجاً للخصوبة؛ استشر طبيب الغدد التناسلية."
+  }
+}

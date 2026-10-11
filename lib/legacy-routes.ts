@@ -117,6 +117,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.ANDROGENIC_BALANCE_CALCULATOR]: '/smarttools/tool-058-androgenic-balance-calculator',
     [Page.ANDROGEN_RECEPTOR_OPTIMIZER]: '/smarttools/tool-059-androgen-receptor-optimizer',
     [Page.FIVE_ALPHA_CONVERSION_CALCULATOR]: '/smarttools/tool-060-5-alpha-conversion-calculator',
+
+    [Page.HAIR_LOSS_TRACKER]: '/smarttools/tool-061-hair-loss-tracker',
+    [Page.PROSTATE_HEALTH_MANAGER]: '/smarttools/tool-062-prostate-health-manager',
+    [Page.TESTICULAR_SUPPRESSION_CALCULATOR]: '/smarttools/tool-063-testicular-suppression-calculator',
+    [Page.SPERM_PRODUCTION_OPTIMIZER]: '/smarttools/tool-064-sperm-production-optimizer',
+    [Page.AROMATASE_CONVERSION_CALCULATOR]: '/smarttools/tool-065-aromatase-conversion-calculator',
 };
 
 export function pageToPath(page: Page): string {

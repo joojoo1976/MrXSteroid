@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Testicular Suppression Calculator",
+    "weeks_on_cycle": "Weeks on Cycle",
+    "suppression_tier": "Suppression Tier",
+    "tier_mild": "Mild (e.g. low-dose test)",
+    "tier_moderate": "Moderate (e.g. standard TRT/cycle)",
+    "tier_severe": "19-nor / high-dose",
+    "age": "Age (years)",
+    "suppression_depth": "Suppression depth",
+    "recovery_months": "Recovery estimate",
+    "band": "Suppression band",
+    "warnings": "Warnings",
+    "disclaimer": "Educational suppression projection — individual recovery varies greatly; consult an endocrinologist."
+  },
+  "ar": {
+    "tool_name": "حاسبة قمع الخصية",
+    "weeks_on_cycle": "أسابيع الدورة",
+    "suppression_tier": "مستوى القمع",
+    "tier_mild": "خفيف (مثل جرعات TRT المنخفضة)",
+    "tier_moderate": "متوسط (مثل TRT أو دورة اعتيادية)",
+    "tier_severe": "19-nor / جرعة عالية",
+    "age": "العمر (سنة)",
+    "suppression_depth": "عمق القمع التقديري",
+    "recovery_months": "مدة التعافي المتوقعة",
+    "band": "مستوى القمع",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير تعليمي لقمع الخصية — يختلف التعافي اختلافاً كبيراً؛ استشر طبيب الغدد الصماء."
+  }
+}
