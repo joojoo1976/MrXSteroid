@@ -83,6 +83,11 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.STACKING_SYNERGY]: '/smarttools/tool-028-stacking-synergy',
     [Page.SIDE_EFFECT_EARLY_WARNING]: '/smarttools/tool-029-side-effect-early-warning',
     [Page.CYCLE_COST_CALCULATOR]: '/smarttools/tool-030-cycle-cost-calculator',
+    [Page.TRT_LIFETIME]: '/smarttools/trt-lifetime',
+    [Page.FERTILITY_PRESERVATION]: '/smarttools/fertility-preservation',
+    [Page.CARDIOVASCULAR_RISK]: '/smarttools/cardiovascular-risk',
+    [Page.BONE_DENSITY_OPTIMIZER]: '/smarttools/bone-density-optimizer',
+    [Page.MENTAL_HEALTH_MONITOR]: '/smarttools/mental-health-monitor',
 };
 
 export function pageToPath(page: Page): string {
