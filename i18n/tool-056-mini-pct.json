@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Mini PCT Calculator",
+    "last_injection": "Last injection date",
+    "half_life": "Longest ester half-life (days)",
+    "cycle_weeks": "Cycle length (weeks)",
+    "age": "Age",
+    "used_hcg": "Used hCG support",
+    "washout_days": "Washout (days, ~5 half-lives)",
+    "pct_window": "Recovery window (educational)"
+  },
+  "ar": {
+    "tool_name": "حاسبة PCT المصغرة",
+    "last_injection": "تاريخ آخر حقنة",
+    "half_life": "أطول نصف عمر للإستر (أيام)",
+    "cycle_weeks": "طول الدورة (أسابيع)",
+    "age": "العمر",
+    "used_hcg": "استُخدم دعم hCG",
+    "washout_days": "التطهير (أيام، ~5 أنصاف عمر)",
+    "pct_window": "نافذة الاستعادة (تعليمية)"
+  }
+}

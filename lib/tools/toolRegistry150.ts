@@ -192,7 +192,7 @@ export const TOOLS_31_150_RAW: readonly RawTool[] = [
  * tool is never advertised as complete without passing acceptance criteria.
  * (Spec §7, §24, §49: no fake functionality.)
  */
-export const IMPLEMENTED_TOOL_IDS: readonly number[] = [46, 47, 48, 49, 50];
+export const IMPLEMENTED_TOOL_IDS: readonly number[] = [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56];
 
 function buildDescription(titleEn: string, titleAr: string, restricted: boolean): { en: string; ar: string } {
   if (restricted) {

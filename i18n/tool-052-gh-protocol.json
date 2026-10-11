@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Growth Hormone Protocol Planner",
+    "weekly_iu": "Weekly amount (IU)",
+    "injections_per_week": "Injections per week",
+    "age": "Age",
+    "baseline_igf1": "Baseline IGF-1 (ng/mL)",
+    "fasting_glucose": "Fasting glucose (mg/dL)",
+    "per_injection_iu": "Per-injection (IU, arithmetic)",
+    "igf1_response_index": "IGF-1 response index (0–100)",
+    "projected_igf1": "Projected IGF-1 (ng/mL)",
+    "glucose_risk": "Glucose risk",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High"
+  },
+  "ar": {
+    "tool_name": "مخطط بروتوكول هرمون النمو",
+    "weekly_iu": "الكمية الأسبوعية (وحدة)",
+    "injections_per_week": "عدد الحقن أسبوعيًا",
+    "age": "العمر",
+    "baseline_igf1": "IGF-1 الأساسي (نانوغرام/مل)",
+    "fasting_glucose": "الجلوكوز صائمًا (ملغ/دل)",
+    "per_injection_iu": "لكل حقنة (وحدة، حسابيًا)",
+    "igf1_response_index": "مؤشر استجابة IGF-1 (0–100)",
+    "projected_igf1": "IGF-1 المتوقع (نانوغرام/مل)",
+    "glucose_risk": "خطر الجلوكوز",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع"
+  }
+}

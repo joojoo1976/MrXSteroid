@@ -88,6 +88,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.CARDIOVASCULAR_RISK]: '/smarttools/cardiovascular-risk',
     [Page.BONE_DENSITY_OPTIMIZER]: '/smarttools/bone-density-optimizer',
     [Page.MENTAL_HEALTH_MONITOR]: '/smarttools/mental-health-monitor',
+    [Page.PEPTIDE_DOSAGE]: '/smarttools/peptide-dosage',
+    [Page.GH_PROTOCOL]: '/smarttools/gh-protocol',
+    [Page.INSULIN_CONVERSION]: '/smarttools/insulin-conversion',
+    [Page.GLUCOSE_TRACKER]: '/smarttools/glucose-tracker',
+    [Page.INSULIN_SENSITIVITY]: '/smarttools/insulin-sensitivity',
+    [Page.MINI_PCT]: '/smarttools/mini-pct',
 };
 
 export function pageToPath(page: Page): string {

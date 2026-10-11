@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Peptide Dosage Calculator",
+    "vial_mg": "Vial amount (mg)",
+    "diluent_ml": "Diluent added (mL)",
+    "unit": "Working unit",
+    "user_stated_amount": "Amount stated by you / your clinician",
+    "concentration_per_ml": "Concentration",
+    "volume_for_stated_amount_ml": "Volume (mL)",
+    "syringe_ticks": "Syringe ticks (U-100)"
+  },
+  "ar": {
+    "tool_name": "حاسبة تركيز الببتيد",
+    "vial_mg": "كمية القارورة (ملغ)",
+    "diluent_ml": "حجم المذيب المضاف (مل)",
+    "unit": "وحدة العمل",
+    "user_stated_amount": "الكمية المذكورة منك/من طبيبك",
+    "concentration_per_ml": "التركيز",
+    "volume_for_stated_amount_ml": "الحجم (مل)",
+    "syringe_ticks": "تدريجات المحقن (U-100)"
+  }
+}

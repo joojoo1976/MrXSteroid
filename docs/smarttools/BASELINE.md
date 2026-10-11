@@ -47,3 +47,30 @@ commit; nothing was reset or discarded.
 This is not a claim of project completion. Per spec §46, build success alone does
 not prove completion. See `TRACEABILITY_MATRIX.md` for per-tool evidence and the
 PASS / PARTIAL / FAIL / NOT RUN / BLOCKED ledger.
+
+---
+
+## 6. Pre-existing test failures (NOT introduced by this work stream)
+
+Full `vitest run` was executed against the untouched baseline commit (`6a84b3d`, in a
+`git worktree`) and against the current branch. Both produce **exactly the same**
+16 failing files / 72 failing tests (and the same 5 skipped). No new failures were
+introduced; all failures below pre-date this work stream.
+
+| Failing file | Nature |
+|---|---|
+| `lib/tools/registry.test.ts` | expects a richer registry API that was never implemented (`validateRegistry`, `normalizeSlug`, `orderedTools`, `ToolRegistryError`) |
+| `lib/tools/adapters/{aromatization-risk,hpta-recovery,multi-ester-pharmacokinetics,pct-timing,timeline,toolLogAdapter}.test.ts` | adapter/envelope expectations vs. current registry values (e.g. tier `premium` vs `free`, `requireTool('timeline')`) |
+| `tests/unit/seoSmartToolsTitles.test.ts` | flat SmartTools pages are redirect-only and carry no `metadata.title` |
+| `tests/{unit,integration}/*` (checkout, instapay, merchant, order-producers, payment-receipts, invoice-kashier, toolLogPersistence) | payment/checkout subsystems, out of SmartTools scope |
+
+These are logged as **pre-existing** and are not claimed as passing. Fixing them is
+scoped separately (see TRACEABILITY_MATRIX.md).
+
+## 7. Batch log
+
+| Batch | Tools | Result |
+|---|---|---|
+| Baseline | #1–#30 | PASS (verified) |
+| Batch 1 | #046–#050 | PASS — engines, schemas, components, i18n, routes, 34 engine tests; full-suite delta = 0 new failures |
+| AI layer | platform | PARTIAL — deterministic fallback/guard/grounding PASS; real provider NOT RUN |

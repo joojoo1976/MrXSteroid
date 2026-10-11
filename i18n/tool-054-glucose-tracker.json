@@ -1,0 +1,22 @@
+{
+  "en": {
+    "tool_name": "Glucose Tracker",
+    "readings_csv": "Readings (mg/dL, comma or space separated)",
+    "count": "Readings",
+    "mean": "Mean (mg/dL)",
+    "min": "Min (mg/dL)",
+    "max": "Max (mg/dL)",
+    "tir": "Time in range (70–180)",
+    "est_a1c": "Estimated A1c"
+  },
+  "ar": {
+    "tool_name": "متتبع الجلوكوز",
+    "readings_csv": "القراءات (ملغ/دل، مفصولة بفواصل أو مسافات)",
+    "count": "عدد القراءات",
+    "mean": "المتوسط (ملغ/دل)",
+    "min": "الأدنى (ملغ/دل)",
+    "max": "الأعلى (ملغ/دل)",
+    "tir": "الوقت في النطاق (70–180)",
+    "est_a1c": "A1c المقدّر"
+  }
+}

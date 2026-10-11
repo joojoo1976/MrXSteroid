@@ -102,6 +102,12 @@ export enum Page {
   CARDIOVASCULAR_RISK = 'cardiovascular-risk',
   BONE_DENSITY_OPTIMIZER = 'bone-density-optimizer',
   MENTAL_HEALTH_MONITOR = 'mental-health-monitor',
+  PEPTIDE_DOSAGE = 'peptide-dosage',
+  GH_PROTOCOL = 'gh-protocol',
+  INSULIN_CONVERSION = 'insulin-conversion',
+  GLUCOSE_TRACKER = 'glucose-tracker',
+  INSULIN_SENSITIVITY = 'insulin-sensitivity',
+  MINI_PCT = 'mini-pct',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

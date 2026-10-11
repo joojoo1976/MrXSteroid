@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Insulin Sensitivity Optimizer",
+    "fasting_glucose": "Fasting glucose (mg/dL)",
+    "fasting_insulin": "Fasting insulin (µU/mL)",
+    "activity": "Activity days / week",
+    "sleep": "Sleep hours / night",
+    "homa_ir": "HOMA-IR",
+    "quicki": "QUICKI",
+    "band": "Classification",
+    "insulin-sensitive": "Insulin sensitive",
+    "borderline": "Borderline",
+    "insulin-resistant": "Insulin resistant"
+  },
+  "ar": {
+    "tool_name": "محسّن حساسية الأنسولين",
+    "fasting_glucose": "الجلوكوز صائمًا (ملغ/دل)",
+    "fasting_insulin": "الأنسولين صائمًا (µU/مل)",
+    "activity": "أيام النشاط أسبوعيًا",
+    "sleep": "ساعات النوم ليلًا",
+    "homa_ir": "HOMA-IR",
+    "quicki": "QUICKI",
+    "band": "التصنيف",
+    "insulin-sensitive": "حساس للأنسولين",
+    "borderline": "حدّي",
+    "insulin-resistant": "مقاوم للأنسولين"
+  }
+}

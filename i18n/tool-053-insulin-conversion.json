@@ -1,0 +1,18 @@
+{
+  "en": {
+    "tool_name": "Insulin Conversion Calculator",
+    "concentration": "Concentration",
+    "units": "Units",
+    "hypo_symptoms": "I have symptoms of hypoglycaemia",
+    "units_per_ml": "Units per mL",
+    "volume_ml": "Volume (mL)"
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل الأنسولين",
+    "concentration": "التركيز",
+    "units": "الوحدات",
+    "hypo_symptoms": "لدي أعراض نقص سكر الدم",
+    "units_per_ml": "الوحدات لكل مل",
+    "volume_ml": "الحجم (مل)"
+  }
+}
