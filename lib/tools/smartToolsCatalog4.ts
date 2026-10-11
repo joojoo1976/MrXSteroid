@@ -3,6 +3,7 @@ import { SMART_TOOLS_CATALOG } from './smartToolsCatalog';
 import { SMART_TOOLS_CATALOG_2 } from './smartToolsCatalog2';
 import { SMART_TOOLS_CATALOG_3 } from './smartToolsCatalog3';
 import { SMART_TOOLS_CATALOG_5 } from './smartToolsCatalog5';
+import { SMART_TOOLS_CATALOG_6 } from './smartToolsCatalog6';
 
 export const SMART_TOOLS_CATALOG_4: readonly SmartToolEntry[] = [
   { toolId: 'mrx.tool.016-half-life', slug: 'tool-016-half-life-calculator', href: '/smarttools/tool-016-half-life-calculator', order: 300, titleEn: 'Half-Life Calculator', titleAr: 'حاسبة نصف العمر', descriptionEn: 'Multi-compound clearance optimizer', descriptionAr: 'محسن تطهير المركبات المتعددة', icon: 'Timer', accessTier: 'free', componentPath: '@/components/tools/tool-016-half-life-calculator', enginePath: 'lib/tools/engines/tool-016-half-life-calculator', schemaPath: 'lib/tools/schemas/tool-016-half-life-calculator' },
@@ -33,7 +34,7 @@ export function validateCatalog(): { ok: boolean; errors: string[] } {
 }
 
 export function catalogAll(): SmartToolEntry[] {
-  return [...SMART_TOOLS_CATALOG, ...SMART_TOOLS_CATALOG_2, ...SMART_TOOLS_CATALOG_3, ...SMART_TOOLS_CATALOG_4, ...SMART_TOOLS_CATALOG_5].sort((a, b) => a.order - b.order);
+  return [...SMART_TOOLS_CATALOG, ...SMART_TOOLS_CATALOG_2, ...SMART_TOOLS_CATALOG_3, ...SMART_TOOLS_CATALOG_4, ...SMART_TOOLS_CATALOG_5, ...SMART_TOOLS_CATALOG_6].sort((a, b) => a.order - b.order);
 }
 
 export function getCatalogTools(): SmartToolEntry[] {

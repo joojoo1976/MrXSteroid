@@ -3,6 +3,7 @@
  */
 import type { SmartToolEntry } from './smartToolsCatalog';
 import { getCatalogTools } from './smartToolsCatalog4';
+import { TOOL_REGISTRY_150 } from './toolRegistry150';
 
 export const SMART_TOOL_CATEGORY_SLUGS = [
   'nutrition',
@@ -48,7 +49,7 @@ export function getCategory(slug: string): SmartToolCategoryDefinition | null {
 }
 
 /** Rattachement outil → catégorie (slug du catalogue → slug de catégorie). */
-export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
+const LEGACY_TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'multi-ester-pharmacokinetics': 'pharmacokinetics',
   'hpta-recovery': 'hormonal-health',
   'aromatization-risk': 'hormonal-health',
@@ -79,6 +80,15 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-028-stacking-synergy': 'cycle-management',
   'tool-029-side-effect-early-warning': 'medical-monitoring',
   'tool-030-cycle-cost-calculator': 'cycle-management',
+};
+
+/**
+ * Full slug -> category map: legacy/completed catalogue slugs plus every
+ * registered tool #31-#150 (SPEC 4/8/50). The registry remains authority.
+ */
+export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
+  ...LEGACY_TOOL_CATEGORY,
+  ...Object.fromEntries(TOOL_REGISTRY_150.map((t) => [t.slug, t.category])),
 };
 
 /** Catégorie d'un outil (accepte slug ou href '/smarttools/<slug>'). */

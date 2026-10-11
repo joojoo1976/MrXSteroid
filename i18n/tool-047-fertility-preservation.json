@@ -1,0 +1,36 @@
+{
+  "en": {
+    "tool_name": "Fertility Preservation Guide",
+    "age": "Age",
+    "suppressive_weeks": "Cumulative suppressive weeks",
+    "used_hcg": "Used hCG support",
+    "has_semen_analysis": "I have a recent semen analysis",
+    "concentration": "Sperm concentration (M/mL)",
+    "motility": "Motility (%)",
+    "likelihood": "Recovery likelihood",
+    "high": "High",
+    "moderate": "Moderate",
+    "low": "Low",
+    "likelihood_score": "Likelihood score",
+    "estimated_recovery_months": "Estimated recovery (months)",
+    "urgent_referral_notice": "Low likelihood detected — please seek an urgent reproductive-medicine referral and discuss fertility preservation.",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "دليل الحفاظ على الخصوبة",
+    "age": "العمر",
+    "suppressive_weeks": "عدد أسابيع التثبيط التراكمية",
+    "used_hcg": "استُخدم دعم hCG",
+    "has_semen_analysis": "لدي تحليل سائل منوي حديث",
+    "concentration": "تركيز الحيوانات المنوية (مليون/مل)",
+    "motility": "الحركة (%)",
+    "likelihood": "احتمالية الاستعادة",
+    "high": "مرتفعة",
+    "moderate": "متوسطة",
+    "low": "منخفضة",
+    "likelihood_score": "درجة الاحتمالية",
+    "estimated_recovery_months": "الاستعادة المتوقعة (أشهر)",
+    "urgent_referral_notice": "تم رصد احتمالية منخفضة — يرجى طلب إحالة عاجلة لطب الخصوبة ومناقشة حفظ الخصوبة.",
+    "recommendations": "التوصيات"
+  }
+}

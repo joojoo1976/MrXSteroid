@@ -97,6 +97,11 @@ export enum Page {
   STACKING_SYNERGY = 'stacking-synergy',
   SIDE_EFFECT_EARLY_WARNING = 'side-effect-early-warning',
   CYCLE_COST_CALCULATOR = 'cycle-cost-calculator',
+  TRT_LIFETIME = 'trt-lifetime',
+  FERTILITY_PRESERVATION = 'fertility-preservation',
+  CARDIOVASCULAR_RISK = 'cardiovascular-risk',
+  BONE_DENSITY_OPTIMIZER = 'bone-density-optimizer',
+  MENTAL_HEALTH_MONITOR = 'mental-health-monitor',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

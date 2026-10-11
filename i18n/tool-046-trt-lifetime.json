@@ -1,0 +1,36 @@
+{
+  "en": {
+    "tool_name": "TRT Lifetime Calculator",
+    "weekly_dose_mg": "Weekly dose (mg)",
+    "ester": "Ester",
+    "injection_interval_days": "Injection interval (days)",
+    "planned_years": "Planned duration (years)",
+    "age": "Age",
+    "baseline_hematocrit_pct": "Baseline hematocrit (%)",
+    "cardiovascular_risk_factors": "Cardiovascular risk factors (count)",
+    "weekly_active_mg": "Weekly active testosterone (mg)",
+    "cumulative_active_g": "Cumulative active exposure (g)",
+    "accumulation_ratio": "Steady-state accumulation ratio",
+    "exposure_index": "Exposure index (0–100)",
+    "projected_hematocrit_pct": "Projected hematocrit (%)",
+    "hematocrit_monitoring": "Hematocrit monitoring (months)",
+    "safety_flags": "Safety flags"
+  },
+  "ar": {
+    "tool_name": "حاسبة مسار TRT طويل المدى",
+    "weekly_dose_mg": "الجرعة الأسبوعية (ملغ)",
+    "ester": "الإستر",
+    "injection_interval_days": "الفاصل بين الحقن (أيام)",
+    "planned_years": "المدة المخططة (سنوات)",
+    "age": "العمر",
+    "baseline_hematocrit_pct": "الهيماتوكريت الأساسي (%)",
+    "cardiovascular_risk_factors": "عدد عوامل خطر القلب",
+    "weekly_active_mg": "التستوستيرون الفعّال أسبوعيًا (ملغ)",
+    "cumulative_active_g": "التعرض الفعّال التراكمي (غرام)",
+    "accumulation_ratio": "نسبة التراكم في الحالة المستقرة",
+    "exposure_index": "مؤشر التعرض (0–100)",
+    "projected_hematocrit_pct": "الهيماتوكريت المتوقع (%)",
+    "hematocrit_monitoring": "مراقبة الهيماتوكريت (أشهر)",
+    "safety_flags": "تنبيهات السلامة"
+  }
+}
