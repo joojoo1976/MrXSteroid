@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Detoxification Optimizer",
+    "daily_water": "Daily Water Intake (Liters)",
+    "daily_fiber": "Daily Dietary Fiber (Grams)",
+    "cruciferous_servings": "Cruciferous Veg Servings/Week (Broccoli, Kale, etc.)",
+    "alcohol_drinks": "Alcohol Drinks per Week",
+    "nac_support": "Takes NAC / Glutathione / TUDCA liver support",
+    "oral_compounds": "Using C17-aa oral compounds or hepatotoxic substances",
+    "hepatic_score": "Hepatic Support Score",
+    "support_tier": "Functional Support Tier",
+    "recommendations": "Physiological Support Recommendations",
+    "warnings": "Warnings",
+    "disclaimer": "Evidence-based physiological hepatic cofactor evaluation — avoids unproven \"detox cleanse\" myths. Consult your doctor for medical liver function monitoring."
+  },
+  "ar": {
+    "tool_name": "محسّن إزالة السموم",
+    "daily_water": "تناول الماء اليومي (لتر)",
+    "daily_fiber": "الألياف الغذائية اليومية (غرام)",
+    "cruciferous_servings": "حصص الخضار الصليبية أسبوعياً (بروكلي، ملفوف...)",
+    "alcohol_drinks": "المشروبات الكحولية أسبوعياً",
+    "nac_support": "تناول مكملات دعم الكبد (NAC / TUDCA / جلوتاثيون)",
+    "oral_compounds": "استخدام مركبات C17-aa الفموية أو مواد مجهدة للكبد",
+    "hepatic_score": "درجة الدعم الكبدي الفسيولوجي",
+    "support_tier": "مستوى الدعم الوظيفي",
+    "recommendations": "التوصيات الفسيولوجية لدعم الكبد",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم فسيولوجي قائم على الدلائل لمحددات دعم الكبد الطبيعية — يتجنب تماماً خرافات \"حميات الديتوكس\" غير العلمية. راجع طبيبك لمراقبة وظائف الكبد المخبرية."
+  }
+}

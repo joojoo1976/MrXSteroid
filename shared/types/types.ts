@@ -138,6 +138,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   TESTICULAR_SUPPRESSION_CALCULATOR = 'tool-063-testicular-suppression-calculator',
   SPERM_PRODUCTION_OPTIMIZER = 'tool-064-sperm-production-optimizer',
   AROMATASE_CONVERSION_CALCULATOR = 'tool-065-aromatase-conversion-calculator',
+
+  ESTROGEN_SENSITIVITY_MANAGER = 'tool-066-estrogen-sensitivity-manager',
+  ESTROGEN_BALANCE_CALCULATOR = 'tool-067-estrogen-balance-calculator',
+  GYNECOMASTIA_TRACKER = 'tool-068-gynecomastia-tracker',
+  DETOXIFICATION_OPTIMIZER = 'tool-069-detoxification-optimizer',
+  OXIDATIVE_STRESS_CALCULATOR = 'tool-070-oxidative-stress-calculator',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tool_name": "Estrogen Balance Calculator",
+    "total_testosterone": "Total Testosterone (ng/dL)",
+    "estradiol": "Estradiol E2 (pg/mL)",
+    "ratio": "T:E2 Ratio",
+    "band": "Balance classification",
+    "warnings": "Warnings",
+    "disclaimer": "Educational hormonal balance screen — target T:E2 physiological reference range is approximately 14:1 to 30:1. Always confirm with laboratory tests."
+  },
+  "ar": {
+    "tool_name": "حاسبة التوازن الإستروجيني",
+    "total_testosterone": "التستوستيرون الكلي (ng/dL)",
+    "estradiol": "الإستراديول E2 (pg/mL)",
+    "ratio": "نسبة T:E2",
+    "band": "تصنيف التوازن الهرموني",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص توازن هرموني تعليمي — النطاق المرجعي الفسيولوجي لنسبة T:E2 يتراوح تقريباً بين 14:1 و 30:1. استند دائماً إلى الفحوصات المخبرية."
+  }
+}

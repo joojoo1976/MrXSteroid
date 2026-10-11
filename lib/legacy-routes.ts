@@ -123,6 +123,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.TESTICULAR_SUPPRESSION_CALCULATOR]: '/smarttools/tool-063-testicular-suppression-calculator',
     [Page.SPERM_PRODUCTION_OPTIMIZER]: '/smarttools/tool-064-sperm-production-optimizer',
     [Page.AROMATASE_CONVERSION_CALCULATOR]: '/smarttools/tool-065-aromatase-conversion-calculator',
+
+    [Page.ESTROGEN_SENSITIVITY_MANAGER]: '/smarttools/tool-066-estrogen-sensitivity-manager',
+    [Page.ESTROGEN_BALANCE_CALCULATOR]: '/smarttools/tool-067-estrogen-balance-calculator',
+    [Page.GYNECOMASTIA_TRACKER]: '/smarttools/tool-068-gynecomastia-tracker',
+    [Page.DETOXIFICATION_OPTIMIZER]: '/smarttools/tool-069-detoxification-optimizer',
+    [Page.OXIDATIVE_STRESS_CALCULATOR]: '/smarttools/tool-070-oxidative-stress-calculator',
 };
 
 export function pageToPath(page: Page): string {

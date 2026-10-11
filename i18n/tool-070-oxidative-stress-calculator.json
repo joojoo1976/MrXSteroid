@@ -1,0 +1,30 @@
+{
+  "en": {
+    "tool_name": "Oxidative Stress Calculator",
+    "sleep_hours": "Sleep Hours per Night",
+    "training_hours": "Hard High-Intensity Training Hours/Week",
+    "smoker_vaper": "Smoker or regular vaper",
+    "ultraprocessed_diet": "High refined sugar / ultra-processed diet",
+    "androgen_dose": "Weekly Androgen Dose (mg, total AAS/TRT)",
+    "antioxidant_support": "Adequate whole-food antioxidant / polyphenol intake",
+    "burden_score": "Oxidative Burden Score",
+    "burden_tier": "Oxidative Stress Tier",
+    "priorities": "Mitigating Lifestyle Priorities",
+    "warnings": "Warnings",
+    "disclaimer": "Educational redox biological burden assessment — reflects published oxidative stress determinants. Not a medical diagnostic tool."
+  },
+  "ar": {
+    "tool_name": "حاسبة الإجهاد التأكسدي",
+    "sleep_hours": "ساعات النوم بالليلة",
+    "training_hours": "ساعات التدريب الشاق عالي الكثافة أسبوعياً",
+    "smoker_vaper": "مدخن سجائر أو شيشة إلكترونية بانتظام",
+    "ultraprocessed_diet": "نظام غذائي عالي السكريات المكررة والأطعمة المصنعة",
+    "androgen_dose": "الجرعة الأندروجينية الأسبوعية (ملغ، إجمالي AAS/TRT)",
+    "antioxidant_support": "تناول كافٍ لمضادات الأكسدة والبوليفينول من الأغذية الكاملة",
+    "burden_score": "درجة العبء التأكسدي",
+    "burden_tier": "تصنيف الإجهاد التأكسدي",
+    "priorities": "أولويات تعديل نمط الحياة للتخفيف",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم بيولوجي تعليمي للعبء التأكسدي — يستند إلى العوامل العلمية الموثقة للإجهاد التأكسدي. ليس أداة تشخيص طبي."
+  }
+}

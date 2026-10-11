@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Gynecomastia Tracker",
+    "tenderness_itching": "Nipple tenderness, itching, or puffiness present",
+    "palpable_lump": "Palpable firm disk/lump under areola detected",
+    "lump_size": "Lump size (diameter in cm, optional)",
+    "duration_weeks": "Duration of symptoms (weeks)",
+    "prolactin_involved": "Suspected prolactin involvement (e.g. 19-nor cycle, galactorrhea)",
+    "progression_stage": "Tissue progression stage",
+    "fibrosis_risk": "Fibrosis status risk",
+    "escalation": "Clinical evaluation advisory",
+    "warnings": "Warnings",
+    "disclaimer": "Educational tissue staging tracker — not medical or surgical advice. Established glandular tissue requires physical examination by a physician."
+  },
+  "ar": {
+    "tool_name": "متتبع التثدي",
+    "tenderness_itching": "وجود حساسية، حكة، أو انتفاخ تحت الحلمة",
+    "palpable_lump": "تم تحسس كتلة أو نسيج صلب قرصي تحت الهالة",
+    "lump_size": "حجم الكتلة (القطر بالسنتيمتر، اختياري)",
+    "duration_weeks": "مدة استمرار الأعراض (بالأسابيع)",
+    "prolactin_involved": "احتمال تدخل البرولاكتين (مثل مركبات 19-nor أو إفرازات)",
+    "progression_stage": "مرحلة تطور النسيج",
+    "fibrosis_risk": "احتمالية التليف الثابت",
+    "escalation": "توصية الاستشارة السريرية",
+    "warnings": "تحذيرات",
+    "disclaimer": "أداة تعليمية لتتبع مراحل الأنسجة — ليست استشارة طبية أو جراحية. يتطلب النسيج الغدي المكتمل فحصاً سريرياً لدى الطبيب."
+  }
+}
