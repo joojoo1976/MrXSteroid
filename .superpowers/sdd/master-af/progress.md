@@ -48,3 +48,9 @@ BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git hist
 - [x] AI (§11) integration: health guidance and physiological support framed with strict safe boundaries; #069 avoids unproven detox cure myths; #068 flags clinical escalation; AI explain tests pass.
 - [x] Verification: full suite passed (smarttools domain) / 16 payments pre-existing baseline / 5 skipped; tsc EXIT=0; eslint clean on batch files; `next build` PASS.
 - [x] Matrix updated: batch #066–#070 detail + commits 14–15.
+
+## Session 3 addendum — batch #071–#075 (2026-10-11, commit `635b6a5`)
+- [x] Batch #071–#075 (41 files): engines TDD 15/15 pass; schemas ×5; adapters ×5 + batch 5/5; i18n AR/EN ×5; components ×5 (complete dynamic UI + AI-context details); 301 routes ×5; Page enum +5, PAGE_TO_PATH +5, registry orders 870–910; catalog7 flip **75 implemented / 75 planned / 150 total**, published=75.
+- [x] Live Preview Verification: Local production server http://localhost:3005 verified: all 45 tools (#031–#075) return 200 OK on canonical paths, 301/308 redirects functional.
+- [x] Verification: gates 29/29; tsc EXIT=0; eslint clean on batch files; `next build` PASS.
+- [x] Matrix updated: batch #071–#075 detail + commits 16–17.

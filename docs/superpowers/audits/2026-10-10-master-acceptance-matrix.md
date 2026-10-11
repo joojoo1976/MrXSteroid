@@ -100,6 +100,8 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 13. `204c1eb` — feat(tools): ship batch #061-#065 — TDD engines, schemas, adapters, i18n, UI, routes (65/150 implemented).
 14. `ed99a10` — docs: acceptance matrix + ledger for batch #061-#065 (65/85/150).
 15. `53bf333` — feat(tools): ship batch #066-#070 — TDD engines, schemas, adapters, i18n, UI, routes (70/150 implemented).
+16. `79a8d51` — docs: acceptance matrix + ledger for batch #066-#070 (70/80/150).
+17. `635b6a5` — feat(tools): ship batch #071-#075 — TDD engines, schemas, adapters, i18n, UI, routes (75/150 implemented).
 
 ## Batch #061–#065 detail (2026-10-11, commit `204c1eb`)
 | Item | Status | Evidence |
@@ -124,5 +126,18 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 | Components ×5 | **PASS** | draft autosave + zod + Bio-Dashboard save + prev/next + RTL/LTR + AI-context `<details>` panel |
 | Routes 301 ×5 | **PASS** | app/smarttools/tool-066..070-*/page.tsx → toHierarchicalHref |
 | Catalog flip | **PASS** | catalog7 #066–#070 planned→implemented; counts 70/80/150; published=70 |
+| Full suite | **PASS (SmartTools domain)** | All tests passing (16 pre-existing baseline payment failures untouched) |
+| next build | **PASS** | All 5 new routes built statically and SSR valid |
+
+## Batch #071–#075 detail (2026-10-11, commit `635b6a5`)
+| Item | Status | Evidence |
+|---|---|---|
+| Engines 071–075 (TDD golden) | **PASS** | GREEN 15/15: 071 (antioxidant defense score, CoQ10/polyphenols), 072 (hs-CRP, waist circ, systemic cytokine risk), 073 (25(OH)D, sleep architecture, training strain resilience), 074 (AHA/ACC BP staging, MAP & PP calculations, emergency crisis escalation), 075 (pulse pressure stiffness, TC:HDL, TG:HDL atherogenic screening) |
+| Schemas 071–075 | **PASS** | zod in/out contracts; tsc EXIT=0 |
+| Adapters + batch test | **PASS** | GREEN 5/5 (`lib/tools/adapters/tool-071-075-batch.test.ts`); canonical buildXProvenance/KeyFindings/Output; registry orders 870–910 |
+| i18n AR/EN ×5 | **PASS** | i18n/tool-071..075-*.json; Arabic via write-tool |
+| Components ×5 | **PASS** | draft autosave + zod + Bio-Dashboard save + prev/next + RTL/LTR + AI-context `<details>` panel |
+| Routes 301 ×5 | **PASS** | app/smarttools/tool-071..075-*/page.tsx → toHierarchicalHref |
+| Catalog flip | **PASS** | catalog7 #071–#075 planned→implemented; counts 75/75/150; published=75 |
 | Full suite | **PASS (SmartTools domain)** | All tests passing (16 pre-existing baseline payment failures untouched) |
 | next build | **PASS** | All 5 new routes built statically and SSR valid |
