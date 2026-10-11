@@ -56,5 +56,7 @@ BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git hist
 - [x] Matrix updated: batch #071–#075 detail + commits 16–17.
 - [x] Batch #076–#080 (commit `fc7cef5`): engines TDD 10/10 pass; schemas ×5; adapters ×5 + batch 5/5 pass; i18n AR/EN ×5; components ×5 (complete dynamic UI + AI-context details); 301 routes ×5; Page enum +5, PAGE_TO_PATH +5, registry orders 920–960; catalog8 flip **80 implemented / 70 planned / 150 total**, published=80.
 - [x] Live Preview & HTTP Verification: Local production preview server http://localhost:3005 verified: 5 new canonical URLs return 200 OK, 5 legacy URLs return 308 permanent redirect, roadmap #081 returns 404 (planned gate intact).
+- [x] Batch #081–#085 (commit `ac07f50`): engines TDD 10/10 pass; schemas ×5; adapters ×5 + batch 5/5 pass; i18n AR/EN ×5; components ×5 (complete dynamic UI + AI-context details); 301 routes ×5; Page enum +5, PAGE_TO_PATH +5, registry orders 970–1010; catalog8 flip **85 implemented / 65 planned / 150 total**, published=85.
+- [x] Live Preview & HTTP Verification: Local production preview server http://localhost:3005 verified: 5 new canonical URLs return 200 OK, 5 legacy URLs return 308 permanent redirect, roadmap #086 returns 404 (planned gate intact).
 - [x] Verification: vitest unit/integration passes (baseline 16 untouched); tsc EXIT=0; eslint clean on batch files; `next build` PASS.
 
