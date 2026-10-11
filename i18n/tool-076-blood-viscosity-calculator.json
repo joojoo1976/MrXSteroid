@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Blood Viscosity Calculator",
+    "hematocrit": "Hematocrit (%)",
+    "total_protein": "Total Protein (g/dL, optional)",
+    "hydration_status": "Hydration Status",
+    "hydration_dehydrated": "Dehydrated",
+    "hydration_adequate": "Adequate",
+    "hydration_well": "Well Hydrated",
+    "androgen_use": "Active androgen/AAS use",
+    "viscosity_score": "Relative Viscosity Score",
+    "viscosity_cp": "Estimated Viscosity (cP)",
+    "viscosity_band": "Viscosity Classification",
+    "warnings": "Warnings",
+    "disclaimer": "Educational whole-blood viscosity estimation based on hematocrit and protein. Not a substitute for laboratory viscometry. Consult a physician if hematocrit exceeds 52% or thrombotic symptoms are present."
+  },
+  "ar": {
+    "tool_name": "حاسبة لزوجة الدم",
+    "hematocrit": "الهيماتوكريت (%)",
+    "total_protein": "البروتين الكلي (g/dL، اختياري)",
+    "hydration_status": "حالة الترطيب",
+    "hydration_dehydrated": "جفاف",
+    "hydration_adequate": "ترطيب كافٍ",
+    "hydration_well": "ترطيب جيد",
+    "androgen_use": "يستخدم أندروجينات أو مواد AAS حالياً",
+    "viscosity_score": "مؤشر اللزوجة النسبي",
+    "viscosity_cp": "اللزوجة التقديرية (سنتيبواز)",
+    "viscosity_band": "تصنيف لزوجة الدم",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقدير تعليمي للزوجة الدم بناءً على الهيماتوكريت والبروتين. لا يُغني عن قياس اللزوجة المختبري. استشر طبيبك إذا تجاوز الهيماتوكريت 52% أو ظهرت أعراض خثارية."
+  }
+}

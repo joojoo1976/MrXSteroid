@@ -135,6 +135,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.IMMUNE_SYSTEM_OPTIMIZER]: '/smarttools/tool-073-immune-system-optimizer',
     [Page.BLOOD_PRESSURE_TRACKER]: '/smarttools/tool-074-blood-pressure-tracker',
     [Page.ARTERIAL_HEALTH_MANAGER]: '/smarttools/tool-075-arterial-health-manager',
+
+    [Page.BLOOD_VISCOSITY_CALCULATOR]: '/smarttools/tool-076-blood-viscosity-calculator',
+    [Page.NITRIC_OXIDE_OPTIMIZER]: '/smarttools/tool-077-nitric-oxide-optimizer',
+    [Page.ENDOTHELIAL_HEALTH_MANAGER]: '/smarttools/tool-078-endothelial-health-manager',
+    [Page.FAT_METABOLISM_CALCULATOR]: '/smarttools/tool-079-fat-metabolism-calculator',
+    [Page.MITOCHONDRIAL_OPTIMIZER]: '/smarttools/tool-080-mitochondrial-optimizer',
 };
 
 export function pageToPath(page: Page): string {

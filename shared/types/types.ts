@@ -150,6 +150,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   IMMUNE_SYSTEM_OPTIMIZER = 'tool-073-immune-system-optimizer',
   BLOOD_PRESSURE_TRACKER = 'tool-074-blood-pressure-tracker',
   ARTERIAL_HEALTH_MANAGER = 'tool-075-arterial-health-manager',
+
+  BLOOD_VISCOSITY_CALCULATOR = 'tool-076-blood-viscosity-calculator',
+  NITRIC_OXIDE_OPTIMIZER = 'tool-077-nitric-oxide-optimizer',
+  ENDOTHELIAL_HEALTH_MANAGER = 'tool-078-endothelial-health-manager',
+  FAT_METABOLISM_CALCULATOR = 'tool-079-fat-metabolism-calculator',
+  MITOCHONDRIAL_OPTIMIZER = 'tool-080-mitochondrial-optimizer',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

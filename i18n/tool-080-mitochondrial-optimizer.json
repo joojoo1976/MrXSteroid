@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Mitochondrial Optimizer",
+    "zone2_hours": "Zone 2 Aerobic Training (hours/week)",
+    "hiit_sessions": "HIIT Sessions per Week",
+    "coq10_nad": "CoQ10, NAD+ precursor, or ubiquinol supplementation",
+    "cold_heat": "Regular cold/heat hormesis (sauna, cold therapy)",
+    "sleep_quality": "Sleep Quality Score (1–10)",
+    "statin_use": "Currently using statin medication",
+    "mito_score": "Mitochondrial Efficiency Score",
+    "mito_band": "Mitochondrial Health Status",
+    "warnings": "Warnings",
+    "disclaimer": "Educational mitochondrial health assessment based on PGC-1alpha stimulus and cofactor support. Not a clinical measure of mitochondrial density or VO2max. Consult a physician for formal metabolic evaluation."
+  },
+  "ar": {
+    "tool_name": "محسّن الميتوكوندريا",
+    "zone2_hours": "التدريب الهوائي Zone 2 (ساعات/أسبوع)",
+    "hiit_sessions": "جلسات HIIT في الأسبوع",
+    "coq10_nad": "مكملات CoQ10 أو NAD+ أو يوبيكوينول",
+    "cold_heat": "تعرض منتظم للبرد والحرارة (ساونا، غمر بارد)",
+    "sleep_quality": "درجة جودة النوم (1–10)",
+    "statin_use": "يستخدم أدوية الستاتين حالياً",
+    "mito_score": "مؤشر كفاءة الميتوكوندريا",
+    "mito_band": "حالة صحة الميتوكوندريا",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي لصحة الميتوكوندريا بناءً على محفزات PGC-1alpha ودعم العوامل المساعدة. لا يعادل قياس كثافة الميتوكوندريا السريري. استشر طبيبك لإجراء التقييم الأيضي الدقيق."
+  }
+}

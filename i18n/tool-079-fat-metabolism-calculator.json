@@ -1,0 +1,32 @@
+{
+  "en": {
+    "tool_name": "Fat Metabolism Calculator",
+    "body_weight": "Body Weight (kg)",
+    "body_fat_pct": "Body Fat % (optional)",
+    "vo2max": "VO2max (mL/kg/min, optional)",
+    "heart_rate": "Current Exercise Heart Rate (bpm)",
+    "resting_hr": "Resting Heart Rate (bpm)",
+    "fasted": "Training in fasted state",
+    "fat_oxidation": "Estimated Fat Oxidation",
+    "carb_oxidation": "Estimated Carbohydrate Oxidation",
+    "rer": "Estimated RER",
+    "zone_state": "Predominant Fuel Zone",
+    "warnings": "Notes",
+    "disclaimer": "Educational substrate oxidation estimation using heart rate reserve and the Achten FatMax model. Individual values vary with training status and measurement accuracy. Not clinical calorimetry. Consult a sports physician for formal metabolic testing."
+  },
+  "ar": {
+    "tool_name": "حاسبة التمثيل الغذائي للدهون",
+    "body_weight": "وزن الجسم (كجم)",
+    "body_fat_pct": "نسبة الدهون (%)، اختياري",
+    "vo2max": "VO2max (مل/كجم/دقيقة، اختياري)",
+    "heart_rate": "معدل نبضات القلب أثناء التمرين (نبضة/دقيقة)",
+    "resting_hr": "معدل نبضات القلب في الراحة (نبضة/دقيقة)",
+    "fasted": "التمرين في حالة صيام",
+    "fat_oxidation": "معدل أكسدة الدهون التقديري",
+    "carb_oxidation": "معدل أكسدة الكربوهيدرات التقديري",
+    "rer": "معامل تبادل التنفس التقديري",
+    "zone_state": "نمط الوقود السائد",
+    "warnings": "ملاحظات",
+    "disclaimer": "تقدير تعليمي لأكسدة الركائز باستخدام احتياطي معدل القلب ونموذج FatMax. تتفاوت القيم الفردية حسب مستوى التدريب ودقة القياس. لا يُغني عن قياس التمثيل الغذائي السريري. استشر طبيب الرياضة لإجراء فحوصات التمثيل الغذائي الدقيقة."
+  }
+}

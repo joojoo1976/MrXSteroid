@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Endothelial Health Manager",
+    "systolic_bp": "Systolic Blood Pressure (mmHg)",
+    "fasting_glucose": "Fasting Glucose (mg/dL, optional)",
+    "hscrp": "hs-CRP (mg/L, optional)",
+    "smoker": "Smoker or vaper",
+    "androgen_therapy": "Active androgen therapy",
+    "aerobic_mins": "Daily aerobic movement (minutes)",
+    "risk_score": "Endothelial Dysfunction Risk Score",
+    "status_band": "Endothelial Health Status",
+    "warnings": "Warnings",
+    "disclaimer": "Educational endothelial health screening based on multi-marker risk factors. Not equivalent to clinical flow-mediated dilation testing or vascular imaging. Consult a cardiologist for formal vascular evaluation."
+  },
+  "ar": {
+    "tool_name": "مدير صحة البطانة الغشائية",
+    "systolic_bp": "ضغط الدم الانقباضي (mmHg)",
+    "fasting_glucose": "سكر الدم الصائم (mg/dL، اختياري)",
+    "hscrp": "بروتين CRP عالي الحساسية (mg/L، اختياري)",
+    "smoker": "مدخن أو يستخدم السيجارة الإلكترونية",
+    "androgen_therapy": "علاج أندروجيني نشط",
+    "aerobic_mins": "الحركة الهوائية اليومية (دقائق)",
+    "risk_score": "درجة خطر خلل وظائف البطانة الوعائية",
+    "status_band": "حالة صحة البطانة الوعائية",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي لصحة بطانة الأوعية بناءً على متعدد عوامل الخطر. لا يعادل اختبار توسع الأوعية الدموية السريري أو التصوير الوعائي. استشر طبيب القلب للتقييم الوعائي الدقيق."
+  }
+}

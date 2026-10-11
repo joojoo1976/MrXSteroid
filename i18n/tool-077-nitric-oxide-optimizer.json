@@ -1,0 +1,34 @@
+{
+  "en": {
+    "tool_name": "Nitric Oxide Optimizer",
+    "dietary_nitrate": "Dietary Nitrate Frequency",
+    "nitrate_rarely": "Rarely (< 1/week)",
+    "nitrate_occasional": "Occasional (1–3/week)",
+    "nitrate_daily": "Daily",
+    "nitrate_high_daily": "High daily (multiple servings)",
+    "aerobic_days": "Aerobic Exercise Days per Week",
+    "mouthwash": "Uses antiseptic mouthwash daily",
+    "citrulline": "L-Citrulline or precursor supplementation",
+    "sunlight": "Regular sunlight / UVA skin exposure",
+    "no_score": "NO Optimization Score",
+    "no_band": "NO Pathway Status",
+    "warnings": "Warnings",
+    "disclaimer": "Educational nitric oxide pathway assessment. Diet and lifestyle factors affecting endothelial NO bioavailability. Not a clinical nitric oxide measurement (NO is not a serum test). Consult a physician for vascular health concerns."
+  },
+  "ar": {
+    "tool_name": "محسّن أكسيد النيتريك",
+    "dietary_nitrate": "تكرار تناول النترات الغذائية",
+    "nitrate_rarely": "نادراً (أقل من مرة/أسبوع)",
+    "nitrate_occasional": "أحياناً (1–3 مرات/أسبوع)",
+    "nitrate_daily": "يومياً",
+    "nitrate_high_daily": "يومياً بكميات عالية (وجبات متعددة)",
+    "aerobic_days": "أيام التمرين الهوائي في الأسبوع",
+    "mouthwash": "يستخدم غسول الفم المضاد للجراثيم يومياً",
+    "citrulline": "مكملات سيترولين أو أحماض أمينية سابقة",
+    "sunlight": "تعرض منتظم للشمس أو الأشعة فوق البنفسجية",
+    "no_score": "مؤشر تحسين أكسيد النيتريك",
+    "no_band": "حالة مسار أكسيد النيتريك",
+    "warnings": "تحذيرات",
+    "disclaimer": "تقييم تعليمي لمسارات أكسيد النيتريك الوعائية. العوامل الغذائية وأسلوب الحياة التي تؤثر على توافر أكسيد النيتريك. لا يُغني عن استشارة طبيب متخصص في أمراض القلب والأوعية."
+  }
+}
