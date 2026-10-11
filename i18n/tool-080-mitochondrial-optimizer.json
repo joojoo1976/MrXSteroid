@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Mitochondrial Optimizer",
+    "age": "Age",
+    "exercise_days": "Exercise days per week",
+    "sleep_hours": "Sleep (hours/night)",
+    "diet_diversity": "Dietary diversity (1–5)",
+    "cold_exposure_days": "Cold-exposure sessions/week",
+    "heat_exposure_days": "Sauna/heat sessions/week",
+    "stress_level": "Perceived stress (1–10)",
+    "smoker": "Current smoker",
+    "cardiovascular_disease": "Known cardiovascular disease",
+    "mitochondrial_health_index": "Mitochondrial-health index (0–100)",
+    "band": "Band",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "contributing_factors": "Findings",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "محسّن الميتوكوندريا",
+    "age": "العمر",
+    "exercise_days": "أيام التمرين أسبوعيًا",
+    "sleep_hours": "النوم (ساعات/ليلة)",
+    "diet_diversity": "تنوع النظام الغذائي (1–5)",
+    "cold_exposure_days": "جلسات التعرض للبرد أسبوعيًا",
+    "heat_exposure_days": "جلسات الساونا/الحرارة أسبوعيًا",
+    "stress_level": "الإجهاد المُدرَك (1–10)",
+    "smoker": "مدخّن حاليًا",
+    "cardiovascular_disease": "مرض قلبي وعائي معروف",
+    "mitochondrial_health_index": "مؤشر صحة الميتوكوندريا (0–100)",
+    "band": "الفئة",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "contributing_factors": "النتائج",
+    "recommendations": "التوصيات"
+  }
+}

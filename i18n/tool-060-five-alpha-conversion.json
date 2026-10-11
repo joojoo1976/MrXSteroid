@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "5-Alpha Conversion Calculator",
+    "total_testosterone_ng_dl": "Total testosterone (ng/dL)",
+    "age": "Age",
+    "body_fat_pct": "Body fat (%)",
+    "scalp_sensitivity": "Scalp androgen sensitivity (1–10)",
+    "mpb_family_history": "Family history of male-pattern baldness",
+    "sebum_activity": "Oily skin/acne severity (0–3)",
+    "five_ar_activity_index": "5-alpha-reductase activity index (0–100)",
+    "dht_conversion_fraction_pct": "Estimated DHT conversion fraction (%)",
+    "estimated_dht_ng_dl": "Estimated DHT (ng/dL)",
+    "band": "Classification",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "contributing_factors": "Contributing factors",
+    "education": "Education"
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل 5-ألفا",
+    "total_testosterone_ng_dl": "التستوستيرون الكلي (نانوغرام/دل)",
+    "age": "العمر",
+    "body_fat_pct": "نسبة الدهون (%)",
+    "scalp_sensitivity": "حساسية فروة الرأس للأندروجين (1–10)",
+    "mpb_family_history": "تاريخ عائلي لثعلبة نمط الذكور",
+    "sebum_activity": "شدة البشرة الدهنية/حب الشباب (0–3)",
+    "five_ar_activity_index": "مؤشر نشاط إنزيم 5-ألفا ريدكتاز (0–100)",
+    "dht_conversion_fraction_pct": "النسبة المقدَّرة للتحويل إلى DHT (%)",
+    "estimated_dht_ng_dl": "DHT المقدَّر (نانوغرام/دل)",
+    "band": "التصنيف",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "contributing_factors": "العوامل المؤثرة",
+    "education": "معلومات تعليمية"
+  }
+}

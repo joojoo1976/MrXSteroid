@@ -108,7 +108,32 @@ export enum Page {
   GLUCOSE_TRACKER = 'glucose-tracker',
   INSULIN_SENSITIVITY = 'insulin-sensitivity',
   MINI_PCT = 'mini-pct',
+  FREE_TESTOSTERONE = 'free-testosterone',
+  ANDROGENIC_BALANCE = 'androgenic-balance',
+  ANDROGEN_RECEPTOR = 'androgen-receptor',
+  FIVE_ALPHA_CONVERSION = 'five-alpha-conversion',
+  HAIR_LOSS_TRACKER = 'hair-loss-tracker',
+  PROSTATE_HEALTH = 'prostate-health',
+  TESTICULAR_SUPPRESSION = 'testicular-suppression',
+  SPERM_PRODUCTION = 'sperm-production',
+  AROMATASE_CONVERSION = 'aromatase-conversion',
+  ESTROGEN_SENSITIVITY = 'estrogen-sensitivity',
+  ESTROGEN_BALANCE = 'estrogen-balance',
+  GYNECOMASTIA_TRACKER = 'gynecomastia-tracker',
+  DETOX_OPTIMIZER = 'detox-optimizer',
+  OXIDATIVE_STRESS = 'oxidative-stress',
+  ANTIOXIDANT_MANAGER = 'antioxidant-manager',
+  INFLAMMATION_CALCULATOR = 'inflammation-calculator',
+  IMMUNE_OPTIMIZER = 'immune-optimizer',
+  BLOOD_PRESSURE_TRACKER = 'blood-pressure-tracker',
+  ARTERIAL_HEALTH = 'arterial-health',
+  BLOOD_VISCOSITY = 'blood-viscosity',
+  NITRIC_OXIDE = 'nitric-oxide',
+  ENDOTHELIAL_HEALTH = 'endothelial-health',
+  FAT_METABOLISM = 'fat-metabolism',
+  MITOCHONDRIAL_OPTIMIZER = 'mitochondrial-optimizer',
 }
+
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';
 export type ShippingZone = 'egypt' | 'global';

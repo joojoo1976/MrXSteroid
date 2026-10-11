@@ -1,0 +1,42 @@
+{
+  "en": {
+    "tool_name": "Androgenic Balance Calculator",
+    "anabolic_activity": "Anabolic activity rating (1–100)",
+    "androgenic_activity": "Androgenic activity rating (1–100)",
+    "androgenic_side_effects": "Androgenic side-effect severity (0–3)",
+    "acne_severity": "Acne severity (0–3)",
+    "mpb_history": "Personal/family history of male-pattern baldness",
+    "ratio": "Anabolic:androgenic ratio",
+    "dissociation_index": "Dissociation index (0–100)",
+    "band": "Classification",
+    "androgenic-dominant": "Androgenic-dominant",
+    "balanced": "Balanced",
+    "anabolic-dominant": "Anabolic-dominant",
+    "side_effect_burden": "Side-effect burden",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "contributing_factors": "Contributing factors",
+    "education": "Education"
+  },
+  "ar": {
+    "tool_name": "حاسبة التوازن الأندروجيني",
+    "anabolic_activity": "تقييم الفعالية الابتنائية (1–100)",
+    "androgenic_activity": "تقييم الفعالية الأندروجينية (1–100)",
+    "androgenic_side_effects": "شدة الآثار الأندروجينية الجانبية (0–3)",
+    "acne_severity": "شدة حب الشباب (0–3)",
+    "mpb_history": "تاريخ شخصي/عائلي لثعلبة نمط الذكور",
+    "ratio": "نسبة الابتنائي إلى الأندروجيني",
+    "dissociation_index": "مؤشر التفارق (0–100)",
+    "band": "التصنيف",
+    "androgenic-dominant": "أندروجيني غالب",
+    "balanced": "متوازن",
+    "anabolic-dominant": "ابتنائي غالب",
+    "side_effect_burden": "عبء الآثار الجانبية",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "contributing_factors": "العوامل المؤثرة",
+    "education": "معلومات تعليمية"
+  }
+}

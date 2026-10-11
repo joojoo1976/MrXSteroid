@@ -1,0 +1,42 @@
+{
+  "en": {
+    "tool_name": "Estrogen Balance Calculator",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "estradiol_pg_ml": "Estradiol (pg/mL)",
+    "total_testosterone_ng_dl": "Total testosterone (ng/dL)",
+    "shbg_nmol_l": "SHBG (nmol/L)",
+    "high_e2_symptoms": "High-estrogen symptoms (0–3)",
+    "low_e2_symptoms": "Low-estrogen symptoms (0–3)",
+    "e2_t_ratio": "Estradiol:testosterone ratio",
+    "balance_index": "Balance index (0–100)",
+    "classification": "Classification",
+    "estrogen-low": "Estrogen-low",
+    "balanced": "Balanced",
+    "estrogen-dominant": "Estrogen-dominant",
+    "symptom_discordance": "Symptoms and lab values point in opposite directions.",
+    "contributing_factors": "Findings",
+    "education": "Education"
+  },
+  "ar": {
+    "tool_name": "حاسبة توازن الإستروجين",
+    "sex": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "estradiol_pg_ml": "الإستراديول (بيكوغرام/مل)",
+    "total_testosterone_ng_dl": "التستوستيرون الكلي (نانوغرام/دل)",
+    "shbg_nmol_l": "الغلوبيولين الرابط للهرمون الجنسي SHBG (نانومول/ل)",
+    "high_e2_symptoms": "أعراض ارتفاع الإستروجين (0–3)",
+    "low_e2_symptoms": "أعراض انخفاض الإستروجين (0–3)",
+    "e2_t_ratio": "نسبة الإستراديول إلى التستوستيرون",
+    "balance_index": "مؤشر التوازن (0–100)",
+    "classification": "التصنيف",
+    "estrogen-low": "إستروجين منخفض",
+    "balanced": "متوازن",
+    "estrogen-dominant": "إستروجين غالب",
+    "symptom_discordance": "الأعراض والقيم المخبرية تشير في اتجاهين متعاكسين.",
+    "contributing_factors": "النتائج",
+    "education": "معلومات تعليمية"
+  }
+}

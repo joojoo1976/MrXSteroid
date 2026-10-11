@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Androgen Receptor Optimizer",
+    "age": "Age",
+    "sleep_hours": "Average sleep (hours/night)",
+    "resistance_training_days": "Resistance training (days/week)",
+    "body_fat_pct": "Body fat (%)",
+    "protein_g_per_kg": "Protein (g/kg/day)",
+    "stress_level": "Perceived stress (1–10)",
+    "vitamin_d_ng_ml": "Vitamin D (ng/mL)",
+    "ar_cag_repeats": "AR CAG-repeat length (9–40)",
+    "ar_sensitivity_index": "AR signalling-context index (0–100)",
+    "band": "Classification",
+    "suboptimal": "Suboptimal",
+    "moderate": "Moderate",
+    "favourable": "Favourable",
+    "contributing_factors": "Contributing factors",
+    "education": "Education"
+  },
+  "ar": {
+    "tool_name": "محسّن مستقبلات الأندروجين",
+    "age": "العمر",
+    "sleep_hours": "متوسط النوم (ساعة/ليلة)",
+    "resistance_training_days": "تدريب المقاومة (أيام/أسبوع)",
+    "body_fat_pct": "نسبة الدهون (%)",
+    "protein_g_per_kg": "البروتين (غرام/كغ/يوم)",
+    "stress_level": "الإجهاد المُدرك (1–10)",
+    "vitamin_d_ng_ml": "فيتامين د (نانوغرام/مل)",
+    "ar_cag_repeats": "طول تكرار CAG في المستقبل AR (9–40)",
+    "ar_sensitivity_index": "مؤشر سياق إشارة المستقبل (0–100)",
+    "band": "التصنيف",
+    "suboptimal": "دون الأمثل",
+    "moderate": "متوسط",
+    "favourable": "مُواتٍ",
+    "contributing_factors": "العوامل المؤثرة",
+    "education": "معلومات تعليمية"
+  }
+}

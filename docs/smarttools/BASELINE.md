@@ -73,4 +73,5 @@ scoped separately (see TRACEABILITY_MATRIX.md).
 |---|---|---|
 | Baseline | #1–#30 | PASS (verified) |
 | Batch 1 | #046–#050 | PASS — engines, schemas, components, i18n, routes, 34 engine tests; full-suite delta = 0 new failures |
+| Batch 2 | #051–#056 | PASS — engines, schemas, components, i18n, routes, 27 engine tests; `tsc --noEmit` exit 0 |
 | AI layer | platform | PARTIAL — deterministic fallback/guard/grounding PASS; real provider NOT RUN |

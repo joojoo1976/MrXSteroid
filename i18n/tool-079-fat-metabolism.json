@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Fat Metabolism",
+    "age": "Age",
+    "cardio_days": "Cardio days per week",
+    "resistance_days": "Resistance days per week",
+    "daily_steps": "Average daily steps",
+    "carb_grams": "Daily carbohydrate (g)",
+    "protein_adequacy": "Protein adequacy (1–5)",
+    "body_fat_pct": "Body-fat (%)",
+    "fasting_hours": "Overnight fasting window (hours)",
+    "fat_oxidation_index": "Fat-oxidation index (0–100)",
+    "band": "Band",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "contributing_factors": "Findings",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "استقلاب الدهون",
+    "age": "العمر",
+    "cardio_days": "أيام الكارديو أسبوعيًا",
+    "resistance_days": "أيام المقاومة أسبوعيًا",
+    "daily_steps": "متوسط الخطوات اليومية",
+    "carb_grams": "الكربوهيدرات اليومية (غرام)",
+    "protein_adequacy": "كفاية البروتين (1–5)",
+    "body_fat_pct": "نسبة دهون الجسم (٪)",
+    "fasting_hours": "نافذة الصيام الليلي (ساعات)",
+    "fat_oxidation_index": "مؤشر أكسدة الدهون (0–100)",
+    "band": "الفئة",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "contributing_factors": "النتائج",
+    "recommendations": "التوصيات"
+  }
+}

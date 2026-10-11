@@ -5,9 +5,9 @@
 
 ## Summary
 
-- Implemented catalogue entries: **35**
+- Implemented catalogue entries: **41**
 - Registered tools #31–#150: **120**
-- Marked implemented in registry seed: **5** (46, 47, 48, 49, 50)
+- Marked implemented in registry seed: **11** (46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56)
 - Total tool identities tracked: **150** (#1-#30 legacy + #31-#150 registered)
 
 ## Implemented tools (catalogue) — functional evidence
@@ -49,6 +49,12 @@
 | Cardiovascular Risk Assessor | `cardiovascular-risk` | yes | yes | yes | yes | yes | PASS |
 | Bone Density Optimizer | `bone-density-optimizer` | yes | yes | yes | yes | yes | PASS |
 | Mental Health Monitor | `mental-health-monitor` | yes | yes | yes | yes | yes | PASS |
+| Peptide Dosage Calculator | `peptide-dosage` | yes | yes | yes | yes | yes | PASS |
+| Growth Hormone Protocol Planner | `gh-protocol` | yes | yes | yes | yes | yes | PASS |
+| Insulin Conversion Calculator | `insulin-conversion` | yes | yes | yes | yes | yes | PASS |
+| Glucose Tracker | `glucose-tracker` | yes | yes | yes | yes | yes | PASS |
+| Insulin Sensitivity Optimizer | `insulin-sensitivity` | yes | yes | yes | yes | yes | PASS |
+| Mini PCT Calculator | `mini-pct` | yes | yes | yes | yes | yes | PASS |
 
 ## Registered tools #31–#150 — development status
 
@@ -74,12 +80,12 @@
 | 48 | medical-monitoring | `cardiovascular-risk` | completed | available | no | PASS |
 | 49 | medical-monitoring | `bone-density-optimizer` | completed | available | no | PASS |
 | 50 | medical-monitoring | `mental-health-monitor` | completed | available | no | PASS |
-| 51 | hormonal-health | `peptide-dosage` | planned | unavailable | no | NOT RUN |
-| 52 | hormonal-health | `gh-protocol` | planned | unavailable | no | NOT RUN |
-| 53 | medical-monitoring | `insulin-conversion` | planned | unavailable | no | NOT RUN |
-| 54 | medical-monitoring | `glucose-tracker` | planned | unavailable | no | NOT RUN |
-| 55 | medical-monitoring | `insulin-sensitivity` | planned | unavailable | no | NOT RUN |
-| 56 | hormonal-health | `mini-pct` | planned | unavailable | no | NOT RUN |
+| 51 | hormonal-health | `peptide-dosage` | completed | available | no | PASS |
+| 52 | hormonal-health | `gh-protocol` | completed | available | no | PASS |
+| 53 | medical-monitoring | `insulin-conversion` | completed | available | no | PASS |
+| 54 | medical-monitoring | `glucose-tracker` | completed | available | no | PASS |
+| 55 | medical-monitoring | `insulin-sensitivity` | completed | available | no | PASS |
+| 56 | hormonal-health | `mini-pct` | completed | available | no | PASS |
 | 57 | hormonal-health | `free-testosterone` | planned | unavailable | no | NOT RUN |
 | 58 | hormonal-health | `androgenic-balance` | planned | unavailable | no | NOT RUN |
 | 59 | hormonal-health | `androgen-receptor` | planned | unavailable | no | NOT RUN |

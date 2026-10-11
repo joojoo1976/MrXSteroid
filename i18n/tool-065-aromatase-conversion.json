@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Aromatase Conversion Calculator",
+    "body_fat_pct": "Body fat (%)",
+    "age": "Age",
+    "total_testosterone_ng_dl": "Total testosterone (ng/dL)",
+    "estradiol_pg_ml": "Estradiol (pg/mL)",
+    "aromatization_index": "Aromatisation-rate index (0–100)",
+    "e2_t_ratio": "Estradiol:testosterone ratio",
+    "ratio_band": "Ratio band",
+    "ratio_low": "Low",
+    "ratio_typical": "Typical",
+    "ratio_high": "High",
+    "band": "Classification",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "contributing_factors": "Contributing factors",
+    "education": "Education"
+  },
+  "ar": {
+    "tool_name": "حاسبة تحويل الأروماتاز",
+    "body_fat_pct": "نسبة الدهون (%)",
+    "age": "العمر",
+    "total_testosterone_ng_dl": "التستوستيرون الكلي (نانوغرام/دل)",
+    "estradiol_pg_ml": "الإستراديول (بيكوغرام/مل)",
+    "aromatization_index": "مؤشر معدل الأرومتة (0–100)",
+    "e2_t_ratio": "نسبة الإستراديول إلى التستوستيرون",
+    "ratio_band": "فئة النسبة",
+    "ratio_low": "منخفضة",
+    "ratio_typical": "نموذجية",
+    "ratio_high": "مرتفعة",
+    "band": "التصنيف",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "contributing_factors": "العوامل المؤثرة",
+    "education": "معلومات تعليمية"
+  }
+}

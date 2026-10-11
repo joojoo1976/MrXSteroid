@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Blood Viscosity",
+    "age": "Age",
+    "sex": "Sex",
+    "hematocrit_pct": "Hematocrit (%)",
+    "water_liters": "Daily water (litres)",
+    "ldl_mg_dl": "LDL cholesterol (mg/dL)",
+    "triglycerides_mg_dl": "Triglycerides (mg/dL)",
+    "fibrinogen_mg_dl": "Fibrinogen (mg/dL, optional)",
+    "smoker": "Current smoker",
+    "viscosity_index": "Viscosity index (0–100)",
+    "band": "Band",
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "clinical_review_notice": "Consider a clinical review of your blood counts and lipids.",
+    "contributing_factors": "Findings",
+    "recommendations": "Recommendations"
+  },
+  "ar": {
+    "tool_name": "لزوجة الدم",
+    "age": "العمر",
+    "sex": "الجنس",
+    "hematocrit_pct": "الهيماتوكريت (%)",
+    "water_liters": "الماء اليومي (لتر)",
+    "ldl_mg_dl": "الكوليسترول الضار LDL (ملغ/دل)",
+    "triglycerides_mg_dl": "الدهون الثلاثية (ملغ/دل)",
+    "fibrinogen_mg_dl": "الفيبرينوجين (ملغ/دل، اختياري)",
+    "smoker": "مدخّن حاليًا",
+    "viscosity_index": "مؤشر اللزوجة (0–100)",
+    "band": "الفئة",
+    "low": "منخفض",
+    "moderate": "متوسط",
+    "high": "مرتفع",
+    "clinical_review_notice": "فكّر في مراجعة سريرية لتحاليل الدم والدهون.",
+    "contributing_factors": "النتائج",
+    "recommendations": "التوصيات"
+  }
+}
