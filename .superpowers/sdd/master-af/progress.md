@@ -37,5 +37,9 @@ BLOCKED (documented): file `2gpt MASTER v3.0` does not exist in repo or git hist
 ## Session 3 addendum — batch #056–#060 (2026-10-11, commit `1ba881c`)
 - [x] Batch #056–#060 (41 files): engines TDD RED→GREEN 15/15 (`tmp/green2-056-060.log`); schemas ×5; adapters ×5 + batch 8/8; i18n AR/EN ×5; components ×5 (all composed complete — zero truncated writes; stray `.keep` caught+deleted); 301 routes ×5; Page enum +5, PAGE_TO_PATH +5, registry orders 720–760; catalog7 flip **60 implemented / 90 planned / 150 total**, published=60.
 - [x] Golden-deviation applied both directions again: engine fixed for intended behavior (056 ≥12w duration, 059 partial-credit + recommendation), test goldens recomputed (057 Vermeulen exact, 058 formula ×100 bug, 060 quoted dotted enum key `'dutasteride_0.5mg'`).
-- [x] Verification: gates 30/30; full suite **3088 pass** / 16 payments pre-existing / 5 skipped; tsc EXIT=0; lint EXIT=0; `next build` → **209 static pages** (+10).
 - [x] Matrix updated: batch #056–#060 detail + commits 10–11.
+
+## Session 3 addendum — batch #061–#065 (2026-10-11, commit `204c1eb`)
+- [x] Batch #061–#065 (41 files): engines TDD 15/15 pass; schemas ×5; adapters ×5 + batch 5/5; i18n AR/EN ×5; components ×5 (complete dynamic UI + AI-context details); 301 routes ×5; Page enum +5, PAGE_TO_PATH +5, registry orders 770–810; catalog7 flip **65 implemented / 85 planned / 150 total**, published=65.
+- [x] Verification: full suite **3108 pass** / 16 payments pre-existing (identical byte-level baseline) / 5 skipped; tsc EXIT=0; eslint clean on batch files; `next build` PASS.
+- [x] Matrix updated: batch #061–#065 detail + commits 12–13.

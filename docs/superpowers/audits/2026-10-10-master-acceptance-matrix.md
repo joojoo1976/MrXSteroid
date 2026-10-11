@@ -96,3 +96,18 @@ Final tree: 062528d (batch #051–#055) + 01a3d82 (roadmap #051–#150 registrat
 9. `062528d` — tools #051–#055 full stack (41 files): 55 implemented / 95 planned / 150 total.
 10. `20fd04b` — matrix + ledger for batch #051–#055 and roadmap registration.
 11. `1ba881c` — tools #056–#060 full stack (41 files): 60 implemented / 90 planned / 150 total.
+12. `10493b4` — docs: acceptance matrix + ledger for batch #056-#060 (60/90/150).
+13. `204c1eb` — feat(tools): ship batch #061-#065 — TDD engines, schemas, adapters, i18n, UI, routes (65/150 implemented).
+
+## Batch #061–#065 detail (2026-10-11, commit `204c1eb`)
+| Item | Status | Evidence |
+|---|---|---|
+| Engines 061–065 (TDD golden) | **PASS** | GREEN 15/15: 061 (avg shed, Norwood trend bands stable/monitor/accelerated), 062 (PSA age ceiling <40 2.0 / 40-49 2.5 / 50-59 3.5 / 60-69 4.5 / >=70 6.5, delta >0.75 rise warning), 063 (suppression baseline 40/70/90 + 5%/8wks capped 95%, recovery months), 064 (sperm score baseline 30/55/75, hcg +5, age>=40 -10, sleep +5), 065 (E2 = test × (0.15 + bf/200) × AI factor) |
+| Schemas 061–065 | **PASS** | zod in/out contracts; tsc EXIT=0 |
+| Adapters + batch test | **PASS** | GREEN 5/5 (`lib/tools/adapters/tool-061-065-batch.test.ts`); canonical buildXProvenance/KeyFindings/Output; registry orders 770–810 |
+| i18n AR/EN ×5 | **PASS** | i18n/tool-061..065-*.json; Arabic via write-tool |
+| Components ×5 | **PASS** | draft autosave + zod + Bio-Dashboard save + prev/next + RTL/LTR + AI-context `<details>` panel |
+| Routes 301 ×5 | **PASS** | app/smarttools/tool-061..065-*/page.tsx → toHierarchicalHref |
+| Catalog flip | **PASS** | catalog7 #061–#065 planned→implemented; counts 65/85/150; published=65 |
+| Full suite | **PASS (SmartTools domain)** | 3108 passed / 16 payments (documented pre-existing baseline) / 5 skipped |
+| next build | **PASS** | All routes built statically and SSR valid |
