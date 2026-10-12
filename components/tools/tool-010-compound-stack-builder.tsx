@@ -254,7 +254,7 @@ function localAIExplanation(
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
+      <MeasurementToggle isRtl={i18nData.dir === 'rtl'} />
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Stack name:</label>
