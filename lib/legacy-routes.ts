@@ -147,6 +147,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.ANTI_AGING_INFLAMMATION_CALCULATOR]: '/smarttools/tool-083-anti-aging-inflammation-calculator',
     [Page.COGNITIVE_ENHANCER]: '/smarttools/tool-084-cognitive-enhancer',
     [Page.SLEEP_QUALITY_MANAGER]: '/smarttools/tool-085-sleep-quality-manager',
+
+    [Page.CORTISOL_STRESS_CALCULATOR]: '/smarttools/tool-086-cortisol-stress-calculator',
+    [Page.MOOD_OPTIMIZER]: '/smarttools/tool-087-mood-optimizer',
+    [Page.DOPAMINE_TRACKER]: '/smarttools/tool-088-dopamine-tracker',
+    [Page.SEROTONIN_MANAGER]: '/smarttools/tool-089-serotonin-manager',
+    [Page.FEMALE_HORMONE_BALANCE_CALCULATOR]: '/smarttools/tool-090-female-hormone-balance-calculator',
 };
 
 export function pageToPath(page: Page): string {

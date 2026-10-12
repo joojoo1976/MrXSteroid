@@ -1,0 +1,34 @@
+{
+  "en": {
+    "tool_name": "Mood Optimizer",
+    "sunlight_mins": "Daily Outdoor Sunlight (minutes)",
+    "social_connection": "Social Connection Satisfaction",
+    "social_isolated": "Isolated / Lonely",
+    "social_moderate": "Moderate",
+    "social_strong": "Strong / Fulfilling",
+    "activity_days": "Physical Activity Days Weekly",
+    "micronutrients": "Adequate Omega-3, Magnesium, Zinc, and D3",
+    "burnout": "Chronic work overload and burnout",
+    "anhedonia": "Subjective loss of interest or pleasure (anhedonia)",
+    "resilience_score": "Affective Resilience Score",
+    "affective_tier": "Affective Balance Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening evaluating lifestyle factors supporting affective resilience. Not a psychological or psychiatric diagnostic tool (e.g. PHQ-9). Consult a licensed mental health professional for persistent affective distress."
+  },
+  "ar": {
+    "tool_name": "محسّن المزاج",
+    "sunlight_mins": "التعرض اليومي لضوء الشمس في الهواء الطلق (دقائق)",
+    "social_connection": "الرضا عن الروابط الاجتماعية",
+    "social_isolated": "عزلة / وحدة",
+    "social_moderate": "متوسط",
+    "social_strong": "قوي / مُرضٍ",
+    "activity_days": "أيام النشاط البدني أسبوعياً",
+    "micronutrients": "كفاية أوميغا-3 والمغنيسيوم والزنك وفيتامين د",
+    "burnout": "إرهاق مزمن وضغوط عمل مفرطة (Burnout)",
+    "anhedonia": "فقدان ملحوظ للشغف أو المتعة (Anhedonia)",
+    "resilience_score": "مؤشر المرونة العاطفية والمزاجية",
+    "affective_tier": "تصنيف التوازن العاطفي",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي يقيّم عوامل نمط الحياة الداعمة للمرونة المزاجية. ليس أداة تشخيص نفسي أو سريري (مثل PHQ-9). استشر أخصائي الصحة النفسية للاضطرابات النفسية المستمرة."
+  }
+}

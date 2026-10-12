@@ -162,6 +162,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   ANTI_AGING_INFLAMMATION_CALCULATOR = 'tool-083-anti-aging-inflammation-calculator',
   COGNITIVE_ENHANCER = 'tool-084-cognitive-enhancer',
   SLEEP_QUALITY_MANAGER = 'tool-085-sleep-quality-manager',
+
+  CORTISOL_STRESS_CALCULATOR = 'tool-086-cortisol-stress-calculator',
+  MOOD_OPTIMIZER = 'tool-087-mood-optimizer',
+  DOPAMINE_TRACKER = 'tool-088-dopamine-tracker',
+  SEROTONIN_MANAGER = 'tool-089-serotonin-manager',
+  FEMALE_HORMONE_BALANCE_CALCULATOR = 'tool-090-female-hormone-balance-calculator',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

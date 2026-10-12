@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Serotonin Manager",
+    "tryptophan_intake": "Tryptophan-Rich Food Intake",
+    "tryp_low": "Low",
+    "tryp_mod": "Moderate",
+    "tryp_opt": "Optimal (Poultry/Eggs/Cheese/Seeds)",
+    "gut_health": "Gut Health & Digestion Status",
+    "gut_distress": "Frequent GI Distress / Irritable Bowel",
+    "gut_bloating": "Occasional Bloating",
+    "gut_regular": "Healthy & Regular",
+    "sunlight_lux": "Daily Bright Sunlight Exposure (minutes)",
+    "melatonin_transition": "Calm, natural evening transition into sleepiness",
+    "carb_craving": "Chronic evening irritability or carb cravings",
+    "serotonin_score": "Serotonin Somatic Score",
+    "serotonin_tier": "Serotonin Balance Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening evaluating enteric and central serotonin lifestyle substrates. Not a direct clinical assay or diagnostic for clinical depression. Consult a healthcare provider for mood and gastroenterological conditions."
+  },
+  "ar": {
+    "tool_name": "مدير السيروتونين",
+    "tryptophan_intake": "تناول الأطعمة الغنية بالتربتوفان",
+    "tryp_low": "منخفض",
+    "tryp_mod": "متوسط",
+    "tryp_opt": "مثالي (دواجن/بيض/أجبان/بذور)",
+    "gut_health": "صحة الجهاز الهضمي والأمعاء",
+    "gut_distress": "اضطرابات هضمية متكررة / قولون عصبي",
+    "gut_bloating": "انتفاخات عرضية",
+    "gut_regular": "صحي ومنتظم",
+    "sunlight_lux": "التعرض اليومي لضوء الشمس الساطع (دقائق)",
+    "melatonin_transition": "استرخاء وشعور طبيعي بالنعاس مساءً",
+    "carb_craving": "عصبية مسائية مزمنة أو رغبة شديدة بالسكريات",
+    "serotonin_score": "مؤشر المسار السيروتونيني الجسدي",
+    "serotonin_tier": "تصنيف توازن السيروتونين",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي يقيّم عوامل إنتاج السيروتونين المعوي والمركزي. ليس فحصاً مخبرياً مباشراً ولا يشخص الاكتئاب السريري. استشر الطبيب للاضطرابات النفسية والهضمية."
+  }
+}

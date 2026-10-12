@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Female Hormone Balance Calculator",
+    "cycle_length": "Average Menstrual Cycle Length (days)",
+    "pms_severity": "PMS Symptom Severity (Bloating/Mood)",
+    "pms_none": "None to Mild",
+    "pms_mod": "Moderate",
+    "pms_sev": "Severe (Disruptive)",
+    "androgenic_signs": "Androgenic signs (cystic acne, hirsutism, voice changes)",
+    "cycle_regularity": "Menstrual Cycle Regularity",
+    "reg_strict": "Strictly Regular (±2 days)",
+    "reg_variable": "Mildly Variable (±5 days)",
+    "reg_irregular": "Highly Irregular / Absent (Oligomenorrhea)",
+    "stress_weight": "High chronic stress or rapid weight loss / energy deficit",
+    "harmony_score": "Hormone Harmony Score",
+    "balance_tier": "Endocrine Balance Tier",
+    "virilization_risk": "Androgenic Risk Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening for female hormonal symptoms and androgenic indicators. Not a diagnostic tool for PCOS, endometriosis, or ovarian conditions. Consult a gynecologist or endocrinologist for clinical diagnosis."
+  },
+  "ar": {
+    "tool_name": "حاسبة التوازن الهرموني الأنثوي",
+    "cycle_length": "متوسط طول الدورة الشهرية (أيام)",
+    "pms_severity": "شدة أعراض ما قبل الدورة (PMS)",
+    "pms_none": "معدومة إلى خفيفة",
+    "pms_mod": "متوسطة",
+    "pms_sev": "شديدة (معطلة للنشاط)",
+    "androgenic_signs": "علامات أندروجينية/ذكورية (حب شباب كيسي، شعرانية، تغير الصوت)",
+    "cycle_regularity": "انتظام الدورة الشهرية",
+    "reg_strict": "منتظمة بدقة (± يومين)",
+    "reg_variable": "متفاوتة قليلاً (± 5 أيام)",
+    "reg_irregular": "غير منتظمة إطلاقاً أو منقطعة",
+    "stress_weight": "توتر مزمن شديد أو نزول وزن سريع / عجز طاقة حاد",
+    "harmony_score": "مؤشر التناغم الهرموني",
+    "balance_tier": "تصنيف التوازن الغددي الصم",
+    "virilization_risk": "مستوى الخطر الأندروجيني/الذكوري",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي للأعراض الهرمونية الأنثوية ومؤشرات التأثير الأندروجيني. لا يمثل تشخيصاً لمتلازمة تكيس المبايض (PCOS) أو بطانة الرحم المهاجرة. استشيري طبيبة النساء والتوليد للتشخيص السريري."
+  }
+}

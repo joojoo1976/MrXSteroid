@@ -1,0 +1,42 @@
+{
+  "en": {
+    "tool_name": "Dopamine Tracker",
+    "screen_hours": "Daily Short-Form Media Hours (TikTok/Reels/Gaming)",
+    "tyrosine_intake": "Tyrosine-Rich Protein Intake",
+    "tyrosine_suboptimal": "Suboptimal",
+    "tyrosine_adequate": "Adequate",
+    "tyrosine_optimal": "Optimal / High Protein",
+    "cold_effort": "Habitual hard effort or cold exposure",
+    "compulsive": "Compulsive dopamine/phone checking loops",
+    "sleep_score": "Sleep Consistency Score (1–10)",
+    "stimulant_freq": "Stimulant Intake Level",
+    "stim_none": "None",
+    "stim_mod": "Moderate Caffeine",
+    "stim_high": "High Caffeine / Pre-Workout",
+    "stim_heavy": "Prescription / High Stimulant",
+    "dopamine_score": "Dopamine Baseline Health Score",
+    "dopamine_tier": "Dopaminergic Tone Tier",
+    "warnings": "Warnings",
+    "disclaimer": "Educational screening evaluating behavioral dopamine dynamics and receptor sensitivity habits. Not a neuroimaging or biochemical assay. Consult a healthcare provider for compulsive or clinical habit concerns."
+  },
+  "ar": {
+    "tool_name": "متتبع الدوبامين",
+    "screen_hours": "ساعات مشاهدة المحتوى القصير والشاشات يومياً",
+    "tyrosine_intake": "تناول البروتين الغني بالتيروزين",
+    "tyrosine_suboptimal": "أقل من المطلوب",
+    "tyrosine_adequate": "كافٍ",
+    "tyrosine_optimal": "مثالي / بروتين عالي",
+    "cold_effort": "بذل مجهود شاق أو حمامات باردة بانتظام",
+    "compulsive": "حلقات تصفح قهرية وتفقد مستمر للهاتف",
+    "sleep_score": "انتظام وجودة النوم (1–10)",
+    "stimulant_freq": "مستوى استخدام المنبهات",
+    "stim_none": "بدون",
+    "stim_mod": "كافيين معتدل",
+    "stim_high": "كافيين عالي / مكملات طاقة",
+    "stim_heavy": "منبهات طبية / عالية الشدة",
+    "dopamine_score": "مؤشر صحة خط أساس الدوبامين",
+    "dopamine_tier": "تصنيف النغمة الدوبامينية",
+    "warnings": "تحذيرات",
+    "disclaimer": "فحص تعليمي يقيّم ديناميكيات الدوبامين السلوكية وحساسية المستقبلات. ليس فحصاً تصويرياً عصبياً أو مختبرياً. استشر الطبيب لعلاج الاضطرابات القهرية السلوكية."
+  }
+}
