@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublishedCatalogTools } from '@/lib/tools/smartToolsCatalog4';
-import { getCategory, getCategoryOfSlug, SMART_TOOL_CATEGORIES } from '@/lib/tools/categories';
+import { getCategory, getCategoryOfSlug } from '@/lib/tools/categories';
 import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
 import AIInsightPanel from '@/components/smarttools/AIInsightPanel';

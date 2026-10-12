@@ -185,6 +185,11 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   RENAL_FUNCTION_HYDRATION = 'tool-103-renal-function-hydration-index',
   THYROID_METABOLIC_RATE = 'tool-104-thyroid-metabolic-rate-dynamics',
   AI_HEALTH_DATA_FUSION = 'tool-105-ai-health-data-fusion-hub',
+  GLYCOGEN_SUPERCOMPENSATION_WATER = 'tool-106-glycogen-supercompensation-water-modeler',
+  CONTEST_PREP_PEAK_WEEK = 'tool-107-contest-prep-peak-week-manipulator',
+  AI_BODY_COMPOSITION_VISION = 'tool-108-ai-body-composition-vision-engine',
+  COMPETITION_READINESS_POSING = 'tool-109-competition-readiness-posing-os',
+  AI_MEAL_VISION_SCANNER = 'tool-110-ai-meal-vision-scanner',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

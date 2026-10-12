@@ -68,8 +68,8 @@ export default function Tool010CompoundStackBuilder() {
   const totalWeekly = compounds.reduce((s, c) => s + c.weekly_dose_mg, 0);
 
   return (
-    <div className="pct-timing-tool p-6" dir="ltr">
-      <h2 className="text-2xl font-bold mb-6">{i18nData.en.tool_name}</h2>
+    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
+      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
       <MeasurementToggle />
       <div className="space-y-4">
         <div>
@@ -91,11 +91,11 @@ export default function Tool010CompoundStackBuilder() {
           </div>
         </div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}>
-          {i18nData.en.build_stack}
+          {i18nData.build_stack}
         </button>
         <div className="mt-6 p-4 rounded bg-zinc-50">
-          <p className="font-bold">{i18nData.en.stack}: {name} — {compounds.length} compounds, {totalWeekly} mg/week</p>
-          <p className="text-sm text-zinc-600">{i18nData.en.synergy}: {rating} ({score})</p>
+          <p className="font-bold">{i18nData.stack}: {name} — {compounds.length} compounds, {totalWeekly} mg/week</p>
+          <p className="text-sm text-zinc-600">{i18nData.synergy}: {rating} ({score})</p>
           <ul className="mt-2 space-y-1 text-sm text-zinc-600">
             {tips.map((t, i) => <li key={i}>{t}</li>)}
           </ul>

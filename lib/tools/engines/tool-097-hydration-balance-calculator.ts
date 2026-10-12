@@ -32,7 +32,7 @@ export function calculateHydrationBalance(input: HydrationBalanceCalculatorInput
   const hydration_guidelines: string[] = ['educational_sports_hydration_fluid_model'];
 
   // Baseline turnover: ~35ml per kg
-  let baseFluidLiters = (body_weight_kg * 35) / 1000;
+  const baseFluidLiters = (body_weight_kg * 35) / 1000;
 
   // Hourly sweat rate estimate
   let sweatRateLitersPerHour = 0.6;
@@ -55,7 +55,7 @@ export function calculateHydrationBalance(input: HydrationBalanceCalculatorInput
   const exerciseFluidOffset = sweat_loss_estimate_liters * 1.2;
   const diureticOffset = caffeine_or_diuretic_intake_mg > 300 ? 0.4 : 0.0;
 
-  let totalLiters = baseFluidLiters + exerciseFluidOffset + diureticOffset;
+  const totalLiters = baseFluidLiters + exerciseFluidOffset + diureticOffset;
   const recommended_daily_fluid_liters = Math.round(Math.min(8.0, Math.max(1.8, totalLiters)) * 10) / 10;
 
   let hydration_status_tier: 'baseline' | 'elevated-fluid-demand' | 'critical-hyperhydration-required';

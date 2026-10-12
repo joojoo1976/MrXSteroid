@@ -170,6 +170,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.RENAL_FUNCTION_HYDRATION]: '/smarttools/tool-103-renal-function-hydration-index',
     [Page.THYROID_METABOLIC_RATE]: '/smarttools/tool-104-thyroid-metabolic-rate-dynamics',
     [Page.AI_HEALTH_DATA_FUSION]: '/smarttools/tool-105-ai-health-data-fusion-hub',
+
+    [Page.GLYCOGEN_SUPERCOMPENSATION_WATER]: '/smarttools/tool-106-glycogen-supercompensation-water-modeler',
+    [Page.CONTEST_PREP_PEAK_WEEK]: '/smarttools/tool-107-contest-prep-peak-week-manipulator',
+    [Page.AI_BODY_COMPOSITION_VISION]: '/smarttools/tool-108-ai-body-composition-vision-engine',
+    [Page.COMPETITION_READINESS_POSING]: '/smarttools/tool-109-competition-readiness-posing-os',
+    [Page.AI_MEAL_VISION_SCANNER]: '/smarttools/tool-110-ai-meal-vision-scanner',
 };
 
 export function pageToPath(page: Page): string {
