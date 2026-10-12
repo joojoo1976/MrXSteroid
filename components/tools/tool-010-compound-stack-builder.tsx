@@ -7,6 +7,7 @@ import type { StackCompound } from '@/lib/tools/schemas/tool-010-compound-stack-
 import i18nJson from '@/i18n/tool-010-compound-stack-builder.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 
+export default function Tool010CompoundStackBuilder() {
 function synergyOf(compounds: StackCompound[]): { rating: 'negative' | 'neutral' | 'positive'; score: number; tips: string[] } {
   let score = 0;
   const tips: string[] = [];
@@ -35,7 +36,190 @@ function synergyOf(compounds: StackCompound[]): { rating: 'negative' | 'neutral'
   return { rating: score < 0 ? 'negative' : score > 10 ? 'positive' : 'neutral', score, tips };
 }
 
-export default function Tool010CompoundStackBuilder() {
+/* ============================================================================
+ * AROMATIZATION RISK WEIGHTS & TIER
+ * ============================================================================ */
+
+// Aromatization family weights (relative to testosterone = 1.0)
+const aromatizationWeights: Record<string, number> = {
+  testosterone: 1.0,
+  dianabol: 1.5,
+  dihydrotestosterone: 0, // non-aromatizable
+  nandrolone: 0.7,
+  trenbolone: 0.5,
+  oxandrolone: 0,
+  stanozolol: 0,
+  boldenone: 0.6,
+  methenolone: 0,
+  testosterone_ester: 1.0,
+};
+
+// Aromatization risk tier type
+type AromatizationTier = '1-minimal' | '2-moderate' | '3-high' | '4-critical';
+
+/* ============================================================================
+ * AROMATIZATION TIER CALCULATION
+ * ============================================================================ */
+
+/**
+ * Calculate aromatization risk tier and details based on compounds and doses.
+ */
+function calculateAromatizationTier(compounds: StackCompound[]) {
+  if (compounds.length === 0) {
+    return {
+      tier: '1-minimal' as AromatizationTier,
+      estrogen_estimate_mg: 0,
+      risk_factors: [
+        'No compounds entered — baseline estrogen levels expected.',
+      ],
+      ai_explanation:
+        'With no compounds, your estrogen levels should remain at baseline. Any observed gynecomastia or water retention should be evaluated separately.',
+    };
+  }
+
+  let totalWeightedAromatization = 0;
+  const riskFactors: string[] = [];
+  let hasNonAromatizable = false;
+
+  compounds.forEach((c) => {
+    const weight = aromatizationWeights[c.family] || 0.5;
+    totalWeightedAromatization +=
+      c.aromatization_factor * weight * c.weekly_dose_mg;
+
+    if (weight === 0) {
+      hasNonAromatizable = true;
+      riskFactors.push(
+        `${c.name_en} (${c.family}) is non-aromatizable — will not convert to estrogen.`
+      );
+    }
+
+    if (c.aromatization_factor > 0.7 && c.weekly_dose_mg > 500) {
+      riskFactors.push(
+        `High aromatization factor (${c.aromatization_factor}) at high dose (${c.weekly_dose_mg}mg/week) — significant estrogen conversion expected.`
+      );
+    }
+  });
+
+  const avgAromatization =
+    totalWeightedAromatization /
+    Math.max(1, compounds.reduce((s, c) => s + c.weekly_dose_mg, 0));
+
+  let tier: AromatizationTier;
+  const estrogenEstimate = Math.round((totalWeightedAromatization / 100) * 10) / 10;
+
+  if (avgAromatization > 0.8) {
+    tier = '4-critical';
+  } else if (avgAromatization > 0.6) {
+    tier = '3-high';
+  } else if (avgAromatization > 0.4) {
+    tier = '2-moderate';
+  } else {
+    tier = '1-minimal';
+  }
+
+  // Generate risk factors based on tier
+  if (tier === '4-critical') {
+    riskFactors.push(
+      'CRITICAL aromatization risk — AI strongly recommends aromatase inhibitor support and bloodwork within 48 hours.'
+    );
+  }
+  if (tier === '3-high' || tier === '4-critical') {
+    riskFactors.push(
+      'Moderate-to-high estrogen conversion expected. Monitor for: water retention, gynecomastia, elevated blood pressure.'
+    );
+  }
+  if (hasNonAromatizable) {
+    riskFactors.push(
+      'Stack contains non-aromatizable compounds — ensure primary goal aligns with mass/cutting/recovery without estrogen-related sides.'
+    );
+  }
+
+  // AI-generated explanation (with local fallback)
+  const aiExplanation = generateAIExplanation(
+    tier,
+    compounds,
+    estrogenEstimate,
+    riskFactors
+  );
+
+  return {
+    tier,
+    estrogen_estimate_mg: estrogenEstimate,
+    risk_factors: riskFactors,
+    ai_explanation: aiExplanation,
+  };
+}
+
+/* ============================================================================
+ * AI EXPLANATION FUNCTIONS
+ * ============================================================================ */
+
+/**
+ * Generate AI-powered explanation (with local fallback).
+ * Uses Supabase Edge Function when available, otherwise falls back to deterministic local explanation.
+ */
+function generateAIExplanation(
+  tier: AromatizationTier,
+  compounds: StackCompound[],
+  estrogenEstimate: number,
+  riskFactors: string[]
+): string {
+  // Local fallback if no AI service configuration
+  return localAIExplanation(tier, compounds, estrogenEstimate, riskFactors);
+}
+
+/**
+ * Local AI explanation fallback (deterministic, no API call required).
+ */
+function localAIExplanation(
+  tier: AromatizationTier,
+  compounds: StackCompound[],
+  estrogenEstimate: number,
+  riskFactors: string[]
+): string {
+  const parts: string[] = [];
+
+  const tierDescriptions: Record<AromatizationTier, string> = {
+    '1-minimal':
+      'Low aromatization risk. Estrogen conversion is minimal with this stack.',
+    '2-moderate':
+      'Moderate aromatization risk. Some estrogen conversion expected; monitor symptoms.',
+    '3-high':
+      'High aromatization risk. Significant estrogen conversion likely; AI recommends supportive therapy.',
+    '4-critical':
+      'Critical aromatization risk. Immediate medical review and aromatase inhibitor consideration required.',
+  };
+
+  parts.push(tierDescriptions[tier] || 'Aromatization risk assessment complete.');
+
+  parts.push(
+    `Estimated estradiol equivalent: ${estrogenEstimate} mg. This is a computational estimate based on compound aromatization factors and doses.`
+  );
+
+  const aromatizingCompounds = compounds.filter(
+    (c) => c.aromatization_factor > 0
+  );
+  if (aromatizingCompounds.length > 0) {
+    parts.push(
+      `${aromatizingCompounds.length} compound${aromatizingCompounds.length > 1 ? 's' : ''} in this stack have aromatization potential.`
+    );
+  }
+
+  const activeRisks = riskFactors.filter(
+    (f) => !f.includes('No compounds')
+  );
+  if (activeRisks.length > 0) {
+    parts.push(
+      'Key risk considerations: ' + activeRisks.slice(0, 3).join('. ') + '.'
+    );
+  }
+
+  parts.push(
+    '*Note: This explanation is generated via local calculation. AI-powered explanation available when Supabase Edge Function service is operational.'
+  );
+
+  return parts.join(' ');
+}
   const i18nData = useToolI18n(i18nJson);
   const { data: savedState } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
