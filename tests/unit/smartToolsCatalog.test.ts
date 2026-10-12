@@ -29,9 +29,9 @@ describe('Smart Tools catalog', () => {
     const tools = getCatalogTools();
     const implemented = tools.filter((t) => t.status !== 'planned');
     const planned = tools.filter((t) => t.status === 'planned');
-    // 30 baseline (#1-#30) + 30 shipped (#031-#060) + 15 shipped (#061-#075) + 5 shipped (#076-#080) + 5 shipped (#081-#085) + 5 shipped (#086-#090) + 5 shipped (#091-#095) + 5 shipped (#096-#100) + 50 roadmap (#101-#150).
-    expect(implemented.length).toBe(100);
-    expect(planned.length).toBe(50);
+    // 30 baseline (#1-#30) + 30 shipped (#031-#060) + 15 shipped (#061-#075) + 5 shipped (#076-#080) + 5 shipped (#081-#085) + 5 shipped (#086-#090) + 5 shipped (#091-#095) + 5 shipped (#096-#100) + 5 shipped (#101-#105) + 45 roadmap (#106-#150).
+    expect(implemented.length).toBe(105);
+    expect(planned.length).toBe(45);
     expect(tools.length).toBe(150);
   });
 
@@ -72,7 +72,7 @@ describe('Smart Tools catalog', () => {
   it('published views (category pages, sitemap, tool params) exclude planned entries', () => {
     const published = getPublishedCatalogTools();
     expect(published.some((t) => t.status === 'planned')).toBe(false);
-    expect(published.length).toBe(100);
+    expect(published.length).toBe(105);
     for (const cat of SMART_TOOL_CATEGORIES) {
       expect(getPublishedToolsByCategory(cat.slug).some((t) => t.status === 'planned'), cat.slug).toBe(false);
     }

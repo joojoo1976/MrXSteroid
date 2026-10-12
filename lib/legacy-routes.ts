@@ -1,5 +1,5 @@
 /**
- * Legacy page → Next.js route map.
+ * Legacy page - Next.js route map.
  * Centralized so pages, header, footer and programmatic navigation all share
  * one source of truth (mirrors the old PAGE_TO_PATH table).
  */
@@ -165,6 +165,11 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.SODIUM_POTASSIUM_MANAGER]: '/smarttools/tool-098-sodium-potassium-manager',
     [Page.DIGESTIVE_HEALTH_OPTIMIZER]: '/smarttools/tool-099-digestive-health-optimizer',
     [Page.COMPREHENSIVE_REPORT_GENERATOR]: '/smarttools/tool-100-comprehensive-report-generator',
+    [Page.SARM_TO_AAS_TRANSITION]: '/smarttools/tool-101-sarm-to-aas-transition-bridge-predictor',
+    [Page.SUBCUTANEOUS_VS_INTRAMUSCULAR]: '/smarttools/tool-102-subcutaneous-vs-intramuscular-pk-modeler',
+    [Page.RENAL_FUNCTION_HYDRATION]: '/smarttools/tool-103-renal-function-hydration-index',
+    [Page.THYROID_METABOLIC_RATE]: '/smarttools/tool-104-thyroid-metabolic-rate-dynamics',
+    [Page.AI_HEALTH_DATA_FUSION]: '/smarttools/tool-105-ai-health-data-fusion-hub',
 };
 
 export function pageToPath(page: Page): string {

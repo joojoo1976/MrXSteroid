@@ -180,6 +180,11 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   SODIUM_POTASSIUM_MANAGER = 'tool-098-sodium-potassium-manager',
   DIGESTIVE_HEALTH_OPTIMIZER = 'tool-099-digestive-health-optimizer',
   COMPREHENSIVE_REPORT_GENERATOR = 'tool-100-comprehensive-report-generator',
+  SARM_TO_AAS_TRANSITION = 'tool-101-sarm-to-aas-transition-bridge-predictor',
+  SUBCUTANEOUS_VS_INTRAMUSCULAR = 'tool-102-subcutaneous-vs-intramuscular-pk-modeler',
+  RENAL_FUNCTION_HYDRATION = 'tool-103-renal-function-hydration-index',
+  THYROID_METABOLIC_RATE = 'tool-104-thyroid-metabolic-rate-dynamics',
+  AI_HEALTH_DATA_FUSION = 'tool-105-ai-health-data-fusion-hub',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';
