@@ -1,0 +1,36 @@
+{
+  "en": {
+    "tool_name": "Pregnancy Risk Calculator",
+    "compound_class": "Compound Category",
+    "class_aas": "Anabolic-Androgenic Steroids (AAS)",
+    "class_sarm": "Selective Androgen Receptor Modulators (SARMs)",
+    "class_ai_serm": "Aromatase Inhibitors (AI) or SERMs",
+    "class_retinoid": "Retinoids / Isotretinoin (Accutane)",
+    "class_thermogenic": "Thermogenics & Sympathomimetics (Clenbuterol, T3)",
+    "weeks_since": "Weeks Elapsed Since Last Exposure",
+    "currently_pregnant": "Currently pregnant or actively trying to conceive",
+    "unprotected_intercourse": "Unprotected intercourse occurred during or right after exposure",
+    "terato_risk": "Fetal Teratogenicity Risk Tier",
+    "washout_status": "Pharmacokinetic Washout Status",
+    "wait_weeks": "Minimum Recommended Clearance Window (weeks)",
+    "alerts": "Critical Safety & Reproductive Alerts",
+    "disclaimer": "Educational toxicology screening for reproductive contraindications. NEVER constitutes medical clearance for conception or pregnancy. Absolute discontinuation of all PEDs is mandatory prior to attempting pregnancy. Consult an obstetrician or maternal-fetal specialist immediately."
+  },
+  "ar": {
+    "tool_name": "حاسبة خطر الحمل",
+    "compound_class": "فئة المركب المستخدم",
+    "class_aas": "الستيرويدات الأندروجينية البنائية (AAS)",
+    "class_sarm": "معدلات مستقبلات الأندروجين الانتقائية (SARMs)",
+    "class_ai_serm": "مثبطات الأروماتاز أو معدلات الإستروجين (SERMs)",
+    "class_retinoid": "الريتينويدات / إيزوتريتينوين (روأكوتان)",
+    "class_thermogenic": "حوارق الدهون ومحفزات الجهاز العصبي (كلينبوترول، T3)",
+    "weeks_since": "الأسابيع المنقضية منذ آخر جرعة/تعرض",
+    "currently_pregnant": "يوجد حمل حالياً أو محاولة نشطة للإنجاب",
+    "unprotected_intercourse": "حدثت علاقة غير محمية أثناء التعرض أو فور انتهائه",
+    "terato_risk": "مستوى خطر التشوه الجنيني (Teratogenicity)",
+    "washout_status": "حالة التطهير الحركي الدوائي من الجسم",
+    "wait_weeks": "الحد الأدنى الموصى به للانتظار والتطهير (أسابيع)",
+    "alerts": "تنبيهات السلامة التناسلية الحرجة",
+    "disclaimer": "فحص سمومي تثقيفي لموانع الحمل وتشوهات الأجنة. لا يمثل إطلاقاً تصريحاً طبياً بسلامة الحمل أو التخصيب. يجب التوقف التام والفوري عن جميع المحسنات قبل التخطيط للإنجاب ومراجعة استشاري طب الأجنة والتوليد فوراً."
+  }
+}

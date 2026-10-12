@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Menstrual Cycle Manager",
+    "cycle_length": "Average Cycle Length (days)",
+    "current_day": "Current Cycle Day (Day 1 = start of bleed)",
+    "birth_control": "Using Oral Contraceptives / Exogenous Progestins",
+    "high_intensity": "High-Intensity Training / PR Focus This Week",
+    "current_phase": "Current Physiological Phase",
+    "substrate_pref": "Metabolic Fuel Preference",
+    "carb_fuel": "Carbohydrate / Glycogen Dominant",
+    "lipid_fuel": "Lipid Oxidation Dominant",
+    "balanced_fuel": "Balanced Metabolic Substrates",
+    "power_score": "Strength & Power Potential",
+    "thermo_tier": "Thermoregulatory & Core Temp Strain",
+    "thermo_cool": "Baseline / Cool Core (Optimal Heat Dissipation)",
+    "thermo_warm": "Elevated Core Temp (+0.5°C) & Higher Sodium Loss",
+    "recommendations": "Phase Periodization Insights",
+    "disclaimer": "Educational menstrual cycle phase model based on sports endocrinology research. Not a fertility tracking, natural family planning, or contraceptive algorithm. Individual hormonal variations occur."
+  },
+  "ar": {
+    "tool_name": "مدير الدورة الشهرية",
+    "cycle_length": "متوسط طول الدورة الشهرية (أيام)",
+    "current_day": "اليوم الحالي من الدورة (اليوم 1 = بداية الحيض)",
+    "birth_control": "تناول حبوب منع الحمل أو بروجستين خارجي",
+    "high_intensity": "التركيز على أوزان قياسية وتمارين عالية الكثافة هذا الأسبوع",
+    "current_phase": "الطور الفسيولوجي الحالي",
+    "substrate_pref": "الوقود الأيضي المفضل",
+    "carb_fuel": "سيادة حرق الكربوهيدرات والجليكوجين",
+    "lipid_fuel": "سيادة أكسدة الدهون",
+    "balanced_fuel": "توازن مصادر الطاقة",
+    "power_score": "مؤشر القوة والانفجارية",
+    "thermo_tier": "الإجهاد الحراري ودرجة حرارة الجسم",
+    "thermo_cool": "حرارة أساسية طبيعية (تبريد مثالي للجسم)",
+    "thermo_warm": "حرارة داخلية مرتفعة (+0.5°م) وفقدان أعلى للصوديوم",
+    "recommendations": "إرشادات التقسيم الدوري للأطوار",
+    "disclaimer": "نموذج تعليمي لأطوار الدورة الشهرية بناءً على أبحاث الغدد الصماء الرياضية. ليس وسيلة لتحديد النسل أو منع الحمل أو متابعة الخصوبة السريرية. توجد فروق هرمونية فردية طبيعية."
+  }
+}

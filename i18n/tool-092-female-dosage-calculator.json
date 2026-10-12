@@ -1,0 +1,42 @@
+{
+  "en": {
+    "tool_name": "Female Dosage Calculator",
+    "compound": "Compound Selection",
+    "comp_oxan": "Oxandrolone (Anavar)",
+    "comp_prim": "Methenolone Acetate (Primobolan)",
+    "comp_nand": "Nandrolone Decanoate (Deca-Durabolin)",
+    "comp_test": "Testosterone Propionate (TRT / Microdose)",
+    "weekly_dose": "Proposed Weekly Dose (mg)",
+    "experience": "Exposure Experience Level",
+    "exp_first": "First Time (No Prior Androgen Exposure)",
+    "exp_inter": "Intermediate Experience",
+    "exp_adv": "Advanced / Risk-Aware",
+    "bloodwork": "Baseline and mid-cycle bloodwork planned",
+    "virilization_tier": "Virilization Risk Tier",
+    "ceiling_percent": "% of Conservative Ceiling",
+    "max_duration": "Max Conservative Exposure Window",
+    "weeks": "weeks",
+    "warnings": "Harm-Reduction & Toxicology Alerts",
+    "disclaimer": "Educational harm-reduction contextualizer for female androgen exposure. Not a prescription, dosing protocol, or medical endorsement of anabolic substances. Exogenous androgens carry high risks of irreversible virilization (vocal deepening, clitoromegaly, androgenic alopecia) in females."
+  },
+  "ar": {
+    "tool_name": "حاسبة جرعة الإناث",
+    "compound": "المركب المقترح",
+    "comp_oxan": "أوكساندرولون (أنافار)",
+    "comp_prim": "ميثينولون أسيتات (بريموبولان)",
+    "comp_nand": "ناندرولون ديكانوات (ديكا دورابولين)",
+    "comp_test": "تستوستيرون بروبيونات (جرعات تعويضية دقيقة)",
+    "weekly_dose": "الجرعة الأسبوعية المقترحة (ملغ)",
+    "experience": "مستوى الخبرة والتعرض السابق",
+    "exp_first": "المرة الأولى (لا يوجد أي تعرض أندروجيني سابق)",
+    "exp_inter": "خبرة متوسطة",
+    "exp_adv": "متقدمة ومدركة للمخاطر",
+    "bloodwork": "فحوصات الدم الأساسية والوسطية مخطط إجراؤها",
+    "virilization_tier": "مستوى خطر التذكير (الاسترجال)",
+    "ceiling_percent": "النسبة من السقف الآمن التحفظي",
+    "max_duration": "أقصى فترة تعرض تحفظية",
+    "weeks": "أسابيع",
+    "warnings": "تنبيهات الحد من الأضرار والسمية",
+    "disclaimer": "أداة تثقيفية للحد من الأضرار وفهم نطاقات التعرض الأندروجيني لدى الإناث. ليست وصفة طبية أو بروتوكولاً علاجياً أو تشجيعاً على تعاطي الستيرويدات. المواد الأندروجينية تسبب مخاطر استرجال دائمة لا يمكن عكسها (تغير نبرة الصوت، تضخم البظر، الصلع الأندروجيني)."
+  }
+}

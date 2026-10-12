@@ -168,6 +168,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   DOPAMINE_TRACKER = 'tool-088-dopamine-tracker',
   SEROTONIN_MANAGER = 'tool-089-serotonin-manager',
   FEMALE_HORMONE_BALANCE_CALCULATOR = 'tool-090-female-hormone-balance-calculator',
+
+  FEMALE_HEALTH_OPTIMIZER = 'tool-091-female-health-optimizer',
+  FEMALE_DOSAGE_CALCULATOR = 'tool-092-female-dosage-calculator',
+  MENSTRUAL_CYCLE_MANAGER = 'tool-093-menstrual-cycle-manager',
+  PREGNANCY_RISK_CALCULATOR = 'tool-094-pregnancy-risk-calculator',
+  SKIN_HEALTH_OPTIMIZER = 'tool-095-skin-health-optimizer',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

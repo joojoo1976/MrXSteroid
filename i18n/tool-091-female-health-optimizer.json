@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Female Health Optimizer",
+    "energy_availability": "Energy Availability Status (Caloric vs Expenditure)",
+    "energy_adeq": "Adequate (Energy Replete)",
+    "energy_marg": "Marginal (Low Energy Availability Risk)",
+    "energy_def": "Severely Deficient (RED-S / Anorexic Spectrum)",
+    "ferritin_status": "Iron & Ferritin Stores",
+    "ferr_opt": "Optimal (>50 ng/mL)",
+    "ferr_border": "Borderline Low (20–50 ng/mL)",
+    "ferr_def": "Suspected Deficiency (<20 ng/mL)",
+    "bone_joint": "Bone stress symptoms or recurring joint pains",
+    "cold_intolerance": "Persistent cold intolerance / sluggish thyroid symptoms",
+    "training_sessions": "Resistance Training Sessions / Week",
+    "vitality_score": "Female Vitality Score",
+    "resilience_tier": "Athletic Resilience Tier",
+    "priority_support": "Physiological Support Priority",
+    "warnings": "Warnings & Clinical Indicators",
+    "disclaimer": "Educational screening for female athletic energy availability, iron status, and endocrine resilience. Not a diagnostic tool for Relative Energy Deficiency in Sport (RED-S) or hypothyroidism. Consult a sports endocrinologist or gynecologist."
+  },
+  "ar": {
+    "tool_name": "محسّن الصحة الأنثوية",
+    "energy_availability": "حالة توفر الطاقة (الوارد السعري مقابل الاستهلاك)",
+    "energy_adeq": "كافية ومثالية (فائض طاقة للوظائف الحيوية)",
+    "energy_marg": "هامشية (خطر نقص الطاقة النسبي)",
+    "energy_def": "عجز طاقة حاد (متلازمة RED-S)",
+    "ferritin_status": "مخازن الحديد والفيريتين",
+    "ferr_opt": "مثالية (> 50 نانوغرام/مل)",
+    "ferr_border": "منخفضة حرجياً (20–50 نانوغرام/مل)",
+    "ferr_def": "نقص مؤكد أو مشتبه (< 20 نانوغرام/مل)",
+    "bone_joint": "إجهاد عظمي موضعي أو آلام مفاصل متكررة",
+    "cold_intolerance": "عدم تحمل البرودة المزمن / خمول الأيض الغددي",
+    "training_sessions": "حصص تمارين المقاومة أسبوعياً",
+    "vitality_score": "مؤشر الحيوية والمرونة الأنثوية",
+    "resilience_tier": "مستوى المرونة الرياضية",
+    "priority_support": "أولوية الدعم الفسيولوجي",
+    "warnings": "التحذيرات والدلالات السريرية",
+    "disclaimer": "فحص تثقيفي لمدى توفر الطاقة وصحة مخازن الحديد والمرونة الغددية للإناث الرياضيات. لا يمثل تشخيصاً لمتلازمة عجز الطاقة النسبي في الرياضة (RED-S) أو قصور الغدة الدرقية. استشيري طبيب الغدد الصم الرياضي."
+  }
+}

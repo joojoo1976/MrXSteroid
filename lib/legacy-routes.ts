@@ -153,6 +153,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.DOPAMINE_TRACKER]: '/smarttools/tool-088-dopamine-tracker',
     [Page.SEROTONIN_MANAGER]: '/smarttools/tool-089-serotonin-manager',
     [Page.FEMALE_HORMONE_BALANCE_CALCULATOR]: '/smarttools/tool-090-female-hormone-balance-calculator',
+
+    [Page.FEMALE_HEALTH_OPTIMIZER]: '/smarttools/tool-091-female-health-optimizer',
+    [Page.FEMALE_DOSAGE_CALCULATOR]: '/smarttools/tool-092-female-dosage-calculator',
+    [Page.MENSTRUAL_CYCLE_MANAGER]: '/smarttools/tool-093-menstrual-cycle-manager',
+    [Page.PREGNANCY_RISK_CALCULATOR]: '/smarttools/tool-094-pregnancy-risk-calculator',
+    [Page.SKIN_HEALTH_OPTIMIZER]: '/smarttools/tool-095-skin-health-optimizer',
 };
 
 export function pageToPath(page: Page): string {
