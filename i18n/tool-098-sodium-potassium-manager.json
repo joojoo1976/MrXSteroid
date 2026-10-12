@@ -1,0 +1,26 @@
+{
+  "en": {
+    "tool_name": "Sodium-Potassium Manager",
+    "sodium_mg": "Daily Sodium Intake (mg)",
+    "potassium_mg": "Daily Potassium Intake (mg)",
+    "aldosterone_aas": "Active AAS use, mineralocorticoid retention, or chronic mental stress",
+    "systolic_bp": "Resting Systolic Blood Pressure (mmHg)",
+    "na_k_ratio": "Sodium-to-Potassium Ratio (Na:K)",
+    "balance_tier": "Electrolyte Balance Tier",
+    "cv_strain": "Cardiovascular Volume Strain Index",
+    "recommendations": "Clinical & Dietary Recommendations",
+    "disclaimer": "Educational electrolyte ratio calculation model. Severe hyperkalemia or hyponatremia is potentially life-threatening and requires clinical serum ion selective electrode laboratory analysis and physician supervision."
+  },
+  "ar": {
+    "tool_name": "مدير الصوديوم والبوتاسيوم",
+    "sodium_mg": "استهلاك الصوديوم اليومي (ملجم)",
+    "potassium_mg": "استهلاك البوتاسيوم اليومي (ملجم)",
+    "aldosterone_aas": "استخدام مركبات أندروجينية أو احتباس ألدوستيرون أو توتر مزمن",
+    "systolic_bp": "ضغط الدم الانقباضي وقت الراحة (mmHg)",
+    "na_k_ratio": "نسبة الصوديوم إلى البوتاسيوم (Na:K)",
+    "balance_tier": "تصنيف توازن الإلكتروليتات",
+    "cv_strain": "مؤشر الإجهاد الوعائي والحجمي",
+    "recommendations": "التوصيات الغذائية والسريرية",
+    "disclaimer": "نموذج تثقيفي لحساب نسبة الصوديوم والبوتاسيوم الغذائية. اضطرابات البوتاسيوم أو الصوديوم الشديدة قد تشكل خطورة بالغة على كهربية القلب وتتطلب تحاليل مصلية وإشرافاً طبياً دقيقاً."
+  }
+}

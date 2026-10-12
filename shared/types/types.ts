@@ -174,6 +174,12 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   MENSTRUAL_CYCLE_MANAGER = 'tool-093-menstrual-cycle-manager',
   PREGNANCY_RISK_CALCULATOR = 'tool-094-pregnancy-risk-calculator',
   SKIN_HEALTH_OPTIMIZER = 'tool-095-skin-health-optimizer',
+
+  HAIR_NAIL_TRACKER = 'tool-096-hair-nail-tracker',
+  HYDRATION_BALANCE_CALCULATOR = 'tool-097-hydration-balance-calculator',
+  SODIUM_POTASSIUM_MANAGER = 'tool-098-sodium-potassium-manager',
+  DIGESTIVE_HEALTH_OPTIMIZER = 'tool-099-digestive-health-optimizer',
+  COMPREHENSIVE_REPORT_GENERATOR = 'tool-100-comprehensive-report-generator',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

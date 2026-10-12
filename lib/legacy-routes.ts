@@ -159,6 +159,12 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.MENSTRUAL_CYCLE_MANAGER]: '/smarttools/tool-093-menstrual-cycle-manager',
     [Page.PREGNANCY_RISK_CALCULATOR]: '/smarttools/tool-094-pregnancy-risk-calculator',
     [Page.SKIN_HEALTH_OPTIMIZER]: '/smarttools/tool-095-skin-health-optimizer',
+
+    [Page.HAIR_NAIL_TRACKER]: '/smarttools/tool-096-hair-nail-tracker',
+    [Page.HYDRATION_BALANCE_CALCULATOR]: '/smarttools/tool-097-hydration-balance-calculator',
+    [Page.SODIUM_POTASSIUM_MANAGER]: '/smarttools/tool-098-sodium-potassium-manager',
+    [Page.DIGESTIVE_HEALTH_OPTIMIZER]: '/smarttools/tool-099-digestive-health-optimizer',
+    [Page.COMPREHENSIVE_REPORT_GENERATOR]: '/smarttools/tool-100-comprehensive-report-generator',
 };
 
 export function pageToPath(page: Page): string {

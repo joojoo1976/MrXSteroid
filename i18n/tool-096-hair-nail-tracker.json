@@ -1,0 +1,40 @@
+{
+  "en": {
+    "tool_name": "Hair & Nail Tracker",
+    "daily_shedding": "Daily Hair Shedding Volume",
+    "shedding_under_50": "Normal (< 50 hairs/day)",
+    "shedding_50_100": "Moderate (50–100 hairs/day)",
+    "shedding_over_100": "Excessive (> 100 hairs/day)",
+    "thinning": "Visible bitemporal or vertex scalp thinning",
+    "inflammation": "Scalp Sebum & Inflammation Status",
+    "inflamm_none": "Calm / None",
+    "inflamm_mild": "Mild Pruritus & Itching",
+    "inflamm_severe": "Severe Seborrheic Erythema",
+    "nails": "Nail brittleness, splitting, or longitudinal ridging",
+    "meds": "Using topical Minoxidil or 5-AR blockers (Finasteride/Dutasteride)",
+    "follicle_score": "Hair Follicle Vitality Score",
+    "alopecia_tier": "Androgenic Miniaturization Risk",
+    "matrix_tier": "Keratin Matrix Health",
+    "recommendations": "Follicular Care Recommendations",
+    "disclaimer": "Educational trichological screening for androgen-sensitive follicular miniaturization and keratin matrix integrity. Not a clinical dermatology diagnosis for alopecia areata or scarring alopecias. Consult a trichologist or dermatologist for clinical scalp evaluation."
+  },
+  "ar": {
+    "tool_name": "متتبع الشعر والأظافر",
+    "daily_shedding": "معدل تساقط الشعر اليومي",
+    "shedding_under_50": "طبيعي (أقل من 50 شعرة/يوم)",
+    "shedding_50_100": "متوسط (50 إلى 100 شعرة/يوم)",
+    "shedding_over_100": "مفرط (أكثر من 100 شعرة/يوم)",
+    "thinning": "ملاحظة تراجع أو ترقق عند الصدغين أو قمة الرأس",
+    "inflammation": "حالة التهاب وإفرازات فروة الرأس",
+    "inflamm_none": "هادئة وسليمة تماماً",
+    "inflamm_mild": "حكة خفيفة أو قشرة بسيطة",
+    "inflamm_severe": "التهاب دهني شديد واحمرار",
+    "nails": "هشاشة الأظافر أو تكسرها أو وجود خطوط طولية",
+    "meds": "استخدام مينوكسيديل أو مثبطات 5-AR (فيناسترايد/دوتاستيرايد)",
+    "follicle_score": "مؤشر حيوية بصيلات الشعر",
+    "alopecia_tier": "مستوى خطر الترقق الأندروجيني",
+    "matrix_tier": "صحة مصفوفة الكيراتين",
+    "recommendations": "توجيهات دعم بصيلات الشعر والأظافر",
+    "disclaimer": "فحص تثقيفي لتأثير الأندروجينات على ترقق البصيلات ومصفوفة الكيراتين. لا يمثل تشخيصاً طبياً للثعلبة البقعية أو الندبية. استشر طبيب الجلدية لتقييم الفروة مجهرياً."
+  }
+}

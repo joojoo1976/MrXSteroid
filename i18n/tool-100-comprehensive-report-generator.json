@@ -1,0 +1,28 @@
+{
+  "en": {
+    "tool_name": "Comprehensive Report Generator",
+    "cardio_risk": "Cardiovascular Strain Score (0–100)",
+    "hepatic_stress": "Hepatic & Biliary Stress Score (0–100)",
+    "endocrine_supp": "Endocrine HPTA Suppression Score (0–100)",
+    "metabolic_vitality": "Metabolic Vitality Score (0–100)",
+    "red_flags_count": "Active Red-Flag Clinical Symptoms Count (0–10)",
+    "unified_index": "Unified Holistic Health Index",
+    "governance_tier": "Health Governance & Surveillance Tier",
+    "flagged_domains": "High-Priority Flagged Domains",
+    "action_plan": "Action Plan Summary & Clinical Pathways",
+    "disclaimer": "Educational multi-pillar biometric aggregation platform. This report provides mathematical consolidation of risk markers and does not supersede professional medical diagnosis, interpretation of pathology, or emergency triage by a board-certified physician."
+  },
+  "ar": {
+    "tool_name": "التقرير الشامل",
+    "cardio_risk": "مؤشر الإجهاد القلبي الوعائي (0 إلى 100)",
+    "hepatic_stress": "مؤشر إجهاد الكبد والمرارة (0 إلى 100)",
+    "endocrine_supp": "مؤشر تثبيط المحور الهرموني HPTA (0 إلى 100)",
+    "metabolic_vitality": "مؤشر الحيوية الأيضية (0 إلى 100)",
+    "red_flags_count": "عدد الأعراض السريرية التحذيرية النشطة (0 إلى 10)",
+    "unified_index": "المؤشر الصحي الموحد الشامل",
+    "governance_tier": "مستوى الرقابة والمتابعة الطبية",
+    "flagged_domains": "المحاور ذات الأولوية للتدخل الطبي",
+    "action_plan": "ملخص خطة العمل والمسارات السريرية",
+    "disclaimer": "منصة تثقيفية لدمج مؤشرات الصحة الحيوية المتعددة. هذا التقرير يمثل تلخيصاً حسابياً للمؤشرات ولا يغني إطلاقاً عن التشخيص الطبي المتخصص أو تقييم الطبيب المعالج."
+  }
+}

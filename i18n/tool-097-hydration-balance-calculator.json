@@ -1,0 +1,38 @@
+{
+  "en": {
+    "tool_name": "Hydration Balance Calculator",
+    "body_weight": "Body Weight (kg)",
+    "training_duration": "Daily Training Duration (minutes)",
+    "sweat_rate": "Exercise Sweat Rate Intensity",
+    "sweat_light": "Light / Minimal Sweating",
+    "sweat_mod": "Moderate Sweating",
+    "sweat_heavy": "Heavy / Profuse Sweating",
+    "climate": "Ambient Climate Conditions",
+    "climate_temp": "Temperate / Air-Conditioned",
+    "climate_hot": "Hot & Humid Environment",
+    "caffeine_diuretic": "Daily Caffeine & Diuretic Intake (mg)",
+    "daily_fluid": "Recommended Daily Fluid Intake",
+    "sweat_loss": "Estimated Exercise Sweat Loss",
+    "hydration_tier": "Hydration Demand Tier",
+    "guidelines": "Hydration & Electrolyte Guidelines",
+    "disclaimer": "Educational sports hydration fluid intake model. Fluid needs fluctuate based on elevation, ambient humidity, sodium sweat concentration, and individual renal clearance. Consult a sports dietitian or nephrologist for precise fluid balance protocols."
+  },
+  "ar": {
+    "tool_name": "حاسبة التوازن المائي",
+    "body_weight": "وزن الجسم (كجم)",
+    "training_duration": "مدة التمرين اليومي (دقيقة)",
+    "sweat_rate": "كثافة ومعدل التعرق أثناء التمرين",
+    "sweat_light": "تعرق خفيف أو محدود",
+    "sweat_mod": "تعرق متوسط",
+    "sweat_heavy": "تعرق غزير وشديد",
+    "climate": "البيئة والمناخ المحيط",
+    "climate_temp": "معتدل / مكيف هواء",
+    "climate_hot": "حار ورطب",
+    "caffeine_diuretic": "كمية الكافيين أو مدرات البول اليومية (ملجم)",
+    "daily_fluid": "الاحتياج اليومي الكلي المقترح من السوائل",
+    "sweat_loss": "تقدير السوائل المفقودة بالتعرق",
+    "hydration_tier": "مستوى متطلبات الترطيب",
+    "guidelines": "إرشادات الترطيب وتوازن الإلكتروليتات",
+    "disclaimer": "نموذج رياضي تثقيفي لحساب احتياجات الترطيب والسوائل. تتفاوت الاحتياجات بناءً على رطوبة الجو وتركيز صوديوم العرق ومعدل التصفية الكلوية. استشر أخصائي التغذية الرياضية للبروتوكولات المتخصصة."
+  }
+}

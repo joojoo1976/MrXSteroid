@@ -1,0 +1,34 @@
+{
+  "en": {
+    "tool_name": "Digestive Health Optimizer",
+    "protein_grams": "Daily Dietary Protein Intake (g)",
+    "bloating_reflux": "Bloating, Dyspepsia or Acid Reflux Frequency",
+    "reflux_rare": "Rare / Never",
+    "reflux_occ": "Occasional (1–2x weekly)",
+    "reflux_severe": "Severe / Daily post-meal",
+    "bristol_score": "Bowel Regularity (Bristol Stool Scale 1–7)",
+    "bristol_hint": "Type 3–4 indicates optimal smooth transit",
+    "meds_nsaids": "Using oral 17-alpha-alkylated androgens, oral steroids, or frequent NSAIDs",
+    "fermented_probiotic": "Daily intake of fermented foods (kefir, sauerkraut) or clinical probiotics",
+    "digestive_score": "Digestive Efficiency Score",
+    "barrier_tier": "GI Mucosal & Microbiome Barrier Tier",
+    "support_priorities": "Targeted Digestive Support Priorities",
+    "disclaimer": "Educational gastrointestinal screening for athletic high-protein digestion and hepatic-GI strain. Not a gastroenterological diagnosis for GERD, gastroparesis, or inflammatory bowel disease. Consult a gastroenterologist for persistent GI distress."
+  },
+  "ar": {
+    "tool_name": "محسّن الهضم",
+    "protein_grams": "كمية البروتين الغذائي اليومي (جرام)",
+    "bloating_reflux": "تكرار الانتفاخ أو عسر الهضم أو الارتجاع المريئي",
+    "reflux_rare": "نادر / غير موجود",
+    "reflux_occ": "أحياناً (1-2 مرة أسبوعياً)",
+    "reflux_severe": "شديد / يومياً بعد الوجبات",
+    "bristol_score": "انتظام الإخراج (مقياس بريستول 1 إلى 7)",
+    "bristol_hint": "النوع 3-4 يمثل القوام المتوازن المثالي",
+    "meds_nsaids": "تناول منشطات فموية 17-alpha-alkylated أو مسكنات NSAIDs متكررة",
+    "fermented_probiotic": "تناول أطعمة متخمرة يومية (كفير، زبادي) أو بكتيريا نافعة (بروبيوتيك)",
+    "digestive_score": "مؤشر كفاءة وصحة الهضم",
+    "barrier_tier": "حالة الحاجز المعوي والميكروبيوم",
+    "support_priorities": "أولويات الدعم الهضمي المستهدفة",
+    "disclaimer": "فحص تثقيفي لملاءمة الهضم مع الوجبات عالية البروتين وإجهاد الكبد والجهاز الهضمي. لا يعتبر تشخيصاً لارتجاع المريء أو التهابات القولون. استشر طبيب الجهاز الهضمي عند استمرار الأعراض."
+  }
+}
