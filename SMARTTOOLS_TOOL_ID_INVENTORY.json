@@ -1,0 +1,30 @@
+{
+  "toolInventoryVersion": "1.0",
+  "generatedAt": "2026-10-12T00:00:00Z",
+  "sourceFiles": [
+    "lib/tools/registry.ts",
+    "lib/tools/smartToolsCatalog9.ts",
+    "lib/tools/smartToolsCatalog10.ts",
+    "lib/tools/smartToolsCatalog8.ts",
+    "lib/tools/smartToolsCatalog7.ts",
+    "lib/tools/smartToolsCatalog6.ts",
+    "lib/tools/smartToolsCatalog5.ts",
+    "lib/tools/smartToolsCatalog4.ts",
+    "lib/tools/smartToolsCatalog3.ts",
+    "lib/tools/smartToolsCatalog2.ts",
+    "lib/tools/smartToolsCatalog1.ts",
+    "SMARTTOOLS_SPEC.md",
+    "AROMATIZATION_RISK_ACCEPTANCE_REPORT.md"
+  ],
+  "totalToolPositions": 150,
+  "toolRange": "#001–#150",
+  "gapPositions": ["#090"],
+  "classification": {
+    "IMPLEMENTED": 109,
+    "PLANNED": 40,
+    "MISSING": 1,
+    "DUPLICATE": 0,
+    "UNKNOWN": 0
+  },
+  "tools": []
+}
