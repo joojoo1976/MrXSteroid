@@ -78,6 +78,9 @@ import {
   kgToLbs,
   lbsToKg,
   KG_TO_LBS,
+  mgToOz,
+  ozToMg,
+  MG_PER_OZ,
   getStoredMeasurementSystem,
   storeMeasurementSystem,
 } from './MeasurementToggle';
@@ -388,5 +391,117 @@ describe('tool-010 — Arabic RTL / English LTR (UI)', () => {
     const rootDiv = container.querySelector('.pct-timing-tool');
     expect(rootDiv?.getAttribute('dir')).toBe('rtl');
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('بناء حزمة المركبات');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUITE 4 — REAL Metric↔Imperial value conversion (not just active-class)
+// Guards the wiring fix: unitSystem state → dose input units/values →
+// result units/values → labels, with lossless round-trips and NaN safety.
+// ═══════════════════════════════════════════════════════════════════════════
+describe('tool-010 — REAL Metric↔Imperial conversion (UI)', () => {
+  beforeEach(() => {
+    localStorageStore = {};
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  /** The dose field is the first type="number" input (name/family are text). */
+  const doseInput = () => document.querySelectorAll('input[type="number"]')[0] as HTMLInputElement;
+
+  const renderEn = () =>
+    render(
+      <WithPreferences locale="en">
+        <Tool010CompoundStackBuilder />
+      </WithPreferences>
+    );
+
+  it('TC-CV-01 metric default: dose shows 300 with mg/week label', () => {
+    renderEn();
+    expect(doseInput().value).toBe('300');
+    expect(document.body.textContent).toContain('mg/week');
+  });
+
+  it('TC-CV-02 metric → imperial converts the dose VALUE and UNIT', () => {
+    renderEn();
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    // 300 mg = 0.010582 oz (mass ounce, 6 dp) — value AND unit both changed.
+    expect(doseInput().value).toBe(mgToOz(300).toFixed(6));
+    expect(doseInput().value).toBe('0.010582');
+    expect(document.body.textContent).toContain('oz/week');
+    expect(document.body.textContent).not.toContain('mg/week');
+  });
+
+  it('TC-CV-03 imperial → metric restores the exact original value (no drift)', () => {
+    renderEn();
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    act(() => { fireEvent.click(document.getElementById('metric-btn')!); });
+    expect(doseInput().value).toBe('300');
+    expect(document.body.textContent).toContain('mg/week');
+  });
+
+  it('TC-CV-04 repeated cycling M→I→M→I→M never loses the canonical dose', () => {
+    renderEn();
+    for (let i = 0; i < 2; i++) {
+      act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+      expect(doseInput().value).toBe('0.010582');
+      act(() => { fireEvent.click(document.getElementById('metric-btn')!); });
+      expect(doseInput().value).toBe('300');
+    }
+    expect(localStorageStore['measurementSystem']).toBe('metric');
+  });
+
+  it('TC-CV-05 editing in imperial writes back the correct canonical mg', () => {
+    renderEn();
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    act(() => { fireEvent.change(doseInput(), { target: { value: '0.02' } }); });
+    // 0.02 oz → 566.99 mg → canonical 567 mg
+    act(() => { fireEvent.click(document.getElementById('metric-btn')!); });
+    expect(doseInput().value).toBe('567');
+    expect(document.body.textContent).not.toContain('NaN');
+  });
+
+  it('TC-CV-06 results total converts units AND values with the toggle', () => {
+    renderEn();
+    act(() => { fireEvent.click(screen.getByRole('button', { name: 'Build Stack' })); });
+    // Stack now holds one 300 mg/wk compound → total 300 mg/week in metric.
+    expect(document.body.textContent).toContain('300 mg/week');
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    // Total converts: 300 mg = 0.0106 oz/week (4 dp) — no stale metric value.
+    expect(document.body.textContent).toContain('0.0106 oz/week');
+    expect(document.body.textContent).not.toContain('300 mg/week');
+  });
+
+  it('TC-CV-07 empty/garbage dose never renders NaN in either system', () => {
+    renderEn();
+    act(() => { fireEvent.change(doseInput(), { target: { value: '' } }); });
+    expect(doseInput().value).toBe('0');
+    expect(document.body.textContent).not.toContain('NaN');
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    expect(doseInput().value).toBe('0');
+    expect(document.body.textContent).not.toContain('NaN');
+  });
+
+  it('TC-CV-08 AR locale shows Arabic unit labels per system', () => {
+    render(
+      <WithPreferences locale="ar">
+        <Tool010CompoundStackBuilder />
+      </WithPreferences>
+    );
+    expect(document.body.textContent).toContain('ملغ/أسبوع');
+    act(() => { fireEvent.click(document.getElementById('imperial-btn')!); });
+    expect(document.body.textContent).toContain('أونصة/أسبوع');
+    expect(document.body.textContent).not.toContain('ملغ/أسبوع');
+  });
+
+  it('TC-CV-09 pure mg↔oz helpers round-trip within 0.5 mg', () => {
+    expect(MG_PER_OZ).toBe(28349.523125);
+    for (const mg of [1, 10, 100, 300, 500, 1000, 2000]) {
+      expect(Math.abs(ozToMg(mgToOz(mg)) - mg)).toBeLessThanOrEqual(0.5);
+    }
+    expect(mgToOz(NaN)).toBeNaN(); // documented: raw division of NaN
   });
 });
