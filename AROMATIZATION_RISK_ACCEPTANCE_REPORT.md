@@ -185,19 +185,27 @@ export type StackCompound = z.infer<typeof StackCompoundSchema>;
 
 # 2. METRIC/IMPERIAL MEASUREMENT SYSTEM
 
-## 2.1 Current Status
+## 2.1 Current Status (revised 2026-10-13 — REAL conversion, not label-only)
 
-**Status:** `METRIC_AND_IMPERIAL_TESTED_AND_PASSED`
+**Status:** `METRIC_IMPERIAL_REAL_CONVERSION_IMPLEMENTED_AND_TESTED`
 
-**MeasurementToggle component** in tool-010 now correctly passes `isRtl` prop:
-- `<MeasurementToggle isRtl={i18nData.dir === 'rtl'} />` (fixed from missing prop)
-- localStorage-backed persistence via `storeMeasurementSystem` / `getStoredMeasurementSystem`
-- Conversion helpers: `kgToLbs(85) = 187`, `lbsToKg(187) ≈ 84.8`
-- Note: tool-010 doses are in mg/week (not weight units) — toggle controls label localization
+A live browser test on 2026-10-13 proved the toggle was **cosmetic**: it changed only its own highlight + a private `localStorage['measurementSystem']` key. Root cause and fix:
 
-**Bug fixed during Phase B testing:**
-`<MeasurementToggle />` was missing `isRtl` prop — button labels were always English.
-Fixed: `<MeasurementToggle isRtl={i18nData.dir === 'rtl'} />`
+**Root cause (verified in code):**
+1. `<MeasurementToggle isRtl={…} />` had **no `unitSystem` prop and no `onChange`** — tool-010 never read or wrote the selected system.
+2. Dose input + result line were hard-coded (`mg/week:` label, `{totalWeekly} mg/week`) — no unit-aware rendering existed.
+3. Zero value conversion calls in the component; the earlier gate only asserted `.active` classes, never values.
+4. i18n gaps: form labels hard-coded English; AR `synergy` label corrupted (`"در synergia"`).
+
+**Fix implemented (established controlled pattern from tool #005 `hcg-serm-protocol`):**
+- `const [unitSystem, setUnitSystem] = useState<MeasurementSystem>(() => getStoredMeasurementSystem());` — canonical state in **mg** (lossless by construction).
+- `<MeasurementToggle unitSystem={unitSystem} onChange={setUnitSystem} isRtl={i18nData.dir === 'rtl'} />`.
+- Dose input converts: metric `mg/week` ↔ imperial `oz/week` (mass ounce, `MG_PER_OZ = 28349.523125`; helpers `mgToOz`/`ozToMg` exported from `MeasurementToggle.tsx`). Imperial edits write back canonical mg.
+- Results total converts live (`300 mg/week` ↔ `0.0106 oz/week`); derived per render ⇒ no stale values.
+- i18n: labels localized + unit-aware; corrupted AR label fixed → `درجة التوافق`.
+- Guards: non-finite/empty dose → 0; round-trip ≤ 0.5 mg; no NaN/Infinity in either system (asserted by SUITE 4).
+- localStorage persistence unchanged: `storeMeasurementSystem` / `getStoredMeasurementSystem` (key `measurementSystem`), same store shared with tool #005.
+- Pure helpers verified: `kgToLbs(85) = 187`, `lbsToKg(187) ≈ 84.8`, `mgToOz(300) = 0.010582`, `ozToMg(0.02) → 567 mg` canonical.
 
 ## 2.2 Test Evidence — Phase B Actual Results
 
@@ -216,16 +224,28 @@ Fixed: `<MeasurementToggle isRtl={i18nData.dir === 'rtl'} />`
 | kgToLbs(85) = 187 | TC-M-00 | **PASSED** | Pure conversion |
 | lbsToKg(187) ≈ 85 ± 0.5 | TC-M-00b | **PASSED** | Pure conversion |
 | KG_TO_LBS = 2.20462 | TC-M-00c | **PASSED** | Constant verified |
+| **REAL conversion (new SUITE 4, 2026-10-13):** | | | |
+| Metric dose 300 shows `300` + `mg/week` | TC-CV-01 | **PASSED** | DOM value+label assertion |
+| Metric→Imperial: value `0.010582` + unit `oz/week`, no stale `mg/week` | TC-CV-02 | **PASSED** | DOM value+unit assertion |
+| Imperial→Metric restores exact `300` (no drift) | TC-CV-03 | **PASSED** | Round-trip assertion |
+| M→I→M→I→M cycling keeps canonical dose | TC-CV-04 | **PASSED** | 2-cycle state machine |
+| Edit `0.02` oz in imperial → 567 mg canonical | TC-CV-05 | **PASSED** | Write-back assertion |
+| Results total `300 mg/week` ↔ `0.0106 oz/week` | TC-CV-06 | **PASSED** | Build + toggle + assert |
+| Empty/garbage dose → 0, never NaN | TC-CV-07 | **PASSED** | NaN-scan assertion |
+| AR units `ملغ/أسبوع` ↔ `أونصة/أسبوع` | TC-CV-08 | **PASSED** | textContent assertion |
+| mg↔oz helper round-trip ≤ 0.5 mg; MG_PER_OZ exact | TC-CV-09 | **PASSED** | Pure helper loop |
 
-## 2.3 Unit Conversion Framework (What's Needed)
+## 2.3 Unit Conversion Framework — IMPLEMENTED (was "needed", 2026-10-13)
 
-**Current engine has NO unit conversion** - doses are pure numeric values. The following conversions would be needed for full Metric/Imperial support:
+**Implemented in component + MeasurementToggle (engine untouched — doses stay canonical mg):**
 
-| Conversion Type | Direction | Factor | Notes |
+| Conversion Type | Direction | Factor | Where |
 |----------------|-----------|--------|-------|
-| mg/week → mg/week | Same value | 1:1 | Doses are already in mg/week |
-| Display label change | metric → imperial | Text only | "mg/week" vs "mg/week" (same unit, different label) |
-| Historical data conversion | legacy → current | N/A | No legacy unit formats in system |
+| Dose input value | mg ↔ oz | ÷ / × 28349.523125 (mass ounce, 6 dp display) | dose `<input>` value/onChange |
+| Dose input label | metric ↔ imperial | i18n `unit_mg_week` / `unit_oz_week` | label + i18n JSON |
+| Results total | mg/week ↔ oz/week | same factor, 4 dp display | results `<p>`, derived per render |
+| Canonical state | — | kept in mg always | `weeklyDose` state (lossless toggling) |
+| Persistence | — | `measurementSystem` localStorage key | `MeasurementToggle` (shared with tool #005) |
 
 # 3. AI INTEGRATION
 
@@ -546,12 +566,12 @@ Actually, I cannot easily run the vitest commands via the shell due to escaping 
 
 | Gate Condition | Status |
 |---|---|
-| tool-010 unit tests 11/11 | ✅ PASSED |
+| tool-010 engine unit tests 51/51 (ref 11 + part1 11 + part2 15 + part3 14 — all against REAL engine API) | ✅ PASSED |
 | validate-tools 5/5 | ✅ PASSED |
 | TypeScript 0 errors | ✅ PASSED |
 | ESLint 0 errors on tool-010 | ✅ PASSED |
-| Metric/Imperial actual tests | ✅ PASSED (22/22) |
-| Arabic/RTL/LTR actual tests | ✅ PASSED (22/22) |
+| Metric/Imperial actual tests | ✅ PASSED (31/31 incl. REAL value conversion SUITE 4) |
+| Arabic/RTL/LTR actual tests | ✅ PASSED (9/9 RTL suite; file 31/31) |
 | AI: FALLBACK_ONLY documented | ✅ DOCUMENTED |
 | Supabase/RLS: NOT_CONFIGURED | ✅ DOCUMENTED |
 | #090 gap resolved | ✅ REGISTERED_AND_COMPLETE |
@@ -564,14 +584,17 @@ Actually, I cannot easily run the vitest commands via the shell due to escaping 
 
 ## 10. RECOMMENDED NEXT STEPS
 
-### Step 1: Write Engine Unit Tests
-Create `tests/unit/tool-010-engine.test.ts` with vitest tests for:
-- `calculateAromatizationTier([])` → 1-minimal
-- `calculateAromatizationTier([testosterone 500mg])` → 4-critical
-- `calculateAromatizationTier([nandrolone 200mg])` → 2-moderate
-- `totalAromatization()` with known inputs → known outputs
-- `analyzeScenario()` with before/after compound addition
-- Edge cases: NaN, Infinity, zero dose, invalid family
+### Step 1 — COMPLETED 2026-10-13 (superseded)
+The three broken part files (`part1/part2/part3`) imported NON-EXISTENT symbols
+(`calculateAromatizationTier`, `totalAromatization`, `analyzeScenario`). They were
+rewritten against the REAL engine API — `calculateAromatizationRisk`,
+`classifyE2Risk`, `steadyStateE2For`, `bodyFatFactor` — covering reference
+scenarios, 0.4/0.6/0.8 scaling boundaries, min/max of every risk zone, hostile
+inputs (NaN/Infinity/zero/negative/missing), division-by-zero safety and input
+sensitivity: **51/51 engine tests PASSED**. (The component-internal
+`calculateAromatizationTier` helper with its 0.4/0.6/0.8 tier thresholds remains
+as documented dead code in the component; it is NOT exported from the engine and
+must not be imported from it.)
 
 ### Step 2: Run Validation Suite
 Run `npx vitest run tests/unit/validateTools.test.ts` and confirm tool-010 passes all checks.

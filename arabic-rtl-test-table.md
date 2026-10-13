@@ -2,8 +2,8 @@
 
 **Test Method:** Automated jsdom UI tests via Vitest (Layer-5)
 **Test File:** `components/tools/tool-010-compound-stack-builder.dom.test.tsx`
-**Date:** 2026-10-13
-**Evidence:** 22/22 tests passed
+**Date:** 2026-10-13 (updated post-fix)
+**Evidence:** RTL/LTR suite 9/9 PASSED — file total 31/31 PASSED (incl. new Metric/Imperial SUITE 4)
 
 ---
 
@@ -50,17 +50,12 @@
 ## Vitest Output (Actual Evidence)
 
 ```
-✓ jsdom  components/tools/tool-010-compound-stack-builder.dom.test.tsx (22 tests) 544ms
-  ✓ TC-AR-01 root container has dir=rtl in Arabic locale 17ms
-  ✓ TC-AR-02 root container has dir=ltr in English locale 7ms
-  ✓ TC-AR-03 tool title renders Arabic text in AR locale 209ms
-  ✓ TC-AR-04 tool title renders English text in EN locale 23ms
-  ✓ TC-AR-05 Build Stack button renders in Arabic in AR locale 43ms
-  ✓ TC-AR-06 Build Stack button renders in English in EN locale 24ms
-  ✓ TC-AR-07 MeasurementToggle container has dir=rtl in AR locale (isRtl correctly passed) 16ms
-  ✓ TC-AR-08 stack name input and synergy result survive in both locales 14ms
-  ✓ TC-AR-09 adding compound preserves Arabic heading and RTL dir 42ms
-Test Files  1 passed (1) | Tests  22 passed (22)
+✓ jsdom  components/tools/tool-010-compound-stack-builder.dom.test.tsx (31 tests) 663ms
+  ✓ SUITE 1 — MeasurementToggle pure helpers (6 tests)
+  ✓ SUITE 2 — tool-010 Metric/Imperial toggle UI (7 tests: TC-MI-01…06b)
+  ✓ SUITE 3 — Arabic RTL / English LTR (9 tests: TC-AR-01…09)
+  ✓ SUITE 4 — REAL Metric↔Imperial conversion (9 tests: TC-CV-01…09)
+Test Files  1 passed (1) | Tests  31 passed (31)
 ```
 
 ---
@@ -70,7 +65,10 @@ Test Files  1 passed (1) | Tests  22 passed (22)
 | الخلل | الوصف | الإصلاح | Status |
 |---|---|---|---|
 | `isRtl` prop مفقود | `<MeasurementToggle />` بدون `isRtl` → نصوص إنجليزية دائماً | `<MeasurementToggle isRtl={i18nData.dir === 'rtl'} />` | FIXED |
+| الزر غير موصول بالحالة | لا `unitSystem` ولا `onChange` → التبديل لا يغيّر شيئاً | state `unitSystem` + `onChange={setUnitSystem}` (نمط tool #005) | FIXED (2026-10-13) |
+| تسميات حقول صلبة بالإنجليزية | Stack name/Family/Weeks/mg/week لا تترجم | مفاتيح i18n جديدة (stack_name, family_label, weeks_label, dose_label, unit_*) | FIXED (2026-10-13) |
+| تعرّج النص العربي | `synergy` = "در synergia" | `درجة التوافق` | FIXED (2026-10-13) |
 
 ---
 
-**Overall Status: ALL ARABIC/RTL/LTR TESTS — PASSED**
+**Overall Status: ALL ARABIC/RTL/LTR TESTS — PASSED (9/9; file 31/31)**

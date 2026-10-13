@@ -38,12 +38,15 @@
 9. **Navigation Routes**: 6 tools missing hierarchical routes
 10. **i18n JSON**: 5 tools have i18n bugs (like tool-010 fixed)
 
-### Gap #090 Status
+### Gap #090 Status (RESOLVED — corrected 2026-10-13)
 
-- **Tool**: Female Hormone Balance Calculator
-- **Status**: UNDER_REVIEW
-- **Description**: Code exists (engine, adapter, component, tests) but tool is not registered in registry.ts or any catalog. Order 90 is occupied by "Master Calculator". Decision needed: re-register with different order, document as unpublished, or treat as numbering conflict.
-- **Priority**: Medium - must be resolved before Phase B infrastructure adoption
+- **Tool**: Female Hormone Balance Calculator (`tool-090-female-hormone-balance-calculator`)
+- **Status**: **IMPLEMENTED + REGISTERED**
+- **Evidence (verified 2026-10-13)**:
+  - Registered in `lib/tools/registry.ts` (toolId `mrx.tool.090-female-hormone-balance-calculator`, `Page.FEMALE_HORMONE_BALANCE_CALCULATOR`).
+  - Implemented catalog entry, category `hormonal-health`, canonical hierarchical route `/smarttools/hormonal-health/tool-090-female-hormone-balance-calculator` (301 redirect from flat URL confirmed by validate-tools output).
+  - All Layer files exist on disk: engine, schema, adapter, component, i18n — filesystem verification passed inside the validate-tools gate (0 errors).
+- **Correction note**: the previous `UNDER_REVIEW` text (claiming the tool was unregistered and that order 90 conflicted with "Master Calculator") was **incorrect** — see `GAP_090_DECISION_REPORT.md`. This section supersedes it.
 
 ### Priority Batch: Aromatization Risk
 
