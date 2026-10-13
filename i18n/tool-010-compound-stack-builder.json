@@ -11,7 +11,46 @@
     "dose_label": "Weekly dose",
     "unit_mg_week": "mg/week",
     "unit_oz_week": "oz/week",
-    "compounds_count": "compounds"
+    "compounds_count": "compounds",
+    "synergy_tips": {
+      "add_compounds": "Add compounds to evaluate synergy.",
+      "duplicate_families": "Duplicate families detected — overlap increases suppression without proportional benefit.",
+      "high_aromatization": "High average aromatization — plan AI support and E2 monitoring.",
+      "mixed_goals": "Mixed mass + cutting goals in one stack — pick a primary goal.",
+      "coherent_stack": "Stack looks coherent — keep testosterone as the base and monitor bloodwork."
+    },
+    "aromatization": {
+      "no_compounds": "No compounds entered — baseline estrogen levels expected.",
+      "ai_no_compounds": "With no compounds, your estrogen levels should remain at baseline. Any observed gynecomastia or water retention should be evaluated separately.",
+      "non_aromatizable": "Non-aromatizable compound detected — reduces overall relative aromatization.",
+      "testosterone": "Testosterone detected — primary aromatization driver.",
+      "dianabol": "Dianabol detected — very high aromatization potential.",
+      "nandrolone": "Nandrolone detected — moderate aromatization, progestogenic activity.",
+      "trenbolone": "Trenbolone detected — non-aromatizable but strong progestogenic activity.",
+      "oxandrolone": "Oxandrolone detected — non-aromatizable.",
+      "stanozolol": "Stanozolol detected — non-aromatizable.",
+      "boldenone": "Boldenone detected — moderate aromatization.",
+      "methenolone": "Methenolone detected — non-aromatizable.",
+      "tier_minimal": "Minimal Risk",
+      "tier_moderate": "Moderate Risk",
+      "tier_high": "High Risk",
+      "tier_critical": "Critical Risk",
+      "ai_minimal": "Estrogen conversion is minimal. Standard monitoring is sufficient. No AI typically needed unless sensitive.",
+      "ai_moderate": "Moderate aromatization expected. Consider a mild AI (e.g., Arimidex 0.25mg E3D) and monitor E2 via bloodwork at week 4–6.",
+      "ai_high": "High aromatization risk. Standard AI protocol recommended (e.g., Arimidex 0.5mg E3D or Exemestane 12.5mg ED). Monitor E2 closely.",
+      "ai_critical": "Critical aromatization risk. Aggressive AI protocol required (e.g., Exemestane 25mg ED or Letrozole 0.5mg E2D). Frequent E2 monitoring essential. Consider reducing aromatizing compounds."
+    },
+    "results": {
+      "total_weekly": "Total weekly",
+      "estrogen_estimate": "Estrogen estimate",
+      "risk_factors": "Risk factors",
+      "ai_explanation": "AI Explanation"
+    },
+    "validation": {
+      "enter_valid_number": "Enter a valid number",
+      "dose_range": "Dose must be between 0 and 2000",
+      "weeks_range": "Weeks must be between 1 and 52"
+    }
   },
   "ar": {
     "tool_name": "بناء حزمة المركبات",
@@ -25,6 +64,45 @@
     "dose_label": "الجرعة الأسبوعية",
     "unit_mg_week": "ملغ/أسبوع",
     "unit_oz_week": "أونصة/أسبوع",
-    "compounds_count": "مركّبات"
+    "compounds_count": "مركّبات",
+    "synergy_tips": {
+      "add_compounds": "أضف مركبات لتقييم التوافق.",
+      "duplicate_families": "تم اكتشاف عائلات مكررة — التداخل يزيد التثبيط دون فائدة تناسبية.",
+      "high_aromatization": "متوسط أرمتة عالي — خطّط لدعم مثبط الأروماتاز ومراقبة E2.",
+      "mixed_goals": "أهداف تضخيم وتنشيف مختلطة في حزمة واحدة — اختر هدفاً أساسياً.",
+      "coherent_stack": "الحزمة متماسكة — احتفظ بالتستوستيرون كقاعدة وراقب تحاليل الدم."
+    },
+    "aromatization": {
+      "no_compounds": "لم يتم إدخال مركبات — متوقع مستويات إستراديول قاعدية.",
+      "ai_no_compounds": "بدون مركبات، يجب أن تظل مستويات الإستراديول عند المستوى القاعدي. أي تثدي ملاحظ أو احتباس ماء يجب تقييمه بشكل منفصل.",
+      "non_aromatizable": "تم اكتشاف مركب غير قابل للأرمتة — يقلل الأرمتة النسبية الإجمالية.",
+      "testosterone": "تم اكتشاف التستوستيرون — المحرك الأساسي للأرمتة.",
+      "dianabol": "تم اكتشاف الديانابول — إمكانية أرمتة عالية جداً.",
+      "nandrolone": "تم اكتشاف الناندرولون — أرمتة متوسطة، نشاط بروجيستوجيني.",
+      "trenbolone": "تم اكتشاف الترينبولون — غير قابل للأرمتة لكن بنشاط بروجيستوجيني قوي.",
+      "oxandrolone": "تم اكتشاف الأوكساندرولون — غير قابل للأرمتة.",
+      "stanozolol": "تم اكتشاف ستانوزولول — غير قابل للأرمتة.",
+      "boldenone": "تم اكتشاف البولدينون — أرمتة متوسطة.",
+      "methenolone": "تم اكتشاف الميثينولون — غير قابل للأرمتة.",
+      "tier_minimal": "خطر ضئيل",
+      "tier_moderate": "خطر متوسط",
+      "tier_high": "خطر مرتفع",
+      "tier_critical": "خطر حرج",
+      "ai_minimal": "تحوّل الإستراديول ضئيل. المراقبة القياسية كافية. لا حاجة لمثبط أروماتاز عادةً إلا في حالات الحساسية.",
+      "ai_moderate": "متوقع أرمتة متوسطة. فكّر في مثبط أروماتاز خفيف (مثل أريميديكس 0.25ملغ كل 3 أيام) وراقب E2 عبر تحاليل الدم في الأسبوع 4-6.",
+      "ai_high": "خطر أرمتة مرتفع. بروتوكول مثبط أروماتاز قياسي موصى به (مثل أريميديكس 0.5ملغ كل 3 أيام أو إكسيمستان 12.5ملغ يومياً). راقب E2 عن كثب.",
+      "ai_critical": "خطر أرمتة حرج. بروتوكول مثبط أروماتاز قوي مطلوب (مثل إكسيمستان 25ملغ يومياً أو ليتروزول 0.5ملغ كل يومين). مراقبة E2 متكررة ضرورية. فكّر في تقليل المركبات القابلة للأرمتة."
+    },
+    "results": {
+      "total_weekly": "إجمالي الأسبوعي",
+      "estrogen_estimate": "تقدير الإستراديول",
+      "risk_factors": "عوامل الخطر",
+      "ai_explanation": "شرح مثبط الأروماتاز"
+    },
+    "validation": {
+      "enter_valid_number": "أدخل رقماً صحيحاً",
+      "dose_range": "يجب أن تكون الجرعة بين 0 و 2000",
+      "weeks_range": "يجب أن تكون الأسابيع بين 1 و 52"
+    }
   }
 }
