@@ -20,6 +20,15 @@ export const KG_TO_LBS = 2.20462;
 export const kgToLbs = (kg: number): number => Math.round(kg * KG_TO_LBS);
 export const lbsToKg = (lbs: number): number => Math.round((lbs / KG_TO_LBS) * 10) / 10;
 
+/**
+ * Mass-ounce conversions for dose-style values (mg ↔ oz). Exact definition:
+ * 1 oz = 28.349523125 g. Kept separate from the fluid-ounce (ml) constants in
+ * shared/lib/logic — a mass ounce is NOT a fluid ounce.
+ */
+export const MG_PER_OZ = 28349.523125;
+export const mgToOz = (mg: number): number => Math.round((mg / MG_PER_OZ) * 1e6) / 1e6;
+export const ozToMg = (oz: number): number => Math.round(oz * MG_PER_OZ * 10) / 10;
+
 export const getStoredMeasurementSystem = (): MeasurementSystem => {
     if (typeof window === 'undefined') return 'metric';
     try {

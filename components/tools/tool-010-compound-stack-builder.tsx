@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import MeasurementToggle from './MeasurementToggle';
+import MeasurementToggle, {
+  getStoredMeasurementSystem,
+  mgToOz,
+  ozToMg,
+  type MeasurementSystem,
+} from './MeasurementToggle';
 import type { StackCompound } from '@/lib/tools/schemas/tool-010-compound-stack-builder';
 import i18nJson from '@/i18n/tool-010-compound-stack-builder.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
@@ -230,6 +235,9 @@ function localAIExplanation(
   const [family, setFamily] = useState('testosterone');
   const [weeklyDose, setWeeklyDose] = useState(300);
   const [weeks, setWeeks] = useState(10);
+  // Canonical unit state (mg kept internally); persisted via MeasurementToggle.
+  const [unitSystem, setUnitSystem] = useState<MeasurementSystem>(() => getStoredMeasurementSystem());
+  const isMetric = unitSystem === 'metric';
 
   const addCompound = () => {
     const c: StackCompound = {
@@ -254,23 +262,35 @@ function localAIExplanation(
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle isRtl={i18nData.dir === 'rtl'} />
+      <MeasurementToggle unitSystem={unitSystem} onChange={setUnitSystem} isRtl={i18nData.dir === 'rtl'} />
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Stack name:</label>
+          <label className="block text-sm font-medium mb-2">{i18nData.stack_name}</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value as any)} className="w-full rounded border p-2" />
         </div>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Family:</label>
+            <label className="block text-sm font-medium mb-2">{i18nData.family_label}</label>
             <input type="text" value={family} onChange={(e) => setFamily(e.target.value as any)} className="w-full rounded border p-2" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">mg/week:</label>
-            <input type="number" value={weeklyDose} onChange={(e) => setWeeklyDose(parseInt(e.target.value as any) || 0)} min="0" max="2000" className="w-full rounded border p-2" />
+            <label className="block text-sm font-medium mb-2">{i18nData.dose_label} ({isMetric ? i18nData.unit_mg_week : i18nData.unit_oz_week}):</label>
+            <input
+              type="number"
+              value={isMetric ? weeklyDose : parseFloat(mgToOz(weeklyDose).toFixed(6))}
+              onChange={(e) => {
+                const raw = Number(e.target.value);
+                const safe = Number.isFinite(raw) && raw >= 0 ? raw : 0;
+                setWeeklyDose(isMetric ? Math.round(safe) : Math.round(ozToMg(safe) * 10) / 10);
+              }}
+              min={isMetric ? '0' : '0'}
+              max={isMetric ? '2000' : String(parseFloat(mgToOz(2000).toFixed(6)))}
+              step={isMetric ? '1' : 'any'}
+              className="w-full rounded border p-2"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Weeks:</label>
+            <label className="block text-sm font-medium mb-2">{i18nData.weeks_label}</label>
             <input type="number" value={weeks} onChange={(e) => setWeeks(parseInt(e.target.value as any) || 1)} min="1" max="52" className="w-full rounded border p-2" />
           </div>
         </div>
@@ -278,7 +298,7 @@ function localAIExplanation(
           {i18nData.build_stack}
         </button>
         <div className="mt-6 p-4 rounded bg-zinc-50">
-          <p className="font-bold">{i18nData.stack}: {name} — {compounds.length} compounds, {totalWeekly} mg/week</p>
+          <p className="font-bold">{i18nData.stack}: {name} — {compounds.length} {i18nData.compounds_count}, {isMetric ? `${totalWeekly} ${i18nData.unit_mg_week}` : `${mgToOz(totalWeekly).toFixed(4)} ${i18nData.unit_oz_week}`}</p>
           <p className="text-sm text-zinc-600">{i18nData.synergy}: {rating} ({score})</p>
           <ul className="mt-2 space-y-1 text-sm text-zinc-600">
             {tips.map((t, i) => <li key={i}>{t}</li>)}

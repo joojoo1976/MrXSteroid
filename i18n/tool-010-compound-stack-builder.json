@@ -4,13 +4,27 @@
     "stack": "Stack",
     "compound": "Compound",
     "synergy": "Synergy Score",
-    "build_stack": "Build Stack"
+    "build_stack": "Build Stack",
+    "stack_name": "Stack name:",
+    "family_label": "Family:",
+    "weeks_label": "Weeks:",
+    "dose_label": "Weekly dose",
+    "unit_mg_week": "mg/week",
+    "unit_oz_week": "oz/week",
+    "compounds_count": "compounds"
   },
   "ar": {
     "tool_name": "بناء حزمة المركبات",
-    "stack": "حزمة المركبات",
+    "stack": "الحزمة",
     "compound": "مركب",
-    "synergy": "در synergia",
-    "build_stack": "بناء الحزمة"
+    "synergy": "درجة التوافق",
+    "build_stack": "بناء الحزمة",
+    "stack_name": "اسم الحزمة:",
+    "family_label": "العائلة الدوائية:",
+    "weeks_label": "عدد الأسابيع:",
+    "dose_label": "الجرعة الأسبوعية",
+    "unit_mg_week": "ملغ/أسبوع",
+    "unit_oz_week": "أونصة/أسبوع",
+    "compounds_count": "مركّبات"
   }
 }
