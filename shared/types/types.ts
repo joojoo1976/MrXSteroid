@@ -190,6 +190,7 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   AI_BODY_COMPOSITION_VISION = 'tool-108-ai-body-composition-vision-engine',
   COMPETITION_READINESS_POSING = 'tool-109-competition-readiness-posing-os',
   AI_MEAL_VISION_SCANNER = 'tool-110-ai-meal-vision-scanner',
+  SMART_FOOD_MACRO_SUBSTITUTION = 'tool-111-smart-food-macro-substitution',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

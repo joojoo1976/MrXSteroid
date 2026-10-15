@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Legacy page - Next.js route map.
  * Centralized so pages, header, footer and programmatic navigation all share
  * one source of truth (mirrors the old PAGE_TO_PATH table).
@@ -176,6 +176,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.AI_BODY_COMPOSITION_VISION]: '/smarttools/tool-108-ai-body-composition-vision-engine',
     [Page.COMPETITION_READINESS_POSING]: '/smarttools/tool-109-competition-readiness-posing-os',
     [Page.AI_MEAL_VISION_SCANNER]: '/smarttools/tool-110-ai-meal-vision-scanner',
+    [Page.SMART_FOOD_MACRO_SUBSTITUTION]: '/smarttools/tool-111-smart-food-macro-substitution',
 };
 
 export function pageToPath(page: Page): string {
@@ -204,3 +205,4 @@ export function pathToPage(path: string | null | undefined): Page | null {
 
     return null;
 }
+
