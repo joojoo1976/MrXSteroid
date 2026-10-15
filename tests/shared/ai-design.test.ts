@@ -6,13 +6,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
+import type {
   AIConnectionStatus,
   EngineResultForAI,
   AIRequest,
   AIResponse,
   AIServiceConfig,
   AIService,
+} from '@/lib/shared/ai-service-design';
+import {
   AI_DESIGN_STATUS,
   AI_CURRENT_STATUS,
   AIRequestSchema,
@@ -193,3 +195,4 @@ describe('AI Service Design Tests - Part 1 (DESIGN_ONLY)', () => {
       expect(request.userContext).toBeUndefined();
     });
   });
+});

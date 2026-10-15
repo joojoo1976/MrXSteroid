@@ -10,7 +10,6 @@ import {
   createToolSchema,
   SchemaFields,
   BilingualErrors,
-  ToolSchema,
 } from '@/lib/shared/schema-contract';
 
 describe('Schema Contract Integration Tests', () => {
@@ -101,4 +100,25 @@ describe('Schema Contract Integration Tests', () => {
         }
       });
     });
+
+    describe('BilingualErrors', () => {
+      it('required builds ar/en pair', () => {
+        const msg = BilingualErrors.required('العمر', 'age');
+        expect(msg.ar).toContain('مطلوب');
+        expect(msg.en).toContain('is required');
+      });
+
+      it('invalidType builds ar/en pair', () => {
+        const msg = BilingualErrors.invalidType('العمر', 'age', 'رقمًا صحيحًا', 'an integer');
+        expect(msg.ar).toContain('العمر');
+        expect(msg.en).toContain('age');
+      });
+
+      it('outOfRange builds ar/en pair', () => {
+        const msg = BilingualErrors.outOfRange('العمر', 'age', 18, 65);
+        expect(msg.ar).toContain('18');
+        expect(msg.en).toContain('between');
+      });
+    });
   });
+});

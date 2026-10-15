@@ -25,20 +25,31 @@ export const PRECISION = {
 const STORAGE_KEY = 'measurementSystem';
 
 /**
+ * Guard: non-finite inputs (NaN, ±Infinity) are clamped to 0.
+ * Safety-net at the shared-infra boundary — engine results must never leak
+ * NaN/Infinity into downstream consumers (tests/shared/unit-system-part2
+ * invalid-values contract).
+ */
+function clampFinite(value: number): number {
+  return Number.isFinite(value) ? value : 0;
+}
+
+/**
  * Core conversion functions
+ * All four clamp non-finite inputs to 0 (invalid-values contract).
  */
 export const unitConversions = {
   /** kg → lbs (rounded to integer) */
-  kgToLbs: (kg: number): number => Math.round(kg * 2.20462),
+  kgToLbs: (kg: number): number => Math.round(clampFinite(kg) * 2.20462),
   
   /** lbs → kg (1 decimal place) */
-  lbsToKg: (lbs: number): number => Math.round((lbs / 2.20462) * 10) / 10,
+  lbsToKg: (lbs: number): number => Math.round((clampFinite(lbs) / 2.20462) * 10) / 10,
   
   /** mg → oz (6 decimal places) */
-  mgToOz: (mg: number): number => Math.round((mg / 28349.523125) * 1e6) / 1e6,
+  mgToOz: (mg: number): number => Math.round((clampFinite(mg) / 28349.523125) * 1e6) / 1e6,
   
   /** oz → mg (1 decimal place) */
-  ozToMg: (oz: number): number => Math.round(oz * 28349.523125 * 10) / 10,
+  ozToMg: (oz: number): number => Math.round(clampFinite(oz) * 28349.523125 * 10) / 10,
 } as const;
 
 /**
@@ -154,11 +165,14 @@ export function validateRoundTrip(): boolean {
     }
   }
   
-  // Test kg ↔ lbs
+  // Test kg ↔ lbs — tolerance 0.3 kg is the mathematically honest bound here:
+  // kgToLbs rounds to integer lbs BY DESIGN (PRECISION.KG_TO_LBS_DP = 0), so the
+  // ±0.5 lb quantum alone can shift the round-trip by up to ~0.23 kg. A 0.1 kg
+  // tolerance is unreachable for ANY implementation of this contract.
   for (const kg of [1, 10, 50, 85, 100, 150]) {
     const lbs = unitConversions.kgToLbs(kg);
     const back = unitConversions.lbsToKg(lbs);
-    if (Math.abs(back - kg) > 0.1) {
+    if (Math.abs(back - kg) > 0.3) {
       return false;
     }
   }

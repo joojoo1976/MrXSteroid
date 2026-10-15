@@ -4,7 +4,7 @@
  * Tests for lib/shared/persistence.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import {
   persistence,
   getStorageKey,
@@ -14,12 +14,36 @@ import {
 } from '@/lib/shared/persistence';
 
 describe('Persistence Service Integration Tests', () => {
+  // Node-environment shim: tests/shared runs in the vitest `node` project
+  // (vitest.config.ts) — no `window`, but Node DOES ship a native global
+  // `localStorage` that is invisible to the lib's `window` gate. Install an
+  // in-memory browser shim via stubGlobal/unstubAllGlobals so persistence tests
+  // exercise REAL lib code paths (not SSR early-returns). Restored in afterEach.
+  const store: Record<string, string> = {};
+  const memoryStorage = {
+    getItem: (k: string) => (k in store ? store[k] : null),
+    setItem: (k: string, v: string) => { store[k] = String(v); },
+    removeItem: (k: string) => { delete store[k]; },
+    clear: () => { for (const k of Object.keys(store)) delete store[k]; },
+  };
+  const hadWindow = typeof (globalThis as unknown as Record<string, unknown>)['window'] !== 'undefined';
+
   beforeEach(() => {
-    if (typeof window !== 'undefined') localStorage.clear();
+    memoryStorage.clear();
+    vi.stubGlobal('window', { localStorage: memoryStorage });
+    vi.stubGlobal('localStorage', memoryStorage);
   });
 
   afterEach(() => {
-    if (typeof window !== 'undefined') localStorage.clear();
+    memoryStorage.clear();
+    vi.unstubAllGlobals();
+    if (!hadWindow) {
+      delete (globalThis as unknown as Record<string, unknown>)['window'];
+    }
+  });
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('State Persistence', () => {

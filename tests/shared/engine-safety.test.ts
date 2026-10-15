@@ -69,3 +69,4 @@ describe('Engine Safety Integration Tests', () => {
       expect(Number.isFinite(result.steadyStateE2)).toBe(true);
     });
   });
+});

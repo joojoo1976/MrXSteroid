@@ -33,7 +33,7 @@ import {
   EQUIVALENCE_THRESHOLDS,
   ADHERENCE_THRESHOLDS,
   EQUIVALENCE_WEIGHTS,
-} from '../../lib/tools/engines/tool-111-smart-food-macro-substitution-engine';
+} from '../../lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
 
 import type {
   FoodItem,
@@ -48,7 +48,7 @@ import type {
   AdherenceLevel,
   WarningCode,
   LimitationCode,
-} from '../../lib/tools/engines/tool-111-smart-food-macro-substitution-engine';
+} from '../../lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test Utilities

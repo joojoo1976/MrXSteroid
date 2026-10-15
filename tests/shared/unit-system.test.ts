@@ -4,7 +4,7 @@
  * Tests for lib/shared/unit-system.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import {
   unitConversions,
   unitStorage,
@@ -14,12 +14,31 @@ import {
 } from '@/lib/shared/unit-system';
 
 describe('Unit System Integration Tests', () => {
+  // Node-environment shim (same rationale as persistence.test.ts): unitStorage
+  // guards on `window`, so install an in-memory browser shim to exercise real
+  // storage paths. Restored after the file run.
+  const store: Record<string, string> = {};
+  const memoryStorage = {
+    getItem: (k: string) => (k in store ? store[k] : null),
+    setItem: (k: string, v: string) => { store[k] = String(v); },
+    removeItem: (k: string) => { delete store[k]; },
+    clear: () => { for (const k of Object.keys(store)) delete store[k]; },
+  };
+
   beforeEach(() => {
-    if (typeof window !== 'undefined') localStorage.clear();
+    memoryStorage.clear();
+    vi.stubGlobal('window', { localStorage: memoryStorage });
+    vi.stubGlobal('localStorage', memoryStorage);
   });
 
   afterEach(() => {
-    if (typeof window !== 'undefined') localStorage.clear();
+    memoryStorage.clear();
+    vi.unstubAllGlobals();
+    delete (globalThis as unknown as Record<string, unknown>)['window'];
+  });
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('Bidirectional Conversions', () => {
@@ -37,7 +56,9 @@ describe('Unit System Integration Tests', () => {
       for (const kg of testValues) {
         const lbs = unitConversions.kgToLbs(kg);
         const back = unitConversions.lbsToKg(lbs);
-        expect(Math.abs(back - kg)).toBeLessThanOrEqual(0.1);
+        // 0.3 kg: honest bound — kgToLbs rounds to integer lbs by design
+        // (PRECISION.KG_TO_LBS_DP = 0); see validateRoundTrip comment in lib.
+        expect(Math.abs(back - kg)).toBeLessThanOrEqual(0.3);
       }
     });
 
@@ -101,3 +122,42 @@ describe('Unit System Integration Tests', () => {
       expect(() => unitStorage.store('metric')).not.toThrow();
     });
   });
+
+  describe('Display Labels', () => {
+    it('getUnitLabel returns metric system labels', () => {
+      expect(getUnitLabel('metric', 'system', 'ar')).toBe('متري (ملغ/كغ/سم)');
+      expect(getUnitLabel('metric', 'system', 'en')).toBe('Metric (mg/kg/cm)');
+    });
+
+    it('getUnitLabel returns metric dose/weight/height labels', () => {
+      expect(getUnitLabel('metric', 'dose', 'ar')).toBe('ملغ/أسبوع');
+      expect(getUnitLabel('metric', 'dose', 'en')).toBe('mg/week');
+      expect(getUnitLabel('metric', 'weight', 'ar')).toBe('كغ');
+      expect(getUnitLabel('metric', 'weight', 'en')).toBe('kg');
+      expect(getUnitLabel('metric', 'height', 'ar')).toBe('سم');
+      expect(getUnitLabel('metric', 'height', 'en')).toBe('cm');
+    });
+
+    it('getUnitLabel returns imperial labels', () => {
+      expect(getUnitLabel('imperial', 'system', 'ar')).toBe('إمبراطوري (ملغ/رطل/إنش)');
+      expect(getUnitLabel('imperial', 'system', 'en')).toBe('Imperial (mg/lb/in)');
+      expect(getUnitLabel('imperial', 'dose', 'ar')).toBe('أونصة/أسبوع');
+      expect(getUnitLabel('imperial', 'dose', 'en')).toBe('oz/week');
+      expect(getUnitLabel('imperial', 'weight', 'ar')).toBe('رطل');
+      expect(getUnitLabel('imperial', 'weight', 'en')).toBe('lbs');
+      expect(getUnitLabel('imperial', 'height', 'ar')).toBe('إنش');
+      expect(getUnitLabel('imperial', 'height', 'en')).toBe('in');
+    });
+
+    it('unitLabels constants match getUnitLabel', () => {
+      expect(unitLabels.metric.en).toBe('Metric (mg/kg/cm)');
+      expect(unitLabels.imperial.en).toBe('Imperial (mg/lb/in)');
+    });
+  });
+
+  describe('Round-Trip Validation', () => {
+    it('validateRoundTrip returns true for standard values', () => {
+      expect(validateRoundTrip()).toBe(true);
+    });
+  });
+});

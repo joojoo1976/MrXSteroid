@@ -1,1 +1,0 @@
-components/tools/tool-008-side-effect-tracker.tsx(30,22): error TS18047: 'savedState' is possibly 'null'.

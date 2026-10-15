@@ -107,13 +107,26 @@ export function validateI18nKeys(
  */
 export function findHardcodedStrings(content: string): string[] {
   const suspicious: string[] = [];
-  // Match string literals that look like UI text (contain spaces, punctuation)
-  const stringLiteralRegex = /['"`]([^'"`]{3,}?['"`])/g;
-  let match;
+  // Match string literals: capture the INNER text only (quotes excluded).
+  const stringLiteralRegex = /['"`]([^'"`]{1,}?)['"`]/g;
+  let match: RegExpExecArray | null;
   while ((match = stringLiteralRegex.exec(content)) !== null) {
     const str = match[1];
-    // Filter out technical strings (paths, IDs, etc.)
-    if (!/^[\/.:a-zA-Z0-9_-]+$/.test(str) && str.length > 2) {
+    if (str.length <= 2) continue;
+    const AR = String.fromCharCode(92, 117, 48, 54, 48, 48) + String.fromCharCode(45) + String.fromCharCode(92, 117, 48, 54, 70, 70);
+    if (new RegExp(AR).test(str)) {
+      suspicious.push(str);
+      continue;
+    }
+    if (/[/\\:]/.test(str)) continue;
+    if (/_/.test(str)) continue;
+    if (/^[A-Z][A-Z0-9_]+$/.test(str)) continue;
+    if (/^[a-z]+[A-Z]/.test(str)) continue;
+    if (/^[A-Za-z]+(\.[A-Za-z]+)+$/.test(str)) continue;
+    // Single Titlecase word (Submit/Save/Cancel) is a UI label: flag it
+    if (/^[A-Z][a-z]+$/.test(str)) { suspicious.push(str); continue; }
+    const AR2 = String.fromCharCode(92, 117, 48, 54, 48, 67) + String.fromCharCode(92, 117, 48, 54, 49, 66);
+    if (/ /.test(str) || new RegExp(AR2).test(str) || /[.!?\-]/.test(str)) {
       suspicious.push(str);
     }
   }

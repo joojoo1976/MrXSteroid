@@ -42,28 +42,28 @@ export function createToolSchema<Input>(
  * Standard field types with bilingual validation messages
  */
 export const SchemaFields = {
-  /** Positive integer with min/max bounds */
+  /** Positive integer with min/max bounds (Zod 4: root `error` covers type/NaN issues) */
   positiveInt: (min: number, max: number, fieldNameAr: string, fieldNameEn: string) =>
-    z.number()
+    z.number({ error: `${fieldNameAr} يجب أن يكون رقمًا` })
       .int(`${fieldNameAr} يجب أن يكون رقمًا صحيحًا`)
       .min(min, `${fieldNameAr} يجب أن يكون ${min} على الأقل`)
       .max(max, `${fieldNameAr} يجب أن يكون ${max} كحد أقصى`),
   
-  /** Finite number with bounds */
+  /** Finite number with bounds (Zod 4: root `error` covers type/NaN issues) */
   finiteNumber: (min: number, max: number, fieldNameAr: string, fieldNameEn: string) =>
-    z.number()
+    z.number({ error: `${fieldNameAr} يجب أن يكون رقمًا` })
       .finite(`${fieldNameAr} يجب أن يكون رقمًا`)
       .min(min, `${fieldNameAr} يجب أن يكون ${min} على الأقل`)
       .max(max, `${fieldNameAr} يجب أن يكون ${max} كحد أقصى`),
   
   /** Percentage (0-100) */
   percentage: (fieldNameAr: string, fieldNameEn: string) =>
-    z.number()
+    z.number({ error: `${fieldNameAr} يجب أن يكون رقمًا` })
       .finite(`${fieldNameAr} يجب أن يكون رقمًا`)
       .min(0, `${fieldNameAr} يجب أن يكون 0 أو أكثر`)
       .max(100, `${fieldNameAr} يجب أن يكون 100 كحد أقصى`),
   
-  /** Enum with bilingual error */
+  /** Enum with bilingual error (Zod 4: unified `error` param; `errorMap` is ignored) */
   enum: <T extends string>(
     values: readonly T[],
     fieldNameAr: string,
@@ -71,9 +71,7 @@ export const SchemaFields = {
   ) => {
     // Convert readonly array to tuple for z.enum
     const tuple = values as [T, ...T[]];
-    return z.enum(tuple).catch(() => {
-      throw new Error(`${fieldNameAr} يجب أن يكون أحد القيم المسموحة`);
-    });
+    return z.enum(tuple, { error: `${fieldNameAr} يجب أن يكون أحد القيم المسموحة` });
   },
   
   /** Strict object (rejects extra keys) */

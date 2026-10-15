@@ -116,7 +116,7 @@ describe('Adapter Contract Integration Tests - Basic', () => {
       const engineResult = { computed: 42 };
       const input = { value: 7, multiplier: 6 };
       
-      const output = adapter.buildOutput(engineResult, input);
+      const output = adapter.build(engineResult, input);
       
       expect(output.result).toBe(42);
       expect(output.metadata).toBe('computed with multiplier 6');
@@ -144,22 +144,20 @@ describe('Adapter Contract Integration Tests - Basic', () => {
   describe('Engine Failure Handling', () => {
     it('gracefully handles engine throwing errors', () => {
       const failingAdapter = createToolAdapter({
-        ...{
-          toolSlug: 'test-tool',
-          engineFn: (input: { value: number; multiplier: number }) => ({ computed: input.value * input.multiplier }),
-          schema: require('@/lib/shared/schema-contract').createToolSchema(require('zod').object({
-            value: require('zod').number().finite().min(0).max(1000),
-            multiplier: require('zod').number().finite().min(0.1).max(10),
-          })),
-          transformInput: (input: { value: number; multiplier: number }) => ({ value: input.value, multiplier: input.multiplier }),
-          buildOutput: (engineResult: { computed: number }, input: { value: number; multiplier: number }) => ({
-            result: engineResult.computed,
-            metadata: `computed with multiplier ${input.multiplier}`,
-          }),
-          engineFn: () => { throw new Error('Engine error'); },
-        };
+        toolSlug: 'test-tool',
+        engineFn: () => { throw new Error('Engine error'); },
+        schema: createToolSchema(z.object({
+          value: z.number().finite().min(0).max(1000),
+          multiplier: z.number().finite().min(0.1).max(10),
+        })),
+        transformInput: (input: { value: number; multiplier: number }) => ({ value: input.value, multiplier: input.multiplier }),
+        buildOutput: (engineResult: { computed: number }, input: { value: number; multiplier: number }) => ({
+          result: engineResult.computed,
+          metadata: `computed with multiplier ${input.multiplier}`,
+        }),
+      });
       
-      const result = adapter.execute({ value: 10, multiplier: 2 });
+      const result = failingAdapter.execute({ value: 10, multiplier: 2 });
       expect(result.ok).toBe(false);
     });
   });

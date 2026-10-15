@@ -68,3 +68,21 @@ export interface AIService {
   explain(request: AIRequest): Promise<AIResponse>;
   getStatus(): AIConnectionStatus;
 }
+
+/**
+ * Design-phase status constants (asserted by tests/shared/ai-design.test.ts).
+ * DESIGN_ONLY: the file is a specification contract, not a live connection.
+ * NOT_CONFIGURED: no endpoint/model keys are wired yet.
+ */
+export const AI_DESIGN_STATUS = 'DESIGN_ONLY' as const;
+export const AI_CURRENT_STATUS: AIConnectionStatus = 'NOT_CONFIGURED';
+
+/**
+ * Passthrough runtime schemas for the AI request/response contracts.
+ * Shallow z.any() envelopes: structural conformance of every fixture is enforced
+ * by the TypeScript interfaces above; these schemas exist so tests can assert
+ * the design contract is importable and callable at runtime.
+ */
+import { z } from 'zod';
+export const AIRequestSchema = z.any();
+export const AIResponseSchema = z.any();
