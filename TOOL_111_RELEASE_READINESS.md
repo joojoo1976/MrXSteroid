@@ -205,11 +205,16 @@ The following three checks remain outstanding:
 1. **TypeScript**
    - Command: `npx tsc --noEmit`
    - Current status: **BLOCKED — environment timeout after 30 seconds**
+   - Duration: 30 seconds
+   - Exit code: not available
+   - Output/log: empty
+   - Cause: environment timeout after 30 seconds — not a code success or failure
    - Historical evidence only: Phase 2 reported 0 errors.
 
 2. **Production Build**
    - Command: `npm run build`
-   - Current status: **BLOCKED — environment timeout after 30 seconds**
+   - Current status: **BLOCKED — expected to exceed the same 30-second environment timeout**
+   - Attempted in this verification round: no
    - Historical evidence only: Phase 2 reported a successful build with 309 routes.
 
 3. **Browser-based interactive testing**
