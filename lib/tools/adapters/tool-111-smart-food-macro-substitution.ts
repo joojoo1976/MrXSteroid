@@ -25,6 +25,7 @@ import {
 import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
   computeSubstitution,
+  type AdherenceLevel,
   type EngineInput,
   type SubstitutionResult,
   type DataSource as EngineDataSource,
@@ -47,6 +48,31 @@ function convertDataSource(source: EngineDataSource): DataSource {
 /** Reference macro profile for provenance (per 100g) */
 export const MACRO_REFERENCE_UNIT = 'g' as const;
 export const MACRO_REFERENCE_AMOUNT = 100;
+
+/**
+ * Bilingual, user-friendly labels for every `AdherenceLevel`.
+ * `Record<AdherenceLevel, …>` makes the map exhaustive at compile time, so a
+ * new engine level cannot be added without a translation.
+ */
+const ADHERENCE_LABELS: Record<AdherenceLevel, { ar: string; en: string }> = {
+  on_target: { ar: 'ضمن الهدف', en: 'On target' },
+  slightly_off: { ar: 'بعيد قليلاً', en: 'Slightly off' },
+  moderately_off: { ar: 'بعيد بدرجة متوسطة', en: 'Moderately off' },
+  significantly_off: { ar: 'بعيد بشكل كبير', en: 'Significantly off' },
+};
+
+/**
+ * Resolves the bilingual label for an adherence level.
+ * Detects a missing translation (corrupt runtime data) by throwing instead of
+ * silently leaking the raw enum value to the user.
+ */
+function getAdherenceLabel(level: AdherenceLevel): { ar: string; en: string } {
+  const label: { ar: string; en: string } | undefined = ADHERENCE_LABELS[level];
+  if (!label) {
+    throw new Error(`Tool #111 — missing adherence translation for "${level}"`);
+  }
+  return label;
+}
 
 /** Build provenance for the substitution result */
 export function buildTool111Provenance(options: {
@@ -127,10 +153,11 @@ export function buildTool111KeyFindings(
   // 4. Target adherence finding (if provided)
   if (result.targetAdherence) {
     const overall = result.targetAdherence.overall;
+    const adherenceLabel = getAdherenceLabel(overall);
     findings.push({
       code: 'TARGET_ADHERENCE',
-      labelAr: `تحقيق المستهدفات: ${overall}`,
-      labelEn: `Target adherence: ${overall}`,
+      labelAr: `تحقيق المستهدفات: ${adherenceLabel.ar}`,
+      labelEn: `Target adherence: ${adherenceLabel.en}`,
       value: overall,
       severity:
         overall === 'on_target'

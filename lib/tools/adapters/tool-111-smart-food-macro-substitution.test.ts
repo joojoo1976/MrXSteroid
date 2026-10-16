@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
+  type AdherenceLevel,
   type EngineInput,
   type SubstitutionResult,
 } from '../engines/staging/tool-111-smart-food-macro-substitution-engine';
@@ -311,5 +312,73 @@ describe('Tool #111 — Adapter pipeline', () => {
   it('tool111Adapter.execute rejects invalid input', () => {
     const result = tool111Adapter.execute({ ...validInput, originalQuantity: 0 });
     expect(result.ok).toBe(false);
+  });
+});
+
+describe('Tool #111 — TARGET_ADHERENCE labels (BR-1)', () => {
+  const adherenceResult = (overall: AdherenceLevel): SubstitutionResult => ({
+    substituteQuantity: 150,
+    substituteUnit: 'g',
+    equivalenceRatio: 1.5,
+    originalMacros: { protein: 31, carbs: 0, fat: 3.6, calories: 165 },
+    substituteMacros: { protein: 20, carbs: 5, fat: 10, calories: 180 },
+    macroDeltas: { protein: -11, carbs: 5, fat: 6.4, calories: 15, proteinPct: -35, carbsPct: 0, fatPct: 178, caloriesPct: 9 },
+    equivalenceScore: 80,
+    equivalenceLevel: 'good',
+    calorieDifference: 15,
+    proteinDifference: -11,
+    carbsDifference: 5,
+    fatDifference: 6.4,
+    targetAdherence: { protein: overall, carbs: overall, fat: overall, calories: overall, overall },
+    warnings: [],
+    limitations: [],
+    metadata: {
+      calculationTimestamp: '2026-10-16T10:00:00.000Z',
+      engineVersion: '1.0.0',
+      dataSources: ['USDA', 'USDA'],
+      calculationTimeMs: 1,
+      unitSystem: 'metric',
+      locale: 'en',
+    },
+  });
+
+  const ADHERENCE_CASES: Array<{ level: AdherenceLevel; ar: string; en: string }> = [
+    { level: 'on_target', ar: 'ضمن الهدف', en: 'On target' },
+    { level: 'slightly_off', ar: 'بعيد قليلاً', en: 'Slightly off' },
+    { level: 'moderately_off', ar: 'بعيد بدرجة متوسطة', en: 'Moderately off' },
+    { level: 'significantly_off', ar: 'بعيد بشكل كبير', en: 'Significantly off' },
+  ];
+
+  it.each(ADHERENCE_CASES)(
+    'localizes $level in AR/EN and preserves the raw value',
+    ({ level, ar, en }) => {
+      const findings = buildTool111KeyFindings(adherenceResult(level), validInput);
+      const finding = findings.find((f) => f.code === 'TARGET_ADHERENCE');
+      expect(finding).toBeDefined();
+      expect(finding?.value).toBe(level);
+      expect(finding?.labelEn).toBe(`Target adherence: ${en}`);
+      expect(finding?.labelAr).toBe(`تحقيق المستهدفات: ${ar}`);
+      expect(finding?.labelEn).not.toContain(level);
+      expect(finding?.labelAr).not.toContain(level);
+    },
+  );
+
+  it('never leaks a raw adherence value into any finding label', () => {
+    const rawValues: AdherenceLevel[] = ['on_target', 'slightly_off', 'moderately_off', 'significantly_off'];
+    const findings = buildTool111KeyFindings(adherenceResult('significantly_off'), validInput);
+    const labels = findings.flatMap((f) => [f.labelAr, f.labelEn]);
+    for (const raw of rawValues) {
+      expect(labels.some((label) => label.includes(raw))).toBe(false);
+    }
+  });
+
+  it('keeps the engine result and severity mapping unchanged', () => {
+    const severityFor = (level: AdherenceLevel) =>
+      buildTool111KeyFindings(adherenceResult(level), validInput)
+        .find((f) => f.code === 'TARGET_ADHERENCE')?.severity;
+    expect(severityFor('on_target')).toBe('info');
+    expect(severityFor('slightly_off')).toBe('monitor');
+    expect(severityFor('moderately_off')).toBe('important');
+    expect(severityFor('significantly_off')).toBe('important');
   });
 });

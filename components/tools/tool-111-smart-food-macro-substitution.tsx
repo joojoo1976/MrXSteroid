@@ -8,9 +8,14 @@ import { tryParseTool111Input } from '@/lib/tools/schemas/tool-111-smart-food-ma
 import { tool111Adapter } from '@/lib/tools/adapters/tool-111-smart-food-macro-substitution';
 import type { EngineInput, SubstitutionResult } from '@/lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
 
-const EMPTY_FOOD: EngineInput['originalFood'] = {
+type MacroFields = { protein: string; carbs: string; fat: string; calories: string };
+
+const MACRO_FIELDS = ['protein', 'carbs', 'fat', 'calories'] as const;
+
+const EMPTY_MACROS: MacroFields = { protein: '', carbs: '', fat: '', calories: '' };
+
+const EMPTY_FOOD: Omit<EngineInput['originalFood'], 'macrosPer100g'> = {
   id: '', name: '', nameEn: '',
-  macrosPer100g: { protein: 0, carbs: 0, fat: 0, calories: 0 },
   category: 'OTHER', dataSource: 'estimated', dataQuality: 'medium', lastUpdated: '',
 };
 
@@ -33,8 +38,10 @@ const ALL_DATA_QUALITIES: EngineInput['originalFood']['dataQuality'][] = [
 ];
 
 type FormData = {
-  originalFood: EngineInput['originalFood'];
-  substituteFood: EngineInput['originalFood'];
+  originalFood: Omit<EngineInput['originalFood'], 'macrosPer100g'>;
+  substituteFood: Omit<EngineInput['originalFood'], 'macrosPer100g'>;
+  originalMacros: MacroFields;
+  substituteMacros: MacroFields;
   originalQuantity: string;
   originalUnit: EngineInput['originalUnit'];
   targetProtein: string;
@@ -46,7 +53,9 @@ type FormData = {
 };
 
 type ValidationErrors = {
-  originalFood?: string; substituteFood?: string; originalQuantity?: string;
+  originalFood?: string; substituteFood?: string;
+  originalMacros?: string; substituteMacros?: string;
+  originalQuantity?: string;
   originalUnit?: string; targetMacros?: string; unitSystem?: string;
   locale?: string; general?: string;
 };
@@ -56,9 +65,34 @@ type DisplayState = 'idle' | 'validating' | 'success' | 'error';
 function emptyFormData(): FormData {
   return {
     originalFood: { ...EMPTY_FOOD }, substituteFood: { ...EMPTY_FOOD },
+    originalMacros: { ...EMPTY_MACROS }, substituteMacros: { ...EMPTY_MACROS },
     originalQuantity: '100', originalUnit: 'g',
     targetProtein: '', targetCarbs: '', targetFat: '', targetCalories: '',
     unitSystem: 'metric', locale: 'en',
+  };
+}
+
+/** Parses a macro text field; returns null when empty or not a finite number ≥ 0. */
+function parseMacroInput(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+  const num = Number(trimmed);
+  if (!Number.isFinite(num) || num < 0) return null;
+  return num;
+}
+
+/** True only when all four macros were explicitly entered as valid numbers. */
+function macrosComplete(macros: MacroFields): boolean {
+  return MACRO_FIELDS.every((key) => parseMacroInput(macros[key]) !== null);
+}
+
+/** Converts validated macro text fields into the engine's numeric profile. */
+function toMacroProfile(macros: MacroFields): EngineInput['originalFood']['macrosPer100g'] {
+  return {
+    protein: parseMacroInput(macros.protein) ?? 0,
+    carbs: parseMacroInput(macros.carbs) ?? 0,
+    fat: parseMacroInput(macros.fat) ?? 0,
+    calories: parseMacroInput(macros.calories) ?? 0,
   };
 }
 
@@ -83,8 +117,8 @@ export default function Tool111SmartFoodMacroSubstitution() {
     const subId = fd.substituteFood.name.trim().toLowerCase().replace(/\s+/g, '-') || 'substitute-food';
     const now = new Date().toISOString().split('T')[0];
     return {
-      originalFood: { ...fd.originalFood, id: origId, lastUpdated: now },
-      substituteFood: { ...fd.substituteFood, id: subId, lastUpdated: now },
+      originalFood: { ...fd.originalFood, macrosPer100g: toMacroProfile(fd.originalMacros), id: origId, lastUpdated: now },
+      substituteFood: { ...fd.substituteFood, macrosPer100g: toMacroProfile(fd.substituteMacros), id: subId, lastUpdated: now },
       originalQuantity: parseFloat(fd.originalQuantity) || 0,
       originalUnit: fd.originalUnit,
       targetMacros: Object.keys(targetMacros).length > 0 ? targetMacros : undefined,
@@ -99,6 +133,14 @@ export default function Tool111SmartFoodMacroSubstitution() {
     setResult(null);
     setOutput(null);
     setDisplayState('validating');
+    const macroErrors: ValidationErrors = {};
+    if (!macrosComplete(formData.originalMacros)) macroErrors.originalMacros = t.macros_required;
+    if (!macrosComplete(formData.substituteMacros)) macroErrors.substituteMacros = t.macros_required;
+    if (Object.keys(macroErrors).length > 0) {
+      setValidationErrors(macroErrors);
+      setDisplayState('error');
+      return;
+    }
     const engineInput = buildEngineInput(formData);
     const parseResult = tryParseTool111Input(engineInput);
     if (!parseResult.ok) {
@@ -138,7 +180,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
     setResult(adapterResult.output.result);
     setOutput(adapterResult.output);
     setDisplayState('success');
-  }, [formData, buildEngineInput]);
+  }, [formData, buildEngineInput, t]);
 
   const handleReset = useCallback(() => {
     setFormData(emptyFormData());
@@ -159,6 +201,16 @@ export default function Tool111SmartFoodMacroSubstitution() {
       excellent: t.excellent ?? 'Excellent', good: t.good ?? 'Good',
       fair: t.fair ?? 'Fair', poor: t.poor ?? 'Poor',
       unacceptable: t.unacceptable ?? 'Unacceptable',
+    };
+    return map[level] ?? level;
+  };
+
+  const translateAdherence = (level: string): string => {
+    const map: Record<string, string> = {
+      on_target: t.adherence_on_target ?? 'On target',
+      slightly_off: t.adherence_slightly_off ?? 'Slightly off',
+      moderately_off: t.adherence_moderately_off ?? 'Moderately off',
+      significantly_off: t.adherence_significantly_off ?? 'Significantly off',
     };
     return map[level] ?? level;
   };
@@ -277,22 +329,45 @@ export default function Tool111SmartFoodMacroSubstitution() {
         </div>
 
         <fieldset className="border rounded p-4 flex flex-col gap-4">
-          <legend className="font-medium">{t.macros_per_100g}</legend>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {['protein', 'carbs', 'fat', 'calories'].map((key) => {
+          <legend className="font-medium">
+            {t.original_macros_per_100g} <span className="text-xs text-rose-500">{t.required}</span>
+          </legend>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {MACRO_FIELDS.map((key) => {
               const label = key === 'protein' ? t.protein : key === 'carbs' ? t.carbs : key === 'fat' ? t.fat : t.calories;
               return (
                 <div key={key} className="flex flex-col gap-1">
                   <label className="text-sm font-medium">{label}</label>
-                  <input type="number"
-                    value={formData.originalFood.macrosPer100g[key as keyof typeof formData.originalFood.macrosPer100g] ?? 0}
-                    onChange={(e) => setFormData((d) => ({ ...d, originalFood: { ...d.originalFood, macrosPer100g: { ...d.originalFood.macrosPer100g, [key]: parseFloat(e.target.value) || 0 } } }))}
+                  <input type="number" min={0}
+                    value={formData.originalMacros[key]}
+                    onChange={(e) => setFormData((d) => ({ ...d, originalMacros: { ...d.originalMacros, [key]: e.target.value } }))}
                     className="w-full rounded border p-2" dir="ltr" />
                 </div>
               );
             })}
           </div>
-          {validationErrors.originalFood && <p className="text-xs text-rose-500">{validationErrors.originalFood}</p>}
+          {validationErrors.originalMacros && <p className="text-xs text-rose-500">{validationErrors.originalMacros}</p>}
+        </fieldset>
+
+        <fieldset className="border rounded p-4 flex flex-col gap-4">
+          <legend className="font-medium">
+            {t.substitute_macros_per_100g} <span className="text-xs text-rose-500">{t.required}</span>
+          </legend>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {MACRO_FIELDS.map((key) => {
+              const label = key === 'protein' ? t.protein : key === 'carbs' ? t.carbs : key === 'fat' ? t.fat : t.calories;
+              return (
+                <div key={key} className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">{label}</label>
+                  <input type="number" min={0}
+                    value={formData.substituteMacros[key]}
+                    onChange={(e) => setFormData((d) => ({ ...d, substituteMacros: { ...d.substituteMacros, [key]: e.target.value } }))}
+                    className="w-full rounded border p-2" dir="ltr" />
+                </div>
+              );
+            })}
+          </div>
+          {validationErrors.substituteMacros && <p className="text-xs text-rose-500">{validationErrors.substituteMacros}</p>}
         </fieldset>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -410,7 +485,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
             </div>
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
               <h3 className="text-sm font-bold mb-3">{t.equivalence_score}</h3>
-              <div className="text-2xl font-mono font-bold">{formatNum(result.equivalenceScore)}</div>
+              <div className="text-2xl font-mono font-bold" data-testid="equivalence-score">{formatNum(result.equivalenceScore)}</div>
               <div className="text-sm text-zinc-500">{translateEquivalence(result.equivalenceLevel)}</div>
             </div>
           </div>
@@ -440,7 +515,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
           {result.targetAdherence && (
             <div className="rounded bg-amber-50 p-4 border border-amber-200">
               <h3 className="text-sm font-bold mb-3">{t.target_adherence}</h3>
-              <div className="text-sm">{result.targetAdherence.overall}</div>
+              <div className="text-sm">{translateAdherence(result.targetAdherence.overall)}</div>
             </div>
           )}
 
