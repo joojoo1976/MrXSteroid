@@ -25,7 +25,7 @@ It does NOT mean the tool has been published, merged, or launched. The decision 
 | Phase 2 | Schema & Adapter Implementation | `c0c962b` | ✅ COMPLETED | 3/3 schema, 19/19 adapter |
 | Phase 3 | Component & i18n Support | `e294b42` | ✅ COMPLETED | 12/12 DOM tests |
 | Phase 4 | Integration & Routing | `d5dce54` | ✅ COMPLETED | 7/7 integration tests |
-| Phase 5 | Final QA, Documentation & Release Readiness | `faa93ae` | ✅ COMPLETED | TypeScript & Build BLOCKED (not re-run); all other gates passed |
+| Phase 5 | Final QA, Documentation & Release Readiness | `de1f057` | ✅ COMPLETED | TypeScript & Build BLOCKED (not re-run); all other gates passed |
 
 ---
 
@@ -141,5 +141,5 @@ This document only certifies technical readiness. It does not constitute release
 ## 12. Git Evidence
 
 - Current branch: `main` (local)
-- Latest commit: `d5dce54` — feat(tool-111): integrate smart food macro substitution page and routing
-- Phase 5 commit to be created: docs(tool-111): add final QA and release readiness documentation
+- Latest commit: `de1f057` — docs(tool-111): update release readiness with final verification evidence
+- Phase 5 commit created: `de1f057` — docs(tool-111): update release readiness with final verification evidence
