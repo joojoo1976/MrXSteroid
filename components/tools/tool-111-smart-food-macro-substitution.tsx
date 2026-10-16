@@ -332,7 +332,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
           <legend className="font-medium text-amber-700">{t.target_macros}</legend>
           <p className="text-xs text-amber-500">{t.optional}</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {['targetProtein', 'targetCarbs', 'targetFat', 'targetCalories'].map((key) => {
+            {(['targetProtein', 'targetCarbs', 'targetFat', 'targetCalories'] as const).map((key) => {
               const label = key === 'targetProtein' ? t.target_protein : key === 'targetCarbs' ? t.target_carbs : key === 'targetFat' ? t.target_fat : t.target_calories;
               return (
                 <div key={key} className="flex flex-col gap-1">
@@ -440,7 +440,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
           {result.targetAdherence && (
             <div className="rounded bg-amber-50 p-4 border border-amber-200">
               <h3 className="text-sm font-bold mb-3">{t.target_adherence}</h3>
-              <div className="text-sm">{formatNum(result.targetAdherence.score)}%</div>
+              <div className="text-sm">{result.targetAdherence.overall}</div>
             </div>
           )}
 
