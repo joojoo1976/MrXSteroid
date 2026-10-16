@@ -195,3 +195,40 @@ This document only certifies technical readiness. It does not constitute release
 | Final verdict | **NOT READY — verification blocked by environment** |
 
 This document does NOT certify release readiness. The decision to publish, merge, or launch remains with the product owner and requires separate explicit approval after TypeScript and Build are successfully re-verified and real-browser interactive testing is completed.
+
+## Final Verification Plan — Pending Environment
+
+Final release readiness remains **NOT READY — verification blocked by environment**.
+
+The following three checks remain outstanding:
+
+1. **TypeScript**
+   - Command: `npx tsc --noEmit`
+   - Current status: **BLOCKED — environment timeout after 30 seconds**
+   - Historical evidence only: Phase 2 reported 0 errors.
+
+2. **Production Build**
+   - Command: `npm run build`
+   - Current status: **BLOCKED — environment timeout after 30 seconds**
+   - Historical evidence only: Phase 2 reported a successful build with 309 routes.
+
+3. **Browser-based interactive testing**
+   - Route: `/smarttools/tool-111-smart-food-macro-substitution`
+   - Current status: **NOT RUN**
+   - Required checks: inputs, results, metric and imperial units, Arabic RTL, English LTR, validation errors, warnings, limitations, provenance, key findings, absence of external calls, and absence of persistent storage.
+
+Status rules:
+
+- Use `PASSED`, `FAILED`, `BLOCKED`, or `NOT RUN` based only on actual evidence.
+- A timeout or stalled process must be recorded as `BLOCKED`, not as code success or failure.
+- Browser-based interactive testing must be completed before final release readiness can be declared.
+
+Current approved-commit-per-phase record:
+
+- Phase 1: `0675495`
+- Phase 2: `c0c962b`
+- Phase 3: `e294b42`
+- Phase 4: `d5dce54`
+- Phase 5: `82f6237`
+
+This is an **approved commit per phase** record, not a complete commit history.
