@@ -119,6 +119,8 @@ const EVIDENCE_BY_ID: Record<string, { confidence: Confidence; note: string }> =
   B01: { confidence: 'Moderate', note: 'Commonly cited adult IM max ~5 mL' },
   B02: { confidence: 'High', note: 'Deltoid capacity ~1 mL' },
   B04: { confidence: 'High', note: 'Site-specific IM volume (StatPearls)' },
+  C01: { confidence: 'Low', note: 'Self-reported pain 0–10: subjective, not a clinical measure' },
+  C02: { confidence: 'Low', note: 'Heuristic 7-day site floor / 14-day optimal (Expert opinion, Low)' },
   A08: { confidence: 'Low', note: 'Non-clinical; no human label' },
   A09: { confidence: 'Low', note: 'Veterinary product' },
 };
@@ -132,7 +134,7 @@ function ref(evidenceId: string, note?: string): EvidenceRef {
 export function siteCeilingMl(siteId: string): { ceilingMl: number; evidence: EvidenceRef } {
   const s = siteId.toLowerCase();
   if (s.includes('delt')) return { ceilingMl: 1.0, evidence: ref('B02') };
-  if (s.includes('glut')) return { ceilingMl: 5.0, evidence: ref('B01') };
+  if (s.includes('glut') || s.includes('ventro') || s.includes('dorso')) return { ceilingMl: 5.0, evidence: ref('B01') };
   if (s.includes('vastus') || s.includes('quad')) return { ceilingMl: 3.0, evidence: ref('B04') };
   return { ceilingMl: 3.0, evidence: ref('B04') };
 }
@@ -437,4 +439,237 @@ export function collectProvenance(result: ChronoResult): EvidenceRef[] {
   for (const w of result.warnings) add(w.evidence);
   for (const f of result.redFlags) if (f.evidence) add(f.evidence);
   return [...map.values()];
+}
+
+/* ==========================================================================
+ * LEVEL 2 — ADVANCED (additive; nothing above is modified)
+ * Body-site registry · comfort factors · personal logger · rotation validation
+ * Pure: no I/O, no Date.now(), no Math.random().
+ * ========================================================================== */
+
+export type BodyRegion = 'ventro' | 'dorso' | 'deltoid' | 'vastus';
+export type BodySide = 'left' | 'right';
+export type BadgeLevel = 'Low' | 'Medium' | 'High';
+export type PainBand = 'none' | 'mild' | 'moderate' | 'severe';
+
+export interface BodySite {
+  siteId: string;
+  labelEn: string;
+  labelAr: string;
+  region: BodyRegion;
+  side: BodySide;
+  ceilingMl: number;
+}
+
+/** The 8 injectable sites rendered by the 2D SVG body map (UI tap target >= 44px). */
+export const BODY_SITES: readonly BodySite[] = [
+  { siteId: 'ventro-l', labelEn: 'Ventrogluteal (L)', labelAr: 'ألوية أمامية (يسار)', region: 'ventro', side: 'left', ceilingMl: 5.0 },
+  { siteId: 'ventro-r', labelEn: 'Ventrogluteal (R)', labelAr: 'ألوية أمامية (يمين)', region: 'ventro', side: 'right', ceilingMl: 5.0 },
+  { siteId: 'dorso-l', labelEn: 'Dorsogluteal (L)', labelAr: 'ألوية خلفية (يسار)', region: 'dorso', side: 'left', ceilingMl: 5.0 },
+  { siteId: 'dorso-r', labelEn: 'Dorsogluteal (R)', labelAr: 'ألوية خلفية (يمين)', region: 'dorso', side: 'right', ceilingMl: 5.0 },
+  { siteId: 'deltoid-l', labelEn: 'Deltoid (L)', labelAr: 'دالية (يسار)', region: 'deltoid', side: 'left', ceilingMl: 1.0 },
+  { siteId: 'deltoid-r', labelEn: 'Deltoid (R)', labelAr: 'دالية (يمين)', region: 'deltoid', side: 'right', ceilingMl: 1.0 },
+  { siteId: 'vastus-l', labelEn: 'Vastus lateralis (L)', labelAr: 'فخذ خارجي (يسار)', region: 'vastus', side: 'left', ceilingMl: 3.0 },
+  { siteId: 'vastus-r', labelEn: 'Vastus lateralis (R)', labelAr: 'فخذ خارجي (يمين)', region: 'vastus', side: 'right', ceilingMl: 3.0 },
+];
+
+export function bodySiteById(siteId: string): BodySite | undefined {
+  return BODY_SITES.find((s) => s.siteId === String(siteId).toLowerCase());
+}
+
+/** Evidence-confidence -> UI badge level (Low / Medium / High). */
+export function toBadgeLevel(c: Confidence): BadgeLevel {
+  if (c === 'High') return 'High';
+  if (c === 'Moderate') return 'Medium';
+  return 'Low';
+}
+
+/** Self-reported pain 0-10 -> band + advisory badge. */
+export function classifyPain(score: number): { band: PainBand; badge: BadgeLevel; evidence: EvidenceRef } {
+  const s = Number.isFinite(score) ? score : 0;
+  if (s <= 0) return { band: 'none', badge: 'Low', evidence: ref('B04', 'No pain reported') };
+  if (s <= 3) return { band: 'mild', badge: 'Medium', evidence: ref('C01') };
+  if (s <= 6) return { band: 'moderate', badge: 'Medium', evidence: ref('C01') };
+  return { band: 'severe', badge: 'High', evidence: ref('C01') };
+}
+
+const ZONE_BADGE: Record<Zone, BadgeLevel> = { green: 'Low', yellow: 'Medium', red: 'High' };
+
+export interface ComfortAssessment {
+  zone: Zone;
+  volumeBadge: BadgeLevel;
+  painBand: PainBand;
+  painBadge: BadgeLevel;
+  advisories: string[];
+  evidence: EvidenceRef[];
+}
+
+/** Combined Volume-Guard zone + site-pain comfort assessment (Evidence Drawer payload). */
+export function assessComfort(volumeMl: number, siteId: string, painScore: number): ComfortAssessment {
+  const { zone, evidence: zoneEvidence } = classifyVolumeZone(volumeMl, siteId);
+  const { ceilingMl, evidence: ceilingEvidence } = siteCeilingMl(siteId);
+  const pain = classifyPain(painScore);
+
+  const advisories: string[] = [];
+  if (zone === 'red') advisories.push(`Volume ${fmtVolume(volumeMl)} is in the Red zone — exceeds the commonly cited adult IM maximum.`);
+  else if (zone === 'yellow') advisories.push(`Volume ${fmtVolume(volumeMl)} is in the Yellow zone (Limited Evidence).`);
+  if (volumeMl > ceilingMl) advisories.push(`${siteId}: ${fmtVolume(volumeMl)} exceeds this site's ceiling of ${ceilingMl.toFixed(2)} mL.`);
+  if (pain.band === 'severe') advisories.push('Severe pain reported — do not inject into a painful site; seek clinical advice.');
+  else if (pain.band === 'moderate') advisories.push('Moderate pain reported — consider an alternative site.');
+
+  return {
+    zone,
+    volumeBadge: ZONE_BADGE[zone],
+    painBand: pain.band,
+    painBadge: pain.badge,
+    advisories,
+    evidence: [zoneEvidence, ceilingEvidence, pain.evidence],
+  };
+}
+
+export type HealingState = 'too-soon' | 'minimum-met' | 'optimal';
+
+export interface HealingStatus {
+  state: HealingState;
+  daysSince: number;
+  minDays: number;
+  optimalDays: number;
+  messageEn: string;
+  messageAr: string;
+}
+
+/** Site healing window: 7-day hard minimum, 14-day optimal (heuristic, Low confidence). */
+export function healingStatus(daysSince: number, minDays = 7, optimalDays = 14): HealingStatus {
+  const d = Number.isFinite(daysSince) ? daysSince : 0;
+  if (d < minDays) {
+    return {
+      state: 'too-soon', daysSince: d, minDays, optimalDays,
+      messageEn: `Only ${d} day(s) since the last injection — wait at least ${minDays} days.`,
+      messageAr: `مرّ ${d} يوم فقط منذ آخر حقنة — انتظر ${minDays} أيام على الأقل.`,
+    };
+  }
+  if (d < optimalDays) {
+    return {
+      state: 'minimum-met', daysSince: d, minDays, optimalDays,
+      messageEn: `${d} day(s) meets the minimum — ${optimalDays}+ days is optimal.`,
+      messageAr: `${d} يوم يحقّق الحد الأدنى — الأمثل ${optimalDays} يوم أو أكثر.`,
+    };
+  }
+  return {
+    state: 'optimal', daysSince: d, minDays, optimalDays,
+    messageEn: `${d} day(s) — the site is in the optimal healing window.`,
+    messageAr: `${d} يوم — الموقع في نافذة التعافي المثلى.`,
+  };
+}
+
+/** Average of the most recent `window` pain entries (default 5). Null when the log is empty. */
+export function averageRecent(scores: number[], window = 5): number | null {
+  const clean = scores.filter((n) => Number.isFinite(n));
+  if (clean.length === 0) return null;
+  const w = Math.max(1, Math.floor(window));
+  const slice = clean.slice(-w);
+  return slice.reduce((a, b) => a + b, 0) / slice.length;
+}
+
+export interface RotationUse { siteId: string; dayIndex: number }
+export type ViolationSeverity = 'error' | 'warning';
+
+export interface RotationViolation {
+  siteId: string;
+  dayIndex: number;
+  daysSincePrev: number;
+  severity: ViolationSeverity;
+  messageEn: string;
+  messageAr: string;
+}
+
+/** Flags same-site reuse: < minDays = error, < warnDays = warning. Pure and order-independent. */
+export function validateRotation(uses: RotationUse[], minDays = 7, warnDays = 14): RotationViolation[] {
+  const sorted = [...uses].sort((a, b) => a.dayIndex - b.dayIndex || a.siteId.localeCompare(b.siteId));
+  const lastUse = new Map<string, number>();
+  const violations: RotationViolation[] = [];
+  for (const u of sorted) {
+    const prev = lastUse.get(u.siteId);
+    if (prev !== undefined) {
+      const gap = u.dayIndex - prev;
+      if (gap < minDays) {
+        violations.push({
+          siteId: u.siteId, dayIndex: u.dayIndex, daysSincePrev: gap, severity: 'error',
+          messageEn: `${u.siteId} reused after ${gap} day(s) — the ${minDays}-day floor is not met.`,
+          messageAr: `أُعيد استخدام ${u.siteId} بعد ${gap} يوم — الحد الأدنى ${minDays} أيام غير محقّق.`,
+        });
+      } else if (gap < warnDays) {
+        violations.push({
+          siteId: u.siteId, dayIndex: u.dayIndex, daysSincePrev: gap, severity: 'warning',
+          messageEn: `${u.siteId} reused after ${gap} day(s) — ${warnDays}+ days is optimal.`,
+          messageAr: `أُعيد استخدام ${u.siteId} بعد ${gap} يوم — الأمثل ${warnDays} يوم أو أكثر.`,
+        });
+      }
+    }
+    lastUse.set(u.siteId, u.dayIndex);
+  }
+  return violations;
+}
+
+/* ==========================================================================
+ * LEVEL 3 — PRO LAB (additive; chart/Gantt data is plain JSON so the
+ * Recharts/dnd bundles stay OUT of the first-load chunk).
+ * ========================================================================== */
+
+export interface ChartPoint { weekIndex: number; level: number; steadyStateReached: boolean }
+
+/** Recharts-ready accumulation series (weeks+1 points). */
+export function accumulationChartSeries(profile: EsterProfile, item: PkDoseItem, weeks: number): ChartPoint[] {
+  return simulateAccumulation(profile, item, weeks).map((p) => ({
+    weekIndex: p.weekIndex,
+    level: p.levelRel,
+    steadyStateReached: p.steadyStateReached,
+  }));
+}
+
+export interface GanttRow { weekIndex: number; day: number; siteId: string }
+
+/** Flattened rotation rows (desktop drag and mobile up/down arrows both consume this). */
+export function ganttRows(plan: RotationWeek[]): GanttRow[] {
+  const rows: GanttRow[] = [];
+  for (const w of plan) for (const e of w.entries) rows.push({ weekIndex: w.weekIndex, day: e.day, siteId: e.site });
+  return rows;
+}
+
+export interface FhirResource { resourceType: string; [key: string]: unknown }
+export interface FhirEntry { resource: FhirResource }
+export interface FhirBundle { resourceType: 'Bundle'; type: 'collection'; entry: FhirEntry[] }
+
+/** Minimal FHIR R4 collection Bundle: one Observation (weekly total) + one MedicationAdministration per shot. */
+export function buildFhirBundle(result: ChronoResult, opts: { patientRef?: string } = {}): FhirBundle {
+  const subject = opts.patientRef ? { subject: { reference: opts.patientRef } } : {};
+  const entry: FhirEntry[] = [
+    {
+      resource: {
+        resourceType: 'Observation',
+        status: 'final',
+        code: { text: 'Total weekly injection volume' },
+        valueString: `${result.total_volume_ml_per_week} mL/week`,
+        ...subject,
+      },
+    },
+  ];
+  for (const s of result.shots) {
+    entry.push({
+      resource: {
+        resourceType: 'MedicationAdministration',
+        status: 'planned',
+        medicationCodeableConcept: { text: s.compound_name },
+        dosage: { dose: { value: s.dose_mg, unit: 'mg' }, route: { text: 'intramuscular' } },
+        bodySite: { text: s.site },
+        note: [
+          {
+            text: `day ${s.day}; ${s.volume_ml} mL; zone ${s.zone}; evidence ${s.evidenceId}${s.non_clinical ? '; NON-CLINICAL' : ''}`,
+          },
+        ],
+        ...subject,
+      },
+    });
+  }
+  return { resourceType: 'Bundle', type: 'collection', entry };
 }

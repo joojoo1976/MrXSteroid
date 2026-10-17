@@ -104,3 +104,56 @@ export const ChronoResultSchema = z.object({
 
 export type { Confidence };
 
+/* ==========================================================================
+ * LEVEL 2 / LEVEL 3 contracts (additive; nothing above is modified)
+ * ========================================================================== */
+
+export const BadgeLevelSchema = z.enum(['Low', 'Medium', 'High']);
+export const PainBandSchema = z.enum(['none', 'mild', 'moderate', 'severe']);
+
+export const BodySiteSchema = z.object({
+  siteId: z.string().min(1).max(40),
+  labelEn: z.string().min(1).max(60),
+  labelAr: z.string().min(1).max(60),
+  region: z.enum(['ventro', 'dorso', 'deltoid', 'vastus']),
+  side: z.enum(['left', 'right']),
+  ceilingMl: z.number().finite().min(0.1).max(10),
+});
+
+export const ComfortAssessmentSchema = z.object({
+  zone: z.enum(['green', 'yellow', 'red']),
+  volumeBadge: BadgeLevelSchema,
+  painBand: PainBandSchema,
+  painBadge: BadgeLevelSchema,
+  advisories: z.array(z.string().min(1).max(300)).max(8),
+  evidence: z.array(EvidenceRefSchema).min(1),
+});
+
+export const HealingStatusSchema = z.object({
+  state: z.enum(['too-soon', 'minimum-met', 'optimal']),
+  daysSince: z.number().finite(),
+  minDays: z.number().int().min(1).max(60),
+  optimalDays: z.number().int().min(1).max(120),
+  messageEn: z.string().min(1).max(300),
+  messageAr: z.string().min(1).max(300),
+});
+
+export const RotationViolationSchema = z.object({
+  siteId: z.string().min(1).max(40),
+  dayIndex: z.number().int(),
+  daysSincePrev: z.number().int(),
+  severity: z.enum(['error', 'warning']),
+  messageEn: z.string().min(1).max(300),
+  messageAr: z.string().min(1).max(300),
+});
+
+export const FhirResourceSchema = z
+  .object({ resourceType: z.string().min(1).max(60) })
+  .catchall(z.unknown());
+
+export const FhirBundleSchema = z.object({
+  resourceType: z.literal('Bundle'),
+  type: z.literal('collection'),
+  entry: z.array(z.object({ resource: FhirResourceSchema })).max(64),
+});
+

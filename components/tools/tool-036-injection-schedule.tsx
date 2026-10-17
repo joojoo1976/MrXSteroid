@@ -3,7 +3,29 @@
  * instant recompute, Zod validation, auto-draft via shared adapter, standard
  * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { planInjectionSchedule, planChronoInjectionSchedule, classifyVolumeZone, siteCeilingMl, type EvidenceRef } from '@/lib/tools/engines/tool-036-injection-schedule';
+import {
+  planInjectionSchedule,
+  planChronoInjectionSchedule,
+  classifyVolumeZone,
+  siteCeilingMl,
+  assessComfort,
+  healingStatus,
+  averageRecent,
+  validateRotation,
+  buildRotationPlan,
+  buildFhirBundle,
+  accumulationChartSeries,
+  ganttRows,
+  bodySiteById,
+  BODY_SITES,
+  ESTER_PROFILES,
+  type EvidenceRef,
+  type ChronoResult,
+  type ChartPoint,
+  type RotationWeek,
+  type RotationViolation,
+} from '@/lib/tools/engines/tool-036-injection-schedule';
+import dynamic from 'next/dynamic';
 import { buildInjectionScheduleOutput } from '@/lib/tools/adapters/tool-036-injection-schedule';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
@@ -216,11 +238,484 @@ function EvidenceNote({ evidence, locale }: { evidence: EvidenceRef; locale: 'ar
   );
 }
 
+/* ==========================================================================
+ * LEVEL 2 + LEVEL 3 strings (all under the same OFF-by-default flag).
+ * ========================================================================== */
+
+const L2_STR = {
+  tabs: {
+    core: { en: 'Core', ar: 'الأساسي' },
+    sites: { en: 'Sites', ar: 'المواقع' },
+    comfort: { en: 'Comfort', ar: 'الراحة' },
+  },
+  bodyMap: { en: '2D body map — 8 sites', ar: 'خريطة الجسم — 8 مواقع' },
+  bodyMapNote: {
+    en: 'Tap a site. Pure SVG, no 3D, ≥44px targets. Minimum 7 days between hits on the same site.',
+    ar: 'اضغط على موقع. SVG فقط بدون 3D، هدف ≥44 بكسل. 7 أيام على الأقل بين الحقن في نفس الموقع.',
+  },
+  selectedSite: { en: 'Selected site', ar: 'الموقع المحدد' },
+  rotation: { en: '12-week rotation table', ar: 'جدول التدوير 12 أسبوعًا' },
+  gantt: { en: 'Rotation Gantt', ar: 'مخطط جانت للتدوير' },
+  ganttNote: {
+    en: 'Desktop: drag the handle to swap. Mobile: use ↑ ↓ arrows.',
+    ar: 'سطح المكتب: اسحب المقبض للتبديل. الجوال: استخدم أسهم ↑ ↓.',
+  },
+  logger: { en: 'Personal pain log (0–10)', ar: 'سجل الألم الشخصي (0–10)' },
+  addLog: { en: 'Add entry', ar: 'إضافة قيد' },
+  avg5: { en: 'Average (last 5)', ar: 'المتوسط (آخر 5)' },
+  healing: { en: 'Healing window', ar: 'نافذة التعافي' },
+  daysSince: { en: 'Days since last hit at this site', ar: 'الأيام منذ آخر حقنة في هذا الموقع' },
+  comfort: { en: 'Comfort factors', ar: 'عوامل الراحة' },
+  volume: { en: 'Volume', ar: 'الحجم' },
+  pain: { en: 'Site pain', ar: 'ألم الموقع' },
+  chart: { en: 'Accumulation chart (lazy)', ar: 'مخطط التراكم (محمّل تأخيريًا)' },
+  chartSkeleton: { en: 'Chart loads on scroll…', ar: 'يُحمّل المخطط عند التمرير…' },
+  chartLoad: { en: 'Load chart', ar: 'تحميل المخطط' },
+  exportPdf: { en: 'Print / PDF', ar: 'طباعة / PDF' },
+  exportFhir: { en: 'Export FHIR (JSON)', ar: 'تصدير FHIR (JSON)' },
+  arBadge: { en: 'AR', ar: 'الواقع المعزز' },
+  arComingSoon: { en: 'Coming Soon', ar: 'قريبًا' },
+  evidenceDrawer: { en: 'Evidence Drawer', ar: 'درج الأدلة' },
+  advisories: { en: 'Advisories', ar: 'تنبيهات' },
+  none: { en: 'None', ar: 'لا يوجد' },
+} as const;
+
+const BADGE_CLS: Record<string, string> = {
+  Low: 'border-lime-500/50 text-lime-300 bg-lime-500/10',
+  Medium: 'border-amber-500/50 text-amber-300 bg-amber-500/10',
+  High: 'border-red-500/50 text-red-300 bg-red-500/10',
+};
+
+function BadgeChip({ level, kind }: { level: string; kind: string }) {
+  return (
+    <span
+      data-testid={`badge-${kind}`}
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold ${BADGE_CLS[level] ?? BADGE_CLS.Low}`}
+    >
+      {level}
+    </span>
+  );
+}
+
+/* ---- LEVEL 3: lazy chart wrapper (IntersectionObserver + skeleton) ------- */
+
+const Tool036AccumulationChart = dynamic(() => import('./tool-036-accumulation-chart'), {
+  ssr: false,
+  loading: () => (
+    <div data-testid="chart-skeleton" className="h-56 w-full animate-pulse rounded-xl bg-zinc-800/60" />
+  ),
+});
+
+function LazyAccumulationChart({ data, label, locale }: { data: ChartPoint[]; label: string; locale: 'ar' | 'en' }) {
+  const sentinel = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return; // manual button remains as fallback
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={sentinel} data-testid="chart-sentinel">
+      {visible ? (
+        <Tool036AccumulationChart data={data} label={label} />
+      ) : (
+        <div className="space-y-2">
+          <div data-testid="chart-skeleton" className="h-56 w-full animate-pulse rounded-xl bg-zinc-800/60" />
+          <button
+            type="button"
+            data-testid="chart-load"
+            onClick={() => setVisible(true)}
+            className="rounded-lg bg-zinc-800 px-3 py-1.5 text-[11px] font-bold text-zinc-200 hover:bg-zinc-700"
+          >
+            {L2_STR.chartLoad[locale]}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---- LEVEL 2: 2D SVG body map (>=44px tap targets, no 3D) ---------------- */
+
+const BODY_SITE_POS: Record<string, { x: number; y: number }> = {
+  'deltoid-l': { x: 24, y: 56 },
+  'deltoid-r': { x: 172, y: 56 },
+  'ventro-l': { x: 48, y: 118 },
+  'ventro-r': { x: 148, y: 118 },
+  'dorso-l': { x: 48, y: 178 },
+  'dorso-r': { x: 148, y: 178 },
+  'vastus-l': { x: 56, y: 242 },
+  'vastus-r': { x: 140, y: 242 },
+};
+
+function BodyMap2D({ selected, onSelect, locale }: { selected: string; onSelect: (id: string) => void; locale: 'ar' | 'en' }) {
+  return (
+    <svg
+      viewBox="0 0 240 320"
+      role="group"
+      aria-label={L2_STR.bodyMap[locale]}
+      data-testid="body-map"
+      className="mx-auto block h-auto w-full max-w-[280px]"
+    >
+      <ellipse cx={120} cy={38} rx={22} ry={26} className="fill-zinc-800" />
+      <rect x={92} y={70} width={56} height={120} rx={18} className="fill-zinc-800/70" />
+      <rect x={84} y={192} width={30} height={108} rx={12} className="fill-zinc-800/60" />
+      <rect x={126} y={192} width={30} height={108} rx={12} className="fill-zinc-800/60" />
+      {BODY_SITES.map((s) => {
+        const p = BODY_SITE_POS[s.siteId];
+        const active = selected === s.siteId;
+        return (
+          <g
+            key={s.siteId}
+            role="button"
+            tabIndex={0}
+            aria-label={`${s.labelEn} / ${s.labelAr}`}
+            aria-pressed={active}
+            data-testid={`bodysite-${s.siteId}`}
+            onClick={() => onSelect(s.siteId)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') onSelect(s.siteId);
+            }}
+            className="cursor-pointer"
+          >
+            <rect
+              x={p.x}
+              y={p.y}
+              width={44}
+              height={44}
+              rx={9}
+              strokeWidth={2}
+              className={active ? 'fill-lime-500/70 stroke-lime-300' : 'fill-cyan-500/20 stroke-cyan-400/60'}
+            />
+            <text x={p.x + 22} y={p.y + 27} textAnchor="middle" fontSize={10} fontWeight="bold" fill="#fff">
+              {s.region.slice(0, 3).toUpperCase()}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ---- LEVEL 2: 12-week rotation table ------------------------------------ */
+
+function RotationTable({ weeks, violations, locale }: { weeks: RotationWeek[]; violations: RotationViolation[]; locale: 'ar' | 'en' }) {
+  const days = locale === 'ar' ? DAY_NAMES_AR : DAY_NAMES_EN;
+  const byWeek = new Map<number, RotationViolation[]>();
+  for (const v of violations) {
+    const w = Math.floor(v.dayIndex / 7);
+    byWeek.set(w, [...(byWeek.get(w) ?? []), v]);
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-[11px]" data-testid="rotation-table">
+        <thead>
+          <tr className="text-zinc-500">
+            <th className="p-1 text-start">{locale === 'ar' ? 'أسبوع' : 'Week'}</th>
+            <th className="p-1 text-start">{locale === 'ar' ? 'الحقن' : 'Entries'}</th>
+            <th className="p-1 text-start">{locale === 'ar' ? 'الحالة' : 'Status'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {weeks.map((w) => {
+            const vs = byWeek.get(w.weekIndex) ?? [];
+            const hasErr = vs.some((v) => v.severity === 'error');
+            return (
+              <tr key={w.weekIndex} data-testid="rotation-row" className="border-t border-zinc-800">
+                <td className="p-1 font-mono text-zinc-400">{w.weekIndex + 1}</td>
+                <td className="p-1 font-mono text-zinc-300" dir="ltr">
+                  {w.entries.map((e) => `${days[e.day]}·${e.site}`).join('  ')}
+                </td>
+                <td className="p-1">
+                  {hasErr ? (
+                    <span className="font-bold text-red-400">{locale === 'ar' ? 'خطأ' : 'error'}</span>
+                  ) : vs.length > 0 ? (
+                    <span className="font-bold text-amber-400">{locale === 'ar' ? 'تحذير' : 'warning'}</span>
+                  ) : (
+                    <span className="font-bold text-lime-400">{locale === 'ar' ? 'سليم' : 'ok'}</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ---- LEVEL 3: Gantt (native HTML5 drag on desktop, arrows on mobile) ----- */
+
+function Gantt({
+  rows,
+  override,
+  onSwap,
+  locale,
+}: {
+  rows: { weekIndex: number; day: number; siteId: string }[];
+  override: Record<number, string>;
+  onSwap: (i: number, j: number) => void;
+  locale: 'ar' | 'en';
+}) {
+  return (
+    <ul className="space-y-1" data-testid="gantt">
+      {rows.map((r, i) => (
+        <li key={i} className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2 py-1.5 text-[11px]">
+          <span
+            draggable
+            onDragStart={(e) => e.dataTransfer.setData('text/plain', String(i))}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const from = Number(e.dataTransfer.getData('text/plain'));
+              if (!Number.isNaN(from)) onSwap(from, i);
+            }}
+            className="hidden cursor-grab text-zinc-500 md:inline"
+            title="drag"
+          >
+            ⋮⋮
+          </span>
+          <span className="w-16 font-mono text-zinc-500">
+            W{r.weekIndex + 1}·D{r.day}
+          </span>
+          <span className="flex-1 font-mono text-cyan-400">{override[i] ?? r.siteId}</span>
+          <button
+            type="button"
+            data-testid={`gantt-up-${i}`}
+            onClick={() => onSwap(i, i - 1)}
+            disabled={i === 0}
+            className="rounded bg-zinc-800 px-2 py-0.5 disabled:opacity-30 md:hidden"
+            aria-label={locale === 'ar' ? 'أعلى' : 'up'}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            data-testid={`gantt-down-${i}`}
+            onClick={() => onSwap(i, i + 1)}
+            disabled={i === rows.length - 1}
+            className="rounded bg-zinc-800 px-2 py-0.5 disabled:opacity-30 md:hidden"
+            aria-label={locale === 'ar' ? 'أسفل' : 'down'}
+          >
+            ↓
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ---- LEVEL 2: comfort factors (zones + pain + evidence drawer) ----------- */
+
+function ComfortPanel({
+  volumeMl,
+  siteId,
+  painScore,
+  locale,
+  onVolume,
+  onSite,
+  onPain,
+}: {
+  volumeMl: number;
+  siteId: string;
+  painScore: number;
+  locale: 'ar' | 'en';
+  onVolume: (v: number) => void;
+  onSite: (s: string) => void;
+  onPain: (p: number) => void;
+}) {
+  const comfort = assessComfort(volumeMl, siteId, painScore);
+  const site = bodySiteById(siteId);
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+      <h3 className="mb-3 text-xs font-black text-zinc-300">{L2_STR.comfort[locale]}</h3>
+
+      <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className={`rounded-lg border p-2 text-[11px] font-bold ${ZONE_CELL[comfort.zone].cls}`}>{ZONE_CELL[comfort.zone][locale]}</div>
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-950 p-2 text-[11px]">
+          <span className="text-zinc-400">
+            {L2_STR.volume[locale]} <BadgeChip level={comfort.volumeBadge} kind="volume" />
+          </span>
+          <span className="text-zinc-400">
+            {L2_STR.pain[locale]} <BadgeChip level={comfort.painBadge} kind="pain" />
+          </span>
+        </div>
+      </div>
+
+      <label className="mb-2 block text-[11px] font-bold text-zinc-500">
+        {L2_STR.selectedSite[locale]}: <span className="font-mono text-cyan-400">{site ? (locale === 'ar' ? site.labelAr : site.labelEn) : siteId}</span>
+        <select
+          data-testid="comfort-site"
+          value={siteId}
+          onChange={(e) => onSite(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+        >
+          {BODY_SITES.map((s) => (
+            <option key={s.siteId} value={s.siteId}>
+              {locale === 'ar' ? s.labelAr : s.labelEn}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label className="block text-[11px] font-bold text-zinc-500">
+          {L2_STR.volume[locale]}: <span className="font-mono text-cyan-400">{volumeMl.toFixed(2)} mL</span>
+          <input
+            type="range"
+            min={0}
+            max={10}
+            step={0.25}
+            value={volumeMl}
+            data-testid="comfort-volume"
+            onChange={(e) => onVolume(Number(e.target.value))}
+            className="mt-1 w-full"
+          />
+        </label>
+        <label className="block text-[11px] font-bold text-zinc-500">
+          {L2_STR.pain[locale]}: <span className="font-mono text-cyan-400">{painScore}/10</span>
+          <input
+            type="range"
+            min={0}
+            max={10}
+            step={1}
+            value={painScore}
+            data-testid="comfort-pain"
+            onChange={(e) => onPain(Number(e.target.value))}
+            className="mt-1 w-full"
+          />
+        </label>
+      </div>
+
+      <div className="mb-2">
+        <span className="text-[10px] font-bold text-zinc-500">{L2_STR.advisories[locale]}</span>
+        {comfort.advisories.length === 0 ? (
+          <p className="text-[11px] text-lime-400">{L2_STR.none[locale]}</p>
+        ) : (
+          <ul className="mt-1 space-y-0.5 text-[11px] text-amber-300">
+            {comfort.advisories.map((a, i) => (
+              <li key={i}>• {a}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <details className="mt-2 text-[10px] text-zinc-500" data-testid="evidence-drawer">
+        <summary className="cursor-pointer font-bold text-cyan-400">ⓘ {L2_STR.evidenceDrawer[locale]}</summary>
+        <ul className="mt-1 space-y-1" dir="ltr">
+          {comfort.evidence.map((e, i) => (
+            <li key={i} className="rounded-lg border border-zinc-800 bg-zinc-950 p-2">
+              <span className="text-zinc-400">{e.evidenceId}</span> · {e.confidence}
+              {e.note && <div className="text-zinc-500">{e.note}</div>}
+            </li>
+          ))}
+        </ul>
+      </details>
+    </div>
+  );
+}
+
+/* ---- LEVEL 2: personal logger (0–10, avg last 5, healing 7d/14d) --------- */
+
+function PersonalLogger({
+  log,
+  onAdd,
+  daysSince,
+  onDays,
+  locale,
+}: {
+  log: number[];
+  onAdd: (v: number) => void;
+  daysSince: number;
+  onDays: (d: number) => void;
+  locale: 'ar' | 'en';
+}) {
+  const [value, setValue] = useState(5);
+  const avg = averageRecent(log);
+  const healing = healingStatus(daysSince);
+  const hCls = healing.state === 'optimal' ? 'text-lime-400' : healing.state === 'minimum-met' ? 'text-amber-400' : 'text-red-400';
+  const hLabel = locale === 'ar' ? healing.messageAr : healing.messageEn;
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+      <h3 className="mb-3 text-xs font-black text-zinc-300">{L2_STR.logger[locale]}</h3>
+      <div className="mb-3 flex items-end gap-2">
+        <label className="text-[11px] font-bold text-zinc-500">
+          {L2_STR.pain[locale]}
+          <input
+            type="number"
+            min={0}
+            max={10}
+            step={1}
+            value={value}
+            data-testid="pain-input"
+            onChange={(e) => setValue(Math.max(0, Math.min(10, Math.round(Number(e.target.value) || 0))))}
+            className="mt-1 w-20 rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white font-mono"
+          />
+        </label>
+        <button
+          type="button"
+          data-testid="pain-add"
+          onClick={() => onAdd(value)}
+          className="rounded-lg bg-lime-500 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-lime-400"
+        >
+          {L2_STR.addLog[locale]}
+        </button>
+        <div className="ml-auto text-end">
+          <span className="block text-[10px] text-zinc-500">{L2_STR.avg5[locale]}</span>
+          <span data-testid="pain-average" className="font-mono text-sm font-bold text-cyan-400">
+            {avg === null ? '—' : avg.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
+      <label className="mb-2 block text-[11px] font-bold text-zinc-500">
+        {L2_STR.daysSince[locale]}: <span className="font-mono text-cyan-400">{daysSince}</span>
+        <input
+          type="range"
+          min={0}
+          max={30}
+          step={1}
+          value={daysSince}
+          data-testid="days-since"
+          onChange={(e) => onDays(Number(e.target.value))}
+          className="mt-1 w-full"
+        />
+      </label>
+
+      <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-2">
+        <span className="block text-[10px] text-zinc-500">{L2_STR.healing[locale]}</span>
+        <span data-testid="healing-state" className={`text-[11px] font-bold ${hCls}`}>
+          {hLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Tool036Supreme() {
   const [locale, setLocale] = useState<'ar' | 'en'>('en');
   const [compounds, setCompounds] = useState<CompoundInput[]>([DEFAULT_COMPOUND]);
   const [sitesText, setSitesText] = useState(DEFAULT_SITES);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [tab, setTab] = useState<'core' | 'sites' | 'comfort'>('core');
+  const [selectedSite, setSelectedSite] = useState('ventro-l');
+  const [comfortVolume, setComfortVolume] = useState(1.0);
+  const [painScore, setPainScore] = useState(0);
+  const [painLog, setPainLog] = useState<number[]>([]);
+  const [daysSince, setDaysSince] = useState(7);
+  const [ganttOverride, setGanttOverride] = useState<Record<number, string>>({});
   const isRtl = locale === 'ar';
   const T = (k: keyof typeof L1_STR) => L1_STR[k][locale];
   const days = locale === 'ar' ? DAY_NAMES_AR : DAY_NAMES_EN;
@@ -239,11 +734,76 @@ function Tool036Supreme() {
     return result.shots.find((s) => s.day === minDay) ?? null;
   }, [result]);
 
+  const T2 = (k: 'core' | 'sites' | 'comfort') => L2_STR.tabs[k][locale];
+
+  /* LEVEL 2 — 12-week rotation plan + 7-day floor / 14-day warning validation */
+  const planSites = useMemo(() => {
+    const s = parseSites(sitesText)
+      .map((x) => x.toLowerCase())
+      .filter((x) => BODY_SITES.some((b) => b.siteId === x));
+    return s.length > 0 ? s : ['ventro-l', 'ventro-r'];
+  }, [sitesText]);
+
+  const weeks = useMemo(() => buildRotationPlan(planSites, [], 12), [planSites]);
+  const violations = useMemo(
+    () =>
+      validateRotation(
+        weeks.flatMap((w) => w.entries.map((e) => ({ siteId: e.site, dayIndex: w.weekIndex * 7 + e.day }))),
+      ),
+    [weeks],
+  );
+  const gantt = useMemo(() => ganttRows(weeks), [weeks]);
+
+  /* LEVEL 3 — chart series is plain JSON so the recharts chunk stays lazy */
+  const chartData: ChartPoint[] = useMemo(() => {
+    const first = compounds[0];
+    return accumulationChartSeries(
+      ESTER_PROFILES['testosterone-enanthate'],
+      { weeklyDoseMg: first?.weekly_dose_mg ?? 200, injectionsPerWeek: first?.injections_per_week ?? 2 },
+      12,
+    );
+  }, [compounds]);
+
+  const swapGantt = (i: number, j: number) => {
+    if (i === j || j < 0 || j >= gantt.length) return;
+    setGanttOverride((prev) => {
+      const a = prev[i] ?? gantt[i].siteId;
+      const b = prev[j] ?? gantt[j].siteId;
+      return { ...prev, [i]: b, [j]: a };
+    });
+  };
+
+  /* LEVEL 3 — export. Zero extra libraries: FHIR as a JSON Blob, PDF via native print. */
+  const exportFhir = (r: ChronoResult | null) => {
+    if (!r) return;
+    const bundle = buildFhirBundle(r, { patientRef: 'Patient/self' });
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/fhir+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tool-036-fhir-bundle.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportPdf = () => {
+    if (typeof window !== 'undefined') window.print();
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">CHRONO-INJECT OS</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <span
+            data-testid="ar-badge"
+            className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-400"
+            title={L2_STR.arComingSoon[locale]}
+          >
+            {L2_STR.arBadge[locale]} · {L2_STR.arComingSoon[locale]}
+          </span>
           <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
           <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
         </div>
@@ -253,6 +813,24 @@ function Tool036Supreme() {
         {L1_STR.educational[locale]}
       </p>
 
+      <div role="tablist" className="mb-4 grid grid-cols-3 gap-2" data-testid="tabs">
+        {(['core', 'sites', 'comfort'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={tab === k}
+            data-testid={`tab-${k}`}
+            onClick={() => setTab(k)}
+            className={`min-h-[44px] rounded-lg px-3 py-2 text-xs font-bold ${tab === k ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}
+          >
+            {T2(k)}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'core' && (
+        <>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{T('compounds')}</h2>
       <div className="space-y-2 mb-3">
         {compounds.map((c, i) => (
@@ -358,6 +936,83 @@ function Tool036Supreme() {
         <p className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-[11px] text-zinc-400">
           {T('advancedNote')}
         </p>
+      )}
+        </>
+      )}
+
+      {tab === 'sites' && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <h3 className="mb-1 text-xs font-black text-zinc-300">{L2_STR.bodyMap[locale]}</h3>
+            <p className="mb-3 text-[11px] text-zinc-500">{L2_STR.bodyMapNote[locale]}</p>
+            <BodyMap2D selected={selectedSite} onSelect={setSelectedSite} locale={locale} />
+            <p className="mt-2 text-center text-[11px] text-zinc-400">
+              {L2_STR.selectedSite[locale]}: <span className="font-mono text-cyan-400">{selectedSite}</span>
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <h3 className="mb-2 text-xs font-black text-zinc-300">{L2_STR.rotation[locale]}</h3>
+            <RotationTable weeks={weeks} violations={violations} locale={locale} />
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <h3 className="mb-1 text-xs font-black text-zinc-300">{L2_STR.gantt[locale]}</h3>
+            <p className="mb-2 text-[11px] text-zinc-500">{L2_STR.ganttNote[locale]}</p>
+            <Gantt rows={gantt} override={ganttOverride} onSwap={swapGantt} locale={locale} />
+          </div>
+        </div>
+      )}
+
+      {tab === 'comfort' && (
+        <div className="space-y-4">
+          <ComfortPanel
+            volumeMl={comfortVolume}
+            siteId={selectedSite}
+            painScore={painScore}
+            locale={locale}
+            onVolume={setComfortVolume}
+            onSite={setSelectedSite}
+            onPain={setPainScore}
+          />
+
+          <PersonalLogger
+            log={painLog}
+            onAdd={(v) => setPainLog((p) => [...p, v])}
+            daysSince={daysSince}
+            onDays={setDaysSince}
+            locale={locale}
+          />
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <h3 className="mb-2 text-xs font-black text-zinc-300">{L2_STR.chart[locale]}</h3>
+            <LazyAccumulationChart
+              data={chartData}
+              label={locale === 'ar' ? 'التراكم النسبي' : 'Relative level'}
+              locale={locale}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              data-testid="export-pdf"
+              onClick={exportPdf}
+              className="rounded-lg bg-zinc-800 px-4 py-2 text-xs font-bold text-zinc-200 hover:bg-zinc-700"
+            >
+              {L2_STR.exportPdf[locale]}
+            </button>
+            <button
+              type="button"
+              data-testid="export-fhir"
+              onClick={() => exportFhir(result)}
+              disabled={!result}
+              className="rounded-lg bg-zinc-800 px-4 py-2 text-xs font-bold text-zinc-200 hover:bg-zinc-700 disabled:opacity-40"
+            >
+              {L2_STR.exportFhir[locale]}
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="mt-6 pt-4 border-t border-zinc-800 text-[10px] text-zinc-600 flex flex-col gap-1">
