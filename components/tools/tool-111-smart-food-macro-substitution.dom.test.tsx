@@ -43,7 +43,11 @@ vi.mock('@/lib/tools/adapters/tool-111-smart-food-macro-substitution', () => {
     substituteMacros: { protein: 31.4, carbs: 4.6, fat: 17.4, calories: 288 },
     macroDeltas: { protein: 0.4, carbs: 4.6, fat: 13.8, calories: 123 },
     calorieDifference: 123, proteinDifference: 0.4, carbsDifference: 4.6, fatDifference: 13.8,
-    targetAdherence: undefined, warnings: [],
+    targetAdherence: {
+      protein: 'on_target', carbs: 'on_target', fat: 'on_target', calories: 'on_target',
+      overall: 'significantly_off',
+    },
+    warnings: [],
     limitations: [{ code: 'ESTIMATED_VALUES', message: 'Estimated values' }],
     metadata: { calculationTimestamp: '2026-10-16T10:00:00.000Z', engineVersion: '1.0.0',
       dataSources: ['USDA', 'USDA'], calculationTimeMs: 1, unitSystem: 'metric', locale: 'en' },
@@ -78,12 +82,27 @@ vi.mock('@/lib/tools/adapters/tool-111-smart-food-macro-substitution', () => {
   };
 });
 
+import { tool111Adapter } from '@/lib/tools/adapters/tool-111-smart-food-macro-substitution';
+
 describe('Tool #111 — Component & i18n (DOM)', () => {
   beforeEach(() => { vi.clearAllMocks(); localStorageStore = {}; });
   afterEach(() => { cleanup(); });
 
   function renderTool(locale: Locale) {
     return render(<WithPreferences locale={locale}><Tool111SmartFoodMacroSubstitution /></WithPreferences>);
+  }
+
+  /** Fills names + original macros + substitute macros with valid values. */
+  function fillValidForm(container: HTMLElement) {
+    const textboxes = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
+    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
+    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
+    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu' } });
+    const numbers = container.querySelectorAll('input[type="number"]');
+    // number inputs: [0..3] original macros, [4..7] substitute macros
+    ['31', '0', '3.6', '165'].forEach((v, i) => fireEvent.change(numbers[i], { target: { value: v } }));
+    ['15.7', '2.3', '8.7', '144'].forEach((v, i) => fireEvent.change(numbers[4 + i], { target: { value: v } }));
   }
 
   it('TC-01 renders the input form in English with LTR direction', () => {
@@ -104,11 +123,7 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
 
   it('TC-03 calls the adapter with valid input and displays results', () => {
     const { container } = renderTool('en');
-    const textboxes = container.querySelectorAll('input[type="text"]');
-    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
-    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu English' } });
+    fillValidForm(container);
     fireEvent.click(screen.getByText('Calculate Substitution'));
     expect(document.body.textContent).toContain('Substitution Results');
   });
@@ -121,11 +136,7 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
 
   it('TC-05 displays engine results including equivalence score', () => {
     const { container } = renderTool('en');
-    const textboxes = container.querySelectorAll('input[type="text"]');
-    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
-    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu English' } });
+    fillValidForm(container);
     fireEvent.click(screen.getByText('Calculate Substitution'));
     expect(document.body.textContent).toContain('80.0');
     expect(document.body.textContent).toContain('Macro Equivalence Score');
@@ -133,11 +144,7 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
 
   it('TC-06 displays warnings and limitations', () => {
     const { container } = renderTool('en');
-    const textboxes = container.querySelectorAll('input[type="text"]');
-    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
-    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu English' } });
+    fillValidForm(container);
     fireEvent.click(screen.getByText('Calculate Substitution'));
     expect(document.body.textContent).toContain('Limitations');
     expect(document.body.textContent).toContain('ESTIMATED_VALUES');
@@ -145,11 +152,7 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
 
   it('TC-07 displays key findings', () => {
     const { container } = renderTool('en');
-    const textboxes = container.querySelectorAll('input[type="text"]');
-    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
-    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu English' } });
+    fillValidForm(container);
     fireEvent.click(screen.getByText('Calculate Substitution'));
     expect(document.body.textContent).toContain('Key Findings');
     expect(document.body.textContent).toContain('EQUIVALENCE_SCORE');
@@ -157,11 +160,7 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
 
   it('TC-08 displays data provenance', () => {
     const { container } = renderTool('en');
-    const textboxes = container.querySelectorAll('input[type="text"]');
-    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
-    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
-    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu English' } });
+    fillValidForm(container);
     fireEvent.click(screen.getByText('Calculate Substitution'));
     expect(document.body.textContent).toContain('Data Provenance');
     expect(document.body.textContent).toContain('import');
@@ -177,6 +176,58 @@ describe('Tool #111 — Component & i18n (DOM)', () => {
     const { container } = renderTool('en');
     expect((container.firstChild as HTMLElement)).toHaveAttribute('dir', 'ltr');
     expect(screen.getByText('Inputs')).toBeInTheDocument();
+  });
+
+  it('TC-13 passes the entered substitute-food macros to the adapter', () => {
+    const { container } = renderTool('en');
+    fillValidForm(container);
+    fireEvent.click(screen.getByText('Calculate Substitution'));
+    const exec = vi.mocked(tool111Adapter.execute);
+    expect(exec).toHaveBeenCalledTimes(1);
+    const input = (exec.mock.calls[0] as unknown as any[])[0];
+    expect(input.substituteFood.macrosPer100g).toEqual({ protein: 15.7, carbs: 2.3, fat: 8.7, calories: 144 });
+    expect(input.originalFood.macrosPer100g).toEqual({ protein: 31, carbs: 0, fat: 3.6, calories: 165 });
+  });
+
+  it('TC-14 blocks calculation and shows an error when substitute macros are missing', () => {
+    const { container } = renderTool('en');
+    const textboxes = container.querySelectorAll('input[type="text"]');
+    fireEvent.change(textboxes[0], { target: { value: 'Chicken Breast' } });
+    fireEvent.change(textboxes[1], { target: { value: 'Chicken Breast' } });
+    fireEvent.change(textboxes[2], { target: { value: 'Firm Tofu' } });
+    fireEvent.change(textboxes[3], { target: { value: 'Firm Tofu' } });
+    const numbers = container.querySelectorAll('input[type="number"]');
+    ['31', '0', '3.6', '165'].forEach((v, i) => fireEvent.change(numbers[i], { target: { value: v } }));
+    fireEvent.click(screen.getByText('Calculate Substitution'));
+    expect(document.body.textContent).toContain('Validation Errors');
+    expect(vi.mocked(tool111Adapter.execute)).not.toHaveBeenCalled();
+  });
+
+  it('TC-15 rejects invalid (negative) substitute macros without calling the adapter', () => {
+    const { container } = renderTool('en');
+    fillValidForm(container);
+    const numbers = container.querySelectorAll('input[type="number"]');
+    fireEvent.change(numbers[4], { target: { value: '-1' } });
+    fireEvent.click(screen.getByText('Calculate Substitution'));
+    expect(document.body.textContent).toContain('Validation Errors');
+    expect(vi.mocked(tool111Adapter.execute)).not.toHaveBeenCalled();
+  });
+
+  it('TC-16 localizes the target-adherence level in English (no raw value)', () => {
+    const { container } = renderTool('en');
+    fillValidForm(container);
+    fireEvent.click(screen.getByText('Calculate Substitution'));
+    expect(document.body.textContent).toContain('Significantly off');
+    expect(document.body.textContent).not.toContain('significantly_off');
+  });
+
+  it('TC-17 localizes the target-adherence level in Arabic (RTL)', () => {
+    const { container } = renderTool('ar');
+    fillValidForm(container);
+    fireEvent.click(screen.getByText('احسب الاستبدال'));
+    expect(document.body.textContent).toContain('بعيد بشكل كبير');
+    expect(document.body.textContent).not.toContain('significantly_off');
+    expect((container.firstChild as HTMLElement)).toHaveAttribute('dir', 'rtl');
   });
 
   it('TC-11 component has no hardcoded UI strings', async () => {

@@ -11,6 +11,9 @@
     "data_source": "Data Source",
     "data_quality": "Data Quality",
     "macros_per_100g": "Macros per 100g",
+    "original_macros_per_100g": "Original Food — Macros per 100g",
+    "substitute_macros_per_100g": "Substitute Food — Macros per 100g",
+    "macros_required": "Enter protein, carbs, fat and calories per 100g as valid numbers (0 or more).",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",
@@ -66,7 +69,11 @@
     "good": "Good",
     "fair": "Fair",
     "poor": "Poor",
-    "unacceptable": "Unacceptable"
+    "unacceptable": "Unacceptable",
+    "adherence_on_target": "On target",
+    "adherence_slightly_off": "Slightly off",
+    "adherence_moderately_off": "Moderately off",
+    "adherence_significantly_off": "Significantly off"
   },
   "ar": {
     "tool_name": "محرك استبدال الطعام الذكي بالمكرويات",
@@ -80,6 +87,9 @@
     "data_source": "مصدر البيانات",
     "data_quality": "جودة البيانات",
     "macros_per_100g": "الماكروز لكل 100غ",
+    "original_macros_per_100g": "ماكروز الطعام الأصلي لكل 100غ",
+    "substitute_macros_per_100g": "ماكروز الطعام البديل لكل 100غ",
+    "macros_required": "أدخل البروتين والكربوهيدرات والدهون والسعرات لكل 100غ كأرقام صحيحة (0 أو أكثر).",
     "protein": "بروتين",
     "carbs": "كربوهيدرات",
     "fat": "دهون",
@@ -135,6 +145,10 @@
     "good": "جيد",
     "fair": "مقبول",
     "poor": "ضعيف",
-    "unacceptable": "غير مقبول"
+    "unacceptable": "غير مقبول",
+    "adherence_on_target": "ضمن الهدف",
+    "adherence_slightly_off": "بعيد قليلاً",
+    "adherence_moderately_off": "بعيد بدرجة متوسطة",
+    "adherence_significantly_off": "بعيد بشكل كبير"
   }
 }
