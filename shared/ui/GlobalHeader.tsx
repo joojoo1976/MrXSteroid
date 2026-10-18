@@ -339,17 +339,16 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             control above: it never changes the L1 language or the URL. */}
                         <RuntimeLanguageSelector />
 
-                        {/* Unit Switcher (calculators only) */}
-                        {isCalculatorPage && (
-                            <button
-                                onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
-                                className="hidden md:flex items-center justify-center gap-1 px-2.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-200"
-                                title={isRTL ? 'نظام القياس' : 'Unit system'}
-                            >
-                                <Scale className="w-3.5 h-3.5 text-gold-500" />
-                                <span>{unitSystem === 'metric' ? (isRTL ? 'متري' : 'MET') : (isRTL ? 'إمبر' : 'IMP')}</span>
-                            </button>
-                        )}
+                        {/* Unit Switcher */}
+                        <button
+                            id="global-header-unit-btn"
+                            onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
+                            className="hidden sm:flex items-center justify-center gap-1 px-2.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-200"
+                            title={isRTL ? 'نظام القياس' : 'Unit system'}
+                        >
+                            <Scale className="w-3.5 h-3.5 text-gold-500" />
+                            <span>{unitSystem === 'metric' ? (isRTL ? 'متري' : 'MET') : (isRTL ? 'إمبر' : 'IMP')}</span>
+                        </button>
 
                         {/* Auth / Profile */}
                         <div className="hidden sm:flex items-center gap-1.5 ps-2 ms-1 border-s border-zinc-200 dark:border-zinc-800">
@@ -601,7 +600,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
 
                             <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-3" />
 
-                            {/* Mobile Language + Theme */}
+                            {/* Mobile Language + Units + Theme */}
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={toggleLanguage}
@@ -609,6 +608,14 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                 >
                                     <Globe className="w-4 h-4 text-gold-500" />
                                     {lang === Language.AR ? 'English' : 'العربية'}
+                                </button>
+                                <button
+                                    onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
+                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-bold"
+                                    aria-label={isRTL ? 'تغيير نظام القياس' : 'Switch measurement system'}
+                                >
+                                    <Scale className="w-4 h-4 text-gold-500" />
+                                    <span>{unitSystem === 'metric' ? (isRTL ? 'متري' : 'Metric') : (isRTL ? 'إمبر' : 'Imperial')}</span>
                                 </button>
                                 {!disableThemeSwitcher && (
                                     <ThemeSwitcher

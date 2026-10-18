@@ -13,7 +13,7 @@ import { useLegacyNavigation } from '../../lib/use-legacy-navigation';
 import { Page, ContentStrings } from '@/shared/types/types';
 import { pathToPage } from '../../lib/legacy-routes';
 import LegacyHeader from './LegacyHeader';
-import LegacyFooter from './LegacyFooter';
+import GlobalFooterWrapper from '../layouts/GlobalFooterWrapper';
 
 interface LegacyPageShellProps {
     children: (ctx: { content: ContentStrings; navigateTo: (page: Page) => void }) => React.ReactNode;
@@ -31,7 +31,7 @@ export default function LegacyPageShell({ children }: LegacyPageShellProps) {
             <main className="flex-1 pt-32 pb-20 container mx-auto px-4 animate-fade-in">
                 {children({ content, navigateTo })}
             </main>
-            <LegacyFooter navigateTo={navigateTo} />
+            <GlobalFooterWrapper />
         </div>
     );
 }
