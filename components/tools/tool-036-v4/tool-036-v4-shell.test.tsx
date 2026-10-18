@@ -1,0 +1,126 @@
+/**
+ * Tool-036 V4 — preview shell tests (gate C4, coherence scenario S1).
+ *
+ * S1 asks: when the user changes one declared input, do EVERY dependent
+ * surfaces update together in the same act — weekly total, per-shot dose,
+ * per-shot volume, the volume-zone guard, and the preference findings?
+ * The shell owns no logic of its own, so the answer must be yes by
+ * construction; this test pins it.
+ *
+ * Note: vitest.setup.ts replaces window.localStorage with no-op vi.fn()
+ * stubs (for older suites). A real in-memory implementation is installed
+ * here so persistence behaviour is genuinely exercised.
+ */
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import React from 'react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import Tool036V4Shell from './tool-036-v4-shell';
+
+const STORAGE_KEY = 'mrx.tool-036-v4.state';
+
+function installMemoryStorage(): Map<string, string> {
+  const map = new Map<string, string>();
+  const impl = {
+    getItem: (k: string) => map.get(k) ?? null,
+    setItem: (k: string, v: string) => void map.set(k, String(v)),
+    removeItem: (k: string) => void map.delete(k),
+    clear: () => map.clear(),
+    get length() {
+      return map.size;
+    },
+    key: (i: number) => [...map.keys()][i] ?? null,
+  };
+  Object.defineProperty(window, 'localStorage', { value: impl, writable: true, configurable: true });
+  return map;
+}
+
+let storageMap: Map<string, string>;
+
+beforeEach(() => {
+  storageMap = installMemoryStorage();
+});
+
+afterEach(() => {
+  cleanup();
+});
+
+async function renderLoaded() {
+  const result = render(<Tool036V4Shell />);
+  await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
+  return result;
+}
+
+describe('V4 shell — coherence scenario S1', () => {
+  it('one dose change updates weekly total, shot dose, volume and zone guard together', async () => {
+    const { container } = await renderLoaded();
+
+    // Declared default: 250 mg/wk, 2 injections, 250 mg/mL.
+    expect(screen.getByTestId('weekly-mg').textContent).toContain('250');
+    expect(screen.getAllByTestId('shot-dose')[0].textContent).toContain('125');
+    expect(screen.getAllByTestId('shot-volume')[0].textContent).toContain('0.5');
+    expect(container.querySelectorAll('[data-zone="yellow"]')).toHaveLength(0);
+    expect(screen.getByTestId('no-findings')).toBeTruthy();
+
+    // A single declared change — 2000 mg/wk => 1000 mg per shot => 4 mL.
+    fireEvent.change(screen.getByLabelText('الجرعة الأسبوعية'), { target: { value: '2000' } });
+
+    expect(screen.getByTestId('weekly-mg').textContent).toContain('2000');
+    expect(screen.getAllByTestId('shot-dose')[0].textContent).toContain('1000');
+    expect(screen.getAllByTestId('shot-volume')[0].textContent).toContain('4');
+    // The guard re-evaluated in the same act: 4 mL is beyond the routine band.
+    expect(container.querySelectorAll('[data-zone="yellow"]').length).toBeGreaterThan(0);
+    // The preference surface is derived from the same state — still coherent.
+    expect(screen.getByTestId('no-findings')).toBeTruthy();
+  });
+
+  it('the change reaches persisted storage in the same interaction', async () => {
+    await renderLoaded();
+    fireEvent.change(screen.getByLabelText('الجرعة الأسبوعية'), { target: { value: '900' } });
+    const stored = JSON.parse(storageMap.get(STORAGE_KEY)!);
+    expect(stored.schemaVersion).toBe(2);
+    expect(stored.plan.compounds[0].weeklyDoseMg).toBe(900);
+  });
+
+  it('a reload restores the persisted plan (continuity through the UI)', async () => {
+    await renderLoaded();
+    fireEvent.change(screen.getByLabelText('الجرعة الأسبوعية'), { target: { value: '900' } });
+    cleanup();
+    await renderLoaded();
+    expect(screen.getByTestId('weekly-mg').textContent).toContain('900');
+  });
+});
+
+describe('V4 shell — decision R2 (silence is stated, never inferred)', () => {
+  it('with no recorded events every site says «لا توجد بيانات استخدام مسجّلة»', async () => {
+    await renderLoaded();
+    expect(screen.getAllByText('لا توجد بيانات استخدام مسجّلة')).toHaveLength(8);
+  });
+
+  it('no readiness wording or healing-day inference appears anywhere', async () => {
+    const { container } = await renderLoaded();
+    const text = container.textContent ?? '';
+    expect(text).not.toMatch(/جاهز|الالتئام|آمن للاستخدام/);
+  });
+});
+
+describe('V4 shell — surface identity', () => {
+  it('renders RTL Arabic with an explicit non-medical scope notice', async () => {
+    const { container } = await renderLoaded();
+    const root = container.querySelector('[dir="rtl"]');
+    expect(root).toBeTruthy();
+    expect(root!.getAttribute('lang')).toBe('ar');
+    expect(container.textContent).toContain('ليست استشارة طبية');
+  });
+
+  it('every cited rule exposes source, confidence and applicability', async () => {
+    const { container } = await renderLoaded();
+    const cites = container.querySelectorAll('[data-testid^="rule-"]');
+    expect(cites.length).toBeGreaterThan(0);
+    for (const cite of cites) {
+      const text = cite.textContent ?? '';
+      expect(text).toContain('المصدر:');
+      expect(text).toContain('الثقة:');
+      expect(text).toContain('النطاق:');
+    }
+  });
+});
