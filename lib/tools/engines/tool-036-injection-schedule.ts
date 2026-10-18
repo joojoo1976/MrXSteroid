@@ -673,3 +673,68 @@ export function buildFhirBundle(result: ChronoResult, opts: { patientRef?: strin
   }
   return { resourceType: 'Bundle', type: 'collection', entry };
 }
+
+/* ==========================================================================
+ * SUPREME V3 — weekly-calendar helpers (pure: no Date.now(), no Math.random())
+ * ========================================================================== */
+
+const DAY_MS = 864e5;
+const WEEK_MS = 7 * DAY_MS;
+
+/** Default rotation order: L glute -> R glute -> Ventro -> Deltoid -> Vastus. */
+export const DEFAULT_ROTATION_SITES: readonly string[] = [
+  'dorso-l',
+  'dorso-r',
+  'ventro-l',
+  'ventro-r',
+  'deltoid-l',
+  'deltoid-r',
+  'vastus-l',
+  'vastus-r',
+];
+
+/** Total weekly milligrams across every scheduled compound. */
+export function totalWeeklyMg(items: { weeklyDoseMg: number }[]): number {
+  return items.reduce((sum, it) => sum + (Number.isFinite(it.weeklyDoseMg) ? it.weeklyDoseMg : 0), 0);
+}
+
+/** siteId -> days since the most recent use (most recent log wins; negatives clamp to 0). */
+export function siteRecency(logs: InjectionLog[], todayDayIndex: number): Record<string, number> {
+  const last = new Map<string, number>();
+  for (const log of logs) {
+    const prev = last.get(log.siteId);
+    if (prev === undefined || log.dayIndex > prev) last.set(log.siteId, log.dayIndex);
+  }
+  const out: Record<string, number> = {};
+  last.forEach((dayIndex, siteId) => {
+    out[siteId] = Math.max(0, todayDayIndex - dayIndex);
+  });
+  return out;
+}
+
+/** Recency bucket used to colour the body map by last use. */
+export function recencyTone(daysSince: number | undefined): 'never' | 'rest' | 'healing' | 'ready' {
+  if (daysSince === undefined || !Number.isFinite(daysSince)) return 'never';
+  if (daysSince < 7) return 'rest';
+  if (daysSince < 14) return 'healing';
+  return 'ready';
+}
+
+/** Countdown to the next shot day. `nowMs` is milliseconds since the start of the current week. */
+export function nextInjection(
+  nowMs: number,
+  shotDayIndices: number[],
+  weekMs: number = WEEK_MS,
+): { msRemaining: number; dayIndex: number; overdue: boolean } {
+  if (shotDayIndices.length === 0) return { msRemaining: 0, dayIndex: 0, overdue: true };
+
+  const daysInWeek = weekMs / DAY_MS;
+  const nowDay = (((nowMs % weekMs) + weekMs) % weekMs) / DAY_MS;
+  const sorted = [...new Set(shotDayIndices)].sort((a, b) => a - b);
+
+  const upcoming = sorted.find((d) => d > nowDay);
+  if (upcoming !== undefined) return { msRemaining: (upcoming - nowDay) * DAY_MS, dayIndex: upcoming, overdue: false };
+
+  const first = sorted[0];
+  return { msRemaining: (daysInWeek - nowDay + first) * DAY_MS, dayIndex: first, overdue: false };
+}

@@ -25,8 +25,14 @@ import {
   planChronoInjectionSchedule,
   buildRotationPlan,
   ESTER_PROFILES,
+  totalWeeklyMg,
+  siteRecency,
+  recencyTone,
+  nextInjection,
+  DEFAULT_ROTATION_SITES,
   type ChronoPlanInput,
   type EsterProfile,
+  type InjectionLog,
 } from './tool-036-injection-schedule';
 import {
   ComfortAssessmentSchema,
@@ -272,5 +278,62 @@ describe('LEVEL 2/3 Zod schemas', () => {
       rotation_sites: ['ventro-l', 'ventro-r'],
     });
     expect(FhirBundleSchema.safeParse(buildFhirBundle(result)).success).toBe(true);
+  });
+});
+
+describe('V3 engine — weekly calendar helpers', () => {
+  const DAY = 864e5;
+
+  it('totalWeeklyMg sums every compound weekly dose', () => {
+    expect(totalWeeklyMg([{ weeklyDoseMg: 500 }, { weeklyDoseMg: 250 }])).toBe(750);
+    expect(totalWeeklyMg([])).toBe(0);
+  });
+
+  it('siteRecency reports days since each site was used', () => {
+    const logs: InjectionLog[] = [{ siteId: 'ventro-l', dayIndex: 4 }];
+    expect(siteRecency(logs, 7)).toEqual({ 'ventro-l': 3 });
+    expect(siteRecency([], 7)).toEqual({});
+  });
+
+  it('siteRecency keeps the most recent use and clamps negatives to 0', () => {
+    const logs: InjectionLog[] = [
+      { siteId: 'ventro-l', dayIndex: 1 },
+      { siteId: 'ventro-l', dayIndex: 6 },
+      { siteId: 'deltoid-l', dayIndex: 9 },
+    ];
+    expect(siteRecency(logs, 7)).toEqual({ 'ventro-l': 1, 'deltoid-l': 0 });
+  });
+
+  it('recencyTone maps days-since to a recency tone', () => {
+    expect(recencyTone(undefined)).toBe('never');
+    expect(recencyTone(0)).toBe('rest');
+    expect(recencyTone(6)).toBe('rest');
+    expect(recencyTone(7)).toBe('healing');
+    expect(recencyTone(13)).toBe('healing');
+    expect(recencyTone(14)).toBe('ready');
+  });
+
+  it('nextInjection counts down to the next shot day', () => {
+    expect(nextInjection(0, [0, 4])).toEqual({ msRemaining: 4 * DAY, dayIndex: 4, overdue: false });
+  });
+
+  it('nextInjection wraps into the following week', () => {
+    expect(nextInjection(5 * DAY, [0, 4])).toEqual({ msRemaining: 2 * DAY, dayIndex: 0, overdue: false });
+  });
+
+  it('nextInjection flags overdue when nothing is scheduled', () => {
+    expect(nextInjection(0, [])).toEqual({ msRemaining: 0, dayIndex: 0, overdue: true });
+  });
+
+  it('DEFAULT_ROTATION_SITES starts L glute -> R glute -> Ventro', () => {
+    expect(DEFAULT_ROTATION_SITES).toHaveLength(8);
+    expect(DEFAULT_ROTATION_SITES[0]).toBe('dorso-l');
+    expect(DEFAULT_ROTATION_SITES[1]).toBe('dorso-r');
+    expect(DEFAULT_ROTATION_SITES[2]).toBe('ventro-l');
+  });
+
+  it('rotation engine auto-advances through the default order', () => {
+    const plan = buildRotationPlan([...DEFAULT_ROTATION_SITES], [], 1);
+    expect(plan[0].entries.map((e) => e.site)).toEqual(['dorso-l', 'dorso-r']);
   });
 });
