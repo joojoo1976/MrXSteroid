@@ -18,6 +18,12 @@ import Tool036V4Shell from './tool-036-v4-shell';
 
 const STORAGE_KEY = 'mrx.tool-036-v4.state';
 
+/** Same wall-time format the shell's datetime-local input uses. */
+function toInputValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function installMemoryStorage(): Map<string, string> {
   const map = new Map<string, string>();
   const impl = {
@@ -100,6 +106,40 @@ describe('V4 shell — decision R2 (silence is stated, never inferred)', () => {
     const { container } = await renderLoaded();
     const text = container.textContent ?? '';
     expect(text).not.toMatch(/جاهز|الالتئام|آمن للاستخدام/);
+  });
+});
+
+describe('V4 shell — drift truthfulness (scenario S2)', () => {
+  it('logging an actual 7h after its slot reports «متأخر» with the declared delta', async () => {
+    await renderLoaded();
+
+    // Take a scheduled slot from the rendered proposal (the first row).
+    const scheduledIso = document.querySelector('[data-testid="shot-row"]')!.getAttribute(
+      'data-scheduled-at',
+    )!;
+    // Log an actual 7h later — beyond the 6h default tolerance, inside 24h.
+    const lateAt = new Date(Date.parse(scheduledIso) + 7 * 3_600_000);
+    fireEvent.change(screen.getByLabelText('موعد الحقن الفعلي'), {
+      target: { value: toInputValue(lateAt) },
+    });
+    fireEvent.click(screen.getByText('تسجيل'));
+
+    expect(screen.getByTestId('drift-status-late')).toBeTruthy();
+    expect(screen.getByTestId('drift-delta').textContent).toContain('7');
+    // The declared rules are visible next to the report — no composite score.
+    const rules = screen.getByTestId('declared-rules').textContent ?? '';
+    expect(rules).toContain('±24');
+    expect(rules).toContain('لا توجد درجة مركّبة');
+    expect(screen.getByTestId('drift-summary').textContent).toContain('متأخر: 1');
+  });
+
+  it('the log form refuses an empty/non-positive volume with an explicit message', async () => {
+    await renderLoaded();
+    // `min=0.01` already blocks typed zeros natively; the handler's own guard
+    // covers what native validation lets through (an empty field).
+    fireEvent.change(screen.getByLabelText('الحجم بالمل'), { target: { value: '' } });
+    fireEvent.click(screen.getByText('تسجيل'));
+    expect(screen.getByTestId('log-error').textContent).toContain('أرقامًا موجبة');
   });
 });
 

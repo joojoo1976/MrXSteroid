@@ -18,7 +18,10 @@
  *  - an actual earlier than tolerance (but within 24 h) is still `matched`,
  *    with the earliness stated in the reason;
  *  - no actual inside the window → `missed`;
- *  - an actual with no scheduled counterpart → `extra`.
+ *  - an actual with no scheduled counterpart → `extra`;
+ *  - a scheduled shot whose judging window has NOT closed yet (still inside
+ *    the +24h half-window relative to `now`) is not judged at all — calling
+ *    a future shot "missed" would be a lie; it stays visible in the proposal.
  *
  * These are bookkeeping rules about adherence, not clinical judgements.
  */
@@ -88,9 +91,14 @@ export function buildDriftReport(
 
   const used = new Set<string>();
   const items: DriftItem[] = [];
+  const nowMs = Date.parse(nowIso);
 
   for (const shot of shots) {
     const scheduledMs = Date.parse(shot.occurredAt);
+
+    // Declared rule: a shot is only judged once its window has closed or an
+    // actual already claims it. Future shots are preview material, not facts.
+    const windowClosed = scheduledMs + MATCHING_WINDOW_HOURS * 3_600_000 < nowMs;
     let best: InjectionEvent | null = null;
     let bestAbs = Number.POSITIVE_INFINITY;
 
@@ -104,6 +112,8 @@ export function buildDriftReport(
         bestAbs = abs;
       }
     }
+
+    if (!best && !windowClosed) continue; // not yet judgeable — silently skip
 
     if (!best) {
       items.push({

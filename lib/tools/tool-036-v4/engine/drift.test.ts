@@ -168,6 +168,29 @@ describe('V4 drift — declared matching rules', () => {
     expect(report.items.filter((i) => i.status === 'missed')).toHaveLength(2);
     expect(report.items.filter((i) => i.status === 'extra')).toHaveLength(1);
   });
+
+  it('a shot whose judging window has not closed is not judged', () => {
+    // asOf sits inside S2's +24h window: S2 must not be called "missed" —
+    // its window is still open. S1 (older) is judged.
+    const asOf = new Date(Date.parse(SCHEDULED_S2) + 2 * hour).toISOString();
+    const report = buildDriftReport(PROPOSAL, [], PREFS, asOf);
+    expect(report.items).toHaveLength(1);
+    expect(report.items[0].scheduledAt).toBe(SCHEDULED_S1);
+    expect(report.items[0].status).toBe('missed');
+  });
+
+  it('a future shot WITH a matching actual is still judged (the actual is a fact)', () => {
+    const asOf = new Date(Date.parse(SCHEDULED_S2) - 1 * hour).toISOString();
+    const report = buildDriftReport(
+      PROPOSAL,
+      [actual(new Date(Date.parse(SCHEDULED_S2) - 1 * hour).toISOString(), 'dorso-r', 'a1')],
+      PREFS,
+      asOf,
+    );
+    const s2 = report.items.find((i) => i.scheduledAt === SCHEDULED_S2)!;
+    expect(s2.status).toBe('matched');
+    expect(s2.deltaHours).toBe(-1);
+  });
 });
 
 describe('V4 drift — summary, determinism, contract', () => {

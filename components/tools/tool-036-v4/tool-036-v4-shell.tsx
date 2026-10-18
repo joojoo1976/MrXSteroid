@@ -36,6 +36,7 @@ import { loadState, saveState } from '@/lib/tools/tool-036-v4/state/storage';
 import { compileProposal } from '@/lib/tools/tool-036-v4/engine/proposal';
 import { checkRotation } from '@/lib/tools/tool-036-v4/engine/rotation-check';
 import { siteRecencyFromEvents } from '@/lib/tools/tool-036-v4/engine/recency';
+import { buildDriftReport } from '@/lib/tools/tool-036-v4/engine/drift';
 import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
 
 const PREVIEW_WEEKS = 4;
@@ -48,6 +49,20 @@ const ZONE_LABEL: Record<Zone, string> = {
 };
 
 const SITE_LABEL = Object.fromEntries(BODY_SITES.map((s) => [s.siteId, s.labelAr]));
+
+const DRIFT_STATUS_LABEL = {
+  matched: 'في الموعد',
+  late: 'متأخر',
+  missed: 'فائت',
+  extra: 'مسجّل دون موعد',
+  'site-changed': 'موقع مختلف',
+} as const;
+
+/** Browser-local wall-time for a datetime-local input (converted to absolute on submit). */
+function toLocalInputValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 function safeTz(): string {
   try {
@@ -96,6 +111,15 @@ function RuleCite({ ruleId }: { ruleId: string }) {
 export default function Tool036V4Shell() {
   const [state, setState] = useState<AppState | null>(null);
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
+  const [logForm, setLogForm] = useState({
+    when: toLocalInputValue(new Date()),
+    siteId: BODY_SITES[0].siteId,
+    volume: '1',
+    dose: '125',
+    pain: '',
+    note: '',
+  });
+  const [logError, setLogError] = useState<string | null>(null);
 
   useEffect(() => {
     const loaded = loadState();
@@ -128,8 +152,9 @@ export default function Tool036V4Shell() {
     });
     const findings = checkRotation(state.events, proposal, state.prefs.restPreferenceDays);
     const recency = siteRecencyFromEvents(state.events, nowIso);
+    const drift = buildDriftReport(proposal, state.events, state.prefs, nowIso);
     const weeklyMg = state.plan.compounds.reduce((sum, c) => sum + c.weeklyDoseMg, 0);
-    return { proposal, findings, recency, weeklyMg };
+    return { proposal, findings, recency, drift, weeklyMg };
   }, [state]);
 
   if (!state || !derived) {
@@ -139,6 +164,36 @@ export default function Tool036V4Shell() {
   const updateCompound = (index: number, patch: Partial<PlanCompound>) => {
     const compounds = state.plan.compounds.map((c, i) => (i === index ? { ...c, ...patch } : c));
     dispatch({ type: 'plan/replace', plan: { ...state.plan, compounds } });
+  };
+
+  const handleLogActual = (event: React.FormEvent) => {
+    event.preventDefault();
+    const volumeMl = Number(logForm.volume);
+    const doseMg = Number(logForm.dose);
+    const when = new Date(logForm.when);
+    if (!Number.isFinite(volumeMl) || volumeMl <= 0 || !Number.isFinite(doseMg) || doseMg <= 0) {
+      setLogError('الحجم والجرعة يجب أن يكونا أرقامًا موجبة.');
+      return;
+    }
+    if (Number.isNaN(when.getTime())) {
+      setLogError('موعد غير صالح.');
+      return;
+    }
+    setLogError(null);
+    dispatch({
+      type: 'event/add',
+      event: {
+        // The datetime-local value is browser-local; Date resolves it to an
+        // absolute instant, so what is stored always carries an offset.
+        occurredAt: when.toISOString(),
+        siteId: logForm.siteId as InjectionEvent['siteId'],
+        volumeMl,
+        doseMg,
+        compoundIds: [state.plan.compounds[0].compoundId],
+        painScore: logForm.pain === '' ? undefined : Number(logForm.pain),
+        note: logForm.note.trim() === '' ? undefined : logForm.note,
+      },
+    });
   };
 
   return (
@@ -263,7 +318,12 @@ export default function Tool036V4Shell() {
               {derived.proposal.shots.map((shot) => {
                 const { zone } = classifyVolumeZone(shot.volumeMl, shot.siteId);
                 return (
-                  <tr key={shot.id} data-testid="shot-row" data-zone={zone}>
+                  <tr
+                    key={shot.id}
+                    data-testid="shot-row"
+                    data-zone={zone}
+                    data-scheduled-at={shot.occurredAt}
+                  >
                     <td>{formatInTz(shot.occurredAt, state.prefs.tz)}</td>
                     <td>{SITE_LABEL[shot.siteId]}</td>
                     <td className="font-mono" data-testid="shot-dose">
@@ -343,6 +403,171 @@ export default function Tool036V4Shell() {
             </ul>
           )}
           <RuleCite ruleId="rotation-rest-preference" />
+        </section>
+
+        {/* ---- Log an actual event ---- */}
+        <section aria-labelledby="log-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
+          <h2 id="log-heading" className="mb-3 font-semibold">
+            تسجيل حدث فعلي (الواقع)
+          </h2>
+          <form onSubmit={handleLogActual} className="grid grid-cols-2 gap-3 md:grid-cols-6" data-testid="log-form">
+            <label className="text-sm" htmlFor="log-when">
+              الموعد الفعلي
+              <input
+                id="log-when"
+                aria-label="موعد الحقن الفعلي"
+                type="datetime-local"
+                className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
+                value={logForm.when}
+                onChange={(e) => setLogForm((f) => ({ ...f, when: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm" htmlFor="log-site">
+              الموقع
+              <select
+                id="log-site"
+                aria-label="الموقع"
+                className="mt-1 w-full rounded bg-zinc-900 p-2"
+                value={logForm.siteId}
+                onChange={(e) => setLogForm((f) => ({ ...f, siteId: e.target.value }))}
+              >
+                {BODY_SITES.map((site) => (
+                  <option key={site.siteId} value={site.siteId}>
+                    {site.labelAr}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm" htmlFor="log-volume">
+              الحجم (مل)
+              <input
+                id="log-volume"
+                aria-label="الحجم بالمل"
+                type="number"
+                step="0.01"
+                min="0.01"
+                className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
+                value={logForm.volume}
+                onChange={(e) => setLogForm((f) => ({ ...f, volume: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm" htmlFor="log-dose">
+              الجرعة (مجم)
+              <input
+                id="log-dose"
+                aria-label="الجرعة بالمجم"
+                type="number"
+                step="0.01"
+                min="0.01"
+                className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
+                value={logForm.dose}
+                onChange={(e) => setLogForm((f) => ({ ...f, dose: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm" htmlFor="log-pain">
+              الألم 0–10 (اختياري، معلوماتي)
+              <input
+                id="log-pain"
+                aria-label="درجة الألم"
+                type="number"
+                min="0"
+                max="10"
+                className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
+                value={logForm.pain}
+                onChange={(e) => setLogForm((f) => ({ ...f, pain: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm" htmlFor="log-note">
+              ملاحظة (اختياري)
+              <input
+                id="log-note"
+                aria-label="ملاحظة"
+                type="text"
+                className="mt-1 w-full rounded bg-zinc-900 p-2"
+                value={logForm.note}
+                onChange={(e) => setLogForm((f) => ({ ...f, note: e.target.value }))}
+              />
+            </label>
+            <div className="col-span-2 flex items-center gap-3 md:col-span-6">
+              <button
+                type="submit"
+                className="rounded bg-amber-500 px-4 py-2 font-semibold text-zinc-950"
+              >
+                تسجيل
+              </button>
+              {logError && (
+                <span className="text-sm text-red-400" data-testid="log-error">
+                  {logError}
+                </span>
+              )}
+            </div>
+          </form>
+        </section>
+
+        {/* ---- Plan vs Actual drift (D4/R5: itemised, never a score) ---- */}
+        <section aria-labelledby="drift-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
+          <h2 id="drift-heading" className="mb-3 font-semibold">
+            الخطة مقابل الواقع
+          </h2>
+          <p className="mb-2 text-xs text-zinc-500" data-testid="declared-rules">
+            قواعد المقارنة المعلنة: التسامح {state.prefs.lateToleranceHours} ساعة · نافذة المطابقة
+            ±24 ساعة · «متأخر» = فعلي بعد التسامح وحتى 24 ساعة · «فائت» = لا يوجد فعلي ضمن
+            النافذة بعد إغلاقها · المواعيد التي لم تُغلق نافذتها بعد لا تُقيَّم. كل فرق يُعرض
+            بحالته وسببه وقواعده وحدوده — <strong>ولا توجد درجة مركّبة</strong> (قرار مكتوب).
+          </p>
+          <p className="mb-3 font-mono text-sm text-zinc-300" data-testid="drift-summary">
+            مطابق: {derived.drift.summary.matched} · متأخر: {derived.drift.summary.late} · فائت:{' '}
+            {derived.drift.summary.missed} · دون موعد: {derived.drift.summary.extra} · موقع مختلف:{' '}
+            {derived.drift.summary.siteChanged}
+          </p>
+          {derived.drift.items.length === 0 ? (
+            <p className="text-sm text-zinc-400" data-testid="drift-empty">
+              لا توجد فروقات مُقيَّمة بعد ضمن النافذة.
+            </p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {derived.drift.items.map((item, index) => (
+                <li
+                  key={`${item.scheduledAt}-${index}`}
+                  data-testid="drift-row"
+                  className="border-b border-zinc-800 pb-2"
+                >
+                  <span
+                    data-testid={`drift-status-${item.status}`}
+                    className={
+                      item.status === 'matched'
+                        ? 'text-emerald-400'
+                        : item.status === 'late' || item.status === 'site-changed'
+                          ? 'text-amber-400'
+                          : 'text-red-400'
+                    }
+                  >
+                    {DRIFT_STATUS_LABEL[item.status]}
+                  </span>{' '}
+                  · مخطط: {formatInTz(item.scheduledAt, state.prefs.tz)}
+                  {item.actual && (
+                    <>
+                      {' · فعلي: '}
+                      {formatInTz(item.actual.occurredAt, state.prefs.tz)} (
+                      {SITE_LABEL[item.actual.siteId]})
+                    </>
+                  )}
+                  {item.deltaHours !== undefined && (
+                    <span data-testid="drift-delta" className="font-mono">
+                      {' '}
+                      · فرق {item.deltaHours} ساعة
+                    </span>
+                  )}
+                  <details className="mt-1 text-xs text-zinc-500">
+                    <summary className="cursor-pointer">سبب التصنيف وقواعدته</summary>
+                    <p>السبب: {item.reason}</p>
+                    <p>القاعدة: {item.ruleId}</p>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )}
+          <RuleCite ruleId="drift-matching-tolerance" />
         </section>
       </main>
     </div>
