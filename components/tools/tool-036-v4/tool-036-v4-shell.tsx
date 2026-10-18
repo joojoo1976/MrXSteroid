@@ -141,7 +141,11 @@ export default function Tool036V4Shell() {
   }, []);
 
   useEffect(() => {
-    if (state) saveState(state);
+    // Persist only state the user owns. A wiped (or never-acknowledged) state
+    // must never be written back: otherwise the wipe's own re-render recreates
+    // the key it just deleted. The acknowledgment lives inside this single
+    // record, so "no acknowledgment" is exactly "nothing consented to store".
+    if (state?.prefs.acknowledgedAt) saveState(state);
   }, [state]);
 
   const dispatch = useCallback((action: Tool036Action) => {

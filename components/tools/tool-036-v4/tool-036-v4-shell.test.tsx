@@ -212,6 +212,37 @@ describe('V4 shell — transfer round trip (scenario S4 via UI)', () => {
   });
 });
 
+describe('V4 shell — complete wipe leaves no key (decision D5 / R7)', () => {
+  it('a full delete removes every tool key, keeps foreign keys, and no re-render resurrects it', async () => {
+    storageMap.set('mrx.keep', 'belongs-to-another-tool');
+    const { rerender } = await renderLoaded();
+
+    // Record one actual so there is real health data to wipe.
+    fireEvent.click(screen.getByText('تسجيل'));
+    // The log form defaults to the first declared site (ventro-l); the recorded
+    // fact must replace that site's silence before we wipe it.
+    await waitFor(() => expect(screen.queryByTestId('no-usage-ventro-l')).toBeNull());
+    expect(JSON.parse(storageMap.get(STORAGE_KEY)!).events).toHaveLength(1);
+
+    fireEvent.click(screen.getByTestId('delete-arm'));
+    fireEvent.click(screen.getByTestId('delete-confirm'));
+
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    expect(screen.getByTestId('delete-notice').textContent).toContain('حُذفت');
+
+    // Not one key in the tool's namespace remains — the acknowledgment included.
+    expect([...storageMap.keys()].filter((k) => k.startsWith('mrx.tool-036-v4.'))).toEqual([]);
+    expect(storageMap.has(STORAGE_KEY)).toBe(false);
+    // Foreign data is never touched.
+    expect(storageMap.get('mrx.keep')).toBe('belongs-to-another-tool');
+
+    // Re-rendering the still-open shell must not write the key back.
+    rerender(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    expect(storageMap.has(STORAGE_KEY)).toBe(false);
+  });
+});
+
 describe('V4 shell — acknowledgment gate (decision D5)', () => {
   it('the tool is not usable before the acknowledgment is accepted', async () => {
     render(<Tool036V4Shell />);
@@ -221,6 +252,16 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
     const gateText = screen.getByTestId('ack-gate').textContent ?? '';
     expect(gateText).toContain('لا تشخيص');
     expect(gateText).toContain('حذفها كاملة');
+  });
+
+  it('a first visit writes nothing before the acknowledgment is accepted', async () => {
+    render(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
+    // No consent yet → no key in the tool's namespace at all.
+    expect([...storageMap.keys()].filter((k) => k.startsWith('mrx.tool-036-v4.'))).toEqual([]);
+    fireEvent.click(screen.getByTestId('ack-button'));
+    await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
+    expect(storageMap.has(STORAGE_KEY)).toBe(true);
   });
 
   it('accepting stores the acknowledgment locally and unlocks the tool', async () => {
@@ -243,26 +284,6 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
     render(<Tool036V4Shell />);
     await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
     expect(screen.queryByTestId('ack-gate')).toBeNull();
-  });
-});
-
-describe('V4 shell — complete wipe (decision D5, gate C2.3 at UI level)', () => {
-  it('delete-all empties the stored health data and returns a pristine gate', async () => {
-    await renderLoaded();
-    // The log form defaults to the first declared site (ventro-l); a recorded
-    // fact must replace that site's silence with a real date.
-    fireEvent.click(screen.getByText('تسجيل'));
-    await waitFor(() => expect(screen.queryByTestId('no-usage-ventro-l')).toBeNull());
-    expect(JSON.parse(storageMap.get(STORAGE_KEY)!).events).toHaveLength(1);
-
-    fireEvent.click(screen.getByTestId('delete-arm'));
-    fireEvent.click(screen.getByTestId('delete-confirm'));
-
-    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
-    expect(screen.getByTestId('delete-notice').textContent).toContain('حُذفت');
-    const stored = JSON.parse(storageMap.get(STORAGE_KEY)!);
-    expect(stored.events).toEqual([]);
-    expect(stored.prefs.acknowledgedAt).toBeUndefined();
   });
 });
 
