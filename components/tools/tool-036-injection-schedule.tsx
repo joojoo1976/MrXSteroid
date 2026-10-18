@@ -34,8 +34,8 @@ import i18nJson from '@/i18n/tool-036-injection-schedule.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-036-injection-schedule';
-/** P1 feature flag — default OFF keeps the v1 UI byte-for-byte unchanged (zero-risk rollback). */
-const SUPREME_ON = process.env.NEXT_PUBLIC_FT_TOOL036_SUPREME_V2 === 'true';
+/** SUPREME V2 is the direct default on this route — feature-flag gating removed. */
+const SUPREME_ON = true;
 interface CompoundInput { name_en: string; weekly_dose_mg: number; concentration_mg_ml: number; injections_per_week: number; max_ml_per_site: number }
 interface DraftInputs { compounds: CompoundInput[]; rotation_sites: string }
 
@@ -187,7 +187,7 @@ function Tool036V1() {
 }
 
 /* ==========================================================================
- * LEVEL 1 — MVP CORE (behind NEXT_PUBLIC_FT_TOOL036_SUPREME_V2, default OFF)
+ * LEVEL 1 — MVP CORE (part of the SUPREME V2 default surface — no flag gate)
  * 7 features only: compound selector · weekly Sun/Thu list · Volume Guard v2
  * (3 zones + evidence badge) · next-injection card · busiest day + total volume ·
  * educational footer · [Advanced ▾]. No Level 2/3, no charts, no drag, no AR.
@@ -1024,5 +1024,5 @@ function Tool036Supreme() {
 }
 
 export default function Tool036InjectionSchedule() {
-  return SUPREME_ON ? <Tool036Supreme /> : <Tool036V1 />;
+  return <Tool036Supreme />;
 }

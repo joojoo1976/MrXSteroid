@@ -1,7 +1,7 @@
 /**
- * Tool #036 v2 — feature-flag gating safety test (P1).
- * Contract: NEXT_PUBLIC_FT_TOOL036_SUPREME_V2 defaults OFF => the v1 UI renders unchanged
- * (zero-risk rollback). Flag ON => LEVEL 1 (CHRONO-INJECT OS) renders.
+ * Tool #036 v2 — SUPREME V2 is the direct default (feature-flag gate removed).
+ * Contract: SUPREME V2 (CHRONO-INJECT OS) renders unconditionally on this route —
+ * no env var required, and no v1 fallback.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import React from 'react';
@@ -20,17 +20,17 @@ async function loadComponent(flag: string) {
   return mod.default;
 }
 
-describe('tool-036 feature-flag gating (P1 safety)', () => {
-  it('flag OFF renders the v1 UI (no CHRONO-INJECT shell)', async () => {
+describe('tool-036 SUPREME V2 default (flag gate removed)', () => {
+  it('flag OFF still renders SUPREME V2 (CHRONO-INJECT shell)', async () => {
     const C = await loadComponent('false');
     render(React.createElement(C));
-    expect(screen.queryByText(/CHRONO-INJECT OS/)).toBeNull();
+    expect(screen.getByText(/CHRONO-INJECT OS/)).toBeTruthy();
   });
 
-  it('flag unset defaults to the v1 UI', async () => {
+  it('flag unset still renders SUPREME V2 (no env var required)', async () => {
     const C = await loadComponent('');
     render(React.createElement(C));
-    expect(screen.queryByText(/CHRONO-INJECT OS/)).toBeNull();
+    expect(screen.getByText(/CHRONO-INJECT OS/)).toBeTruthy();
   });
 
   it('flag ON renders LEVEL 1 (CHRONO-INJECT OS)', async () => {
@@ -40,7 +40,7 @@ describe('tool-036 feature-flag gating (P1 safety)', () => {
   });
 });
 
-describe('tool-036 LEVEL 2 + LEVEL 3 (flag ON, behind OFF-by-default flag)', () => {
+describe('tool-036 LEVEL 2 + LEVEL 3 (SUPREME V2 default surface)', () => {
   async function renderSupreme() {
     const C = await loadComponent('true');
     return render(React.createElement(C));
