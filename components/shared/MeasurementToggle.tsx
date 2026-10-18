@@ -56,6 +56,31 @@ export default function MeasurementToggle({
     const [internal, setInternal] = useState<MeasurementSystem>(() => getStoredMeasurementSystem());
     const current = unitSystem ?? internal;
 
+    // Listen to custom mrx_unit_change event and storage events to sync globally
+    useEffect(() => {
+        const handleUnitChange = (e: Event) => {
+            const detail = (e as CustomEvent<MeasurementSystem>).detail;
+            if (detail === 'metric' || detail === 'imperial') {
+                setInternal(detail);
+                onChange?.(detail);
+            }
+        };
+
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'measurementSystem' && (e.newValue === 'metric' || e.newValue === 'imperial')) {
+                setInternal(e.newValue);
+                onChange?.(e.newValue);
+            }
+        };
+
+        window.addEventListener('mrx_unit_change', handleUnitChange);
+        window.addEventListener('storage', handleStorage);
+        return () => {
+            window.removeEventListener('mrx_unit_change', handleUnitChange);
+            window.removeEventListener('storage', handleStorage);
+        };
+    }, [onChange]);
+
     // Initial mount sync if not yet aligned with localStorage
     useEffect(() => {
         const stored = getStoredMeasurementSystem();
@@ -71,6 +96,9 @@ export default function MeasurementToggle({
         storeMeasurementSystem(system);
         setInternal(system);
         onChange?.(system);
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('mrx_unit_change', { detail: system }));
+        }
     };
 
     return (

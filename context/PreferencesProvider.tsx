@@ -67,15 +67,35 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
                 setLocale(urlLang === Language.AR ? 'ar-EG' : 'en-US');
             } else if (!urlLang) {
                 const explicit = localStorage.getItem('mrx_explicit_language');
-                if ((explicit === Language.AR || explicit === Language.EN) && explicit !== language) {
-                    setLanguageState(explicit as Language);
-                    setLocale(explicit === Language.AR ? 'ar-EG' : 'en-US');
+                const secureLang = SecureStorage.getItem('language');
+                const plainLang = localStorage.getItem('language');
+                const resolvedLang = (explicit === Language.AR || explicit === Language.EN)
+                    ? explicit
+                    : (secureLang === Language.AR || secureLang === Language.EN)
+                        ? secureLang
+                        : (plainLang === Language.AR || plainLang === Language.EN)
+                            ? plainLang
+                            : null;
+
+                if (resolvedLang && resolvedLang !== language) {
+                    setLanguageState(resolvedLang as Language);
+                    setLocale(resolvedLang === Language.AR ? 'ar-EG' : 'en-US');
                 }
             }
 
             const explicitUnits = localStorage.getItem('mrx_explicit_units');
-            if ((explicitUnits === 'metric' || explicitUnits === 'imperial') && explicitUnits !== unitSystem) {
-                setUnitSystemState(explicitUnits as UnitSystem);
+            const unitSystemStored = localStorage.getItem('mrx_unit_system');
+            const measurementSys = localStorage.getItem('measurementSystem');
+            const resolvedUnits = (explicitUnits === 'metric' || explicitUnits === 'imperial')
+                ? explicitUnits
+                : (unitSystemStored === 'metric' || unitSystemStored === 'imperial')
+                    ? unitSystemStored
+                    : (measurementSys === 'metric' || measurementSys === 'imperial')
+                        ? measurementSys
+                        : null;
+
+            if (resolvedUnits && resolvedUnits !== unitSystem) {
+                setUnitSystemState(resolvedUnits as UnitSystem);
             }
 
             const storedTheme = localStorage.getItem('mrx_theme');
@@ -87,6 +107,37 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Listen to custom mrx_unit_change and storage events for real-time sync
+    useEffect(() => {
+        const handleUnitChange = (e: Event) => {
+            const detail = (e as CustomEvent<UnitSystem>).detail;
+            if ((detail === 'metric' || detail === 'imperial') && detail !== unitSystem) {
+                setUnitSystemState(detail);
+            }
+        };
+
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'measurementSystem' || e.key === 'mrx_explicit_units' || e.key === 'mrx_unit_system') {
+                if ((e.newValue === 'metric' || e.newValue === 'imperial') && e.newValue !== unitSystem) {
+                    setUnitSystemState(e.newValue);
+                }
+            }
+            if (e.key === 'language' || e.key === 'mrx_explicit_language') {
+                if ((e.newValue === Language.AR || e.newValue === Language.EN) && e.newValue !== language) {
+                    setLanguageState(e.newValue as Language);
+                    setLocale(e.newValue === Language.AR ? 'ar-EG' : 'en-US');
+                }
+            }
+        };
+
+        window.addEventListener('mrx_unit_change', handleUnitChange);
+        window.addEventListener('storage', handleStorage);
+        return () => {
+            window.removeEventListener('mrx_unit_change', handleUnitChange);
+            window.removeEventListener('storage', handleStorage);
+        };
+    }, [unitSystem, language]);
 
     const initPreferences = useCallback(async (force = false) => {
         if (force || !isAutoDetected) {
@@ -219,6 +270,7 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
     const setLanguage = useCallback((newLang: Language) => {
         setLanguageState(newLang);
         localStorage.setItem('mrx_explicit_language', newLang);
+        localStorage.setItem('language', newLang);
         SecureStorage.setItem('language', newLang);
         import('../shared/lib/cookies').then(m => {
             m.setPreferenceCookie('mrx_language', newLang);
@@ -233,6 +285,7 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
             const smartDefault: UnitSystem = newLang === Language.AR ? 'metric' : 'imperial';
             setUnitSystemState(smartDefault);
             localStorage.setItem('mrx_unit_system', smartDefault);
+            localStorage.setItem('measurementSystem', smartDefault);
             import('../shared/lib/cookies').then(m => m.setPreferenceCookie('mrx_unit_system', smartDefault));
         }
     }, []);
@@ -241,6 +294,7 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
         setUnitSystemState(system);
         localStorage.setItem('mrx_explicit_units', system);
         localStorage.setItem('mrx_unit_system', system);
+        localStorage.setItem('measurementSystem', system);
         import('../shared/lib/cookies').then(m => {
             m.setPreferenceCookie('mrx_unit_system', system);
             // Explicit-choice cookie read by the edge middleware on next SSR.
