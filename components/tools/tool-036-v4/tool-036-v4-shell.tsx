@@ -32,7 +32,7 @@ import {
   type Tool036Action,
 } from '@/lib/tools/tool-036-v4/contracts';
 import { applyAction, initialState } from '@/lib/tools/tool-036-v4/state/reducer';
-import { loadState, saveState } from '@/lib/tools/tool-036-v4/state/storage';
+import { loadState, saveState, deleteAllData } from '@/lib/tools/tool-036-v4/state/storage';
 import { buildEnvelope } from '@/lib/tools/tool-036-v4/state/envelope';
 import { parseImport } from '@/lib/tools/tool-036-v4/state/import';
 import { buildFhirBundle } from '@/lib/tools/tool-036-v4/state/fhir';
@@ -125,6 +125,8 @@ export default function Tool036V4Shell() {
   const [logError, setLogError] = useState<string | null>(null);
   const [transferNotice, setTransferNotice] = useState<string | null>(null);
   const [transferErrors, setTransferErrors] = useState<string[]>([]);
+  const [deleteArmed, setDeleteArmed] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const loaded = loadState();
@@ -264,6 +266,44 @@ export default function Tool036V4Shell() {
       `تم استيراد ${result.added} حدثًا، وتجاهل ${result.skippedDuplicates} مكرر (مطابق للمحتوى المحلي).`,
     );
   };
+
+  const handleDeleteAll = () => {
+    const removed = deleteAllData();
+    setState(initialState(state.prefs.locale, state.prefs.tz));
+    setDeleteArmed(false);
+    setDeleteNotice(`حُذفت ${removed} مفاتيح بيانات من هذا المتصفح. حالتك الآن نظيفة.`);
+  };
+
+  if (!state.prefs.acknowledgedAt) {
+    return (
+      <div dir="rtl" lang="ar" className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex items-center justify-center">
+        <div className="max-w-xl rounded-xl border border-zinc-800 p-6" data-testid="ack-gate">
+          <h1 className="text-lg font-bold">قبل البدء — إقرار الاستخدام</h1>
+          <ul className="mt-3 list-disc space-y-2 pr-5 text-sm text-zinc-300">
+            <li>هذه الأداة لتنظيم جدولك وتسجيل وقائعك فقط: لا تشخيص، ولا وصف جرعات، ولا حكم على ملاءمة موقع طبيًا.</li>
+            <li>لا تستنتج الأداة جاهزية موقع من مرور أيام؛ تُعرض الوقائع المسجّلة فعلًا، وغيابها يُذكر صراحة.</li>
+            <li>كل ادّعاء صحّي معروض مربوط بمصدره ودرجة ثقته ونطاق تطبيقه، ويمكنك مراجعته في مكانه.</li>
+            <li>بياناتك تُخزَّن في متصفحك فقط، ولا تُرسل إلى أي شبكة، ويمكنك حذفها كاملة في أي وقت.</li>
+            <li>عند أي مخاوف صحية، راجع مختصًا.</li>
+          </ul>
+          <button
+            type="button"
+            data-testid="ack-button"
+            className="mt-4 rounded bg-amber-500 px-4 py-2 font-semibold text-zinc-950"
+            onClick={() => dispatch({ type: 'ack/set', at: new Date().toISOString() })}
+          >
+            أفهم وأوافق — ابدأ
+          </button>
+          {deleteNotice && (
+            <p className="mt-3 text-sm text-emerald-400" data-testid="delete-notice">
+              {deleteNotice}
+            </p>
+          )}
+          <RuleCite ruleId="clinical-evaluation-advisory" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
@@ -687,6 +727,60 @@ export default function Tool036V4Shell() {
               ))}
             </ul>
           )}
+        </section>
+
+        {/* ---- Privacy & control (D5/R7: local-only, verifiable wipe) ---- */}
+        <section
+          aria-labelledby="privacy-heading"
+          className="rounded-xl border border-zinc-800 p-4 lg:col-span-2"
+          data-testid="privacy-section"
+        >
+          <h2 id="privacy-heading" className="mb-3 font-semibold">
+            الخصوصية والتحكم
+          </h2>
+          <p className="text-sm text-zinc-400">
+            بياناتك تبقى في متصفحك: لا تُرسل إلى أي شبكة، ولا حسابات، ولا تتبّع. كل ما تخزّنه الأداة
+            يقع تحت مفتاح واحد يمكن حذفه بالكامل في أي وقت — دون التأثير على أي بيانات أخرى في الموقع.
+          </p>
+          <RuleCite ruleId="clinical-evaluation-advisory" />
+          <div className="mt-4 border-t border-zinc-800 pt-3">
+            <p className="text-xs text-zinc-500">
+              حذف كامل: يمحو أحداثك وخطتك وتفضيلاتك من هذا المتصفح نهائيًا. لا يمكن التراجع.
+            </p>
+            {!deleteArmed ? (
+              <button
+                type="button"
+                data-testid="delete-arm"
+                className="mt-2 rounded border border-red-800 px-4 py-2 text-sm text-red-400 hover:bg-red-950"
+                onClick={() => setDeleteArmed(true)}
+              >
+                حذف كل بياناتي
+              </button>
+            ) : (
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  type="button"
+                  data-testid="delete-confirm"
+                  className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white"
+                  onClick={handleDeleteAll}
+                >
+                  تأكيد الحذف النهائي
+                </button>
+                <button
+                  type="button"
+                  className="rounded bg-zinc-800 px-4 py-2 text-sm"
+                  onClick={() => setDeleteArmed(false)}
+                >
+                  إلغاء
+                </button>
+              </div>
+            )}
+            {deleteNotice && (
+              <p className="mt-2 text-sm text-emerald-400" data-testid="delete-notice">
+                {deleteNotice}
+              </p>
+            )}
+          </div>
         </section>
       </main>
     </div>

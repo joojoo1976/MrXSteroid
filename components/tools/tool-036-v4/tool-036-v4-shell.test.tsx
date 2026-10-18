@@ -11,7 +11,7 @@
  * stubs (for older suites). A real in-memory implementation is installed
  * here so persistence behaviour is genuinely exercised.
  */
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import Tool036V4Shell from './tool-036-v4-shell';
@@ -72,6 +72,12 @@ afterEach(() => {
 
 async function renderLoaded() {
   const result = render(<Tool036V4Shell />);
+  await waitFor(() =>
+    expect(screen.queryByTestId('ack-button') ?? screen.queryByTestId('weekly-mg')).toBeTruthy(),
+  );
+  if (screen.queryByTestId('ack-button')) {
+    fireEvent.click(screen.getByTestId('ack-button'));
+  }
   await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
   return result;
 }
@@ -203,6 +209,92 @@ describe('V4 shell — transfer round trip (scenario S4 via UI)', () => {
     expect(screen.getByTestId('transfer-errors').textContent).toContain('بصمة التحقق');
     // Nothing changed: the site is still silent.
     expect(screen.getByTestId('no-usage-dorso-l')).toBeTruthy();
+  });
+});
+
+describe('V4 shell — acknowledgment gate (decision D5)', () => {
+  it('the tool is not usable before the acknowledgment is accepted', async () => {
+    render(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    expect(screen.queryByTestId('weekly-mg')).toBeNull();
+    expect(screen.queryByTestId('log-form')).toBeNull();
+    const gateText = screen.getByTestId('ack-gate').textContent ?? '';
+    expect(gateText).toContain('لا تشخيص');
+    expect(gateText).toContain('حذفها كاملة');
+  });
+
+  it('accepting stores the acknowledgment locally and unlocks the tool', async () => {
+    render(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('ack-button'));
+    await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
+
+    const stored = JSON.parse(storageMap.get(STORAGE_KEY)!);
+    expect(typeof stored.prefs.acknowledgedAt).toBe('string');
+  });
+
+  it('a later visit skips the gate (acknowledgment persisted)', async () => {
+    render(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('ack-button'));
+    await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
+    cleanup();
+
+    render(<Tool036V4Shell />);
+    await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
+    expect(screen.queryByTestId('ack-gate')).toBeNull();
+  });
+});
+
+describe('V4 shell — complete wipe (decision D5, gate C2.3 at UI level)', () => {
+  it('delete-all empties the stored health data and returns a pristine gate', async () => {
+    await renderLoaded();
+    // The log form defaults to the first declared site (ventro-l); a recorded
+    // fact must replace that site's silence with a real date.
+    fireEvent.click(screen.getByText('تسجيل'));
+    await waitFor(() => expect(screen.queryByTestId('no-usage-ventro-l')).toBeNull());
+    expect(JSON.parse(storageMap.get(STORAGE_KEY)!).events).toHaveLength(1);
+
+    fireEvent.click(screen.getByTestId('delete-arm'));
+    fireEvent.click(screen.getByTestId('delete-confirm'));
+
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    expect(screen.getByTestId('delete-notice').textContent).toContain('حُذفت');
+    const stored = JSON.parse(storageMap.get(STORAGE_KEY)!);
+    expect(stored.events).toEqual([]);
+    expect(stored.prefs.acknowledgedAt).toBeUndefined();
+  });
+});
+
+describe('V4 shell — reliability & privacy (scenario S5)', () => {
+  it('no network request fires across a full interaction cycle, including export', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const createObjectURL = vi.fn(() => 'blob:test');
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, configurable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+
+    await renderLoaded();
+    fireEvent.change(screen.getByLabelText('الجرعة الأسبوعية'), { target: { value: '400' } });
+    fireEvent.click(screen.getByText('تسجيل'));
+    fireEvent.click(screen.getByText('تصدير JSON (الظرف المنظّم)'));
+    await waitFor(() => expect(screen.getByTestId('transfer-notice')).toBeTruthy());
+    fireEvent.click(screen.getByText('تصدير FHIR (للتصدير فقط)'));
+    await waitFor(() =>
+      expect(screen.getByTestId('transfer-notice').textContent).toContain('FHIR'),
+    );
+
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it('the privacy section states local-only storage and verifiable deletion', async () => {
+    await renderLoaded();
+    const text = screen.getByTestId('privacy-section').textContent ?? '';
+    expect(text).toContain('لا تُرسل إلى أي شبكة');
+    expect(text).toContain('حذف كامل');
+    expect(text).toContain('مفتاح واحد');
   });
 });
 
