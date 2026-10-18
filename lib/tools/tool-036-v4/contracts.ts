@@ -161,7 +161,13 @@ export type ImportResult =
 export const driftStatus = z.enum(['matched', 'late', 'missed', 'extra', 'site-changed']);
 
 export const driftItemSchema = z.object({
-  scheduledAt: isoDateTimeSchema,
+  /**
+   * The planned slot this item judges. `null` means "no scheduled
+   * counterpart" — used by `extra` facts, which are real recordings the plan
+   * does not account for. It must never be filled with an unrelated time
+   * (e.g. the window start) presented as if a shot had been planned there.
+   */
+  scheduledAt: isoDateTimeSchema.nullable(),
   status: driftStatus,
   actual: z.object({ occurredAt: isoDateTimeSchema, siteId: siteIdSchema }).optional(),
   deltaHours: z.number().optional(),

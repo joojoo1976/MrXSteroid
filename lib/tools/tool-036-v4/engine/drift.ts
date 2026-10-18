@@ -11,10 +11,14 @@
  *
  * Declared comparison rules (ruleId `drift-matching-tolerance`, shown in UI):
  *  - every (scheduled shot, actual) pair inside [−24h, +24h] is a candidate;
- *    candidate pairs are claimed cheapest-|delta|-first, then earlier shot,
- *    then earlier actual, then id — so the result depends only on the set of
- *    pairs, never on the order shots or events are supplied in, and an actual
- *    between two slots is credited to the nearer one;
+ *    candidate pairs form a bipartite graph, and the assignment MAXIMISES the
+ *    number of matched pairs first, then MINIMISES the total |delta| across
+ *    those pairs (a maximum-cardinality, minimum-cost matching). Ties are
+ *    broken by a fixed rule — earlier shot, then earlier actual, then id — so
+ *    the result depends only on the set of pairs, never on the order shots or
+ *    events are supplied in, and an actual between two slots is credited to
+ *    the nearer one. Greedy "nearest-first" is NOT used: it can strand a
+ *    match by consuming an actual a different slot needed;
  *  - |delta| ≤ tolerance (user-declared, default 6 h) → `matched`;
  *    the same, at a different site → `site-changed`;
  *  - actual later than tolerance but within 24 h → `late`;
@@ -65,6 +69,100 @@ function reasonFor(
   }
 }
 
+/**
+ * Maximum-cardinality, minimum-total-cost bipartite matching, computed with
+ * successive shortest augmenting paths on the residual graph.
+ *
+ * Cardinality is maximised first for a structural reason: each augmentation
+ * adds exactly one matched pair, and the loop stops only when no augmenting
+ * path is left — which, by max-flow/min-cut, means the matching is maximum.
+ * Among maximum matchings, Bellman–Ford on the residual graph (which follows
+ * reverse edges of negative cost) keeps the total cost minimal. Costs are
+ * integer milliseconds, so there is no floating-point tie ambiguity.
+ *
+ * Determinism: shots are supplied already sorted, nodes are iterated 0..N-1
+ * and edges in insertion order, and relaxation uses a strict `<` — so an
+ * equal-cost path is won by the first one found (the earlier shot). The result
+ * is therefore a pure function of the (shot, actual) pair set.
+ */
+function optimalPairs(
+  shotCount: number,
+  actualCount: number,
+  costAt: (shot: number, actual: number) => number | null,
+): Array<{ shot: number; actual: number }> {
+  const SOURCE = 0;
+  const shotNode = (i: number) => 1 + i;
+  const actualNode = (j: number) => 1 + shotCount + j;
+  const SINK = 1 + shotCount + actualCount;
+  const nodeCount = SINK + 1;
+
+  // Flat edge arrays; `e ^ 1` is always the reverse of edge `e`.
+  const to: number[] = [];
+  const cap: number[] = [];
+  const cost: number[] = [];
+  const adj: number[][] = Array.from({ length: nodeCount }, () => []);
+  const addEdge = (u: number, v: number, c: number, w: number) => {
+    adj[u].push(to.length);
+    to.push(v);
+    cap.push(c);
+    cost.push(w);
+    adj[v].push(to.length);
+    to.push(u);
+    cap.push(0);
+    cost.push(-w);
+  };
+
+  for (let i = 0; i < shotCount; i++) addEdge(SOURCE, shotNode(i), 1, 0);
+  for (let j = 0; j < actualCount; j++) addEdge(actualNode(j), SINK, 1, 0);
+
+  const pairEdge = new Map<string, number>();
+  for (let i = 0; i < shotCount; i++) {
+    for (let j = 0; j < actualCount; j++) {
+      const c = costAt(i, j);
+      if (c === null) continue;
+      pairEdge.set(`${i}:${j}`, to.length);
+      addEdge(shotNode(i), actualNode(j), 1, c);
+    }
+  }
+
+  for (;;) {
+    const dist = new Array<number>(nodeCount).fill(Infinity);
+    const prevEdge = new Array<number>(nodeCount).fill(-1);
+    dist[SOURCE] = 0;
+    let changed = true;
+    for (let iter = 0; iter < nodeCount - 1 && changed; iter++) {
+      changed = false;
+      for (let u = 0; u < nodeCount; u++) {
+        if (dist[u] === Infinity) continue;
+        for (const e of adj[u]) {
+          if (cap[e] <= 0) continue;
+          const next = dist[u] + cost[e];
+          if (next < dist[to[e]]) {
+            dist[to[e]] = next;
+            prevEdge[to[e]] = e;
+            changed = true;
+          }
+        }
+      }
+    }
+    if (dist[SINK] === Infinity) break;
+    // Every source/sink edge has capacity 1, so the bottleneck is always 1.
+    for (let v = SINK; v !== SOURCE; v = to[prevEdge[v] ^ 1]) {
+      cap[prevEdge[v]] -= 1;
+      cap[prevEdge[v] ^ 1] += 1;
+    }
+  }
+
+  const matched: Array<{ shot: number; actual: number }> = [];
+  for (const [key, e] of pairEdge) {
+    if (cap[e] === 0) {
+      const [shot, actual] = key.split(':').map(Number);
+      matched.push({ shot, actual });
+    }
+  }
+  return matched;
+}
+
 export function buildDriftReport(
   proposal: Proposal,
   events: readonly InjectionEvent[],
@@ -76,8 +174,8 @@ export function buildDriftReport(
   const windowEndMs = Date.parse(proposal.windowEnd);
   const windowIso = (ms: number) => new Date(ms).toISOString();
 
-  const shots: ProposalShot[] = [...proposal.shots].sort((a, b) =>
-    a.occurredAt.localeCompare(b.occurredAt),
+  const shots: ProposalShot[] = [...proposal.shots].sort(
+    (a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id.localeCompare(b.id),
   );
 
   // Actuals that can participate: inside the schedule window extended by the
@@ -90,56 +188,37 @@ export function buildDriftReport(
         t <= windowEndMs + MATCHING_WINDOW_HOURS * 3_600_000
       );
     })
-    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id.localeCompare(b.id));
 
   const nowMs = Date.parse(nowIso);
 
-  // Order-independent assignment. Every (shot, actual) pair inside the matching
-  // window is collected first, then claimed from cheapest to dearest. The report
-  // is therefore a function of the SET of pairs, never of the order shots or
-  // events were supplied in — an actual sitting between two slots goes to the
-  // NEARER slot, not to whichever slot the loop happened to reach first.
-  interface Pair {
-    shot: ProposalShot;
-    actual: InjectionEvent;
-    deltaHours: number;
-    absHours: number;
-  }
-  const pairs: Pair[] = [];
-  for (const shot of shots) {
-    const scheduledMs = Date.parse(shot.occurredAt);
-    for (const candidate of candidatePool) {
-      const deltaHours = (Date.parse(candidate.occurredAt) - scheduledMs) / 3_600_000;
-      const absHours = Math.abs(deltaHours);
-      if (absHours > MATCHING_WINDOW_HOURS) continue;
-      pairs.push({ shot, actual: candidate, deltaHours, absHours });
-    }
-  }
-  pairs.sort(
-    (a, b) =>
-      a.absHours - b.absHours ||
-      Date.parse(a.shot.occurredAt) - Date.parse(b.shot.occurredAt) ||
-      Date.parse(a.actual.occurredAt) - Date.parse(b.actual.occurredAt) ||
-      a.actual.id.localeCompare(b.actual.id),
-  );
-
-  const claimedByShot = new Map<ProposalShot, Pair>();
+  // Order-independent assignment: shot/actual indices line up with the two
+  // sorted arrays above, so the matching is a pure function of the pair set.
+  const windowMs = MATCHING_WINDOW_HOURS * 3_600_000;
+  const pairCost = (shotIndex: number, actualIndex: number): number | null => {
+    const deltaMs = Math.abs(
+      Date.parse(candidatePool[actualIndex].occurredAt) - Date.parse(shots[shotIndex].occurredAt),
+    );
+    return deltaMs <= windowMs ? deltaMs : null;
+  };
+  const matched = optimalPairs(shots.length, candidatePool.length, pairCost);
+  const matchByShot = new Map<number, InjectionEvent>();
   const usedActuals = new Set<string>();
-  for (const pair of pairs) {
-    if (claimedByShot.has(pair.shot) || usedActuals.has(pair.actual.id)) continue;
-    claimedByShot.set(pair.shot, pair);
-    usedActuals.add(pair.actual.id);
+  for (const { shot: shotIndex, actual: actualIndex } of matched) {
+    matchByShot.set(shotIndex, candidatePool[actualIndex]);
+    usedActuals.add(candidatePool[actualIndex].id);
   }
 
   const items: DriftItem[] = [];
 
-  for (const shot of shots) {
+  for (let shotIndex = 0; shotIndex < shots.length; shotIndex++) {
+    const shot = shots[shotIndex];
     const scheduledMs = Date.parse(shot.occurredAt);
 
     // Declared rule: a shot is only judged once its window has closed or an
     // actual already claims it. Future shots are preview material, not facts.
     const windowClosed = scheduledMs + MATCHING_WINDOW_HOURS * 3_600_000 < nowMs;
-    const match = claimedByShot.get(shot);
+    const match = matchByShot.get(shotIndex);
 
     if (!match) {
       if (!windowClosed) continue; // not yet judgeable — silently skip
@@ -152,11 +231,12 @@ export function buildDriftReport(
       continue;
     }
 
-    const deltaHours = Math.round(match.deltaHours * 10) / 10;
+    const deltaHours =
+      Math.round(((Date.parse(match.occurredAt) - scheduledMs) / 3_600_000) * 10) / 10;
 
     let status: DriftItem['status'];
     if (Math.abs(deltaHours) <= tolerance) {
-      status = match.actual.siteId === shot.siteId ? 'matched' : 'site-changed';
+      status = match.siteId === shot.siteId ? 'matched' : 'site-changed';
     } else if (deltaHours > tolerance) {
       status = 'late';
     } else {
@@ -168,9 +248,9 @@ export function buildDriftReport(
     items.push({
       scheduledAt: shot.occurredAt,
       status,
-      actual: { occurredAt: match.actual.occurredAt, siteId: match.actual.siteId },
+      actual: { occurredAt: match.occurredAt, siteId: match.siteId },
       deltaHours,
-      reason: reasonFor(status, deltaHours, tolerance, match.actual.siteId),
+      reason: reasonFor(status, deltaHours, tolerance, match.siteId),
       ruleId: DRIFT_RULE_ID,
     });
   }
@@ -180,7 +260,9 @@ export function buildDriftReport(
   for (const candidate of candidatePool) {
     if (usedActuals.has(candidate.id)) continue;
     items.push({
-      scheduledAt: proposal.windowStart,
+      // No scheduled counterpart exists — never borrow windowStart as if it
+      // were a planned slot for this fact.
+      scheduledAt: null,
       status: 'extra',
       actual: { occurredAt: candidate.occurredAt, siteId: candidate.siteId },
       reason: reasonFor('extra', undefined, tolerance),
@@ -189,8 +271,9 @@ export function buildDriftReport(
   }
 
   items.sort((a, b) => {
-    const at = a.actual?.occurredAt ?? a.scheduledAt;
-    const bt = b.actual?.occurredAt ?? b.scheduledAt;
+    // Extras have no scheduledAt; order by whichever fact exists.
+    const at = a.actual?.occurredAt ?? a.scheduledAt ?? '';
+    const bt = b.actual?.occurredAt ?? b.scheduledAt ?? '';
     return at.localeCompare(bt);
   });
 

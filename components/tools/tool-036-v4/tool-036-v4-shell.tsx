@@ -693,7 +693,11 @@ export default function Tool036V4Shell() {
                   >
                     {DRIFT_STATUS_LABEL[item.status]}
                   </span>{' '}
-                  · مخطط: {formatInTz(item.scheduledAt, state.prefs.tz)}
+                  {item.scheduledAt ? (
+                    <>· مخطط: {formatInTz(item.scheduledAt, state.prefs.tz)}</>
+                  ) : (
+                    <>· بلا موعد مقابل</>
+                  )}
                   {item.actual && (
                     <>
                       {' · فعلي: '}

@@ -123,6 +123,10 @@ describe('V4 drift — declared matching rules', () => {
     expect(extra[0].actual?.siteId).toBe('ventro-l');
     expect(extra[0].actual?.occurredAt).toBe('2026-10-20T09:00:00.000Z');
     expect(report.summary.extra).toBe(1);
+    // An extra fact has NO scheduled counterpart. It must not borrow the
+    // window start (or any other time) and present it as a planned slot.
+    expect(extra[0].scheduledAt).toBeNull();
+    expect(extra[0].deltaHours).toBeUndefined();
   });
 
   it('an actual well before tolerance but inside the window is still matched — earliness stated', () => {
@@ -376,5 +380,77 @@ describe('V4 drift — the window spans the whole planning horizon (acceptance P
     const last = report.items.find((i) => i.scheduledAt === proposal.shots[1].occurredAt)!;
     expect(last.status).toBe('matched');
     expect(last.deltaHours).toBe(1);
+  });
+});
+
+describe('V4 drift — global optimum: maximise matches, then minimise total |delta| (acceptance P0-2b)', () => {
+  // Every judging window has closed in this frame.
+  const ALL_CLOSED = '2026-10-21T00:00:00.000Z';
+
+  // Two slots exactly 24h apart (Sun 08:00 and Mon 08:00, Riyadh wall time).
+  const twoSlots: Proposal = {
+    shots: [
+      { ...PROPOSAL.shots[0], id: 's1', occurredAt: '2026-10-18T05:00:00.000Z' },
+      { ...PROPOSAL.shots[1], id: 's2', occurredAt: '2026-10-19T05:00:00.000Z' },
+    ],
+    windowStart: '2026-10-18T05:00:00.000Z',
+    windowEnd: '2026-10-19T05:00:00.000Z',
+    tz: 'Asia/Riyadh',
+  };
+
+  // a1 is reachable ONLY by s1 (23h; 47h from s2); a2 sits between them
+  // (10h after s1, 14h before s2) and is nearer to s1.
+  const a1 = () => actual('2026-10-17T06:00:00.000Z', 'dorso-l', 'a1');
+  const a2 = () => actual('2026-10-18T15:00:00.000Z', 'dorso-r', 'a2');
+
+  it('does not strand a match: two reachable slots and two actuals both match', () => {
+    const report = buildDriftReport(twoSlots, [a1(), a2()], PREFS, ALL_CLOSED);
+
+    // Cheapest-first greedy claims a2 for s1 (10h) and strands a1 as "extra"
+    // while s2 is reported "missed" — one match where two are possible.
+    // The optimum reserves a1 for s1 and gives a2 to s2: two matches.
+    expect(report.summary.matched).toBe(2);
+    expect(report.summary.missed).toBe(0);
+    expect(report.summary.extra).toBe(0);
+
+    const s1 = report.items.find((i) => i.scheduledAt === twoSlots.shots[0].occurredAt)!;
+    const s2 = report.items.find((i) => i.scheduledAt === twoSlots.shots[1].occurredAt)!;
+    expect(s1.actual?.occurredAt).toBe('2026-10-17T06:00:00.000Z');
+    expect(s2.actual?.occurredAt).toBe('2026-10-18T15:00:00.000Z');
+  });
+
+  it('among equal-cardinality matchings, the smaller total |delta| wins', () => {
+    const twoSlotsHalf: Proposal = {
+      shots: [
+        { ...PROPOSAL.shots[0], id: 's1', occurredAt: '2026-10-18T05:00:00.000Z' },
+        { ...PROPOSAL.shots[1], id: 's2', occurredAt: '2026-10-18T15:00:00.000Z' },
+      ],
+      windowStart: '2026-10-18T05:00:00.000Z',
+      windowEnd: '2026-10-18T15:00:00.000Z',
+      tz: 'Asia/Riyadh',
+    };
+    const report = buildDriftReport(
+      twoSlotsHalf,
+      [
+        actual('2026-10-18T04:00:00.000Z', 'dorso-l', 'a1'), // 1h from s1, 11h from s2
+        actual('2026-10-18T16:00:00.000Z', 'dorso-r', 'a2'), // 11h from s1, 1h from s2
+      ],
+      PREFS,
+      ALL_CLOSED,
+    );
+
+    // Both assignments reach cardinality 2; 1h + 1h (=2h) beats 11h + 11h.
+    const s1 = report.items.find((i) => i.scheduledAt === twoSlotsHalf.shots[0].occurredAt)!;
+    const s2 = report.items.find((i) => i.scheduledAt === twoSlotsHalf.shots[1].occurredAt)!;
+    expect(s1.actual?.occurredAt).toBe('2026-10-18T04:00:00.000Z');
+    expect(s2.actual?.occurredAt).toBe('2026-10-18T16:00:00.000Z');
+    expect(report.summary.extra).toBe(0);
+  });
+
+  it('the optimum is independent of the order of shots and events', () => {
+    const forward = buildDriftReport(twoSlots, [a1(), a2()], PREFS, ALL_CLOSED);
+    expect(buildDriftReport(twoSlots, [a2(), a1()], PREFS, ALL_CLOSED)).toEqual(forward);
+    const reversedShots: Proposal = { ...twoSlots, shots: [...twoSlots.shots].reverse() };
+    expect(buildDriftReport(reversedShots, [a1(), a2()], PREFS, ALL_CLOSED)).toEqual(forward);
   });
 });
