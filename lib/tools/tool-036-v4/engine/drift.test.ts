@@ -246,3 +246,110 @@ describe('V4 drift — summary, determinism, contract', () => {
     expect(relaxed.items[0].deltaHours).toBe(strict.items[0].deltaHours);
   });
 });
+
+describe('V4 drift — matching is order-independent and nearest-wins (acceptance P0-2)', () => {
+  // Every judging window has closed in this frame, so nothing is deferred.
+  const ALL_CLOSED = '2026-10-19T20:00:00.000Z';
+
+  const tenHoursApart: Proposal = {
+    shots: [
+      { ...PROPOSAL.shots[0], id: 's1', occurredAt: '2026-10-18T05:00:00.000Z' },
+      { ...PROPOSAL.shots[1], id: 's2', occurredAt: '2026-10-18T15:00:00.000Z' },
+    ],
+    windowStart: '2026-10-18T05:00:00.000Z',
+    windowEnd: '2026-10-18T15:00:00.000Z',
+    tz: 'Asia/Riyadh',
+  };
+
+  it('an actual between two slots is credited to the NEARER slot, not the earlier one', () => {
+    const report = buildDriftReport(
+      tenHoursApart,
+      [actual('2026-10-18T11:00:00.000Z', 'dorso-r', 'a1')], // +6h from s1, -4h from s2
+      PREFS,
+      ALL_CLOSED,
+    );
+    const s1 = report.items.find((i) => i.scheduledAt === tenHoursApart.shots[0].occurredAt)!;
+    const s2 = report.items.find((i) => i.scheduledAt === tenHoursApart.shots[1].occurredAt)!;
+    expect(s2.status).toBe('matched');
+    expect(s2.deltaHours).toBe(-4);
+    expect(s1.status).toBe('missed');
+  });
+
+  it('two overlapping windows claim two actuals without double-assignment', () => {
+    const overlap: Proposal = {
+      shots: [
+        { ...PROPOSAL.shots[0], id: 's1', occurredAt: '2026-10-18T05:00:00.000Z' },
+        { ...PROPOSAL.shots[1], id: 's2', occurredAt: '2026-10-18T09:00:00.000Z' },
+      ],
+      windowStart: '2026-10-18T05:00:00.000Z',
+      windowEnd: '2026-10-18T09:00:00.000Z',
+      tz: 'Asia/Riyadh',
+    };
+    const report = buildDriftReport(
+      overlap,
+      [
+        actual('2026-10-18T09:30:00.000Z', 'dorso-r', 'a2'), // 0.5h after s2
+        actual('2026-10-18T04:00:00.000Z', 'dorso-l', 'a1'), // 1h before s1
+      ],
+      PREFS,
+      ALL_CLOSED,
+    );
+    const s1 = report.items.find((i) => i.scheduledAt === overlap.shots[0].occurredAt)!;
+    const s2 = report.items.find((i) => i.scheduledAt === overlap.shots[1].occurredAt)!;
+    expect(s1.actual?.occurredAt).toBe('2026-10-18T04:00:00.000Z');
+    expect(s2.actual?.occurredAt).toBe('2026-10-18T09:30:00.000Z');
+    expect(report.summary.extra).toBe(0);
+  });
+
+  it('the result does not depend on the order of the events array', () => {
+    const events = [
+      actual('2026-10-18T11:00:00.000Z', 'dorso-r', 'a1'),
+      actual('2026-10-18T03:00:00.000Z', 'dorso-l', 'a2'),
+      actual('2026-10-20T23:00:00.000Z', 'ventro-l', 'a3'),
+    ];
+    const forward = buildDriftReport(PROPOSAL, events, PREFS, NOW);
+    const reversed = buildDriftReport(PROPOSAL, [...events].reverse(), PREFS, NOW);
+    const shuffled = buildDriftReport(PROPOSAL, [events[2], events[0], events[1]], PREFS, NOW);
+    expect(reversed).toEqual(forward);
+    expect(shuffled).toEqual(forward);
+  });
+
+  it('the result does not depend on the order of the scheduled shots', () => {
+    const events = [actual('2026-10-18T11:00:00.000Z', 'dorso-r', 'a1')];
+    const forward = buildDriftReport(tenHoursApart, events, PREFS, ALL_CLOSED);
+    const reversedShots: Proposal = { ...tenHoursApart, shots: [...tenHoursApart.shots].reverse() };
+    expect(buildDriftReport(reversedShots, events, PREFS, ALL_CLOSED)).toEqual(forward);
+  });
+
+  it('an exact midpoint tie resolves deterministically to the earlier slot', () => {
+    const tie: Proposal = {
+      shots: [
+        { ...PROPOSAL.shots[0], id: 's1', occurredAt: '2026-10-18T05:00:00.000Z' },
+        { ...PROPOSAL.shots[1], id: 's2', occurredAt: '2026-10-18T07:00:00.000Z' },
+      ],
+      windowStart: '2026-10-18T05:00:00.000Z',
+      windowEnd: '2026-10-18T07:00:00.000Z',
+      tz: 'Asia/Riyadh',
+    };
+    const report = buildDriftReport(
+      tie,
+      [actual('2026-10-18T06:00:00.000Z', 'dorso-l', 'a1')], // 1h from each
+      PREFS,
+      ALL_CLOSED,
+    );
+    const claimed = report.items.find((i) => i.actual)!;
+    expect(claimed.scheduledAt).toBe('2026-10-18T05:00:00.000Z');
+    expect(report.summary.missed).toBe(1);
+  });
+
+  it('an actual more than 24h from both nearby slots leaves both missed and is extra', () => {
+    const report = buildDriftReport(
+      PROPOSAL,
+      [actual('2026-10-20T12:00:00.000Z', 'dorso-l', 'a1')], // 55h from s1, 41h from s2
+      PREFS,
+      NOW,
+    );
+    expect(report.summary.missed).toBe(2);
+    expect(report.summary.extra).toBe(1);
+  });
+});

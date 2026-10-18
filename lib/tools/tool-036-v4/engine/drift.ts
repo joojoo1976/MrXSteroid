@@ -10,8 +10,11 @@
  * written mathematical definition.
  *
  * Declared comparison rules (ruleId `drift-matching-tolerance`, shown in UI):
- *  - each scheduled shot looks for the NEAREST unused actual within
- *    [−24h, +24h] of its scheduled time;
+ *  - every (scheduled shot, actual) pair inside [−24h, +24h] is a candidate;
+ *    candidate pairs are claimed cheapest-|delta|-first, then earlier shot,
+ *    then earlier actual, then id — so the result depends only on the set of
+ *    pairs, never on the order shots or events are supplied in, and an actual
+ *    between two slots is credited to the nearer one;
  *  - |delta| ≤ tolerance (user-declared, default 6 h) → `matched`;
  *    the same, at a different site → `site-changed`;
  *  - actual later than tolerance but within 24 h → `late`;
@@ -89,9 +92,46 @@ export function buildDriftReport(
     })
     .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
 
-  const used = new Set<string>();
-  const items: DriftItem[] = [];
   const nowMs = Date.parse(nowIso);
+
+  // Order-independent assignment. Every (shot, actual) pair inside the matching
+  // window is collected first, then claimed from cheapest to dearest. The report
+  // is therefore a function of the SET of pairs, never of the order shots or
+  // events were supplied in — an actual sitting between two slots goes to the
+  // NEARER slot, not to whichever slot the loop happened to reach first.
+  interface Pair {
+    shot: ProposalShot;
+    actual: InjectionEvent;
+    deltaHours: number;
+    absHours: number;
+  }
+  const pairs: Pair[] = [];
+  for (const shot of shots) {
+    const scheduledMs = Date.parse(shot.occurredAt);
+    for (const candidate of candidatePool) {
+      const deltaHours = (Date.parse(candidate.occurredAt) - scheduledMs) / 3_600_000;
+      const absHours = Math.abs(deltaHours);
+      if (absHours > MATCHING_WINDOW_HOURS) continue;
+      pairs.push({ shot, actual: candidate, deltaHours, absHours });
+    }
+  }
+  pairs.sort(
+    (a, b) =>
+      a.absHours - b.absHours ||
+      Date.parse(a.shot.occurredAt) - Date.parse(b.shot.occurredAt) ||
+      Date.parse(a.actual.occurredAt) - Date.parse(b.actual.occurredAt) ||
+      a.actual.id.localeCompare(b.actual.id),
+  );
+
+  const claimedByShot = new Map<ProposalShot, Pair>();
+  const usedActuals = new Set<string>();
+  for (const pair of pairs) {
+    if (claimedByShot.has(pair.shot) || usedActuals.has(pair.actual.id)) continue;
+    claimedByShot.set(pair.shot, pair);
+    usedActuals.add(pair.actual.id);
+  }
+
+  const items: DriftItem[] = [];
 
   for (const shot of shots) {
     const scheduledMs = Date.parse(shot.occurredAt);
@@ -99,23 +139,10 @@ export function buildDriftReport(
     // Declared rule: a shot is only judged once its window has closed or an
     // actual already claims it. Future shots are preview material, not facts.
     const windowClosed = scheduledMs + MATCHING_WINDOW_HOURS * 3_600_000 < nowMs;
-    let best: InjectionEvent | null = null;
-    let bestAbs = Number.POSITIVE_INFINITY;
+    const match = claimedByShot.get(shot);
 
-    for (const candidate of candidatePool) {
-      if (used.has(candidate.id)) continue;
-      const deltaHours = (Date.parse(candidate.occurredAt) - scheduledMs) / 3_600_000;
-      if (Math.abs(deltaHours) > MATCHING_WINDOW_HOURS) continue;
-      const abs = Math.abs(deltaHours);
-      if (abs < bestAbs) {
-        best = candidate;
-        bestAbs = abs;
-      }
-    }
-
-    if (!best && !windowClosed) continue; // not yet judgeable — silently skip
-
-    if (!best) {
+    if (!match) {
+      if (!windowClosed) continue; // not yet judgeable — silently skip
       items.push({
         scheduledAt: shot.occurredAt,
         status: 'missed',
@@ -125,13 +152,11 @@ export function buildDriftReport(
       continue;
     }
 
-    used.add(best.id);
-    const deltaHours =
-      Math.round(((Date.parse(best.occurredAt) - scheduledMs) / 3_600_000) * 10) / 10;
+    const deltaHours = Math.round(match.deltaHours * 10) / 10;
 
     let status: DriftItem['status'];
     if (Math.abs(deltaHours) <= tolerance) {
-      status = best.siteId === shot.siteId ? 'matched' : 'site-changed';
+      status = match.actual.siteId === shot.siteId ? 'matched' : 'site-changed';
     } else if (deltaHours > tolerance) {
       status = 'late';
     } else {
@@ -143,9 +168,9 @@ export function buildDriftReport(
     items.push({
       scheduledAt: shot.occurredAt,
       status,
-      actual: { occurredAt: best.occurredAt, siteId: best.siteId },
+      actual: { occurredAt: match.actual.occurredAt, siteId: match.actual.siteId },
       deltaHours,
-      reason: reasonFor(status, deltaHours, tolerance, best.siteId),
+      reason: reasonFor(status, deltaHours, tolerance, match.actual.siteId),
       ruleId: DRIFT_RULE_ID,
     });
   }
@@ -153,7 +178,7 @@ export function buildDriftReport(
   // Leftover actuals in the (extended) window are "extra" — recorded facts
   // the plan does not account for.
   for (const candidate of candidatePool) {
-    if (used.has(candidate.id)) continue;
+    if (usedActuals.has(candidate.id)) continue;
     items.push({
       scheduledAt: proposal.windowStart,
       status: 'extra',
