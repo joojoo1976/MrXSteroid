@@ -15,8 +15,28 @@ import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import Tool036V4Shell from './tool-036-v4-shell';
+import { buildEnvelope } from '@/lib/tools/tool-036-v4/state/envelope';
+import { applyAction, initialState } from '@/lib/tools/tool-036-v4/state/reducer';
 
 const STORAGE_KEY = 'mrx.tool-036-v4.state';
+
+/** A source state with one recorded event on dorso-l — used for export fixtures. */
+function initialStateAr() {
+  return applyAction(
+    initialState('ar', 'Asia/Riyadh'),
+    {
+      type: 'event/add',
+      event: {
+        occurredAt: '2026-10-18T08:00:00+03:00',
+        siteId: 'dorso-l',
+        volumeMl: 1,
+        doseMg: 125,
+        compoundIds: ['testosterone-enanthate'],
+      },
+    },
+    { now: '2026-10-18T10:00:00+03:00', idGen: () => 'evt-import-1' },
+  );
+}
 
 /** Same wall-time format the shell's datetime-local input uses. */
 function toInputValue(date: Date): string {
@@ -140,6 +160,49 @@ describe('V4 shell — drift truthfulness (scenario S2)', () => {
     fireEvent.change(screen.getByLabelText('الحجم بالمل'), { target: { value: '' } });
     fireEvent.click(screen.getByText('تسجيل'));
     expect(screen.getByTestId('log-error').textContent).toContain('أرقامًا موجبة');
+  });
+});
+
+describe('V4 shell — transfer round trip (scenario S4 via UI)', () => {
+  it('an imported envelope makes a silent site state its recorded usage', async () => {
+    const source = initialStateAr();
+    const envelope = await buildEnvelope(source, new Date().toISOString());
+
+    const { container } = await renderLoaded();
+    // Before: dorso-l is silent (decision R2).
+    expect(screen.getByTestId('no-usage-dorso-l')).toBeTruthy();
+
+    const file = new File([JSON.stringify(envelope)], 'backup.json', {
+      type: 'application/json',
+    });
+    fireEvent.change(screen.getByLabelText('استيراد ملف JSON'), {
+      target: { files: [file] },
+    });
+
+    await waitFor(() => expect(screen.getByTestId('transfer-notice')).toBeTruthy());
+    expect(screen.getByTestId('transfer-notice').textContent).toContain('تم استيراد 1');
+    // The imported fact reached the usage surface: silence became a record.
+    expect(screen.queryByTestId('no-usage-dorso-l')).toBeNull();
+    expect(container.textContent).toContain('منذ');
+  });
+
+  it('a tampered file is rejected with its Arabic reason and changes nothing', async () => {
+    const source = initialStateAr();
+    const envelope = await buildEnvelope(source, new Date().toISOString());
+    envelope.payload.events[0].doseMg = 999; // checksum now fails
+
+    await renderLoaded();
+    const file = new File([JSON.stringify(envelope)], 'tampered.json', {
+      type: 'application/json',
+    });
+    fireEvent.change(screen.getByLabelText('استيراد ملف JSON'), {
+      target: { files: [file] },
+    });
+
+    await waitFor(() => expect(screen.getByTestId('transfer-errors')).toBeTruthy());
+    expect(screen.getByTestId('transfer-errors').textContent).toContain('بصمة التحقق');
+    // Nothing changed: the site is still silent.
+    expect(screen.getByTestId('no-usage-dorso-l')).toBeTruthy();
   });
 });
 

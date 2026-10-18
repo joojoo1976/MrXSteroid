@@ -33,6 +33,9 @@ import {
 } from '@/lib/tools/tool-036-v4/contracts';
 import { applyAction, initialState } from '@/lib/tools/tool-036-v4/state/reducer';
 import { loadState, saveState } from '@/lib/tools/tool-036-v4/state/storage';
+import { buildEnvelope } from '@/lib/tools/tool-036-v4/state/envelope';
+import { parseImport } from '@/lib/tools/tool-036-v4/state/import';
+import { buildFhirBundle } from '@/lib/tools/tool-036-v4/state/fhir';
 import { compileProposal } from '@/lib/tools/tool-036-v4/engine/proposal';
 import { checkRotation } from '@/lib/tools/tool-036-v4/engine/rotation-check';
 import { siteRecencyFromEvents } from '@/lib/tools/tool-036-v4/engine/recency';
@@ -120,6 +123,8 @@ export default function Tool036V4Shell() {
     note: '',
   });
   const [logError, setLogError] = useState<string | null>(null);
+  const [transferNotice, setTransferNotice] = useState<string | null>(null);
+  const [transferErrors, setTransferErrors] = useState<string[]>([]);
 
   useEffect(() => {
     const loaded = loadState();
@@ -194,6 +199,70 @@ export default function Tool036V4Shell() {
         note: logForm.note.trim() === '' ? undefined : logForm.note,
       },
     });
+  };
+
+  const downloadJson = (payload: unknown, filename: string) => {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportEnvelope = async () => {
+    const envelope = await buildEnvelope(state, new Date().toISOString());
+    downloadJson(envelope, 'tool-036-v4-export.json');
+    setTransferErrors([]);
+    setTransferNotice('تم إنشاء ملف الظرف المنظّم (يحوي الأحداث والخطة واللغة فقط).');
+  };
+
+  const handleExportFhir = async () => {
+    const bundle = buildFhirBundle(state, new Date().toISOString());
+    downloadJson(bundle, 'tool-036-v4-fhir-bundle.json');
+    setTransferErrors([]);
+    setTransferNotice('تم إنشاء حزمة FHIR — للتصدير فقط؛ لا يمكن استيرادها في هذا الإصدار.');
+  };
+
+  const readFileText = (file: File): Promise<string> => {
+    // File.text() is the modern path; FileReader covers older DOM runtimes.
+    if (typeof file.text === 'function') return file.text();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error ?? new Error('file read failed'));
+      reader.readAsText(file);
+    });
+  };
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // allow re-selecting the same file
+    if (!file) return;
+    setTransferNotice(null);
+    setTransferErrors([]);
+    let text: string;
+    try {
+      text = await readFileText(file);
+    } catch {
+      setTransferErrors(['تعذّرت قراءة الملف المحدد.']);
+      return;
+    }
+    const result = await parseImport(text, state);
+    if (!result.ok) {
+      setTransferErrors(result.errors.map((e) => e.messageAr));
+      return;
+    }
+    dispatch({
+      type: 'import/merge',
+      events: result.envelope.payload.events,
+      plan: result.envelope.payload.plan,
+      locale: result.envelope.payload.locale,
+    });
+    setTransferNotice(
+      `تم استيراد ${result.added} حدثًا، وتجاهل ${result.skippedDuplicates} مكرر (مطابق للمحتوى المحلي).`,
+    );
   };
 
   return (
@@ -568,6 +637,56 @@ export default function Tool036V4Shell() {
             </ul>
           )}
           <RuleCite ruleId="drift-matching-tolerance" />
+        </section>
+
+        {/* ---- Backup & transfer (D3/R4: envelope in, envelope out; FHIR out only) ---- */}
+        <section aria-labelledby="transfer-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
+          <h2 id="transfer-heading" className="mb-3 font-semibold">
+            النسخ الاحتياطي والنقل
+          </h2>
+          <p className="mb-3 text-xs text-zinc-500">
+            التصدير والاستيراد يتمّان محليًا في متصفحك. ملف الاستيراد الوحيد المدعوم هو ظرف الأداة
+            المنظّم (يُتحقق من إصداره وبصمته ومحتواه قبل القبول). حزمة FHIR للتصدير فقط في هذا
+            الإصدار.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="rounded bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"
+              onClick={handleExportEnvelope}
+            >
+              تصدير JSON (الظرف المنظّم)
+            </button>
+            <button
+              type="button"
+              className="rounded bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"
+              onClick={handleExportFhir}
+            >
+              تصدير FHIR (للتصدير فقط)
+            </button>
+            <label className="text-sm">
+              استيراد ظرف JSON
+              <input
+                type="file"
+                accept="application/json,.json"
+                aria-label="استيراد ملف JSON"
+                className="mt-1 block text-sm"
+                onChange={handleImportFile}
+              />
+            </label>
+          </div>
+          {transferNotice && (
+            <p className="mt-3 text-sm text-emerald-400" data-testid="transfer-notice">
+              {transferNotice}
+            </p>
+          )}
+          {transferErrors.length > 0 && (
+            <ul className="mt-3 space-y-1 text-sm text-red-400" data-testid="transfer-errors">
+              {transferErrors.map((message, index) => (
+                <li key={index}>{message}</li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
     </div>
