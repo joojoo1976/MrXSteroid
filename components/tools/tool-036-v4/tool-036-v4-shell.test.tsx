@@ -13,7 +13,7 @@
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import React from 'react';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import Tool036V4Shell from './tool-036-v4-shell';
 import { buildEnvelope } from '@/lib/tools/tool-036-v4/state/envelope';
 import { applyAction, initialState } from '@/lib/tools/tool-036-v4/state/reducer';
@@ -68,6 +68,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 async function renderLoaded() {
@@ -338,5 +339,37 @@ describe('V4 shell — surface identity', () => {
       expect(text).toContain('الثقة:');
       expect(text).toContain('النطاق:');
     }
+  });
+});
+
+describe('V4 shell — the drift report re-judges as time passes (acceptance P0-3)', () => {
+  it('a slot whose window closes while the page stays open becomes «فائت» with no interaction', () => {
+    vi.useFakeTimers();
+    // 30 seconds before the Thursday slot (2026-10-22 08:00 +03:00) closes its
+    // +24h judging window.
+    vi.setSystemTime(new Date('2026-10-23T07:59:30+03:00'));
+
+    const { unmount } = render(<Tool036V4Shell />);
+    fireEvent.click(screen.getByTestId('ack-button'));
+
+    // Sunday's window closed → missed. Thursday's window is still open → not judged.
+    expect(screen.getByTestId('drift-summary').textContent).toContain('فائت: 1');
+    const firstStamp = screen.getByTestId('drift-computed-at').getAttribute('data-computed-at');
+
+    // Let 60 real seconds elapse with no user interaction at all.
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+
+    // Thursday's window has now closed; the report re-judged on its own, and the
+    // explicitly-shown computation instant moved with it.
+    expect(screen.getByTestId('drift-summary').textContent).toContain('فائت: 2');
+    expect(screen.getByTestId('drift-computed-at').getAttribute('data-computed-at')).not.toBe(
+      firstStamp,
+    );
+
+    // Unmounting clears the timer it owns.
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

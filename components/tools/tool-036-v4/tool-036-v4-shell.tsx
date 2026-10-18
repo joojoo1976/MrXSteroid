@@ -45,6 +45,15 @@ import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
 const PREVIEW_WEEKS = 4;
 const NO_USAGE_LABEL = 'لا توجد بيانات استخدام مسجّلة';
 
+/**
+ * Cadence of the live re-judgement tick. A scheduled slot is judged once its
+ * +24h window has closed, so the report must refresh on its own while the page
+ * stays open — a stale "not judged yet" line would be a lie of omission. The
+ * interval is deliberately shorter than the granularity anyone can perceive at
+ * a day-scale window, and it is cleared on unmount (tested).
+ */
+export const CLOCK_TICK_MS = 30_000;
+
 const ZONE_LABEL: Record<Zone, string> = {
   green: 'روتيني',
   yellow: 'محدود الدليل',
@@ -113,6 +122,9 @@ function RuleCite({ ruleId }: { ruleId: string }) {
 
 export default function Tool036V4Shell() {
   const [state, setState] = useState<AppState | null>(null);
+  // `now` is explicit and testable: the injected tick feeds every derived value,
+  // so a window that closes while the page is open is re-judged on its own.
+  const [clockIso, setClockIso] = useState(() => new Date().toISOString());
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
   const [logForm, setLogForm] = useState({
     when: toLocalInputValue(new Date()),
@@ -141,6 +153,11 @@ export default function Tool036V4Shell() {
   }, []);
 
   useEffect(() => {
+    const id = window.setInterval(() => setClockIso(new Date().toISOString()), CLOCK_TICK_MS);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
     // Persist only state the user owns. A wiped (or never-acknowledged) state
     // must never be written back: otherwise the wipe's own re-render recreates
     // the key it just deleted. The acknowledgment lives inside this single
@@ -154,7 +171,9 @@ export default function Tool036V4Shell() {
 
   const derived = useMemo(() => {
     if (!state) return null;
-    const nowIso = new Date().toISOString();
+    // Everything time-dependent is derived from the injected clock, so a window
+    // that closes while the page is open is reflected without any interaction.
+    const nowIso = clockIso;
     const proposal = compileProposal(state.plan, {
       fromIso: nowIso,
       weeks: PREVIEW_WEEKS,
@@ -165,8 +184,8 @@ export default function Tool036V4Shell() {
     const recency = siteRecencyFromEvents(state.events, nowIso);
     const drift = buildDriftReport(proposal, state.events, state.prefs, nowIso);
     const weeklyMg = state.plan.compounds.reduce((sum, c) => sum + c.weeklyDoseMg, 0);
-    return { proposal, findings, recency, drift, weeklyMg };
-  }, [state]);
+    return { proposal, findings, recency, drift, weeklyMg, computedAt: nowIso };
+  }, [state, clockIso]);
 
   if (!state || !derived) {
     return <div className="p-8 text-zinc-500">جارٍ تحميل المعاينة…</div>;
@@ -627,6 +646,13 @@ export default function Tool036V4Shell() {
             ±24 ساعة · «متأخر» = فعلي بعد التسامح وحتى 24 ساعة · «فائت» = لا يوجد فعلي ضمن
             النافذة بعد إغلاقها · المواعيد التي لم تُغلق نافذتها بعد لا تُقيَّم. كل فرق يُعرض
             بحالته وسببه وقواعده وحدوده — <strong>ولا توجد درجة مركّبة</strong> (قرار مكتوب).
+          </p>
+          <p
+            className="mb-2 text-xs text-zinc-500"
+            data-testid="drift-computed-at"
+            data-computed-at={derived.computedAt}
+          >
+            آخر تحديث: {formatInTz(derived.computedAt, state.prefs.tz)}
           </p>
           <p className="mb-3 font-mono text-sm text-zinc-300" data-testid="drift-summary">
             مطابق: {derived.drift.summary.matched} · متأخر: {derived.drift.summary.late} · فائت:{' '}
