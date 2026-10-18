@@ -293,3 +293,33 @@ describe('V4 rotation preference check — gate C3.4 (R3: preference, not safety
     expect(checkRotation([], proposal, 7)).toHaveLength(0);
   });
 });
+
+describe('V4 proposal — the approved 12-week horizon (acceptance P1-4)', () => {
+  it('plans every one of the 12 weeks (24 shots at 2/week) and brackets them exactly', () => {
+    const proposal = compileProposal(enanthatePlan(), {
+      fromIso: FROM,
+      weeks: 12,
+      tz: RIYADH,
+      events: [],
+    });
+    expect(proposal.shots).toHaveLength(24);
+    expect(proposal.windowStart).toBe(proposal.shots[0].occurredAt);
+    expect(proposal.windowEnd).toBe(proposal.shots[proposal.shots.length - 1].occurredAt);
+    const spanDays =
+      (Date.parse(proposal.windowEnd) - Date.parse(proposal.windowStart)) / 86_400_000;
+    expect(spanDays).toBeGreaterThanOrEqual(11 * 7);
+  });
+
+  it('rotation validation runs over the whole horizon, not just the opening weeks', () => {
+    // One site, fixed order → every consecutive gap is 3–4 days, so every gap
+    // breaches a 7-day preference and the findings must span the final week too.
+    const plan = enanthatePlan({ preferredSites: ['dorso-l'], rotationMode: 'fixed-order' });
+    const proposal = compileProposal(plan, { fromIso: FROM, weeks: 12, tz: RIYADH, events: [] });
+    const findings = checkRotation([], proposal, 7);
+    expect(findings).toHaveLength(proposal.shots.length - 1);
+    const lastFindingAt = findings[findings.length - 1].atIso;
+    expect(Date.parse(lastFindingAt)).toBe(
+      Date.parse(proposal.shots[proposal.shots.length - 1].occurredAt),
+    );
+  });
+});

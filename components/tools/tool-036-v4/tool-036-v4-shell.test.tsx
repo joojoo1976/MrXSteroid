@@ -373,3 +373,12 @@ describe('V4 shell — the drift report re-judges as time passes (acceptance P0-
     expect(vi.getTimerCount()).toBe(0);
   });
 });
+
+describe('V4 shell — the approved 12-week horizon (acceptance P1-4)', () => {
+  it('renders the full 12-week schedule, not a 4-week excerpt', async () => {
+    const { container } = await renderLoaded();
+    expect(screen.getByText(/الجدول المقترح \(12 أسابيع\)/)).toBeTruthy();
+    // 2 injections/week × 12 weeks.
+    expect(container.querySelectorAll('[data-testid="shot-row"]')).toHaveLength(24);
+  });
+});

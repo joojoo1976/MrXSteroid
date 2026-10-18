@@ -353,3 +353,28 @@ describe('V4 drift — matching is order-independent and nearest-wins (acceptanc
     expect(report.summary.extra).toBe(1);
   });
 });
+
+describe('V4 drift — the window spans the whole planning horizon (acceptance P1-4)', () => {
+  it('reports over the full 12-week window and judges an actual at the far end', () => {
+    const proposal: Proposal = {
+      shots: [
+        { ...PROPOSAL.shots[0], id: 'first', occurredAt: '2026-10-18T05:00:00.000Z' },
+        { ...PROPOSAL.shots[1], id: 'last', occurredAt: '2027-01-07T05:00:00.000Z' },
+      ],
+      windowStart: '2026-10-18T05:00:00.000Z',
+      windowEnd: '2027-01-07T05:00:00.000Z',
+      tz: 'Asia/Riyadh',
+    };
+    const report = buildDriftReport(
+      proposal,
+      [actual('2027-01-07T06:00:00.000Z', 'dorso-r', 'far')],
+      PREFS,
+      '2027-01-08T10:00:00+03:00',
+    );
+    expect(report.windowStart).toBe(proposal.windowStart);
+    expect(report.windowEnd).toBe(proposal.windowEnd);
+    const last = report.items.find((i) => i.scheduledAt === proposal.shots[1].occurredAt)!;
+    expect(last.status).toBe('matched');
+    expect(last.deltaHours).toBe(1);
+  });
+});

@@ -42,7 +42,13 @@ import { siteRecencyFromEvents } from '@/lib/tools/tool-036-v4/engine/recency';
 import { buildDriftReport } from '@/lib/tools/tool-036-v4/engine/drift';
 import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
 
-const PREVIEW_WEEKS = 4;
+/**
+ * Planning horizon, in weeks. The approved design fixes a FULL 12-week horizon
+ * (`review-v4-design-ar.md` P3: «خطة الأفق الكامل (12 أسبوعًا)») — the earlier
+ * 4-week preview value was an unapproved shortening and is superseded here.
+ * Exported so tests and callers assert the horizon rather than the literal.
+ */
+export const PREVIEW_WEEKS = 12;
 const NO_USAGE_LABEL = 'لا توجد بيانات استخدام مسجّلة';
 
 /**
@@ -436,6 +442,10 @@ export default function Tool036V4Shell() {
           <h2 id="proposal-heading" className="mb-3 font-semibold">
             الجدول المقترح ({PREVIEW_WEEKS} أسابيع)
           </h2>
+          <p className="mb-3 text-xs text-zinc-500" data-testid="horizon-note">
+            نافذة متجدّدة من {PREVIEW_WEEKS} أسبوعًا تبدأ من الأسبوع الحالي: عند عبور يوم الأحد تتحرّك
+            النافذة، فتخرج الأحداث الأقدم من هذا التقرير. الأفق المعتمد {PREVIEW_WEEKS} أسبوعًا.
+          </p>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-zinc-400">
