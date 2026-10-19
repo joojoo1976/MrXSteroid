@@ -223,7 +223,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
     // failure — it is never equivalent to "invoice does not exist".
     const { data: existing, error: existingError } = await supabase
         .from('invoices')
-        .select('status, payment_status, user_id, tier_id')
+        .select('status, payment_status, user_id, tier_id, metadata, amount, currency')
         .eq('id', invoiceId)
         .single();
 
@@ -345,10 +345,99 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             }
         }
 
+        // ── MULTI-LEG PARTIAL PAYMENT INTERCEPTOR (GAP-D) ──────────────────────
+        // If the invoice is composed of multiple payment legs, process the verdict
+        // against the matching leg first. If other legs remain pending/unpaid,
+        // update the invoice to 'partially_paid' and EXIT WITHOUT fulfilling.
+        const metadata = (existing.metadata || {}) as Record<string, unknown>;
+        const paymentLegs = (metadata.payment_legs || []) as Array<{
+            id: string;
+            legIndex: number;
+            legType: string;
+            provider: string;
+            amount: number;
+            currency: string;
+            status: string;
+            providerReference: string | null;
+            sessionUrl: string | null;
+            items: unknown[];
+            paidAt: string | null;
+        }>;
+
+        const isMultiLeg = paymentLegs.length > 1;
+        if (isMultiLeg) {
+            const { processLegVerdict } = await import('./multiLegPaymentService');
+            const legProvider = providerKey.includes('kashier')
+                ? 'kashier'
+                : providerKey.includes('fourthwall')
+                ? 'fourthwall'
+                : undefined;
+
+            const legVerdictRes = processLegVerdict(paymentLegs as any, {
+                provider: legProvider,
+                providerReference: verdict.externalReferenceId || providerEventId,
+                status: 'succeeded',
+                paidAmount: verdict.paidAmount,
+                paidAt: nowIso(),
+            });
+
+            // Persist the updated legs in invoice metadata and database
+            await supabase
+                .from('invoices')
+                .update({
+                    metadata: {
+                        ...metadata,
+                        payment_legs: legVerdictRes.updatedLegs,
+                    },
+                    payment_status: legVerdictRes.consolidatedStatus,
+                    updated_at: nowIso(),
+                })
+                .eq('id', invoiceId);
+
+            try {
+                const { persistPaymentLegs } = await import('./multiLegPaymentService');
+                await persistPaymentLegs(supabase, legVerdictRes.updatedLegs);
+            } catch (err) {
+                console.warn('[Fulfillment] persistPaymentLegs error (non-fatal):', err);
+            }
+
+            // If not all legs are settled, transition to partially_paid and stop!
+            if (!legVerdictRes.canGrantEntitlement) {
+                console.log(
+                    `⏳ [Fulfillment] Invoice ${invoiceId} is partially paid (status=${legVerdictRes.consolidatedStatus}). Entitlements gated until full settlement.`
+                );
+                await supabase
+                    .from('orders')
+                    .update({
+                        payment_status: 'partially_paid',
+                        updated_at: nowIso(),
+                    })
+                    .eq('invoice_id', invoiceId);
+
+                if (source === 'webhook' && providerEventId) {
+                    await supabase
+                        .from('webhook_events')
+                        .update({
+                            status: 'processed',
+                            processing_status: 'partially_paid',
+                            processed_at: nowIso(),
+                            updated_at: nowIso(),
+                        })
+                        .eq('provider', providerKey)
+                        .eq('provider_event_id', providerEventId);
+                }
+
+                return { code: 'applied', outcome: 'success' };
+            }
+        }
+
         // Defense-in-depth: never activate on a mismatched charge. The SAME
         // database handle is used so the verified invoice is the invoice the
         // §6.3 journal will be posted against.
-        const amountCheck = await verifyPaidAmount(invoiceId, verdict.paidAmount, supabase);
+        // For multi-leg orders, individual legs are verified per-leg above.
+        const amountCheck = isMultiLeg
+            ? { ok: true }
+            : await verifyPaidAmount(invoiceId, verdict.paidAmount, supabase);
         if (!amountCheck.ok) {
             console.error(`❌ [Fulfillment] Amount verification failed for ${invoiceId} — not activating.`);
             await supabase
@@ -428,9 +517,17 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
 
         // 2. §6.3 GROSS (G) — resolved BEFORE the split freeze, because the NET
         //    basis N = G - F must be known before the allocation is computed.
-        const grossMinor = Math.round(
-            Number(verdict.paidAmount || (invoice as InvoiceRow | null)?.amount || 0) * 100
-        );
+        //
+        //    For MULTI-LEG orders the consolidated §6.3 basis is the FULL invoice
+        //    amount (G = sum of all legs). Using the per-leg verdict.paidAmount
+        //    (which is only the settling leg's partial amount) would diverge from
+        //    what freezeOrderSplits uses (invoice.amount), causing a guaranteed
+        //    split_allocation_mismatch at step 6. The invoice.amount is the only
+        //    correct source of truth for the consolidated order gross.
+        const invoiceGross = Number((invoice as InvoiceRow | null)?.amount || 0);
+        const grossMinor = isMultiLeg
+            ? Math.round(invoiceGross * 100)
+            : Math.round(Number(verdict.paidAmount || invoiceGross) * 100);
         if (!Number.isInteger(grossMinor) || grossMinor <= 0) {
             return failFinancial(
                 'splits_incomplete',

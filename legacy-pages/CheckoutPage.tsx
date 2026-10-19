@@ -13,6 +13,7 @@ import { useRegion } from '../context/RegionContext';
 
 import { ProductSelector } from '../features/checkout/ProductSelector';
 import { OrderSummary } from '../features/checkout/OrderSummary';
+import { DirectServicesCheckoutSection } from '../features/checkout/DirectServicesCheckoutSection';
 import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../shared/lib/logic';
 
 interface CheckoutPageProps {
@@ -170,6 +171,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             isEg={isEg}
                             onRegionChange={handleRegionChange}
                         />
+
+                        {/* 03-pre. Direct Professional Services — GLOBAL only, renders step 04 */}
+                        {!isEg && <DirectServicesCheckoutSection isAr={isAr} />}
 
                         {/* 03. Payment Details */}
                         <div className="space-y-6">

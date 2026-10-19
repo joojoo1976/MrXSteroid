@@ -167,30 +167,8 @@ export async function POST(req: Request) {
 
         // Choose between combined checkout (lines[]) and single-tier checkout
         if (input.lines && input.lines.length > 0) {
-            // Determine gateway based on region.
-            // `gatewayFactory` is invoked as factory(region) by
-            // createCombinedCheckoutSession, so the callback must accept that
-            // argument. The selection rule is unchanged: an Egyptian buyer goes
-            // to Kashier, everyone else to Fourthwall.
-            //
-            // KNOWN TYPE DIVERGENCE (pre-existing, NOT introduced here):
-            // createCombinedCheckoutSession calls createPaymentSession with the
-            // KASHIER parameter shape (orderRef/amount/currency/serverWebhook),
-            // whereas FourthwallGateway.createPaymentSession takes the Storefront
-            // shape (productId/variantId/customerEmail). The two are not
-            // structurally compatible, so the union cannot satisfy
-            // CombinedCheckoutGateway without an explicit assertion.
-            //
-            // The runtime behaviour is deliberately left exactly as it was: the
-            // non-EG branch still constructs a FourthwallGateway. Changing which
-            // gateway handles a region would alter payment behaviour, which is
-            // out of scope for a build fix — so the divergence is asserted at
-            // the single call site and reported instead of being silently fixed.
-            const gatewayFactory = (_region: MerchantRegion): CombinedCheckoutGateway => {
-                if (input.country === 'EG') return new KashierGateway('egypt');
-                return new FourthwallGateway() as unknown as CombinedCheckoutGateway;
-            };
-
+            // Combined checkout: resolve gateway via unified adapter layer
+            // (Egypt -> KashierGateway, Global Services -> KashierServiceLinkAdapter, Global Products -> FourthwallCheckoutAdapter)
             const result = await createCombinedCheckoutSession(
                 {
                     lines: input.lines,
@@ -208,11 +186,14 @@ export async function POST(req: Request) {
                 },
                 {
                     supabase: getSupabaseAdmin(),
-                    gatewayFactory,
                     pricingRows: async () => [],
                     generateIdempotencyKey: () => crypto.randomUUID(),
                 }
             );
+
+            const activeGateway = result.region === 'EGYPT'
+                ? 'kashier'
+                : (result.sessionUrl.includes('kashier.io') ? 'kashier' : 'fourthwall');
 
             return NextResponse.json({
                 success: true,
@@ -221,7 +202,7 @@ export async function POST(req: Request) {
                 orderRef: result.orderRef,
                 sessionId: result.sessionId,
                 sessionUrl: result.sessionUrl,
-                gateway: 'kashier',
+                gateway: activeGateway,
                 region: result.region,
                 amount: result.amount,
                 currency: result.currency,

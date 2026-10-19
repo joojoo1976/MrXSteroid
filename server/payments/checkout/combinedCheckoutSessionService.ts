@@ -24,10 +24,13 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { KashierGateway } from '../gateways/KashierGateway';
+import { FourthwallCheckoutAdapter } from '../gateways/FourthwallCheckoutAdapter';
+import { KashierServiceLinkAdapter } from '../gateways/KashierServiceLinkAdapter';
 import {
     assertRegionCredentials,
     resolveRegion,
     type MerchantRegion,
+    type PaymentMethodId,
 } from '../merchantResolver';
 import { loadPricing } from '../pricing';
 import { createPaymentIntentAttempt } from '../paymentIntentService';
@@ -42,8 +45,13 @@ import {
     CheckoutValidationError,
     markSessionCreationFailed,
     type CheckoutShippingAddress,
-    type CheckoutSessionGateway,
 } from './checkoutSessionService';
+import {
+    planPaymentLegs,
+    persistPaymentLegs,
+    type PaymentLeg,
+    type ConsolidatedInvoicePlan,
+} from '../multiLegPaymentService';
 
 export type { CombinedLineInput };
 
@@ -84,15 +92,78 @@ export interface CombinedCheckoutSessionResult {
     shippingCost: number;
     discount: number;
     idempotent: boolean;
+    paymentLegs?: PaymentLeg[];
+    isMultiLeg?: boolean;
 }
 
-export type CombinedCheckoutGateway = Pick<KashierGateway, 'createPaymentSession'>;
+export interface CombinedPaymentSessionParams {
+    orderRef: string;
+    amount: number;
+    currency: string;
+    customerEmail: string;
+    customerName: string;
+    locale?: 'ar' | 'en';
+    paymentMethods?: PaymentMethodId[];
+    defaultMethod?: PaymentMethodId;
+    serverWebhook?: string;
+    lines?: CombinedOrderTotals['lines'];
+    metadata?: Record<string, unknown>;
+}
+
+export interface CombinedPaymentSessionResult {
+    sessionId: string | null;
+    sessionUrl: string;
+    orderId?: string;
+    amount?: number;
+    currency?: string;
+    status?: string;
+}
+
+export interface CombinedCheckoutGateway {
+    createPaymentSession(params: CombinedPaymentSessionParams): Promise<CombinedPaymentSessionResult>;
+}
+
+export function isDirectServiceTier(tierId: string): boolean {
+    return (
+        tierId === 'coaching_addon' ||
+        tierId === 'consultation' ||
+        tierId === 'coaching_plus' ||
+        tierId === 'bundle_plus' ||
+        tierId === 'digital_plus'
+    );
+}
+
+export function resolveCombinedGateway(
+    region: MerchantRegion,
+    lines: CombinedOrderTotals['lines']
+): CombinedCheckoutGateway {
+    if (region === 'EGYPT') {
+        return new KashierGateway('egypt');
+    }
+
+    const hasServices = lines.some((l) => isDirectServiceTier(l.tierId));
+    const hasProducts = lines.some((l) => !isDirectServiceTier(l.tierId));
+
+    if (hasServices && hasProducts) {
+        throw new CheckoutValidationError(
+            'Cannot combine Fourthwall merchandise/books and direct coaching/consultation services in a single payment session. Please complete separate checkouts for products and services.'
+        );
+    }
+
+    if (hasServices) {
+        return new KashierServiceLinkAdapter();
+    }
+
+    return new FourthwallCheckoutAdapter();
+}
 
 export interface CombinedCheckoutDeps {
     supabase?: SupabaseClient;
     gatewayFactory?: (region: MerchantRegion) => CombinedCheckoutGateway;
     pricingRows?: () => Promise<Array<{ key: string; value: string }>>;
     generateIdempotencyKey?: () => string;
+    fourthwallAdapter?: CombinedCheckoutGateway;
+    kashierServiceAdapter?: CombinedCheckoutGateway;
 }
 
 function getSupabaseAdmin(): SupabaseClient {
@@ -264,20 +335,43 @@ export async function createCombinedCheckoutSession(
         shippable: line.shippable,
     }));
 
+    // ── 3.5 Plan payment legs (Consolidated Internal Invoice Architecture) ──
+    // Decomposes cart into independent provider legs tied to this purchase
+    const legPlan = planPaymentLegs({
+        invoiceId: randomUUID(), // Temporary ID for planning; updated once invoice is created
+        region: region === 'EGYPT' ? 'EGYPT' : 'GLOBAL',
+        currency,
+        lines: orderLines,
+        shippingCost: totals.shippingCost,
+        discount: totals.discount,
+    });
+
     // ── 4. ONE invoice for the entire combined order ─────────────────────────
+    const isServiceOrder = totals.lines.every((l) => isDirectServiceTier(l.tierId));
+    const isMultiLegOrder = legPlan.isMultiLeg;
+    const gatewayName = region === 'EGYPT'
+        ? 'kashier'
+        : (isMultiLegOrder ? 'multi_leg' : (isServiceOrder ? 'kashier' : 'fourthwall'));
+    const providerMerchant = region === 'EGYPT'
+        ? `kashier_${region.toLowerCase()}`
+        : (isMultiLegOrder ? 'multi_provider_consolidated' : (isServiceOrder ? 'kashier_service_link' : 'fourthwall_storefront'));
+    const paymentMethodName = region === 'EGYPT'
+        ? 'kashier'
+        : (isMultiLegOrder ? 'multi_leg' : (isServiceOrder ? 'kashier_link' : 'fourthwall'));
+
     let invoiceId: string;
     {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
             .insert({
                 user_id: input.userId || null,
-                gateway: 'kashier',
+                gateway: gatewayName,
                 status: 'pending',
                 payment_status: 'pending',
                 tier_id: totals.primaryTierId,
                 amount,
                 currency,
-                payment_provider_merchant: `kashier_${region.toLowerCase()}`,
+                payment_provider_merchant: providerMerchant,
                 region: region.toLowerCase(),
                 shipping_cost: totals.shippingCost,
                 discount_amount: totals.discount,
@@ -292,6 +386,7 @@ export async function createCombinedCheckoutSession(
                     lines: orderLines,
                     subtotal: totals.subtotal,
                     shipping_provider_id: totals.shippingProviderId,
+                    is_multi_leg: isMultiLegOrder,
                 },
             })
             .select('id')
@@ -345,9 +440,9 @@ export async function createCombinedCheckoutSession(
             items: orderLines,
             region: region.toLowerCase(),
             currency,
-            payment_provider_merchant: `kashier_${region.toLowerCase()}`,
+            payment_provider_merchant: providerMerchant,
             payment_status: 'pending',
-            payment_method: 'kashier',
+            payment_method: paymentMethodName,
             source_channel: 'web_checkout',
         });
 
@@ -358,6 +453,12 @@ export async function createCombinedCheckoutSession(
         }
     }
 
+    // ── 5.5 Bind payment legs to authoritative invoice and persist ───────────
+    const boundLegs: PaymentLeg[] = legPlan.legs.map((leg) => ({
+        ...leg,
+        invoiceId,
+    }));
+
     // ── 6. ONE payment intent for the whole total ────────────────────────────
     const orderRef = invoiceId;
     const amountMinor = Math.round(amount * 100);
@@ -365,7 +466,7 @@ export async function createCombinedCheckoutSession(
     const intent = await createPaymentIntentAttempt(
         {
             invoiceId,
-            provider: 'kashier',
+            provider: gatewayName,
             merchantReference: orderRef,
             amountMinor,
             currency,
@@ -378,44 +479,132 @@ export async function createCombinedCheckoutSession(
                 shippingCost: totals.shippingCost,
                 discount: totals.discount,
                 idempotencyKey,
+                isMultiLeg: isMultiLegOrder,
             },
         },
         supabase
     );
 
-    // ── 7. ONE Kashier session for the single combined amount ─────────────────
-    const gateway = deps.gatewayFactory
-        ? deps.gatewayFactory(region)
-        : new KashierGateway(region === 'EGYPT' ? 'egypt' : 'global');
+    // ── 7. Sessions generation (Multi-Leg or Single Gateway) ─────────────────
+    let session: CombinedPaymentSessionResult;
+    let finalLegs = boundLegs;
 
-    let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
-    try {
-        session = await gateway.createPaymentSession({
-            orderRef,
+    if (isMultiLegOrder) {
+        // Multi-leg cart: create sessions for each independent provider leg
+        const fourthwallAdapter = deps.fourthwallAdapter || new FourthwallCheckoutAdapter();
+        const kashierServiceAdapter = deps.kashierServiceAdapter || new KashierServiceLinkAdapter();
+
+        const sessionLegs: PaymentLeg[] = [];
+        let primarySessionUrl = '';
+
+        for (const leg of boundLegs) {
+            try {
+                if (leg.provider === 'fourthwall') {
+                    const fwRes = await fourthwallAdapter.createPaymentSession({
+                        orderRef: `${orderRef}-L${leg.legIndex}`,
+                        amount: leg.amount,
+                        currency: leg.currency,
+                        customerEmail: input.email,
+                        customerName: input.fullName,
+                        locale: input.locale || 'en',
+                        lines: leg.items as unknown as CombinedOrderTotals['lines'],
+                        metadata: {
+                            invoiceId,
+                            legId: leg.id,
+                            legIndex: leg.legIndex,
+                        },
+                    });
+                    leg.sessionUrl = fwRes.sessionUrl;
+                    leg.providerReference = fwRes.sessionId || fwRes.orderId || null;
+                    if (!primarySessionUrl) primarySessionUrl = fwRes.sessionUrl;
+                } else if (leg.provider === 'kashier') {
+                    const kashierRes = await kashierServiceAdapter.createPaymentSession({
+                        orderRef: `${orderRef}-L${leg.legIndex}`,
+                        amount: leg.amount,
+                        currency: leg.currency,
+                        customerEmail: input.email,
+                        customerName: input.fullName,
+                        locale: input.locale || 'en',
+                        lines: leg.items as unknown as CombinedOrderTotals['lines'],
+                        metadata: {
+                            invoiceId,
+                            legId: leg.id,
+                            legIndex: leg.legIndex,
+                        },
+                    });
+                    leg.sessionUrl = kashierRes.sessionUrl;
+                    leg.providerReference = kashierRes.sessionId || null;
+                    if (!primarySessionUrl) primarySessionUrl = kashierRes.sessionUrl;
+                }
+                sessionLegs.push(leg);
+            } catch (legErr) {
+                leg.status = 'failed';
+                sessionLegs.push(leg);
+                console.error(`[CombinedCheckout] Leg ${leg.legIndex} (${leg.provider}) session failed:`, legErr);
+                await markSessionCreationFailed(supabase, {
+                    invoiceId,
+                    intentId: intent.id,
+                    intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
+                    error: legErr,
+                });
+                throw legErr;
+            }
+        }
+
+        finalLegs = sessionLegs;
+        session = {
+            sessionId: `multi_leg_${invoiceId}`,
+            sessionUrl: primarySessionUrl || '#',
             amount,
             currency,
-            customerEmail: input.email,
-            customerName: input.fullName,
-            locale: input.locale || 'en',
-            paymentMethods: merchant.paymentMethods,
-            defaultMethod: merchant.defaultMethod,
-            serverWebhook: merchant.webhookUrl,
-        });
-    } catch (error) {
-        await markSessionCreationFailed(supabase, {
-            invoiceId,
-            intentId: intent.id,
-            intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
-            error,
-        });
-        throw error;
+            status: 'PENDING_MULTI_LEG',
+        };
+    } else {
+        // Single provider session (Egypt, pure books, or pure service)
+        const gateway = deps.gatewayFactory
+            ? deps.gatewayFactory(region)
+            : resolveCombinedGateway(region, totals.lines);
+
+        try {
+            session = await gateway.createPaymentSession({
+                orderRef,
+                amount,
+                currency,
+                customerEmail: input.email,
+                customerName: input.fullName,
+                locale: input.locale || 'en',
+                paymentMethods: merchant.paymentMethods,
+                defaultMethod: merchant.defaultMethod,
+                serverWebhook: merchant.webhookUrl,
+                lines: totals.lines,
+                metadata: {
+                    ...(input.metadata || {}),
+                    order_kind: 'combined',
+                    subtotal: totals.subtotal,
+                    shippingCost: totals.shippingCost,
+                    discount: totals.discount,
+                    idempotencyKey,
+                },
+            });
+            if (finalLegs.length === 1) {
+                finalLegs[0].sessionUrl = session.sessionUrl;
+                finalLegs[0].providerReference = session.sessionId;
+            }
+        } catch (error) {
+            await markSessionCreationFailed(supabase, {
+                invoiceId,
+                intentId: intent.id,
+                intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
+                error,
+            });
+            throw error;
+        }
     }
 
+    // Persist payment legs to table and mirror to invoice metadata
+    await persistPaymentLegs(supabase, finalLegs);
+
     // ── 8. Link the session to the invoice, the order and the intent ─────────
-    // Provider-identifier columns carry KASHIER's session id only, and stay
-    // null when the provider exposes none. The application's own order
-    // reference belongs to kashier_order_id / invoices.id.
-    // reference belongs to kashier_order_id / invoices.id.
     const providerSessionId = session.sessionId ?? null;
     const { error: linkError } = await supabase
         .from('invoices')
@@ -424,6 +613,15 @@ export async function createCombinedCheckoutSession(
             kashier_session_url: session.sessionUrl,
             kashier_order_id: orderRef,
             gateway_reference_id: providerSessionId,
+            metadata: {
+                ...(input.metadata || {}),
+                order_kind: 'combined',
+                lines: orderLines,
+                subtotal: totals.subtotal,
+                shipping_provider_id: totals.shippingProviderId,
+                is_multi_leg: isMultiLegOrder,
+                payment_legs: finalLegs,
+            },
             updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId);
@@ -445,7 +643,11 @@ export async function createCombinedCheckoutSession(
         .update({
             provider_order_id: providerSessionId,
             status: 'pending',
-            metadata: { ...(intent.metadata || {}), session_url: session.sessionUrl },
+            metadata: {
+                ...(intent.metadata || {}),
+                session_url: session.sessionUrl,
+                payment_legs: finalLegs,
+            },
             updated_at: new Date().toISOString(),
         })
         .eq('id', intent.id);
@@ -467,5 +669,7 @@ export async function createCombinedCheckoutSession(
         shippingCost: totals.shippingCost,
         discount: totals.discount,
         idempotent: false,
+        paymentLegs: finalLegs,
+        isMultiLeg: isMultiLegOrder,
     };
 }

@@ -9,6 +9,7 @@ import { COACHING_ADDON_USD } from '@/shared/lib/logic';
 
 import { KASHIER_PAYMENT_PAGES, buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
 import { useAuth } from '../../context/AuthContext';
+import { DirectServicesSection } from './DirectServicesSection';
 
 interface PricingSectionProps {
     content: ContentStrings;
@@ -397,6 +398,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                         );
                     })}
                 </div>
+
+                {/* 🌟 الخدمات الاستشارية والتدريبية المباشرة (VIP Coaching & Custom Consultation) */}
+                <DirectServicesSection />
             </div>
         </section>
     );

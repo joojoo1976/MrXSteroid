@@ -319,19 +319,30 @@ export class FourthwallGateway implements IPaymentGateway {
     }
 
     private async createStorefrontCart(input: {
-        variantId: string;
+        variantId?: string;
+        items?: Array<{ variantId: string; quantity: number }>;
         metadata: Record<string, unknown>;
     }): Promise<string> {
         const url = `${this.config.storefrontBaseUrl}/v1/carts?storefront_token=${encodeURIComponent(
             this.config.storefrontToken
         )}&currency=USD`;
 
+        const items = input.items && input.items.length > 0
+            ? input.items
+            : input.variantId
+                ? [{ variantId: input.variantId, quantity: 1 }]
+                : [];
+
+        if (items.length === 0) {
+            throw new Error("[FourthwallGateway] Cannot create storefront cart with empty items");
+        }
+
         const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             // metadata keys must be [a-zA-Z0-9_], <=256/key, <=512/value, <=2KB total.
             body: JSON.stringify({
-                items: [{ variantId: input.variantId, quantity: 1 }],
+                items,
                 metadata: input.metadata,
             }),
             signal: AbortSignal.timeout(10_000),
@@ -352,10 +363,35 @@ export class FourthwallGateway implements IPaymentGateway {
     }
 
     /**
+     * Creates a multi-item Fourthwall Storefront cart session for combined checkout.
+     */
+    async createMultiItemStorefrontCart(input: {
+        items: Array<{ variantId: string; quantity: number }>;
+        customerEmail: string;
+        customerName?: string;
+        invoiceId: string;
+        metadata?: Record<string, unknown>;
+    }): Promise<{ cartId: string; checkoutUrl: string }> {
+        this.assertCredentials();
+        const cartId = await this.createStorefrontCart({
+            items: input.items,
+            metadata: {
+                ...(input.metadata || {}),
+                invoiceId: input.invoiceId,
+                region: "GLOBAL",
+                email: input.customerEmail,
+                fullName: input.customerName,
+            },
+        });
+        const checkoutUrl = `https://${this.config.shopDomain}/cart/checkout?cartId=${encodeURIComponent(cartId)}&currency=USD`;
+        return { cartId, checkoutUrl };
+    }
+
+    /**
      * Resolves the Fourthwall product/variant mapping for a given tier.
      * Returns null (never a placeholder) when a real product ID is not configured.
      */
-    private resolveProductMapping(tierId: string): {
+    public resolveProductMapping(tierId: string): {
         fourthwallProductId: string;
         fourthwallVariantId?: string;
     } | null {
@@ -404,8 +440,14 @@ export class FourthwallGateway implements IPaymentGateway {
     }
 
     /** AUP-blocked service tiers must never be exposed through Fourthwall. */
-    private isBlockedServiceTier(tierId: string): boolean {
-        return tierId === "coaching_addon" || tierId === "consultation";
+    public isBlockedServiceTier(tierId: string): boolean {
+        return (
+            tierId === "coaching_addon" ||
+            tierId === "consultation" ||
+            tierId === "coaching_plus" ||
+            tierId === "bundle_plus" ||
+            tierId === "digital_plus"
+        );
     }
 
     private resolveFourthwallProductId(canonical: CanonicalProductId): string | null {
