@@ -45,27 +45,55 @@ export const DRIFT_RULE_ID = 'drift-matching-tolerance';
 /** Matching half-window in hours, on both sides of the scheduled time. */
 export const MATCHING_WINDOW_HOURS = 24;
 
-function reasonFor(
+/**
+ * The declared reason for a classification, in both interface languages
+ * (F7.5). Returning the pair here — rather than a single string — keeps the
+ * wording next to the rule that produces it and mirrors the `messageEn`/
+ * `messageAr` convention already used by import errors.
+ */
+function reasonsFor(
   status: DriftItem['status'],
   deltaHours: number | undefined,
   tolerance: number,
-  actualSite?: string,
-): string {
-  const h = deltaHours === undefined ? undefined : Math.round(deltaHours * 10) / 10;
+): { reasonEn: string; reasonAr: string } {
+  // Two decimals of an hour (≈36 s): fine enough that a delta just past the
+  // declared tolerance is never printed as if it sat exactly on the boundary
+  // (e.g. 6 h 02 m → 6.033 → "6.03"), which would read as a contradiction
+  // ("6h after schedule, beyond the ±6h tolerance").
+  const h = deltaHours === undefined ? undefined : Math.round(deltaHours * 100) / 100;
+  const abs = h === undefined ? undefined : Math.abs(h);
   switch (status) {
     case 'matched':
       if (h !== undefined && h < -tolerance) {
-        return `actual recorded ${Math.abs(h)}h before schedule (inside the ${MATCHING_WINDOW_HOURS}h matching window)`;
+        return {
+          reasonEn: `actual recorded ${abs}h before schedule (inside the ${MATCHING_WINDOW_HOURS}h matching window)`,
+          reasonAr: `سُجِّل الفعلي قبل الموعد بـ${abs} ساعة (داخل نافذة المطابقة ${MATCHING_WINDOW_HOURS} ساعة)`,
+        };
       }
-      return `actual within ±${tolerance}h of schedule`;
+      return {
+        reasonEn: `actual within ±${tolerance}h of schedule`,
+        reasonAr: `فعلي ضمن ±${tolerance} ساعة من الموعد`,
+      };
     case 'site-changed':
-      return `actual within ±${tolerance}h of schedule but at a different site (${actualSite ?? 'unknown'})`;
+      return {
+        reasonEn: `actual within ±${tolerance}h of schedule but at a different site`,
+        reasonAr: `فعلي ضمن ±${tolerance} ساعة من الموعد لكن في موقع مختلف`,
+      };
     case 'late':
-      return `actual ${h}h after schedule (beyond ±${tolerance}h tolerance, inside ${MATCHING_WINDOW_HOURS}h)`;
+      return {
+        reasonEn: `actual ${h}h after schedule (beyond ±${tolerance}h tolerance, inside ${MATCHING_WINDOW_HOURS}h)`,
+        reasonAr: `فعلي بعد الموعد بـ${h} ساعة (تجاوز التسامح ±${tolerance} ساعة، وداخل ${MATCHING_WINDOW_HOURS} ساعة)`,
+      };
     case 'missed':
-      return `no actual event inside [−${MATCHING_WINDOW_HOURS}h, +${MATCHING_WINDOW_HOURS}h] of schedule`;
+      return {
+        reasonEn: `no actual event inside [−${MATCHING_WINDOW_HOURS}h, +${MATCHING_WINDOW_HOURS}h] of schedule`,
+        reasonAr: `لا يوجد حدث فعلي ضمن [−${MATCHING_WINDOW_HOURS} ساعة، +${MATCHING_WINDOW_HOURS} ساعة] من الموعد`,
+      };
     case 'extra':
-      return 'actual event has no scheduled counterpart in this window';
+      return {
+        reasonEn: 'actual event has no scheduled counterpart in this window',
+        reasonAr: 'حدث فعلي بلا موعد مقابل في هذه النافذة',
+      };
   }
 }
 
@@ -225,19 +253,27 @@ export function buildDriftReport(
       items.push({
         scheduledAt: shot.occurredAt,
         status: 'missed',
-        reason: reasonFor('missed', undefined, tolerance),
+        ...reasonsFor('missed', undefined, tolerance),
         ruleId: DRIFT_RULE_ID,
       });
       continue;
     }
 
-    const deltaHours =
-      Math.round(((Date.parse(match.occurredAt) - scheduledMs) / 3_600_000) * 10) / 10;
+    // The classification must use the RAW elapsed time. Rounding to a tenth of
+    // an hour first turned +6 h 02 m (6.033) into 6.0 and labelled an injection
+    // that overran the declared tolerance as `matched`.
+    const rawDeltaHours = (Date.parse(match.occurredAt) - scheduledMs) / 3_600_000;
+    // The published delta carries two decimals (≈36 s) and keeps the sign of the
+    // elapsed time. At one decimal a delta of +6 h 02 m rounded to 6.0, so the
+    // delta chip and the stated reason disagreed with the `late` classification
+    // ("فرق 6 ساعة" next to a reason reading "6.03h after schedule"); two
+    // decimals keep the number, the wording and the status saying one thing.
+    const deltaHours = Math.round(rawDeltaHours * 100) / 100;
 
     let status: DriftItem['status'];
-    if (Math.abs(deltaHours) <= tolerance) {
+    if (Math.abs(rawDeltaHours) <= tolerance) {
       status = match.siteId === shot.siteId ? 'matched' : 'site-changed';
-    } else if (deltaHours > tolerance) {
+    } else if (rawDeltaHours > tolerance) {
       status = 'late';
     } else {
       // Early beyond tolerance, but inside the matching window: the injection
@@ -250,7 +286,9 @@ export function buildDriftReport(
       status,
       actual: { occurredAt: match.occurredAt, siteId: match.siteId },
       deltaHours,
-      reason: reasonFor(status, deltaHours, tolerance, match.siteId),
+      // The exact delta feeds the wording, so a value just past the tolerance is
+      // described by its true distance rather than the rounded value.
+      ...reasonsFor(status, rawDeltaHours, tolerance),
       ruleId: DRIFT_RULE_ID,
     });
   }
@@ -265,7 +303,7 @@ export function buildDriftReport(
       scheduledAt: null,
       status: 'extra',
       actual: { occurredAt: candidate.occurredAt, siteId: candidate.siteId },
-      reason: reasonFor('extra', undefined, tolerance),
+      ...reasonsFor('extra', undefined, tolerance),
       ruleId: DRIFT_RULE_ID,
     });
   }

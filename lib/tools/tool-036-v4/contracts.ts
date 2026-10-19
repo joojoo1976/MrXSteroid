@@ -171,8 +171,13 @@ export const driftItemSchema = z.object({
   status: driftStatus,
   actual: z.object({ occurredAt: isoDateTimeSchema, siteId: siteIdSchema }).optional(),
   deltaHours: z.number().optional(),
-  /** Human-readable explanation generated from the declared comparison rules. */
-  reason: z.string().min(1),
+  /**
+   * Human-readable explanation generated from the declared comparison rules,
+   * in both interface languages (F7.5) — the UI picks one, mirroring
+   * `ImportError.messageEn/messageAr`.
+   */
+  reasonEn: z.string().min(1),
+  reasonAr: z.string().min(1),
   /** Which declared rule produced this classification (traceable in the registry). */
   ruleId: z.string().min(1),
 });

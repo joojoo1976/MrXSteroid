@@ -15,6 +15,8 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import Tool036V4Shell from './tool-036-v4-shell';
+import { DICT } from '@/lib/tools/tool-036-v4/i18n-copy';
+import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
 import { buildEnvelope } from '@/lib/tools/tool-036-v4/state/envelope';
 import { applyAction, initialState } from '@/lib/tools/tool-036-v4/state/reducer';
 
@@ -72,7 +74,7 @@ afterEach(() => {
 });
 
 async function renderLoaded() {
-  const result = render(<Tool036V4Shell />);
+  const result = render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
   await waitFor(() =>
     expect(screen.queryByTestId('ack-button') ?? screen.queryByTestId('weekly-mg')).toBeTruthy(),
   );
@@ -160,6 +162,35 @@ describe('V4 shell — drift truthfulness (scenario S2)', () => {
     expect(screen.getByTestId('drift-summary').textContent).toContain('متأخر: 1');
   });
 
+  it('a 6h02m overshoot prints the same 6.03 in the delta chip and the reason (boundary of S2)', async () => {
+    await renderLoaded();
+
+    const scheduledIso = document.querySelector('[data-testid="shot-row"]')!.getAttribute(
+      'data-scheduled-at',
+    )!;
+    // Two minutes past the declared 6h tolerance: the status is «متأخر», and the
+    // delta the interface prints must not round back onto the tolerance it just
+    // overran. (At one decimal this read «فرق 6 ساعة» beside a 6.03h reason.)
+    const lateAt = new Date(Date.parse(scheduledIso) + 6 * 3_600_000 + 2 * 60_000);
+    fireEvent.change(screen.getByLabelText('موعد الحقن الفعلي'), {
+      target: { value: toInputValue(lateAt) },
+    });
+    fireEvent.click(screen.getByText('تسجيل'));
+
+    expect(screen.getByTestId('drift-status-late')).toBeTruthy();
+    const chip = screen.getByTestId('drift-delta').textContent ?? '';
+    const reason = screen.getByTestId('drift-reason').textContent ?? '';
+
+    // The chip no longer reads as the rounded tolerance it actually overran.
+    expect(chip).toContain('6.03');
+    expect(chip).not.toContain('6 ساعة');
+    // One number, one story: every figure the chip prints also appears in the
+    // stated reason, so the two surfaces cannot contradict each other.
+    const chipNumbers = chip.match(/\d+(?:\.\d+)?/g) ?? [];
+    expect(chipNumbers).toContain('6.03');
+    for (const n of chipNumbers) expect(reason).toContain(n);
+  });
+
   it('the log form refuses an empty/non-positive volume with an explicit message', async () => {
     await renderLoaded();
     // `min=0.01` already blocks typed zeros natively; the handler's own guard
@@ -238,7 +269,7 @@ describe('V4 shell — complete wipe leaves no key (decision D5 / R7)', () => {
     expect(storageMap.get('mrx.keep')).toBe('belongs-to-another-tool');
 
     // Re-rendering the still-open shell must not write the key back.
-    rerender(<Tool036V4Shell />);
+    rerender(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
     expect(storageMap.has(STORAGE_KEY)).toBe(false);
   });
@@ -246,7 +277,7 @@ describe('V4 shell — complete wipe leaves no key (decision D5 / R7)', () => {
 
 describe('V4 shell — acknowledgment gate (decision D5)', () => {
   it('the tool is not usable before the acknowledgment is accepted', async () => {
-    render(<Tool036V4Shell />);
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
     expect(screen.queryByTestId('weekly-mg')).toBeNull();
     expect(screen.queryByTestId('log-form')).toBeNull();
@@ -256,7 +287,7 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
   });
 
   it('a first visit writes nothing before the acknowledgment is accepted', async () => {
-    render(<Tool036V4Shell />);
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
     // No consent yet → no key in the tool's namespace at all.
     expect([...storageMap.keys()].filter((k) => k.startsWith('mrx.tool-036-v4.'))).toEqual([]);
@@ -266,7 +297,7 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
   });
 
   it('accepting stores the acknowledgment locally and unlocks the tool', async () => {
-    render(<Tool036V4Shell />);
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
     fireEvent.click(screen.getByTestId('ack-button'));
     await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
@@ -276,13 +307,13 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
   });
 
   it('a later visit skips the gate (acknowledgment persisted)', async () => {
-    render(<Tool036V4Shell />);
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('ack-button')).toBeTruthy());
     fireEvent.click(screen.getByTestId('ack-button'));
     await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
     cleanup();
 
-    render(<Tool036V4Shell />);
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     await waitFor(() => expect(screen.getByTestId('weekly-mg')).toBeTruthy());
     expect(screen.queryByTestId('ack-gate')).toBeNull();
   });
@@ -349,7 +380,7 @@ describe('V4 shell — the drift report re-judges as time passes (acceptance P0-
     // +24h judging window.
     vi.setSystemTime(new Date('2026-10-23T07:59:30+03:00'));
 
-    const { unmount } = render(<Tool036V4Shell />);
+    const { unmount } = render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
     fireEvent.click(screen.getByTestId('ack-button'));
 
     // Sunday's window closed → missed. Thursday's window is still open → not judged.
@@ -380,5 +411,69 @@ describe('V4 shell — the approved 12-week horizon (acceptance P1-4)', () => {
     expect(screen.getByText(/الجدول المقترح \(12 أسابيع\)/)).toBeTruthy();
     // 2 injections/week × 12 weeks.
     expect(container.querySelectorAll('[data-testid="shot-row"]')).toHaveLength(24);
+  });
+});
+
+describe('V4 shell — English/LTR parity (acceptance F7.5)', () => {
+  it('switches Arabic/RTL ⇄ English/LTR, translating the surfaces (not just the container)', async () => {
+    const { container } = await renderLoaded();
+    expect(container.querySelector('[dir="rtl"][lang="ar"]')).toBeTruthy();
+    expect(screen.getByText(/الجدول المقترح/)).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+
+    await waitFor(() => expect(container.querySelector('[dir="ltr"][lang="en"]')).toBeTruthy());
+    expect(screen.getByText(/Proposed schedule/)).toBeTruthy();
+    // Labels and buttons are translated too — direction alone is not parity.
+    expect(screen.getByLabelText('Weekly dose')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Log' })).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+    await waitFor(() => expect(container.querySelector('[dir="rtl"][lang="ar"]')).toBeTruthy());
+    expect(screen.getByText(/الجدول المقترح/)).toBeTruthy();
+  });
+
+  it('persists the chosen language and restores it on reload', async () => {
+    await renderLoaded();
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+    await waitFor(() => expect(JSON.parse(storageMap.get(STORAGE_KEY)!).prefs.locale).toBe('en'));
+    cleanup();
+
+    const { container } = await renderLoaded();
+    expect(container.querySelector('[dir="ltr"][lang="en"]')).toBeTruthy();
+    expect(screen.getByText(/Proposed schedule/)).toBeTruthy();
+  });
+
+  it('renders the acknowledgment gate in the active language before any consent', async () => {
+    const { container } = render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    expect(container.querySelector('[dir="rtl"][lang="ar"]')).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+    await waitFor(() => expect(container.querySelector('[dir="ltr"][lang="en"]')).toBeTruthy());
+    expect(screen.getByTestId('ack-gate').textContent).toContain('no diagnosis');
+    // Switching language is not consent: nothing may be stored yet.
+    expect([...storageMap.keys()].filter((k) => k.startsWith('mrx.tool-036-v4.'))).toEqual([]);
+  });
+
+  it('translates rule citations and drift reasons, not only headings', async () => {
+    await renderLoaded();
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+    await waitFor(() => expect(screen.getByText(/Proposed schedule/)).toBeTruthy());
+
+    const cite = document.querySelector('[data-testid^="rule-"]')!.textContent ?? '';
+    expect(cite).toContain('Source:');
+    expect(cite).toContain('Confidence:');
+
+    const scheduledIso = document
+      .querySelector('[data-testid="shot-row"]')!
+      .getAttribute('data-scheduled-at')!;
+    const lateAt = new Date(Date.parse(scheduledIso) + 7 * 3_600_000);
+    fireEvent.change(screen.getByLabelText('Actual injection time'), {
+      target: { value: toInputValue(lateAt) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Log' }));
+    await waitFor(() => expect(screen.getByTestId('drift-status-late')).toBeTruthy());
+    expect(screen.getAllByTestId('drift-reason')[0].textContent).toContain('after schedule');
   });
 });

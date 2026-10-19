@@ -83,7 +83,8 @@ describe('V4 drift — declared matching rules', () => {
     const s2 = report.items.find((i) => i.scheduledAt === SCHEDULED_S2)!;
     expect(s2.status).toBe('late');
     expect(s2.deltaHours).toBe(7);
-    expect(s2.reason).toContain('after schedule');
+    expect(s2.reasonEn).toContain('after schedule');
+    expect(s2.reasonAr).toContain('بعد الموعد');
   });
 
   it('an on-time actual at a different site is site-changed', () => {
@@ -96,14 +97,16 @@ describe('V4 drift — declared matching rules', () => {
     const s1 = report.items.find((i) => i.scheduledAt === SCHEDULED_S1)!;
     expect(s1.status).toBe('site-changed');
     expect(s1.actual?.siteId).toBe('ventro-r');
-    expect(s1.reason).toContain('different site');
+    expect(s1.reasonEn).toContain('different site');
+    expect(s1.reasonAr).toContain('موقع مختلف');
   });
 
   it('no actual in the window is missed — with the window stated in the reason', () => {
     const report = buildDriftReport(PROPOSAL, [], PREFS, NOW);
     expect(report.items).toHaveLength(2);
     expect(report.items.every((i) => i.status === 'missed')).toBe(true);
-    expect(report.items[0].reason).toContain(`${MATCHING_WINDOW_HOURS}h`);
+    expect(report.items[0].reasonEn).toContain(`${MATCHING_WINDOW_HOURS}h`);
+    expect(report.items[0].reasonAr).toContain(`${MATCHING_WINDOW_HOURS} ساعة`);
     expect(report.items[0].actual).toBeUndefined();
   });
 
@@ -139,7 +142,8 @@ describe('V4 drift — declared matching rules', () => {
     const s1 = report.items.find((i) => i.scheduledAt === SCHEDULED_S1)!;
     expect(s1.status).toBe('matched');
     expect(s1.deltaHours).toBe(-10);
-    expect(s1.reason).toContain('before schedule');
+    expect(s1.reasonEn).toContain('before schedule');
+    expect(s1.reasonAr).toContain('قبل الموعد');
   });
 
   it('the nearest actual wins; a second nearby actual becomes extra', () => {
@@ -452,5 +456,67 @@ describe('V4 drift — global optimum: maximise matches, then minimise total |de
     expect(buildDriftReport(twoSlots, [a2(), a1()], PREFS, ALL_CLOSED)).toEqual(forward);
     const reversedShots: Proposal = { ...twoSlots, shots: [...twoSlots.shots].reverse() };
     expect(buildDriftReport(reversedShots, [a1(), a2()], PREFS, ALL_CLOSED)).toEqual(forward);
+  });
+});
+
+describe('V4 drift — the tolerance boundary is judged on the RAW delta (acceptance: rounding must not reclassify)', () => {
+  // PREFS declares lateToleranceHours = 6. These three cases pin the edge of
+  // that declared rule: the classification must follow the exact elapsed time,
+  // not a value that was first rounded to a tenth of an hour (which turned
+  // +6h02m into 6.0 and silently reported a late injection as "matched").
+  const minute = 60_000;
+  const at = (offsetMs: number) => new Date(Date.parse(SCHEDULED_S1) + offsetMs).toISOString();
+
+  it('an actual exactly AT the tolerance (+6h) is matched at the same site', () => {
+    const report = buildDriftReport(
+      PROPOSAL,
+      [actual(at(6 * hour), 'dorso-l', 'a1')],
+      PREFS,
+      NOW,
+    );
+    const s1 = report.items.find((i) => i.scheduledAt === SCHEDULED_S1)!;
+    expect(s1.status).toBe('matched');
+    expect(s1.deltaHours).toBe(6);
+  });
+
+  it('an actual 2 minutes PAST the tolerance (+6h02m) is late, δ = 6.03, chip and reason agree', () => {
+    const report = buildDriftReport(
+      PROPOSAL,
+      [actual(at(6 * hour + 2 * minute), 'dorso-l', 'a1')],
+      PREFS,
+      NOW,
+    );
+    const s1 = report.items.find((i) => i.scheduledAt === SCHEDULED_S1)!;
+
+    expect(s1.status).toBe('late');
+    // The published delta is reported at two decimals (≈36 s), so a value a
+    // hair past the tolerance cannot round back onto it.
+    expect(s1.deltaHours).toBeCloseTo(6.03, 2);
+    expect(s1.deltaHours).toBe(6.03);
+    expect(s1.deltaHours!).toBeGreaterThan(PREFS.lateToleranceHours);
+
+    // The delta chip renders `deltaHours` verbatim and the stated reason quotes
+    // the same distance, so the number, the wording and the `late` status all
+    // say one thing. At one decimal the chip read "6" beside a 6.03h reason.
+    expect(s1.reasonEn).toContain(String(s1.deltaHours));
+    expect(s1.reasonAr).toContain(String(s1.deltaHours));
+    expect(s1.reasonEn).toContain('6.03');
+    expect(s1.reasonAr).toContain('6.03');
+  });
+
+  it('an actual 2 minutes BEFORE the tolerance (−6h02m), inside the window, stays matched', () => {
+    const report = buildDriftReport(
+      PROPOSAL,
+      [actual(at(-(6 * hour + 2 * minute)), 'dorso-l', 'a1')],
+      PREFS,
+      NOW,
+    );
+    const s1 = report.items.find((i) => i.scheduledAt === SCHEDULED_S1)!;
+    expect(s1.status).toBe('matched');
+    // Two decimals, sign preserved.
+    expect(s1.deltaHours).toBe(-6.03);
+    expect(s1.reasonEn).toContain('6.03');
+    expect(s1.reasonEn).toContain('before schedule');
+    expect(s1.reasonAr).toContain('قبل الموعد');
   });
 });

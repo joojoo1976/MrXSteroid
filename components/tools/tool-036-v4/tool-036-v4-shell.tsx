@@ -28,6 +28,7 @@ import {
   APP_SCHEMA_VERSION,
   type AppState,
   type InjectionEvent,
+  type MedicalRule,
   type PlanCompound,
   type Tool036Action,
 } from '@/lib/tools/tool-036-v4/contracts';
@@ -40,7 +41,8 @@ import { compileProposal } from '@/lib/tools/tool-036-v4/engine/proposal';
 import { checkRotation } from '@/lib/tools/tool-036-v4/engine/rotation-check';
 import { siteRecencyFromEvents } from '@/lib/tools/tool-036-v4/engine/recency';
 import { buildDriftReport } from '@/lib/tools/tool-036-v4/engine/drift';
-import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
+import { fmt, dirFor } from '@/lib/tools/tool-036-v4/i18n';
+import type { CopyDict, CopyKey, UiLocale } from '@/lib/tools/tool-036-v4/i18n';
 
 /**
  * Planning horizon, in weeks. The approved design fixes a FULL 12-week horizon
@@ -49,7 +51,6 @@ import { RULE_BY_ID } from '@/lib/tools/tool-036-v4/rules/registry';
  * Exported so tests and callers assert the horizon rather than the literal.
  */
 export const PREVIEW_WEEKS = 12;
-const NO_USAGE_LABEL = 'لا توجد بيانات استخدام مسجّلة';
 
 /**
  * Cadence of the live re-judgement tick. A scheduled slot is judged once its
@@ -60,21 +61,43 @@ const NO_USAGE_LABEL = 'لا توجد بيانات استخدام مسجّلة';
  */
 export const CLOCK_TICK_MS = 30_000;
 
-const ZONE_LABEL: Record<Zone, string> = {
-  green: 'روتيني',
-  yellow: 'محدود الدليل',
-  red: 'يتجاوز الحد الشائع',
+/** Volume zones map to copy keys; the wording itself lives in the dictionary. */
+const ZONE_COPY_KEY: Record<Zone, CopyKey> = {
+  green: 'zoneGreen',
+  yellow: 'zoneYellow',
+  red: 'zoneRed',
 };
 
-const SITE_LABEL = Object.fromEntries(BODY_SITES.map((s) => [s.siteId, s.labelAr]));
+type DriftStatus = 'matched' | 'late' | 'missed' | 'extra' | 'site-changed';
+const DRIFT_STATUS_COPY_KEY: Record<DriftStatus, CopyKey> = {
+  matched: 'statusMatched',
+  late: 'statusLate',
+  missed: 'statusMissed',
+  extra: 'statusExtra',
+  'site-changed': 'statusSiteChanged',
+};
 
-const DRIFT_STATUS_LABEL = {
-  matched: 'في الموعد',
-  late: 'متأخر',
-  missed: 'فائت',
-  extra: 'مسجّل دون موعد',
-  'site-changed': 'موقع مختلف',
-} as const;
+/**
+ * The site's own name in the active language. The V3 registry (read-only reuse)
+ * already carries both `labelEn` and `labelAr`, so no second table is kept here.
+ */
+function siteLabel(locale: UiLocale, siteId: string): string {
+  const site = BODY_SITES.find((s) => s.siteId === siteId);
+  if (!site) return siteId;
+  return locale === 'ar' ? site.labelAr : site.labelEn;
+}
+
+/**
+ * A resolved message that survives a language switch: either a dictionary key
+ * or a bilingual pair (imports already carry `messageEn`/`messageAr`).
+ */
+type LocaleMessage = CopyKey | { en: string; ar: string };
+
+/** A notice with its interpolation values, localised at render time. */
+interface Notice {
+  key: CopyKey;
+  vars?: Record<string, string | number>;
+}
 
 /** Browser-local wall-time for a datetime-local input (converted to absolute on submit). */
 function toLocalInputValue(date: Date): string {
@@ -100,38 +123,77 @@ function makeCtx() {
   };
 }
 
-function formatInTz(iso: string, tz: string): string {
-  return new Intl.DateTimeFormat('ar', {
+function formatInTz(iso: string, tz: string, locale: UiLocale): string {
+  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
     timeZone: tz,
     calendar: 'gregory',
+    // Latin digits in both languages: the numbers here are measurements, and
+    // mixed numeral systems would make the report harder to scan, not easier.
     numberingSystem: 'latn',
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(iso));
 }
 
+/**
+ * Resolve a `LocaleMessage` for the active language. `dict` is the copy the
+ * route resolved on the server and passed down (bundle gate: the dictionaries
+ * are data, so they are not part of this route's client entry chunk).
+ */
+function resolveMessage(dict: CopyDict, locale: UiLocale, message: LocaleMessage): string {
+  return typeof message === 'string' ? dict[locale][message] : message[locale];
+}
+
 /** One cited rule, rendered with its full provenance (R7). */
-function RuleCite({ ruleId }: { ruleId: string }) {
-  const rule = RULE_BY_ID[ruleId];
+function RuleCite({
+  ruleId,
+  locale,
+  dict,
+  rules,
+}: {
+  ruleId: string;
+  locale: UiLocale;
+  dict: CopyDict;
+  rules: Readonly<Record<string, MedicalRule>>;
+}) {
+  const copy = dict[locale];
+  const rule = rules[ruleId];
   if (!rule) return null;
   return (
     <details className="mt-1 text-xs text-zinc-500" data-testid={`rule-${ruleId}`}>
-      <summary className="cursor-pointer">المصدر والثقة ونطاق التطبيق</summary>
-      <p className="mt-1">{rule.claimAr}</p>
+      <summary className="cursor-pointer">{copy.ruleSummary}</summary>
+      <p className="mt-1">{locale === 'ar' ? rule.claimAr : rule.claimEn}</p>
       <p>
-        المصدر: {rule.source.ref} · الثقة: {rule.source.confidence}
+        {copy.ruleSource} {rule.source.ref} · {copy.ruleConfidence} {rule.source.confidence}
       </p>
-      <p>النطاق: {rule.applicabilityAr}</p>
+      <p>
+        {copy.ruleScope} {locale === 'ar' ? rule.applicabilityAr : rule.applicabilityEn}
+      </p>
     </details>
   );
 }
 
-export default function Tool036V4Shell() {
+/**
+ * The preview shell. `dict` (interface copy, both languages) and `rules` (the
+ * cited-rule corpus) are resolved by the route on the server and passed down as
+ * props: they are data, and keeping them out of the client entry chunk is what
+ * keeps this route inside its First Load JS budget (acceptance-fixes-plan).
+ * Behaviour is unchanged — both are plain serialisable objects, available
+ * synchronously on the first client render, so the language toggle stays
+ * instant and every citation renders without an extra request.
+ */
+export default function Tool036V4Shell({
+  dict,
+  rules,
+}: {
+  dict: CopyDict;
+  rules: Readonly<Record<string, MedicalRule>>;
+}) {
   const [state, setState] = useState<AppState | null>(null);
   // `now` is explicit and testable: the injected tick feeds every derived value,
   // so a window that closes while the page is open is re-judged on its own.
   const [clockIso, setClockIso] = useState(() => new Date().toISOString());
-  const [storageNotice, setStorageNotice] = useState<string | null>(null);
+  const [storageNotice, setStorageNotice] = useState<CopyKey | null>(null);
   const [logForm, setLogForm] = useState({
     when: toLocalInputValue(new Date()),
     siteId: BODY_SITES[0].siteId,
@@ -140,11 +202,11 @@ export default function Tool036V4Shell() {
     pain: '',
     note: '',
   });
-  const [logError, setLogError] = useState<string | null>(null);
-  const [transferNotice, setTransferNotice] = useState<string | null>(null);
-  const [transferErrors, setTransferErrors] = useState<string[]>([]);
+  const [logError, setLogError] = useState<CopyKey | null>(null);
+  const [transferNotice, setTransferNotice] = useState<Notice | null>(null);
+  const [transferErrors, setTransferErrors] = useState<LocaleMessage[]>([]);
   const [deleteArmed, setDeleteArmed] = useState(false);
-  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const [deleteNotice, setDeleteNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     const loaded = loadState();
@@ -153,7 +215,7 @@ export default function Tool036V4Shell() {
       return;
     }
     if (loaded.reason === 'invalid') {
-      setStorageNotice('البيانات المخزنة غير صالحة — بدأنا بحالة جديدة.');
+      setStorageNotice('storageInvalid');
     }
     setState(initialState('ar', safeTz()));
   }, []);
@@ -194,8 +256,20 @@ export default function Tool036V4Shell() {
   }, [state, clockIso]);
 
   if (!state || !derived) {
-    return <div className="p-8 text-zinc-500">جارٍ تحميل المعاينة…</div>;
+    // The stored locale is unknown until state loads, so this first frame uses
+    // the Arabic default (the tool's default language).
+    return <div className="p-8 text-zinc-500">{dict.ar.loading}</div>;
   }
+
+  // F7.5: language is a first-class, persisted preference — the single source
+  // of truth. Direction derives from it, and every visible string is looked up
+  // per render, so switching re-labels the entire surface in one act (and the
+  // same `prefs.locale` travels in exports).
+  const locale: UiLocale = state.prefs.locale;
+  const dir = dirFor(locale);
+  const copy = dict[locale];
+  const otherLocale: UiLocale = locale === 'ar' ? 'en' : 'ar';
+  const toggleLocale = () => dispatch({ type: 'prefs/update', patch: { locale: otherLocale } });
 
   const updateCompound = (index: number, patch: Partial<PlanCompound>) => {
     const compounds = state.plan.compounds.map((c, i) => (i === index ? { ...c, ...patch } : c));
@@ -208,11 +282,11 @@ export default function Tool036V4Shell() {
     const doseMg = Number(logForm.dose);
     const when = new Date(logForm.when);
     if (!Number.isFinite(volumeMl) || volumeMl <= 0 || !Number.isFinite(doseMg) || doseMg <= 0) {
-      setLogError('الحجم والجرعة يجب أن يكونا أرقامًا موجبة.');
+      setLogError('logErrorNumbers');
       return;
     }
     if (Number.isNaN(when.getTime())) {
-      setLogError('موعد غير صالح.');
+      setLogError('logErrorWhen');
       return;
     }
     setLogError(null);
@@ -246,14 +320,14 @@ export default function Tool036V4Shell() {
     const envelope = await buildEnvelope(state, new Date().toISOString());
     downloadJson(envelope, 'tool-036-v4-export.json');
     setTransferErrors([]);
-    setTransferNotice('تم إنشاء ملف الظرف المنظّم (يحوي الأحداث والخطة واللغة فقط).');
+    setTransferNotice({ key: 'noticeExportEnvelope' });
   };
 
   const handleExportFhir = async () => {
     const bundle = buildFhirBundle(state, new Date().toISOString());
     downloadJson(bundle, 'tool-036-v4-fhir-bundle.json');
     setTransferErrors([]);
-    setTransferNotice('تم إنشاء حزمة FHIR — للتصدير فقط؛ لا يمكن استيرادها في هذا الإصدار.');
+    setTransferNotice({ key: 'noticeExportFhir' });
   };
 
   const readFileText = (file: File): Promise<string> => {
@@ -277,12 +351,12 @@ export default function Tool036V4Shell() {
     try {
       text = await readFileText(file);
     } catch {
-      setTransferErrors(['تعذّرت قراءة الملف المحدد.']);
+      setTransferErrors(['importReadError']);
       return;
     }
     const result = await parseImport(text, state);
     if (!result.ok) {
-      setTransferErrors(result.errors.map((e) => e.messageAr));
+      setTransferErrors(result.errors.map((e) => ({ en: e.messageEn, ar: e.messageAr })));
       return;
     }
     dispatch({
@@ -291,29 +365,45 @@ export default function Tool036V4Shell() {
       plan: result.envelope.payload.plan,
       locale: result.envelope.payload.locale,
     });
-    setTransferNotice(
-      `تم استيراد ${result.added} حدثًا، وتجاهل ${result.skippedDuplicates} مكرر (مطابق للمحتوى المحلي).`,
-    );
+    setTransferNotice({
+      key: 'noticeImport',
+      vars: { added: result.added, skipped: result.skippedDuplicates },
+    });
   };
 
   const handleDeleteAll = () => {
     const removed = deleteAllData();
     setState(initialState(state.prefs.locale, state.prefs.tz));
     setDeleteArmed(false);
-    setDeleteNotice(`حُذفت ${removed} مفاتيح بيانات من هذا المتصفح. حالتك الآن نظيفة.`);
+    setDeleteNotice({ key: 'deleteNotice', vars: { count: removed } });
   };
 
   if (!state.prefs.acknowledgedAt) {
     return (
-      <div dir="rtl" lang="ar" className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex items-center justify-center">
+      <div
+        dir={dir}
+        lang={locale}
+        className="min-h-screen bg-zinc-950 p-6 text-zinc-100 flex items-center justify-center"
+      >
         <div className="max-w-xl rounded-xl border border-zinc-800 p-6" data-testid="ack-gate">
-          <h1 className="text-lg font-bold">قبل البدء — إقرار الاستخدام</h1>
+          <div className="mb-2 flex justify-end">
+            <button
+              type="button"
+              data-testid="locale-toggle"
+              aria-label={copy.languageToggleAria}
+              className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+              onClick={toggleLocale}
+            >
+              {dict[otherLocale].languageName}
+            </button>
+          </div>
+          <h1 className="text-lg font-bold">{copy.ackTitle}</h1>
           <ul className="mt-3 list-disc space-y-2 pr-5 text-sm text-zinc-300">
-            <li>هذه الأداة لتنظيم جدولك وتسجيل وقائعك فقط: لا تشخيص، ولا وصف جرعات، ولا حكم على ملاءمة موقع طبيًا.</li>
-            <li>لا تستنتج الأداة جاهزية موقع من مرور أيام؛ تُعرض الوقائع المسجّلة فعلًا، وغيابها يُذكر صراحة.</li>
-            <li>كل ادّعاء صحّي معروض مربوط بمصدره ودرجة ثقته ونطاق تطبيقه، ويمكنك مراجعته في مكانه.</li>
-            <li>بياناتك تُخزَّن في متصفحك فقط، ولا تُرسل إلى أي شبكة، ويمكنك حذفها كاملة في أي وقت.</li>
-            <li>عند أي مخاوف صحية، راجع مختصًا.</li>
+            <li>{copy.ackBullet1}</li>
+            <li>{copy.ackBullet2}</li>
+            <li>{copy.ackBullet3}</li>
+            <li>{copy.ackBullet4}</li>
+            <li>{copy.ackBullet5}</li>
           </ul>
           <button
             type="button"
@@ -321,32 +411,41 @@ export default function Tool036V4Shell() {
             className="mt-4 rounded bg-amber-500 px-4 py-2 font-semibold text-zinc-950"
             onClick={() => dispatch({ type: 'ack/set', at: new Date().toISOString() })}
           >
-            أفهم وأوافق — ابدأ
+            {copy.ackAccept}
           </button>
           {deleteNotice && (
             <p className="mt-3 text-sm text-emerald-400" data-testid="delete-notice">
-              {deleteNotice}
+              {fmt(copy[deleteNotice.key], deleteNotice.vars ?? {})}
             </p>
           )}
-          <RuleCite ruleId="clinical-evaluation-advisory" />
+          <RuleCite ruleId="clinical-evaluation-advisory" locale={locale} dict={dict} rules={rules} />
         </div>
       </div>
     );
   }
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
+    <div dir={dir} lang={locale} className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
       <header className="mb-6 border-b border-zinc-800 pb-4">
-        <h1 className="text-xl font-bold">
-          Tool-036 V4 — معاينة تجريبية <span data-testid="schema-version">v{APP_SCHEMA_VERSION}</span>
-        </h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          معاينة غير مفهرسة خارج الكتالوج. ليست استشارة طبية، ولا تشخيصًا ولا توصية جرعات. كل ادعاء
-          صحّي هنا مربوط بمصدره ودرجة ثقته ونطاق تطبيقه.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl font-bold">
+            {copy.previewTitle}{' '}
+            <span data-testid="schema-version">v{APP_SCHEMA_VERSION}</span>
+          </h1>
+          <button
+            type="button"
+            data-testid="locale-toggle"
+            aria-label={copy.languageToggleAria}
+            className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+            onClick={toggleLocale}
+          >
+            {dict[otherLocale].languageName}
+          </button>
+        </div>
+        <p className="mt-1 text-sm text-zinc-400">{copy.previewNotice}</p>
         {storageNotice && (
           <p className="mt-2 text-sm text-amber-400" data-testid="storage-notice">
-            {storageNotice}
+            {copy[storageNotice]}
           </p>
         )}
       </header>
@@ -355,23 +454,24 @@ export default function Tool036V4Shell() {
         {/* ---- Plan (intent) ---- */}
         <section aria-labelledby="plan-heading" className="rounded-xl border border-zinc-800 p-4">
           <h2 id="plan-heading" className="mb-3 font-semibold">
-            الخطة (النية)
+            {copy.planHeading}
           </h2>
           <p className="mb-3 text-xs text-zinc-500">
-            إجمالي الجرعة الأسبوعية:{' '}
+            {copy.weeklyTotalLabel}{' '}
             <span data-testid="weekly-mg" className="font-mono text-amber-300">
-              {derived.weeklyMg} مجم
+              {derived.weeklyMg} {copy.mgUnit}
             </span>{' '}
-            · المنطقة الزمنية: {state.prefs.tz} · ساعات التسامح:{' '}
-            {state.prefs.lateToleranceHours} · تفضيل الراحة: {state.prefs.restPreferenceDays} أيام
+            · {copy.timeZoneLabel} {state.prefs.tz} · {copy.toleranceHoursLabel}{' '}
+            {state.prefs.lateToleranceHours} · {copy.restPreferenceLabel}{' '}
+            {state.prefs.restPreferenceDays} {copy.daysUnit}
           </p>
           {state.plan.compounds.map((compound, index) => (
             <div key={compound.compoundId} className="mb-3 grid grid-cols-3 gap-2">
               <label className="text-sm" htmlFor={`dose-${index}`}>
-                الجرعة الأسبوعية (مجم)
+                {copy.weeklyDoseLabel}
                 <input
                   id={`dose-${index}`}
-                  aria-label="الجرعة الأسبوعية"
+                  aria-label={copy.weeklyDoseAria}
                   type="number"
                   min={1}
                   className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
@@ -380,10 +480,10 @@ export default function Tool036V4Shell() {
                 />
               </label>
               <label className="text-sm" htmlFor={`conc-${index}`}>
-                التركيز (مجم/مل)
+                {copy.concentrationLabel}
                 <input
                   id={`conc-${index}`}
-                  aria-label="التركيز"
+                  aria-label={copy.concentrationAria}
                   type="number"
                   min={1}
                   className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
@@ -394,10 +494,10 @@ export default function Tool036V4Shell() {
                 />
               </label>
               <label className="text-sm" htmlFor={`freq-${index}`}>
-                عدد الحقن أسبوعيًا
+                {copy.injectionsPerWeekLabel}
                 <select
                   id={`freq-${index}`}
-                  aria-label="عدد الحقن أسبوعيًا"
+                  aria-label={copy.injectionsPerWeekAria}
                   className="mt-1 w-full rounded bg-zinc-900 p-2"
                   value={compound.injectionsPerWeek}
                   onChange={(e) =>
@@ -414,10 +514,10 @@ export default function Tool036V4Shell() {
             </div>
           ))}
           <label className="text-sm" htmlFor="rotation-mode">
-            نمط تدوير المواقع (تنظيم جدولي فقط — ليس حكمًا طبيًا)
+            {copy.rotationModeLabel}
             <select
               id="rotation-mode"
-              aria-label="نمط تدوير المواقع"
+              aria-label={copy.rotationModeAria}
               className="mt-1 w-full rounded bg-zinc-900 p-2"
               value={state.plan.rotationMode}
               onChange={(e) =>
@@ -430,30 +530,29 @@ export default function Tool036V4Shell() {
                 })
               }
             >
-              <option value="least-recently-used">الأقل استخدامًا حديثًا</option>
-              <option value="fixed-order">ترتيب ثابت</option>
+              <option value="least-recently-used">{copy.rotationLru}</option>
+              <option value="fixed-order">{copy.rotationFixed}</option>
             </select>
           </label>
-          <RuleCite ruleId="rotation-rest-preference" />
+          <RuleCite ruleId="rotation-rest-preference" locale={locale} dict={dict} rules={rules} />
         </section>
 
         {/* ---- Proposal (plan compiled to absolute time) ---- */}
         <section aria-labelledby="proposal-heading" className="rounded-xl border border-zinc-800 p-4">
           <h2 id="proposal-heading" className="mb-3 font-semibold">
-            الجدول المقترح ({PREVIEW_WEEKS} أسابيع)
+            {fmt(copy.proposalHeading, { weeks: PREVIEW_WEEKS })}
           </h2>
           <p className="mb-3 text-xs text-zinc-500" data-testid="horizon-note">
-            نافذة متجدّدة من {PREVIEW_WEEKS} أسبوعًا تبدأ من الأسبوع الحالي: عند عبور يوم الأحد تتحرّك
-            النافذة، فتخرج الأحداث الأقدم من هذا التقرير. الأفق المعتمد {PREVIEW_WEEKS} أسبوعًا.
+            {fmt(copy.horizonNote, { weeks: PREVIEW_WEEKS })}
           </p>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-zinc-400">
-                <th className="text-right">الموعد</th>
-                <th className="text-right">الموقع</th>
-                <th className="text-right">الجرعة</th>
-                <th className="text-right">الحجم</th>
-                <th className="text-right">المنطقة</th>
+                <th className="text-start">{copy.thTime}</th>
+                <th className="text-start">{copy.thSite}</th>
+                <th className="text-start">{copy.thDose}</th>
+                <th className="text-start">{copy.thVolume}</th>
+                <th className="text-start">{copy.thZone}</th>
               </tr>
             </thead>
             <tbody>
@@ -466,13 +565,13 @@ export default function Tool036V4Shell() {
                     data-zone={zone}
                     data-scheduled-at={shot.occurredAt}
                   >
-                    <td>{formatInTz(shot.occurredAt, state.prefs.tz)}</td>
-                    <td>{SITE_LABEL[shot.siteId]}</td>
+                    <td>{formatInTz(shot.occurredAt, state.prefs.tz, locale)}</td>
+                    <td>{siteLabel(locale, shot.siteId)}</td>
                     <td className="font-mono" data-testid="shot-dose">
-                      {shot.doseMg} مجم
+                      {shot.doseMg} {copy.mgUnit}
                     </td>
                     <td className="font-mono" data-testid="shot-volume">
-                      {shot.volumeMl} مل
+                      {shot.volumeMl} {copy.mlUnit}
                     </td>
                     <td>
                       <span
@@ -485,7 +584,7 @@ export default function Tool036V4Shell() {
                               : 'text-red-400'
                         }
                       >
-                        {ZONE_LABEL[zone]}
+                        {copy[ZONE_COPY_KEY[zone]]}
                       </span>
                     </td>
                   </tr>
@@ -493,28 +592,29 @@ export default function Tool036V4Shell() {
               })}
             </tbody>
           </table>
-          <RuleCite ruleId="volume-zone-bands" />
-          <RuleCite ruleId="site-ceiling-table" />
+          <RuleCite ruleId="volume-zone-bands" locale={locale} dict={dict} rules={rules} />
+          <RuleCite ruleId="site-ceiling-table" locale={locale} dict={dict} rules={rules} />
         </section>
 
         {/* ---- Recorded usage (R2: facts and silence) ---- */}
         <section aria-labelledby="usage-heading" className="rounded-xl border border-zinc-800 p-4">
           <h2 id="usage-heading" className="mb-3 font-semibold">
-            سجل استخدام المواقع (وقائع مسجّلة فقط)
+            {copy.usageHeading}
           </h2>
           <ul className="space-y-1 text-sm">
             {BODY_SITES.map((site) => {
               const entry = derived.recency[site.siteId as keyof typeof derived.recency];
               return (
                 <li key={site.siteId} className="flex justify-between">
-                  <span>{site.labelAr}</span>
+                  <span>{siteLabel(locale, site.siteId)}</span>
                   {entry ? (
                     <span className="font-mono text-zinc-400">
-                      {formatInTz(entry.lastUsedAt, state.prefs.tz)} — منذ {entry.daysSince} يوم
+                      {formatInTz(entry.lastUsedAt, state.prefs.tz, locale)}{' '}
+                      {fmt(copy.sinceDays, { days: entry.daysSince })}
                     </span>
                   ) : (
                     <span className="text-zinc-600" data-testid={`no-usage-${site.siteId}`}>
-                      {NO_USAGE_LABEL}
+                      {copy.noUsage}
                     </span>
                   )}
                 </li>
@@ -526,38 +626,40 @@ export default function Tool036V4Shell() {
         {/* ---- Preference findings (R3) ---- */}
         <section aria-labelledby="findings-heading" className="rounded-xl border border-zinc-800 p-4">
           <h2 id="findings-heading" className="mb-3 font-semibold">
-            تفضيل الراحة الشخصي ({state.prefs.restPreferenceDays} أيام)
+            {fmt(copy.findingsHeading, { days: state.prefs.restPreferenceDays })}
           </h2>
           {derived.findings.length === 0 ? (
             <p className="text-sm text-zinc-400" data-testid="no-findings">
-              لا توجد تجاوزات للتفضيل في هذه النافذة.
+              {copy.noFindings}
             </p>
           ) : (
             <ul className="space-y-1 text-sm" data-testid="findings-list">
               {derived.findings.map((finding, index) => (
                 <li key={`${finding.siteId}-${finding.atIso}-${index}`}>
-                  {SITE_LABEL[finding.siteId]}: فرق {finding.gapDays} أيام (
-                  {finding.prevOrigin === 'actual' ? 'مسجّل' : 'مخطط'} ←{' '}
-                  {finding.origin === 'actual' ? 'مسجّل' : 'مخطط'}) — تجاوز تفضيل شخصي، ليس تحذيرًا
-                  طبيًا
+                  {fmt(copy.findingLine, {
+                    site: siteLabel(locale, finding.siteId),
+                    gap: finding.gapDays,
+                    prev: finding.prevOrigin === 'actual' ? copy.originRecorded : copy.originPlanned,
+                    cur: finding.origin === 'actual' ? copy.originRecorded : copy.originPlanned,
+                  })}
                 </li>
               ))}
             </ul>
           )}
-          <RuleCite ruleId="rotation-rest-preference" />
+          <RuleCite ruleId="rotation-rest-preference" locale={locale} dict={dict} rules={rules} />
         </section>
 
         {/* ---- Log an actual event ---- */}
         <section aria-labelledby="log-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
           <h2 id="log-heading" className="mb-3 font-semibold">
-            تسجيل حدث فعلي (الواقع)
+            {copy.logHeading}
           </h2>
           <form onSubmit={handleLogActual} className="grid grid-cols-2 gap-3 md:grid-cols-6" data-testid="log-form">
             <label className="text-sm" htmlFor="log-when">
-              الموعد الفعلي
+              {copy.logWhenLabel}
               <input
                 id="log-when"
-                aria-label="موعد الحقن الفعلي"
+                aria-label={copy.logWhenAria}
                 type="datetime-local"
                 className="mt-1 w-full rounded bg-zinc-900 p-2 font-mono"
                 value={logForm.when}
@@ -565,26 +667,26 @@ export default function Tool036V4Shell() {
               />
             </label>
             <label className="text-sm" htmlFor="log-site">
-              الموقع
+              {copy.logSiteLabel}
               <select
                 id="log-site"
-                aria-label="الموقع"
+                aria-label={copy.logSiteAria}
                 className="mt-1 w-full rounded bg-zinc-900 p-2"
                 value={logForm.siteId}
                 onChange={(e) => setLogForm((f) => ({ ...f, siteId: e.target.value }))}
               >
                 {BODY_SITES.map((site) => (
                   <option key={site.siteId} value={site.siteId}>
-                    {site.labelAr}
+                    {locale === 'ar' ? site.labelAr : site.labelEn}
                   </option>
                 ))}
               </select>
             </label>
             <label className="text-sm" htmlFor="log-volume">
-              الحجم (مل)
+              {copy.logVolumeLabel}
               <input
                 id="log-volume"
-                aria-label="الحجم بالمل"
+                aria-label={copy.logVolumeAria}
                 type="number"
                 step="0.01"
                 min="0.01"
@@ -594,10 +696,10 @@ export default function Tool036V4Shell() {
               />
             </label>
             <label className="text-sm" htmlFor="log-dose">
-              الجرعة (مجم)
+              {copy.logDoseLabel}
               <input
                 id="log-dose"
-                aria-label="الجرعة بالمجم"
+                aria-label={copy.logDoseAria}
                 type="number"
                 step="0.01"
                 min="0.01"
@@ -607,10 +709,10 @@ export default function Tool036V4Shell() {
               />
             </label>
             <label className="text-sm" htmlFor="log-pain">
-              الألم 0–10 (اختياري، معلوماتي)
+              {copy.logPainLabel}
               <input
                 id="log-pain"
-                aria-label="درجة الألم"
+                aria-label={copy.logPainAria}
                 type="number"
                 min="0"
                 max="10"
@@ -620,10 +722,10 @@ export default function Tool036V4Shell() {
               />
             </label>
             <label className="text-sm" htmlFor="log-note">
-              ملاحظة (اختياري)
+              {copy.logNoteLabel}
               <input
                 id="log-note"
-                aria-label="ملاحظة"
+                aria-label={copy.logNoteAria}
                 type="text"
                 className="mt-1 w-full rounded bg-zinc-900 p-2"
                 value={logForm.note}
@@ -635,11 +737,11 @@ export default function Tool036V4Shell() {
                 type="submit"
                 className="rounded bg-amber-500 px-4 py-2 font-semibold text-zinc-950"
               >
-                تسجيل
+                {copy.logSubmit}
               </button>
               {logError && (
                 <span className="text-sm text-red-400" data-testid="log-error">
-                  {logError}
+                  {copy[logError]}
                 </span>
               )}
             </div>
@@ -649,29 +751,30 @@ export default function Tool036V4Shell() {
         {/* ---- Plan vs Actual drift (D4/R5: itemised, never a score) ---- */}
         <section aria-labelledby="drift-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
           <h2 id="drift-heading" className="mb-3 font-semibold">
-            الخطة مقابل الواقع
+            {copy.driftHeading}
           </h2>
           <p className="mb-2 text-xs text-zinc-500" data-testid="declared-rules">
-            قواعد المقارنة المعلنة: التسامح {state.prefs.lateToleranceHours} ساعة · نافذة المطابقة
-            ±24 ساعة · «متأخر» = فعلي بعد التسامح وحتى 24 ساعة · «فائت» = لا يوجد فعلي ضمن
-            النافذة بعد إغلاقها · المواعيد التي لم تُغلق نافذتها بعد لا تُقيَّم. كل فرق يُعرض
-            بحالته وسببه وقواعده وحدوده — <strong>ولا توجد درجة مركّبة</strong> (قرار مكتوب).
+            {fmt(copy.driftDeclaredRules, { tolerance: state.prefs.lateToleranceHours })}
           </p>
           <p
             className="mb-2 text-xs text-zinc-500"
             data-testid="drift-computed-at"
             data-computed-at={derived.computedAt}
           >
-            آخر تحديث: {formatInTz(derived.computedAt, state.prefs.tz)}
+            {copy.driftLastUpdated} {formatInTz(derived.computedAt, state.prefs.tz, locale)}
           </p>
           <p className="mb-3 font-mono text-sm text-zinc-300" data-testid="drift-summary">
-            مطابق: {derived.drift.summary.matched} · متأخر: {derived.drift.summary.late} · فائت:{' '}
-            {derived.drift.summary.missed} · دون موعد: {derived.drift.summary.extra} · موقع مختلف:{' '}
-            {derived.drift.summary.siteChanged}
+            {fmt(copy.driftSummary, {
+              matched: derived.drift.summary.matched,
+              late: derived.drift.summary.late,
+              missed: derived.drift.summary.missed,
+              extra: derived.drift.summary.extra,
+              siteChanged: derived.drift.summary.siteChanged,
+            })}
           </p>
           {derived.drift.items.length === 0 ? (
             <p className="text-sm text-zinc-400" data-testid="drift-empty">
-              لا توجد فروقات مُقيَّمة بعد ضمن النافذة.
+              {copy.driftEmpty}
             </p>
           ) : (
             <ul className="space-y-2 text-sm">
@@ -691,69 +794,72 @@ export default function Tool036V4Shell() {
                           : 'text-red-400'
                     }
                   >
-                    {DRIFT_STATUS_LABEL[item.status]}
+                    {copy[DRIFT_STATUS_COPY_KEY[item.status]]}
                   </span>{' '}
                   {item.scheduledAt ? (
-                    <>· مخطط: {formatInTz(item.scheduledAt, state.prefs.tz)}</>
+                    <>
+                      {copy.driftPlanned} {formatInTz(item.scheduledAt, state.prefs.tz, locale)}
+                    </>
                   ) : (
-                    <>· بلا موعد مقابل</>
+                    <>{copy.driftNoCounterpart}</>
                   )}
                   {item.actual && (
                     <>
-                      {' · فعلي: '}
-                      {formatInTz(item.actual.occurredAt, state.prefs.tz)} (
-                      {SITE_LABEL[item.actual.siteId]})
+                      {' '}
+                      {copy.driftActual}{' '}
+                      {formatInTz(item.actual.occurredAt, state.prefs.tz, locale)} (
+                      {siteLabel(locale, item.actual.siteId)})
                     </>
                   )}
                   {item.deltaHours !== undefined && (
                     <span data-testid="drift-delta" className="font-mono">
                       {' '}
-                      · فرق {item.deltaHours} ساعة
+                      {fmt(copy.driftDelta, { hours: item.deltaHours })}
                     </span>
                   )}
                   <details className="mt-1 text-xs text-zinc-500">
-                    <summary className="cursor-pointer">سبب التصنيف وقواعدته</summary>
-                    <p>السبب: {item.reason}</p>
-                    <p>القاعدة: {item.ruleId}</p>
+                    <summary className="cursor-pointer">{copy.driftReasonSummary}</summary>
+                    <p data-testid="drift-reason">
+                      {copy.driftReason} {locale === 'ar' ? item.reasonAr : item.reasonEn}
+                    </p>
+                    <p>
+                      {copy.driftRule} {item.ruleId}
+                    </p>
                   </details>
                 </li>
               ))}
             </ul>
           )}
-          <RuleCite ruleId="drift-matching-tolerance" />
+          <RuleCite ruleId="drift-matching-tolerance" locale={locale} dict={dict} rules={rules} />
         </section>
 
         {/* ---- Backup & transfer (D3/R4: envelope in, envelope out; FHIR out only) ---- */}
         <section aria-labelledby="transfer-heading" className="rounded-xl border border-zinc-800 p-4 lg:col-span-2">
           <h2 id="transfer-heading" className="mb-3 font-semibold">
-            النسخ الاحتياطي والنقل
+            {copy.transferHeading}
           </h2>
-          <p className="mb-3 text-xs text-zinc-500">
-            التصدير والاستيراد يتمّان محليًا في متصفحك. ملف الاستيراد الوحيد المدعوم هو ظرف الأداة
-            المنظّم (يُتحقق من إصداره وبصمته ومحتواه قبل القبول). حزمة FHIR للتصدير فقط في هذا
-            الإصدار.
-          </p>
+          <p className="mb-3 text-xs text-zinc-500">{copy.transferIntro}</p>
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               className="rounded bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"
               onClick={handleExportEnvelope}
             >
-              تصدير JSON (الظرف المنظّم)
+              {copy.exportEnvelope}
             </button>
             <button
               type="button"
               className="rounded bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"
               onClick={handleExportFhir}
             >
-              تصدير FHIR (للتصدير فقط)
+              {copy.exportFhir}
             </button>
             <label className="text-sm">
-              استيراد ظرف JSON
+              {copy.importLabel}
               <input
                 type="file"
                 accept="application/json,.json"
-                aria-label="استيراد ملف JSON"
+                aria-label={copy.importAria}
                 className="mt-1 block text-sm"
                 onChange={handleImportFile}
               />
@@ -761,13 +867,13 @@ export default function Tool036V4Shell() {
           </div>
           {transferNotice && (
             <p className="mt-3 text-sm text-emerald-400" data-testid="transfer-notice">
-              {transferNotice}
+              {fmt(copy[transferNotice.key], transferNotice.vars ?? {})}
             </p>
           )}
           {transferErrors.length > 0 && (
             <ul className="mt-3 space-y-1 text-sm text-red-400" data-testid="transfer-errors">
               {transferErrors.map((message, index) => (
-                <li key={index}>{message}</li>
+                <li key={index}>{resolveMessage(dict, locale, message)}</li>
               ))}
             </ul>
           )}
@@ -780,17 +886,12 @@ export default function Tool036V4Shell() {
           data-testid="privacy-section"
         >
           <h2 id="privacy-heading" className="mb-3 font-semibold">
-            الخصوصية والتحكم
+            {copy.privacyHeading}
           </h2>
-          <p className="text-sm text-zinc-400">
-            بياناتك تبقى في متصفحك: لا تُرسل إلى أي شبكة، ولا حسابات، ولا تتبّع. كل ما تخزّنه الأداة
-            يقع تحت مفتاح واحد يمكن حذفه بالكامل في أي وقت — دون التأثير على أي بيانات أخرى في الموقع.
-          </p>
-          <RuleCite ruleId="clinical-evaluation-advisory" />
+          <p className="text-sm text-zinc-400">{copy.privacyBody}</p>
+          <RuleCite ruleId="clinical-evaluation-advisory" locale={locale} dict={dict} rules={rules} />
           <div className="mt-4 border-t border-zinc-800 pt-3">
-            <p className="text-xs text-zinc-500">
-              حذف كامل: يمحو أحداثك وخطتك وتفضيلاتك من هذا المتصفح نهائيًا. لا يمكن التراجع.
-            </p>
+            <p className="text-xs text-zinc-500">{copy.deleteIntro}</p>
             {!deleteArmed ? (
               <button
                 type="button"
@@ -798,7 +899,7 @@ export default function Tool036V4Shell() {
                 className="mt-2 rounded border border-red-800 px-4 py-2 text-sm text-red-400 hover:bg-red-950"
                 onClick={() => setDeleteArmed(true)}
               >
-                حذف كل بياناتي
+                {copy.deleteArm}
               </button>
             ) : (
               <div className="mt-2 flex items-center gap-3">
@@ -808,20 +909,20 @@ export default function Tool036V4Shell() {
                   className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white"
                   onClick={handleDeleteAll}
                 >
-                  تأكيد الحذف النهائي
+                  {copy.deleteConfirm}
                 </button>
                 <button
                   type="button"
                   className="rounded bg-zinc-800 px-4 py-2 text-sm"
                   onClick={() => setDeleteArmed(false)}
                 >
-                  إلغاء
+                  {copy.deleteCancel}
                 </button>
               </div>
             )}
             {deleteNotice && (
               <p className="mt-2 text-sm text-emerald-400" data-testid="delete-notice">
-                {deleteNotice}
+                {fmt(copy[deleteNotice.key], deleteNotice.vars ?? {})}
               </p>
             )}
           </div>
