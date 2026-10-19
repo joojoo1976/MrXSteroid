@@ -247,6 +247,7 @@ export function processLegVerdict(
         providerReference?: string;
         status: 'succeeded' | 'failed';
         paidAmount?: number;
+        paidCurrency?: string;
         paidAt?: string;
     }
 ): {
@@ -267,10 +268,20 @@ export function processLegVerdict(
         );
 
         if (matchesId || matchesRef || matchesProvider) {
-            // Verify leg amount if supplied
+            // ── Strict Leg Currency Verification ──────────────────────────
+            if (verdict.paidCurrency && verdict.paidCurrency.toUpperCase() !== leg.currency.toUpperCase()) {
+                console.warn(
+                    `[MultiLegPayment] Leg currency mismatch: expected ${leg.currency}, got ${verdict.paidCurrency}`
+                );
+                return leg;
+            }
+
+            // ── Strict Leg Amount Verification (0.01 tolerance for precision) ──
             if (verdict.paidAmount !== undefined && verdict.paidAmount !== null && !Number.isNaN(verdict.paidAmount)) {
-                if (Math.abs(verdict.paidAmount - leg.amount) > 1.0) {
-                    console.warn(`[MultiLegPayment] Leg amount mismatch: expected ${leg.amount}, got ${verdict.paidAmount}`);
+                if (Math.abs(verdict.paidAmount - leg.amount) > 0.01) {
+                    console.warn(
+                        `[MultiLegPayment] Leg amount mismatch: expected ${leg.amount}, got ${verdict.paidAmount}`
+                    );
                     return leg;
                 }
             }

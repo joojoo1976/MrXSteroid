@@ -516,6 +516,51 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
     });
 
     // ══════════════════════════════════════════════════════════════════════
+    //  Strict Verification: Reject Mismatched Amount or Currency on Legs
+    // ══════════════════════════════════════════════════════════════════════
+    it('Strictly rejects leg verdict if paid amount or currency does not match the planned leg', () => {
+        const invoiceId = 'inv_mismatch_test';
+        const pendingLegs: PaymentLeg[] = [
+            {
+                id: `${invoiceId}_leg_0`, invoiceId, legIndex: 0,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'pending',
+                providerReference: null, paidAt: null, items: [],
+            },
+            {
+                id: `${invoiceId}_leg_1`, invoiceId, legIndex: 1,
+                legType: 'service', provider: 'kashier',
+                amount: 349.99, currency: 'USD', status: 'pending',
+                providerReference: null, paidAt: null, items: [],
+            },
+        ];
+
+        // 1. Amount mismatch: Attempt to settle $49.99 leg with $20.00
+        const amountMismatchRes = processLegVerdict(pendingLegs, {
+            provider: 'fourthwall',
+            providerReference: 'fw_order_bad_amount',
+            status: 'succeeded',
+            paidAmount: 20.00, // Bad amount!
+            paidCurrency: 'USD',
+        });
+        expect(amountMismatchRes.consolidatedStatus).toBe('pending');
+        expect(amountMismatchRes.canGrantEntitlement).toBe(false);
+        expect(amountMismatchRes.updatedLegs[0].status).toBe('pending');
+
+        // 2. Currency mismatch: Attempt to settle USD leg with EUR
+        const currencyMismatchRes = processLegVerdict(pendingLegs, {
+            provider: 'fourthwall',
+            providerReference: 'fw_order_bad_currency',
+            status: 'succeeded',
+            paidAmount: 49.99,
+            paidCurrency: 'EUR', // Bad currency!
+        });
+        expect(currencyMismatchRes.consolidatedStatus).toBe('pending');
+        expect(currencyMismatchRes.canGrantEntitlement).toBe(false);
+        expect(currencyMismatchRes.updatedLegs[0].status).toBe('pending');
+    });
+
+    // ══════════════════════════════════════════════════════════════════════
     //  Egypt EGP: Single-leg order via Kashier — zero regression
     //  Uses 'digital' tierId (non-shippable, EGP 499) so no shipping address
     //  is required — parity with EGYPT single-product digital orders.

@@ -154,18 +154,44 @@ begin
     from public.invoice_payment_legs
     where invoice_id = p_invoice_id
       and (provider = p_provider or p_provider is null)
-      and (provider_reference = p_provider_reference or p_provider_reference is null)
+      and (provider_reference = p_provider_reference or p_provider_reference is null or status = 'pending')
+    order by case when status = 'pending' then 0 else 1 end
+    limit 1
     for update;
 
-    if found then
-        -- Update target leg status
-        update public.invoice_payment_legs
-        set status = p_status,
-            paid_at = case when p_status = 'succeeded' then now() else paid_at end,
-            provider_reference = coalesce(p_provider_reference, provider_reference),
-            updated_at = now()
-        where id = v_target_leg.id;
+    if not found then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'LEG_NOT_FOUND',
+            'message', 'Matching payment leg not found'
+        );
     end if;
+
+    -- Strict Currency Verification: reject mismatch
+    if p_currency is not null and upper(v_target_leg.currency) != upper(p_currency) then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'CURRENCY_MISMATCH',
+            'message', format('Leg currency mismatch: expected %s, got %s', v_target_leg.currency, p_currency)
+        );
+    end if;
+
+    -- Strict Amount Verification (tolerance 0.01)
+    if p_amount_paid is not null and abs(v_target_leg.amount - p_amount_paid) > 0.01 then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'AMOUNT_MISMATCH',
+            'message', format('Leg amount mismatch: expected %s, got %s', v_target_leg.amount, p_amount_paid)
+        );
+    end if;
+
+    -- Update target leg status
+    update public.invoice_payment_legs
+    set status = p_status,
+        paid_at = case when p_status = 'succeeded' then now() else paid_at end,
+        provider_reference = coalesce(p_provider_reference, provider_reference),
+        updated_at = now()
+    where id = v_target_leg.id;
 
     -- 3. Evaluate consolidated status across all legs for this invoice
     select
