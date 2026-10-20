@@ -21,6 +21,32 @@ import {
 //                          MULTI-GATEWAY INVOICE API
 // ═══════════════════════════════════════════════════════════════════════════
 
+export interface ClientPaymentLeg {
+    id: string;
+    legIndex: number;
+    legType: 'merchandise' | 'service' | 'standard';
+    provider: 'kashier' | 'fourthwall' | 'instapay' | 'stripe' | 'manual';
+    amount: number;
+    currency: string;
+    status: string;
+    sessionUrl: string | null;
+    providerReference?: string | null;
+}
+
+export interface CheckoutStatusResult {
+    success: boolean;
+    invoiceId?: string;
+    paymentStatus?: string;
+    amount?: number;
+    currency?: string;
+    isMultiLeg?: boolean;
+    isCompleted?: boolean;
+    canFulfill?: boolean;
+    legs?: ClientPaymentLeg[];
+    nextPendingLeg?: ClientPaymentLeg | null;
+    error?: string;
+}
+
 export interface CreateInvoiceRequest {
     userId: string;
     tierId: string;
@@ -36,6 +62,11 @@ export interface CreateInvoiceRequest {
     quantity?: number;
     shippingCost?: number;
     discount?: number;
+    lines?: Array<{
+        kind: 'product' | 'addon' | 'consultation';
+        tierId: 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
+        quantity?: number;
+    }>;
     metadata?: Record<string, unknown>;
     /** v5.1 §12 checkout idempotency key — sent as the `Idempotency-Key` header. */
     idempotencyKey?: string;
@@ -45,8 +76,11 @@ export interface CreateInvoiceResponse {
     success: boolean;
     invoiceId?: string;
     redirectUrl?: string;
+    sessionUrl?: string;
     clientSecret?: string;
     gateway?: string;
+    isMultiLeg?: boolean;
+    paymentLegs?: ClientPaymentLeg[];
     error?: string;
     details?: Record<string, string[]>;
 }
@@ -185,6 +219,7 @@ class PaymentService {
                             phone: request.phoneNumber,
                         }
                         : undefined,
+                    lines: request.lines,
                     metadata: request.metadata,
                     idempotencyKey: request.idempotencyKey,
                 }
@@ -220,24 +255,71 @@ class PaymentService {
                 };
             }
 
+            const redirectUrl = (data.redirectUrl || data.sessionUrl) as string | undefined;
+            const sessionUrl = (data.sessionUrl || data.redirectUrl) as string | undefined;
+
             loggers.payment.info('Invoice created successfully', {
                 invoiceId: data.invoiceId,
                 gateway: data.gateway,
-                redirectUrl: data.redirectUrl,
+                redirectUrl,
+                sessionUrl,
+                isMultiLeg: Boolean(data.isMultiLeg),
                 hasClientSecret: !!data.clientSecret,
             });
 
             return {
                 success: true,
                 invoiceId: data.invoiceId as string | undefined,
-                redirectUrl: data.redirectUrl as string | undefined,
+                redirectUrl,
+                sessionUrl,
                 clientSecret: data.clientSecret as string | undefined,
                 gateway: data.gateway as string | undefined,
+                isMultiLeg: Boolean(data.isMultiLeg),
+                paymentLegs: (data.paymentLegs as ClientPaymentLeg[]) || [],
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             errorHandler.handle(error, 'PaymentService.createInvoice');
             loggers.payment.error('createInvoice failed', { error: message });
+            return { success: false, error: message };
+        }
+    }
+
+    /**
+     * Checks the authoritative multi-leg settlement status of an invoice.
+     */
+    public async getCheckoutStatus(invoiceId: string): Promise<CheckoutStatusResult> {
+        try {
+            if (!invoiceId) {
+                return { success: false, error: 'Invoice ID is required' };
+            }
+
+            const response = await fetch(`/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!response.ok) {
+                return { success: false, error: `Failed to fetch checkout status (${response.status})` };
+            }
+
+            const data = await response.json();
+            return {
+                success: Boolean(data.success),
+                invoiceId: data.invoiceId,
+                paymentStatus: data.paymentStatus,
+                amount: data.amount,
+                currency: data.currency,
+                isMultiLeg: Boolean(data.isMultiLeg),
+                isCompleted: data.isCompleted === true || data.paymentStatus === 'paid',
+                canFulfill: Boolean(data.canFulfill),
+                legs: (data.legs as ClientPaymentLeg[]) || [],
+                nextPendingLeg: data.nextPendingLeg || null,
+                error: data.error,
+            };
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            loggers.payment.error('getCheckoutStatus error', { error: message });
             return { success: false, error: message };
         }
     }

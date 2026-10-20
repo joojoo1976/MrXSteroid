@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { paymentService } from '../../../shared/lib/payment.service';
+import { paymentService, type ClientPaymentLeg } from '../../../shared/lib/payment.service';
 import { 
     ShippingProvider, 
     validatePromoCode, 
@@ -97,6 +97,31 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
     const [stripeInvoiceId, setStripeInvoiceId] = useState<string | null>(null);
     const [isStripeReady, setIsStripeReady] = useState(false);
+
+    // Multi-Leg Checkout Coordinator State
+    const [multiLegSession, setMultiLegSession] = useState<{
+        invoiceId: string;
+        legs: ClientPaymentLeg[];
+    } | null>(null);
+
+    // Check for returning multi-leg checkout session
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const activeInvoiceId = window.localStorage.getItem('mrx_active_multileg_invoice');
+        if (!activeInvoiceId) return;
+
+        paymentService.getCheckoutStatus(activeInvoiceId).then((res) => {
+            if (res.success && res.isMultiLeg && !res.isCompleted) {
+                setMultiLegSession({
+                    invoiceId: activeInvoiceId,
+                    legs: res.legs || [],
+                });
+            } else if (res.isCompleted) {
+                window.localStorage.removeItem('mrx_active_multileg_invoice');
+                window.localStorage.removeItem(`mrx_multileg_${activeInvoiceId}`);
+            }
+        }).catch(() => {});
+    }, []);
 
     const isAr = lang === 'ar';
     const DIGITAL_VARIANTS: ProductVariant[] = ['digital', 'digital_plus'];
@@ -419,11 +444,27 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 return;
             }
 
-            if (result.success && result.redirectUrl) {
-                console.log('🚀 Redirecting to Payment Gateway URL:', result.redirectUrl);
+            // Multi-leg checkout flow: coordinator handles sequential gateway sessions
+            if (result.success && result.isMultiLeg && result.paymentLegs && result.paymentLegs.length > 1) {
+                if (typeof window !== 'undefined') {
+                    window.localStorage.setItem('mrx_active_multileg_invoice', result.invoiceId || '');
+                    window.localStorage.setItem(`mrx_multileg_${result.invoiceId}`, JSON.stringify(result.paymentLegs));
+                }
+                setMultiLegSession({
+                    invoiceId: result.invoiceId || '',
+                    legs: result.paymentLegs,
+                });
+                setIsProcessing(false);
+                setIsRedirecting(false);
+                return;
+            }
+
+            if (result.success && (result.redirectUrl || result.sessionUrl)) {
+                const targetUrl = result.redirectUrl || result.sessionUrl;
+                console.log('🚀 Redirecting to Payment Gateway URL:', targetUrl);
                 setIsRedirecting(true);
                 setTimeout(() => {
-                    window.location.assign(result.redirectUrl!);
+                    window.location.assign(targetUrl!);
                 }, 100);
             } else {
                 throw new Error(result.error || (isAr ? 'فشل إنشاء عملية الدفع' : 'Payment initiation failed'));
@@ -478,6 +519,15 @@ export const useCheckout = (options: useCheckoutOptions) => {
         stripeClientSecret,
         stripeInvoiceId,
         isStripeReady,
-        setIsStripeReady
+        setIsStripeReady,
+        // Multi-leg checkout coordinator
+        multiLegSession,
+        setMultiLegSession,
+        clearMultiLegSession: () => {
+            setMultiLegSession(null);
+            if (typeof window !== 'undefined') {
+                window.localStorage.removeItem('mrx_active_multileg_invoice');
+            }
+        },
     };
 };

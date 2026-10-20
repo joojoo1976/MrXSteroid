@@ -390,8 +390,19 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 return { code: 'amount_mismatch' };
             }
 
-            // ── Atomic Multi-Leg Database Settlement ────────────────────────
-            // Attempts atomic RPC row-lock settlement; fails closed if RPC reports an error
+            // ── Atomic Multi-Leg Database Settlement (P0 & P1 Remediation) ───
+            // 1. Strict Fail-Closed Verification (Fix 3):
+            // Any RPC error, null response, missing success, or success !== true MUST fail-closed.
+            let rpcOutcome: {
+                success: boolean;
+                invoice_status?: string;
+                can_fulfill?: boolean;
+                idempotent?: boolean;
+                target_leg_id?: string;
+                error?: string;
+                message?: string;
+            };
+
             try {
                 const { data: rpcRes, error: rpcErr } = await supabase.rpc('settle_invoice_payment_leg', {
                     p_invoice_id: invoiceId,
@@ -401,29 +412,62 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                     p_currency: verdict.currency || (existing as any)?.currency || 'USD',
                     p_status: 'succeeded',
                 });
-                if (rpcErr || rpcRes?.success === false) {
-                    console.error('[Fulfillment] settle_invoice_payment_leg failed:', rpcErr?.message || rpcRes?.error || rpcRes?.message);
+
+                if (
+                    rpcErr ||
+                    !rpcRes ||
+                    typeof rpcRes !== 'object' ||
+                    (rpcRes as any).success !== true
+                ) {
+                    console.error(
+                        '[Fulfillment] settle_invoice_payment_leg failed or invalid RPC response:',
+                        rpcErr?.message || rpcRes
+                    );
                     return { code: 'unresolved' };
-                } else if (rpcRes?.success) {
-                    console.log(`✅ [Fulfillment] settle_invoice_payment_leg atomic RPC succeeded: invoice_status=${rpcRes.invoice_status}`);
                 }
+
+                rpcOutcome = rpcRes as any;
+                console.log(
+                    `✅ [Fulfillment] settle_invoice_payment_leg atomic RPC succeeded: invoice_status=${rpcOutcome.invoice_status}, can_fulfill=${rpcOutcome.can_fulfill}`
+                );
             } catch (rpcCallErr) {
                 console.error('[Fulfillment] settle_invoice_payment_leg RPC threw error:', rpcCallErr);
                 return { code: 'unresolved' };
             }
 
-            // Persist the updated legs in invoice metadata and database
-            await supabase
-                .from('invoices')
-                .update({
-                    metadata: {
-                        ...metadata,
-                        payment_legs: legVerdictRes.updatedLegs,
-                    },
-                    payment_status: legVerdictRes.consolidatedStatus,
-                    updated_at: nowIso(),
-                })
-                .eq('id', invoiceId);
+            // 2. Replay / Idempotency Guard:
+            if (rpcOutcome.idempotent) {
+                console.log(`♻️ [Fulfillment] Invoice ${invoiceId} already settled — idempotent ack`);
+                return { code: 'already_processed' };
+            }
+
+            // 3. Concurrency Protection (Fix 1):
+            // Database RPC is the SOLE source of truth for payment_status.
+            // NEVER overwrite payment_status with legVerdictRes.consolidatedStatus!
+            // Sync metadata.payment_legs from authoritative DB table invoice_payment_legs:
+            try {
+                const { data: dbLegs } = await supabase
+                    .from('invoice_payment_legs')
+                    .select('*')
+                    .eq('invoice_id', invoiceId)
+                    .order('leg_index', { ascending: true });
+
+                const authoritativeLegs = dbLegs && dbLegs.length > 0 ? dbLegs : legVerdictRes.updatedLegs;
+
+                // Update metadata ONLY — DO NOT touch payment_status (it was set atomically by the RPC)
+                await supabase
+                    .from('invoices')
+                    .update({
+                        metadata: {
+                            ...metadata,
+                            payment_legs: authoritativeLegs,
+                        },
+                        updated_at: nowIso(),
+                    })
+                    .eq('id', invoiceId);
+            } catch (metaErr) {
+                console.warn('[Fulfillment] metadata sync note (non-fatal):', metaErr);
+            }
 
             try {
                 const { persistPaymentLegs } = await import('./multiLegPaymentService');
@@ -432,19 +476,12 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 console.warn('[Fulfillment] persistPaymentLegs error (non-fatal):', err);
             }
 
-            // If not all legs are settled, transition to partially_paid and stop!
-            if (!legVerdictRes.canGrantEntitlement) {
+            // 4. Entitlement Decision Tied to Authoritative DB Settlement (Fix 1):
+            // can_fulfill is returned directly by the atomic Postgres function
+            if (!rpcOutcome.can_fulfill) {
                 console.log(
-                    `⏳ [Fulfillment] Invoice ${invoiceId} is partially paid (status=${legVerdictRes.consolidatedStatus}). Entitlements gated until full settlement.`
+                    `⏳ [Fulfillment] Invoice ${invoiceId} is partially paid (status=${rpcOutcome.invoice_status}). Entitlements gated until full settlement.`
                 );
-                await supabase
-                    .from('orders')
-                    .update({
-                        payment_status: 'partially_paid',
-                        updated_at: nowIso(),
-                    })
-                    .eq('invoice_id', invoiceId);
-
                 if (source === 'webhook' && providerEventId) {
                     await supabase
                         .from('webhook_events')

@@ -202,6 +202,7 @@ export async function POST(req: Request) {
                 orderRef: result.orderRef,
                 sessionId: result.sessionId,
                 sessionUrl: result.sessionUrl,
+                redirectUrl: result.sessionUrl,
                 gateway: activeGateway,
                 region: result.region,
                 amount: result.amount,

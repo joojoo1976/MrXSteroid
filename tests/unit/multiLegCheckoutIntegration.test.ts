@@ -358,6 +358,29 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
         ];
 
         const supabase = createFakeSupabase();
+        // Fix 3 compliance: override RPC to return a proper success response
+        // (leg 0 settled, leg 1 still pending → can_fulfill=false, partially_paid)
+        // The RPC mock also mutates the fake DB row to mirror what real Postgres does atomically.
+        supabase.rpc = async (funcName: string) => {
+            if (funcName === 'settle_invoice_payment_leg') {
+                // Simulate the atomic Postgres function updating payment_status
+                const inv = supabase._db.invoices.find((i: any) => i.id === invoiceId);
+                if (inv) inv.payment_status = 'partially_paid';
+                const ord = supabase._db.orders.find((o: any) => o.invoice_id === invoiceId);
+                if (ord) ord.payment_status = 'partially_paid';
+                return {
+                    data: {
+                        success: true,
+                        invoice_status: 'partially_paid',
+                        can_fulfill: false,
+                        idempotent: false,
+                        target_leg_id: `${invoiceId}_leg_0`,
+                    },
+                    error: null,
+                };
+            }
+            return { data: null, error: null };
+        };
         supabase._db.invoices.push({
             id: invoiceId, customer_id: userId, user_id: userId,
             amount: 399.98, amount_cents: 39998, currency: 'USD',
@@ -428,6 +451,22 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
 
         // Seed with default split_rules so freezeOrderSplits can proceed
         const supabase = createFakeSupabase({ split_rules: defaultSplitRules() });
+        // Fix 3 compliance: override RPC — leg 1 settling completes all legs → can_fulfill=true
+        supabase.rpc = async (funcName: string) => {
+            if (funcName === 'settle_invoice_payment_leg') {
+                return {
+                    data: {
+                        success: true,
+                        invoice_status: 'paid',
+                        can_fulfill: true,
+                        idempotent: false,
+                        target_leg_id: `${invoiceId}_leg_1`,
+                    },
+                    error: null,
+                };
+            }
+            return { data: null, error: null };
+        };
 
         supabase._db.invoices.push({
             id: invoiceId, customer_id: userId, user_id: userId,
@@ -682,5 +721,532 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
         expect(result.paymentLegs![0].provider).toBe('kashier');
         expect(result.amount).toBe(499); // canonical EGP price for 'digital'
         expect(result.currency).toBe('EGP');
+    });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  ACCEPTANCE GAP TESTS — V3.4.1 Remediation
+//  Fix 1 (P0): No stale payment_status overwrite after atomic RPC settlement
+//  Fix 3 (P1): Strict Fail-Closed — all null/invalid RPC responses → unresolved
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe('V3.4.1 Acceptance Gap: Fix 1 — No stale payment_status overwrite', () => {
+    /**
+     * Creates a fake Supabase that captures all .update() calls to invoices,
+     * while serving a successful settle_invoice_payment_leg RPC response.
+     */
+    function createConcurrencyFakeSupabase(rpcResult: Record<string, any>) {
+        const invoiceRows: any[] = [
+            {
+                id: 'inv_race_001',
+                customer_id: 'user_race_001',
+                user_id: 'user_race_001',
+                tier_id: 'bundle_plus',
+                amount: 399.98,
+                amount_cents: 39998,
+                currency: 'USD',
+                status: 'open',
+                payment_status: 'pending',
+                metadata: {
+                    customer_email: 'race@example.com',
+                    payment_legs: [
+                        {
+                            id: 'leg_fw_001', invoiceId: 'inv_race_001', legIndex: 0,
+                            legType: 'merchandise', provider: 'fourthwall',
+                            amount: 49.99, currency: 'USD', status: 'pending',
+                            providerReference: null, paidAt: null, items: [],
+                        },
+                        {
+                            id: 'leg_ks_001', invoiceId: 'inv_race_001', legIndex: 1,
+                            legType: 'service', provider: 'kashier',
+                            amount: 349.99, currency: 'USD', status: 'pending',
+                            providerReference: null, paidAt: null, items: [],
+                        },
+                    ],
+                },
+            },
+        ];
+
+        const profileRows: any[] = [{ id: 'user_race_001', has_paid: false, is_vip: false }];
+        const legRows: any[] = [];
+        const updatedPayloads: any[] = [];
+
+        const db: Record<string, any[]> = {
+            invoices: invoiceRows,
+            profiles: profileRows,
+            invoice_payment_legs: legRows,
+            webhook_events: [],
+            payment_intents: [],
+            orders: [],
+            split_rules: [],
+            user_entitlements: [],
+        };
+
+        let idCtr = 0;
+
+        function from(table: string) {
+            const state: any = { mode: 'select', payload: null, filters: {} };
+
+            const exec = async () => {
+                const rows = db[table] || (db[table] = []);
+                if (state.mode === 'insert' || state.mode === 'upsert') {
+                    const incoming = Array.isArray(state.payload) ? state.payload : [state.payload];
+                    incoming.forEach((item: any) => {
+                        const row = { id: item?.id || `${table}-${++idCtr}`, ...item };
+                        rows.push(row);
+                    });
+                    return { data: state.payload, error: null };
+                }
+                if (state.mode === 'update') {
+                    if (table === 'invoices') updatedPayloads.push({ ...state.payload });
+                    const matched = rows.filter((r: any) =>
+                        Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                    );
+                    matched.forEach((r: any) => Object.assign(r, state.payload));
+                    return { data: state.payload, error: null };
+                }
+                const matched = rows.filter((r: any) =>
+                    Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                );
+                return { data: matched, error: null };
+            };
+
+            const builder: any = {
+                select() { return builder; },
+                insert(p: any) { state.mode = 'insert'; state.payload = p; return builder; },
+                upsert(p: any) { state.mode = 'upsert'; state.payload = p; return builder; },
+                update(p: any) { state.mode = 'update'; state.payload = p; return builder; },
+                delete() { state.mode = 'delete'; return builder; },
+                eq(col: string, val: any) { state.filters[col] = val; return builder; },
+                in(col: string, v: any[]) { state.filters[col] = v; return builder; },
+                order() { return builder; },
+                limit() { return builder; },
+                async single() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                async maybeSingle() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                then(resolve: any, reject: any) { return exec().then(resolve, reject); },
+            };
+            return builder;
+        }
+
+        const supabase: any = {
+            from,
+            rpc: async (funcName: string) => {
+                if (funcName === 'settle_invoice_payment_leg') {
+                    return { data: rpcResult, error: null };
+                }
+                return { data: null, error: null };
+            },
+            _db: db,
+            _capturedUpdates: updatedPayloads,
+        };
+
+        return supabase;
+    }
+
+    it('Fix 1: invoices.update NEVER includes payment_status after successful RPC settlement', async () => {
+        const supabase = createConcurrencyFakeSupabase({
+            success: true,
+            invoice_status: 'paid',
+            can_fulfill: true,
+            idempotent: false,
+            target_leg_id: 'leg_fw_001',
+        });
+
+        const result = await applyProviderVerdict({
+            supabase,
+            invoiceId: 'inv_race_001',
+            gatewayName: 'FOURTHWALL',
+            verdict: {
+                status: 'success',
+                externalReferenceId: 'fw_ref_race_001',
+                paidAmount: 49.99,
+                currency: 'USD',
+            },
+            providerEventId: 'evt_fw_race_001',
+            providerStatus: 'succeeded',
+            source: 'webhook',
+        });
+
+        // RPC succeeded → must not be 'unresolved'
+        expect(result.code).not.toBe('unresolved');
+
+        // CRITICAL FIX 1 ASSERTION:
+        // The stale-overwrite bug was: after a successful atomic RPC, the OLD code
+        // wrote legVerdictRes.consolidatedStatus ('paid'/'partially_paid') back to
+        // invoices.payment_status, potentially downgrading the DB's authoritative
+        // state. Fix 1 removes that write entirely.
+        // Legitimate writes: 'unknown' (§6.3 reconciliation fallback), 'failed' (error paths).
+        const illegalStatuses = ['paid', 'partially_paid', 'initiated'];
+        for (const updatePayload of supabase._capturedUpdates) {
+            if (updatePayload.payment_status) {
+                expect(illegalStatuses).not.toContain(updatePayload.payment_status);
+            }
+        }
+    });
+
+    it('Fix 1: Concurrent applyProviderVerdict calls — second call must not downgrade status to partially_paid', async () => {
+        // Both calls with same invoice but different legs to simulate race condition.
+        // The supabase mock RPC always returns 'paid' (simulating DB atomic success),
+        // so neither call should write payment_status at all.
+        const supabase = createConcurrencyFakeSupabase({
+            success: true,
+            invoice_status: 'paid',
+            can_fulfill: true,
+            idempotent: false,
+        });
+
+        const verdictParams = {
+            supabase,
+            invoiceId: 'inv_race_001',
+            gatewayName: 'FOURTHWALL',
+            verdict: {
+                status: 'success' as const,
+                externalReferenceId: 'fw_ref_concurrent',
+                paidAmount: 49.99,
+                currency: 'USD',
+            },
+            providerEventId: 'evt_fw_concurrent',
+            providerStatus: 'succeeded' as const,
+            source: 'webhook' as const,
+        };
+
+        // Fire two concurrent calls
+        const [r1, r2] = await Promise.all([
+            applyProviderVerdict(verdictParams),
+            applyProviderVerdict({ ...verdictParams, providerEventId: 'evt_fw_concurrent_2' }),
+        ]);
+
+        // Neither result should be unresolved (RPC is succeeding)
+        // At least one should succeed (other may be idempotent depending on leg matching)
+        const codes = [r1.code, r2.code];
+        expect(codes.every(c => c !== 'amount_mismatch')).toBe(true);
+
+        // After both calls: no update to invoices should have set payment_status
+        // to a COMPUTED in-memory value (paid/partially_paid from legVerdictRes).
+        // The only legitimate payment_status writes are: 'unknown' (§6.3 fallback
+        // reconciliation marker) and 'failed' (on error paths).
+        // The stale overwrite bug was writing 'paid' or 'partially_paid' computed
+        // in-memory from legVerdictRes.consolidatedStatus AFTER a successful RPC.
+        const illegalStatuses = ['paid', 'partially_paid', 'initiated'];
+        for (const updatePayload of supabase._capturedUpdates) {
+            if (updatePayload.payment_status) {
+                expect(illegalStatuses).not.toContain(updatePayload.payment_status);
+            }
+        }
+
+        // Invoice payment_status in DB should remain as-set by RPC only (we never wrote it)
+        const inv = supabase._db.invoices.find((i: any) => i.id === 'inv_race_001');
+        // payment_status in DB was never touched by our code (only by RPC which is external)
+        expect(['pending', 'partially_paid', 'paid']).toContain(inv.payment_status);
+    });
+});
+
+describe('V3.4.1 Acceptance Gap: Fix 3 — Strict Fail-Closed on all invalid RPC responses', () => {
+    function baseInvoiceSetup(supabase: any) {
+        supabase._db = supabase._db || {};
+        supabase._db.invoices = [
+            {
+                id: 'inv_rpc_variant',
+                customer_id: 'user_rpc_variant',
+                user_id: 'user_rpc_variant',
+                tier_id: 'bundle_plus',
+                amount: 399.98,
+                amount_cents: 39998,
+                currency: 'USD',
+                status: 'open',
+                payment_status: 'pending',
+                metadata: {
+                    customer_email: 'rpc_variant@example.com',
+                    payment_legs: [
+                        {
+                            id: 'leg_rpc_fw', invoiceId: 'inv_rpc_variant', legIndex: 0,
+                            legType: 'merchandise', provider: 'fourthwall',
+                            amount: 49.99, currency: 'USD', status: 'pending',
+                            providerReference: null, paidAt: null, items: [],
+                        },
+                    ],
+                },
+            },
+        ];
+        supabase._db.profiles = [{ id: 'user_rpc_variant', has_paid: false, is_vip: false }];
+        supabase._db.invoice_payment_legs = [];
+        supabase._db.webhook_events = [];
+        supabase._db.orders = [];
+        supabase._db.split_rules = [];
+    }
+
+    async function testRpcVariant(rpcData: any, rpcError: any): Promise<string> {
+        const db: Record<string, any[]> = {
+            invoices: [], profiles: [], invoice_payment_legs: [],
+            webhook_events: [], orders: [], split_rules: [], payment_intents: [],
+            user_entitlements: [],
+        };
+        let idCtr = 0;
+
+        function from(table: string) {
+            const state: any = { mode: 'select', payload: null, filters: {} };
+            const exec = async () => {
+                const rows = db[table] || (db[table] = []);
+                if (state.mode === 'insert' || state.mode === 'upsert') {
+                    const incoming = Array.isArray(state.payload) ? state.payload : [state.payload];
+                    incoming.forEach((item: any) => rows.push({ id: item?.id || `${table}-${++idCtr}`, ...item }));
+                    return { data: state.payload, error: null };
+                }
+                if (state.mode === 'update') {
+                    const matched = rows.filter((r: any) =>
+                        Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                    );
+                    matched.forEach((r: any) => Object.assign(r, state.payload));
+                    return { data: state.payload, error: null };
+                }
+                const matched = rows.filter((r: any) =>
+                    Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                );
+                return { data: matched, error: null };
+            };
+            const builder: any = {
+                select() { return builder; },
+                insert(p: any) { state.mode = 'insert'; state.payload = p; return builder; },
+                upsert(p: any) { state.mode = 'upsert'; state.payload = p; return builder; },
+                update(p: any) { state.mode = 'update'; state.payload = p; return builder; },
+                delete() { state.mode = 'delete'; return builder; },
+                eq(col: string, val: any) { state.filters[col] = val; return builder; },
+                in(col: string, v: any[]) { state.filters[col] = v; return builder; },
+                order() { return builder; },
+                limit() { return builder; },
+                async single() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                async maybeSingle() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                then(resolve: any, reject: any) { return exec().then(resolve, reject); },
+            };
+            return builder;
+        }
+
+        db.invoices.push({
+            id: 'inv_rpc_variant',
+            customer_id: 'user_rpc_variant',
+            user_id: 'user_rpc_variant',
+            tier_id: 'bundle_plus',
+            // Multi-leg invoice: total = 399.98 (two legs)
+            // isMultiLeg is determined by paymentLegs.length > 1
+            amount: 399.98,
+            amount_cents: 39998,
+            currency: 'USD',
+            status: 'open',
+            payment_status: 'pending',
+            metadata: {
+                customer_email: 'rpc_variant@example.com',
+                payment_legs: [
+                    {
+                        id: 'leg_rpc_fw', invoiceId: 'inv_rpc_variant', legIndex: 0,
+                        legType: 'merchandise', provider: 'fourthwall',
+                        amount: 49.99, currency: 'USD', status: 'pending',
+                        providerReference: null, paidAt: null, items: [],
+                    },
+                    {
+                        id: 'leg_rpc_ks', invoiceId: 'inv_rpc_variant', legIndex: 1,
+                        legType: 'service', provider: 'kashier',
+                        amount: 349.99, currency: 'USD', status: 'pending',
+                        providerReference: null, paidAt: null, items: [],
+                    },
+                ],
+            },
+        });
+        db.profiles.push({ id: 'user_rpc_variant', has_paid: false, is_vip: false });
+
+        const supabase: any = {
+            from,
+            rpc: async (funcName: string) => {
+                if (funcName === 'settle_invoice_payment_leg') {
+                    return { data: rpcData, error: rpcError };
+                }
+                return { data: null, error: null };
+            },
+            _db: db,
+        };
+
+        const result = await applyProviderVerdict({
+            supabase,
+            invoiceId: 'inv_rpc_variant',
+            gatewayName: 'FOURTHWALL',
+            verdict: {
+                status: 'success',
+                externalReferenceId: 'fw_ref_variant',
+                paidAmount: 49.99,
+                currency: 'USD',
+            },
+            providerEventId: 'evt_variant',
+            providerStatus: 'succeeded',
+            source: 'webhook',
+        });
+
+        return result.code;
+    }
+
+    it('Fix 3 Variant 1: { data: null, error: null } → unresolved', async () => {
+        const code = await testRpcVariant(null, null);
+        expect(code).toBe('unresolved');
+    });
+
+    it('Fix 3 Variant 2: { data: {}, error: null } → unresolved (missing success key)', async () => {
+        const code = await testRpcVariant({}, null);
+        expect(code).toBe('unresolved');
+    });
+
+    it('Fix 3 Variant 3: { data: { no_success_key: true }, error: null } → unresolved', async () => {
+        const code = await testRpcVariant({ no_success_key: true }, null);
+        expect(code).toBe('unresolved');
+    });
+
+    it('Fix 3 Variant 4: { data: { success: false }, error: null } → unresolved', async () => {
+        const code = await testRpcVariant({ success: false, error: 'CONSTRAINT_VIOLATION' }, null);
+        expect(code).toBe('unresolved');
+    });
+
+    it('Fix 3 Variant 5: { data: null, error: { message: "DB error" } } → unresolved', async () => {
+        const code = await testRpcVariant(null, { message: 'DB connection error', code: 'PGRST500' });
+        expect(code).toBe('unresolved');
+    });
+
+    it('Fix 3 Variant 6: { data: { success: true, invoice_status: "partially_paid", can_fulfill: false } } → applied (not grant entitlement)', async () => {
+        // This is the only "happy path" variant — but entitlement should NOT be granted since can_fulfill=false
+        // The result code should be 'applied' (or 'success') but NOT 'unresolved'
+        // Invoice amount matches paidAmount exactly (single-leg) so verifyPaidAmount passes
+        const db: Record<string, any[]> = {
+            invoices: [{
+                id: 'inv_rpc_variant',
+                customer_id: 'user_rpc_variant',
+                user_id: 'user_rpc_variant',
+                tier_id: 'bundle_plus',
+                // Multi-leg: 2 legs so isMultiLeg = true, RPC path is triggered
+                amount: 399.98,
+                amount_cents: 39998,
+                currency: 'USD',
+                status: 'open',
+                payment_status: 'pending',
+                metadata: {
+                    customer_email: 'rpc_variant@example.com',
+                    payment_legs: [
+                        {
+                            id: 'leg_rpc_fw', invoiceId: 'inv_rpc_variant', legIndex: 0,
+                            legType: 'merchandise', provider: 'fourthwall',
+                            amount: 49.99, currency: 'USD', status: 'pending',
+                            providerReference: null, paidAt: null, items: [],
+                        },
+                        {
+                            id: 'leg_rpc_ks', invoiceId: 'inv_rpc_variant', legIndex: 1,
+                            legType: 'service', provider: 'kashier',
+                            amount: 349.99, currency: 'USD', status: 'pending',
+                            providerReference: null, paidAt: null, items: [],
+                        },
+                    ],
+                },
+            }],
+            profiles: [{ id: 'user_rpc_variant', has_paid: false, is_vip: false }],
+            invoice_payment_legs: [],
+            webhook_events: [],
+            orders: [],
+            split_rules: [],
+            payment_intents: [],
+            user_entitlements: [],
+        };
+        let idCtr = 0;
+
+        function from(table: string) {
+            const state: any = { mode: 'select', payload: null, filters: {} };
+            const exec = async () => {
+                const rows = db[table] || (db[table] = []);
+                if (state.mode === 'insert' || state.mode === 'upsert') {
+                    const incoming = Array.isArray(state.payload) ? state.payload : [state.payload];
+                    incoming.forEach((item: any) => rows.push({ id: item?.id || `${table}-${++idCtr}`, ...item }));
+                    return { data: state.payload, error: null };
+                }
+                if (state.mode === 'update') {
+                    const matched = rows.filter((r: any) =>
+                        Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                    );
+                    matched.forEach((r: any) => Object.assign(r, state.payload));
+                    return { data: state.payload, error: null };
+                }
+                const matched = rows.filter((r: any) =>
+                    Object.entries(state.filters).every(([k, v]) => r[k] === v)
+                );
+                return { data: matched, error: null };
+            };
+            const builder: any = {
+                select() { return builder; },
+                insert(p: any) { state.mode = 'insert'; state.payload = p; return builder; },
+                upsert(p: any) { state.mode = 'upsert'; state.payload = p; return builder; },
+                update(p: any) { state.mode = 'update'; state.payload = p; return builder; },
+                delete() { state.mode = 'delete'; return builder; },
+                eq(col: string, val: any) { state.filters[col] = val; return builder; },
+                in(col: string, v: any[]) { state.filters[col] = v; return builder; },
+                order() { return builder; },
+                limit() { return builder; },
+                async single() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                async maybeSingle() {
+                    const { data, error } = await exec();
+                    return { data: Array.isArray(data) ? (data[0] ?? null) : data, error };
+                },
+                then(resolve: any, reject: any) { return exec().then(resolve, reject); },
+            };
+            return builder;
+        }
+
+        const supabase: any = {
+            from,
+            rpc: async (funcName: string) => {
+                if (funcName === 'settle_invoice_payment_leg') {
+                    return {
+                        data: {
+                            success: true,
+                            invoice_status: 'partially_paid',
+                            can_fulfill: false,
+                            idempotent: false,
+                        },
+                        error: null,
+                    };
+                }
+                return { data: null, error: null };
+            },
+            _db: db,
+        };
+
+        const result = await applyProviderVerdict({
+            supabase,
+            invoiceId: 'inv_rpc_variant',
+            gatewayName: 'FOURTHWALL',
+            verdict: {
+                status: 'success',
+                externalReferenceId: 'fw_ref_variant6',
+                paidAmount: 49.99,
+                currency: 'USD',
+            },
+            providerEventId: 'evt_variant6',
+            providerStatus: 'succeeded',
+            source: 'webhook',
+        });
+
+        // RPC succeeded (success: true) → must NOT be unresolved
+        expect(result.code).not.toBe('unresolved');
+
+        // Profile must NOT be granted entitlement since can_fulfill=false
+        const profile = db.profiles.find((p: any) => p.id === 'user_rpc_variant');
+        expect(profile.has_paid).toBe(false);
+        expect(profile.is_vip).toBe(false);
     });
 });
