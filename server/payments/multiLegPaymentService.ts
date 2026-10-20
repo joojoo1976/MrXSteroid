@@ -388,8 +388,15 @@ export function processLegVerdict(
 }
 
 /**
- * Persists payment legs into the invoice_payment_legs table idempotently.
- * Fails safely if table is not yet migrated, preserving legs in metadata.
+ * Persists payment legs into the invoice_payment_legs table idempotently and race-safely.
+ *
+ * CRITICAL P0 PROTECTIONS (V3.4.1 Remediation):
+ * 1. Treats an unsuccessful database-state read as a failure; never proceeds with a write
+ *    based on an empty state inferred from a query error.
+ * 2. Distinguishes a genuinely empty table from a missing table (pre-migration) or query failure.
+ * 3. Enforces monotonic payment-leg transitions: a stale snapshot can NEVER overwrite an
+ *    already succeeded leg, its provider reference, actual paid amount, or paid timestamp.
+ * 4. Atomic conditional update guards against races where settlement occurs between read and write.
  */
 export async function persistPaymentLegs(
     supabase: SupabaseClient,
@@ -397,36 +404,115 @@ export async function persistPaymentLegs(
 ): Promise<void> {
     if (!legs || legs.length === 0) return;
 
-    try {
-        const rows = legs.map((leg) => ({
-            id: leg.id,
-            invoice_id: leg.invoiceId,
-            leg_index: leg.legIndex,
-            leg_type: leg.legType,
-            provider: leg.provider,
-            amount: leg.amount,
-            actual_paid_amount: leg.actualPaidAmount ?? null,
-            currency: leg.currency,
-            status: leg.status,
-            provider_reference: leg.providerReference,
-            session_url: leg.sessionUrl,
-            items: leg.items,
-            paid_at: leg.paidAt,
-        }));
+    const invoiceId = legs[0]?.invoiceId;
+    if (!invoiceId) {
+        throw new Error('[MultiLegPayment] Cannot persist legs without invoiceId.');
+    }
 
-        const table = supabase.from('invoice_payment_legs');
-        if (typeof table?.upsert === 'function') {
-            const { error } = await table.upsert(rows, { onConflict: 'invoice_id, leg_index' });
-            if (error) {
-                console.warn('[MultiLegPayment] invoice_payment_legs upsert note:', error.message);
+    // 1. Authoritative DB query with strict error distinction
+    const { data: existingRows, error: readError } = await supabase
+        .from('invoice_payment_legs')
+        .select('id, invoice_id, leg_index, status, provider_reference, paid_at, actual_paid_amount')
+        .eq('invoice_id', invoiceId);
+
+    if (readError) {
+        const isTableMissing =
+            readError.code === '42P01' ||
+            (typeof readError.message === 'string' &&
+                (readError.message.includes('relation') || readError.message.includes('does not exist')));
+
+        if (isTableMissing) {
+            console.warn('[MultiLegPayment] invoice_payment_legs table does not exist (pre-migration). Skipping DB write.');
+            return;
+        }
+
+        // Query error must NEVER silently fallback to an upsert or infer empty state!
+        console.error('[MultiLegPayment] Database read error while inspecting payment legs:', readError);
+        throw new Error(`[MultiLegPayment] Query error reading existing legs: ${readError.message}`);
+    }
+
+    // Ensure response is a valid array
+    if (existingRows === null || existingRows === undefined || !Array.isArray(existingRows)) {
+        throw new Error('[MultiLegPayment] Unexpected database response: existing payment legs is not an array.');
+    }
+
+    const existingMap = new Map<number, any>();
+    for (const row of existingRows) {
+        existingMap.set(row.leg_index, row);
+    }
+
+    // 2. Monotonic Transitions & Concurrency Safety
+    for (const leg of legs) {
+        const existing = existingMap.get(leg.legIndex);
+
+        if (existing) {
+            // Already succeeded in DB: absolute freeze, skip update entirely to prevent regression
+            if (existing.status === 'succeeded') {
+                continue;
             }
-        } else if (typeof table?.insert === 'function') {
-            const { error } = await table.insert(rows);
-            if (error) {
-                console.warn('[MultiLegPayment] invoice_payment_legs insert note:', error.message);
+
+            // Target is not yet succeeded: prepare update payload
+            const updatePayload: Record<string, any> = {
+                leg_type: leg.legType,
+                provider: leg.provider,
+                amount: leg.amount,
+                currency: leg.currency,
+                session_url: leg.sessionUrl,
+                items: leg.items,
+                updated_at: new Date().toISOString(),
+            };
+
+            if (leg.status === 'succeeded') {
+                updatePayload.status = 'succeeded';
+                updatePayload.actual_paid_amount = leg.actualPaidAmount ?? leg.amount;
+                updatePayload.provider_reference = leg.providerReference;
+                updatePayload.paid_at = leg.paidAt || new Date().toISOString();
+            } else {
+                updatePayload.status = leg.status;
+                updatePayload.provider_reference = leg.providerReference;
+            }
+
+            // CRITICAL CONCURRENCY PROTECTION:
+            // Conditional update with atomic precondition:
+            // Only update if status in the database is still not 'succeeded'.
+            // If another worker/webhook settled this leg between our read and write,
+            // this update matches 0 rows rather than overwriting the succeeded settlement.
+            const { error: updateErr } = await supabase
+                .from('invoice_payment_legs')
+                .update(updatePayload)
+                .eq('invoice_id', leg.invoiceId)
+                .eq('leg_index', leg.legIndex)
+                .in('status', ['pending', 'initiated', 'failed', 'cancelled']);
+
+            if (updateErr) {
+                console.error(`[MultiLegPayment] Failed to update leg ${leg.legIndex}:`, updateErr.message);
+                throw new Error(`[MultiLegPayment] Failed to update leg ${leg.legIndex}: ${updateErr.message}`);
+            }
+        } else {
+            // Leg does not exist in DB yet: insert new leg
+            const insertPayload = {
+                id: leg.id,
+                invoice_id: leg.invoiceId,
+                leg_index: leg.legIndex,
+                leg_type: leg.legType,
+                provider: leg.provider,
+                amount: leg.amount,
+                actual_paid_amount: leg.actualPaidAmount ?? null,
+                currency: leg.currency,
+                status: leg.status,
+                provider_reference: leg.providerReference ?? null,
+                session_url: leg.sessionUrl ?? null,
+                items: leg.items || [],
+                paid_at: leg.paidAt ?? null,
+            };
+
+            const { error: insertErr } = await supabase
+                .from('invoice_payment_legs')
+                .insert(insertPayload);
+
+            if (insertErr) {
+                console.warn(`[MultiLegPayment] Leg ${leg.legIndex} insert note:`, insertErr.message);
             }
         }
-    } catch (err) {
-        console.warn('[MultiLegPayment] persistPaymentLegs skipped table insert:', err);
     }
 }

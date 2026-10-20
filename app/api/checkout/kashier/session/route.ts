@@ -202,6 +202,7 @@ export async function POST(req: Request) {
                 orderRef: result.orderRef,
                 sessionId: result.sessionId,
                 sessionUrl: result.sessionUrl,
+                redirectUrl: result.sessionUrl,
                 gateway: activeGateway,
                 region: result.region,
                 amount: result.amount,
@@ -215,6 +216,7 @@ export async function POST(req: Request) {
                 discount: result.discount,
                 paymentLegs: result.paymentLegs || [],
                 isMultiLeg: Boolean(result.isMultiLeg),
+                resumeToken: result.resumeToken,
             });
         } else {
             // Single-tier checkout: use existing createCheckoutSession path
