@@ -66,6 +66,7 @@ export interface PaymentLeg {
     legType: PaymentLegType;
     provider: PaymentLegProvider;
     amount: number;
+    actualPaidAmount?: number | null;
     currency: string;
     status: PaymentLegStatus;
     providerReference: string | null;
@@ -255,50 +256,128 @@ export function processLegVerdict(
     consolidatedStatus: ConsolidatedPaymentStatus;
     canGrantEntitlement: boolean;
     targetLeg: PaymentLeg | null;
+    error?: string;
 } {
-    let targetLeg: PaymentLeg | null = null;
+    const currentStatus = evaluateConsolidatedInvoiceStatus(currentLegs);
 
-    const updatedLegs = currentLegs.map((leg) => {
-        const matchesId = Boolean(verdict.legId && leg.id === verdict.legId);
-        const matchesRef = Boolean(verdict.providerReference && leg.providerReference === verdict.providerReference);
-        const matchesProvider = Boolean(
-            verdict.provider &&
-            leg.provider.toLowerCase() === verdict.provider.toLowerCase() &&
-            leg.status !== 'succeeded'
-        );
-
-        if (matchesId || matchesRef || matchesProvider) {
-            // ── Strict Leg Currency Verification ──────────────────────────
-            if (verdict.paidCurrency && verdict.paidCurrency.toUpperCase() !== leg.currency.toUpperCase()) {
-                console.warn(
-                    `[MultiLegPayment] Leg currency mismatch: expected ${leg.currency}, got ${verdict.paidCurrency}`
-                );
-                return leg;
-            }
-
-            // ── Strict Leg Amount Verification (0.01 tolerance for precision) ──
-            if (verdict.paidAmount !== undefined && verdict.paidAmount !== null && !Number.isNaN(verdict.paidAmount)) {
-                if (Math.abs(verdict.paidAmount - leg.amount) > 0.01) {
-                    console.warn(
-                        `[MultiLegPayment] Leg amount mismatch: expected ${leg.amount}, got ${verdict.paidAmount}`
-                    );
-                    return leg;
-                }
-            }
-
-            targetLeg = {
-                ...leg,
-                status: verdict.status,
-                paidAt: verdict.status === 'succeeded' ? (verdict.paidAt || new Date().toISOString()) : null,
-                providerReference: verdict.providerReference || leg.providerReference,
+    // 0. Strict input validations for successful settlement (V3.4.1)
+    if (verdict.status === 'succeeded') {
+        if (verdict.paidAmount === undefined || verdict.paidAmount === null || Number.isNaN(verdict.paidAmount) || verdict.paidAmount <= 0) {
+            return {
+                updatedLegs: currentLegs,
+                consolidatedStatus: currentStatus,
+                canGrantEntitlement: false,
+                targetLeg: null,
+                error: 'INVALID_PAID_AMOUNT',
             };
-            return targetLeg;
         }
-        return leg;
+
+        // When settling via external provider/webhook (no explicit internal legId), require full metadata
+        if (!verdict.legId) {
+            if (!verdict.providerReference || verdict.providerReference.trim() === '') {
+                return {
+                    updatedLegs: currentLegs,
+                    consolidatedStatus: currentStatus,
+                    canGrantEntitlement: false,
+                    targetLeg: null,
+                    error: 'MISSING_PROVIDER_REFERENCE',
+                };
+            }
+            if (!verdict.provider || verdict.provider.trim() === '') {
+                return {
+                    updatedLegs: currentLegs,
+                    consolidatedStatus: currentStatus,
+                    canGrantEntitlement: false,
+                    targetLeg: null,
+                    error: 'MISSING_PROVIDER',
+                };
+            }
+            if (!verdict.paidCurrency || verdict.paidCurrency.trim() === '') {
+                return {
+                    updatedLegs: currentLegs,
+                    consolidatedStatus: currentStatus,
+                    canGrantEntitlement: false,
+                    targetLeg: null,
+                    error: 'MISSING_PAID_CURRENCY',
+                };
+            }
+        }
+    }
+
+    // 1. Locate candidate matching leg
+    const targetIndex = currentLegs.findIndex((leg) => {
+        if (verdict.legId && leg.id === verdict.legId) return true;
+        const providerMatches = verdict.provider
+            ? leg.provider.toLowerCase() === verdict.provider.toLowerCase()
+            : false;
+        if (!providerMatches) return false;
+        if (verdict.providerReference && leg.providerReference === verdict.providerReference) {
+            return true;
+        }
+        return !leg.providerReference && leg.status === 'pending';
     });
 
+    if (targetIndex === -1) {
+        return {
+            updatedLegs: currentLegs,
+            consolidatedStatus: currentStatus,
+            canGrantEntitlement: false,
+            targetLeg: null,
+            error: 'LEG_NOT_FOUND',
+        };
+    }
+
+    const candidateLeg = currentLegs[targetIndex];
+
+    // 2. Strict Currency Verification
+    if (verdict.paidCurrency && verdict.paidCurrency.toUpperCase() !== candidateLeg.currency.toUpperCase()) {
+        console.warn(
+            `[MultiLegPayment] Leg currency mismatch: expected ${candidateLeg.currency}, got ${verdict.paidCurrency}`
+        );
+        return {
+            updatedLegs: currentLegs,
+            consolidatedStatus: currentStatus,
+            canGrantEntitlement: false,
+            targetLeg: null,
+            error: `Leg currency mismatch: expected ${candidateLeg.currency}, got ${verdict.paidCurrency}`,
+        };
+    }
+
+    // 3. Strict Amount Verification (0.01 tolerance)
+    if (verdict.paidAmount !== undefined && verdict.paidAmount !== null && !Number.isNaN(verdict.paidAmount)) {
+        if (Math.abs(verdict.paidAmount - candidateLeg.amount) > 0.01) {
+            console.warn(
+                `[MultiLegPayment] Leg amount mismatch: expected ${candidateLeg.amount}, got ${verdict.paidAmount}`
+            );
+            return {
+                updatedLegs: currentLegs,
+                consolidatedStatus: currentStatus,
+                canGrantEntitlement: false,
+                targetLeg: null,
+                error: `Leg amount mismatch: expected ${candidateLeg.amount}, got ${verdict.paidAmount}`,
+            };
+        }
+    }
+
+    // 4. Update target leg
+    const targetLeg: PaymentLeg = {
+        ...candidateLeg,
+        status: verdict.status,
+        actualPaidAmount: verdict.status === 'succeeded' ? verdict.paidAmount : candidateLeg.actualPaidAmount,
+        paidAt: verdict.status === 'succeeded' ? (verdict.paidAt || new Date().toISOString()) : candidateLeg.paidAt,
+        providerReference: verdict.providerReference || candidateLeg.providerReference,
+    };
+
+    const updatedLegs = [...currentLegs];
+    updatedLegs[targetIndex] = targetLeg;
+
     const consolidatedStatus = evaluateConsolidatedInvoiceStatus(updatedLegs);
-    const canGrantEntitlement = consolidatedStatus === 'paid';
+    const totalPlanned = updatedLegs.reduce((acc, l) => acc + l.amount, 0);
+    const totalActual = updatedLegs.reduce(
+        (acc, l) => acc + (l.status === 'succeeded' ? (l.actualPaidAmount ?? l.amount) : 0),
+        0
+    );
+    const canGrantEntitlement = consolidatedStatus === 'paid' && totalActual >= totalPlanned - 0.01;
 
     return {
         updatedLegs,
@@ -326,6 +405,7 @@ export async function persistPaymentLegs(
             leg_type: leg.legType,
             provider: leg.provider,
             amount: leg.amount,
+            actual_paid_amount: leg.actualPaidAmount ?? null,
             currency: leg.currency,
             status: leg.status,
             provider_reference: leg.providerReference,

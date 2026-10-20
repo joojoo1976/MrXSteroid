@@ -346,6 +346,7 @@ async function processWebhook(
                 status: verification.status as 'success' | 'failed',
                 externalReferenceId: verification.externalReferenceId,
                 paidAmount: verification.paidAmount,
+                currency: verification.currency,
                 providerStatus: providerStatus || undefined,
                 providerOperation: verification.providerOperation,
             },

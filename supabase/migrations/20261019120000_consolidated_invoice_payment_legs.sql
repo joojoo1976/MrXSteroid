@@ -61,6 +61,7 @@ create table if not exists public.invoice_payment_legs (
     leg_type            text not null check (leg_type in ('merchandise', 'service', 'standard')),
     provider            text not null check (provider in ('kashier', 'fourthwall', 'instapay', 'stripe', 'manual')),
     amount              numeric(10,2) not null check (amount > 0),
+    actual_paid_amount  numeric(10,2),
     currency            text not null check (currency in ('USD', 'EGP')),
     status              text not null default 'pending' check (status in ('pending', 'initiated', 'succeeded', 'failed', 'cancelled')),
     provider_reference  text,
@@ -71,6 +72,10 @@ create table if not exists public.invoice_payment_legs (
     created_at          timestamptz not null default now(),
     updated_at          timestamptz not null default now()
 );
+
+-- Ensure column exists if table was previously created
+alter table public.invoice_payment_legs
+    add column if not exists actual_paid_amount numeric(10,2);
 
 -- Unique index per leg index on the same invoice
 create unique index if not exists idx_invoice_payment_legs_unique_leg
@@ -119,9 +124,59 @@ declare
     v_target_leg record;
     v_all_succeeded boolean;
     v_any_succeeded boolean;
+    v_total_paid numeric(10,2) := 0;
     v_new_invoice_status text;
     v_can_fulfill boolean := false;
 begin
+    -- 0. Strict input parameter validations (V3.4.1)
+    if p_invoice_id is null then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Invoice ID is required'
+        );
+    end if;
+
+    if p_provider is null or trim(p_provider) = '' then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Provider is required'
+        );
+    end if;
+
+    if p_provider_reference is null or trim(p_provider_reference) = '' then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Provider reference is required'
+        );
+    end if;
+
+    if p_amount_paid is null or p_amount_paid <= 0 then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Valid paid amount is required'
+        );
+    end if;
+
+    if p_currency is null or trim(p_currency) = '' then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Currency is required'
+        );
+    end if;
+
+    if p_status is null or p_status not in ('succeeded', 'failed', 'cancelled') then
+        return jsonb_build_object(
+            'success', false,
+            'error', 'INVALID_PARAMETERS',
+            'message', 'Valid settlement status is required'
+        );
+    end if;
+
     -- 1. Explicit row lock on the invoice to eliminate race conditions
     select id, amount, currency, status, payment_status
     into v_invoice
@@ -148,14 +203,17 @@ begin
         );
     end if;
 
-    -- 2. Locate and lock the matching leg
+    -- 2. Locate and lock the matching leg with strict provider and reference matching
     select *
     into v_target_leg
     from public.invoice_payment_legs
     where invoice_id = p_invoice_id
-      and (provider = p_provider or p_provider is null)
-      and (provider_reference = p_provider_reference or p_provider_reference is null or status = 'pending')
-    order by case when status = 'pending' then 0 else 1 end
+      and lower(provider) = lower(trim(p_provider))
+      and (
+          provider_reference = trim(p_provider_reference)
+          or (provider_reference is null and status = 'pending')
+      )
+    order by case when provider_reference = trim(p_provider_reference) then 0 else 1 end, leg_index asc
     limit 1
     for update;
 
@@ -163,12 +221,12 @@ begin
         return jsonb_build_object(
             'success', false,
             'error', 'LEG_NOT_FOUND',
-            'message', 'Matching payment leg not found'
+            'message', 'Matching payment leg not found for provider and reference'
         );
     end if;
 
     -- Strict Currency Verification: reject mismatch
-    if p_currency is not null and upper(v_target_leg.currency) != upper(p_currency) then
+    if upper(trim(v_target_leg.currency)) != upper(trim(p_currency)) then
         return jsonb_build_object(
             'success', false,
             'error', 'CURRENCY_MISMATCH',
@@ -177,7 +235,7 @@ begin
     end if;
 
     -- Strict Amount Verification (tolerance 0.01)
-    if p_amount_paid is not null and abs(v_target_leg.amount - p_amount_paid) > 0.01 then
+    if abs(v_target_leg.amount - p_amount_paid) > 0.01 then
         return jsonb_build_object(
             'success', false,
             'error', 'AMOUNT_MISMATCH',
@@ -185,23 +243,26 @@ begin
         );
     end if;
 
-    -- Update target leg status
+    -- Update target leg status and store actual_paid_amount
     update public.invoice_payment_legs
     set status = p_status,
-        paid_at = case when p_status = 'succeeded' then now() else paid_at end,
-        provider_reference = coalesce(p_provider_reference, provider_reference),
+        actual_paid_amount = case when p_status = 'succeeded' then p_amount_paid else actual_paid_amount end,
+        paid_at = case when p_status = 'succeeded' then coalesce(paid_at, now()) else paid_at end,
+        provider_reference = trim(p_provider_reference),
         updated_at = now()
     where id = v_target_leg.id;
 
-    -- 3. Evaluate consolidated status across all legs for this invoice
+    -- 3. Evaluate consolidated status and sum of actual amounts across all legs
     select
+        coalesce(sum(case when status = 'succeeded' then coalesce(actual_paid_amount, amount) else 0 end), 0),
         bool_and(status = 'succeeded'),
         bool_or(status = 'succeeded')
-    into v_all_succeeded, v_any_succeeded
+    into v_total_paid, v_all_succeeded, v_any_succeeded
     from public.invoice_payment_legs
     where invoice_id = p_invoice_id;
 
-    if v_all_succeeded then
+    -- Only promote to paid if ALL legs succeeded AND total paid satisfies the invoice amount
+    if v_all_succeeded and (v_total_paid >= (v_invoice.amount - 0.01)) then
         v_new_invoice_status := 'paid';
         v_can_fulfill := true;
 
@@ -243,7 +304,9 @@ begin
         'success', true,
         'invoice_status', v_new_invoice_status,
         'can_fulfill', v_can_fulfill,
-        'target_leg_id', v_target_leg.id
+        'target_leg_id', v_target_leg.id,
+        'total_paid', v_total_paid,
+        'invoice_amount', v_invoice.amount
     );
 end;
 $$;

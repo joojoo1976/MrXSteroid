@@ -213,6 +213,8 @@ export async function POST(req: Request) {
                 subtotal: result.subtotal,
                 shippingCost: result.shippingCost,
                 discount: result.discount,
+                paymentLegs: result.paymentLegs || [],
+                isMultiLeg: Boolean(result.isMultiLeg),
             });
         } else {
             // Single-tier checkout: use existing createCheckoutSession path
@@ -260,6 +262,8 @@ export async function POST(req: Request) {
                 paymentMethods: result.paymentMethods,
                 environment: result.environment,
                 idempotent: result.idempotent,
+                paymentLegs: [],
+                isMultiLeg: false,
             });
         }
     } catch (error) {

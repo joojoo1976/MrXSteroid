@@ -32,6 +32,7 @@ export interface ProviderVerdictInput {
         status?: 'success' | 'failed';
         externalReferenceId?: string;
         paidAmount?: number;
+        currency?: string;
         providerStatus?: string;
         providerOperation?: string;
     };
@@ -378,28 +379,37 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 providerReference: verdict.externalReferenceId || providerEventId,
                 status: 'succeeded',
                 paidAmount: verdict.paidAmount,
-                paidCurrency: (existing as any)?.currency || undefined,
+                paidCurrency: verdict.currency || (existing as any)?.currency || undefined,
                 paidAt: nowIso(),
             });
 
+            if (!legVerdictRes.targetLeg) {
+                console.warn(
+                    `⚠️ [Fulfillment] Multi-leg validation failed or leg not found for invoice ${invoiceId}: ${legVerdictRes.error}`
+                );
+                return { code: 'amount_mismatch' };
+            }
+
             // ── Atomic Multi-Leg Database Settlement ────────────────────────
-            // Attempts atomic RPC row-lock settlement; gracefully falls back to direct updates
+            // Attempts atomic RPC row-lock settlement; fails closed if RPC reports an error
             try {
                 const { data: rpcRes, error: rpcErr } = await supabase.rpc('settle_invoice_payment_leg', {
                     p_invoice_id: invoiceId,
                     p_provider: legProvider || null,
                     p_provider_reference: verdict.externalReferenceId || providerEventId || null,
                     p_amount_paid: verdict.paidAmount || null,
-                    p_currency: (existing as any)?.currency || 'USD',
+                    p_currency: verdict.currency || (existing as any)?.currency || 'USD',
                     p_status: 'succeeded',
                 });
-                if (rpcErr) {
-                    console.warn('[Fulfillment] settle_invoice_payment_leg RPC returned error (falling back to application engine):', rpcErr.message);
+                if (rpcErr || rpcRes?.success === false) {
+                    console.error('[Fulfillment] settle_invoice_payment_leg failed:', rpcErr?.message || rpcRes?.error || rpcRes?.message);
+                    return { code: 'unresolved' };
                 } else if (rpcRes?.success) {
                     console.log(`✅ [Fulfillment] settle_invoice_payment_leg atomic RPC succeeded: invoice_status=${rpcRes.invoice_status}`);
                 }
             } catch (rpcCallErr) {
-                console.warn('[Fulfillment] settle_invoice_payment_leg RPC unavailable (using durable fallback):', rpcCallErr);
+                console.error('[Fulfillment] settle_invoice_payment_leg RPC threw error:', rpcCallErr);
+                return { code: 'unresolved' };
             }
 
             // Persist the updated legs in invoice metadata and database

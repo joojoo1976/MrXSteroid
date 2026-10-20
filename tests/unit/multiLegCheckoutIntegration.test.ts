@@ -457,7 +457,7 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
             supabase,
             invoiceId,
             gatewayName:     'KASHIER_GLOBAL',
-            verdict:         { status: 'success', externalReferenceId: 'kashier_tx_456', paidAmount: 349.99 },
+            verdict:         { status: 'success', externalReferenceId: 'kashier_tx_456', paidAmount: 349.99, currency: 'USD' },
             providerEventId: 'evt_kashier_456',
             providerStatus:  'succeeded',
             source:          'webhook',
@@ -505,6 +505,7 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
             providerReference: 'fw_order_dup',
             status:            'succeeded',
             paidAmount:        49.99,
+            paidCurrency:      'USD',
         });
 
         expect(verdictResult.consolidatedStatus).toBe('paid');
@@ -547,7 +548,19 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
         expect(amountMismatchRes.canGrantEntitlement).toBe(false);
         expect(amountMismatchRes.updatedLegs[0].status).toBe('pending');
 
-        // 2. Currency mismatch: Attempt to settle USD leg with EUR
+        // 2. Exact amount tolerance check: 2 cents mismatch is strictly rejected
+        const twoCentMismatchRes = processLegVerdict(pendingLegs, {
+            provider: 'fourthwall',
+            providerReference: 'fw_order_two_cents_bad',
+            status: 'succeeded',
+            paidAmount: 49.97, // 2 cents off!
+            paidCurrency: 'USD',
+        });
+        expect(twoCentMismatchRes.consolidatedStatus).toBe('pending');
+        expect(twoCentMismatchRes.canGrantEntitlement).toBe(false);
+        expect(twoCentMismatchRes.targetLeg).toBeNull();
+
+        // 3. Currency mismatch: Attempt to settle USD leg with EUR
         const currencyMismatchRes = processLegVerdict(pendingLegs, {
             provider: 'fourthwall',
             providerReference: 'fw_order_bad_currency',
@@ -558,6 +571,83 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
         expect(currencyMismatchRes.consolidatedStatus).toBe('pending');
         expect(currencyMismatchRes.canGrantEntitlement).toBe(false);
         expect(currencyMismatchRes.updatedLegs[0].status).toBe('pending');
+
+        // 4. Missing required fields (providerReference or provider)
+        const missingRefRes = processLegVerdict(pendingLegs, {
+            provider: 'fourthwall',
+            providerReference: '',
+            status: 'succeeded',
+            paidAmount: 49.99,
+            paidCurrency: 'USD',
+        });
+        expect(missingRefRes.canGrantEntitlement).toBe(false);
+        expect(missingRefRes.targetLeg).toBeNull();
+        expect(missingRefRes.error).toBe('MISSING_PROVIDER_REFERENCE');
+    });
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Fail-Closed Entitlement Gating When Database RPC Reports Failure
+    // ══════════════════════════════════════════════════════════════════════
+    it('Fail-closed: Returns unresolved and blocks entitlement when settle_invoice_payment_leg RPC fails', async () => {
+        const invoiceId = 'inv_rpc_fail_test';
+        const userId    = 'user_rpc_fail_test';
+
+        const initialLegs: PaymentLeg[] = [
+            {
+                id: `${invoiceId}_leg_0`, invoiceId, legIndex: 0,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'pending',
+                providerReference: null, paidAt: null, items: [],
+            },
+            {
+                id: `${invoiceId}_leg_1`, invoiceId, legIndex: 1,
+                legType: 'service', provider: 'kashier',
+                amount: 349.99, currency: 'USD', status: 'pending',
+                providerReference: null, paidAt: null, items: [],
+            },
+        ];
+
+        const supabase = createFakeSupabase({ split_rules: defaultSplitRules() });
+        // Override rpc to simulate database failure / constraint violation
+        supabase.rpc = async (funcName: string) => {
+            if (funcName === 'settle_invoice_payment_leg') {
+                return {
+                    data: { success: false, error: 'AMOUNT_MISMATCH', message: 'Leg amount mismatch' },
+                    error: null,
+                };
+            }
+            return { data: null, error: null };
+        };
+
+        supabase._db.invoices.push({
+            id: invoiceId, customer_id: userId, user_id: userId,
+            tier_id: 'bundle',
+            amount: 399.98, amount_cents: 39998, currency: 'USD',
+            status: 'open', payment_status: 'pending',
+            metadata: { payment_legs: initialLegs, customer_email: 'fail@example.com' },
+        });
+        supabase._db.profiles.push({ id: userId, has_paid: false, is_vip: false });
+
+        const result = await applyProviderVerdict({
+            supabase,
+            invoiceId,
+            gatewayName:     'FOURTHWALL',
+            verdict:         { status: 'success', externalReferenceId: 'fw_ref_123', paidAmount: 49.99, currency: 'USD' },
+            providerEventId: 'evt_fw_fail_1',
+            providerStatus:  'succeeded',
+            source:          'webhook',
+        });
+
+        // Must fail-closed with 'unresolved'
+        expect(result.code).toBe('unresolved');
+
+        // Invoice must NOT be marked paid
+        const inv = supabase._db.invoices.find((i: any) => i.id === invoiceId);
+        expect(inv.payment_status).not.toBe('paid');
+
+        // Profile must NOT be activated
+        const profile = supabase._db.profiles.find((p: any) => p.id === userId);
+        expect(profile.has_paid).toBe(false);
     });
 
     // ══════════════════════════════════════════════════════════════════════
