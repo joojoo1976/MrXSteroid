@@ -1491,6 +1491,11 @@ describe('V3.4.1 Remediation: P1 — Strict Payment Leg Sequencing & SessionUrl 
             },
         });
 
+        supabase._db.invoice_payment_legs.push(
+            { id: 'leg_0', invoice_id: invoiceId, leg_index: 0, status: 'pending', amount: 49.99, currency: 'USD', session_url: 'https://fourthwall.com/pay_leg_0' },
+            { id: 'leg_1', invoice_id: invoiceId, leg_index: 1, status: 'pending', amount: 349.99, currency: 'USD', session_url: 'https://kashier.io/pay_leg_1' }
+        );
+
         const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
             method: 'GET',
             headers: {
@@ -1541,6 +1546,12 @@ describe('V3.4.1 Remediation: P1 — Strict Payment Leg Sequencing & SessionUrl 
                 ],
             },
         });
+
+        // Authoritative DB state reflecting atomic settlement of Leg 0
+        supabase._db.invoice_payment_legs.push(
+            { id: 'leg_0', invoice_id: invoiceId, leg_index: 0, status: 'succeeded', amount: 49.99, currency: 'USD', session_url: 'https://fourthwall.com/pay_leg_0' },
+            { id: 'leg_1', invoice_id: invoiceId, leg_index: 1, status: 'pending', amount: 349.99, currency: 'USD', session_url: 'https://kashier.io/pay_leg_1' }
+        );
 
         const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
             method: 'GET',
@@ -2158,5 +2169,370 @@ describe('Finding 4 — P2: Customer-Facing Guest Recovery Contract via Request 
         const data = await res.json();
         expect(data.success).toBe(false);
         expect(data.error).toContain('x-resume-token header required');
+    });
+});
+
+describe('Fix A — P0: Authoritative Payment Legs Table & Error Handling in Checkout Status', () => {
+    const invoiceId = '77777777-7777-4777-a777-777777777777';
+    const resumeToken = 'fix_a_resume_token_456';
+
+    const baseInvoice = {
+        id: invoiceId,
+        user_id: null,
+        customer_email: 'fix_a@example.com',
+        payment_status: 'pending',
+        status: 'open',
+        amount: 399.98,
+        currency: 'USD',
+        metadata: {
+            guest_resume_token: resumeToken,
+            payment_legs: [
+                { id: 'leg_0', legIndex: 0, status: 'succeeded', amount: 49.99, currency: 'USD', sessionUrl: 'https://fourthwall.com/pay_leg_0' },
+                { id: 'leg_1', legIndex: 1, status: 'pending', amount: 349.99, currency: 'USD', sessionUrl: 'https://kashier.io/pay_leg_1' },
+            ],
+        },
+    };
+
+    const makeRequest = () => new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
+        method: 'GET',
+        headers: {
+            'x-resume-token': resumeToken,
+        },
+    });
+
+    it('Fix A Test 1: Query error reading invoice_payment_legs returns 503 retryable response without exposing downstream session URLs', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: baseInvoice, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({
+                                    data: null,
+                                    error: { message: 'Connection timeout: unable to reach Postgres', code: '08006' },
+                                }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(503);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.retryable).toBe(true);
+        expect(data.error).toContain('Database read error while inspecting payment legs');
+        expect(data.legs).toBeUndefined();
+        expect(data.nextPendingLeg).toBeUndefined();
+    });
+
+    it('Fix A Test 2: Missing table (42P01 pre-migration) is distinguished from DB errors and falls back safely to initial metadata without unlocking downstream legs', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: baseInvoice, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({
+                                    data: null,
+                                    error: { message: 'relation "invoice_payment_legs" does not exist', code: '42P01' },
+                                }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.legs).toHaveLength(2);
+
+        // Pre-migration metadata fallback: ONLY initial leg is payable. Downstream leg is strictly locked!
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+        expect(leg0.isPayable).toBe(true);
+        expect(leg0.sessionUrl).toBe('https://fourthwall.com/pay_leg_0');
+        expect(leg1.isPayable).toBe(false);
+        expect(leg1.sessionUrl).toBeNull();
+    });
+
+    it('Fix A Test 3: Query succeeds but returns empty array (table exists, 0 rows) — metadata cannot prove settlement or authorize downstream legs', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        // Invoice metadata claims leg_0 was succeeded, but table exists and has 0 rows for this invoice!
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: baseInvoice, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({ data: [], error: null }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+
+        // Metadata alone cannot prove settlement: leg 0 remains the payable leg, leg 1 is NOT unlocked
+        expect(leg0.isPayable).toBe(true);
+        expect(leg1.isPayable).toBe(false);
+        expect(leg1.sessionUrl).toBeNull();
+    });
+
+    it('Fix A Test 4: Query succeeds and returns documented legs with compatible states from DB', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        const dbLegs = [
+            {
+                id: 'db_leg_0',
+                invoice_id: invoiceId,
+                leg_index: 0,
+                leg_type: 'merchandise',
+                provider: 'fourthwall',
+                amount: 49.99,
+                currency: 'USD',
+                status: 'succeeded',
+                session_url: 'https://fourthwall.com/pay_leg_0',
+                provider_reference: 'fw_confirmed_ref_123',
+            },
+            {
+                id: 'db_leg_1',
+                invoice_id: invoiceId,
+                leg_index: 1,
+                leg_type: 'service',
+                provider: 'kashier',
+                amount: 349.99,
+                currency: 'USD',
+                status: 'pending',
+                session_url: 'https://kashier.io/pay_leg_1',
+                provider_reference: null,
+            },
+        ];
+
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({
+                                    data: { ...baseInvoice, payment_status: 'partially_paid' },
+                                    error: null,
+                                }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({ data: dbLegs, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.nextPendingLeg.id).toBe('db_leg_1');
+
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+
+        expect(leg0.status).toBe('succeeded');
+        expect(leg0.isPayable).toBe(false);
+        expect(leg0.providerReference).toBe('fw_confirmed_ref_123');
+
+        // Leg 1 is now authoritatively payable and its sessionUrl is released
+        expect(leg1.status).toBe('pending');
+        expect(leg1.isPayable).toBe(true);
+        expect(leg1.sessionUrl).toBe('https://kashier.io/pay_leg_1');
+    });
+
+    it('Fix A Test 5: Attempting to bypass Leg 1 using Leg 2 session URL fails because downstream URL is null while Leg 1 is pending', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        const dbLegs = [
+            {
+                id: 'db_leg_0',
+                invoice_id: invoiceId,
+                leg_index: 0,
+                leg_type: 'merchandise',
+                provider: 'fourthwall',
+                amount: 49.99,
+                currency: 'USD',
+                status: 'pending',
+                session_url: 'https://fourthwall.com/pay_leg_0',
+                provider_reference: null,
+            },
+            {
+                id: 'db_leg_1',
+                invoice_id: invoiceId,
+                leg_index: 1,
+                leg_type: 'service',
+                provider: 'kashier',
+                amount: 349.99,
+                currency: 'USD',
+                status: 'pending',
+                session_url: 'https://kashier.io/pay_leg_1',
+                provider_reference: null,
+            },
+        ];
+
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: baseInvoice, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({ data: dbLegs, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+
+        expect(leg0.isPayable).toBe(true);
+        expect(leg0.sessionUrl).toBe('https://fourthwall.com/pay_leg_0');
+
+        // BYPASS IMPOSSIBLE: Leg 1 sessionUrl is completely null
+        expect(leg1.isPayable).toBe(false);
+        expect(leg1.sessionUrl).toBeNull();
+    });
+
+    it('Fix A Test 6: Reliable state lost or unexpected DB failure guarantees no downstream session URLs are issued', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+
+        const mockSupabase: any = {
+            from: (table: string) => {
+                if (table === 'invoices') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: baseInvoice, error: null }),
+                            }),
+                        }),
+                    };
+                }
+                if (table === 'invoice_payment_legs') {
+                    return {
+                        select: () => ({
+                            eq: () => ({
+                                order: () => Promise.resolve({
+                                    data: null,
+                                    error: { message: 'permission denied for table invoice_payment_legs', code: '42501' },
+                                }),
+                            }),
+                        }),
+                    };
+                }
+                throw new Error(`Unexpected table ${table}`);
+            },
+        };
+
+        const res = await handleCheckoutStatus(makeRequest(), {
+            supabase: mockSupabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        // Fails closed with 503 — zero session URLs issued
+        expect(res.status).toBe(503);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.retryable).toBe(true);
+        expect(data.legs).toBeUndefined();
     });
 });

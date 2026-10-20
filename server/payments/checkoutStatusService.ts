@@ -113,17 +113,52 @@ export async function handleCheckoutStatus(
             }
         }
 
-        // 3. Fetch Authoritative Payment Legs from Database Table
-        const { data: dbLegs } = await supabase
+        // 3. Fetch Authoritative Payment Legs from Database Table (Fix A - P0)
+        // Explicitly inspect error and distinguish missing table from database failures.
+        const { data: dbLegs, error: legsError } = await supabase
             .from('invoice_payment_legs')
             .select('*')
             .eq('invoice_id', invoiceId)
             .order('leg_index', { ascending: true });
 
-        // Fallback to metadata payment_legs if table records not yet populated
-        const rawLegs = (dbLegs && dbLegs.length > 0)
-            ? dbLegs
-            : ((metadata.payment_legs || []) as any[]);
+        let rawLegs: any[] = [];
+        let isAuthoritativeDb = false;
+
+        if (legsError) {
+            const isTableMissing =
+                legsError.code === '42P01' ||
+                (typeof legsError.message === 'string' &&
+                    (legsError.message.includes('relation') || legsError.message.includes('does not exist')));
+
+            if (!isTableMissing) {
+                // Unexpected DB error (connection failure, timeout, schema error, permission issue)
+                // FAIL-CLOSED: Stop sequence determination, do not expose downstream session URLs,
+                // and return safe retryable response.
+                console.error('[CheckoutStatus] Unexpected database read error for invoice_payment_legs:', legsError);
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: `Database read error while inspecting payment legs: ${legsError.message || 'unknown error'}`,
+                        retryable: true,
+                    },
+                    { status: 503 }
+                );
+            }
+
+            // Table does not exist (pre-migration state)
+            console.warn('[CheckoutStatus] invoice_payment_legs table does not exist (pre-migration). Using fallback metadata.');
+            rawLegs = (metadata.payment_legs || []) as any[];
+            isAuthoritativeDb = false;
+        } else if (dbLegs && Array.isArray(dbLegs) && dbLegs.length > 0) {
+            // Authoritative table records exist in database
+            rawLegs = dbLegs;
+            isAuthoritativeDb = true;
+        } else {
+            // Query succeeded, but returned empty records (`dbLegs` is empty `[]` or null)
+            // Metadata alone is NOT authoritative proof of settlement or eligibility for downstream legs.
+            rawLegs = (metadata.payment_legs || []) as any[];
+            isAuthoritativeDb = false;
+        }
 
         // Sort by legIndex ascending
         const sortedRawLegs = [...rawLegs].sort((a: any, b: any) => {
@@ -135,33 +170,57 @@ export async function handleCheckoutStatus(
         const isCompleted = invoice.payment_status === 'paid';
         const canFulfill = isCompleted;
 
-        // 4. Strict Sequencing Enforcement (P1):
-        // Next payable leg is the earliest leg with status !== 'succeeded'.
-        const targetNextPending = sortedRawLegs.find(
-            (l: any) => l.status !== 'succeeded'
-        ) || null;
+        // 4. Strict Sequencing Enforcement (P0 & P1):
+        // If isAuthoritativeDb is true:
+        //   Next payable leg is the earliest leg with status !== 'succeeded'.
+        // If isAuthoritativeDb is false (pre-migration or empty DB):
+        //   Metadata alone cannot authorize progression to downstream legs or prove settlement.
+        //   Only legIndex === 1 (first leg) can ever be payable. Downstream legs are strictly locked.
+        let targetNextPending: any = null;
 
-        const mappedLegs = sortedRawLegs.map((leg: any) => {
-            const legId = leg.id || `${leg.invoice_id}_leg_${leg.leg_index ?? leg.legIndex}`;
-            const isTarget = targetNextPending && (
-                leg.id === targetNextPending.id ||
-                (leg.leg_index ?? leg.legIndex) === (targetNextPending.leg_index ?? targetNextPending.legIndex)
-            );
-            const isPayable = !isCompleted && Boolean(isTarget);
-            const isSucceeded = leg.status === 'succeeded';
+        if (!isCompleted) {
+            if (isAuthoritativeDb) {
+                targetNextPending = sortedRawLegs.find(
+                    (l: any) => l.status !== 'succeeded'
+                ) || null;
+            } else {
+                // Non-authoritative metadata: only allow the very first leg to be payable
+                targetNextPending = sortedRawLegs[0] || null;
+            }
+        }
+
+        const mappedLegs = sortedRawLegs.map((leg: any, idx: number) => {
+            const legId = leg.id || `${leg.invoice_id || invoice.id}_leg_${leg.leg_index ?? leg.legIndex ?? idx + 1}`;
+            const legIndex = leg.leg_index ?? leg.legIndex ?? (idx + 1);
+
+            let isPayable = false;
+            if (!isCompleted && targetNextPending) {
+                if (isAuthoritativeDb) {
+                    isPayable = Boolean(
+                        (leg.id && leg.id === targetNextPending.id) ||
+                        (legIndex === (targetNextPending.leg_index ?? targetNextPending.legIndex))
+                    );
+                } else {
+                    // With metadata fallback, strictly only the first leg can be payable
+                    isPayable = (idx === 0);
+                }
+            }
+
+            const isSucceeded = isAuthoritativeDb && leg.status === 'succeeded';
 
             return {
                 id: legId,
-                legIndex: leg.leg_index ?? leg.legIndex ?? 1,
+                legIndex,
                 legType: leg.leg_type ?? leg.legType ?? 'standard',
                 provider: leg.provider,
                 amount: Number(leg.amount),
                 currency: leg.currency,
-                status: leg.status,
+                status: isAuthoritativeDb ? leg.status : (idx === 0 ? (leg.status || 'pending') : 'pending'),
                 isPayable,
-                // Only provide sessionUrl to client if the leg is payable or already finished/failed; hide from downstream pending legs
-                sessionUrl: isPayable || isSucceeded ? (leg.session_url ?? leg.sessionUrl ?? null) : null,
-                providerReference: leg.provider_reference ?? leg.providerReference ?? null,
+                // Only provide sessionUrl to client if the leg is payable.
+                // Downstream pending legs MUST have sessionUrl: null.
+                sessionUrl: isPayable ? (leg.session_url ?? leg.sessionUrl ?? null) : null,
+                providerReference: isAuthoritativeDb ? (leg.provider_reference ?? leg.providerReference ?? null) : null,
             };
         });
 
