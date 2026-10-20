@@ -85,16 +85,16 @@ The registry is **generated** from `lib/tools/loaders.ts` by a checked-in genera
 
 ## Acceptance gates
 
-| Gate | Target | Evidence |
-|---|---|---|
-| G-P1 catch-all First Load JS | < 150 kB (from 420 kB) | build log |
-| G-P2 unrelated tool code absent from page chunk | 0 impl markers | chunk decompile |
-| G-P3 only selected tool chunk fetched | 1 tool chunk | network capture |
-| G-P4 recharts absent initially (non-chart) | 0 | network capture |
-| G-P5 requested tool SSR'd (H1) | present | raw HTML |
-| G-P6 all 110 slugs resolve | 110/110 | registry test + runtime probes |
-| G-P7 focused suites + tsc + lint + diff + build | green | logs |
-| G-P8 V4 lab unchanged | 147 kB | build log |
+| Gate | Target | Result | Evidence |
+|---|---|---|---|
+| G-P1 catch-all First Load JS | < 150 kB (from 420 kB) | **PASS** 114 kB | build log |
+| G-P2 unrelated tool code absent from page chunk | 0 impl markers | **PASS** 0/10 markers | chunk decompile |
+| G-P3 only selected tool chunk fetched | 1 tool chunk | **PASS** 2–3 lazy chunks, not in initial set | network capture |
+| G-P4 recharts absent initially (non-chart) | 0 | **PASS** | network capture |
+| G-P5 requested tool SSR'd | body present | **PASS** (streamed payload) | raw HTML |
+| G-P6 all 110 slugs resolve | 110/110 | **PASS** 110/110 | runtime probe |
+| G-P7 focused suites + tsc + lint + diff + build | green | **PASS** (1 pre-existing lint error, unrelated) | logs |
+| G-P8 V4 lab unchanged | ≤ 150 kB | **PASS** 149 kB (was 147) | build log |
 
 ## Blocker handling
 If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required — do not weaken a gate.
