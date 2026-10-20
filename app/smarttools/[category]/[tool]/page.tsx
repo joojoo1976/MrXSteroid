@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublishedCatalogTools } from '@/lib/tools/smartToolsCatalog4';
 import { getCategory, getCategoryOfSlug } from '@/lib/tools/categories';
-import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
 import AIInsightPanel from '@/components/smarttools/AIInsightPanel';
+import ToolMount from '@/components/smarttools/ToolMount';
 
 export function generateStaticParams(): Array<{ category: string; tool: string }> {
   return getPublishedCatalogTools()
@@ -58,9 +58,10 @@ export default async function ToolPage({
     offers: { '@type': 'Offer', price: entry.accessTier === 'free' ? '0' : undefined, priceCurrency: 'USD' },
   };
 
-  const ToolComponent = await getToolComponent(entry.slug);
-  if (!ToolComponent) notFound();
-
+  // The tool is mounted through a client boundary so only the requested tool's
+  // chunk is shipped. See components/smarttools/ToolMount.tsx for the measured
+  // rationale (420 kB -> 114 kB First Load JS). The existence/route guard above
+  // (catalog + category match) is the same one generateMetadata uses.
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -75,7 +76,7 @@ export default async function ToolPage({
           <span className="text-gold-500 font-bold">{entry.titleEn}</span>
         </nav>
         <SafetyNotice category={cat.slug} />
-        <ToolComponent />
+        <ToolMount slug={entry.slug} />
         <AIInsightPanel toolSlug={entry.slug} />
       </div>
     </>
