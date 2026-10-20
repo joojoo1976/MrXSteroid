@@ -142,11 +142,13 @@ async function processWebhook(
         // retry with KASHIER_GLOBAL before rejecting.
         if (!verification.valid && (gatewayName === 'KASHIER_EGYPT' || gatewayName === 'KASHIER_GLOBAL')) {
             // Extract merchantId from payload to route to the correct account
-            let payloadMerchantId: string | undefined;
-            try { payloadMerchantId = (JSON.parse(rawBody) as Record<string, string>)?.merchantId; } catch { /* ignore */ }
 
-            if (payloadMerchantId) {
-                const correctGateway = PaymentFactory.detectKashierAccountFromMerchantId(payloadMerchantId);
+            // PAY-011: Never extract merchantId from rawBody; derive strictly from server env
+            const correctGateway = gatewayName === 'KASHIER_EGYPT' ? PaymentFactory.getKashierGlobal() : PaymentFactory.getKashierEgypt();
+
+
+            if (correctGateway) {
+
                 if (correctGateway && correctGateway.getGatewayName() !== gatewayName) {
                     console.log(`ðŸ”„ [Webhook] Cross-account routing: ${gatewayName} â†’ ${correctGateway.getGatewayName()}`);
                     gateway = correctGateway;

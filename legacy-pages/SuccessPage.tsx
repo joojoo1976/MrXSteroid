@@ -34,12 +34,23 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ navigateTo }) => {
     useEffect(() => {
         console.debug("Payment Success Page Mounted");
 
-        // ─── READ URL PARAMS FOR DIRECT PAYMENT PAGES (Kashier) ───────────
+        // ─── VERIFY PAYMENT STATUS SERVER-SIDE (PAY-006) ───────────────────
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            const planFromUrl = urlParams.get('plan_id');
-            if (planFromUrl) {
-                setSubscriptionTier(planFromUrl);
+            const orderId = urlParams.get('orderId') || urlParams.get('orderRef') || '';
+            const invoiceId = urlParams.get('txn') || urlParams.get('invoiceId') || '';
+
+            if (orderId || invoiceId) {
+                fetch(`/api/payments/verify?orderId=${encodeURIComponent(orderId)}&invoiceId=${encodeURIComponent(invoiceId)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data?.verified && data?.tier) {
+                            setSubscriptionTier(data.tier);
+                        }
+                    })
+                    .catch(err => {
+                        console.warn('[SuccessPage] Server verification call failed:', err);
+                    });
             }
         } catch {
             // URL search params might fail in non-browser env

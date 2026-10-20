@@ -146,13 +146,19 @@ export async function PATCH(
 
         // ─── 3. Validate approval-specific requirements ──────────────────────
         if (status === 'approved') {
-            // Server amount is authoritative - customer submitted amount is recorded but not trusted
-            if (submittedAmount !== undefined && Math.abs(submittedAmount - receipt.amount) > 0.01) {
-                // Record mismatch but don't block - admin can still approve with note
-                console.warn(
-                    `[PaymentReceipts] Amount mismatch: server=${receipt.amount} ${receipt.currency}, submitted=${submittedAmount} ${submittedCurrency || receipt.currency}`
+            // PAY-008: Hard block on underpayment (prohibit approving less than required amount)
+            if (submittedAmount !== undefined && submittedAmount < receipt.amount - 0.01) {
+                console.error(
+                    `[PaymentReceipts] Underpayment blocked: server=${receipt.amount} ${receipt.currency}, submitted=${submittedAmount} ${submittedCurrency || receipt.currency}`
+                );
+                return NextResponse.json(
+                    {
+                        error: `Underpayment blocked: submitted amount (${submittedAmount} ${submittedCurrency || receipt.currency}) is less than required invoice amount (${receipt.amount} ${receipt.currency}). Approval is prohibited.`,
+                    },
+                    { status: 422 }
                 );
             }
+
             // InstaPay reference/transaction ID is required for audit trail
             if (!instapayReference?.trim() && !instapayTransactionId?.trim()) {
                 return NextResponse.json(
