@@ -12,7 +12,7 @@
  *     through `POST /api/tools/logs` (Bearer-authenticated).
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import dynamic from 'next/dynamic';
 import {
     calculateMultiEsterPK,
     ESTER_DATABASE,
@@ -34,6 +34,15 @@ import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseMultiEsterInput } from '@/lib/tools/schemas/multi-ester-pharmacokinetics';
 
 const TOOL_SLUG = 'multi-ester-pharmacokinetics';
+
+// G-08 — `recharts` must not be a module-scope import of a component served by
+// the SmartTools catch-all route, or it ships in every other tool's first load.
+// The chart lives in its own module and is fetched only when it renders.
+// (Same pattern as tool-036-injection-schedule.tsx.)
+const MultiEsterPharmacokineticsChart = dynamic(
+    () => import('./multi-ester-pharmacokinetics-chart'),
+    { ssr: false },
+);
 
 type Field = 'day' | 'doseMg' | 'ester';
 type FieldValue = number | EsterType;
@@ -348,34 +357,7 @@ export default function MultiEsterPKToolComponent() {
                         </h2>
 
                         <div className="w-full h-72">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={pkResult.timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                    <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 10 }} />
-                                    <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#020617', borderColor: '#475569', borderRadius: '8px', fontSize: '12px' }}
-                                    />
-                                    <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="concentrationNgl"
-                                        name={isRtl ? 'تركيز المصل (ng/dL)' : 'Serum Concentration (ng/dL)'}
-                                        stroke="#84cc16"
-                                        strokeWidth={2.5}
-                                        dot={false}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="accumulatedEsterMg"
-                                        name={isRtl ? 'مخزون النسيج (mg)' : 'Depot Active Ester (mg)'}
-                                        stroke="#06b6d4"
-                                        strokeWidth={1.5}
-                                        strokeDasharray="4 4"
-                                        dot={false}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            <MultiEsterPharmacokineticsChart data={pkResult.timeline} isRtl={isRtl} />
                         </div>
                     </div>
 

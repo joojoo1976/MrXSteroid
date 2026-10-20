@@ -48,7 +48,7 @@ describe('tool-036 SUPREME V3 dark-OS dashboard', () => {
     expect((screen.getByTestId('volume-tooltip').textContent ?? '').length).toBeGreaterThan(10);
   });
 
-  it('averages the last 5 comfort scores and reports the healing window', () => {
+  it('averages the last 5 comfort scores', () => {
     render(<Tool036InjectionSchedule />);
     fireEvent.change(screen.getByTestId('pain-input'), { target: { value: '8' } });
     fireEvent.click(screen.getByTestId('pain-add'));
@@ -56,7 +56,36 @@ describe('tool-036 SUPREME V3 dark-OS dashboard', () => {
     fireEvent.change(screen.getByTestId('pain-input'), { target: { value: '2' } });
     fireEvent.click(screen.getByTestId('pain-add'));
     expect(screen.getByTestId('pain-average').textContent).toBe('5.00');
-    expect(screen.getByTestId('healing-state').textContent).toMatch(/7|14/);
+  });
+
+  it('states the absence of a usage log instead of a healing/readiness window (G-05, G-07)', () => {
+    render(<Tool036InjectionSchedule />);
+    // The 7/14-day "healing window" readout is gone…
+    expect(screen.queryByTestId('healing-state')).toBeNull();
+    // …and the surface says plainly that nothing is recorded yet.
+    expect(screen.getByTestId('usage-state').textContent).toContain('لا توجد وقائع استخدام');
+
+    const text = screen.getByTestId('v3-shell').textContent ?? '';
+    expect(text).not.toMatch(/التعافي|نافذة الالتئام|healing window|optimal healing/i);
+    expect(text).not.toMatch(/(^|\s)(7d|14d)(\s|$)/i);
+  });
+
+  it('never labels a site from the plan: editing the plan changes no usage fact (G-06)', () => {
+    const { container } = render(<Tool036InjectionSchedule />);
+    const usageBefore = screen.getByTestId('usage-state').textContent ?? '';
+    const sitesBefore = Array.from(
+      container.querySelectorAll('[data-testid^="bodysite-"] rect'),
+    ).map((el) => el.getAttribute('class'));
+
+    // Touch the *plan* twice (1 shot/week, then 4) — no usage was recorded.
+    fireEvent.change(screen.getByLabelText('عدد الحقن / أسبوع'), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('عدد الحقن / أسبوع'), { target: { value: '4' } });
+
+    expect(screen.getByTestId('usage-state').textContent).toBe(usageBefore);
+    const sitesAfter = Array.from(
+      container.querySelectorAll('[data-testid^="bodysite-"] rect'),
+    ).map((el) => el.getAttribute('class'));
+    expect(sitesAfter).toEqual(sitesBefore);
   });
 
   it('mounts the lazy weekly calendar inside its placeholder', () => {

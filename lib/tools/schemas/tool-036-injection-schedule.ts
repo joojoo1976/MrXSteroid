@@ -129,15 +129,11 @@ export const ComfortAssessmentSchema = z.object({
   evidence: z.array(EvidenceRefSchema).min(1),
 });
 
-export const HealingStatusSchema = z.object({
-  state: z.enum(['too-soon', 'minimum-met', 'optimal']),
-  daysSince: z.number().finite(),
-  minDays: z.number().int().min(1).max(60),
-  optimalDays: z.number().int().min(1).max(120),
-  messageEn: z.string().min(1).max(300),
-  messageAr: z.string().min(1).max(300),
-});
-
+/*
+ * REMOVED (G-05 / G-07): `HealingStatusSchema` validated the elapsed-day
+ * "healing window" verdict that no longer exists in the engine. Elapsed days
+ * are not a contract this tool is allowed to assert.
+ */
 export const RotationViolationSchema = z.object({
   siteId: z.string().min(1).max(40),
   dayIndex: z.number().int(),

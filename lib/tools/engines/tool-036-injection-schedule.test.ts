@@ -8,7 +8,16 @@
  * LEVEL 2: body-site registry, comfort factors, personal logger, rotation validation.
  * LEVEL 3: accumulation chart series, Gantt rows, FHIR bundle export.
  */
+/**
+ * G-05 / G-06 / G-07 (audit remediation): the tool must never infer site
+ * healing, readiness or medical suitability from elapsed time, and must never
+ * treat a *planned* date as a *recorded* use. The guards at the bottom of this
+ * file fail if the healing/readiness helpers ever come back.
+ */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import * as engineModule from './tool-036-injection-schedule';
 import {
   BODY_SITES,
   bodySiteById,
@@ -16,7 +25,6 @@ import {
   classifyPain,
   toBadgeLevel,
   assessComfort,
-  healingStatus,
   averageRecent,
   validateRotation,
   accumulationChartSeries,
@@ -27,7 +35,6 @@ import {
   ESTER_PROFILES,
   totalWeeklyMg,
   siteRecency,
-  recencyTone,
   nextInjection,
   DEFAULT_ROTATION_SITES,
   type ChronoPlanInput,
@@ -36,7 +43,6 @@ import {
 } from './tool-036-injection-schedule';
 import {
   ComfortAssessmentSchema,
-  HealingStatusSchema,
   RotationViolationSchema,
   FhirBundleSchema,
 } from '../schemas/tool-036-injection-schedule';
@@ -113,21 +119,22 @@ describe('T30–T33 comfort factors (volume zones + site pain + badge)', () => {
   });
 });
 
-describe('T34–T36 personal logger healing window (7d minimum / 14d optimal)', () => {
-  it('T34: under the 7-day floor is too-soon', () => {
-    expect(healingStatus(3).state).toBe('too-soon');
-    expect(healingStatus(6).state).toBe('too-soon');
+describe('T34–T36 (replaced) — no readiness/healing inference from elapsed time (G-05, G-07)', () => {
+  it('the engine exports no healing-status or 7/14-day recency tone helper', () => {
+    expect(Object.keys(engineModule)).not.toContain('healingStatus');
+    expect(Object.keys(engineModule)).not.toContain('recencyTone');
+    expect(Object.keys(engineModule)).not.toContain('HealingStatus');
   });
 
-  it('T35: 7–13 days meets the minimum but is not yet optimal', () => {
-    expect(healingStatus(7).state).toBe('minimum-met');
-    expect(healingStatus(13).state).toBe('minimum-met');
-  });
-
-  it('T36: 14 days or more is optimal', () => {
-    expect(healingStatus(14).state).toBe('optimal');
-    expect(healingStatus(30).state).toBe('optimal');
-    expect(healingStatus(3).messageAr).toBeTruthy();
+  it('the engine source makes no healing-window / healing-readiness claim', () => {
+    const raw = readFileSync(
+      path.join(process.cwd(), 'lib/tools/engines/tool-036-injection-schedule.ts'),
+      'utf8',
+    );
+    // Strip block and line comments first: the audit-trail comment above is
+    // allowed to *name* the removed helpers, the implementation is not.
+    const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    expect(src).not.toMatch(/التعافي|نافذة الالتئام|healing window|healing-window|optimal healing|HealingStatus|healingStatus|recencyTone/i);
   });
 });
 
@@ -242,14 +249,11 @@ describe('T47–T49 accumulation series + Gantt rows', () => {
 });
 
 describe('T50 boundary safety (never throws, deterministic)', () => {
-  it('T50: comfort + healing are total functions across the input domain', () => {
+  it('T50: comfort is a total function across the input domain', () => {
     for (const v of [0, 0.5, 2, 5, 5.01, 12]) {
       for (const p of [0, 5, 10]) {
         expect(() => assessComfort(v, 'vastus-l', p)).not.toThrow();
       }
-    }
-    for (const d of [-1, 0, 7, 14, 1000]) {
-      expect(() => healingStatus(d)).not.toThrow();
     }
   });
 });
@@ -259,11 +263,6 @@ describe('T50 boundary safety (never throws, deterministic)', () => {
 describe('LEVEL 2/3 Zod schemas', () => {
   it('comfort assessment schema accepts a real assessment', () => {
     expect(ComfortAssessmentSchema.safeParse(assessComfort(1.0, 'deltoid-l', 0)).success).toBe(true);
-  });
-
-  it('healing status schema rejects an unknown state', () => {
-    const bad = { state: 'instant', daysSince: 1, minDays: 7, optimalDays: 14, messageEn: 'x', messageAr: 'y' };
-    expect(HealingStatusSchema.safeParse(bad).success).toBe(false);
   });
 
   it('rotation violation schema requires a known severity', () => {
@@ -304,13 +303,11 @@ describe('V3 engine — weekly calendar helpers', () => {
     expect(siteRecency(logs, 7)).toEqual({ 'ventro-l': 1, 'deltoid-l': 0 });
   });
 
-  it('recencyTone maps days-since to a recency tone', () => {
-    expect(recencyTone(undefined)).toBe('never');
-    expect(recencyTone(0)).toBe('rest');
-    expect(recencyTone(6)).toBe('rest');
-    expect(recencyTone(7)).toBe('healing');
-    expect(recencyTone(13)).toBe('healing');
-    expect(recencyTone(14)).toBe('ready');
+  it('recency is a recorded-fact lookup: no logs means no recency at all (G-06)', () => {
+    // The tool renders this with an empty list of *recorded* uses, so every
+    // site is simply unknown — never "ready", "healing" or "used".
+    expect(siteRecency([], 3)).toEqual({});
+    expect(siteRecency([], 0)).toEqual({});
   });
 
   it('nextInjection counts down to the next shot day', () => {
