@@ -29,6 +29,7 @@ export interface ClientPaymentLeg {
     amount: number;
     currency: string;
     status: string;
+    isPayable?: boolean;
     sessionUrl: string | null;
     providerReference?: string | null;
 }
@@ -81,6 +82,7 @@ export interface CreateInvoiceResponse {
     gateway?: string;
     isMultiLeg?: boolean;
     paymentLegs?: ClientPaymentLeg[];
+    resumeToken?: string;
     error?: string;
     details?: Record<string, string[]>;
 }
@@ -276,6 +278,7 @@ class PaymentService {
                 gateway: data.gateway as string | undefined,
                 isMultiLeg: Boolean(data.isMultiLeg),
                 paymentLegs: (data.paymentLegs as ClientPaymentLeg[]) || [],
+                resumeToken: data.resumeToken as string | undefined,
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
@@ -287,20 +290,49 @@ class PaymentService {
 
     /**
      * Checks the authoritative multi-leg settlement status of an invoice.
+     * Supports secure guest token and authenticated Bearer authorization (P0).
      */
-    public async getCheckoutStatus(invoiceId: string): Promise<CheckoutStatusResult> {
+    public async getCheckoutStatus(
+        invoiceId: string,
+        options?: { resumeToken?: string }
+    ): Promise<CheckoutStatusResult> {
         try {
             if (!invoiceId) {
                 return { success: false, error: 'Invoice ID is required' };
             }
 
-            const response = await fetch(`/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}`, {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (options?.resumeToken) {
+                headers['x-resume-token'] = options.resumeToken;
+            }
+
+            // Attach user token if authenticated
+            try {
+                if (typeof window !== 'undefined' && supabase?.auth?.getSession) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.access_token) {
+                        headers['Authorization'] = `Bearer ${session.access_token}`;
+                    }
+                }
+            } catch {
+                // Ignore auth lookup failure
+            }
+
+            const url = options?.resumeToken
+                ? `/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}&token=${encodeURIComponent(options.resumeToken)}`
+                : `/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}`;
+
+            const response = await fetch(url, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
             });
 
             if (!response.ok) {
-                return { success: false, error: `Failed to fetch checkout status (${response.status})` };
+                const errData = await response.json().catch(() => null);
+                return {
+                    success: false,
+                    error: errData?.error || `Failed to fetch checkout status (${response.status})`
+                };
             }
 
             const data = await response.json();

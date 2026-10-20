@@ -221,6 +221,7 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
             {multiLegSession && (
                 <MultiLegCheckoutCoordinator
                     invoiceId={multiLegSession.invoiceId}
+                    resumeToken={multiLegSession.resumeToken}
                     initialLegs={multiLegSession.legs}
                     isAr={isAr}
                     onCompleted={() => {

@@ -101,19 +101,37 @@ export const useCheckout = (options: useCheckoutOptions) => {
     // Multi-Leg Checkout Coordinator State
     const [multiLegSession, setMultiLegSession] = useState<{
         invoiceId: string;
+        resumeToken?: string;
         legs: ClientPaymentLeg[];
     } | null>(null);
 
     // Check for returning multi-leg checkout session
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        const activeInvoiceId = window.localStorage.getItem('mrx_active_multileg_invoice');
+        const raw = window.localStorage.getItem('mrx_active_multileg_invoice');
+        if (!raw) return;
+
+        let activeInvoiceId = '';
+        let resumeToken: string | undefined = undefined;
+        try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+                activeInvoiceId = parsed.invoiceId || '';
+                resumeToken = parsed.resumeToken || undefined;
+            } else {
+                activeInvoiceId = String(raw);
+            }
+        } catch {
+            activeInvoiceId = raw;
+        }
+
         if (!activeInvoiceId) return;
 
-        paymentService.getCheckoutStatus(activeInvoiceId).then((res) => {
+        paymentService.getCheckoutStatus(activeInvoiceId, { resumeToken }).then((res) => {
             if (res.success && res.isMultiLeg && !res.isCompleted) {
                 setMultiLegSession({
                     invoiceId: activeInvoiceId,
+                    resumeToken,
                     legs: res.legs || [],
                 });
             } else if (res.isCompleted) {
@@ -447,11 +465,16 @@ export const useCheckout = (options: useCheckoutOptions) => {
             // Multi-leg checkout flow: coordinator handles sequential gateway sessions
             if (result.success && result.isMultiLeg && result.paymentLegs && result.paymentLegs.length > 1) {
                 if (typeof window !== 'undefined') {
-                    window.localStorage.setItem('mrx_active_multileg_invoice', result.invoiceId || '');
+                    const sessionPayload = {
+                        invoiceId: result.invoiceId || '',
+                        resumeToken: result.resumeToken,
+                    };
+                    window.localStorage.setItem('mrx_active_multileg_invoice', JSON.stringify(sessionPayload));
                     window.localStorage.setItem(`mrx_multileg_${result.invoiceId}`, JSON.stringify(result.paymentLegs));
                 }
                 setMultiLegSession({
                     invoiceId: result.invoiceId || '',
+                    resumeToken: result.resumeToken,
                     legs: result.paymentLegs,
                 });
                 setIsProcessing(false);

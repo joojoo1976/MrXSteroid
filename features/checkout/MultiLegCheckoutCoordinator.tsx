@@ -16,13 +16,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Clock, AlertCircle, ArrowRight, RefreshCw, ExternalLink, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, ArrowRight, RefreshCw, ExternalLink, ShieldCheck, Lock } from 'lucide-react';
 import { Button } from '../../shared/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../shared/ui/card';
 import { paymentService, type ClientPaymentLeg, type CheckoutStatusResult } from '../../shared/lib/payment.service';
 
 interface MultiLegCheckoutCoordinatorProps {
     invoiceId: string;
+    resumeToken?: string;
     initialLegs?: ClientPaymentLeg[];
     isAr?: boolean;
     onCompleted?: () => void;
@@ -31,12 +32,14 @@ interface MultiLegCheckoutCoordinatorProps {
 
 export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorProps> = ({
     invoiceId,
+    resumeToken,
     initialLegs = [],
     isAr = true,
     onCompleted,
     onCancel,
 }) => {
     const [legs, setLegs] = useState<ClientPaymentLeg[]>(initialLegs);
+    const [nextPendingLeg, setNextPendingLeg] = useState<ClientPaymentLeg | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<string>('pending');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -46,10 +49,13 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
         setIsLoading(true);
         setErrorMessage(null);
         try {
-            const res: CheckoutStatusResult = await paymentService.getCheckoutStatus(invoiceId);
+            const res: CheckoutStatusResult = await paymentService.getCheckoutStatus(invoiceId, { resumeToken });
             if (res.success) {
                 if (res.legs && res.legs.length > 0) {
                     setLegs(res.legs);
+                }
+                if (res.nextPendingLeg !== undefined) {
+                    setNextPendingLeg(res.nextPendingLeg);
                 }
                 if (res.paymentStatus) {
                     setPaymentStatus(res.paymentStatus);
@@ -60,7 +66,7 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
             } else {
                 setErrorMessage(res.error || (isAr ? 'تعذر جلب حالة الدفع' : 'Could not fetch status'));
             }
-        } catch (err) {
+        } catch {
             setErrorMessage(isAr ? 'خطأ في الاتصال بالخادم' : 'Server connection error');
         } finally {
             setIsLoading(false);
@@ -74,7 +80,7 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
     }, [invoiceId]);
 
     const allSucceeded = paymentStatus === 'paid' || legs.every((l) => l.status === 'succeeded');
-    const nextLeg = legs.find((l) => l.status !== 'succeeded') || null;
+    const activeLeg = nextPendingLeg || legs.find((l) => l.status !== 'succeeded') || null;
 
     const handleProceedToLeg = (leg: ClientPaymentLeg) => {
         if (leg.sessionUrl && typeof window !== 'undefined') {
@@ -118,8 +124,9 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
                 <div className="space-y-3">
                     {legs.map((leg, idx) => {
                         const isSucceeded = leg.status === 'succeeded';
-                        const isCurrent = nextLeg?.id === leg.id;
+                        const isCurrent = Boolean(leg.isPayable || (activeLeg && (leg.id === activeLeg.id || leg.legIndex === activeLeg.legIndex)));
                         const isFailed = leg.status === 'failed';
+                        const isLocked = !isSucceeded && !isCurrent;
 
                         return (
                             <motion.div
@@ -142,6 +149,8 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
                                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                                         ) : isFailed ? (
                                             <AlertCircle className="w-4 h-4 text-red-400" />
+                                        ) : isLocked ? (
+                                            <Lock className="w-3.5 h-3.5 text-zinc-500" />
                                         ) : (
                                             idx + 1
                                         )}
@@ -159,7 +168,9 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
                                                     ? (isAr ? 'مكتمل ✅' : 'Completed ✅')
                                                     : isFailed
                                                     ? (isAr ? 'فشل السداد ⚠️' : 'Payment Failed ⚠️')
-                                                    : (isAr ? 'في انتظار السداد' : 'Pending Payment')}
+                                                    : isLocked
+                                                    ? (isAr ? 'مغلق حتى اكتمال الدفعة السابقة' : 'Locked until previous step')
+                                                    : (isAr ? 'جاهز للسداد الآن' : 'Ready to pay')}
                                             </span>
                                         </p>
                                     </div>
@@ -170,6 +181,11 @@ export const MultiLegCheckoutCoordinator: React.FC<MultiLegCheckoutCoordinatorPr
                                         <span className="text-xs text-emerald-400 font-bold px-2 py-1 bg-emerald-500/10 rounded-lg">
                                             {isAr ? 'مدفوع' : 'Paid'}
                                         </span>
+                                    ) : isLocked ? (
+                                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-800/40 border border-zinc-800">
+                                            <Lock className="w-3.5 h-3.5 text-zinc-500" />
+                                            <span>{isAr ? 'في الانتظار' : 'Waiting'}</span>
+                                        </div>
                                     ) : (
                                         <Button
                                             size="sm"

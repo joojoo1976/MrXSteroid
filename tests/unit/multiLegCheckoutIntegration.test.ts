@@ -84,7 +84,10 @@ function createFakeSupabase(seed: {
                 const insertedRows: Row[] = [];
                 incoming.forEach((item) => {
                     const row: Row = { id: item?.id || nextId(table), metadata: {}, ...item };
-                    const existingIdx = rows.findIndex((r) => r.id === row.id);
+                    const existingIdx = rows.findIndex((r) =>
+                        r.id === row.id ||
+                        (row.invoice_id && r.invoice_id === row.invoice_id && r.leg_index !== undefined && r.leg_index === row.leg_index)
+                    );
                     if (existingIdx >= 0) {
                         Object.assign(rows[existingIdx], row);
                         insertedRows.push(rows[existingIdx]);
@@ -1248,5 +1251,362 @@ describe('V3.4.1 Acceptance Gap: Fix 3 — Strict Fail-Closed on all invalid RPC
         const profile = db.profiles.find((p: any) => p.id === 'user_rpc_variant');
         expect(profile.has_paid).toBe(false);
         expect(profile.is_vip).toBe(false);
+    });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  POST-MERGE AUDIT REMEDIATION (PR #12 Review Tests)
+//  1. P0: /api/checkout/status Authentication, Authorization & IDOR Protection
+//  2. P0: Stale Overwrite Prevention & Deterministic Interleaved Webhooks
+//  3. P1: Strict Payment Leg Sequencing & Downstream SessionUrl Protection
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe('V3.4.1 Remediation: P0 — /api/checkout/status Authentication & IDOR Protection', () => {
+    const registeredInvoiceId = '11111111-1111-4111-a111-111111111111';
+    const guestInvoiceId = '22222222-2222-4222-a222-222222222222';
+    const ownerUserId = 'owner_user_uuid_123';
+    const attackerUserId = 'attacker_user_uuid_999';
+    const guestResumeToken = 'guest_secret_resume_token_abc';
+    const guestEmail = 'guest.athlete@example.com';
+
+    function setupTestDatabase() {
+        const supabase = createFakeSupabase();
+        // Registered User Invoice
+        supabase._db.invoices.push({
+            id: registeredInvoiceId,
+            user_id: ownerUserId,
+            customer_email: 'owner@example.com',
+            payment_status: 'pending',
+            status: 'open',
+            amount: 399.98,
+            currency: 'USD',
+            metadata: {
+                payment_legs: [
+                    { id: 'leg_0', legIndex: 0, status: 'pending', amount: 49.99, currency: 'USD', sessionUrl: 'https://fourthwall.com/pay1' },
+                    { id: 'leg_1', legIndex: 1, status: 'pending', amount: 349.99, currency: 'USD', sessionUrl: 'https://kashier.io/pay2' },
+                ],
+            },
+        });
+
+        // Guest Invoice
+        supabase._db.invoices.push({
+            id: guestInvoiceId,
+            user_id: null, // Guest
+            customer_email: guestEmail,
+            payment_status: 'pending',
+            status: 'open',
+            amount: 399.98,
+            currency: 'USD',
+            metadata: {
+                guest_resume_token: guestResumeToken,
+                payment_legs: [
+                    { id: 'guest_leg_0', legIndex: 0, status: 'pending', amount: 49.99, currency: 'USD', sessionUrl: 'https://fourthwall.com/guest1' },
+                    { id: 'guest_leg_1', legIndex: 1, status: 'pending', amount: 349.99, currency: 'USD', sessionUrl: 'https://kashier.io/guest2' },
+                ],
+            },
+        });
+
+        return supabase;
+    }
+
+    it('IDOR Guard: Anonymous request for a registered user invoice is REJECTED with 401', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${registeredInvoiceId}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(401);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toContain('Authentication required');
+    });
+
+    it('IDOR Guard: Authenticated attacker attempting to view another user invoice is REJECTED with 403', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${registeredInvoiceId}`, {
+            method: 'GET',
+            headers: { Authorization: 'Bearer attacker_jwt' },
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'AUTHENTICATED', userId: attackerUserId }),
+        });
+
+        expect(res.status).toBe(403);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toContain('permission');
+    });
+
+    it('Authorized: Legitimate owner accessing their own invoice succeeds with 200 and full leg details', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${registeredInvoiceId}`, {
+            method: 'GET',
+            headers: { Authorization: 'Bearer owner_jwt' },
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'AUTHENTICATED', userId: ownerUserId }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.invoiceId).toBe(registeredInvoiceId);
+        expect(data.legs).toHaveLength(2);
+    });
+
+    it('Guest Security: Reading guest invoice by UUID alone without token is REJECTED with 403', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(403);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toContain('resume token required');
+    });
+
+    it('Guest Security: Reading guest invoice with WRONG resume token is REJECTED with 403', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=wrong_token`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(403);
+    });
+
+    it('Guest Security: Reading guest invoice with VALID resume token SUCCEEDS with 200', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=${guestResumeToken}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.invoiceId).toBe(guestInvoiceId);
+        expect(data.legs).toHaveLength(2);
+    });
+
+    it('Guest Security: Reading guest invoice with VALID HMAC signature SUCCEEDS with 200', async () => {
+        const { handleCheckoutStatus, computeGuestHmac } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const validHmac = computeGuestHmac(guestInvoiceId, guestEmail);
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=${validHmac}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.invoiceId).toBe(guestInvoiceId);
+    });
+});
+
+describe('V3.4.1 Remediation: P1 — Strict Payment Leg Sequencing & SessionUrl Protection', () => {
+    const invoiceId = '33333333-3333-4333-a333-333333333333';
+    const resumeToken = 'seq_resume_token_xyz';
+
+    it('Sequencing: While Leg 0 is pending, only Leg 0 has isPayable=true and reveals sessionUrl; Leg 1 sessionUrl is hidden', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = createFakeSupabase();
+
+        supabase._db.invoices.push({
+            id: invoiceId,
+            user_id: null,
+            customer_email: 'seq@example.com',
+            payment_status: 'pending',
+            status: 'open',
+            amount: 399.98,
+            currency: 'USD',
+            metadata: {
+                guest_resume_token: resumeToken,
+                payment_legs: [
+                    { id: 'leg_0', legIndex: 0, status: 'pending', amount: 49.99, currency: 'USD', sessionUrl: 'https://fourthwall.com/pay_leg_0' },
+                    { id: 'leg_1', legIndex: 1, status: 'pending', amount: 349.99, currency: 'USD', sessionUrl: 'https://kashier.io/pay_leg_1' },
+                ],
+            },
+        });
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}&token=${resumeToken}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.nextPendingLeg).toBeDefined();
+        expect(data.nextPendingLeg.id).toBe('leg_0');
+
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+
+        // Leg 0 is the immediate payable leg
+        expect(leg0.isPayable).toBe(true);
+        expect(leg0.sessionUrl).toBe('https://fourthwall.com/pay_leg_0');
+
+        // CRITICAL P1 ASSERTION: Leg 1 is NOT payable and its sessionUrl is locked/null
+        expect(leg1.isPayable).toBe(false);
+        expect(leg1.sessionUrl).toBeNull();
+    });
+
+    it('Sequencing: Once Leg 0 is succeeded, Leg 1 advances to isPayable=true and unlocks its sessionUrl', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = createFakeSupabase();
+
+        supabase._db.invoices.push({
+            id: invoiceId,
+            user_id: null,
+            customer_email: 'seq@example.com',
+            payment_status: 'partially_paid',
+            status: 'open',
+            amount: 399.98,
+            currency: 'USD',
+            metadata: {
+                guest_resume_token: resumeToken,
+                payment_legs: [
+                    { id: 'leg_0', legIndex: 0, status: 'succeeded', amount: 49.99, currency: 'USD', sessionUrl: 'https://fourthwall.com/pay_leg_0' },
+                    { id: 'leg_1', legIndex: 1, status: 'pending', amount: 349.99, currency: 'USD', sessionUrl: 'https://kashier.io/pay_leg_1' },
+                ],
+            },
+        });
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}&token=${resumeToken}`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+        expect(data.nextPendingLeg.id).toBe('leg_1');
+
+        const leg0 = data.legs.find((l: any) => l.legIndex === 0);
+        const leg1 = data.legs.find((l: any) => l.legIndex === 1);
+
+        expect(leg0.status).toBe('succeeded');
+        expect(leg0.isPayable).toBe(false);
+
+        // Leg 1 is now active and unlocked
+        expect(leg1.isPayable).toBe(true);
+        expect(leg1.sessionUrl).toBe('https://kashier.io/pay_leg_1');
+    });
+});
+
+describe('V3.4.1 Remediation: P0 — Stale Overwrite Prevention & Deterministic Interleaved Webhooks', () => {
+    it('persistPaymentLegs NEVER downgrades an already succeeded leg to pending when called with a stale snapshot', async () => {
+        const { persistPaymentLegs } = await import('../../server/payments/multiLegPaymentService');
+        const supabase = createFakeSupabase();
+        const invoiceId = 'race_interleave_inv_001';
+
+        // 1. Initial State: Both legs in DB are pending
+        supabase._db.invoice_payment_legs.push(
+            {
+                id: 'leg_0', invoice_id: invoiceId, leg_index: 0,
+                leg_type: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'pending',
+                provider_reference: null, actual_paid_amount: null,
+            },
+            {
+                id: 'leg_1', invoice_id: invoiceId, leg_index: 1,
+                leg_type: 'service', provider: 'kashier',
+                amount: 349.99, currency: 'USD', status: 'pending',
+                provider_reference: null, actual_paid_amount: null,
+            }
+        );
+
+        // 2. Deterministic Interleaving Simulation:
+        // Webhook B (for Leg 1) arrives and settles Leg 1 in the DB first!
+        const leg1Row = supabase._db.invoice_payment_legs.find((r: any) => r.id === 'leg_1');
+        leg1Row.status = 'succeeded';
+        leg1Row.actual_paid_amount = 349.99;
+        leg1Row.provider_reference = 'kashier_ref_winner_456';
+        leg1Row.paid_at = new Date().toISOString();
+
+        // 3. Webhook A (for Leg 0) was in-flight with an older snapshot taken BEFORE Webhook B completed.
+        // In Webhook A's memory, Leg 1 is still 'pending'.
+        const staleLegsSnapshot: PaymentLeg[] = [
+            {
+                id: 'leg_0', invoiceId, legIndex: 0,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'succeeded',
+                providerReference: 'fw_ref_001', actualPaidAmount: 49.99,
+                paidAt: new Date().toISOString(), items: [],
+            },
+            {
+                id: 'leg_1', invoiceId, legIndex: 1,
+                legType: 'service', provider: 'kashier',
+                amount: 349.99, currency: 'USD', status: 'pending', // STALE in-memory snapshot!
+                providerReference: null, actualPaidAmount: null,
+                paidAt: null, items: [],
+            },
+        ];
+
+        // Webhook A finishes and calls persistPaymentLegs with its stale snapshot
+        await persistPaymentLegs(supabase, staleLegsSnapshot);
+
+        // 4. CRITICAL P0 ASSERTION:
+        // Leg 1 in the database MUST REMAIN 'succeeded'. It must NEVER be reverted to 'pending'!
+        const finalLeg1 = supabase._db.invoice_payment_legs.find((r: any) => r.id === 'leg_1');
+        expect(finalLeg1.status).toBe('succeeded');
+        expect(finalLeg1.provider_reference).toBe('kashier_ref_winner_456');
+        expect(finalLeg1.actual_paid_amount).toBe(349.99);
+
+        // Leg 0 was also updated to succeeded
+        const finalLeg0 = supabase._db.invoice_payment_legs.find((r: any) => r.id === 'leg_0');
+        expect(finalLeg0.status).toBe('succeeded');
+        expect(finalLeg0.provider_reference).toBe('fw_ref_001');
     });
 });

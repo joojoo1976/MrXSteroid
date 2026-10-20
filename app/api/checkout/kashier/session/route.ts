@@ -216,6 +216,7 @@ export async function POST(req: Request) {
                 discount: result.discount,
                 paymentLegs: result.paymentLegs || [],
                 isMultiLeg: Boolean(result.isMultiLeg),
+                resumeToken: result.resumeToken,
             });
         } else {
             // Single-tier checkout: use existing createCheckoutSession path

@@ -441,10 +441,10 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 return { code: 'already_processed' };
             }
 
-            // 3. Concurrency Protection (Fix 1):
-            // Database RPC is the SOLE source of truth for payment_status.
+            // 3. Concurrency & Regression Protection (P0):
+            // Database RPC is the SOLE source of truth for payment_status and leg statuses.
             // NEVER overwrite payment_status with legVerdictRes.consolidatedStatus!
-            // Sync metadata.payment_legs from authoritative DB table invoice_payment_legs:
+            // Sync metadata.payment_legs strictly from authoritative DB table invoice_payment_legs:
             try {
                 const { data: dbLegs } = await supabase
                     .from('invoice_payment_legs')
@@ -465,15 +465,14 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                         updated_at: nowIso(),
                     })
                     .eq('id', invoiceId);
+
+                // If DB table was empty (e.g. legacy invoice before migration), seed table safely
+                if (!dbLegs || dbLegs.length === 0) {
+                    const { persistPaymentLegs } = await import('./multiLegPaymentService');
+                    await persistPaymentLegs(supabase, legVerdictRes.updatedLegs);
+                }
             } catch (metaErr) {
                 console.warn('[Fulfillment] metadata sync note (non-fatal):', metaErr);
-            }
-
-            try {
-                const { persistPaymentLegs } = await import('./multiLegPaymentService');
-                await persistPaymentLegs(supabase, legVerdictRes.updatedLegs);
-            } catch (err) {
-                console.warn('[Fulfillment] persistPaymentLegs error (non-fatal):', err);
             }
 
             // 4. Entitlement Decision Tied to Authoritative DB Settlement (Fix 1):

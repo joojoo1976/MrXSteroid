@@ -94,6 +94,7 @@ export interface CombinedCheckoutSessionResult {
     idempotent: boolean;
     paymentLegs?: PaymentLeg[];
     isMultiLeg?: boolean;
+    resumeToken?: string;
 }
 
 export interface CombinedPaymentSessionParams {
@@ -360,6 +361,7 @@ export async function createCombinedCheckoutSession(
         : (isMultiLegOrder ? 'multi_leg' : (isServiceOrder ? 'kashier_link' : 'fourthwall'));
 
     let invoiceId: string;
+    const guestResumeToken = randomUUID();
     {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
@@ -382,6 +384,7 @@ export async function createCombinedCheckoutSession(
                 idempotency_key: idempotencyKey,
                 metadata: {
                     ...(input.metadata || {}),
+                    guest_resume_token: guestResumeToken,
                     order_kind: 'combined',
                     lines: orderLines,
                     subtotal: totals.subtotal,
@@ -630,6 +633,9 @@ export async function createCombinedCheckoutSession(
         throw new Error(`[CombinedCheckout] Failed to persist session linkage: ${linkError.message}`);
     }
 
+    // Persist initial legs into invoice_payment_legs table so DB is populated
+    await persistPaymentLegs(supabase, finalLegs);
+
     await supabase
         .from('orders')
         .update({
@@ -671,5 +677,6 @@ export async function createCombinedCheckoutSession(
         idempotent: false,
         paymentLegs: finalLegs,
         isMultiLeg: isMultiLegOrder,
+        resumeToken: guestResumeToken,
     };
 }

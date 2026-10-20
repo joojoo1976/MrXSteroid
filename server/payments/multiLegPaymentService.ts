@@ -390,6 +390,10 @@ export function processLegVerdict(
 /**
  * Persists payment legs into the invoice_payment_legs table idempotently.
  * Fails safely if table is not yet migrated, preserving legs in metadata.
+ *
+ * CRITICAL P0 PROTECTION:
+ * Prevents race condition regressions where a concurrent webhook upserting
+ * a stale in-memory snapshot could revert an already 'succeeded' leg back to 'pending'.
  */
 export async function persistPaymentLegs(
     supabase: SupabaseClient,
@@ -398,21 +402,55 @@ export async function persistPaymentLegs(
     if (!legs || legs.length === 0) return;
 
     try {
-        const rows = legs.map((leg) => ({
-            id: leg.id,
-            invoice_id: leg.invoiceId,
-            leg_index: leg.legIndex,
-            leg_type: leg.legType,
-            provider: leg.provider,
-            amount: leg.amount,
-            actual_paid_amount: leg.actualPaidAmount ?? null,
-            currency: leg.currency,
-            status: leg.status,
-            provider_reference: leg.providerReference,
-            session_url: leg.sessionUrl,
-            items: leg.items,
-            paid_at: leg.paidAt,
-        }));
+        const invoiceId = legs[0]?.invoiceId;
+        const existingMap = new Map<number, any>();
+
+        // Query authoritative database state if table exists
+        if (invoiceId) {
+            try {
+                const { data: existingRows } = await supabase
+                    .from('invoice_payment_legs')
+                    .select('id, invoice_id, leg_index, status, provider_reference, paid_at, actual_paid_amount')
+                    .eq('invoice_id', invoiceId);
+                if (existingRows && Array.isArray(existingRows)) {
+                    existingRows.forEach((row) => existingMap.set(row.leg_index, row));
+                }
+            } catch (queryErr) {
+                console.warn('[MultiLegPayment] Could not check existing legs, proceeding with safe upsert:', queryErr);
+            }
+        }
+
+        const rows = legs.map((leg) => {
+            const existing = existingMap.get(leg.legIndex);
+            // If the database already has 'succeeded' for this leg, NEVER downgrade it!
+            const isAlreadySucceeded = existing?.status === 'succeeded';
+            const status = isAlreadySucceeded ? 'succeeded' : leg.status;
+            const actualPaidAmount = isAlreadySucceeded
+                ? (existing.actual_paid_amount ?? leg.actualPaidAmount ?? null)
+                : (leg.actualPaidAmount ?? null);
+            const providerReference = isAlreadySucceeded
+                ? (existing.provider_reference ?? leg.providerReference)
+                : leg.providerReference;
+            const paidAt = isAlreadySucceeded
+                ? (existing.paid_at ?? leg.paidAt)
+                : leg.paidAt;
+
+            return {
+                id: leg.id,
+                invoice_id: leg.invoiceId,
+                leg_index: leg.legIndex,
+                leg_type: leg.legType,
+                provider: leg.provider,
+                amount: leg.amount,
+                actual_paid_amount: actualPaidAmount,
+                currency: leg.currency,
+                status,
+                provider_reference: providerReference,
+                session_url: leg.sessionUrl,
+                items: leg.items,
+                paid_at: paidAt,
+            };
+        });
 
         const table = supabase.from('invoice_payment_legs');
         if (typeof table?.upsert === 'function') {
