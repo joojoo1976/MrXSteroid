@@ -136,5 +136,38 @@ webpack still emits one async chunk per tool. The generator, the registry test a
 | all 110 routes: visible non-hidden SSR body | — | **110/110** |
 | JS-enabled: shells / H1 / title occurrences | — | **1 / 1 / 1 (no duplication)**, 0 hydration warnings |
 
+### Standard-tool integration (verified on the pushed SHA)
+
+| Check | Result |
+|---|---|
+| Catalog entry | `mrx.tool.036-injection-schedule`, `status: 'implemented'`, `href: /smarttools/tool-036-injection-schedule` |
+| Canonical route | `/smarttools/injection-formulation/tool-036-injection-schedule` → **200** |
+| Flat legacy route | `/smarttools/tool-036-injection-schedule` → **308** → canonical |
+| Category route / hub | `/smarttools/injection-formulation` **200**, `/smarttools` **200** |
+| Category card | tool-036 listed with the other published tools in the category |
+| Shared chrome | exactly **1 `<header>` (banner) + 1 `<footer> (contentinfo)`, both from `app/smarttools/layout.tsx** — no per-tool chrome |
+| Header vs title | header bottom 101 < title top 259 → does not cover the title |
+| Footer vs content | footer top 1749 ≥ content bottom 1571 → follows the content |
+| RTL/LTR | `عربي` toggle → `dir=rtl`, `lang=ar`, shell `dir="rtl"`, still 1 header / 1 footer |
+| Responsive | tool shell reflows to a 390 px box (`scrollWidth 388`, 0 overflow offenders); shared nav uses `px-4 lg:px-6 h-12 md:h-14` |
+| SEO contracts | 1 breadcrumb, correct canonical, 1 JSON-LD, SafetyNotice present |
+| V4 lab | untouched by this work; still `/labs/tool-036-v4` 149 kB, not linked from the catalog |
+
+### G-03 — privacy / network (PASS)
+
+Runtime capture on the pushed SHA with **synthetic** inputs (no real health data): 36 requests total
+= 34 same-origin (document, app chunks, lazily-fetched tool chunk, assets) + **2 pre-existing
+shared third-party requests**:
+
+| Host | Call | Carries tool state? |
+|---|---|---|
+| `grainy-gradients.vercel.app` | static `GET /noise.svg` decorative texture, referenced by `shared/ui/Footer.tsx` | **No** — no query, no body, `no-cors` |
+| `ipapi.co` | bare `GET /json/` IP geolocation from `shared/lib/logic.ts` | **No** — empty query string, empty body, no auth/custom headers |
+
+Both are explicitly allowlisted in the site's own CSP (`img-src … https://grainy-gradients.vercel.app`,
+`connect-src … https://ipapi.co`), i.e. sanctioned site-wide behaviour, and both appear **identically**
+on an untouched ordinary tool (tool-009). No analytics or error-tracking SDK is mounted in the
+SmartTools layout. **Tool-036 transmits nothing private to any unrelated endpoint.**
+
 ## Blocker handling
 If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required — do not weaken a gate.
