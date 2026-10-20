@@ -91,33 +91,50 @@ The registry is **generated** from `lib/tools/loaders.ts` by a checked-in genera
 | G-P2 unrelated tool code absent from page chunk | 0 impl markers | **PASS** 0/10 markers | chunk decompile |
 | G-P3 only selected tool chunk fetched | 1 tool chunk | **PASS** 2–3 lazy chunks, not in initial set | network capture |
 | G-P4 recharts absent initially (non-chart) | 0 | **PASS** | network capture |
-| G-P5 requested tool SSR'd | body present in HTML | **PASS (with caveat)** streamed into the Suspense payload; **not visible until hydration** — see G-P10 | raw HTML |
+| G-P5 requested tool SSR'd | body present in HTML | **PASS** body server-rendered directly into the visible document | raw HTML |
 | G-P6 all 110 slugs resolve | 110/110 | **PASS** 110/110 | runtime probe |
 | G-P7 focused suites + tsc + lint + diff + build | green | **PASS** (1 pre-existing lint error, unrelated) | logs |
 | G-P8 V4 lab unchanged | ≤ 150 kB | **PASS** 149 kB (was 147) | build log |
-| G-P9 tool visible + interactive with client JS ON | visible | **PASS** on the pushed SHA (localhost prod build): `v3-shell` 956×1328 visible, skeleton gone after hydration, 93 buttons; `hpta-recovery` RTL-Arabic H1 visible with 6 recharts containers / 44 `<svg>`; no duplicate content | browser DOM |
-| G-P10 tool visible with client JS BLOCKED | visible without JS | **FAIL (regression)** — body streams into React's hidden `<div id="S:n" hidden>` container and is only unhidden by hydration; with JS blocked/absent the body stays invisible. Pre-fix static render was visible with JS disabled. Escalated, not silently accepted. | browser DOM (localhost + Vercel Preview) |
+| G-P9 tool visible + interactive with client JS ON | visible | **PASS** `v3-shell` 956×1328 visible, 1 H1, title once (no duplication), 89 buttons, charts render | browser DOM |
+| G-P10 tool visible with client JS BLOCKED | visible without JS | **PASS (fixed)** body is server-rendered into the visible DOM, outside any hidden container; sandboxed no-script iframe renders it at 1169×2636 with 1 visible H1 | browser DOM + raw HTML |
 
-### G-P9 / G-P10 detail (honest disclosure)
+### G-P10 — root cause and fix (resolved)
 
-- **G-P9 (normal operation, hydration ON)** — verified on the **exact pushed SHA** via
-  `next start -p 3160`: tool-036 renders `data-testid="v3-shell"` at **956×1328 visible**
-  (`hiddenAncestor:false`), the `tool-mount-skeleton` is **removed after hydration**, 19 `h2`,
-  93 interactive buttons; `hpta-recovery` renders a visible RTL-Arabic `h1` with 6 recharts
-  containers and 44 `<svg>`. `visibleH1Count === 1` and the title appears exactly once in
-  visible text → **no duplicated content**.
-- **G-P10 (hydration OFF)** — **regression versus pre-fix.** The tool now mounts through a
-  `next/dynamic` + Suspense boundary, so the server streams the body into a `hidden` React
-  container (`<div id="S:1" hidden>`) that client hydration unhides. If client JS never runs
-  (browser JS disabled, a CSP block, or a script error) the body stays **invisible**. Pre-fix, the
-  body was statically server-rendered into the visible DOM and was visible with zero JS.
-  Observed live on the Vercel Preview *and* on a pre-existing Preview (same mechanism: Vercel
-  deployment protection rewrites subresources through `vercel.com/sso-api`, which the site's own
-  CSP blocks → no JS → no hydration). Raw evidence in `t036-remediation-plan.md`.
-- React's `<div id="S:n" hidden>` containers **persist (hidden, inert) even when hydration
-  succeeds**; that is standard React 19 out-of-order streaming and is **not** by itself evidence of
-  failure. The distinguishing tests are whether the *live* element is visible
-  (`getBoundingClientRect`) and whether the skeleton is gone.
+**Root cause (source-level).** `next/dynamic` wraps its target in a React Suspense boundary
+whenever a `loading` fallback is supplied:
+
+```js
+// node_modules/next/dist/shared/lib/lazy-dynamic/loadable.js
+const hasSuspenseBoundary = !opts.ssr || !!opts.loading;
+const Wrap = hasSuspenseBoundary ? Suspense : Fragment;
+```
+
+`React.lazy` always suspends on the first server render, so that boundary made React stream the
+server-rendered tool body into a hidden out-of-order container (`<div hidden id="S:1">`) that only
+became visible after client hydration. With JS disabled the body stayed invisible (measured: the
+`v3-shell` element sat inside `S:1` at zero size).
+
+**Rejected fix.** A route-level `app/smarttools/[category]/[tool]/loading.tsx` was tried first and
+**made it worse**: it wraps the whole page in Suspense in the streamed payload, and the body landed
+inside `<div hidden id="S:2">`. Measured, then reverted.
+
+**Applied fix.** Every `next/dynamic` entry in `ToolMount.tsx` is now a bare
+`dynamic(() => import('…'))` with **no options object**, so `hasSuspenseBoundary` stays `false` and
+the tool is rendered through a Fragment — server-rendered straight into the visible document, while
+webpack still emits one async chunk per tool. The generator, the registry test and a new
+`app/smarttools/[category]/[tool]/ssr-visibility.test.ts` guard the shape.
+
+**Evidence (same build, `next start`):**
+
+| Probe | Before fix | After fix |
+|---|---|---|
+| `v3-shell` byte offset in SSR HTML | 40934, inside `<div hidden id="S:1">` | **19245, not in any hidden container** |
+| hidden containers | `S:1`,`S:2`,`S:0` | `S:0` only (site-wide, pre-existing) |
+| `tool-mount-skeleton` in SSR HTML | present | **absent** |
+| no-JS sandboxed render (scripts blocked) | hidden | **visible 1169×2636, 1 visible H1** |
+| catch-all First Load JS | 114 kB | **114 kB (unchanged)** |
+| all 110 routes: visible non-hidden SSR body | — | **110/110** |
+| JS-enabled: shells / H1 / title occurrences | — | **1 / 1 / 1 (no duplication)**, 0 hydration warnings |
 
 ## Blocker handling
 If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required — do not weaken a gate.

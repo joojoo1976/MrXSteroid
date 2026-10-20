@@ -20,14 +20,18 @@
  *   Mounting the tool through this client boundary — with the 110 next/dynamic
  *   declarations at module scope and LITERAL import paths — makes each entry a
  *   real async chunk again. Webpack emits
- *       "slug": dynamic(() => Promise.all([l.e(chunk)]).then(l.bind(l, id)))
+ *       "slug": dynamic(() => Promise.resolve().then(() => l.bind(l, id)))
  *   and the browser downloads only the requested tool's chunk. Measured after:
  *   114 kB First Load JS.
  *
- * SSR is preserved: next/dynamic defaults to ssr:true, so the requested tool is
- * server-rendered (its <h1> stays in the initial HTML) and hydrates on the
- * client. Only the one requested component is ever resolved; the other 109 are
- * not rendered or eagerly imported.
+ * SSR is visible without JavaScript (G-P10): each entry is a bare
+ * `next/dynamic(() => import('…'))` with NO `loading` option. Supplying a
+ * loading fallback would make next/dynamic wrap the import in a Suspense
+ * boundary, which streams the server-rendered body into a hidden
+ * `<div hidden id="S:n">` container that only becomes visible after hydration —
+ * invisible with JS disabled. Without the fallback the tool is server-rendered
+ * into the visible document and hydrates in place (no duplicate body). The
+ * client-side navigation skeleton lives in the route's loading.tsx instead.
  *
  * Slug safety: the slug is supplied by a trusted server component (validated
  * against the published catalog) and re-guarded here by an allow-list — an
@@ -39,352 +43,124 @@ import dynamic from 'next/dynamic';
 type ToolProps = Record<string, never>;
 type ToolComponent = React.ComponentType<ToolProps>;
 
-/** Shown while the single requested tool chunk is fetched. */
-function ToolSkeleton() {
-  return (
-    <div
-      data-testid="tool-mount-skeleton"
-      className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
-      aria-hidden="true"
-    />
-  );
-}
-
 /**
  * Allow-listed slug -> lazily-imported component. Module scope is deliberate:
  * each entry must be a top-level next/dynamic declaration with a literal import.
+ *
+ * No `loading` option: see the G-P10 note above — a fallback would force a
+ * Suspense boundary and hide the server-rendered tool body from no-JS clients.
  */
 const TOOL_COMPONENTS: Record<string, ToolComponent> = {
-  'aromatization-risk': dynamic(() => import('@/components/tools/aromatization-risk'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'hcg-serm-protocol': dynamic(() => import('@/components/tools/hcg-serm-protocol'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'hpta-recovery': dynamic(() => import('@/components/tools/hpta-recovery'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'multi-ester-pharmacokinetics': dynamic(() => import('@/components/tools/multi-ester-pharmacokinetics'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'pct-timing': dynamic(() => import('@/components/tools/pct-timing'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-006-estrogen-prolactin': dynamic(() => import('@/components/tools/tool-006-estrogen-prolactin'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-007-bloodwork-analyzer': dynamic(() => import('@/components/tools/tool-007-bloodwork-analyzer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-008-side-effect-tracker': dynamic(() => import('@/components/tools/tool-008-side-effect-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-009-injection-site-rotator': dynamic(() => import('@/components/tools/tool-009-injection-site-rotator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-010-compound-stack-builder': dynamic(() => import('@/components/tools/tool-010-compound-stack-builder'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-011-progress-tracker': dynamic(() => import('@/components/tools/tool-011-progress-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-012-calorie-adjuster': dynamic(() => import('@/components/tools/tool-012-calorie-adjuster'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-013-macro-optimizer': dynamic(() => import('@/components/tools/tool-013-macro-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-014-water-retention': dynamic(() => import('@/components/tools/tool-014-water-retention'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-015-shbg-modulator': dynamic(() => import('@/components/tools/tool-015-shbg-modulator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-016-half-life-calculator': dynamic(() => import('@/components/tools/tool-016-half-life-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-017-drug-interaction': dynamic(() => import('@/components/tools/tool-017-drug-interaction'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-018-hpta-recovery': dynamic(() => import('@/components/tools/tool-018-hpta-recovery'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-019-cardio-monitor': dynamic(() => import('@/components/tools/tool-019-cardio-monitor'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-020-genetic-potential': dynamic(() => import('@/components/tools/tool-020-genetic-potential'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-021-peptide-protocol': dynamic(() => import('@/components/tools/tool-021-peptide-protocol'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-022-half-life-stacker': dynamic(() => import('@/components/tools/tool-022-half-life-stacker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-023-trt-optimization': dynamic(() => import('@/components/tools/tool-023-trt-optimization'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-024-bloodwork-interpreter': dynamic(() => import('@/components/tools/tool-024-bloodwork-interpreter'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-025-drug-interaction-pro': dynamic(() => import('@/components/tools/tool-025-drug-interaction-pro'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-026-injection-pain': dynamic(() => import('@/components/tools/tool-026-injection-pain'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-027-ester-conversion': dynamic(() => import('@/components/tools/tool-027-ester-conversion'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-028-stacking-synergy': dynamic(() => import('@/components/tools/tool-028-stacking-synergy'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-029-side-effect-early-warning': dynamic(() => import('@/components/tools/tool-029-side-effect-early-warning'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-030-cycle-cost-calculator': dynamic(() => import('@/components/tools/tool-030-cycle-cost-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-031-cycle-length-optimizer': dynamic(() => import('@/components/tools/tool-031-cycle-length-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-032-advanced-pct-planner': dynamic(() => import('@/components/tools/tool-032-advanced-pct-planner'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-033-bloodwork-trend-analyzer': dynamic(() => import('@/components/tools/tool-033-bloodwork-trend-analyzer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-034-compound-clearance': dynamic(() => import('@/components/tools/tool-034-compound-clearance'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-035-hormone-conversion': dynamic(() => import('@/components/tools/tool-035-hormone-conversion'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-036-injection-schedule': dynamic(() => import('@/components/tools/tool-036-injection-schedule'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-037-side-effect-probability': dynamic(() => import('@/components/tools/tool-037-side-effect-probability'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-038-stack-compatibility': dynamic(() => import('@/components/tools/tool-038-stack-compatibility'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-039-liver-enzyme-tracker': dynamic(() => import('@/components/tools/tool-039-liver-enzyme-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-040-lipid-profile-optimizer': dynamic(() => import('@/components/tools/tool-040-lipid-profile-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-041-hematocrit-monitor': dynamic(() => import('@/components/tools/tool-041-hematocrit-monitor'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-042-estrogen-management': dynamic(() => import('@/components/tools/tool-042-estrogen-management'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-043-prolactin-management': dynamic(() => import('@/components/tools/tool-043-prolactin-management'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-044-dht-side-effects': dynamic(() => import('@/components/tools/tool-044-dht-side-effects'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-045-cycle-break-planner': dynamic(() => import('@/components/tools/tool-045-cycle-break-planner'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-046-trt-lifetime': dynamic(() => import('@/components/tools/tool-046-trt-lifetime'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-047-fertility-preservation': dynamic(() => import('@/components/tools/tool-047-fertility-preservation'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-048-cardiovascular-risk': dynamic(() => import('@/components/tools/tool-048-cardiovascular-risk'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-049-bone-density': dynamic(() => import('@/components/tools/tool-049-bone-density'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-050-mental-health': dynamic(() => import('@/components/tools/tool-050-mental-health'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-051-peptide-dosage-calculator': dynamic(() => import('@/components/tools/tool-051-peptide-dosage-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-052-growth-hormone-protocol-planner': dynamic(() => import('@/components/tools/tool-052-growth-hormone-protocol-planner'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-053-insulin-conversion-calculator': dynamic(() => import('@/components/tools/tool-053-insulin-conversion-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-054-glucose-tracker': dynamic(() => import('@/components/tools/tool-054-glucose-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-055-insulin-sensitivity-optimizer': dynamic(() => import('@/components/tools/tool-055-insulin-sensitivity-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-056-mini-pct-calculator': dynamic(() => import('@/components/tools/tool-056-mini-pct-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-057-free-testosterone-manager': dynamic(() => import('@/components/tools/tool-057-free-testosterone-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-058-androgenic-balance-calculator': dynamic(() => import('@/components/tools/tool-058-androgenic-balance-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-059-androgen-receptor-optimizer': dynamic(() => import('@/components/tools/tool-059-androgen-receptor-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-060-5-alpha-conversion-calculator': dynamic(() => import('@/components/tools/tool-060-5-alpha-conversion-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-061-hair-loss-tracker': dynamic(() => import('@/components/tools/tool-061-hair-loss-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-062-prostate-health-manager': dynamic(() => import('@/components/tools/tool-062-prostate-health-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-063-testicular-suppression-calculator': dynamic(() => import('@/components/tools/tool-063-testicular-suppression-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-064-sperm-production-optimizer': dynamic(() => import('@/components/tools/tool-064-sperm-production-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-065-aromatase-conversion-calculator': dynamic(() => import('@/components/tools/tool-065-aromatase-conversion-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-066-estrogen-sensitivity-manager': dynamic(() => import('@/components/tools/tool-066-estrogen-sensitivity-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-067-estrogen-balance-calculator': dynamic(() => import('@/components/tools/tool-067-estrogen-balance-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-068-gynecomastia-tracker': dynamic(() => import('@/components/tools/tool-068-gynecomastia-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-069-detoxification-optimizer': dynamic(() => import('@/components/tools/tool-069-detoxification-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-070-oxidative-stress-calculator': dynamic(() => import('@/components/tools/tool-070-oxidative-stress-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-071-antioxidant-manager': dynamic(() => import('@/components/tools/tool-071-antioxidant-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-072-systemic-inflammation-calculator': dynamic(() => import('@/components/tools/tool-072-systemic-inflammation-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-073-immune-system-optimizer': dynamic(() => import('@/components/tools/tool-073-immune-system-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-074-blood-pressure-tracker': dynamic(() => import('@/components/tools/tool-074-blood-pressure-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-075-arterial-health-manager': dynamic(() => import('@/components/tools/tool-075-arterial-health-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-076-blood-viscosity-calculator': dynamic(() => import('@/components/tools/tool-076-blood-viscosity-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-077-nitric-oxide-optimizer': dynamic(() => import('@/components/tools/tool-077-nitric-oxide-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-078-endothelial-health-manager': dynamic(() => import('@/components/tools/tool-078-endothelial-health-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-079-fat-metabolism-calculator': dynamic(() => import('@/components/tools/tool-079-fat-metabolism-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-080-mitochondrial-optimizer': dynamic(() => import('@/components/tools/tool-080-mitochondrial-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-081-cellular-aging-calculator': dynamic(() => import('@/components/tools/tool-081-cellular-aging-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-082-telomere-manager': dynamic(() => import('@/components/tools/tool-082-telomere-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-083-anti-aging-inflammation-calculator': dynamic(() => import('@/components/tools/tool-083-anti-aging-inflammation-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-084-cognitive-enhancer': dynamic(() => import('@/components/tools/tool-084-cognitive-enhancer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-085-sleep-quality-manager': dynamic(() => import('@/components/tools/tool-085-sleep-quality-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-086-cortisol-stress-calculator': dynamic(() => import('@/components/tools/tool-086-cortisol-stress-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-087-mood-optimizer': dynamic(() => import('@/components/tools/tool-087-mood-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-088-dopamine-tracker': dynamic(() => import('@/components/tools/tool-088-dopamine-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-089-serotonin-manager': dynamic(() => import('@/components/tools/tool-089-serotonin-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-090-female-hormone-balance-calculator': dynamic(() => import('@/components/tools/tool-090-female-hormone-balance-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-091-female-health-optimizer': dynamic(() => import('@/components/tools/tool-091-female-health-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-092-female-dosage-calculator': dynamic(() => import('@/components/tools/tool-092-female-dosage-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-093-menstrual-cycle-manager': dynamic(() => import('@/components/tools/tool-093-menstrual-cycle-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-094-pregnancy-risk-calculator': dynamic(() => import('@/components/tools/tool-094-pregnancy-risk-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-095-skin-health-optimizer': dynamic(() => import('@/components/tools/tool-095-skin-health-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-096-hair-nail-tracker': dynamic(() => import('@/components/tools/tool-096-hair-nail-tracker'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-097-hydration-balance-calculator': dynamic(() => import('@/components/tools/tool-097-hydration-balance-calculator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-098-sodium-potassium-manager': dynamic(() => import('@/components/tools/tool-098-sodium-potassium-manager'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-099-digestive-health-optimizer': dynamic(() => import('@/components/tools/tool-099-digestive-health-optimizer'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-100-comprehensive-report-generator': dynamic(() => import('@/components/tools/tool-100-comprehensive-report-generator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-101-sarm-to-aas-transition-bridge-predictor': dynamic(() => import('@/components/tools/tool-101-sarm-to-aas-transition-bridge-predictor'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-102-subcutaneous-vs-intramuscular-pk-modeler': dynamic(() => import('@/components/tools/tool-102-subcutaneous-vs-intramuscular-pk-modeler'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-103-renal-function-hydration-index': dynamic(() => import('@/components/tools/tool-103-renal-function-hydration-index'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-104-thyroid-metabolic-rate-dynamics': dynamic(() => import('@/components/tools/tool-104-thyroid-metabolic-rate-dynamics'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-105-ai-health-data-fusion-hub': dynamic(() => import('@/components/tools/tool-105-ai-health-data-fusion-hub'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-106-glycogen-supercompensation-water-modeler': dynamic(() => import('@/components/tools/tool-106-glycogen-supercompensation-water-modeler'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-107-contest-prep-peak-week-manipulator': dynamic(() => import('@/components/tools/tool-107-contest-prep-peak-week-manipulator'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-108-ai-body-composition-vision-engine': dynamic(() => import('@/components/tools/tool-108-ai-body-composition-vision-engine'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-109-competition-readiness-posing-os': dynamic(() => import('@/components/tools/tool-109-competition-readiness-posing-os'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
-  'tool-110-ai-meal-vision-scanner': dynamic(() => import('@/components/tools/tool-110-ai-meal-vision-scanner'), {
-    loading: () => <ToolSkeleton />,
-  }) as unknown as ToolComponent,
+  'aromatization-risk': dynamic(() => import('@/components/tools/aromatization-risk')) as unknown as ToolComponent,
+  'hcg-serm-protocol': dynamic(() => import('@/components/tools/hcg-serm-protocol')) as unknown as ToolComponent,
+  'hpta-recovery': dynamic(() => import('@/components/tools/hpta-recovery')) as unknown as ToolComponent,
+  'multi-ester-pharmacokinetics': dynamic(() => import('@/components/tools/multi-ester-pharmacokinetics')) as unknown as ToolComponent,
+  'pct-timing': dynamic(() => import('@/components/tools/pct-timing')) as unknown as ToolComponent,
+  'tool-006-estrogen-prolactin': dynamic(() => import('@/components/tools/tool-006-estrogen-prolactin')) as unknown as ToolComponent,
+  'tool-007-bloodwork-analyzer': dynamic(() => import('@/components/tools/tool-007-bloodwork-analyzer')) as unknown as ToolComponent,
+  'tool-008-side-effect-tracker': dynamic(() => import('@/components/tools/tool-008-side-effect-tracker')) as unknown as ToolComponent,
+  'tool-009-injection-site-rotator': dynamic(() => import('@/components/tools/tool-009-injection-site-rotator')) as unknown as ToolComponent,
+  'tool-010-compound-stack-builder': dynamic(() => import('@/components/tools/tool-010-compound-stack-builder')) as unknown as ToolComponent,
+  'tool-011-progress-tracker': dynamic(() => import('@/components/tools/tool-011-progress-tracker')) as unknown as ToolComponent,
+  'tool-012-calorie-adjuster': dynamic(() => import('@/components/tools/tool-012-calorie-adjuster')) as unknown as ToolComponent,
+  'tool-013-macro-optimizer': dynamic(() => import('@/components/tools/tool-013-macro-optimizer')) as unknown as ToolComponent,
+  'tool-014-water-retention': dynamic(() => import('@/components/tools/tool-014-water-retention')) as unknown as ToolComponent,
+  'tool-015-shbg-modulator': dynamic(() => import('@/components/tools/tool-015-shbg-modulator')) as unknown as ToolComponent,
+  'tool-016-half-life-calculator': dynamic(() => import('@/components/tools/tool-016-half-life-calculator')) as unknown as ToolComponent,
+  'tool-017-drug-interaction': dynamic(() => import('@/components/tools/tool-017-drug-interaction')) as unknown as ToolComponent,
+  'tool-018-hpta-recovery': dynamic(() => import('@/components/tools/tool-018-hpta-recovery')) as unknown as ToolComponent,
+  'tool-019-cardio-monitor': dynamic(() => import('@/components/tools/tool-019-cardio-monitor')) as unknown as ToolComponent,
+  'tool-020-genetic-potential': dynamic(() => import('@/components/tools/tool-020-genetic-potential')) as unknown as ToolComponent,
+  'tool-021-peptide-protocol': dynamic(() => import('@/components/tools/tool-021-peptide-protocol')) as unknown as ToolComponent,
+  'tool-022-half-life-stacker': dynamic(() => import('@/components/tools/tool-022-half-life-stacker')) as unknown as ToolComponent,
+  'tool-023-trt-optimization': dynamic(() => import('@/components/tools/tool-023-trt-optimization')) as unknown as ToolComponent,
+  'tool-024-bloodwork-interpreter': dynamic(() => import('@/components/tools/tool-024-bloodwork-interpreter')) as unknown as ToolComponent,
+  'tool-025-drug-interaction-pro': dynamic(() => import('@/components/tools/tool-025-drug-interaction-pro')) as unknown as ToolComponent,
+  'tool-026-injection-pain': dynamic(() => import('@/components/tools/tool-026-injection-pain')) as unknown as ToolComponent,
+  'tool-027-ester-conversion': dynamic(() => import('@/components/tools/tool-027-ester-conversion')) as unknown as ToolComponent,
+  'tool-028-stacking-synergy': dynamic(() => import('@/components/tools/tool-028-stacking-synergy')) as unknown as ToolComponent,
+  'tool-029-side-effect-early-warning': dynamic(() => import('@/components/tools/tool-029-side-effect-early-warning')) as unknown as ToolComponent,
+  'tool-030-cycle-cost-calculator': dynamic(() => import('@/components/tools/tool-030-cycle-cost-calculator')) as unknown as ToolComponent,
+  'tool-031-cycle-length-optimizer': dynamic(() => import('@/components/tools/tool-031-cycle-length-optimizer')) as unknown as ToolComponent,
+  'tool-032-advanced-pct-planner': dynamic(() => import('@/components/tools/tool-032-advanced-pct-planner')) as unknown as ToolComponent,
+  'tool-033-bloodwork-trend-analyzer': dynamic(() => import('@/components/tools/tool-033-bloodwork-trend-analyzer')) as unknown as ToolComponent,
+  'tool-034-compound-clearance': dynamic(() => import('@/components/tools/tool-034-compound-clearance')) as unknown as ToolComponent,
+  'tool-035-hormone-conversion': dynamic(() => import('@/components/tools/tool-035-hormone-conversion')) as unknown as ToolComponent,
+  'tool-036-injection-schedule': dynamic(() => import('@/components/tools/tool-036-injection-schedule')) as unknown as ToolComponent,
+  'tool-037-side-effect-probability': dynamic(() => import('@/components/tools/tool-037-side-effect-probability')) as unknown as ToolComponent,
+  'tool-038-stack-compatibility': dynamic(() => import('@/components/tools/tool-038-stack-compatibility')) as unknown as ToolComponent,
+  'tool-039-liver-enzyme-tracker': dynamic(() => import('@/components/tools/tool-039-liver-enzyme-tracker')) as unknown as ToolComponent,
+  'tool-040-lipid-profile-optimizer': dynamic(() => import('@/components/tools/tool-040-lipid-profile-optimizer')) as unknown as ToolComponent,
+  'tool-041-hematocrit-monitor': dynamic(() => import('@/components/tools/tool-041-hematocrit-monitor')) as unknown as ToolComponent,
+  'tool-042-estrogen-management': dynamic(() => import('@/components/tools/tool-042-estrogen-management')) as unknown as ToolComponent,
+  'tool-043-prolactin-management': dynamic(() => import('@/components/tools/tool-043-prolactin-management')) as unknown as ToolComponent,
+  'tool-044-dht-side-effects': dynamic(() => import('@/components/tools/tool-044-dht-side-effects')) as unknown as ToolComponent,
+  'tool-045-cycle-break-planner': dynamic(() => import('@/components/tools/tool-045-cycle-break-planner')) as unknown as ToolComponent,
+  'tool-046-trt-lifetime': dynamic(() => import('@/components/tools/tool-046-trt-lifetime')) as unknown as ToolComponent,
+  'tool-047-fertility-preservation': dynamic(() => import('@/components/tools/tool-047-fertility-preservation')) as unknown as ToolComponent,
+  'tool-048-cardiovascular-risk': dynamic(() => import('@/components/tools/tool-048-cardiovascular-risk')) as unknown as ToolComponent,
+  'tool-049-bone-density': dynamic(() => import('@/components/tools/tool-049-bone-density')) as unknown as ToolComponent,
+  'tool-050-mental-health': dynamic(() => import('@/components/tools/tool-050-mental-health')) as unknown as ToolComponent,
+  'tool-051-peptide-dosage-calculator': dynamic(() => import('@/components/tools/tool-051-peptide-dosage-calculator')) as unknown as ToolComponent,
+  'tool-052-growth-hormone-protocol-planner': dynamic(() => import('@/components/tools/tool-052-growth-hormone-protocol-planner')) as unknown as ToolComponent,
+  'tool-053-insulin-conversion-calculator': dynamic(() => import('@/components/tools/tool-053-insulin-conversion-calculator')) as unknown as ToolComponent,
+  'tool-054-glucose-tracker': dynamic(() => import('@/components/tools/tool-054-glucose-tracker')) as unknown as ToolComponent,
+  'tool-055-insulin-sensitivity-optimizer': dynamic(() => import('@/components/tools/tool-055-insulin-sensitivity-optimizer')) as unknown as ToolComponent,
+  'tool-056-mini-pct-calculator': dynamic(() => import('@/components/tools/tool-056-mini-pct-calculator')) as unknown as ToolComponent,
+  'tool-057-free-testosterone-manager': dynamic(() => import('@/components/tools/tool-057-free-testosterone-manager')) as unknown as ToolComponent,
+  'tool-058-androgenic-balance-calculator': dynamic(() => import('@/components/tools/tool-058-androgenic-balance-calculator')) as unknown as ToolComponent,
+  'tool-059-androgen-receptor-optimizer': dynamic(() => import('@/components/tools/tool-059-androgen-receptor-optimizer')) as unknown as ToolComponent,
+  'tool-060-5-alpha-conversion-calculator': dynamic(() => import('@/components/tools/tool-060-5-alpha-conversion-calculator')) as unknown as ToolComponent,
+  'tool-061-hair-loss-tracker': dynamic(() => import('@/components/tools/tool-061-hair-loss-tracker')) as unknown as ToolComponent,
+  'tool-062-prostate-health-manager': dynamic(() => import('@/components/tools/tool-062-prostate-health-manager')) as unknown as ToolComponent,
+  'tool-063-testicular-suppression-calculator': dynamic(() => import('@/components/tools/tool-063-testicular-suppression-calculator')) as unknown as ToolComponent,
+  'tool-064-sperm-production-optimizer': dynamic(() => import('@/components/tools/tool-064-sperm-production-optimizer')) as unknown as ToolComponent,
+  'tool-065-aromatase-conversion-calculator': dynamic(() => import('@/components/tools/tool-065-aromatase-conversion-calculator')) as unknown as ToolComponent,
+  'tool-066-estrogen-sensitivity-manager': dynamic(() => import('@/components/tools/tool-066-estrogen-sensitivity-manager')) as unknown as ToolComponent,
+  'tool-067-estrogen-balance-calculator': dynamic(() => import('@/components/tools/tool-067-estrogen-balance-calculator')) as unknown as ToolComponent,
+  'tool-068-gynecomastia-tracker': dynamic(() => import('@/components/tools/tool-068-gynecomastia-tracker')) as unknown as ToolComponent,
+  'tool-069-detoxification-optimizer': dynamic(() => import('@/components/tools/tool-069-detoxification-optimizer')) as unknown as ToolComponent,
+  'tool-070-oxidative-stress-calculator': dynamic(() => import('@/components/tools/tool-070-oxidative-stress-calculator')) as unknown as ToolComponent,
+  'tool-071-antioxidant-manager': dynamic(() => import('@/components/tools/tool-071-antioxidant-manager')) as unknown as ToolComponent,
+  'tool-072-systemic-inflammation-calculator': dynamic(() => import('@/components/tools/tool-072-systemic-inflammation-calculator')) as unknown as ToolComponent,
+  'tool-073-immune-system-optimizer': dynamic(() => import('@/components/tools/tool-073-immune-system-optimizer')) as unknown as ToolComponent,
+  'tool-074-blood-pressure-tracker': dynamic(() => import('@/components/tools/tool-074-blood-pressure-tracker')) as unknown as ToolComponent,
+  'tool-075-arterial-health-manager': dynamic(() => import('@/components/tools/tool-075-arterial-health-manager')) as unknown as ToolComponent,
+  'tool-076-blood-viscosity-calculator': dynamic(() => import('@/components/tools/tool-076-blood-viscosity-calculator')) as unknown as ToolComponent,
+  'tool-077-nitric-oxide-optimizer': dynamic(() => import('@/components/tools/tool-077-nitric-oxide-optimizer')) as unknown as ToolComponent,
+  'tool-078-endothelial-health-manager': dynamic(() => import('@/components/tools/tool-078-endothelial-health-manager')) as unknown as ToolComponent,
+  'tool-079-fat-metabolism-calculator': dynamic(() => import('@/components/tools/tool-079-fat-metabolism-calculator')) as unknown as ToolComponent,
+  'tool-080-mitochondrial-optimizer': dynamic(() => import('@/components/tools/tool-080-mitochondrial-optimizer')) as unknown as ToolComponent,
+  'tool-081-cellular-aging-calculator': dynamic(() => import('@/components/tools/tool-081-cellular-aging-calculator')) as unknown as ToolComponent,
+  'tool-082-telomere-manager': dynamic(() => import('@/components/tools/tool-082-telomere-manager')) as unknown as ToolComponent,
+  'tool-083-anti-aging-inflammation-calculator': dynamic(() => import('@/components/tools/tool-083-anti-aging-inflammation-calculator')) as unknown as ToolComponent,
+  'tool-084-cognitive-enhancer': dynamic(() => import('@/components/tools/tool-084-cognitive-enhancer')) as unknown as ToolComponent,
+  'tool-085-sleep-quality-manager': dynamic(() => import('@/components/tools/tool-085-sleep-quality-manager')) as unknown as ToolComponent,
+  'tool-086-cortisol-stress-calculator': dynamic(() => import('@/components/tools/tool-086-cortisol-stress-calculator')) as unknown as ToolComponent,
+  'tool-087-mood-optimizer': dynamic(() => import('@/components/tools/tool-087-mood-optimizer')) as unknown as ToolComponent,
+  'tool-088-dopamine-tracker': dynamic(() => import('@/components/tools/tool-088-dopamine-tracker')) as unknown as ToolComponent,
+  'tool-089-serotonin-manager': dynamic(() => import('@/components/tools/tool-089-serotonin-manager')) as unknown as ToolComponent,
+  'tool-090-female-hormone-balance-calculator': dynamic(() => import('@/components/tools/tool-090-female-hormone-balance-calculator')) as unknown as ToolComponent,
+  'tool-091-female-health-optimizer': dynamic(() => import('@/components/tools/tool-091-female-health-optimizer')) as unknown as ToolComponent,
+  'tool-092-female-dosage-calculator': dynamic(() => import('@/components/tools/tool-092-female-dosage-calculator')) as unknown as ToolComponent,
+  'tool-093-menstrual-cycle-manager': dynamic(() => import('@/components/tools/tool-093-menstrual-cycle-manager')) as unknown as ToolComponent,
+  'tool-094-pregnancy-risk-calculator': dynamic(() => import('@/components/tools/tool-094-pregnancy-risk-calculator')) as unknown as ToolComponent,
+  'tool-095-skin-health-optimizer': dynamic(() => import('@/components/tools/tool-095-skin-health-optimizer')) as unknown as ToolComponent,
+  'tool-096-hair-nail-tracker': dynamic(() => import('@/components/tools/tool-096-hair-nail-tracker')) as unknown as ToolComponent,
+  'tool-097-hydration-balance-calculator': dynamic(() => import('@/components/tools/tool-097-hydration-balance-calculator')) as unknown as ToolComponent,
+  'tool-098-sodium-potassium-manager': dynamic(() => import('@/components/tools/tool-098-sodium-potassium-manager')) as unknown as ToolComponent,
+  'tool-099-digestive-health-optimizer': dynamic(() => import('@/components/tools/tool-099-digestive-health-optimizer')) as unknown as ToolComponent,
+  'tool-100-comprehensive-report-generator': dynamic(() => import('@/components/tools/tool-100-comprehensive-report-generator')) as unknown as ToolComponent,
+  'tool-101-sarm-to-aas-transition-bridge-predictor': dynamic(() => import('@/components/tools/tool-101-sarm-to-aas-transition-bridge-predictor')) as unknown as ToolComponent,
+  'tool-102-subcutaneous-vs-intramuscular-pk-modeler': dynamic(() => import('@/components/tools/tool-102-subcutaneous-vs-intramuscular-pk-modeler')) as unknown as ToolComponent,
+  'tool-103-renal-function-hydration-index': dynamic(() => import('@/components/tools/tool-103-renal-function-hydration-index')) as unknown as ToolComponent,
+  'tool-104-thyroid-metabolic-rate-dynamics': dynamic(() => import('@/components/tools/tool-104-thyroid-metabolic-rate-dynamics')) as unknown as ToolComponent,
+  'tool-105-ai-health-data-fusion-hub': dynamic(() => import('@/components/tools/tool-105-ai-health-data-fusion-hub')) as unknown as ToolComponent,
+  'tool-106-glycogen-supercompensation-water-modeler': dynamic(() => import('@/components/tools/tool-106-glycogen-supercompensation-water-modeler')) as unknown as ToolComponent,
+  'tool-107-contest-prep-peak-week-manipulator': dynamic(() => import('@/components/tools/tool-107-contest-prep-peak-week-manipulator')) as unknown as ToolComponent,
+  'tool-108-ai-body-composition-vision-engine': dynamic(() => import('@/components/tools/tool-108-ai-body-composition-vision-engine')) as unknown as ToolComponent,
+  'tool-109-competition-readiness-posing-os': dynamic(() => import('@/components/tools/tool-109-competition-readiness-posing-os')) as unknown as ToolComponent,
+  'tool-110-ai-meal-vision-scanner': dynamic(() => import('@/components/tools/tool-110-ai-meal-vision-scanner')) as unknown as ToolComponent,
 };
 
 /**

@@ -69,19 +69,38 @@ describe('ToolMount registry', () => {
     expect(staticToolImports).toHaveLength(0);
   });
 
+  it('declares no `loading` fallback (G-P10: a fallback forces a Suspense boundary)', () => {
+    // next/dynamic wraps in Suspense when a loading fallback is present
+    // (next/dist/shared/lib/lazy-dynamic/loadable.js: hasSuspenseBoundary =
+    //  !opts.ssr || !!opts.loading). That streams the server-rendered tool body
+    // into a hidden out-of-order container and hides it from no-JS clients.
+    const code = mountSrc
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/[^\n]*/g, '');
+    expect(code).not.toMatch(/loading\s*:/);
+    expect(code).not.toContain('ToolSkeleton');
+    expect(code).not.toContain('tool-mount-skeleton');
+  });
+
+  it('every dynamic entry is a bare literal import (no options object)', () => {
+    const entries = mountSrc.match(/:\s*dynamic\(\(\)\s*=>\s*import\('[^']+'\)\)/g) || [];
+    expect(entries).toHaveLength(110);
+  });
+
   it('uses literal import paths only (no template strings, no computed paths)', () => {
+    // strip comments first: prose may legitimately mention import('…')
+    const source = mountSrc
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/[^\n]*/g, '');
     // every import() call site must contain a quoted literal
-    const importCalls = mountSrc.match(/import\([^)]*\)/g) || [];
+    const importCalls = source.match(/import\([^)]*\)/g) || [];
     expect(importCalls.length).toBe(110);
     for (const call of importCalls) {
       expect(call).toMatch(/^import\('@\/components\/tools\/[a-z0-9-]+'\)$/);
     }
-    // strip comments, then assert no template-string / computed import machinery
-    const code = mountSrc
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/[^\n]*/g, '');
-    expect(code).not.toContain('${');
-    expect(code).not.toContain('`');
+    // assert no template-string / computed import machinery
+    expect(source).not.toContain('${');
+    expect(source).not.toContain('`');
   });
 
   it('resolves exactly one component at runtime and renders it', () => {
@@ -89,8 +108,7 @@ describe('ToolMount registry', () => {
     expect(mountSrc).toMatch(/return\s*<Component/);
   });
 
-  it('has a loading skeleton and a defensive missing-slug branch', () => {
-    expect(mountSrc).toContain('tool-mount-skeleton');
+  it('keeps a defensive missing-slug branch that imports nothing', () => {
     expect(mountSrc).toContain('tool-mount-missing');
   });
 });

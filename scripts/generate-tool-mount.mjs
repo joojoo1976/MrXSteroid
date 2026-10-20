@@ -32,11 +32,22 @@ if (entries.length === 0) {
   process.exit(2);
 }
 
+// IMPORTANT (G-P10): no `loading` option here on purpose.
+//
+// next/dynamic wraps the component in a Suspense boundary whenever a `loading`
+// fallback is supplied (see next/dist/shared/lib/lazy-dynamic/loadable.js:
+// `hasSuspenseBoundary = !opts.ssr || !!opts.loading`). Because React.lazy
+// always suspends on the first server render, that boundary makes React stream
+// the tool body into a `hidden` out-of-order container (`<div hidden id="S:n">`)
+// which only becomes visible once client JS hydrates. With JS disabled the body
+// stayed invisible — the G-P10 regression.
+//
+// Omitting `loading` keeps `hasSuspenseBoundary` false, so the dynamic import is
+// rendered through a Fragment: the tool is server-rendered straight into the
+// visible document, while webpack still emits one async chunk per tool. The
+// client-side navigation skeleton lives in app/smarttools/[category]/[tool]/loading.tsx.
 const registryLines = entries
-  .map(
-    (e) =>
-      `  '${e.slug}': dynamic(() => import('@/components/tools/${e.component}'), {\n    loading: () => <ToolSkeleton />,\n  }) as unknown as ToolComponent,`
-  )
+  .map((e) => `  '${e.slug}': dynamic(() => import('@/components/tools/${e.component}')) as unknown as ToolComponent,`)
   .join('\n');
 
 const file = `'use client';
@@ -61,14 +72,18 @@ const file = `'use client';
  *   Mounting the tool through this client boundary — with the 110 next/dynamic
  *   declarations at module scope and LITERAL import paths — makes each entry a
  *   real async chunk again. Webpack emits
- *       "slug": dynamic(() => Promise.all([l.e(chunk)]).then(l.bind(l, id)))
+ *       "slug": dynamic(() => Promise.resolve().then(() => l.bind(l, id)))
  *   and the browser downloads only the requested tool's chunk. Measured after:
  *   114 kB First Load JS.
  *
- * SSR is preserved: next/dynamic defaults to ssr:true, so the requested tool is
- * server-rendered (its <h1> stays in the initial HTML) and hydrates on the
- * client. Only the one requested component is ever resolved; the other 109 are
- * not rendered or eagerly imported.
+ * SSR is visible without JavaScript (G-P10): each entry is a bare
+ * \`next/dynamic(() => import('…'))\` with NO \`loading\` option. Supplying a
+ * loading fallback would make next/dynamic wrap the import in a Suspense
+ * boundary, which streams the server-rendered body into a hidden
+ * \`<div hidden id="S:n">\` container that only becomes visible after hydration —
+ * invisible with JS disabled. Without the fallback the tool is server-rendered
+ * into the visible document and hydrates in place (no duplicate body). The
+ * client-side navigation skeleton lives in the route's loading.tsx instead.
  *
  * Slug safety: the slug is supplied by a trusted server component (validated
  * against the published catalog) and re-guarded here by an allow-list — an
@@ -80,20 +95,12 @@ import dynamic from 'next/dynamic';
 type ToolProps = Record<string, never>;
 type ToolComponent = React.ComponentType<ToolProps>;
 
-/** Shown while the single requested tool chunk is fetched. */
-function ToolSkeleton() {
-  return (
-    <div
-      data-testid="tool-mount-skeleton"
-      className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
-      aria-hidden="true"
-    />
-  );
-}
-
 /**
  * Allow-listed slug -> lazily-imported component. Module scope is deliberate:
  * each entry must be a top-level next/dynamic declaration with a literal import.
+ *
+ * No \`loading\` option: see the G-P10 note above — a fallback would force a
+ * Suspense boundary and hide the server-rendered tool body from no-JS clients.
  */
 const TOOL_COMPONENTS: Record<string, ToolComponent> = {
 ${registryLines}
