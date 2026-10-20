@@ -618,6 +618,7 @@ export async function createCombinedCheckoutSession(
             gateway_reference_id: providerSessionId,
             metadata: {
                 ...(input.metadata || {}),
+                guest_resume_token: guestResumeToken,
                 order_kind: 'combined',
                 lines: orderLines,
                 subtotal: totals.subtotal,
@@ -632,9 +633,6 @@ export async function createCombinedCheckoutSession(
     if (linkError) {
         throw new Error(`[CombinedCheckout] Failed to persist session linkage: ${linkError.message}`);
     }
-
-    // Persist initial legs into invoice_payment_legs table so DB is populated
-    await persistPaymentLegs(supabase, finalLegs);
 
     await supabase
         .from('orders')
@@ -658,6 +656,21 @@ export async function createCombinedCheckoutSession(
         })
         .eq('id', intent.id);
 
+    // P0: Sanitize payment legs for public client response.
+    // Store complete provider-session information on the server (persisted above).
+    // Return only the currently payable leg's session URL to the client.
+    // Set all downstream pending legs' sessionUrl values to null in the initial public response.
+    const clientSafeLegs = isMultiLegOrder
+        ? finalLegs.map((leg, idx) => ({
+            ...leg,
+            isPayable: idx === 0,
+            sessionUrl: idx === 0 ? leg.sessionUrl : null,
+        }))
+        : finalLegs.map((leg) => ({
+            ...leg,
+            isPayable: true,
+        }));
+
     return {
         invoiceId,
         orderId,
@@ -675,7 +688,7 @@ export async function createCombinedCheckoutSession(
         shippingCost: totals.shippingCost,
         discount: totals.discount,
         idempotent: false,
-        paymentLegs: finalLegs,
+        paymentLegs: clientSafeLegs,
         isMultiLeg: isMultiLegOrder,
         resumeToken: guestResumeToken,
     };

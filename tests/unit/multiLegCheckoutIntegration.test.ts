@@ -57,7 +57,10 @@ function createFakeSupabase(seed: {
     }
 
     let idCounter = 0;
-    const nextId = (t: string) => `${t}-${String(++idCounter).padStart(4, '0')}`;
+    const nextId = (t: string) =>
+        t === 'invoices' || t === 'orders' || t === 'invoice_payment_legs'
+            ? `11111111-1111-4111-8111-${String(++idCounter).padStart(12, '0')}`
+            : `${t}-${String(++idCounter).padStart(4, '0')}`;
 
     function from(table: string) {
         const state = {
@@ -378,6 +381,8 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
                         can_fulfill: false,
                         idempotent: false,
                         target_leg_id: `${invoiceId}_leg_0`,
+                        total_paid: 49.99,
+                        invoice_amount: 399.98,
                     },
                     error: null,
                 };
@@ -464,6 +469,8 @@ describe('Multi-Leg Payment Integration & Enforcement (GAP-A, GAP-B, GAP-C, GAP-
                         can_fulfill: true,
                         idempotent: false,
                         target_leg_id: `${invoiceId}_leg_1`,
+                        total_paid: 399.98,
+                        invoice_amount: 399.98,
                     },
                     error: null,
                 };
@@ -859,6 +866,8 @@ describe('V3.4.1 Acceptance Gap: Fix 1 — No stale payment_status overwrite', (
             can_fulfill: true,
             idempotent: false,
             target_leg_id: 'leg_fw_001',
+            total_paid: 399.98,
+            invoice_amount: 399.98,
         });
 
         const result = await applyProviderVerdict({
@@ -902,6 +911,9 @@ describe('V3.4.1 Acceptance Gap: Fix 1 — No stale payment_status overwrite', (
             invoice_status: 'paid',
             can_fulfill: true,
             idempotent: false,
+            target_leg_id: 'leg_fw_001',
+            total_paid: 399.98,
+            invoice_amount: 399.98,
         });
 
         const verdictParams = {
@@ -1220,6 +1232,9 @@ describe('V3.4.1 Acceptance Gap: Fix 3 — Strict Fail-Closed on all invalid RPC
                             invoice_status: 'partially_paid',
                             can_fulfill: false,
                             idempotent: false,
+                            target_leg_id: 'leg_rpc_fw',
+                            total_paid: 49.99,
+                            invoice_amount: 399.98,
                         },
                         error: null,
                     };
@@ -1385,15 +1400,18 @@ describe('V3.4.1 Remediation: P0 — /api/checkout/status Authentication & IDOR 
         expect(res.status).toBe(403);
         const data = await res.json();
         expect(data.success).toBe(false);
-        expect(data.error).toContain('resume token required');
+        expect(data.error).toContain('x-resume-token header required');
     });
 
     it('Guest Security: Reading guest invoice with WRONG resume token is REJECTED with 403', async () => {
         const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
         const supabase = setupTestDatabase();
 
-        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=wrong_token`, {
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}`, {
             method: 'GET',
+            headers: {
+                'x-resume-token': 'wrong_token',
+            },
         });
 
         const res = await handleCheckoutStatus(req, {
@@ -1404,12 +1422,35 @@ describe('V3.4.1 Remediation: P0 — /api/checkout/status Authentication & IDOR 
         expect(res.status).toBe(403);
     });
 
-    it('Guest Security: Reading guest invoice with VALID resume token SUCCEEDS with 200', async () => {
+    it('Guest Security (Finding 4): Query URL token is REJECTED with 403 because token must be in request header', async () => {
         const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
         const supabase = setupTestDatabase();
 
+        // Sending token in query param only, without header
         const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=${guestResumeToken}`, {
             method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(403);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toContain('x-resume-token header required');
+    });
+
+    it('Guest Security (Finding 4): Reading guest invoice with VALID resume token in x-resume-token header SUCCEEDS with 200', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = setupTestDatabase();
+
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}`, {
+            method: 'GET',
+            headers: {
+                'x-resume-token': guestResumeToken,
+            },
         });
 
         const res = await handleCheckoutStatus(req, {
@@ -1422,27 +1463,6 @@ describe('V3.4.1 Remediation: P0 — /api/checkout/status Authentication & IDOR 
         expect(data.success).toBe(true);
         expect(data.invoiceId).toBe(guestInvoiceId);
         expect(data.legs).toHaveLength(2);
-    });
-
-    it('Guest Security: Reading guest invoice with VALID HMAC signature SUCCEEDS with 200', async () => {
-        const { handleCheckoutStatus, computeGuestHmac } = await import('../../server/payments/checkoutStatusService');
-        const supabase = setupTestDatabase();
-
-        const validHmac = computeGuestHmac(guestInvoiceId, guestEmail);
-
-        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${guestInvoiceId}&token=${validHmac}`, {
-            method: 'GET',
-        });
-
-        const res = await handleCheckoutStatus(req, {
-            supabase,
-            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
-        });
-
-        expect(res.status).toBe(200);
-        const data = await res.json();
-        expect(data.success).toBe(true);
-        expect(data.invoiceId).toBe(guestInvoiceId);
     });
 });
 
@@ -1471,8 +1491,11 @@ describe('V3.4.1 Remediation: P1 — Strict Payment Leg Sequencing & SessionUrl 
             },
         });
 
-        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}&token=${resumeToken}`, {
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
             method: 'GET',
+            headers: {
+                'x-resume-token': resumeToken,
+            },
         });
 
         const res = await handleCheckoutStatus(req, {
@@ -1519,8 +1542,11 @@ describe('V3.4.1 Remediation: P1 — Strict Payment Leg Sequencing & SessionUrl 
             },
         });
 
-        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}&token=${resumeToken}`, {
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
             method: 'GET',
+            headers: {
+                'x-resume-token': resumeToken,
+            },
         });
 
         const res = await handleCheckoutStatus(req, {
@@ -1608,5 +1634,529 @@ describe('V3.4.1 Remediation: P0 — Stale Overwrite Prevention & Deterministic 
         const finalLeg0 = supabase._db.invoice_payment_legs.find((r: any) => r.id === 'leg_0');
         expect(finalLeg0.status).toBe('succeeded');
         expect(finalLeg0.provider_reference).toBe('fw_ref_001');
+    });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+//  V3.4.1 Final PR #12 Remediation: Comprehensive Finding Suites
+// ══════════════════════════════════════════════════════════════════════════
+
+describe('Finding 1 — P0: Premature Session URL Exposure & Step Skipping Prevention', () => {
+    beforeEach(() => {
+        process.env.KASHIER_MODE = 'test';
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = 'MID-TEST-GLOBAL';
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = 'test-api-global-123';
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'test-secret-global-456';
+        process.env.FOURTHWALL_SHOP_ID = 'shop_test_123';
+        process.env.FOURTHWALL_API_KEY = 'fw_test_key_123';
+    });
+    it('Finding 1: Initial checkout response returns downstream pending legs with sessionUrl = null and isPayable = false', async () => {
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+
+        const lines: CombinedLineInput[] = [
+            { kind: 'product', tierId: 'digital' },       // Fourthwall
+            { kind: 'addon',   tierId: 'digital_plus' },  // Kashier
+        ];
+
+        const mockFwAdapter: CombinedCheckoutGateway = {
+            createPaymentSession: async (params: any) => ({
+                sessionId: 'fw_sess_initial_001',
+                sessionUrl: 'https://fourthwall.com/pay/initial_001',
+                orderId: params.orderRef,
+                amount: params.amount,
+                currency: params.currency,
+                status: 'ACTIVE',
+            }),
+        };
+
+        const mockKashierAdapter: CombinedCheckoutGateway = {
+            createPaymentSession: async (params: any) => ({
+                sessionId: 'ks_sess_initial_002',
+                sessionUrl: 'https://kashier.io/pay/initial_002',
+                orderId: params.orderRef,
+                amount: params.amount,
+                currency: params.currency,
+                status: 'ACTIVE',
+            }),
+        };
+
+        const result = await createCombinedCheckoutSession(
+            { email: 'buyer@example.com', fullName: 'Leg Tester', country: 'US', lines },
+            {
+                supabase,
+                gatewayFactory: () => gateway,
+                pricingRows: async () => [],
+                fourthwallAdapter: mockFwAdapter,
+                kashierServiceAdapter: mockKashierAdapter,
+            }
+        );
+
+        expect(result.isMultiLeg).toBe(true);
+        expect(result.paymentLegs).toHaveLength(2);
+
+        const leg0 = result.paymentLegs![0];
+        const leg1 = result.paymentLegs![1];
+
+        // Leg 0 is the immediate payable leg
+        expect(leg0.isPayable).toBe(true);
+        expect(leg0.sessionUrl).toBe('https://fourthwall.com/pay/initial_001');
+
+        // CRITICAL P0 ASSERTION: Leg 1 sessionUrl MUST BE NULL in client response
+        expect(leg1.isPayable).toBe(false);
+        expect(leg1.sessionUrl).toBeNull();
+
+        // Server-side persistence MUST retain both session URLs
+        const dbLegs = supabase._db.invoice_payment_legs;
+        expect(dbLegs).toHaveLength(2);
+        const dbLeg0 = dbLegs.find((l: any) => l.leg_index === 1);
+        const dbLeg1 = dbLegs.find((l: any) => l.leg_index === 2);
+        expect(dbLeg0.session_url).toBe('https://fourthwall.com/pay/initial_001');
+        expect(dbLeg1.session_url).toBe('https://kashier.io/pay/initial_002');
+    });
+
+    it('Finding 1: Client cannot skip first payment step using initial checkout response because downstream sessionUrl is null', async () => {
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+
+        const lines: CombinedLineInput[] = [
+            { kind: 'product', tierId: 'digital' },
+            { kind: 'addon',   tierId: 'digital_plus' },
+        ];
+
+        const result = await createCombinedCheckoutSession(
+            { email: 'skip_attacker@example.com', fullName: 'Attacker Test', country: 'US', lines },
+            {
+                supabase,
+                gatewayFactory: () => gateway,
+                pricingRows: async () => [],
+                fourthwallAdapter: {
+                    createPaymentSession: async (p: any) => ({
+                        sessionId: 'fw_leg1', sessionUrl: 'https://fw.com/1', amount: p.amount, currency: p.currency,
+                    }),
+                },
+                kashierServiceAdapter: {
+                    createPaymentSession: async (p: any) => ({
+                        sessionId: 'ks_leg2', sessionUrl: 'https://ks.com/2', amount: p.amount, currency: p.currency,
+                    }),
+                },
+            }
+        );
+
+        // Client attempts to inspect the 2nd leg from the response
+        const downstreamLeg = result.paymentLegs!.find((l) => l.legIndex === 2);
+        expect(downstreamLeg).toBeDefined();
+        expect(downstreamLeg!.sessionUrl).toBeNull();
+        expect(downstreamLeg!.isPayable).toBe(false);
+    });
+});
+
+describe('Finding 2 — P0: Race-Safe & Monotonic Payment Leg Persistence', () => {
+    it('Finding 2: persistPaymentLegs THROWS when existing-row lookup encounters a database error (never proceeds with write)', async () => {
+        const { persistPaymentLegs } = await import('../../server/payments/multiLegPaymentService');
+        const invoiceId = 'err_db_read_001';
+
+        // Mock supabase returning a real database error (not relation-missing)
+        const mockSupabase: any = {
+            from: (table: string) => ({
+                select: () => ({
+                    eq: () => Promise.resolve({
+                        data: null,
+                        error: { message: 'Connection pool exhausted: timeout 5000ms', code: '57P01' },
+                    }),
+                }),
+                insert: () => {
+                    throw new Error('Insert must NEVER be called after a query error!');
+                },
+                update: () => {
+                    throw new Error('Update must NEVER be called after a query error!');
+                },
+            }),
+        };
+
+        const legs: PaymentLeg[] = [
+            {
+                id: 'leg_err_1', invoiceId, legIndex: 1,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'pending',
+                providerReference: null, actualPaidAmount: null,
+                sessionUrl: 'https://fw.com/err', items: [], paidAt: null,
+            },
+        ];
+
+        // CRITICAL P0 ASSERTION: Query error must throw and NEVER proceed with upsert
+        await expect(persistPaymentLegs(mockSupabase, legs)).rejects.toThrow(
+            /Query error reading existing legs: Connection pool exhausted/
+        );
+    });
+
+    it('Finding 2: persistPaymentLegs distinguishes missing table (42P01) from database error and safely skips write without crashing', async () => {
+        const { persistPaymentLegs } = await import('../../server/payments/multiLegPaymentService');
+        const invoiceId = 'pre_migration_inv_001';
+
+        const mockSupabase: any = {
+            from: () => ({
+                select: () => ({
+                    eq: () => Promise.resolve({
+                        data: null,
+                        error: { message: 'relation "invoice_payment_legs" does not exist', code: '42P01' },
+                    }),
+                }),
+            }),
+        };
+
+        const legs: PaymentLeg[] = [
+            {
+                id: 'leg_prem_1', invoiceId, legIndex: 1,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 49.99, currency: 'USD', status: 'pending',
+                providerReference: null, actualPaidAmount: null,
+                sessionUrl: 'https://fw.com/prem', items: [], paidAt: null,
+            },
+        ];
+
+        // Must resolve safely without throwing
+        await expect(persistPaymentLegs(mockSupabase, legs)).resolves.toBeUndefined();
+    });
+
+    it('Finding 2: Atomic conditional update prevents overwriting a leg settled concurrently between read and write', async () => {
+        const { persistPaymentLegs } = await import('../../server/payments/multiLegPaymentService');
+        const supabase = createFakeSupabase();
+        const invoiceId = 'race_window_inv_001';
+
+        // 1. Leg starts as pending
+        supabase._db.invoice_payment_legs.push({
+            id: 'leg_race_window',
+            invoice_id: invoiceId,
+            leg_index: 1,
+            leg_type: 'merchandise',
+            provider: 'fourthwall',
+            amount: 49.99,
+            currency: 'USD',
+            status: 'pending',
+            provider_reference: null,
+            actual_paid_amount: null,
+            paid_at: null,
+        });
+
+        // 2. Interleaving: right after read, concurrent webhook settles the row to succeeded
+        // In our mock, let's settle it in DB directly:
+        const dbRow = supabase._db.invoice_payment_legs[0];
+        dbRow.status = 'succeeded';
+        dbRow.provider_reference = 'winner_ref_123';
+        dbRow.actual_paid_amount = 49.99;
+        const settledTimestamp = '2026-10-20T12:00:00Z';
+        dbRow.paid_at = settledTimestamp;
+
+        // 3. Stale worker attempts to persist older snapshot with status 'pending'
+        const staleSnapshot: PaymentLeg[] = [
+            {
+                id: 'leg_race_window',
+                invoiceId,
+                legIndex: 1,
+                legType: 'merchandise',
+                provider: 'fourthwall',
+                amount: 49.99,
+                currency: 'USD',
+                status: 'pending',
+                providerReference: null,
+                actualPaidAmount: null,
+                sessionUrl: 'https://fw.com/stale',
+                items: [],
+                paidAt: null,
+            },
+        ];
+
+        await persistPaymentLegs(supabase, staleSnapshot);
+
+        // 4. Assert row in database was NOT downgraded
+        expect(dbRow.status).toBe('succeeded');
+        expect(dbRow.provider_reference).toBe('winner_ref_123');
+        expect(dbRow.actual_paid_amount).toBe(49.99);
+        expect(dbRow.paid_at).toBe(settledTimestamp);
+    });
+
+    it('Finding 2: Normal initialization inserts new legs and idempotent persistence is safe', async () => {
+        const { persistPaymentLegs } = await import('../../server/payments/multiLegPaymentService');
+        const supabase = createFakeSupabase();
+        const invoiceId = 'normal_init_inv_001';
+
+        const initialLegs: PaymentLeg[] = [
+            {
+                id: 'leg_init_1', invoiceId, legIndex: 1,
+                legType: 'merchandise', provider: 'fourthwall',
+                amount: 50.00, currency: 'USD', status: 'pending',
+                providerReference: null, actualPaidAmount: null,
+                sessionUrl: 'https://fw.com/init', items: [], paidAt: null,
+            },
+            {
+                id: 'leg_init_2', invoiceId, legIndex: 2,
+                legType: 'service', provider: 'kashier',
+                amount: 150.00, currency: 'USD', status: 'pending',
+                providerReference: null, actualPaidAmount: null,
+                sessionUrl: 'https://ks.com/init', items: [], paidAt: null,
+            },
+        ];
+
+        // 1. First call: normal initialization
+        await persistPaymentLegs(supabase, initialLegs);
+        expect(supabase._db.invoice_payment_legs).toHaveLength(2);
+
+        // 2. Second call: idempotent repeat
+        await persistPaymentLegs(supabase, initialLegs);
+        expect(supabase._db.invoice_payment_legs).toHaveLength(2);
+    });
+});
+
+describe('Finding 3 — P1: Validate Full Settlement RPC Contract & Consistency', () => {
+    function setupRpcTestSupabase(rpcResult: any) {
+        const supabase = createFakeSupabase();
+        supabase._db.invoices.push({
+            id: 'inv_contract_test',
+            user_id: 'user_contract_test',
+            amount: 399.98,
+            currency: 'USD',
+            status: 'open',
+            payment_status: 'pending',
+            metadata: {
+                payment_legs: [
+                    { id: 'leg_fw_c', legIndex: 0, provider: 'fourthwall', amount: 49.99, currency: 'USD', status: 'pending' },
+                    { id: 'leg_ks_c', legIndex: 1, provider: 'kashier', amount: 349.99, currency: 'USD', status: 'pending' },
+                ],
+            },
+        });
+        supabase._db.orders.push({ id: 'ord_c', invoice_id: 'inv_contract_test', payment_status: 'pending' });
+        supabase._db.payment_intents.push({ id: 'intent_c', invoice_id: 'inv_contract_test', attempt_number: 1, is_current: true, status: 'pending' });
+        supabase._db.profiles.push({ id: 'user_contract_test', has_paid: false, is_vip: false });
+
+        supabase.rpc = async (func: string) => {
+            if (func === 'settle_invoice_payment_leg') {
+                return { data: rpcResult, error: null };
+            }
+            return { data: null, error: null };
+        };
+
+        return supabase;
+    }
+
+    const baseVerdictParams = (supabase: any) => ({
+        supabase,
+        invoiceId: 'inv_contract_test',
+        gatewayName: 'FOURTHWALL_GLOBAL',
+        verdict: {
+            status: 'success' as const,
+            externalReferenceId: 'fw_c_ref',
+            paidAmount: 49.99,
+            currency: 'USD',
+        },
+        providerEventId: 'evt_c_123',
+        providerStatus: 'succeeded',
+        source: 'webhook' as const,
+    });
+
+    it('Contract: returns unresolved when RPC response is missing target_leg_id', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'partially_paid',
+            can_fulfill: false,
+            total_paid: 49.99,
+            invoice_amount: 399.98,
+            // target_leg_id missing!
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: returns unresolved when RPC response is missing total_paid or invoice_amount', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'partially_paid',
+            can_fulfill: false,
+            target_leg_id: 'leg_fw_c',
+            // total_paid and invoice_amount missing!
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: returns unresolved when RPC response has incorrect field types', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'partially_paid',
+            can_fulfill: 'true', // string instead of boolean!
+            target_leg_id: 'leg_fw_c',
+            total_paid: '49.99', // string instead of number!
+            invoice_amount: 399.98,
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: returns unresolved when RPC response is CONTRADICTORY (can_fulfill: true but invoice_status: partially_paid)', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'partially_paid',
+            can_fulfill: true, // Contradictory: can_fulfill cannot be true when status is partially_paid!
+            target_leg_id: 'leg_fw_c',
+            total_paid: 399.98,
+            invoice_amount: 399.98,
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: returns unresolved when RPC response is CONTRADICTORY (can_fulfill: true but total_paid < invoice_amount)', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'paid',
+            can_fulfill: true,
+            target_leg_id: 'leg_fw_c',
+            total_paid: 49.99, // Contradictory: total_paid is far less than invoice_amount!
+            invoice_amount: 399.98,
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: returns unresolved when RPC response is CONTRADICTORY (invoice_status: paid but can_fulfill: false)', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            invoice_status: 'paid',
+            can_fulfill: false, // Contradictory!
+            target_leg_id: 'leg_fw_c',
+            total_paid: 399.98,
+            invoice_amount: 399.98,
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+
+    it('Contract: handles legitimate idempotent response returning already_processed', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            idempotent: true,
+            invoice_status: 'paid',
+            can_fulfill: false,
+            message: 'Invoice already settled',
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('already_processed');
+    });
+
+    it('Contract: rejects invalid idempotent response (idempotent: true but invoice_status != paid) returning unresolved', async () => {
+        const supabase = setupRpcTestSupabase({
+            success: true,
+            idempotent: true,
+            invoice_status: 'pending', // Invalid for idempotent!
+            can_fulfill: false,
+        });
+
+        const res = await applyProviderVerdict(baseVerdictParams(supabase));
+        expect(res.code).toBe('unresolved');
+    });
+});
+
+describe('Finding 4 — P2: Customer-Facing Guest Recovery Contract via Request Header', () => {
+    beforeEach(() => {
+        process.env.KASHIER_MODE = 'test';
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = 'MID-TEST-GLOBAL';
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = 'test-api-global-123';
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'test-secret-global-456';
+    });
+
+    it('Finding 4: End-to-end guest flow: resumeToken generated at checkout allows status query via x-resume-token header', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = createFakeSupabase();
+        const gateway = createFakeGateway();
+
+        const lines: CombinedLineInput[] = [
+            { kind: 'product', tierId: 'digital' },
+            { kind: 'addon',   tierId: 'digital_plus' },
+        ];
+
+        // 1. Guest creates checkout
+        const checkoutRes = await createCombinedCheckoutSession(
+            { email: 'guest_customer@example.com', fullName: 'Guest Customer', country: 'US', lines },
+            {
+                supabase,
+                gatewayFactory: () => gateway,
+                pricingRows: async () => [],
+                fourthwallAdapter: {
+                    createPaymentSession: async (p: any) => ({
+                        sessionId: 'fw_guest_1', sessionUrl: 'https://fw.com/guest_1', amount: p.amount, currency: p.currency,
+                    }),
+                },
+                kashierServiceAdapter: {
+                    createPaymentSession: async (p: any) => ({
+                        sessionId: 'ks_guest_2', sessionUrl: 'https://ks.com/guest_2', amount: p.amount, currency: p.currency,
+                    }),
+                },
+            }
+        );
+
+        expect(checkoutRes.resumeToken).toBeDefined();
+        const resumeToken = checkoutRes.resumeToken!;
+        const invoiceId = checkoutRes.invoiceId;
+
+        // 2. Guest requests status with the resumeToken in x-resume-token header
+        const statusReq = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}`, {
+            method: 'GET',
+            headers: {
+                'x-resume-token': resumeToken,
+            },
+        });
+
+        const statusRes = await handleCheckoutStatus(statusReq, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(statusRes.status).toBe(200);
+        const data = await statusRes.json();
+        expect(data.success).toBe(true);
+        expect(data.invoiceId).toBe(invoiceId);
+        expect(data.legs[0].isPayable).toBe(true);
+        expect(data.legs[1].isPayable).toBe(false);
+    });
+
+    it('Finding 4: Request with invoice UUID and email alone without x-resume-token header is strictly REJECTED with 403', async () => {
+        const { handleCheckoutStatus } = await import('../../server/payments/checkoutStatusService');
+        const supabase = createFakeSupabase();
+        const invoiceId = '99999999-9999-4999-a999-999999999999';
+
+        supabase._db.invoices.push({
+            id: invoiceId,
+            user_id: null,
+            customer_email: 'target_guest@example.com',
+            payment_status: 'pending',
+            status: 'open',
+            amount: 100,
+            currency: 'USD',
+            metadata: {
+                guest_resume_token: 'secret_token_123',
+            },
+        });
+
+        // Attacker knows UUID and email, but does NOT possess the secret resumeToken in header
+        const req = new Request(`https://mrxsteroid.com/api/checkout/status?invoiceId=${invoiceId}&email=target_guest@example.com`, {
+            method: 'GET',
+        });
+
+        const res = await handleCheckoutStatus(req, {
+            supabase,
+            getAuthUser: async () => ({ status: 'ANONYMOUS' }),
+        });
+
+        expect(res.status).toBe(403);
+        const data = await res.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toContain('x-resume-token header required');
     });
 });

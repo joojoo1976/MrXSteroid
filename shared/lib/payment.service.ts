@@ -318,9 +318,7 @@ class PaymentService {
                 // Ignore auth lookup failure
             }
 
-            const url = options?.resumeToken
-                ? `/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}&token=${encodeURIComponent(options.resumeToken)}`
-                : `/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}`;
+            const url = `/api/checkout/status?invoiceId=${encodeURIComponent(invoiceId)}`;
 
             const response = await fetch(url, {
                 method: 'GET',

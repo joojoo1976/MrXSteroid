@@ -4,21 +4,23 @@
  *
  *  Authoritative Server-Side Multi-Leg Settlement Status Service.
  *
- *  Security & Authorization (P0):
+ *  Security & Authorization (P0 - Finding 4 Outcome B):
  *  - Registered user's invoice: caller MUST be authenticated and match user_id.
- *  - Guest checkout: caller MUST supply a valid guest resume token or HMAC signature.
- *    Access based purely on invoice UUID is strictly rejected.
+ *  - Guest checkout: caller MUST supply the original authoritative guest_resume_token
+ *    via the `x-resume-token` request header.
+ *  - URL query parameter tokens are explicitly rejected (prevents token leakage in
+ *    access logs, browser history, and referrer headers).
+ *  - Authorization is NEVER derived from invoice UUID and email alone.
  *
  *  Sequencing Enforcement (P1):
  *  - Determines nextPendingLeg as earliest leg with status !== 'succeeded'.
  *  - Only the nextPendingLeg has isPayable = true and reveals sessionUrl.
- *  - Downstream legs remain locked with hidden sessionUrls.
+ *  - Downstream legs remain locked with hidden (null) sessionUrls.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import { NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { createHmac } from 'node:crypto';
 import { getAuthenticatedUser, type UserAuthResult } from '@/server/auth/resolveUser';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,13 +28,6 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 export interface CheckoutStatusDeps {
     supabase?: SupabaseClient | any;
     getAuthUser?: (req: Request) => Promise<UserAuthResult>;
-}
-
-export function computeGuestHmac(invoiceId: string, email: string | null, secretOverride?: string): string {
-    const secret = secretOverride || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.JWT_SECRET || 'mrx_guest_token_secret';
-    return createHmac('sha256', secret)
-        .update(`${invoiceId}:${(email || '').toLowerCase().trim()}`)
-        .digest('hex');
 }
 
 const getDefaultAdminSupabase = () => {
@@ -50,7 +45,10 @@ export async function handleCheckoutStatus(
     try {
         const { searchParams } = new URL(req.url);
         const invoiceId = searchParams.get('invoiceId') || searchParams.get('id');
-        const candidateToken = searchParams.get('token') || req.headers.get('x-resume-token') || null;
+
+        // P0 (Finding 4): Candidate token MUST come from the x-resume-token header,
+        // never from URL query parameters.
+        const candidateToken = req.headers.get('x-resume-token')?.trim() || null;
 
         if (!invoiceId || !uuidRegex.test(invoiceId)) {
             return NextResponse.json(
@@ -89,7 +87,6 @@ export async function handleCheckoutStatus(
 
         const metadata = (invoice.metadata || {}) as Record<string, unknown>;
         const expectedResumeToken = (metadata.guest_resume_token as string) || null;
-        const expectedHmac = computeGuestHmac(invoice.id, invoice.customer_email);
 
         if (invoice.user_id) {
             // Registered user's invoice: caller MUST be authenticated and match user_id
@@ -107,15 +104,10 @@ export async function handleCheckoutStatus(
             }
         } else {
             // Guest checkout invoice:
-            // Caller must supply valid candidateToken matching metadata token or deterministic HMAC
-            const matchesToken = candidateToken && (
-                candidateToken === expectedResumeToken ||
-                candidateToken === expectedHmac
-            );
-
-            if (!matchesToken) {
+            // Caller must supply the original authoritative resume token in x-resume-token header
+            if (!candidateToken || !expectedResumeToken || candidateToken !== expectedResumeToken) {
                 return NextResponse.json(
-                    { success: false, error: 'Forbidden: Valid resume token required for guest invoice' },
+                    { success: false, error: 'Forbidden: Valid x-resume-token header required for guest invoice' },
                     { status: 403 }
                 );
             }

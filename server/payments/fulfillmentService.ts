@@ -391,14 +391,16 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             }
 
             // ── Atomic Multi-Leg Database Settlement (P0 & P1 Remediation) ───
-            // 1. Strict Fail-Closed Verification (Fix 3):
-            // Any RPC error, null response, missing success, or success !== true MUST fail-closed.
+            // 1. Strict Contract & Fail-Closed Verification (Finding 3):
+            // Do not accept success: true as sufficient proof without full shape and consistency verification.
             let rpcOutcome: {
-                success: boolean;
+                success?: boolean;
                 invoice_status?: string;
                 can_fulfill?: boolean;
                 idempotent?: boolean;
                 target_leg_id?: string;
+                total_paid?: number;
+                invoice_amount?: number;
                 error?: string;
                 message?: string;
             };
@@ -413,12 +415,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                     p_status: 'succeeded',
                 });
 
-                if (
-                    rpcErr ||
-                    !rpcRes ||
-                    typeof rpcRes !== 'object' ||
-                    (rpcRes as any).success !== true
-                ) {
+                if (rpcErr || !rpcRes || typeof rpcRes !== 'object') {
                     console.error(
                         '[Fulfillment] settle_invoice_payment_leg failed or invalid RPC response:',
                         rpcErr?.message || rpcRes
@@ -427,19 +424,68 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 }
 
                 rpcOutcome = rpcRes as any;
-                console.log(
-                    `✅ [Fulfillment] settle_invoice_payment_leg atomic RPC succeeded: invoice_status=${rpcOutcome.invoice_status}, can_fulfill=${rpcOutcome.can_fulfill}`
-                );
             } catch (rpcCallErr) {
                 console.error('[Fulfillment] settle_invoice_payment_leg RPC threw error:', rpcCallErr);
                 return { code: 'unresolved' };
             }
 
-            // 2. Replay / Idempotency Guard:
-            if (rpcOutcome.idempotent) {
-                console.log(`♻️ [Fulfillment] Invoice ${invoiceId} already settled — idempotent ack`);
-                return { code: 'already_processed' };
+            // A. Validate top-level success
+            if (rpcOutcome.success !== true) {
+                console.error('[Fulfillment] settle_invoice_payment_leg returned success !== true:', rpcOutcome);
+                return { code: 'unresolved' };
             }
+
+            // B. Legitimate Idempotent Response Handling
+            if (rpcOutcome.idempotent === true) {
+                if (
+                    rpcOutcome.invoice_status === 'paid' &&
+                    rpcOutcome.can_fulfill === false
+                ) {
+                    console.log(`♻️ [Fulfillment] Invoice ${invoiceId} already settled — idempotent ack`);
+                    return { code: 'already_processed' };
+                }
+                console.error('[Fulfillment] Idempotent response failed contract validation:', rpcOutcome);
+                return { code: 'unresolved' };
+            }
+
+            // C. Validate full documented response shape and types
+            const hasValidShape =
+                typeof rpcOutcome.invoice_status === 'string' &&
+                ['partially_paid', 'paid'].includes(rpcOutcome.invoice_status) &&
+                typeof rpcOutcome.can_fulfill === 'boolean' &&
+                typeof rpcOutcome.target_leg_id === 'string' &&
+                rpcOutcome.target_leg_id.trim().length > 0 &&
+                typeof rpcOutcome.total_paid === 'number' &&
+                !Number.isNaN(rpcOutcome.total_paid) &&
+                rpcOutcome.total_paid >= 0 &&
+                typeof rpcOutcome.invoice_amount === 'number' &&
+                !Number.isNaN(rpcOutcome.invoice_amount) &&
+                rpcOutcome.invoice_amount > 0;
+
+            if (!hasValidShape) {
+                console.error('[Fulfillment] settle_invoice_payment_leg response missing fields or invalid types:', rpcOutcome);
+                return { code: 'unresolved' };
+            }
+
+            // D. Consistency & Contradiction verification
+            if (rpcOutcome.can_fulfill === true) {
+                const satisfiesAmount = rpcOutcome.total_paid! >= rpcOutcome.invoice_amount! - 0.01;
+                if (rpcOutcome.invoice_status !== 'paid' || !satisfiesAmount) {
+                    console.error(
+                        `[Fulfillment] Contradictory RPC response: can_fulfill=true but invoice_status=${rpcOutcome.invoice_status}, total_paid=${rpcOutcome.total_paid}, invoice_amount=${rpcOutcome.invoice_amount}`
+                    );
+                    return { code: 'unresolved' };
+                }
+            } else {
+                if (rpcOutcome.invoice_status === 'paid') {
+                    console.error('[Fulfillment] Contradictory RPC response: invoice_status=paid but can_fulfill=false');
+                    return { code: 'unresolved' };
+                }
+            }
+
+            console.log(
+                `✅ [Fulfillment] settle_invoice_payment_leg contract validated: invoice_status=${rpcOutcome.invoice_status}, can_fulfill=${rpcOutcome.can_fulfill}, total_paid=${rpcOutcome.total_paid}/${rpcOutcome.invoice_amount}`
+            );
 
             // 3. Concurrency & Regression Protection (P0):
             // Database RPC is the SOLE source of truth for payment_status and leg statuses.
