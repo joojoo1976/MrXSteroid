@@ -91,10 +91,33 @@ The registry is **generated** from `lib/tools/loaders.ts` by a checked-in genera
 | G-P2 unrelated tool code absent from page chunk | 0 impl markers | **PASS** 0/10 markers | chunk decompile |
 | G-P3 only selected tool chunk fetched | 1 tool chunk | **PASS** 2–3 lazy chunks, not in initial set | network capture |
 | G-P4 recharts absent initially (non-chart) | 0 | **PASS** | network capture |
-| G-P5 requested tool SSR'd | body present | **PASS** (streamed payload) | raw HTML |
+| G-P5 requested tool SSR'd | body present in HTML | **PASS (with caveat)** streamed into the Suspense payload; **not visible until hydration** — see G-P10 | raw HTML |
 | G-P6 all 110 slugs resolve | 110/110 | **PASS** 110/110 | runtime probe |
 | G-P7 focused suites + tsc + lint + diff + build | green | **PASS** (1 pre-existing lint error, unrelated) | logs |
 | G-P8 V4 lab unchanged | ≤ 150 kB | **PASS** 149 kB (was 147) | build log |
+| G-P9 tool visible + interactive with client JS ON | visible | **PASS** on the pushed SHA (localhost prod build): `v3-shell` 956×1328 visible, skeleton gone after hydration, 93 buttons; `hpta-recovery` RTL-Arabic H1 visible with 6 recharts containers / 44 `<svg>`; no duplicate content | browser DOM |
+| G-P10 tool visible with client JS BLOCKED | visible without JS | **FAIL (regression)** — body streams into React's hidden `<div id="S:n" hidden>` container and is only unhidden by hydration; with JS blocked/absent the body stays invisible. Pre-fix static render was visible with JS disabled. Escalated, not silently accepted. | browser DOM (localhost + Vercel Preview) |
+
+### G-P9 / G-P10 detail (honest disclosure)
+
+- **G-P9 (normal operation, hydration ON)** — verified on the **exact pushed SHA** via
+  `next start -p 3160`: tool-036 renders `data-testid="v3-shell"` at **956×1328 visible**
+  (`hiddenAncestor:false`), the `tool-mount-skeleton` is **removed after hydration**, 19 `h2`,
+  93 interactive buttons; `hpta-recovery` renders a visible RTL-Arabic `h1` with 6 recharts
+  containers and 44 `<svg>`. `visibleH1Count === 1` and the title appears exactly once in
+  visible text → **no duplicated content**.
+- **G-P10 (hydration OFF)** — **regression versus pre-fix.** The tool now mounts through a
+  `next/dynamic` + Suspense boundary, so the server streams the body into a `hidden` React
+  container (`<div id="S:1" hidden>`) that client hydration unhides. If client JS never runs
+  (browser JS disabled, a CSP block, or a script error) the body stays **invisible**. Pre-fix, the
+  body was statically server-rendered into the visible DOM and was visible with zero JS.
+  Observed live on the Vercel Preview *and* on a pre-existing Preview (same mechanism: Vercel
+  deployment protection rewrites subresources through `vercel.com/sso-api`, which the site's own
+  CSP blocks → no JS → no hydration). Raw evidence in `t036-remediation-plan.md`.
+- React's `<div id="S:n" hidden>` containers **persist (hidden, inert) even when hydration
+  succeeds**; that is standard React 19 out-of-order streaming and is **not** by itself evidence of
+  failure. The distinguishing tests are whether the *live* element is visible
+  (`getBoundingClientRect`) and whether the skeleton is gone.
 
 ## Blocker handling
 If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required — do not weaken a gate.
