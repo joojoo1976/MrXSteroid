@@ -15,7 +15,7 @@
  * components/tools into the route graph. Measured, not assumed — see the
  * audit report. Tracked as a shared-loader follow-up; do not re-assert
  * "recharts is not in First Load JS" for this route until loaders.ts changes. */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import {
   ESTER_PROFILES,
@@ -54,6 +54,7 @@ const L = {
   weeklyMg: { en: 'Weekly load', ar: 'الحمل الأسبوعي' },
   nextInj: { en: 'Next injection', ar: 'الحقن القادم' },
   overdue: { en: 'Overdue', ar: 'متأخر' },
+  pending: { en: '—', ar: '—' },
   volGuard: { en: 'Volume Guard', ar: 'حارس الحجم' },
   evidence: { en: 'Evidence', ar: 'الدليل' },
   comfort: { en: 'Comfort', ar: 'الراحة' },
@@ -108,6 +109,51 @@ const SITE_XY: Record<string, { cx: number; cy: number }> = {
 
 const SHOT_DAYS: Record<number, number[]> = { 1: [0], 2: [0, 4], 3: [0, 2, 4], 4: [0, 1, 3, 5] };
 
+/*
+ * G-P11 (hydration determinism) — wall-clock store.
+ * ───────────────────────────────────────────────────────────────────────────
+ * The next-injection countdown depends on the current time. Rendering
+ * `Date.now()` directly during render made the server markup and the first
+ * client render disagree whenever a minute boundary was crossed between render
+ * and hydration (the text is floored to whole minutes), which React reported as
+ * error #418 "text content does not match". It surfaced on the Vercel Preview
+ * (real network latency) and never on a same-machine `next start` (sub-ms TTFB).
+ *
+ * `useSyncExternalStore` is the React-sanctioned way to read an external,
+ * mutable, client-only source:
+ *   - `getServerSnapshot` returns `null` for the server render AND the
+ *     hydration render, so the first paint is a deterministic placeholder that
+ *     matches byte-for-byte on both sides — no mismatch is possible.
+ *   - `getSnapshot` is only consulted after hydration commits, so the live
+ *     clock never participates in hydration.
+ *   - `subscribe` keeps the countdown ticking once per second.
+ * This replaces an earlier `useState(() => Date.now())` seed + effect update.
+ */
+const clockStore = {
+  listeners: new Set<() => void>(),
+  now: null as number | null,
+  getSnapshot(): number | null {
+    /* First client read (post-hydration): adopt the real clock once. */
+    if (this.now === null) this.now = Date.now();
+    return this.now;
+  },
+  getServerSnapshot(): number | null {
+    return null;
+  },
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    const timer = setInterval(() => {
+      this.now = Date.now();
+      this.listeners.forEach((l) => l());
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+      this.listeners.delete(listener);
+    };
+  },
+};
+
+
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
@@ -145,14 +191,20 @@ export default function Tool036InjectionSchedule() {
   const [scores, setScores] = useState<number[]>([]);
   const [painDraft, setPainDraft] = useState(0);
   const [shotDays, setShotDays] = useState<number[]>(SHOT_DAYS[2]);
-  const [now, setNow] = useState<number>(() => Date.now());
+  /*
+   * G-P11 (hydration determinism): read the wall clock through the module-scope
+   * `clockStore` above. `getServerSnapshot` yields `null` for the server render
+   * and the hydration render, so both paint the deterministic `pending` glyph;
+   * the live value appears only after hydration commits. This is the React-
+   * sanctioned external-store pattern and never bakes the clock into hydration.
+   */
+  const now = useSyncExternalStore(
+    (l) => clockStore.subscribe(l),
+    () => clockStore.getSnapshot(),
+    () => clockStore.getServerSnapshot()
+  );
   const [chartOn, setChartOn] = useState(false);
   const chartRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     const el = chartRef.current;
@@ -176,9 +228,18 @@ export default function Tool036InjectionSchedule() {
   const volumeMl = concentration > 0 ? perShotMg / concentration : 0;
   const totalMg = totalWeeklyMg([{ weeklyDoseMg }]);
 
-  const today = new Date(now);
-  const todayDayIndex = today.getDay();
-  const nowMs = todayDayIndex * 864e5 + today.getHours() * 3600e3 + today.getMinutes() * 60e3 + today.getSeconds() * 1e3;
+  /*
+   * G-P11: while `now` is still null (server render + hydration render) the
+   * countdown text is deterministic and identical on both sides; the live value
+   * arrives only after hydration commits, via the external `clockStore`.
+   */
+  const nowMs =
+    now === null
+      ? null
+      : (() => {
+          const today = new Date(now);
+          return today.getDay() * 864e5 + today.getHours() * 3600e3 + today.getMinutes() * 60e3 + today.getSeconds() * 1e3;
+        })();
 
   const shotModels = shotDays.map((day, i) => ({
     id: `shot-${i}`,
@@ -200,7 +261,7 @@ export default function Tool036InjectionSchedule() {
    * UI states that plainly. Plan dates remain plan dates.
    */
   const recordedUsage: InjectionLog[] = [];
-  const countdown = nextInjection(nowMs, shotDays);
+  const countdown = nowMs === null ? null : nextInjection(nowMs, shotDays);
 
   const rotationPlan = buildRotationPlan([...DEFAULT_ROTATION_SITES], recordedUsage, 12);
   const weekRows = ganttRows(rotationPlan).filter((r) => r.weekIndex === 0);
@@ -216,7 +277,18 @@ export default function Tool036InjectionSchedule() {
   const assessment = assessComfort(volumeMl, selectedSite, scores[scores.length - 1] ?? 0);
   const avg = averageRecent(scores);
   const series = accumulationChartSeries(profile, { weeklyDoseMg, injectionsPerWeek }, 12);
-  const countdownText = countdown.overdue ? label('overdue', locale) : formatCountdown(countdown.msRemaining, locale);
+  /*
+   * G-P11: before the clock is known (server render + first client render) the
+   * countdown text is the fixed `pending` glyph, so both sides agree exactly.
+   * The live countdown appears after the mount effect sets `now`. The label is
+   * language-neutral, so it is identical in `ar` and `en` too.
+   */
+  const countdownText =
+    countdown === null
+      ? label('pending', locale)
+      : countdown.overdue
+        ? label('overdue', locale)
+        : formatCountdown(countdown.msRemaining, locale);
 
   function handleMove(id: string, toDay: number) {
     const idx = Number(id.replace('shot-', ''));

@@ -170,4 +170,66 @@ on an untouched ordinary tool (tool-009). No analytics or error-tracking SDK is 
 SmartTools layout. **Tool-036 transmits nothing private to any unrelated endpoint.**
 
 ## Blocker handling
-If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required — do not weaken a gate.
+If any gate cannot be met within the authorized boundary (integration branch only, no engine/payment changes), stop, preserve the tree, and report the exact authorization required - do not weaken a gate.
+
+## G-P11 - hydration consistency reconciliation (React #418)
+
+### Reproduction matrix
+
+| # | Environment | SHA / build | Run | JS | Route | Console result |
+|---|---|---|---|---|---|---|
+| 1 | Vercel Preview | `9e77fd8b` (pre-fix) | earlier session | on | canonical tool-036 | React **#418** recovered by client re-render; 1 shell / 1 H1 / 89 buttons visible |
+| 2 | local `next start` (same SHA) | `9e77fd8b` | earlier session | on | canonical tool-036 | **0** hydration errors |
+| 3 | unit (jsdom, `renderToString`) | pre-fix source | this session | - | - | two renders 1 minute apart produced **different first-render text** (`1ي 8س 59د` vs `1ي 8س 58د`) -> the defect, captured deterministically |
+| 4 | local `next start` (post-fix) | this commit | run 1 | on | canonical tool-036 | only environmental error; live countdown after hydration |
+| 5 | local `next start` (post-fix) | this commit | run 2 | on | canonical tool-036 | only environmental error; live countdown after hydration |
+| 6 | local `next start` (post-fix) | this commit | run 3 | on | canonical tool-036 | only environmental error; live countdown after hydration |
+| 7 | Vercel Preview (post-fix) | this commit | after push | on | canonical tool-036 | see final Preview verification below |
+
+Runs 1 and 2 were **different execution environments**, both correct: the Preview had real network latency between server render and hydration; the same-machine `next start` had sub-millisecond TTFB. Neither was a stale session or a different route. Outcome classification: **A (a true, recoverable hydration error)** - not B/C/D.
+
+### Root cause (source-proven)
+
+`components/tools/tool-036-injection-schedule.tsx` rendered a countdown to the next shot day whose text came from the wall clock:
+
+```
+const [now, setNow] = useState<number>(() => Date.now());   // line 148
+const nowMs = dayIndex*864e5 + h*3600e3 + m*60e3 + s*1e3;
+const countdownText = formatCountdown(nextInjection(nowMs, shotDays).msRemaining, locale);
+```
+
+`formatCountdown` **floors to whole minutes**, so the text changes at each minute boundary. The server rendered it at server time; the client recomputed it from the client clock. When network latency straddled a minute boundary the two disagreed and React reported #418 "text content does not match". Reproduced deterministically in the unit probe above (runs 3 -> 4).
+
+### Fix
+
+Smallest correct correction, using React's own API for external mutable sources:
+
+- New module-scope `clockStore` read via `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)`.
+- `getServerSnapshot()` returns `null` for **both** the server render and the hydration render (verified against React 19.2.4 `react-dom-client` source: `if (isHydrating) nextSnapshot = getServerSnapshot()`), so the first paint is byte-identical on both sides - a mismatch is structurally impossible.
+- `getSnapshot()` adopts the real clock only after hydration commits; `subscribe()` ticks it once per second.
+- While the clock is unknown, the countdown shows a deterministic language-neutral `pending` glyph (`-`); the live value replaces it after hydration. Scheduling computations (`nextInjection`, rotation, volumes) are unchanged.
+- Added `components/tools/tool-036-injection-schedule.hydration.test.tsx` (G-P11 guard). It **fails on the pre-fix source** (different first-render text one minute apart) and **passes on the fix**.
+
+Files changed: `components/tools/tool-036-injection-schedule.tsx`, `components/tools/tool-036-injection-schedule.hydration.test.tsx`. No architecture, route, layout, SEO or performance change.
+
+### G-P10 evidence (unchanged, re-verified on this build)
+
+| Check | Result |
+|---|---|
+| 110/110 routes: HTTP 200 + visible non-hidden SSR body, no skeleton | **PASS** |
+| `v3-shell` byte offset in SSR HTML | **19245**, before the first hidden container at 51218 |
+| hidden `S:` containers contain | React hydration bookkeeping scripts only (`$RC`/`$RV`/`__next_f`), not tool markup |
+| tool-036 SSR: H1 / buttons / calendar / body-map / svg | 1 / 51 / present / present / 33 |
+| `tool-mount-skeleton` in SSR HTML | absent |
+| JS-on: shells / H1 / title occurrences | 1 / 1 / 1 (no duplication), no #418 |
+| RTL toggle | `1ي 2س 54د` -> `1d 2h 54m`, still 1 H1 / 1 title occurrence |
+
+### Performance evidence (measured on this build)
+
+| Metric | Value |
+|---|---|
+| Catch-all `< 150 kB` gate: Next "First Load JS" (deduped) | **114 kB** PASS |
+| Catch-all initial file list | 6 files; flat gzip sum **111.7 kB** (separate metric, reported separately) |
+| recharts in catch-all initial files | **NO** (6 standalone recharts chunks, load on demand) |
+| tool-036 component in catch-all initial files | **NO** (standalone chunk `9038.*.js`, 12.1 kB) |
+| total async chunks (per-tool splitting) | 423 |
