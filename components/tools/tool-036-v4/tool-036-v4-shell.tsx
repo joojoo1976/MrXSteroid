@@ -413,6 +413,18 @@ export default function Tool036V4Shell({
           >
             {copy.ackAccept}
           </button>
+          {/* G-02: an always-available way out. A plain anchor, so it is
+              reachable and activatable by keyboard and mouse alike, and it
+              stores nothing — leaving is not consenting. */}
+          <p className="mt-3 text-sm">
+            <a
+              href="/"
+              data-testid="ack-exit"
+              className="text-zinc-300 underline underline-offset-2 hover:text-amber-300"
+            >
+              {copy.ackExit}
+            </a>
+          </p>
           {deleteNotice && (
             <p className="mt-3 text-sm text-emerald-400" data-testid="delete-notice">
               {fmt(copy[deleteNotice.key], deleteNotice.vars ?? {})}
@@ -426,7 +438,9 @@ export default function Tool036V4Shell({
 
   return (
     <div dir={dir} lang={locale} className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
-      <header className="mb-6 border-b border-zinc-800 pb-4">
+      {/* G-01: not a <header> — the site chrome mounted by the route layout
+          owns the page's banner landmark. This is the tool's title block. */}
+      <div className="mb-6 border-b border-zinc-800 pb-4">
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-xl font-bold">
             {copy.previewTitle}{' '}
@@ -448,7 +462,7 @@ export default function Tool036V4Shell({
             {copy[storageNotice]}
           </p>
         )}
-      </header>
+      </div>
 
       <main className="grid gap-6 lg:grid-cols-2">
         {/* ---- Plan (intent) ---- */}

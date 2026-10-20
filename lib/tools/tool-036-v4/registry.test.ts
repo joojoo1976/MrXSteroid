@@ -13,18 +13,30 @@ import {
   ESTER_PROFILES,
   classifyVolumeZone,
   siteCeilingMl,
-  healingStatus,
   classifyPain,
   validateRotation,
 } from '@/lib/tools/engines/tool-036-injection-schedule';
 
-/** The engine claims that MUST stay mapped — removing any entry fails here. */
+/**
+ * The engine claims that MUST stay mapped — removing any entry fails here.
+ *
+ * Merge note (V3 G-05): this list previously also carried
+ * `healingStatus.min7optimal14` and imported `healingStatus` from the V3
+ * engine. That export was DELETED by the V3 audit fix because it inferred a
+ * healing/readiness window from elapsed time. V4 is the only owner of that
+ * concern now: decision R2 registers `healing-window-7-14` as `disabled` with
+ * an unverified provenance, and nothing in V4 consumes a V3 timing helper for
+ * it. The R2 assertions below therefore read the registry, not the V3 engine,
+ * so the two branches can merge in either order without a broken import.
+ *
+ * Every remaining claim maps to a live V3 export and is asserted against the
+ * real function in the "engine constants" test below.
+ */
 const REQUIRED_ENGINE_CLAIMS = [
   'ESTER_PROFILES.halfLifeDays',
   'classifyVolumeZone.bands',
   'siteCeilingMl.per-site',
   'classifyPain.bands',
-  'healingStatus.min7optimal14',
   'validateRotation.minDays7',
 ];
 
@@ -74,10 +86,6 @@ describe('V4 rule registry — engine-claim completeness (C1.2)', () => {
     // siteCeilingMl returns a per-site ceiling with evidence.
     expect(siteCeilingMl('deltoid-l').ceilingMl).toBeGreaterThan(0);
     expect(siteCeilingMl('deltoid-l').evidence.evidenceId).toBeTruthy();
-    // healingStatus defaults are exactly the 7/14 constants the disabled rule names.
-    const healing = healingStatus(0);
-    expect(healing.minDays).toBe(7);
-    expect(healing.optimalDays).toBe(14);
     // classifyPain exists and classifies a score.
     expect(classifyPain(0)).toBeTruthy();
     // validateRotation defaults are the 7/14 spacing the preference rule generalises.
@@ -86,6 +94,17 @@ describe('V4 rule registry — engine-claim completeness (C1.2)', () => {
       { siteId: 'dorso-l', dayIndex: 3 },
     ];
     expect(validateRotation(uses).some((v) => v.severity === 'error')).toBe(true);
+    // The two spacing thresholds the `validateRotation.minDays7` claim names are
+    // real: a 3-day rest is an error (< 7) and a 10-day rest is only a warning
+    // (< 14). This replaces the old `healingStatus(0)` check — that helper was
+    // removed by the V3 audit (G-05) and must not come back through V4.
+    const warnUses = [
+      { siteId: 'dorso-l', dayIndex: 0 },
+      { siteId: 'dorso-l', dayIndex: 10 },
+    ];
+    const warnViolations = validateRotation(warnUses);
+    expect(warnViolations.some((v) => v.severity === 'warning')).toBe(true);
+    expect(warnViolations.some((v) => v.severity === 'error')).toBe(false);
   });
 });
 
@@ -141,5 +160,40 @@ describe('V4 rule registry — decision R3 (rest spacing is a preference)', () =
     expect(rule.kind).toBe('product');
     expect(rule.status).toBe('active');
     expect(rule.applicabilityEn).toMatch(/preference breach, never as a safety warning/i);
+  });
+});
+
+/**
+ * G-04: the preview shows tolerance and rest spacing as read-only values. No
+ * rule may describe them as user-editable, because no editing control exists.
+ */
+describe('V4 rule registry — claims match the capabilities actually shipped (G-04)', () => {
+  it('no rule claims a value the preview lets the user edit', () => {
+    for (const rule of RULES) {
+      const text = [
+        rule.claimEn,
+        rule.claimAr,
+        rule.source.ref,
+        rule.applicabilityEn,
+        rule.applicabilityAr,
+      ].join(' ');
+      expect(text, rule.ruleId).not.toMatch(/user-editable|قابل للتعديل/i);
+      // A bare mention of "editable" is only acceptable as an explicit denial.
+      if (/\beditable\b/i.test(text)) {
+        expect(text, rule.ruleId).toMatch(/not editable in this preview/i);
+      }
+    }
+  });
+
+  it('the rest-spacing rule says the shown value is the fixed current default', () => {
+    const rule = RULE_BY_ID['rotation-rest-preference'];
+    expect(rule.claimEn).toMatch(/not editable in this preview/i);
+    expect(rule.claimEn).toMatch(/default/i);
+    expect(rule.claimAr).toContain('غير قابلة للتحرير');
+  });
+
+  it('the tolerance rule describes a current value, not a user-edited one', () => {
+    const rule = RULE_BY_ID['drift-matching-tolerance'];
+    expect(rule.claimEn).toMatch(/not editable in this preview/i);
   });
 });

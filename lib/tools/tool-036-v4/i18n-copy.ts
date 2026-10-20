@@ -42,9 +42,10 @@ const ar = {
   ackBullet3:
     'كل ادّعاء صحّي معروض مربوط بمصدره ودرجة ثقته ونطاق تطبيقه، ويمكنك مراجعته في مكانه.',
   ackBullet4:
-    'بياناتك تُخزَّن في متصفحك فقط، ولا تُرسل إلى أي شبكة، ويمكنك حذفها كاملة في أي وقت.',
+    'أحداثك وخطتك وتفضيلاتك تُخزَّن محليًا في متصفحك، ووظيفة الحفظ والاستعادة في الأداة لا تُرسل هذه البيانات. النطاق الكامل في قسم الخصوصية.',
   ackBullet5: 'عند أي مخاوف صحية، راجع مختصًا.',
   ackAccept: 'أفهم وأوافق — ابدأ',
+  ackExit: 'العودة إلى الموقع',
 
   // Header
   previewTitle: 'Tool-036 V4 — معاينة تجريبية',
@@ -154,7 +155,7 @@ const ar = {
   // Privacy & control (D5/R7)
   privacyHeading: 'الخصوصية والتحكم',
   privacyBody:
-    'بياناتك تبقى في متصفحك: لا تُرسل إلى أي شبكة، ولا حسابات، ولا تتبّع. كل ما تخزّنه الأداة يقع تحت مفتاح واحد يمكن حذفه بالكامل في أي وقت — دون التأثير على أي بيانات أخرى في الموقع.',
+    'بيانات الأداة — أحداثك وخطتك وتفضيلاتك — تُخزَّن في متصفحك فقط. وظيفة الحفظ والاستعادة في الأداة لا تُرسل هذه البيانات إلى أي خادم، ولا حسابات، ولا تتبّع. كل ما تخزّنه الأداة يقع تحت مفتاح واحد يمكن حذفه بالكامل في أي وقت — دون التأثير على أي بيانات أخرى في الموقع. الموقع نفسه قد يجري طلباته العامة الخاصة (مثل تحديد المنطقة والترجمة) خارج نطاق تخزين الأداة.',
   deleteIntro: 'حذف كامل: يمحو أحداثك وخطتك وتفضيلاتك من هذا المتصفح نهائيًا. لا يمكن التراجع.',
   deleteArm: 'حذف كل بياناتي',
   deleteConfirm: 'تأكيد الحذف النهائي',
@@ -189,9 +190,10 @@ const en: Record<CopyKey, string> = {
   ackBullet3:
     'Every health claim shown is tied to its source, confidence and scope, and you can review it in place.',
   ackBullet4:
-    'Your data is stored only in your browser, is never sent to any network, and you can delete it entirely at any time.',
+    'Your events, plan and preferences are stored locally in your browser, and the tool’s own save/restore does not transmit that data. Full scope is in the privacy section.',
   ackBullet5: 'For any health concerns, consult a professional.',
   ackAccept: 'I understand and agree — start',
+  ackExit: 'Back to the site',
 
   previewTitle: 'Tool-036 V4 — experimental preview',
   previewNotice:
@@ -293,7 +295,7 @@ const en: Record<CopyKey, string> = {
 
   privacyHeading: 'Privacy & control',
   privacyBody:
-    'Your data stays in your browser: it is not sent to any network, no accounts, no tracking. Everything the tool stores lives under a single key you can delete entirely at any time — without affecting any other site data.',
+    'Tool data — your events, plan and preferences — is stored in your browser only. The tool’s own save/restore does not transmit that data to any server; no accounts, no tracking. Everything the tool stores lives under a single key you can delete entirely at any time — without affecting any other site data. The page itself may make its own general requests (such as region detection and translation) outside the scope of the tool’s storage.',
   deleteIntro:
     'Full delete: permanently erases your events, plan and preferences from this browser. It cannot be undone.',
   deleteArm: 'Delete all my data',

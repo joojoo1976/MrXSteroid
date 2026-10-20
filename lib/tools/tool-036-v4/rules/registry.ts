@@ -20,8 +20,9 @@
  * readiness or safety from elapsed days. Absence of a record is shown as
  * "no recorded usage data", never as "ready".
  * R3 (user decision): the 7-day same-site spacing is a *personal
- * scheduling preference*, editable, and is never phrased as a clinical
- * safety rule.
+ * scheduling preference* and is never phrased as a clinical safety rule.
+ * The value a preview renders is the current default; the preview offers no
+ * control to change it, so no rule may claim it is editable there.
  */
 import { medicalRuleSchema, type MedicalRule } from '../contracts';
 
@@ -131,11 +132,12 @@ const PRODUCT: readonly MedicalRule[] = [
     ruleId: 'rotation-rest-preference',
     kind: 'product',
     claimEn:
-      'User preference for spacing injections to the same site (default 7 days, editable).',
-    claimAr: 'تفضيل شخصي للتباعد بين الحقن في نفس الموقع (الافتراضي 7 أيام، قابل للتعديل).',
+      'User preference for spacing injections to the same site. The value shown in this preview is the fixed current default (7 days); it is not editable in this preview.',
+    claimAr:
+      'تفضيل شخصي للتباعد بين الحقن في نفس الموقع. القيمة المعروضة في هذه المعاينة هي القيمة الافتراضية الحالية الثابتة (7 أيام)، وهي غير قابلة للتحرير هنا.',
     source: {
       type: 'unverified',
-      ref: 'product decision R3: user-configurable scheduling preference',
+      ref: 'product decision R3: declared scheduling preference (value fixed in this preview)',
       confidence: 'None',
     },
     applicabilityEn:
@@ -148,12 +150,12 @@ const PRODUCT: readonly MedicalRule[] = [
     ruleId: 'drift-matching-tolerance',
     kind: 'product',
     claimEn:
-      'Plan-vs-Actual matching uses the user’s declared tolerance (default 6 h) for "on time"; an actual up to 24 h after schedule is "late"; otherwise "missed".',
+      'Plan-vs-Actual matching uses the current tolerance value (default 6 h; not editable in this preview) for "on time"; an actual up to 24 h after schedule is "late"; otherwise "missed".',
     claimAr:
-      'مطابقة الخطة بالواقع تستخدم حد التسامح المعلن من المستخدم (الافتراضي 6 ساعات) لتصنيف «في الوقت»؛ الفعلي حتى 24 ساعة بعد الموعد «متأخر»، وما بعدها «فائت».',
+      'مطابقة الخطة بالواقع تستخدم قيمة التسامح الحالية (الافتراضية 6 ساعات؛ غير قابلة للتحرير في هذه المعاينة) لتصنيف «في الوقت»؛ الفعلي حتى 24 ساعة بعد الموعد «متأخر»، وما بعدها «فائت».',
     source: {
       type: 'unverified',
-      ref: 'product decision D4/§5: comparison rules are declared and user-editable',
+      ref: 'product decision D4/§5: comparison rules are declared; values are fixed in this preview',
       confidence: 'None',
     },
     applicabilityEn:

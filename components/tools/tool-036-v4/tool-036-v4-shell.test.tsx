@@ -283,7 +283,7 @@ describe('V4 shell — acknowledgment gate (decision D5)', () => {
     expect(screen.queryByTestId('log-form')).toBeNull();
     const gateText = screen.getByTestId('ack-gate').textContent ?? '';
     expect(gateText).toContain('لا تشخيص');
-    expect(gateText).toContain('حذفها كاملة');
+    expect(gateText).toContain('تُخزَّن محليًا');
   });
 
   it('a first visit writes nothing before the acknowledgment is accepted', async () => {
@@ -339,17 +339,66 @@ describe('V4 shell — reliability & privacy (scenario S5)', () => {
 
     expect(createObjectURL).toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
+
+    // G-03: tool facts must not ride along in any network payload. Because no
+    // request is issued at all, there is no payload to inspect — the strongest
+    // form of the guarantee. This assertion fails loudly (naming the leak) if a
+    // request is ever introduced that carries tool data.
+    const serializedCalls = fetchSpy.mock.calls.map((call) => JSON.stringify(call));
+    expect(serializedCalls.filter((payload) => /evt-|\d+\s*mg|volumeMl|compound/i.test(payload))).toEqual([]);
     vi.unstubAllGlobals();
   });
 
-  it('the privacy section states local-only storage and verifiable deletion', async () => {
+  it('scopes the no-upload claim to the tool storage and stays honest about page services (G-03)', async () => {
     await renderLoaded();
     const text = screen.getByTestId('privacy-section').textContent ?? '';
-    expect(text).toContain('لا تُرسل إلى أي شبكة');
-    expect(text).toContain('حذف كامل');
+    // The claim names its scope: the tool's own save/restore never uploads.
+    expect(text).toContain('تخزين الأداة');
     expect(text).toContain('مفتاح واحد');
+    expect(text).toContain('حذف كامل');
+    // …and it stays honest about the page's own services (site-wide providers).
+    expect(text).toContain('خارج نطاق');
+    // It must NOT make the absolute whole-page claim the audit disproved.
+    expect(text).not.toContain('إلى أي شبكة');
   });
 });
+
+describe('V4 shell — acknowledgment gate is escapable (G-02)', () => {
+  it('offers a plain, keyboard-reachable exit to the site without consenting', async () => {
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+
+    const exit = screen.getByTestId('ack-exit');
+    // A real anchor: focusable and activatable by keyboard and mouse alike.
+    expect(exit.tagName).toBe('A');
+    expect(exit.getAttribute('href')).toBe('/');
+    expect(exit.textContent).toContain('العودة إلى الموقع');
+    // It is distinct from the consent button…
+    expect(screen.getByTestId('ack-button').tagName).toBe('BUTTON');
+    // …and using neither stores anything: exiting is not consenting.
+    expect([...storageMap.keys()].filter((k) => k.startsWith('mrx.tool-036-v4.'))).toEqual([]);
+  });
+
+  it('translates the exit link with the rest of the gate', async () => {
+    render(<Tool036V4Shell dict={DICT} rules={RULE_BY_ID} />);
+    await waitFor(() => expect(screen.getByTestId('ack-gate')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('locale-toggle'));
+    await waitFor(() =>
+      expect(screen.getByTestId('ack-exit').textContent).toContain('Back to the site'),
+    );
+  });
+});
+
+describe('V4 shell — one banner landmark (G-01)', () => {
+  it('does not declare its own <header>; the site chrome owns the banner', async () => {
+    const { container } = await renderLoaded();
+    // The route layout mounts the shared site header; the shell must not add a
+    // second `banner` landmark or duplicate navigation.
+    expect(container.querySelectorAll('header')).toHaveLength(0);
+    expect(container.querySelectorAll('nav')).toHaveLength(0);
+  });
+});
+
 
 describe('V4 shell — surface identity', () => {
   it('renders RTL Arabic with an explicit non-medical scope notice', async () => {
