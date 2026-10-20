@@ -3,7 +3,18 @@
  * The feature flag was removed on commit b913b104: V3 is the unconditional
  * surface for /smarttools/injection-formulation/tool-036-injection-schedule.
  * Heavy widgets (dnd-kit calendar, recharts chart) are lazy via next/dynamic
- * with ssr:false so neither enters First Load JS. */
+ * with ssr:false, and the chart is only mounted after the user opens the chart
+ * card (IntersectionObserver + button, below), so this component never pulls
+ * recharts into its own render path.
+ *
+ * NOTE (G-08 audit finding): that is a property of *this* component only. The
+ * route that renders it — app/smarttools/[category]/[tool] — still ships the
+ * recharts chunks in its initial <script> set for every tool, because
+ * lib/tools/loaders.ts resolves tools through a webpack context
+ * (`import(`@/components/tools/${slug}`)`) that sweeps every file in
+ * components/tools into the route graph. Measured, not assumed — see the
+ * audit report. Tracked as a shared-loader follow-up; do not re-assert
+ * "recharts is not in First Load JS" for this route until loaders.ts changes. */
 import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
@@ -14,11 +25,8 @@ import {
   buildRotationPlan,
   DEFAULT_ROTATION_SITES,
   totalWeeklyMg,
-  siteRecency,
-  recencyTone,
   nextInjection,
   assessComfort,
-  healingStatus,
   averageRecent,
   validateRotation,
   ganttRows,
@@ -51,7 +59,7 @@ const L = {
   comfort: { en: 'Comfort', ar: 'الراحة' },
   pain: { en: 'Pain 0-10', ar: 'الألم 0-10' },
   add: { en: 'Add', ar: 'أضف' },
-  healing: { en: 'Healing window', ar: 'نافذة الالتئام' },
+  noUsage: { en: 'No recorded usage events', ar: 'لا توجد وقائع استخدام مسجّلة' },
   calendar: { en: 'This week — drag a shot, or use the arrows', ar: 'هذا الأسبوع — اسحب الحقن أو استخدم الأسهم' },
   rotation: { en: 'Auto rotation', ar: 'التدوير التلقائي' },
   gantt: { en: 'Week 1 Gantt', ar: 'جانت الأسبوع الأول' },
@@ -78,12 +86,13 @@ const ZONE_CLS: Record<string, string> = {
   red: 'border-rose-500/50 bg-rose-500/10 text-rose-200',
 };
 
-const TONE_CLS: Record<string, string> = {
-  never: 'fill-slate-500/30 stroke-slate-300/40',
-  rest: 'fill-rose-500/35 stroke-rose-300/50',
-  healing: 'fill-amber-400/35 stroke-amber-300/50',
-  ready: 'fill-lime-400/35 stroke-lime-300/50',
-};
+/**
+ * G-05/G-06: a body site is neutral styling until a *recorded* use exists.
+ * The old `recencyTone()` colours ('rest' / 'healing' / 'ready') graded a site
+ * from elapsed days; that grading is gone, so every site uses one neutral
+ * class and the map is annotated with "no recorded usage events".
+ */
+const SITE_FILL = 'fill-slate-500/30 stroke-slate-300/40';
 
 /** Site centres inside the 200x260 viewBox; each gets a 44x44 tap target. */
 const SITE_XY: Record<string, { cx: number; cy: number }> = {
@@ -179,13 +188,23 @@ export default function Tool036InjectionSchedule() {
     mg: Math.round(perShotMg),
   }));
 
-  const logs: InjectionLog[] = shotModels.map((s) => ({ siteId: s.siteId, dayIndex: s.dayIndex }));
-  const recency = siteRecency(logs, todayDayIndex);
+  /*
+   * G-06 (audit finding): `shotModels` above is the *plan* the user is editing.
+   * The old code fed those planned days straight into `siteRecency()` and
+   * `validateRotation()` as if they were recorded injections, so moving a
+   * planned shot silently rewrote the tool's claimed "last used / days since"
+   * history and its rotation warnings.
+   *
+   * This tool has no usage-log input in V3 and this fix deliberately does not
+   * add one, so there are no recorded events: usage history is empty and the
+   * UI states that plainly. Plan dates remain plan dates.
+   */
+  const recordedUsage: InjectionLog[] = [];
   const countdown = nextInjection(nowMs, shotDays);
 
-  const rotationPlan = buildRotationPlan([...DEFAULT_ROTATION_SITES], logs, 12);
+  const rotationPlan = buildRotationPlan([...DEFAULT_ROTATION_SITES], recordedUsage, 12);
   const weekRows = ganttRows(rotationPlan).filter((r) => r.weekIndex === 0);
-  const violations = validateRotation(logs, 7, 14);
+  const violations = validateRotation(recordedUsage, 7, 14);
 
   const days: CalendarDay[] = Array.from({ length: 7 }, (_, i) => ({
     dayIndex: i,
@@ -195,7 +214,6 @@ export default function Tool036InjectionSchedule() {
 
   const zone = classifyVolumeZone(volumeMl, selectedSite);
   const assessment = assessComfort(volumeMl, selectedSite, scores[scores.length - 1] ?? 0);
-  const healing = healingStatus(recency[selectedSite] ?? 7, 7, 14);
   const avg = averageRecent(scores);
   const series = accumulationChartSeries(profile, { weeklyDoseMg, injectionsPerWeek }, 12);
   const countdownText = countdown.overdue ? label('overdue', locale) : formatCountdown(countdown.msRemaining, locale);
@@ -339,7 +357,6 @@ export default function Tool036InjectionSchedule() {
             <rect x="106" y="162" width="24" height="86" rx="10" className="fill-white/10 stroke-white/20" />
             {BODY_SITES.map((s) => {
               const xy = SITE_XY[s.siteId] ?? { cx: 100, cy: 130 };
-              const tone = recencyTone(recency[s.siteId]);
               const isSelected = selectedSite === s.siteId;
               return (
                 <g
@@ -355,7 +372,7 @@ export default function Tool036InjectionSchedule() {
                     width={44}
                     height={44}
                     rx={10}
-                    className={`${TONE_CLS[tone] ?? TONE_CLS.never} ${isSelected ? 'stroke-gold-500 stroke-2' : ''}`}
+                    className={`${SITE_FILL} ${isSelected ? 'stroke-gold-500 stroke-2' : ''}`}
                   />
                   <circle cx={xy.cx} cy={xy.cy} r={5} className="fill-white/70" />
                 </g>
@@ -364,6 +381,11 @@ export default function Tool036InjectionSchedule() {
           </svg>
           <p className="mt-1 text-center text-[11px] text-zinc-500">
             {label('tapSite', locale)}: {selectedBodySite ? (locale === 'ar' ? selectedBodySite.labelAr : selectedBodySite.labelEn) : '—'}
+          </p>
+          {/* G-05 / G-06: state what is actually known. Nothing is recorded, so
+              no site carries a last-used date, a day count or a readiness tone. */}
+          <p className="mt-1 text-center text-[11px] text-zinc-500" data-testid="usage-state">
+            {label('noUsage', locale)}
           </p>
         </Card>
 
@@ -388,9 +410,7 @@ export default function Tool036InjectionSchedule() {
               {label('avg5', locale)}:{' '}
               <span data-testid="pain-average">{avg === null ? '—' : avg.toFixed(2)}</span>
             </p>
-            <p className="mt-1 text-[11px] text-zinc-400" data-testid="healing-state">
-              {label('healing', locale)}: {healing.minDays}d / {healing.optimalDays}d
-            </p>
+
             <p className="mt-1 text-[11px]">
               {locale === 'ar' ? 'شدة الألم' : 'Pain band'}:{' '}
               <span data-testid="comfort-badge" data-level={assessment.painBadge}>
@@ -411,10 +431,10 @@ export default function Tool036InjectionSchedule() {
       <div className="mb-4 grid gap-3 lg:grid-cols-2">
         <Card title={label('rotation', locale)}>
           <ol data-testid="rotation-plan" className="space-y-1 text-[11px]">
-            {DEFAULT_ROTATION_SITES.map((s) => (
+            {DEFAULT_ROTATION_SITES.map((s, i) => (
               <li key={s} className="flex items-center justify-between rounded border border-white/10 px-2 py-1">
                 <span>{s}</span>
-                <span>{recencyTone(recency[s])}</span>
+                <span className="text-zinc-500">#{i + 1}</span>
               </li>
             ))}
           </ol>

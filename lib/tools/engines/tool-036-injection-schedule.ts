@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tool #036 — Injection Schedule Planner
  * Weekly-dose splitter → per-site rotation calendar with volume guards.
  * Pure calculation engine (no I/O, no DB).
@@ -527,40 +527,18 @@ export function assessComfort(volumeMl: number, siteId: string, painScore: numbe
   };
 }
 
-export type HealingState = 'too-soon' | 'minimum-met' | 'optimal';
-
-export interface HealingStatus {
-  state: HealingState;
-  daysSince: number;
-  minDays: number;
-  optimalDays: number;
-  messageEn: string;
-  messageAr: string;
-}
-
-/** Site healing window: 7-day hard minimum, 14-day optimal (heuristic, Low confidence). */
-export function healingStatus(daysSince: number, minDays = 7, optimalDays = 14): HealingStatus {
-  const d = Number.isFinite(daysSince) ? daysSince : 0;
-  if (d < minDays) {
-    return {
-      state: 'too-soon', daysSince: d, minDays, optimalDays,
-      messageEn: `Only ${d} day(s) since the last injection — wait at least ${minDays} days.`,
-      messageAr: `مرّ ${d} يوم فقط منذ آخر حقنة — انتظر ${minDays} أيام على الأقل.`,
-    };
-  }
-  if (d < optimalDays) {
-    return {
-      state: 'minimum-met', daysSince: d, minDays, optimalDays,
-      messageEn: `${d} day(s) meets the minimum — ${optimalDays}+ days is optimal.`,
-      messageAr: `${d} يوم يحقّق الحد الأدنى — الأمثل ${optimalDays} يوم أو أكثر.`,
-    };
-  }
-  return {
-    state: 'optimal', daysSince: d, minDays, optimalDays,
-    messageEn: `${d} day(s) — the site is in the optimal healing window.`,
-    messageAr: `${d} يوم — الموقع في نافذة التعافي المثلى.`,
-  };
-}
+/*
+ * REMOVED (G-05, G-07 — audit finding): `healingStatus()` / `HealingState` /
+ * `HealingStatus`. It turned an elapsed-day count into a clinical-sounding
+ * verdict (too-soon / minimum-met / optimal, "the site is in the optimal
+ * spacing interval" / «الفاصل الزمني الأمثل بين الاستخدامات»).
+ *
+ * There is no verified source in this repository for a 7/14-day
+ * intramuscular-site recovery model, and elapsed days say nothing about a
+ * person's healing or a site's safety. The tool now renders the absence of a
+ * record explicitly instead of grading it (see
+ * `lib/tools/engines/tool-036-injection-schedule.test.ts` for the guard).
+ */
 
 /** Average of the most recent `window` pain entries (default 5). Null when the log is empty. */
 export function averageRecent(scores: number[], window = 5): number | null {
@@ -712,13 +690,14 @@ export function siteRecency(logs: InjectionLog[], todayDayIndex: number): Record
   return out;
 }
 
-/** Recency bucket used to colour the body map by last use. */
-export function recencyTone(daysSince: number | undefined): 'never' | 'rest' | 'healing' | 'ready' {
-  if (daysSince === undefined || !Number.isFinite(daysSince)) return 'never';
-  if (daysSince < 7) return 'rest';
-  if (daysSince < 14) return 'healing';
-  return 'ready';
-}
+/*
+ * REMOVED (G-05 — audit finding): `recencyTone(days)` bucketed elapsed days
+ * into 'rest' / 'healing' / 'ready' and those buckets coloured the body map.
+ * A colour-coded "ready" for a body site is exactly the inference that must
+ * not exist. With no usage log the tool shows a neutral map plus an explicit
+ * "no recorded usage" statement; when a log does exist, `siteRecency` above
+ * reports plain elapsed days and nothing is derived from them.
+ */
 
 /** Countdown to the next shot day. `nowMs` is milliseconds since the start of the current week. */
 export function nextInjection(

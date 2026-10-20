@@ -13,17 +13,7 @@
  *     through `POST /api/tools/logs` (Bearer-authenticated).
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-    ResponsiveContainer,
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid,
-    Legend,
-    ReferenceLine,
-} from 'recharts';
+import dynamic from 'next/dynamic';
 import {
     calculateAromatizationRisk,
     type AiProtocol,
@@ -45,6 +35,12 @@ import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseAromatizationRiskInput } from '@/lib/tools/schemas/aromatization-risk';
 
 const TOOL_SLUG = 'aromatization-risk';
+
+// G-08 — `recharts` must not be a module-scope import of a component served by
+// the SmartTools catch-all route, or it ships in every other tool's first load.
+// The chart lives in its own module and is fetched only when it renders.
+// (Same pattern as tool-036-injection-schedule.tsx.)
+const AromatizationRiskChart = dynamic(() => import('./aromatization-risk-chart'), { ssr: false });
 
 /** pmol/L per pg/mL conversion (Estradiol). */
 const PMOL_PER_PGML = 3.671;
@@ -363,24 +359,15 @@ export default function AromatizationRiskToolComponent() {
                             {isRtl ? 'منحنى الاستراديول الزمني' : 'Estradiol (E2) Trajectory'}
                         </h2>
                         <div className="w-full h-72">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                    <XAxis dataKey="week" stroke="#94a3b8" tick={{ fontSize: 10 }} />
-                                    <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} domain={[0, criticalRef + 40]} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#020617', borderColor: '#475569', borderRadius: '8px', fontSize: '12px' }}
-                                        formatter={(val: number | string) => {
-                                            const n = typeof val === 'number' ? val : Number(val);
-                                            return [formatE2(unitSystem === 'metric' ? n : n / PMOL_PER_PGML), isRtl ? 'الاستراديول' : 'E2'];
-                                        }}
-                                    />
-                                    <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                                    <ReferenceLine y={refHigh} stroke="#10b981" strokeDasharray="5 3" label={{ value: `${isRtl ? 'أقصى طبيعي' : 'Optimal High'} ${refHigh}`, fontSize: 9, fill: '#10b981' }} />
-                                    <ReferenceLine y={criticalRef} stroke="#ef4444" strokeDasharray="5 3" label={{ value: `${isRtl ? 'حرج' : 'Critical'} ${criticalRef}`, fontSize: 9, fill: '#ef4444' }} />
-                                    <Area type="monotone" dataKey="e2" name={isRtl ? 'الاستراديول (E2)' : 'Estradiol (E2)'} stroke="#ec4899" fillOpacity={0.25} fill="#ec4899" strokeWidth={2.5} />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                            <AromatizationRiskChart
+                                data={chartData}
+                                isRtl={isRtl}
+                                formatE2={formatE2}
+                                pmolPerPgml={PMOL_PER_PGML}
+                                unitSystem={unitSystem}
+                                refHigh={refHigh}
+                                criticalRef={criticalRef}
+                            />
                         </div>
                     </div>
 
