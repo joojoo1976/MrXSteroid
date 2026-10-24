@@ -191,6 +191,7 @@ HORMONE_CONVERSION = 'tool-035-hormone-conversion',
   COMPETITION_READINESS_POSING = 'tool-109-competition-readiness-posing-os',
   AI_MEAL_VISION_SCANNER = 'tool-110-ai-meal-vision-scanner',
   SMART_FOOD_MACRO_SUBSTITUTION = 'tool-111-smart-food-macro-substitution',
+  EMERGENCY_WARNING_SIGNS_CHECKLIST = 'tool-146-ai-safety-gate-emergency-protocol',
 }
 
 export type ProductVariant = 'digital' | 'paperback' | 'hardcover' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus';

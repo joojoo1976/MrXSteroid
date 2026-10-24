@@ -176,6 +176,7 @@ export const PAGE_TO_PATH: Record<Page, string> = {
     [Page.AI_BODY_COMPOSITION_VISION]: '/smarttools/tool-108-ai-body-composition-vision-engine',
     [Page.COMPETITION_READINESS_POSING]: '/smarttools/tool-109-competition-readiness-posing-os',
     [Page.AI_MEAL_VISION_SCANNER]: '/smarttools/tool-110-ai-meal-vision-scanner',
+    [Page.EMERGENCY_WARNING_SIGNS_CHECKLIST]: '/smarttools/platform-ai/tool-146-ai-safety-gate-emergency-protocol',
     [Page.SMART_FOOD_MACRO_SUBSTITUTION]: '/smarttools/tool-111-smart-food-macro-substitution',
 };
 
