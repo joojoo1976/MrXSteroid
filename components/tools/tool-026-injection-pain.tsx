@@ -1,84 +1,108 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import { calculateInjectionPainMinimizer } from '@/lib/tools/engines/tool-026-injection-pain';
-import MeasurementToggle from './MeasurementToggle';
+import React, { useState } from 'react';
 import i18nJson from '@/i18n/tool-026-injection-pain.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import { buildInjectionExperienceSessionV7 } from '@/lib/tools/engines/tool-026-injection-pain';
+import {
+  InjectionExperienceEntrySchema,
+  InjectionExperienceInputSchema,
+  type InjectionExperienceEntry,
+} from '@/lib/tools/schemas/tool-026-injection-pain';
 
-export default function Tool026InjectionPainMinimizer() {
-  const i18nData = useToolI18n(i18nJson);
-  const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
-  const { mutate: updateToolState, isPending } = useUpdateToolState();
-  const debouncedSave = useDebounce(updateToolState, 1000);
-
-  const [viscosity, setViscosity] = useState('medium' as 'low' | 'medium' | 'high');
-  const [concentration, setConcentration] = useState(250);
-  const [dose, setDose] = useState(500);
-  const [site, setSite] = useState('glutes' as 'deltoid' | 'glutes' | 'quads' | 'pectorals' | 'triceps' | 'biceps');
-  const [currentSites, setCurrentSites] = useState<any[]>([]);
-  const [result, setResult] = useState<any>(null);
-
-  useEffect(() => {
-    if (savedState?.injection_pain_result) setResult(savedState.injection_pain_result);
-  }, [savedState]);
-
-  const addSite = () => {
-    const newSite: any = {
-      id: Date.now(),
-      name_en: 'glutes',
-      name_ar: 'الأرداف',
-      muscle_group: 'glutes',
-      pain_level: 'none',
-    };
-    setCurrentSites(prev => [...prev, newSite]);
-  };
-
-  const calculate = () => {
-    const input = {
-      compound_viscosity: viscosity,
-      concentration_mg_ml: concentration,
-      desired_dose_mg: dose,
-      current_sites: currentSites,
-      injection_site: site,
-    };
-    const r = calculateInjectionPainMinimizer(input);
-    setResult(r);
-    debouncedSave({ ...savedState, injection_pain_result: r });
-  };
-
-  return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
-      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
-      <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Viscosity:</label> <select value={viscosity} onChange={(e) => setViscosity(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Concentration (mg/mL):</label> <input type="number" value={concentration} onChange={(e) => setConcentration(parseInt(e.target.value as any))} min="1" max="500" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Desired Dose (mg):</label> <input type="number" value={dose} onChange={(e) => setDose(parseInt(e.target.value as any))} min="1" max="1000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Injection Site:</label> <select value={site} onChange={(e) => setSite(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="deltoid">Deltoid</option><option value="glutes">Glutes</option><option value="quads">Quads</option><option value="pectorals">Pectorals</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option></select></div>
-        <button onClick={addSite} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Site </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        <button onClick={calculate} className="mt-6 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? 'Calculating...' : 'Minimize Pain'} </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
-          <p className="text-zinc-600 font-bold">{i18nData.desired_dose_ml}: {result.desired_dose_ml}mL</p>
-          <p className="text-zinc-500">{i18nData.max_safe_volume_ml}: {result.max_safe_volume_ml}mL</p>
-          <p className="text-zinc-500">{i18nData.pain_minimization_score}: {result.pain_minimization_score}/100</p>
-          <p className="text-zinc-500">{i18nData.recommended_site}: {result.recommended_site}</p>
-          <p className="text-zinc-500">{i18nData.solvent_ratio}: {result.solvent_ratio}</p>
-          <p className="text-zinc-500">{i18nData.temperature_recommendation}: {result.temperature_recommendation}</p>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.warnings.map((w: any, i: any) => <li key={i}>{w}</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.rotation_schedule.map((r: any, i: any) => <li key={i}>{r}</li>)}
-          </ul>
-        </div>}
-      </div>
-    </div>
-  );
+interface Draft {
+  eventDate: string;
+  siteLabel: string;
+  notes: string;
 }
 
+const EMPTY_DRAFT: Draft = { eventDate: '', siteLabel: '', notes: '' };
+
+export default function Tool026InjectionExperienceLog() {
+  const t = useToolI18n(i18nJson);
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [entries, setEntries] = useState<InjectionExperienceEntry[]>([]);
+  const [validationError, setValidationError] = useState(false);
+  const session = buildInjectionExperienceSessionV7(entries);
+
+  const updateDraft = (key: keyof Draft, value: string) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setValidationError(false);
+  };
+
+  const addEntry = () => {
+    const parsed = InjectionExperienceEntrySchema.safeParse({
+      id: crypto.randomUUID(),
+      ...draft,
+      siteLabel: draft.siteLabel.trim() || undefined,
+    });
+    const candidate = parsed.success ? [...entries, parsed.data] : entries;
+    const validSession = parsed.success && candidate.length <= 100
+      ? InjectionExperienceInputSchema.safeParse({ entries: candidate }).success
+      : false;
+    if (!parsed.success || !validSession) {
+      setValidationError(true);
+      return;
+    }
+
+    setEntries(candidate);
+    setDraft(EMPTY_DRAFT);
+    setValidationError(false);
+  };
+
+  const removeEntry = (id: string) => setEntries((current) => current.filter((entry) => entry.id !== id));
+
+  return (
+    <section className="pct-timing-tool p-6" dir={t.dir}>
+      <h2 className="mb-3 text-2xl font-bold">{t.tool_name}</h2>
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        {t.scope_note}
+      </p>
+      <p role="status" className="mb-6 rounded bg-zinc-100 p-3 text-sm">{t.assessment_unavailable}</p>
+
+      <div className="space-y-4">
+        <label className="block text-sm font-medium">
+          {t.event_date}
+          <input type="date" value={draft.eventDate} onChange={(event) => updateDraft('eventDate', event.target.value)}
+            className="mt-1 w-full rounded border p-2" dir="ltr" />
+        </label>
+        <label className="block text-sm font-medium">
+          {t.site_label}
+          <input value={draft.siteLabel} maxLength={120} onChange={(event) => updateDraft('siteLabel', event.target.value)}
+            className="mt-1 w-full rounded border p-2" />
+        </label>
+        <label className="block text-sm font-medium">
+          {t.experience_notes}
+          <textarea value={draft.notes} maxLength={500} onChange={(event) => updateDraft('notes', event.target.value)}
+            className="mt-1 w-full rounded border p-2" rows={4} />
+        </label>
+        {validationError && <p role="alert" className="text-sm text-red-700">{t.validation_error}</p>}
+        <button type="button" onClick={addEntry} disabled={entries.length >= 100}
+          className="w-full rounded bg-blue-700 px-4 py-3 font-medium text-white disabled:opacity-50">
+          {t.add_entry} ({entries.length}/100)
+        </button>
+      </div>
+
+      <section aria-labelledby="tool-026-records-heading" className="mt-8 rounded bg-zinc-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 id="tool-026-records-heading" className="font-semibold">{t.session_records}: {session.entries.length}</h3>
+          {entries.length > 0 && <button type="button" onClick={() => setEntries([])} className="rounded border px-3 py-2 text-sm">{t.clear_all}</button>}
+        </div>
+        {session.entries.length === 0 ? <p className="mt-3 text-sm text-zinc-600">{t.empty}</p> : (
+          <ul className="mt-3 space-y-3">
+            {session.entries.map((entry) => (
+              <li key={entry.id} className="flex items-start justify-between gap-3 rounded border bg-white p-3">
+                <div>
+                  <div className="font-medium">{entry.eventDate}{entry.siteLabel ? ` · ${entry.siteLabel}` : ''}</div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-700">{entry.notes}</p>
+                  <div className="mt-2 text-xs text-zinc-500">{t.origin_user_provided}</div>
+                </div>
+                <button type="button" onClick={() => removeEntry(entry.id)} className="rounded border px-2 py-1 text-sm">{t.remove}</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </section>
+  );
+}

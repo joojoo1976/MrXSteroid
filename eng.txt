@@ -1,0 +1,4516 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [32m✓[39m [30m[43m node [49m[39m lib/tools/engines/bmi.v6.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[43m node [49m[39m lib/tools/engines/one-rep-max.v6.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m1. Core Math Engine - Male[2m > [22m[2mshould calculate correct body fat % for male using US Navy formula
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.11410000000000764[39m,
+  timestamp: [33m1792849982754[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m1. Core Math Engine - Male[2m > [22m[2mshould calculate FFMI and normalized FFMI correctly
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.02659999999991669[39m,
+  timestamp: [33m1792849982757[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m1. Core Math Engine - Male[2m > [22m[2mshould calculate BMR using Mifflin-St Jeor
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.035199999999917964[39m,
+  timestamp: [33m1792849982758[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m1. Core Math Engine - Male[2m > [22m[2mshould calculate TDEE with activity multiplier
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.09010000000000673[39m,
+  timestamp: [33m1792849982760[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m1. Core Math Engine - Male[2m > [22m[2mshould calculate BMI correctly
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.07899999999995089[39m,
+  timestamp: [33m1792849982762[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m2. Core Math Engine - Female[2m > [22m[2mshould calculate correct body fat % for female using US Navy formula
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m65[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m75[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m28.9[39m,
+    ffmi: [33m17[39m,
+    normalizedFFMI: [33m17.9[39m,
+    leanBodyMassKg: [33m46.2[39m,
+    fatMassKg: [33m18.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m23.9[39m,
+    bmr: [33m1395[39m,
+    tdee: [33m1918[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m6.5[39m,
+    leanMassPotentialKg: [33m13.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.033599999999978536[39m,
+  timestamp: [33m1792849982764[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m2. Core Math Engine - Female[2m > [22m[2mshould calculate female BMR correctly
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m65[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m75[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m28.9[39m,
+    ffmi: [33m17[39m,
+    normalizedFFMI: [33m17.9[39m,
+    leanBodyMassKg: [33m46.2[39m,
+    fatMassKg: [33m18.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m23.9[39m,
+    bmr: [33m1395[39m,
+    tdee: [33m1918[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m6.5[39m,
+    leanMassPotentialKg: [33m13.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028099999999994907[39m,
+  timestamp: [33m1792849982767[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m3. Input Validation & Golden Rules[2m > [22m[2mshould clamp body fat % to 0-50 range (Golden Rule #6)
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m20[39m,
+    waistCm: [33m200[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m50[39m,
+    ffmi: [33m13.1[39m,
+    normalizedFFMI: [33m13.1[39m,
+    leanBodyMassKg: [33m42.5[39m,
+    fatMassKg: [33m42.5[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m35.9[39m,
+    leanMassPotentialKg: [33m38.5[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028500000000008185[39m,
+  timestamp: [33m1792849982769[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m3. Input Validation & Golden Rules[2m > [22m[2mshould apply all 7 Golden Rules
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.023800000000051114[39m,
+  timestamp: [33m1792849982770[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m4. Sensitivity Analysis[2m > [22m[2mshould show highest sensitivity to waist circumference
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.04469999999992069[39m,
+  timestamp: [33m1792849982772[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028099999999994907[39m,
+  timestamp: [33m1792849982772[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007199999999897955[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005299999999920146[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006799999999998363[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.009700000000066211[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004900000000020555[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004199999999968895[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0049999999999954525[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.014099999999984902[39m,
+  timestamp: [33m1792849982773[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004699999999957072[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004199999999968895[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006899999999973261[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.014800000000036562[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005300000000033833[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0036999999999807187[39m,
+  timestamp: [33m1792849982774[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.003500000000030923[39m,
+  timestamp: [33m1792849982774[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m4. Sensitivity Analysis[2m > [22m[2mshould show positive correlation for waist, negative for neck
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01569999999992433[39m,
+  timestamp: [33m1792849982776[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.012999999999919964[39m,
+  timestamp: [33m1792849982776[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0079000000000633[39m,
+  timestamp: [33m1792849982776[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.020199999999931606[39m,
+  timestamp: [33m1792849982777[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88.88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m19[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5.4[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006600000000048567[39m,
+  timestamp: [33m1792849982777[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007099999999923057[39m,
+  timestamp: [33m1792849982777[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0061999999999216016[39m,
+  timestamp: [33m1792849982777[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0061000000000603904[39m,
+  timestamp: [33m1792849982778[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38.38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.5[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m11.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005999999999971806[39m,
+  timestamp: [33m1792849982778[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.010400000000004184[39m,
+  timestamp: [33m1792849982778[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005400000000008731[39m,
+  timestamp: [33m1792849982778[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005499999999983629[39m,
+  timestamp: [33m1792849982778[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85.85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.6[39m,
+    normalizedFFMI: [33m21.6[39m,
+    leanBodyMassKg: [33m70.1[39m,
+    fatMassKg: [33m15.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.5[39m,
+    bmr: [33m1849[39m,
+    tdee: [33m2866[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m10.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01670000000001437[39m,
+  timestamp: [33m1792849982779[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005300000000033833[39m,
+  timestamp: [33m1792849982779[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005899999999996908[39m,
+  timestamp: [33m1792849982779[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0060000000000854925[39m,
+  timestamp: [33m1792849982779[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m181.8[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.1[39m,
+    ffmi: [33m21.1[39m,
+    normalizedFFMI: [33m21[39m,
+    leanBodyMassKg: [33m69.6[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.7[39m,
+    bmr: [33m1851[39m,
+    tdee: [33m2869[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.5[39m,
+    leanMassPotentialKg: [33m13[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005999999999971806[39m,
+  timestamp: [33m1792849982779[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m5. Dynamic Results - Completeness States[2m > [22m[2mshould extract minimum viable output
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.020999999999958163[39m,
+  timestamp: [33m1792849982782[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m6. What-If Scenarios[2m > [22m[2mshould generate lose 5kg scenario
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00940000000002783[39m,
+  timestamp: [33m1792849982783[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0061000000000603904[39m,
+  timestamp: [33m1792849982784[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004900000000020555[39m,
+  timestamp: [33m1792849982784[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00430000000005748[39m,
+  timestamp: [33m1792849982784[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m6. What-If Scenarios[2m > [22m[2mshould generate gain 3kg muscle scenario
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008499999999912689[39m,
+  timestamp: [33m1792849982785[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005699999999933425[39m,
+  timestamp: [33m1792849982785[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004699999999957072[39m,
+  timestamp: [33m1792849982785[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004099999999993997[39m,
+  timestamp: [33m1792849982785[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m6. What-If Scenarios[2m > [22m[2mshould generate reach ideal BF scenario when fat to lose > 0
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m100[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m105[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m29.4[39m,
+    ffmi: [33m21.8[39m,
+    normalizedFFMI: [33m21.8[39m,
+    leanBodyMassKg: [33m70.6[39m,
+    fatMassKg: [33m29.4[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m30.9[39m,
+    bmr: [33m1990[39m,
+    tdee: [33m3085[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m18.3[39m,
+    leanMassPotentialKg: [33m10.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.009699999999952524[39m,
+  timestamp: [33m1792849982786[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m95[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m102[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m27.6[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.2[39m,
+    leanBodyMassKg: [33m68.8[39m,
+    fatMassKg: [33m26.2[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m29.3[39m,
+    bmr: [33m1940[39m,
+    tdee: [33m3007[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m15.5[39m,
+    leanMassPotentialKg: [33m12.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.009999999999990905[39m,
+  timestamp: [33m1792849982786[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m103[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m105[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m29.4[39m,
+    ffmi: [33m22.5[39m,
+    normalizedFFMI: [33m22.5[39m,
+    leanBodyMassKg: [33m72.8[39m,
+    fatMassKg: [33m30.2[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m31.8[39m,
+    bmr: [33m2020[39m,
+    tdee: [33m3131[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m18.9[39m,
+    leanMassPotentialKg: [33m8.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00909999999998945[39m,
+  timestamp: [33m1792849982786[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m81.7[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m90.36[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m20.1[39m,
+    ffmi: [33m20.2[39m,
+    normalizedFFMI: [33m20.2[39m,
+    leanBodyMassKg: [33m65.3[39m,
+    fatMassKg: [33m16.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25.2[39m,
+    bmr: [33m1807[39m,
+    tdee: [33m2801[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m6.2[39m,
+    leanMassPotentialKg: [33m15.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028900000000021464[39m,
+  timestamp: [33m1792849982786[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m7. What-If Engine (Live Recalculation)[2m > [22m[2mshould adjust single input and recalculate
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.015499999999974534[39m,
+  timestamp: [33m1792849982788[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m80[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m12.1[39m,
+    ffmi: [33m23.1[39m,
+    normalizedFFMI: [33m23.1[39m,
+    leanBodyMassKg: [33m74.8[39m,
+    fatMassKg: [33m10.2[39m,
+    category: [32m'athletic'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m0[39m,
+    leanMassPotentialKg: [33m6.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008600000000001273[39m,
+  timestamp: [33m1792849982788[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m7. What-If Engine (Live Recalculation)[2m > [22m[2mshould adjust by percentage
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008699999999976171[39m,
+  timestamp: [33m1792849982789[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m76.5[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m19.3[39m,
+    normalizedFFMI: [33m19.3[39m,
+    leanBodyMassKg: [33m62.4[39m,
+    fatMassKg: [33m14.1[39m,
+    category: [32m'average'[39m,
+    bmi: [33m23.6[39m,
+    bmr: [33m1755[39m,
+    tdee: [33m2720[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.3[39m,
+    leanMassPotentialKg: [33m18.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008199999999987995[39m,
+  timestamp: [33m1792849982789[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m7. What-If Engine (Live Recalculation)[2m > [22m[2mshould provide slider config with markers
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.018100000000004002[39m,
+  timestamp: [33m1792849982790[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m8. Cross-Tool Links[2m > [22m[2mshould link to macro calculator with lean mass
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006200000000035288[39m,
+  timestamp: [33m1792849982791[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005999999999971806[39m,
+  timestamp: [33m1792849982791[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0049999999999954525[39m,
+  timestamp: [33m1792849982791[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0037999999999556167[39m,
+  timestamp: [33m1792849982792[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m8. Cross-Tool Links[2m > [22m[2mshould link to genetic potential with FFMI
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.030000000000086402[39m,
+  timestamp: [33m1792849982793[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01859999999999218[39m,
+  timestamp: [33m1792849982793[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00760000000002492[39m,
+  timestamp: [33m1792849982794[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007399999999961437[39m,
+  timestamp: [33m1792849982794[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m8. Cross-Tool Links[2m > [22m[2mshould link to transformation timeline
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006799999999998363[39m,
+  timestamp: [33m1792849982795[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.014600000000086766[39m,
+  timestamp: [33m1792849982795[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00659999999993488[39m,
+  timestamp: [33m1792849982795[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007000000000061846[39m,
+  timestamp: [33m1792849982795[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m8. Cross-Tool Links[2m > [22m[2mshould have 5 cross-tool links total
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0061000000000603904[39m,
+  timestamp: [33m1792849982796[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004699999999957072[39m,
+  timestamp: [33m1792849982797[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004599999999982174[39m,
+  timestamp: [33m1792849982797[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006500000000073669[39m,
+  timestamp: [33m1792849982797[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m9. Explainable AI - Reasoning Trace[2m > [22m[2mshould produce reasoning trace with 3 steps
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006099999999946704[39m,
+  timestamp: [33m1792849982798[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005100000000084037[39m,
+  timestamp: [33m1792849982798[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008699999999976171[39m,
+  timestamp: [33m1792849982798[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005199999999945248[39m,
+  timestamp: [33m1792849982799[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m9. Explainable AI - Reasoning Trace[2m > [22m[2mshould have final confidence ~0.94
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006500000000073669[39m,
+  timestamp: [33m1792849982800[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005300000000033833[39m,
+  timestamp: [33m1792849982800[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004800000000045657[39m,
+  timestamp: [33m1792849982800[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004900000000020555[39m,
+  timestamp: [33m1792849982800[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m9. Explainable AI - Reasoning Trace[2m > [22m[2mshould identify 3 uncertainty sources
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006600000000048567[39m,
+  timestamp: [33m1792849982801[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004800000000045657[39m,
+  timestamp: [33m1792849982801[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004900000000020555[39m,
+  timestamp: [33m1792849982801[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00430000000005748[39m,
+  timestamp: [33m1792849982801[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m9. Explainable AI - Reasoning Trace[2m > [22m[2mshould provide 2 alternative paths
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008500000000026375[39m,
+  timestamp: [33m1792849982802[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007899999999949614[39m,
+  timestamp: [33m1792849982802[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004699999999957072[39m,
+  timestamp: [33m1792849982803[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0036000000000058208[39m,
+  timestamp: [33m1792849982803[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m10. Top-3 Reasoning[2m > [22m[2mshould identify waist-to-neck as #1 factor (65%)
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.009200000000078035[39m,
+  timestamp: [33m1792849982804[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005400000000008731[39m,
+  timestamp: [33m1792849982804[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004800000000045657[39m,
+  timestamp: [33m1792849982804[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0036999999999807187[39m,
+  timestamp: [33m1792849982804[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m10. Top-3 Reasoning[2m > [22m[2mshould identify height as #2 factor (20%)
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005599999999958527[39m,
+  timestamp: [33m1792849982805[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004400000000032378[39m,
+  timestamp: [33m1792849982805[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0038999999999305146[39m,
+  timestamp: [33m1792849982805[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0036999999999807187[39m,
+  timestamp: [33m1792849982805[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m10. Top-3 Reasoning[2m > [22m[2mshould identify hip as #3 for female (15%)
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m65[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m75[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m28.9[39m,
+    ffmi: [33m17[39m,
+    normalizedFFMI: [33m17.9[39m,
+    leanBodyMassKg: [33m46.2[39m,
+    fatMassKg: [33m18.8[39m,
+    category: [32m'average'[39m,
+    bmi: [33m23.9[39m,
+    bmr: [33m1395[39m,
+    tdee: [33m1918[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m6.5[39m,
+    leanMassPotentialKg: [33m13.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.014099999999984902[39m,
+  timestamp: [33m1792849982805[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m60[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m72[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m27.4[39m,
+    ffmi: [33m16[39m,
+    normalizedFFMI: [33m16.9[39m,
+    leanBodyMassKg: [33m43.5[39m,
+    fatMassKg: [33m16.5[39m,
+    category: [32m'average'[39m,
+    bmi: [33m22[39m,
+    bmr: [33m1345[39m,
+    tdee: [33m1849[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m4.9[39m,
+    leanMassPotentialKg: [33m16.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004699999999957072[39m,
+  timestamp: [33m1792849982806[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m68[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m75[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m28.9[39m,
+    ffmi: [33m17.7[39m,
+    normalizedFFMI: [33m18.7[39m,
+    leanBodyMassKg: [33m48.3[39m,
+    fatMassKg: [33m19.7[39m,
+    category: [32m'average'[39m,
+    bmi: [33m25[39m,
+    bmr: [33m1425[39m,
+    tdee: [33m1959[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m6.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.008600000000001273[39m,
+  timestamp: [33m1792849982806[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'female'[39m,
+    heightCm: [33m165[39m,
+    weightKg: [33m58.5[39m,
+    neckCm: [33m32[39m,
+    waistCm: [33m69.8[39m,
+    hipCm: [33m98[39m,
+    age: [33m25[39m,
+    activityLevel: [32m'light'[39m,
+    goal: [32m'recomp'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m26.3[39m,
+    ffmi: [33m15.8[39m,
+    normalizedFFMI: [33m16.8[39m,
+    leanBodyMassKg: [33m43.1[39m,
+    fatMassKg: [33m15.4[39m,
+    category: [32m'average'[39m,
+    bmi: [33m21.5[39m,
+    bmr: [33m1330[39m,
+    tdee: [33m1829[39m,
+    idealBodyFatMin: [33m18[39m,
+    idealBodyFatMax: [33m24[39m,
+    fatToLoseKg: [33m3.9[39m,
+    leanMassPotentialKg: [33m16.8[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01999999999998181[39m,
+  timestamp: [33m1792849982806[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m11. Warnings & Safety[2m > [22m[2mshould warn for obese category
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m120[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m120[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m37.3[39m,
+    ffmi: [33m23.2[39m,
+    normalizedFFMI: [33m23.2[39m,
+    leanBodyMassKg: [33m75.3[39m,
+    fatMassKg: [33m44.7[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m37[39m,
+    bmr: [33m2190[39m,
+    tdee: [33m3395[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m33[39m,
+    leanMassPotentialKg: [33m5.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.005999999999971806[39m,
+  timestamp: [33m1792849982807[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m115[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m117[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m35.8[39m,
+    ffmi: [33m22.8[39m,
+    normalizedFFMI: [33m22.8[39m,
+    leanBodyMassKg: [33m73.8[39m,
+    fatMassKg: [33m41.2[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m35.5[39m,
+    bmr: [33m2140[39m,
+    tdee: [33m3317[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m29.6[39m,
+    leanMassPotentialKg: [33m7.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004000000000019099[39m,
+  timestamp: [33m1792849982807[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m123[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m120[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m37.3[39m,
+    ffmi: [33m23.8[39m,
+    normalizedFFMI: [33m23.8[39m,
+    leanBodyMassKg: [33m77.2[39m,
+    fatMassKg: [33m45.8[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m38[39m,
+    bmr: [33m2220[39m,
+    tdee: [33m3441[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m33.8[39m,
+    leanMassPotentialKg: [33m3.8[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0036000000000058208[39m,
+  timestamp: [33m1792849982807[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m87[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m105[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m29.4[39m,
+    ffmi: [33m19[39m,
+    normalizedFFMI: [33m19[39m,
+    leanBodyMassKg: [33m61.5[39m,
+    fatMassKg: [33m25.5[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m26.9[39m,
+    bmr: [33m1860[39m,
+    tdee: [33m2883[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m16[39m,
+    leanMassPotentialKg: [33m19.5[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.004000000000019099[39m,
+  timestamp: [33m1792849982807[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m11. Warnings & Safety[2m > [22m[2mshould warn for essential fat category
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m65[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m70[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m2.5[39m,
+    ffmi: [33m19.6[39m,
+    normalizedFFMI: [33m19.6[39m,
+    leanBodyMassKg: [33m63.4[39m,
+    fatMassKg: [33m1.6[39m,
+    category: [32m'essential'[39m,
+    bmi: [33m20.1[39m,
+    bmr: [33m1640[39m,
+    tdee: [33m2542[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m0[39m,
+    leanMassPotentialKg: [33m17.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.011899999999968713[39m,
+  timestamp: [33m1792849982812[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m60[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m67[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m0[39m,
+    ffmi: [33m18.5[39m,
+    normalizedFFMI: [33m18.5[39m,
+    leanBodyMassKg: [33m60[39m,
+    fatMassKg: [33m0[39m,
+    category: [32m'essential'[39m,
+    bmi: [33m18.5[39m,
+    bmr: [33m1590[39m,
+    tdee: [33m2465[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m0[39m,
+    leanMassPotentialKg: [33m21[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.011300000000005639[39m,
+  timestamp: [33m1792849982812[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m68[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m70[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m2.5[39m,
+    ffmi: [33m20.5[39m,
+    normalizedFFMI: [33m20.5[39m,
+    leanBodyMassKg: [33m66.3[39m,
+    fatMassKg: [33m1.7[39m,
+    category: [32m'essential'[39m,
+    bmi: [33m21[39m,
+    bmr: [33m1670[39m,
+    tdee: [33m2589[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m0[39m,
+    leanMassPotentialKg: [33m14.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007399999999961437[39m,
+  timestamp: [33m1792849982812[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m11. Warnings & Safety[2m > [22m[2mshould warn for high waist circumference
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m125[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m39.6[39m,
+    ffmi: [33m15.8[39m,
+    normalizedFFMI: [33m15.8[39m,
+    leanBodyMassKg: [33m51.3[39m,
+    fatMassKg: [33m33.7[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m25.7[39m,
+    leanMassPotentialKg: [33m29.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01490000000001146[39m,
+  timestamp: [33m1792849982814[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m122[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m38.2[39m,
+    ffmi: [33m15.3[39m,
+    normalizedFFMI: [33m15.3[39m,
+    leanBodyMassKg: [33m49.4[39m,
+    fatMassKg: [33m30.6[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m22.9[39m,
+    leanMassPotentialKg: [33m31.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007100000000036744[39m,
+  timestamp: [33m1792849982814[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m125[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m39.6[39m,
+    ffmi: [33m16.4[39m,
+    normalizedFFMI: [33m16.4[39m,
+    leanBodyMassKg: [33m53.1[39m,
+    fatMassKg: [33m34.9[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m26.6[39m,
+    leanMassPotentialKg: [33m27.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01010000000007949[39m,
+  timestamp: [33m1792849982814[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m59.3[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m110[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m32.1[39m,
+    ffmi: [33m12.4[39m,
+    normalizedFFMI: [33m12.4[39m,
+    leanBodyMassKg: [33m40.2[39m,
+    fatMassKg: [33m19.1[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m18.3[39m,
+    bmr: [33m1583[39m,
+    tdee: [33m2454[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m12.8[39m,
+    leanMassPotentialKg: [33m40.8[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.01089999999999236[39m,
+  timestamp: [33m1792849982814[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m11. Warnings & Safety[2m > [22m[2mshould warn for formula extrapolation at high BF%
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m130[39m,
+    neckCm: [33m40[39m,
+    waistCm: [33m130[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m41[39m,
+    ffmi: [33m23.7[39m,
+    normalizedFFMI: [33m23.7[39m,
+    leanBodyMassKg: [33m76.7[39m,
+    fatMassKg: [33m53.3[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m40.1[39m,
+    bmr: [33m2290[39m,
+    tdee: [33m3550[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m41.3[39m,
+    leanMassPotentialKg: [33m4.3[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.00940000000002783[39m,
+  timestamp: [33m1792849982816[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m125[39m,
+    neckCm: [33m40[39m,
+    waistCm: [33m127[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m39.6[39m,
+    ffmi: [33m23.3[39m,
+    normalizedFFMI: [33m23.3[39m,
+    leanBodyMassKg: [33m75.5[39m,
+    fatMassKg: [33m49.5[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m38.6[39m,
+    bmr: [33m2240[39m,
+    tdee: [33m3472[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m37.8[39m,
+    leanMassPotentialKg: [33m5.5[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006499999999959982[39m,
+  timestamp: [33m1792849982816[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m133[39m,
+    neckCm: [33m40[39m,
+    waistCm: [33m130[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m41[39m,
+    ffmi: [33m24.2[39m,
+    normalizedFFMI: [33m24.2[39m,
+    leanBodyMassKg: [33m78.5[39m,
+    fatMassKg: [33m54.5[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m41[39m,
+    bmr: [33m2320[39m,
+    tdee: [33m3596[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m42.3[39m,
+    leanMassPotentialKg: [33m2.5[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006700000000023465[39m,
+  timestamp: [33m1792849982816[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88.7[39m,
+    neckCm: [33m40[39m,
+    waistCm: [33m115[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m33.7[39m,
+    ffmi: [33m18.1[39m,
+    normalizedFFMI: [33m18.1[39m,
+    leanBodyMassKg: [33m58.8[39m,
+    fatMassKg: [33m29.9[39m,
+    category: [32m'obese'[39m,
+    bmi: [33m27.4[39m,
+    bmr: [33m1877[39m,
+    tdee: [33m2909[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m20.8[39m,
+    leanMassPotentialKg: [33m22.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006300000000010186[39m,
+  timestamp: [33m1792849982816[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m12. Unit Conversion - No Double Conversion (Golden Rule #1)[2m > [22m[2mshould convert metric to imperial for display only
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.014300000000048385[39m,
+  timestamp: [33m1792849982818[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m12. Unit Conversion - No Double Conversion (Golden Rule #1)[2m > [22m[2mshould NOT convert when target is metric
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.0181999999999789[39m,
+  timestamp: [33m1792849982821[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2m12. Unit Conversion - No Double Conversion (Golden Rule #1)[2m > [22m[2mshould preserve original metric values internally
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.013900000000035106[39m,
+  timestamp: [33m1792849982822[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.011200000000030741[39m,
+  timestamp: [33m1792849982822[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.012200000000007094[39m,
+  timestamp: [33m1792849982822[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.010500000000092768[39m,
+  timestamp: [33m1792849982823[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2mIntegration: Full v6 Execution[2m > [22m[2mshould produce complete SuperIntelligenceOutput
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.010300000000029286[39m,
+  timestamp: [33m1792849982824[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.006899999999973261[39m,
+  timestamp: [33m1792849982824[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.011499999999955435[39m,
+  timestamp: [33m1792849982824[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007500000000050022[39m,
+  timestamp: [33m1792849982824[39m
+}
+
+[90mstdout[2m | lib/tools/engines/bodyfat.v6.test.ts[2m > [22m[2mBody Fat Calculator v6 Genius - 12 Tests[2m > [22m[2mIntegration: Full v6 Execution[2m > [22m[2mshould compute in under 100ms
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m85[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m21.4[39m,
+    normalizedFFMI: [33m21.4[39m,
+    leanBodyMassKg: [33m69.4[39m,
+    fatMassKg: [33m15.6[39m,
+    category: [32m'average'[39m,
+    bmi: [33m26.2[39m,
+    bmr: [33m1840[39m,
+    tdee: [33m2852[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m4.8[39m,
+    leanMassPotentialKg: [33m11.6[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.016799999999989268[39m,
+  timestamp: [33m1792849982827[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.1[39m,
+    ffmi: [33m20.7[39m,
+    normalizedFFMI: [33m20.7[39m,
+    leanBodyMassKg: [33m67.1[39m,
+    fatMassKg: [33m12.9[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.7[39m,
+    bmr: [33m1790[39m,
+    tdee: [33m2775[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m2.4[39m,
+    leanMassPotentialKg: [33m13.9[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.009700000000066211[39m,
+  timestamp: [33m1792849982827[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m88[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m88[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m18.4[39m,
+    ffmi: [33m22.2[39m,
+    normalizedFFMI: [33m22.2[39m,
+    leanBodyMassKg: [33m71.8[39m,
+    fatMassKg: [33m16.2[39m,
+    category: [32m'average'[39m,
+    bmi: [33m27.2[39m,
+    bmr: [33m1870[39m,
+    tdee: [33m2899[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m5[39m,
+    leanMassPotentialKg: [33m9.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.013399999999933243[39m,
+  timestamp: [33m1792849982828[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    sex: [32m'male'[39m,
+    heightCm: [33m180[39m,
+    weightKg: [33m80.2[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m84.16[39m,
+    age: [33m28[39m,
+    activityLevel: [32m'moderate'[39m,
+    goal: [32m'cut'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15.5[39m,
+    ffmi: [33m20.9[39m,
+    normalizedFFMI: [33m20.9[39m,
+    leanBodyMassKg: [33m67.8[39m,
+    fatMassKg: [33m12.4[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.8[39m,
+    bmr: [33m1792[39m,
+    tdee: [33m2778[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.8[39m,
+    leanMassPotentialKg: [33m13.2[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.007500000000050022[39m,
+  timestamp: [33m1792849982828[39m
+}
+
+ [32m✓[39m [30m[43m node [49m[39m lib/tools/engines/bodyfat.v6.test.ts [2m([22m[2m46 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m61 passed[39m[22m[90m (61)[39m
+[2m   Start at [22m 16:53:01
+[2m   Duration [22m 1.03s[2m (transform 440ms, setup 0ms, import 654ms, tests 111ms, environment 1ms)[22m
+

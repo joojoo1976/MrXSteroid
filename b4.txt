@@ -1,0 +1,15 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/tool-128-training-load-acute-chronic-ratio-pilot.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 657[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates sufficient data [33m 550[2mms[22m[39m
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/tool-126-neuromuscular-explosiveness-modeler-pilot.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 688[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates [33m 566[2mms[22m[39m
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/tool-133-rep-tempo-velocity-loss-analyzer-pilot.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 688[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates [33m 564[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 17:57:03
+[2m   Duration [22m 4.49s[2m (transform 642ms, setup 861ms, import 2.67s, tests 2.03s, environment 6.14s)[22m
+

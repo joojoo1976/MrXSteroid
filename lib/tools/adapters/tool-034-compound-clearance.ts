@@ -3,7 +3,6 @@
  * Pure wrapper: engine math + canonical `ToolOutput` envelope. No I/O here.
  */
 import {
-  deriveDataQuality,
   type DataProvenance,
   type DataSource,
   type KeyFinding,
@@ -31,33 +30,32 @@ export interface ClearanceOutputOptions {
 
 export function buildClearanceProvenance(options: ClearanceOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = source === 'manual' ? 0.9 : 0.8;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'days',
-    measurementMethod: 'exponential decay C(t) = C0 * 0.5^(t/half-life)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
+    measurementMethod: 'hypothetical single-exponential fraction arithmetic from a user-entered half-life; source and model fit are not verified',
+    confidence: null,
+    dataQuality: 'not_assessed',
   };
 }
 
 export function buildClearanceKeyFindings(result: ClearanceResult): KeyFinding[] {
   return [
     {
-      code: 'CLEARANCE_DATE',
-      labelAr: 'تاريخ التصفية',
-      labelEn: 'Clearance Date',
-      value: result.clearance_date,
-      severity: result.already_clear ? 'info' : 'monitor',
+      code: 'MODEL_THRESHOLD_DATE',
+      labelAr: 'تاريخ بلوغ حد النموذج',
+      labelEn: 'Model Threshold Date',
+      value: result.threshold_date,
+      severity: 'info',
     },
     {
-      code: 'CURRENT_RESIDUAL',
-      labelAr: 'المتبقي الحالي',
-      labelEn: 'Current Residual',
-      value: `${result.current_remaining_percent}%`,
-      severity: result.already_clear ? 'info' : 'monitor',
+      code: 'MODELED_RESIDUAL_PERCENT',
+      labelAr: 'النسبة المتبقية وفق النموذج',
+      labelEn: 'Modeled Residual Fraction',
+      value: `${result.modeled_remaining_percent}%`,
+      severity: 'info',
     },
   ];
 }

@@ -1,0 +1,292 @@
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(6,34): error TS2307: Cannot find module '@/lib/core/adaptive-context.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(7,38): error TS2307: Cannot find module '@/lib/engines/macro.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(8,31): error TS2307: Cannot find module '@/lib/core/event-bus.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(9,25): error TS2307: Cannot find module '@/components/tools/macro/MacroToolUI.v7' or its corresponding type declarations.
+lib/engines/core/v6/future/ml-models.ts(152,14): error TS2323: Cannot redeclare exported variable 'MLModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(190,14): error TS2323: Cannot redeclare exported variable 'mlModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(237,14): error TS2323: Cannot redeclare exported variable 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(336,14): error TS2323: Cannot redeclare exported variable 'RandomForestRegressor'.
+lib/engines/core/v6/future/ml-models.ts(339,15): error TS2341: Property 'model' is private and only accessible within class 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(341,27): error TS2341: Property 'preprocess' is private and only accessible within class 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(342,29): error TS2341: Property 'stubInference' is private and only accessible within class 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(346,31): error TS2341: Property 'model' is private and only accessible within class 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(348,26): error TS2341: Property 'model' is private and only accessible within class 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(392,14): error TS2323: Cannot redeclare exported variable 'LSTMForecaster'.
+lib/engines/core/v6/future/ml-models.ts(403,36): error TS2339: Property 'config' does not exist on type 'MLModelMetadata'.
+lib/engines/core/v6/future/ml-models.ts(461,14): error TS2323: Cannot redeclare exported variable 'LSTMClassifier'.
+lib/engines/core/v6/future/ml-models.ts(469,36): error TS2339: Property 'config' does not exist on type 'MLModelMetadata'.
+lib/engines/core/v6/future/ml-models.ts(477,51): error TS2304: Cannot find name 'sequence'.
+lib/engines/core/v6/future/ml-models.ts(480,27): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+lib/engines/core/v6/future/ml-models.ts(531,14): error TS2323: Cannot redeclare exported variable 'LogisticRegressionClassifier'.
+lib/engines/core/v6/future/ml-models.ts(545,54): error TS2345: Argument of type 'number' is not assignable to parameter of type 'number[]'.
+lib/engines/core/v6/future/ml-models.ts(566,42): error TS2339: Property 'model' does not exist on type 'MLInferenceResponse'.
+lib/engines/core/v6/future/ml-models.ts(589,28): error TS2339: Property 'map' does not exist on type 'number'.
+lib/engines/core/v6/future/ml-models.ts(599,62): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'Number'.
+  No index signature with a parameter of type 'number' was found on type 'Number'.
+lib/engines/core/v6/future/ml-models.ts(610,79): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'Number'.
+  No index signature with a parameter of type 'number' was found on type 'Number'.
+lib/engines/core/v6/future/ml-models.ts(817,14): error TS2323: Cannot redeclare exported variable 'MLModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(863,14): error TS2323: Cannot redeclare exported variable 'mlModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(916,3): error TS2323: Cannot redeclare exported variable 'MLModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(916,3): error TS2484: Export declaration conflicts with exported declaration of 'MLModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(917,3): error TS2323: Cannot redeclare exported variable 'mlModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(917,3): error TS2484: Export declaration conflicts with exported declaration of 'mlModelRegistry'.
+lib/engines/core/v6/future/ml-models.ts(918,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(918,3): error TS2484: Export declaration conflicts with exported declaration of 'RandomForestConfig'.
+lib/engines/core/v6/future/ml-models.ts(919,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(919,3): error TS2484: Export declaration conflicts with exported declaration of 'RandomForestModel'.
+lib/engines/core/v6/future/ml-models.ts(920,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(920,3): error TS2484: Export declaration conflicts with exported declaration of 'DecisionTree'.
+lib/engines/core/v6/future/ml-models.ts(921,3): error TS2323: Cannot redeclare exported variable 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(921,3): error TS2484: Export declaration conflicts with exported declaration of 'RandomForestClassifier'.
+lib/engines/core/v6/future/ml-models.ts(922,3): error TS2323: Cannot redeclare exported variable 'RandomForestRegressor'.
+lib/engines/core/v6/future/ml-models.ts(922,3): error TS2484: Export declaration conflicts with exported declaration of 'RandomForestRegressor'.
+lib/engines/core/v6/future/ml-models.ts(923,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(923,3): error TS2484: Export declaration conflicts with exported declaration of 'LSTMConfig'.
+lib/engines/core/v6/future/ml-models.ts(924,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(924,3): error TS2484: Export declaration conflicts with exported declaration of 'LSTMModel'.
+lib/engines/core/v6/future/ml-models.ts(925,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(925,3): error TS2484: Export declaration conflicts with exported declaration of 'SequenceInput'.
+lib/engines/core/v6/future/ml-models.ts(926,3): error TS2323: Cannot redeclare exported variable 'LSTMForecaster'.
+lib/engines/core/v6/future/ml-models.ts(926,3): error TS2484: Export declaration conflicts with exported declaration of 'LSTMForecaster'.
+lib/engines/core/v6/future/ml-models.ts(927,3): error TS2323: Cannot redeclare exported variable 'LSTMClassifier'.
+lib/engines/core/v6/future/ml-models.ts(927,3): error TS2484: Export declaration conflicts with exported declaration of 'LSTMClassifier'.
+lib/engines/core/v6/future/ml-models.ts(928,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(928,3): error TS2484: Export declaration conflicts with exported declaration of 'LogisticRegressionConfig'.
+lib/engines/core/v6/future/ml-models.ts(929,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(929,3): error TS2484: Export declaration conflicts with exported declaration of 'LogisticRegressionModel'.
+lib/engines/core/v6/future/ml-models.ts(930,3): error TS2323: Cannot redeclare exported variable 'LogisticRegressionClassifier'.
+lib/engines/core/v6/future/ml-models.ts(930,3): error TS2484: Export declaration conflicts with exported declaration of 'LogisticRegressionClassifier'.
+lib/engines/core/v6/future/ml-models.ts(931,3): error TS2323: Cannot redeclare exported variable 'MLModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(931,3): error TS2484: Export declaration conflicts with exported declaration of 'MLModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(932,3): error TS2323: Cannot redeclare exported variable 'mlModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(932,3): error TS2484: Export declaration conflicts with exported declaration of 'mlModelLoader'.
+lib/engines/core/v6/future/ml-models.ts(933,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(933,3): error TS2484: Export declaration conflicts with exported declaration of 'MLModelInstance'.
+lib/engines/core/v6/future/ml-models.ts(934,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(934,3): error TS2484: Export declaration conflicts with exported declaration of 'MLInferenceRequest'.
+lib/engines/core/v6/future/ml-models.ts(935,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(935,3): error TS2484: Export declaration conflicts with exported declaration of 'MLInferenceResponse'.
+lib/engines/core/v6/future/ml-models.ts(936,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(936,3): error TS2484: Export declaration conflicts with exported declaration of 'MLBatchInferenceRequest'.
+lib/engines/core/v6/future/ml-models.ts(937,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(937,3): error TS2484: Export declaration conflicts with exported declaration of 'MLBatchInferenceResponse'.
+lib/engines/core/v6/future/ml-models.ts(938,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(938,3): error TS2484: Export declaration conflicts with exported declaration of 'MLFeature'.
+lib/engines/core/v6/future/ml-models.ts(939,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(939,3): error TS2484: Export declaration conflicts with exported declaration of 'MLModelMetadata'.
+lib/engines/core/v6/future/ml-models.ts(940,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(940,3): error TS2484: Export declaration conflicts with exported declaration of 'MLOutputSchema'.
+lib/engines/core/v6/future/ml-models.ts(941,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(941,3): error TS2484: Export declaration conflicts with exported declaration of 'MLPerformanceMetrics'.
+lib/engines/core/v6/future/ml-models.ts(942,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(942,3): error TS2484: Export declaration conflicts with exported declaration of 'MLTrainingInfo'.
+lib/engines/core/v6/future/ml-models.ts(943,3): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+lib/engines/core/v6/future/ml-models.ts(943,3): error TS2484: Export declaration conflicts with exported declaration of 'MLDeploymentInfo'.
+lib/engines/core/v6/future/vision.ts(77,39): error TS2307: Cannot find module '@mediapipe/pose' or its corresponding type declarations.
+lib/engines/core/v6/future/vision.ts(213,82): error TS2304: Cannot find name 'leftHeel'.
+lib/engines/core/v6/future/vision.ts(216,85): error TS2304: Cannot find name 'rightHeel'.
+lib/tools/engines/bodyfat.v6.ts(14,15): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'MathEngine'.
+lib/tools/engines/bodyfat.v6.ts(14,27): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'ValidationResult'.
+lib/tools/engines/bodyfat.v6.ts(14,45): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'SensitivityReport'.
+lib/tools/engines/bodyfat.v6.ts(23,41): error TS2552: Cannot find name 'BodyFatInput'. Did you mean 'BodyFatInputV6'?
+lib/tools/engines/bodyfat.v6.ts(30,42): error TS2552: Cannot find name 'BodyFatOutput'. Did you mean 'BodyFatOutputV6'?
+lib/tools/engines/bodyfat.v6.ts(188,35): error TS2345: Argument of type 'BodyFatInputV6' is not assignable to parameter of type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(191,21): error TS2304: Cannot find name 'ValidationWarning'.
+lib/tools/engines/bodyfat.v6.ts(193,15): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(193,43): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(193,58): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(197,15): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(197,32): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(202,15): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(203,15): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(203,42): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,13): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,18): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,28): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,38): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,46): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(212,55): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(237,19): error TS2552: Cannot find name 'BodyFatOutput'. Did you mean 'BodyFatOutputV6'?
+lib/tools/engines/bodyfat.v6.ts(284,7): error TS2353: Object literal may only specify known properties, and 'bodyFatPercentage' does not exist in type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(303,7): error TS2322: Type 'BodyFatInputV6' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(304,7): error TS2322: Type 'BodyFatOutputV6' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(313,16): error TS2339: Property 'bodyFatPercentage' does not exist on type 'Partial<BodyFatOutputV6>'.
+lib/tools/engines/bodyfat.v6.ts(313,49): error TS2339: Property 'heightCm' does not exist on type 'Partial<BodyFatInputV6>'.
+lib/tools/engines/bodyfat.v6.ts(313,73): error TS2339: Property 'sex' does not exist on type 'Partial<BodyFatInputV6>'.
+lib/tools/engines/bodyfat.v6.ts(313,92): error TS2339: Property 'neckCm' does not exist on type 'Partial<BodyFatInputV6>'.
+lib/tools/engines/bodyfat.v6.ts(313,114): error TS2339: Property 'waistCm' does not exist on type 'Partial<BodyFatInputV6>'.
+lib/tools/engines/bodyfat.v6.ts(322,7): error TS2345: Argument of type 'BodyFatInputV6' is not assignable to parameter of type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(324,41): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(325,40): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(326,42): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(327,42): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(344,29): error TS2367: This comparison appears to be unintentional because the types 'number | "light" | "moderate" | "cut" | "maintain" | "bulk" | "recomp" | "sedentary" | "active" | "veryActive" | undefined' and '"male"' have no overlap.
+lib/tools/engines/bodyfat.v6.ts(344,47): error TS2367: This comparison appears to be unintentional because the types 'number | "light" | "moderate" | "cut" | "maintain" | "bulk" | "recomp" | "sedentary" | "active" | "veryActive" | undefined' and '"female"' have no overlap.
+lib/tools/engines/bodyfat.v6.ts(349,13): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(349,41): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(349,56): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(355,5): error TS2353: Object literal may only specify known properties, and 'bodyFatPercentage' does not exist in type 'Partial<BodyFatOutputV6>'.
+lib/tools/engines/bodyfat.v6.ts(355,31): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(356,22): error TS2339: Property 'category' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(357,28): error TS2339: Property 'leanBodyMassKg' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(358,23): error TS2339: Property 'fatMassKg' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(366,52): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(366,81): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(381,52): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(399,52): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(399,98): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(480,27): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(480,43): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(481,25): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(482,77): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(483,44): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(483,61): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(483,81): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(483,118): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(493,32): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(493,53): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(500,24): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(504,36): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(511,38): error TS2339: Property 'leanBodyMassKg' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(511,69): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(512,36): error TS2339: Property 'normalizedFFMI' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(523,90): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(524,77): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(548,21): error TS2552: Cannot find name 'input'. Did you mean 'oninput'?
+lib/tools/engines/bodyfat.v6.ts(575,21): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(576,27): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(577,26): error TS2339: Property 'sex' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(607,5): error TS2322: Type '(inputKey: string, newValue: number) => { id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' is not assignable to type '(inputKey: string, newValue: number) => WhatIfScenarioV6'.
+  Call signature return types '{ id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' and 'WhatIfScenarioV6' are incompatible.
+    The types of 'difficulty' are incompatible between these types.
+      Type 'string' is not assignable to type '"easy" | "moderate" | "hard" | "extreme"'.
+lib/tools/engines/bodyfat.v6.ts(608,5): error TS2322: Type '(inputKey: string, percentChange: number) => { id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' is not assignable to type '(inputKey: string, percentChange: number) => WhatIfScenarioV6'.
+  Call signature return types '{ id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' and 'WhatIfScenarioV6' are incompatible.
+    The types of 'difficulty' are incompatible between these types.
+      Type 'string' is not assignable to type '"easy" | "moderate" | "hard" | "extreme"'.
+lib/tools/engines/bodyfat.v6.ts(647,13): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(652,14): error TS2339: Property 'category' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(654,21): error TS2339: Property 'category' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(659,14): error TS2339: Property 'normalizedFFMI' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(664,14): error TS2339: Property 'bodyFatPercentage' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(688,65): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/tools/engines/bodyfat.v6.ts(710,5): error TS2322: Type '(newInputs: Partial<BodyFatInputV6>) => Promise<DynamicResultV6>' is not assignable to type '(newInputs: Partial<BodyFatInputV6>) => DynamicResultV6'.
+  Type 'Promise<DynamicResultV6>' is missing the following properties from type 'DynamicResultV6': completeness, minimumViableOutput, whatIfScenarios, goldenRulesApplied, recalculate
+lib/tools/engines/bodyfat.v6.ts(750,5): error TS2353: Object literal may only specify known properties, and 'heightCm' does not exist in type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(750,35): error TS2339: Property 'heightCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(751,35): error TS2339: Property 'weightKg' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(752,33): error TS2339: Property 'neckCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(753,34): error TS2339: Property 'waistCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(754,18): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(754,46): error TS2339: Property 'hipCm' does not exist on type 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(764,5): error TS2353: Object literal may only specify known properties, and 'leanBodyMassKg' does not exist in type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(764,42): error TS2339: Property 'leanBodyMassKg' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(765,37): error TS2339: Property 'fatMassKg' does not exist on type 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(777,15): error TS2484: Export declaration conflicts with exported declaration of 'BodyFatInputV6'.
+lib/tools/engines/bodyfat.v6.ts(777,31): error TS2484: Export declaration conflicts with exported declaration of 'BodyFatOutputV6'.
+lib/tools/engines/bodyfat.v6.ts(777,48): error TS2484: Export declaration conflicts with exported declaration of 'SuperIntelligenceLayer'.
+lib/tools/engines/bodyfat.v6.ts(777,72): error TS2484: Export declaration conflicts with exported declaration of 'DynamicResultV6'.
+lib/tools/engines/macro.v6.ts(14,15): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'MathEngine'.
+lib/tools/engines/macro.v6.ts(14,27): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'ValidationResult'.
+lib/tools/engines/macro.v6.ts(14,45): error TS2305: Module '"../../engines/core/v6/equation-validator.v6"' has no exported member 'SensitivityReport'.
+lib/tools/engines/macro.v6.ts(22,39): error TS2552: Cannot find name 'MacroInput'. Did you mean 'MacroInputV6'?
+lib/tools/engines/macro.v6.ts(29,40): error TS2552: Cannot find name 'MacroOutput'. Did you mean 'MacroOutputV6'?
+lib/tools/engines/macro.v6.ts(187,35): error TS2345: Argument of type 'MacroInputV6' is not assignable to parameter of type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(189,21): error TS2304: Cannot find name 'ValidationWarning'.
+lib/tools/engines/macro.v6.ts(191,15): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(191,40): error TS2339: Property 'targetWeightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(191,64): error TS2339: Property 'targetWeightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(191,88): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(194,15): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(194,41): error TS2339: Property 'targetWeightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(194,65): error TS2339: Property 'targetWeightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(194,89): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,13): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,23): error TS2339: Property 'heightCm' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,33): error TS2339: Property 'age' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,38): error TS2339: Property 'sex' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,43): error TS2339: Property 'activityLevel' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(206,58): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(222,29): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ bulk: number; cut: number; recomp: number; maintenance: number; }'.
+lib/tools/engines/macro.v6.ts(270,7): error TS2353: Object literal may only specify known properties, and 'bmr' does not exist in type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(276,20): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(294,7): error TS2322: Type 'MacroInputV6' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(295,7): error TS2322: Type 'MacroOutputV6' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(303,16): error TS2339: Property 'targetCalories' does not exist on type 'Partial<MacroOutputV6>'.
+lib/tools/engines/macro.v6.ts(303,46): error TS2339: Property 'age' does not exist on type 'Partial<MacroInputV6>'.
+lib/tools/engines/macro.v6.ts(303,65): error TS2339: Property 'heightCm' does not exist on type 'Partial<MacroInputV6>'.
+lib/tools/engines/macro.v6.ts(303,89): error TS2339: Property 'sex' does not exist on type 'Partial<MacroInputV6>'.
+lib/tools/engines/macro.v6.ts(303,108): error TS2339: Property 'activityLevel' does not exist on type 'Partial<MacroInputV6>'.
+lib/tools/engines/macro.v6.ts(303,137): error TS2339: Property 'phase' does not exist on type 'Partial<MacroInputV6>'.
+lib/tools/engines/macro.v6.ts(311,7): error TS2345: Argument of type 'MacroInputV6' is not assignable to parameter of type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(313,42): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(314,42): error TS2339: Property 'heightCm' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(315,37): error TS2339: Property 'age' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(316,47): error TS2339: Property 'activityLevel' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(333,29): error TS2367: This comparison appears to be unintentional because the types 'number | "cut" | "maintain" | "bulk" | "recomp" | "balanced" | "high-protein" | "low-carb" | "ketogenic" | "high-carb" | undefined' and '"male"' have no overlap.
+lib/tools/engines/macro.v6.ts(333,47): error TS2367: This comparison appears to be unintentional because the types 'number | "cut" | "maintain" | "bulk" | "recomp" | "balanced" | "high-protein" | "low-carb" | "ketogenic" | "high-carb" | undefined' and '"female"' have no overlap.
+lib/tools/engines/macro.v6.ts(343,5): error TS2353: Object literal may only specify known properties, and 'bmr' does not exist in type 'Partial<MacroOutputV6>'.
+lib/tools/engines/macro.v6.ts(343,17): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(344,18): error TS2339: Property 'tdee' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(345,28): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(346,26): error TS2339: Property 'proteinGrams' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(381,13): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(382,54): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(397,52): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(469,28): error TS2339: Property 'sex' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(481,35): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(481,61): error TS2339: Property 'heightCm' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(481,82): error TS2339: Property 'age' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(482,36): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(489,31): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(489,57): error TS2339: Property 'activityLevel' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(490,36): error TS2339: Property 'tdee' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(497,32): error TS2339: Property 'tdee' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(497,62): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(497,86): error TS2339: Property 'tdee' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(498,36): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(505,42): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(505,77): error TS2339: Property 'macros' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(506,36): error TS2339: Property 'proteinGrams' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(532,87): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(533,91): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(555,21): error TS2339: Property 'sex' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(556,27): error TS2339: Property 'sex' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(557,26): error TS2339: Property 'sex' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(587,5): error TS2322: Type '(inputKey: string, newValue: number) => { id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' is not assignable to type '(inputKey: string, newValue: number) => WhatIfScenarioV6'.
+  Call signature return types '{ id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' and 'WhatIfScenarioV6' are incompatible.
+    The types of 'difficulty' are incompatible between these types.
+      Type 'string' is not assignable to type '"easy" | "moderate" | "hard" | "extreme"'.
+lib/tools/engines/macro.v6.ts(588,5): error TS2322: Type '(inputKey: string, percentChange: number) => { id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' is not assignable to type '(inputKey: string, percentChange: number) => WhatIfScenarioV6'.
+  Call signature return types '{ id: string; label: string; description: string; inputDeltas: { [x: string]: number; }; predictedOutput: any; confidence: number; tradeoffs: never[]; timeframe: string; difficulty: string; }' and 'WhatIfScenarioV6' are incompatible.
+    The types of 'difficulty' are incompatible between these types.
+      Type 'string' is not assignable to type '"easy" | "moderate" | "hard" | "extreme"'.
+lib/tools/engines/macro.v6.ts(625,13): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(625,39): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(625,63): error TS2339: Property 'bmr' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(635,14): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(643,21): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(653,13): error TS2339: Property 'phase' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(653,40): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(653,64): error TS2339: Property 'tdee' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(663,29): error TS2339: Property 'proteinGrams' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(663,55): error TS2339: Property 'targetCalories' does not exist on type 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(702,65): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/tools/engines/macro.v6.ts(721,5): error TS2322: Type '(newInputs: Partial<MacroInputV6>) => Promise<DynamicResultV6>' is not assignable to type '(newInputs: Partial<MacroInputV6>) => DynamicResultV6'.
+  Type 'Promise<DynamicResultV6>' is missing the following properties from type 'DynamicResultV6': completeness, minimumViableOutput, whatIfScenarios, goldenRulesApplied, recalculate
+lib/tools/engines/macro.v6.ts(759,5): error TS2353: Object literal may only specify known properties, and 'heightCm' does not exist in type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(759,35): error TS2339: Property 'heightCm' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(760,35): error TS2339: Property 'weightKg' does not exist on type 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(786,3): error TS2484: Export declaration conflicts with exported declaration of 'MacroInputV6'.
+lib/tools/engines/macro.v6.ts(787,3): error TS2484: Export declaration conflicts with exported declaration of 'MacroOutputV6'.
+lib/tools/engines/macro.v6.ts(788,3): error TS2484: Export declaration conflicts with exported declaration of 'SuperIntelligenceLayer'.
+lib/tools/engines/macro.v6.ts(789,3): error TS2484: Export declaration conflicts with exported declaration of 'DynamicResultV6'.

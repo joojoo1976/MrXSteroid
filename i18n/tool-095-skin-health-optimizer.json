@@ -1,6 +1,12 @@
 {
   "en": {
-    "tool_name": "Skin Health Optimizer",
+    "tool_name": "Skin Observation Log",
+    "scope": "Record user-entered skin observations without diagnosing acne or suggesting treatment.",
+    "choose": "Choose an observation",
+    "recorded": "USER_PROVIDED — observations recorded without inference.",
+    "recorded_title": "Recorded observations",
+    "complete_inputs": "Complete the observation selections before recording.",
+    "limits": "These observations do not establish acne diagnosis, skin-barrier integrity, infection, scarring risk, or treatment priority.",
     "sebum_level": "Sebum Production & Oiliness Level",
     "sebum_normal": "Normal / Balanced Skin Barrier",
     "sebum_mod": "Moderately Oily (T-Zone Shininess)",
@@ -21,7 +27,13 @@
     "disclaimer": "Educational screening for androgen-induced dermatological changes and sebaceous kinetics. Not a clinical dermatology diagnosis for acne vulgaris or folliculitis. Consult a certified dermatologist for prescription treatments."
   },
   "ar": {
-    "tool_name": "محسّن صحة الجلد",
+    "tool_name": "سجل ملاحظات الجلد",
+    "scope": "سجّل ملاحظات الجلد التي يدخلها المستخدم دون تشخيص حب الشباب أو اقتراح علاج.",
+    "choose": "اختر الملاحظة",
+    "recorded": "USER_PROVIDED — سُجلت الملاحظات دون استنتاج.",
+    "recorded_title": "الملاحظات المسجلة",
+    "complete_inputs": "أكمل اختيارات الملاحظات قبل التسجيل.",
+    "limits": "لا تثبت هذه الملاحظات تشخيص حب الشباب أو سلامة الحاجز الجلدي أو العدوى أو خطر الندبات أو أولوية العلاج.",
     "sebum_level": "معدل إفراز الدهون والزيوت الجلدية (Sebum)",
     "sebum_normal": "طبيعي ومتوازن (حاجز جلدي سليم)",
     "sebum_mod": "دهني متوسط (لمعان في الجبهة والأنف)",

@@ -1,63 +1,133 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useCompounds } from '@/lib/hooks/useToolState';
-import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import { calculateAromatizationRisk, type EstrogenProlactinInput, type AromatizationScore } from '@/lib/tools/engines/tool-006-estrogen-prolactin';
-import { Compound } from '@/lib/types/database';
-import MeasurementToggle from './MeasurementToggle';
-import i18nJson from '@/i18n/tool-006-estrogen-prolactin.json';
+import React, { useState } from 'react';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import i18nJson from '@/i18n/tool-006-estrogen-prolactin.json';
+import type { EstrogenProlactinInput } from '@/lib/tools/engines/tool-006-estrogen-prolactin';
+import { EstrogenProlactinInputSchema } from '@/lib/tools/schemas/tool-006-estrogen-prolactin';
+
+type Draft = {
+  e2Level: string;
+  e2Unit: EstrogenProlactinInput['e2Unit'];
+  prolactinLevel: string;
+  prolactinUnit: EstrogenProlactinInput['prolactinUnit'];
+};
+
+const EMPTY_DRAFT: Draft = {
+  e2Level: '',
+  e2Unit: 'pg/mL',
+  prolactinLevel: '',
+  prolactinUnit: 'ng/mL',
+};
 
 export default function Tool006EstrogenProlactin() {
   const i18nData = useToolI18n(i18nJson);
-  const { data: dbCompounds, isLoading: compoundsLoading } = useCompounds();
-  const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
-  const { mutate: updateToolState, isPending } = useUpdateToolState();
-  const debouncedSave = useDebounce(updateToolState, 1000);
+  const { isRtl } = useToolDisplayPreferences();
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [records, setRecords] = useState<EstrogenProlactinInput[]>([]);
+  const [error, setError] = useState('');
 
-  const availableCompounds = dbCompounds || [
-    { id: 1, name_en: 'Testosterone', name_ar: 'تستوستيرون', family: 'testosterone', suppression_factor: 1.0, half_life_days: 4.5, is_lipophilic: false, bioavailability: 1.0, default_dose_mg: 50.0, description_text: 'Primary male sex hormone', aromatization_factor: 1.0 },
-    { id: 2, name_en: 'Dianabol', name_ar: 'ديانabol', family: 'testosterone', suppression_factor: 1.5, half_life_days: 6.0, is_lipophilic: true, bioavailability: 0.8, default_dose_mg: 50.0, description_text: 'Oral steroid', aromatization_factor: 1.0 },
-    { id: 3, name_en: 'Deca Durabolin', name_ar: 'ديدا', family: 'nandrolone', suppression_factor: 0.8, half_life_days: 14.0, is_lipophilic: true, bioavailability: 0.8, default_dose_mg: 200.0, description_text: 'Long-acting nandrolone', aromatization_factor: 0.2 },
-  ];
-
-  const [state, setState] = useState({
-    e2Level: 40,
-    prolactinLevel: 15,
-    measurementSystem: 'metric' as 'metric' | 'imperial',
-    currentAI: '',
-    currentDA: '',
-    compoundStack: [] as any[],
-  });
-
-  const [aromResult, setAromResult] = useState<AromatizationScore | null>(null);
-
-  useEffect(() => {
-    if (state.compoundStack.length > 0) {
-      const input: EstrogenProlactinInput = {
-        e2Level: state.e2Level,
-        prolactinLevel: state.prolactinLevel,
-        measurementSystem: state.measurementSystem,
-        currentAI: state.currentAI,
-        currentDA: state.currentDA,
-        compoundStack: state.compoundStack,
-      };
-
-      const result = calculateAromatizationRisk(input);
-      setAromResult(result);
-
-      debouncedSave({
-        ...savedState,
-        last_calculated_at: new Date().toISOString(),
-      });
+  function addRecord(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const parsed = EstrogenProlactinInputSchema.safeParse({
+      e2Level: Number(draft.e2Level),
+      e2Unit: draft.e2Unit,
+      prolactinLevel: Number(draft.prolactinLevel),
+      prolactinUnit: draft.prolactinUnit,
+    });
+    if (!parsed.success) {
+      setError(i18nData.invalid_values);
+      return;
     }
-  }, [state.compoundStack]);
+    setError('');
+    setRecords((current) => [...current, parsed.data]);
+    setDraft(EMPTY_DRAFT);
+  }
 
   return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
-      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
-    </div>
+    <section className="mx-auto max-w-3xl rounded-2xl border border-slate-700 bg-slate-950 p-5 text-slate-100 md:p-7" dir={isRtl ? 'rtl' : 'ltr'}>
+      <h1 className="text-2xl font-bold">{i18nData.tool_name}</h1>
+      <p className="mt-2 text-sm text-slate-300">{i18nData.description}</p>
+
+      <div role="note" className="my-5 rounded-lg border border-amber-500/50 bg-amber-950/30 p-4 text-sm text-amber-100">
+        <strong>{i18nData.not_assessed_title}</strong>
+        <p className="mt-1">{i18nData.not_assessed_body}</p>
+      </div>
+
+      <form onSubmit={addRecord} className="grid gap-4 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm">
+          <span>{i18nData.e2_label}</span>
+          <span className="flex gap-2">
+            <input
+              aria-label={i18nData.e2_label}
+              inputMode="decimal"
+              type="number"
+              min="0"
+              step="any"
+              required
+              value={draft.e2Level}
+              onChange={(event) => setDraft({ ...draft, e2Level: event.target.value })}
+              className="min-w-0 flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-2"
+            />
+            <select
+              aria-label={i18nData.e2_unit}
+              value={draft.e2Unit}
+              onChange={(event) => setDraft({ ...draft, e2Unit: event.target.value as Draft['e2Unit'] })}
+              className="rounded border border-slate-600 bg-slate-900 px-2 py-2"
+            >
+              <option value="pg/mL">pg/mL</option>
+              <option value="pmol/L">pmol/L</option>
+            </select>
+          </span>
+        </label>
+
+        <label className="grid gap-1 text-sm">
+          <span>{i18nData.prolactin_label}</span>
+          <span className="flex gap-2">
+            <input
+              aria-label={i18nData.prolactin_label}
+              inputMode="decimal"
+              type="number"
+              min="0"
+              step="any"
+              required
+              value={draft.prolactinLevel}
+              onChange={(event) => setDraft({ ...draft, prolactinLevel: event.target.value })}
+              className="min-w-0 flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-2"
+            />
+            <select
+              aria-label={i18nData.prolactin_unit}
+              value={draft.prolactinUnit}
+              onChange={(event) => setDraft({ ...draft, prolactinUnit: event.target.value as Draft['prolactinUnit'] })}
+              className="rounded border border-slate-600 bg-slate-900 px-2 py-2"
+            >
+              <option value="ng/mL">ng/mL</option>
+              <option value="mIU/L">mIU/L</option>
+            </select>
+          </span>
+        </label>
+
+        {error && <p role="alert" className="text-sm text-red-300 sm:col-span-2">{error}</p>}
+        <button type="submit" className="rounded-lg bg-cyan-700 px-4 py-2 font-semibold hover:bg-cyan-600 sm:col-span-2">
+          {i18nData.add_record}
+        </button>
+      </form>
+
+      <section aria-live="polite" className="mt-6 border-t border-slate-700 pt-4">
+        <h2 className="font-semibold">{i18nData.session_records}</h2>
+        {records.length === 0 ? (
+          <p className="mt-2 text-sm text-slate-400">{i18nData.no_records}</p>
+        ) : (
+          <ol className="mt-2 grid gap-2">
+            {records.map((record, index) => (
+              <li key={`${index}-${record.e2Level}-${record.prolactinLevel}`} className="rounded border border-slate-700 p-3 text-sm">
+                {i18nData.e2_label}: {record.e2Level} {record.e2Unit}; {i18nData.prolactin_label}: {record.prolactinLevel} {record.prolactinUnit}
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </section>
   );
 }

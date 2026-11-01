@@ -3,6 +3,7 @@
  * instant recompute, Zod validation, auto-draft via shared adapter, standard
  * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { checkStackCompatibility, type StackCompatibilityResult } from '@/lib/tools/engines/tool-038-stack-compatibility';
 import { buildStackCompatibilityOutput } from '@/lib/tools/adapters/tool-038-stack-compatibility';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -24,7 +25,7 @@ const FLAG_COLOR: Record<string, string> = { info: 'text-zinc-400', monitor: 'te
 export default function Tool038StackCompatibility() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({ items: [DEFAULT_ITEM] });
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
@@ -81,8 +82,8 @@ export default function Tool038StackCompatibility() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.items}</h2>

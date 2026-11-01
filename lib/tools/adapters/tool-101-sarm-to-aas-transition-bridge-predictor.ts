@@ -2,9 +2,7 @@
  * Tool #101 - SARM-to-AAS Transition & Bridge Predictor
  * Layer 3: canonical ToolOutput envelope.
  */
-import {
-  deriveDataQuality,
-  type DataProvenance,
+import {  type DataProvenance,
   type DataSource,
   type KeyFinding,
   type Locale,
@@ -31,15 +29,14 @@ export interface SarmToAasTransitionOutputOptions {
 
 export function buildSarmToAasTransitionProvenance(options: SarmToAasTransitionOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.7;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'days',
     measurementMethod: 'first-order elimination model using published SARM/AAS half-lives (educational, deterministic)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
+    confidence: 0.65,
+    dataQuality: 'medium',
   };
 }
 
@@ -100,4 +97,4 @@ export function buildSarmToAasTransitionOutput(
     seoLinks: buildSeoLinks(tool),
   });
 }
-
+

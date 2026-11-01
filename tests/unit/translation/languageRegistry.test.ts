@@ -199,7 +199,7 @@ describe('T1 · contracts (§33, §36–§40)', () => {
 
     it('§33/§34 define version identifiers', () => {
         expect(TRANSLATION_ENGINE_VERSION).toBe('v1');
-        expect(TRANSLATION_GLOSSARY_VERSION).toBe('none');
+        expect(TRANSLATION_GLOSSARY_VERSION).toBe('mrx-core-v1');
     });
 
     it('§33 a missing sourceLanguage fails validation explicitly', () => {

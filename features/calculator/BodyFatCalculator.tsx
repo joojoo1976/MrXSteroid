@@ -13,7 +13,6 @@ import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { UnitToggle } from '../../shared/ui/UnitToggle';
 import { useBodyFatCalculator, BodyFatDisplayResult } from './hooks/useBodyFatCalculator';
 
 interface BodyFatCalculatorProps {
@@ -439,7 +438,6 @@ const BodyFatCalculator: React.FC<BodyFatCalculatorProps> = ({ content, navigate
 
       {/* AdSlot Top */}
       <div className="mb-10 flex flex-col items-center gap-5">
-        <UnitToggle className="scale-110 shadow-xl border-white/10" />
         <AdPlaceholder slotId="bodyfat_top_banner" format="horizontal" content={content} />
       </div>
 

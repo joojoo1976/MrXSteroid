@@ -1,0 +1,3 @@
+import {z} from 'zod';
+export const GeneticPotentialInputSchema=z.object({height_cm:z.number().finite().positive().min(100).max(250),wrist_cm:z.number().finite().positive().min(5).max(30),ankle_cm:z.number().finite().positive().min(10).max(40)}).strict();
+export function calculatePotentialScenario(raw:unknown){const i=GeneticPotentialInputSchema.parse(raw);const index=(i.height_cm*0.1)+(i.wrist_cm*0.2)+(i.ankle_cm*0.1);return {status:'CALCULATED' as const,resultType:'SCENARIO' as const,index:Number(index.toFixed(3)),assumptions:['Illustrative formula, not validated prediction','Measurements are user provided'],disclaimer:'Illustrative arithmetic only; not a prediction of genetic limit or health outcome.'};}

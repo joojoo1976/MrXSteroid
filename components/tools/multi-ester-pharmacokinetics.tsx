@@ -32,6 +32,7 @@ import {
 } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseMultiEsterInput } from '@/lib/tools/schemas/multi-ester-pharmacokinetics';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const TOOL_SLUG = 'multi-ester-pharmacokinetics';
 
@@ -44,8 +45,7 @@ export default function MultiEsterPKToolComponent() {
     const tool = requireTool(TOOL_SLUG);
     const neighbors = getToolNeighbors(TOOL_SLUG);
 
-    const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-    const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
+    const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
     const [bodyWeightInput, setBodyWeightInput] = useState<number>(85); // kg or lbs
     const [simulationDays, setSimulationDays] = useState<number>(60);
     const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -58,8 +58,6 @@ export default function MultiEsterPKToolComponent() {
         { id: '3', day: 14, doseMg: 250, ester: 'enanthate' },
         { id: '4', day: 21, doseMg: 250, ester: 'enanthate' },
     ]);
-
-    const isRtl = locale === 'ar';
 
     // Draft restore (once, on mount) — corrupt/stale drafts are discarded safely.
     // `unitSystem` is intentionally excluded: drafts store the raw display value
@@ -203,23 +201,6 @@ export default function MultiEsterPKToolComponent() {
                     </p>
                 </div>
 
-                {/* Global Controls */}
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700 transition"
-                    >
-                        {isRtl ? 'English (LTR)' : 'عربي (RTL)'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-lime-400 rounded-lg border border-slate-700 transition"
-                    >
-                        {unitSystem === 'metric' ? 'Metric (kg)' : 'Imperial (lbs)'}
-                    </button>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

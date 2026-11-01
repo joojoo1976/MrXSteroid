@@ -6,7 +6,7 @@ import {
   ShieldAlert, Calendar, ChevronDown, Clock,
   Info, Gauge, FlaskConical, Droplet, RotateCcw,
   Zap, Plus, Trash2, TrendingUp, LineChart, Activity,
-  Target, Beaker, Sparkles, Scale, Ruler, BookOpen, HelpCircle
+  Beaker, Sparkles, BookOpen, HelpCircle
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -82,7 +82,7 @@ const CustomTooltip = ({ active, payload, label, content }: {
 };
 
 const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
-  const { isRTL, unitSystem, setUnitSystem } = usePreferences();
+  const { isRTL, unitSystem } = usePreferences();
   const [showSlider, setShowSlider] = useState(false);
 
   const {
@@ -195,28 +195,6 @@ const HalfLifeVisualizer: React.FC<HalfLifeVisualizerProps> = ({ content }) => {
         {/* Sidebar */}
         <motion.div initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} className="lg:col-span-4 space-y-6">
           <div className="bg-white dark:bg-zinc-950/60 p-8 rounded-[3rem] border border-zinc-100 dark:border-zinc-800/60 shadow-2xl space-y-7 backdrop-blur-3xl card-shine">
-
-            {/* Metric/Imperial Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-              <div className="flex items-center gap-2">
-                <Target size={14} className="text-gold-500" />
-                <span className="text-[11px] font-black uppercase tracking-wider text-zinc-500">{content.hlUnitToggleLabel ?? 'Measurement'}</span>
-              </div>
-              <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-900 gap-1" role="group" aria-label={content.hlUnitToggleLabel ?? 'Measurement System'}>
-                <button type="button" onClick={() => setUnitSystem('metric')} aria-pressed={unitSystem === 'metric'}
-                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
-                    unitSystem === 'metric' ? 'bg-gold-500 text-black shadow-md shadow-gold-500/30' : 'text-zinc-400 hover:text-white'
-                  }`}>
-                  <Scale size={12} className={unitSystem === 'metric' ? 'text-black' : 'text-gold-500'} />{content.hlMetric ?? 'METRIC'}
-                </button>
-                <button type="button" onClick={() => setUnitSystem('imperial')} aria-pressed={unitSystem === 'imperial'}
-                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-black transition-all ${
-                    unitSystem === 'imperial' ? 'bg-gold-500 text-black shadow-md shadow-gold-500/30' : 'text-zinc-400 hover:text-white'
-                  }`}>
-                  <Ruler size={12} className={unitSystem === 'imperial' ? 'text-black' : 'text-gold-500'} />{content.hlImperial ?? 'IMPERIAL'}
-                </button>
-              </div>
-            </div>
 
             {/* Compound Selector */}
             <div className="space-y-4">

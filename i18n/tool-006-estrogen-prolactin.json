@@ -1,16 +1,30 @@
 {
   "en": {
-    "tool_name": "Estrogen & Prolactin Control",
-    "risk_level": "Aromatization Risk",
-    "recommended_ai_dose": "Recommended AI Dose",
-    "recommended_da_dose": "Recommended DA Dose",
-    "key_findings": "Key Findings"
+    "tool_name": "Estradiol & Prolactin Record",
+    "description": "Add laboratory values to a temporary list in this page session. Values stay in the page state and are cleared when you leave or reload.",
+    "not_assessed_title": "NOT ASSESSED",
+    "not_assessed_body": "This tool does not interpret results, determine whether a value is normal, assess risk, or recommend medication. Use the reference interval printed by your laboratory and contact a qualified clinician with questions.",
+    "e2_label": "Estradiol (E2)",
+    "e2_unit": "Estradiol unit",
+    "prolactin_label": "Prolactin",
+    "prolactin_unit": "Prolactin unit",
+    "add_record": "Add to this session",
+    "session_records": "Current page-session records",
+    "no_records": "No values added in this session.",
+    "invalid_values": "Enter finite non-negative values and select the units shown on the laboratory report."
   },
   "ar": {
-    "tool_name": "التحكم في الإستروجين والبرولاكتين",
-    "risk_level": "خطر الأروماتيزيشن",
-    "recommended_ai_dose": "جرعة AI الموصى بها",
-    "recommended_da_dose": "جرعة DA الموصى بها",
-    "key_findings": "النتائج الهامة"
+    "tool_name": "سجل قيم الإستراديول والبرولاكتين",
+    "description": "أضف نتائج المختبر إلى قائمة مؤقتة خلال جلسة هذه الصفحة. تبقى القيم في حالة الصفحة وتُمسح عند مغادرتها أو إعادة تحميلها.",
+    "not_assessed_title": "لم يتم التقييم",
+    "not_assessed_body": "لا تفسر الأداة النتائج ولا تحدد إن كانت القيمة طبيعية، ولا تقيم المخاطر أو توصي بالأدوية. استخدم المجال المرجعي المطبوع في تقرير مختبرك واستشر مختصاً مؤهلاً عند وجود أسئلة.",
+    "e2_label": "الإستراديول (E2)",
+    "e2_unit": "وحدة الإستراديول",
+    "prolactin_label": "البرولاكتين",
+    "prolactin_unit": "وحدة البرولاكتين",
+    "add_record": "إضافة إلى الجلسة الحالية",
+    "session_records": "السجلات المؤقتة في الصفحة الحالية",
+    "no_records": "لم تُضف أي قيم في هذه الجلسة.",
+    "invalid_values": "أدخل قيماً رقمية محدودة وغير سالبة واختر الوحدات الظاهرة في تقرير المختبر."
   }
 }

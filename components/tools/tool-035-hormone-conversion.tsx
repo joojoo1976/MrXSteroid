@@ -1,25 +1,29 @@
 'use client';
-/** Tool #035 — Hormone Conversion Calculator (dynamic UI, GPT2 spec). */
+/** Tool #035 — sourced testosterone and estradiol lab-unit converter. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateHormoneConversion } from '@/lib/tools/engines/tool-035-hormone-conversion';
 import { buildConversionOutput } from '@/lib/tools/adapters/tool-035-hormone-conversion';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
+import { AUTO_DRAFT_DEBOUNCE_MS, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { ConversionInputSchema } from '@/lib/tools/schemas/tool-035-hormone-conversion';
 import i18nJson from '@/i18n/tool-035-hormone-conversion.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-035-hormone-conversion';
-interface DraftInputs { weeklyTestMg: number; bodyFatPct: number; age: number; aiDose: number }
+type Analyte = 'testosterone' | 'estradiol';
+type Unit = 'ng/dL' | 'nmol/L' | 'pg/mL' | 'pmol/L';
+interface DraftInputs { analyte: Analyte; value: number; unit: Unit; measurementDate: string; readingSource: string }
 
 export default function Tool035HormoneConversion() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-  const [weeklyTestMg, setWeeklyTestMg] = useState(500);
-  const [bodyFatPct, setBodyFatPct] = useState(18);
-  const [age, setAge] = useState(30);
-  const [aiDose, setAiDose] = useState(0);
+  const { locale, unitSystem } = useToolDisplayPreferences();
+  const [analyte, setAnalyte] = useState<Analyte>('testosterone');
+  const [value, setValue] = useState(Number.NaN);
+  const [unit, setUnit] = useState<Unit>('ng/dL');
+  const [measurementDate, setMeasurementDate] = useState('');
+  const [readingSource, setReadingSource] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -27,90 +31,123 @@ export default function Tool035HormoneConversion() {
   const isRtl = locale === 'ar';
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevDraftKey = useRef('');
+
   useEffect(() => {
     const draft = loadDraft<DraftInputs>(TOOL_SLUG);
     if (!draft) return;
-    if (typeof draft.inputs.weeklyTestMg === 'number') setWeeklyTestMg(draft.inputs.weeklyTestMg);
-    if (typeof draft.inputs.bodyFatPct === 'number') setBodyFatPct(draft.inputs.bodyFatPct);
-    if (typeof draft.inputs.age === 'number') setAge(draft.inputs.age);
-    if (typeof draft.inputs.aiDose === 'number') setAiDose(draft.inputs.aiDose);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (draft.inputs.analyte === 'testosterone' || draft.inputs.analyte === 'estradiol') setAnalyte(draft.inputs.analyte);
+    if (typeof draft.inputs.value === 'number') setValue(draft.inputs.value);
+    if (draft.inputs.unit) setUnit(draft.inputs.unit);
+    if (draft.inputs.measurementDate) setMeasurementDate(draft.inputs.measurementDate);
+    if (draft.inputs.readingSource) setReadingSource(draft.inputs.readingSource);
   }, []);
-  const inputs = useMemo(() => ({ weekly_test_mg: weeklyTestMg, body_fat_pct: bodyFatPct, age, ai_dose_mg_per_week: aiDose }), [weeklyTestMg, bodyFatPct, age, aiDose]);
+
+  const inputs = useMemo(() => ({
+    analyte,
+    value,
+    unit,
+    measurement_date: measurementDate,
+    reading_source: readingSource,
+  }), [analyte, value, unit, measurementDate, readingSource]);
   const parsed = useMemo(() => ConversionInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo(() => (parsed.success ? calculateHormoneConversion(parsed.data) : null), [parsed]);
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const output = buildConversionOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: '1970-01-01T00:00:00.000Z', recordedAt: '1970-01-01T00:00:00.000Z', timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
+  const result = useMemo(() => parsed.success ? calculateHormoneConversion(parsed.data) : null, [parsed]);
+
   useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
     if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    draftTimer.current = setTimeout(() => {
+      saveDraft(TOOL_SLUG, { analyte, value, unit, measurementDate, readingSource }, { locale, unitSystem, savedAt: new Date().toISOString() });
+    }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem, analyte, value, unit, measurementDate, readingSource]);
+
+  const changeAnalyte = (nextAnalyte: Analyte) => {
+    setAnalyte(nextAnalyte);
+    setUnit(nextAnalyte === 'testosterone' ? 'ng/dL' : 'pg/mL');
+  };
+
   const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
+    if (!parsed.success || !result) { setSaveStatus(t.save_invalid); return; }
     setIsSaving(true);
-    setSaveStatus(isRtl ? 'جاري الحفظ...' : 'Saving...');
+    setSaveStatus(t.saving);
     try {
       const now = new Date().toISOString();
-      const output = buildConversionOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildConversionOutput(parsed.data, {
+        locale,
+        unitSystem,
+        snapshotType: 'dashboard_projection',
+        calculatedAt: now,
+        recordedAt: `${parsed.data.measurement_date}T00:00:00.000Z`,
+        timezone: 'UTC',
+      });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
+      if (submitted.ok && projection.ok) { clearDraft(TOOL_SLUG); setSaveStatus(t.saved); }
+      else setSaveStatus(t.save_failed);
     } finally { setIsSaving(false); }
   };
+
+  const availableUnits: Unit[] = analyte === 'testosterone' ? ['ng/dL', 'nmol/L'] : ['pg/mL', 'pmol/L'];
+
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
+    <main className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
-        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <label className="text-xs font-bold text-zinc-500">{t.weekly_test_mg}
-          <input type="number" min={0} max={3000} value={weeklyTestMg} onChange={(e) => setWeeklyTestMg(Math.max(0, Math.min(3000, Number(e.target.value) || 0)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+      <p role="note" className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-5 text-amber-800 dark:text-amber-200">{t.scope_note}</p>
+      <p className="mb-4 text-xs text-zinc-400">
+        {t.sources}: {' '}
+        <a className="underline" href="https://pubchem.ncbi.nlm.nih.gov/compound/testosterone" target="_blank" rel="noreferrer">PubChem — testosterone</a>
+        {' · '}
+        <a className="underline" href="https://pubchem.ncbi.nlm.nih.gov/compound/estradiol" target="_blank" rel="noreferrer">PubChem — estradiol</a>
+        {' · '}
+        <a className="underline" href="https://www.nist.gov/pml/special-publication-811/nist-guide-si-chapter-8" target="_blank" rel="noreferrer">NIST SI Guide</a>
+      </p>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-4">
+        <label className="text-xs font-bold text-zinc-500">{t.analyte}
+          <select value={analyte} onChange={(event) => changeAnalyte(event.target.value as Analyte)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white">
+            <option value="testosterone">{t.testosterone}</option>
+            <option value="estradiol">{t.estradiol}</option>
+          </select>
         </label>
-        <label className="text-xs font-bold text-zinc-500">{t.body_fat_pct}
-          <input type="number" step={0.5} min={5} max={60} value={bodyFatPct} onChange={(e) => setBodyFatPct(Math.max(5, Math.min(60, Number(e.target.value) || 5)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+        <label className="text-xs font-bold text-zinc-500">{t.value}
+          <input type="number" min={0} max={10_000_000} step="any" value={Number.isFinite(value) ? value : ''} onChange={(event) => setValue(event.target.value === '' ? Number.NaN : Number(event.target.value))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
         </label>
-        <label className="text-xs font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={age} onChange={(e) => setAge(Math.max(18, Math.min(90, Number(e.target.value) || 18)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+        <label className="text-xs font-bold text-zinc-500">{t.unit}
+          <select value={unit} onChange={(event) => setUnit(event.target.value as Unit)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr">
+            {availableUnits.map((availableUnit) => <option key={availableUnit} value={availableUnit}>{availableUnit}</option>)}
+          </select>
         </label>
-        <label className="text-xs font-bold text-zinc-500">{t.ai_dose}
-          <input type="number" step={0.25} min={0} max={14} value={aiDose} onChange={(e) => setAiDose(Math.max(0, Math.min(14, Number(e.target.value) || 0)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+        <label className="text-xs font-bold text-zinc-500">{t.measurement_date}
+          <input type="date" value={measurementDate} onChange={(event) => setMeasurementDate(event.target.value)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+        </label>
+        <label className="text-xs font-bold text-zinc-500 sm:col-span-2">{t.reading_source}
+          <input value={readingSource} onChange={(event) => setReadingSource(event.target.value)} maxLength={200} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white" />
+          <span className="mt-1 block font-normal">{t.source_unverified}</span>
         </label>
       </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
+      {validationError && <p role="alert" className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>}
+      {!result && <p role="status" className="mb-4 rounded-lg border border-zinc-700 p-3 text-sm text-zinc-400">{t.empty_state}</p>}
       {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.estimated_total_t}</span><span className="text-lg font-bold text-cyan-400 font-mono" dir="ltr">{result.estimated_total_t_ng_dl}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-lime-500/40"><span className="text-[10px] text-zinc-400 block">{t.estimated_e2}</span><span className="text-lg font-bold text-lime-400 font-mono" dir="ltr">{result.estimated_e2_pg_ml}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.e2_status}</span><span className="text-lg font-bold text-amber-400 font-mono" dir="ltr">{result.e2_status}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.ai_suggestion}</span><span className="text-lg font-bold text-purple-400 font-mono" dir="ltr">{result.ai_suggestion_mg_per_week}</span></div>
+        <section aria-labelledby="tool-035-result" className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
+          <h2 id="tool-035-result" className="mb-3 text-sm font-bold text-zinc-300">{t.result}</h2>
+          <p className="text-2xl font-bold font-mono text-cyan-300" dir="ltr">{result.input_value} {result.input_unit} = {result.result_value} {result.result_unit}</p>
+          <p className="mt-2 text-xs text-zinc-400">{t.method}: 1 molar mass-based conversion · {t.calculated_only}</p>
+          <p className="mt-1 text-xs text-zinc-500">{t.measurement_date}: {result.measurement_date} · {t.reading_source}: <span dir="auto">{result.reading_source}</span></p>
+          <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-3 border-t border-zinc-800 pt-3">
+            <span className="text-xs text-zinc-500 font-mono" role="status">{saveStatus}</span>
+            <button type="button" onClick={handleSave} disabled={isSaving || !parsed.success} className="w-full md:w-auto rounded-lg bg-lime-500 px-5 py-2 text-xs font-bold text-slate-950 transition hover:bg-lime-400 disabled:opacity-50">{isSaving ? t.saving : t.save}</button>
           </div>
-          <div className="text-xs text-zinc-400 font-mono mb-2" dir="ltr">{t.test_to_e2_ratio}: {result.test_to_e2_ratio}</div>
-          <ul className="space-y-1 text-xs text-amber-200/90">{result.warnings.map((w, i) => (<li key={i}>⚠ {w}</li>))}</ul>
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
-          </div>
-        </div>
+        </section>
       )}
       <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
+        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `${t.previous}: ${neighbors.prevTool.titleAr}` : `${t.previous}: ${neighbors.prevTool.titleEn}`}</span></a>
+        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `${t.next}: ${neighbors.nextTool.titleAr}` : `${t.next}: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
       </div>
       <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+    </main>
   );
 }

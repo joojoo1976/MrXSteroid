@@ -2,16 +2,15 @@
 
 import React, { useState, useMemo } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import MeasurementToggle, {
-  getStoredMeasurementSystem,
+import {
   mgToOz,
   ozToMg,
-  type MeasurementSystem,
 } from './MeasurementToggle';
 import type { StackCompound } from '@/lib/tools/schemas/tool-010-compound-stack-builder';
 import i18nJsonRaw from '@/i18n/tool-010-compound-stack-builder.json';
 const i18nJson = i18nJsonRaw as any;
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 /* ============================================================================
  * TYPE DEFINITIONS
@@ -223,6 +222,7 @@ function synergyOf(compounds: StackCompound[], t: ReturnType<typeof useToolI18n>
 }
 export default function Tool010CompoundStackBuilder() {
   const i18nData = useToolI18n(i18nJson);
+  const { unitSystem } = useToolDisplayPreferences();
   const { data: savedStateRaw } = useUserToolState('user-id');
   const savedState = (savedStateRaw as any) ?? {};
   const { mutate: updateToolState, isPending } = useUpdateToolState();
@@ -235,7 +235,6 @@ export default function Tool010CompoundStackBuilder() {
   const [family, setFamily] = useState('');
   const [weeklyDose, setWeeklyDose] = useState(300);
   const [weeks, setWeeks] = useState(12);
-  const [unitSystem, setUnitSystem] = useState<MeasurementSystem>(() => getStoredMeasurementSystem());
   const isMetric = unitSystem === 'metric';
 
   const addCompound = () => {
@@ -271,7 +270,6 @@ export default function Tool010CompoundStackBuilder() {
 
   return (    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle unitSystem={unitSystem} onChange={setUnitSystem} isRtl={i18nData.dir === 'rtl'} />
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">{i18nData.stack_name}</label>
@@ -310,8 +308,8 @@ export default function Tool010CompoundStackBuilder() {
           <h3 className="font-bold text-lg mb-3">{isArabic ? 'تقييم خطر الأرمتة' : 'Aromatization Risk Assessment'}</h3>
           <div className="space-y-2">
             <p className="font-medium">
-              {isArabic ? 'مستوى الخطر:' : 'Risk Level:'} 
-              <span className="ml-2 px-2 py-1 rounded text-sm font-bold 
+              {isArabic ? 'مستوى الخطر:' : 'Risk Level:'}
+              <span className="ml-2 px-2 py-1 rounded text-sm font-bold
                 {tierLabel === 'Critical Risk' || tierLabel === 'خطر حرج' ? 'bg-red-100 text-red-800' :
                  tierLabel === 'High Risk' || tierLabel === 'خطر مرتفع' ? 'bg-orange-100 text-orange-800' :
                  tierLabel === 'Moderate Risk' || tierLabel === 'خطر متوسط' ? 'bg-yellow-100 text-yellow-800' :
@@ -320,7 +318,7 @@ export default function Tool010CompoundStackBuilder() {
               </span>
             </p>
             <p className="text-sm">
-              {isArabic ? i18nData.results?.estrogen_estimate : i18nData.results?.estrogen_estimate}: 
+              {isArabic ? i18nData.results?.estrogen_estimate : i18nData.results?.estrogen_estimate}:
               {aromatizationResult.estrogen_estimate_mg} mg
             </p>
             <div>

@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const AntioxSchema=z.object({items:z.array(z.string().trim().min(1).max(100)).min(1).max(30)}).strict(); export function recordAntioxidants(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,items:AntioxSchema.parse(raw).items,disclaimer:'User list only; no supplement recommendation.'};}

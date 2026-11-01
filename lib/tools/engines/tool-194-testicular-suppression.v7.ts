@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const SuppressionSchema=z.object({note:z.string().trim().min(1).max(300)}).strict(); export function recordSuppression(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:SuppressionSchema.parse(raw),disclaimer:'Note record only; no suppression estimate or diagnosis.'};}

@@ -1,0 +1,231 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [31m❯[39m [30m[45m jsdom [49m[39m components/tools/body-composition-vision-pilot.test.tsx [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1627[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates body composition estimate [33m 379[2mms[22m[39m
+     [32m✓[39m shows validation error for invalid input[32m 77[2mms[22m[39m
+     [32m✓[39m shows validation error for female without hip[32m 62[2mms[22m[39m
+[31m     [31m×[31m shows validation error when waist <= neck[39m[33m 1047[2mms[22m[39m
+     [32m✓[39m shows disclaimer[32m 27[2mms[22m[39m
+     [32m✓[39m keeps fat + lean mass consistent with weight[32m 31[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m jsdom [49m[39m components/tools/body-composition-vision-pilot.test.tsx[2m > [22mBodyCompositionVisionPilotTool integration[2m > [22mshows validation error when waist <= neck
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"genius-tool-template"[39m
+      [33mdata-locale[39m=[32m"en"[39m
+      [33mdata-status[39m=[32m"ready"[39m
+      [33mdata-theme[39m=[32m"light"[39m
+      [33mdata-tool-id[39m=[32m"mrx.tool.108-ai-body-composition-vision-engine"[39m
+      [33mdata-unit-system[39m=[32m"metric"[39m
+      [33mdir[39m=[32m"ltr"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"genius-tool-template__header"[39m
+      [36m>[39m
+        [36m<h1>[39m
+          [0mBody Composition Estimator[0m
+        [36m</h1>[39m
+        [36m<p>[39m
+          [0mManual circumference-based body composition estimate (Navy method). Not image analysis, not medical advice.[0m
+        [36m</p>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"genius-tool-template__status"[39m
+        [33mrole[39m=[32m"status"[39m
+      [36m>[39m
+        [0mready[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"genius-tool-template__inputs"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<label>[39m
+            [0mSex[0m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"male"[39m
+              [36m>[39m
+                [0mmale[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"female"[39m
+              [36m>[39m
+                [0mfemale[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mHeight (cm) [0m
+            [36m<input[39m
+              [33mvalue[39m=[32m"180"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mNeck (cm) [0m
+            [36m<input[39m
+              [33mvalue[39m=[32m"40"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mWaist (cm) [0m
+            [36m<input[39m
+              [33mvalue[39m=[32m"30"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mWeight (kg) [0m
+            [36m<input[39m
+              [33mvalue[39m=[32m"80"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<button[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mCalculate[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"genius-tool-template__results"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"body-composition-result"[39m
+        [36m>[39m
+          [0mBody fat: NaN% | Lean mass: NaN kg | Fat mass: NaN kg | BMI: 24.7 | Category: obese | Heuristic estimate from circumference measurements (Navy method). Not medical advice or imaging.[0m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"genius-tool-template__explanation"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mThis estimate uses circumference measurements (Navy method). It is not image analysis, not a direct measurement, and not medical advice.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"genius-tool-template"[39m
+        [33mdata-locale[39m=[32m"en"[39m
+        [33mdata-status[39m=[32m"ready"[39m
+        [33mdata-theme[39m=[32m"light"[39m
+        [33mdata-tool-id[39m=[32m"mrx.tool.108-ai-body-composition-vision-engine"[39m
+        [33mdata-unit-system[39m=[32m"metric"[39m
+        [33mdir[39m=[32m"ltr"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"genius-tool-template__header"[39m
+        [36m>[39m
+          [36m<h1>[39m
+            [0mBody Composition Estimator[0m
+          [36m</h1>[39m
+          [36m<p>[39m
+            [0mManual circumference-based body composition estimate (Navy method). Not image analysis, not medical advice.[0m
+          [36m</p>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"genius-tool-template__status"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0mready[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"genius-tool-template__inputs"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<label>[39m
+              [0mSex[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"male"[39m
+                [36m>[39m
+                  [0mmale[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"female"[39m
+                [36m>[39m
+                  [0mfemale[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mHeight (cm) [0m
+              [36m<input[39m
+                [33mvalue[39m=[32m"180"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mNeck (cm) [0m
+              [36m<input[39m
+                [33mvalue[39m=[32m"40"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mWaist (cm) [0m
+              [36m<input[39m
+                [33mvalue[39m=[32m"30"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mWeight (kg) [0m
+              [36m<input[39m
+                [33mvalue[39m=[32m"80"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mCalculate[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"genius-tool-template__results"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"body-composition-result"[39m
+          [36m>[39m
+            [0mBody fat: NaN% | Lean mass: NaN kg | Fat mass: NaN kg | BMI: 24.7 | Category: obese | Heuristic estimate from circumference measurements (Navy method). Not medical advice or imaging.[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"genius-tool-template__explanation"[39m
+        [36m>[39m
+          [36m<p>[39m
+            [0mThis estimate uses circumference measurements (Navy method). It is not image analysis, not a direct measurement, and not medical advice.[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m components/tools/body-composition-vision-pilot.test.tsx:[2m45:11[22m[39m
+    [90m 43|[39m     fireEvent[33m.[39m[34mchange[39m(neckInput[33m,[39m { target[33m:[39m { value[33m:[39m [32m'40'[39m } })[33m;[39m
+    [90m 44|[39m     fireEvent.click(screen.getByRole('button', { name: /calculate/i })…
+    [90m 45|[39m     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDoc…
+    [90m   |[39m           [31m^[39m
+    [90m 46|[39m     expect(screen.queryByTestId('body-composition-result')).not.toBeIn…
+    [90m 47|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 17:29:17
+[2m   Duration [22m 4.02s[2m (transform 206ms, setup 182ms, import 681ms, tests 1.63s, environment 1.13s)[22m
+

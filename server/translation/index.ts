@@ -87,3 +87,115 @@ export {
     enforceTranslationSecurity,
     type TranslationSecurityVerdict,
 } from './security';
+
+export {
+    TRANSLATION_CACHE_NORMALIZATION_VERSION,
+    normalizeForTranslationCache,
+} from './normalization';
+
+export {
+    TRANSLATION_GLOSSARY_VERSION as CURRENT_TRANSLATION_GLOSSARY_VERSION,
+    TRANSLATION_GLOSSARY,
+    glossaryTermsForTarget,
+    validateTranslationGlossary,
+    type TranslationGlossaryEntry,
+    type TranslationGlossaryTerm,
+} from './glossary';
+
+export {
+    SENTINEL_PATTERN,
+    protectTranslationValues,
+    validateAndRestoreTranslation,
+    type ProtectedTranslation,
+    type ProtectedValue,
+    type ProtectedValueKind,
+    type SentinelRestorationResult,
+    type SentinelValidationError,
+} from './placeholders';
+export {
+    TRANSLATION_SESSION_VERSION,
+    issueTranslationSession,
+    verifyTranslationSession,
+    translationSessionSecretFromEnv,
+    type TranslationSessionClaims,
+    type TranslationSessionIssueInput,
+    type TranslationSessionVerification,
+} from './session';
+
+export {
+    normalizeTranslationRoutePath,
+    classifyTranslationRoute,
+    isSurfaceAllowedForRoute,
+    type TranslationRouteClass,
+    type TranslationRoutePolicy,
+} from './policy';
+
+export {
+    MemoryTranslationBudgetStore,
+    UpstashTranslationBudgetStore,
+    createTranslationBudgetStore,
+    createTranslationBudgetStoreFromEnv,
+    type TranslationBudgetContext,
+    type TranslationBudgetLimits,
+    type TranslationBudgetStore,
+    type TranslationBudgetVerdict,
+    type TranslationAtomicRedis,
+} from './budget';
+
+export {
+    MemoryTranslationRateLimiter,
+    UpstashTranslationRateLimiter,
+    createTranslationRateLimiter,
+    createTranslationRateLimiterFromEnv,
+    type TranslationRateLimiter,
+    type TranslationRateLimitResult,
+} from './rateLimit';
+
+export {
+    TranslationCircuitBreaker,
+    DistributedTranslationCircuitBreaker,
+    TranslationCircuitOpenError,
+    TranslationCircuitConcurrencyError,
+    createDistributedTranslationCircuitBreaker,
+    MemoryTranslationCircuitStateStore,
+    type TranslationCircuitStateStore,
+    type CircuitState,
+    type CircuitSnapshot,
+    type TranslationCircuitBreakerOptions,
+    type TranslationCircuitBreakerLike,
+    type TranslationCircuitRedis,
+} from './circuitBreaker';
+
+export {
+    noopTranslationAuditSink,
+    safeTranslationAuditEvent,
+    type TranslationAuditEvent,
+    type TranslationAuditSink,
+} from './audit';
+export {
+    TRANSLATION_CONFIG_DEFAULTS,
+    TRANSLATION_CONFIG_MAXIMA,
+    TranslationConfigError,
+    loadTranslationConfig,
+    type TranslationConfig,
+} from './config';
+
+export {
+    TranslationStorageUnavailableError,
+    withTranslationStorageTimeout,
+} from './storage';
+export {
+    TranslationBatchItemSchema,
+    TranslationRuntimeBatchSchema,
+    validateTranslationBatch,
+    type TranslationBatchItem,
+    type TranslationRuntimeBatch,
+    type TranslationBatchResultItem,
+} from './batchContracts';
+
+export {
+    translateBatchRequest,
+    validateBatchResponseMapping,
+    type TranslationBatchRuntimeDeps,
+    type TranslationBatchSuccess,
+} from './batchRuntime';

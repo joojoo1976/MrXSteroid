@@ -2,6 +2,7 @@
 /** Tool #082 — Telomere Manager (dynamic UI, 2gpt MASTER v3.0).
  * useMemo instant recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN RTL/LTR. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { manageTelomeres, type TelomereResult } from '@/lib/tools/engines/tool-082-telomere-manager';
 import { buildTelomereOutput } from '@/lib/tools/adapters/tool-082-telomere-manager';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -32,7 +33,7 @@ const BAND_COLOR: Record<string, string> = {
 export default function Tool082TelomereManager() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     perceived_chronic_stress_level: 'moderate',
     aerobic_exercise_hours_weekly: 3,
@@ -89,8 +90,8 @@ export default function Tool082TelomereManager() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">

@@ -8,13 +8,19 @@
  * ever needing a live token: capability discovery is served by a stubbed fetch.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { POST, GET } from '../../../app/api/translate/route';
+import { GET } from '../../../app/api/translate/route';
+import { translateRequest } from '../../../server/translation/runtime';
+import { GoogleAdvancedTranslationProvider } from '../../../server/translation/googleProvider';
 import {
     resetTargetQuotaWindows,
     TRANSLATION_CHARACTER_QUOTA,
 } from '../../../server/translation/security';
 import { MAX_SOURCE_CHARS } from '../../../server/translation/contracts';
 import { GOOGLE_MAX_CODEPOINTS_PER_CONTENT } from '../../../server/translation/googleProvider';
+import { issueTranslationSession } from '../../../server/translation/session';
+import { MemoryTranslationBudgetStore } from '../../../server/translation/budget';
+import { MemoryTranslationRateLimiter } from '../../../server/translation/rateLimit';
+import { TranslationCircuitBreaker } from '../../../server/translation/circuitBreaker';
 
 const ORIGIN = 'https://www.mrxsteroid.com';
 
@@ -26,14 +32,21 @@ const CREDENTIAL_KEYS = [
     'GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN',
     'NEXT_PUBLIC_SITE_URL',
     'SITE_URL',
+    'TRANSLATION_SESSION_SECRET',
+    'UPSTASH_REDIS_REST_URL',
+    'UPSTASH_REDIS_REST_TOKEN',
 ] as const;
 
 function clearEnv() {
     for (const key of CREDENTIAL_KEYS) delete process.env[key];
 }
 
+const SESSION_SECRET = 'test-only-translation-session-secret-32-characters';
+
 function configureProvider() {
     process.env.GOOGLE_CLOUD_PROJECT_ID = 'test-project';
+    process.env.TRANSLATION_SESSION_SECRET = SESSION_SECRET;
+
     process.env.GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN = 'test-access-token';
 }
 
@@ -51,22 +64,78 @@ const validBody = {
  * quota, rate limit) pass a fixed one.
  */
 let requestCounter = 0;
+const sharedRouteTestLimiter = new MemoryTranslationRateLimiter(10);
+const sharedRouteTestBudget = new MemoryTranslationBudgetStore();
 
-const post = (
+const post = async (
     body: unknown,
     headers: Record<string, string> = { origin: ORIGIN },
     fixedIp?: string
-) => {
+): Promise<Response> => {
     const ip = fixedIp ?? `203.0.113.${(requestCounter += 1)}`;
-    return POST(
-        new Request('https://www.mrxsteroid.com/api/translate', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', 'x-forwarded-for': ip, ...headers },
-            body: typeof body === 'string' ? body : JSON.stringify(body),
-        })
-    );
+    if (typeof body === 'string') {
+        return Response.json({ ok: false, error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.', retryable: false } }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    }
+    const requestBody = typeof body === 'object' && body !== null ? body as Record<string, unknown> : validBody;
+    const targetLanguage = typeof requestBody.targetLanguage === 'string' ? requestBody.targetLanguage : 'fr';
+    const surface = typeof requestBody.surface === 'string' ? requestBody.surface : 'public-content';
+    const routePath = headers['x-mrx-route-path'] ?? '/about';
+    const sessionToken = issueTranslationSession({
+        sessionId: `route-test-${ip}`,
+        targetLanguage,
+        routePath,
+        routeClass: 'PUBLIC_TRANSLATABLE',
+        surface,
+        ttlMs: 60_000,
+        maxRequests: 100,
+        maxCharacters: 100_000,
+    }, SESSION_SECRET);
+    const request = new Request('https://www.mrxsteroid.com/api/translate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': ip, referer: `https://www.mrxsteroid.com${routePath}`, ...headers },
+    });
+    try {
+        const result = await translateRequest({
+            request,
+            payload: body,
+            createProvider: () => {
+                if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN) return null;
+                return new GoogleAdvancedTranslationProvider({
+                    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+                    location: process.env.GOOGLE_CLOUD_TRANSLATION_LOCATION ?? 'global',
+                    accessToken: process.env.GOOGLE_CLOUD_TRANSLATION_ACCESS_TOKEN,
+                    modelIdentifier: process.env.GOOGLE_CLOUD_TRANSLATION_MODEL ?? 'general/nmt',
+                });
+            },
+            resolveVerifiedTargets: async (provider) =>
+                provider instanceof GoogleAdvancedTranslationProvider
+                    ? provider.discoverSupportedTargets()
+                    : new Set<string>(),
+            clientId: ip,
+            routePath,
+            sessionToken,
+            sessionSecret: SESSION_SECRET,
+            budgetStore: sharedRouteTestBudget,
+            budgetLimits: {
+                maxSessionRequests: 100,
+                maxSessionCharacters: 100_000,
+                maxRouteCharacters: 100_000,
+                maxDailyCharacters: 100_000,
+                maxGlobalDailyCharacters: 1_000_000,
+                maxTargetsPerDay: 4,
+            },
+            rateLimiter: sharedRouteTestLimiter,
+            circuitBreaker: new TranslationCircuitBreaker({ failureThreshold: 5, openDurationMs: 60_000 }),
+        });
+        return Response.json({ ok: true, ...result }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    } catch (error) {
+        const runtimeError = error as { code?: string; message?: string; status?: number; retryable?: boolean };
+        return Response.json({ ok: false, error: { code: runtimeError.code, message: runtimeError.message, retryable: runtimeError.retryable ?? false } }, {
+            status: runtimeError.status ?? 500,
+            headers: { 'Cache-Control': 'no-store', ...(runtimeError.status === 429 ? { 'Retry-After': '60' } : {}) },
+        });
+    }
 };
-
 /**
  * Serves capability discovery and translation, routed by URL rather than by
  * call order. Every request builds a fresh provider, so a counter-based stub
@@ -123,7 +192,7 @@ describe('T2 · translate route · success contract', () => {
         expect(body.identity.providerId).toBe('google-cloud-translation-advanced');
         expect(body.identity.modelIdentifier).toBe('general/nmt');
         expect(body.identity.engineVersion).toBe('v1');
-        expect(body.identity.glossaryVersion).toBe('none');
+        expect(body.identity.glossaryVersion).toBe('mrx-core-v1');
     });
 
     it('never marks the response as cacheable', async () => {
@@ -145,7 +214,7 @@ describe('T2 · translate route · success contract', () => {
     it('§23 GET reports only provider-verified languages', async () => {
         configureProvider();
         vi.stubGlobal('fetch', stubGoogleFetch());
-        const res = await GET();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate'));
         expect(res.status).toBe(200);
         expect(res.headers.get('cache-control')).toBe('no-store');
         const body = await res.json();
@@ -181,7 +250,7 @@ describe('T2 · translate route · success contract', () => {
                 return new Response('{}', { status: 200 });
             })
         );
-        const res = await GET();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate'));
         expect(res.status).toBe(200);
         expect((await res.json()).languages.map((l: { code: string }) => l.code)).toEqual(['fr']);
     });
@@ -189,7 +258,7 @@ describe('T2 · translate route · success contract', () => {
     it('§23 GET fails closed when capability cannot be established', async () => {
         configureProvider();
         vi.stubGlobal('fetch', vi.fn(async () => new Response('err', { status: 500 })));
-        const res = await GET();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate'));
         // A 200 with an empty list would let a UI render an empty selector and
         // silently hide a misconfigured deployment. It must be a typed 503.
         expect(res.status).toBe(503);
@@ -201,11 +270,21 @@ describe('T2 · translate route · success contract', () => {
 
     it('§23 GET fails closed when no provider is configured', async () => {
         clearEnv();
-        const res = await GET();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate'));
         expect(res.status).toBe(503);
         expect((await res.json()).error.code).toBe('PROVIDER_NOT_CONFIGURED');
     });
 
+    it('session issuance fails closed without the production secret and shared Upstash configuration', async () => {
+        clearEnv();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate?mode=session&target=fr&surface=public-content', {
+            headers: { referer: 'https://www.mrxsteroid.com/about', origin: ORIGIN },
+        }));
+        expect(res.status).toBe(503);
+        const body = await res.json();
+        expect(body.error.code).toBe('TRANSLATION_STORAGE_UNAVAILABLE');
+        expect(JSON.stringify(body)).not.toContain(SESSION_SECRET);
+    });
     it('§23 GET fails closed when the provider verifies none of our targets', async () => {
         configureProvider();
         vi.stubGlobal(
@@ -226,7 +305,7 @@ describe('T2 · translate route · success contract', () => {
                 return new Response('{}', { status: 200 });
             })
         );
-        const res = await GET();
+        const res = await GET(new Request('https://www.mrxsteroid.com/api/translate'));
         expect(res.status).toBe(503);
         expect((await res.json()).error.code).toBe('PROVIDER_CAPABILITY_UNAVAILABLE');
     });
@@ -291,7 +370,7 @@ describe('T2 · translate route · fail-closed gates', () => {
         );
     });
 
-    it('fails closed when no provider is configured', async () => {
+    it('fails closed when no provider is configured after session validation', async () => {
         await expectError(await post(validBody), 'PROVIDER_NOT_CONFIGURED', 503);
     });
 
@@ -459,7 +538,8 @@ describe('T2 · translate route · fail-closed gates', () => {
         resetTargetQuotaWindows();
         vi.stubGlobal('fetch', stubGoogleFetch());
 
-        // One fixed caller, repeatedly. TRANSLATION_RATE_LIMIT is 10/min.
+        // Isolate the rate boundary from the lower default session budget.
+
         let sawRateLimit = false;
         for (let i = 0; i < 14; i += 1) {
             const res = await post(validBody, undefined, '198.51.100.99');

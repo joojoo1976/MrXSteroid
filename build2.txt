@@ -1,0 +1,24 @@
+
+> 008mr.-x-steroid-landing-page@0.0.0 build
+> next build
+
+   ▲ Next.js 15.5.23
+   - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/smarttools/tool-111-smart-food-macro-substitution/page.tsx
+Module not found: Can't resolve '@/lib/core/adaptive-context.v7'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./app/smarttools/tool-111-smart-food-macro-substitution/page.tsx
+Module not found: Can't resolve '@/components/tools/macro/MacroToolUI.v7'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors
+
+E:\MrXSteroid-main>

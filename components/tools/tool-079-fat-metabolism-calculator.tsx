@@ -2,6 +2,7 @@
 /** Tool #079 — Fat Metabolism Calculator (dynamic UI, 2gpt MASTER v3.0).
  * useMemo instant recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN RTL/LTR. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateFatMetabolism, type FatMetabolismResult } from '@/lib/tools/engines/tool-079-fat-metabolism-calculator';
 import { buildFatMetabolismOutput } from '@/lib/tools/adapters/tool-079-fat-metabolism-calculator';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -29,7 +30,7 @@ const ZONE_COLOR: Record<string, string> = {
 export default function Tool079FatMetabolismCalculator() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     body_weight_kg: 80,
     body_fat_pct: '15',
@@ -68,26 +69,31 @@ export default function Tool079FatMetabolismCalculator() {
   const aiContext = useMemo(() => {
     if (!result || !parsedInput.success) return null;
     const now = '1970-01-01T00:00:00.000Z';
-    const output = buildFatMetabolismOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+    const output = buildFatMetabolismOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
     return buildAiContext({ ...output, result });
-  }, [result, parsedInput, locale]);
+  }, [result, parsedInput, locale, unitSystem]);
 
   useEffect(() => { setValidationError(parsedInput.success ? null : parsedInput.error.issues[0]?.message ?? 'Invalid input'); }, [parsedInput]);
 
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
+
+  const isImperial = unitSystem === 'imperial';
+  const displayWeight = (kg: number) => isImperial ? Number((kg * 2.2046226218).toFixed(1)) : kg;
+  const canonicalWeight = (value: number) => isImperial ? value / 2.2046226218 : value;
+  const weightUnit = isImperial ? 'lb' : 'kg';
 
   const handleSave = async () => {
     if (!parsedInput.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const output = buildFatMetabolismOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildFatMetabolismOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsedInput.data);
       if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
       else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
@@ -99,13 +105,13 @@ export default function Tool079FatMetabolismCalculator() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <label className="text-[10px] font-bold text-zinc-500">{t.body_weight}
-          <input type="number" min={40} max={200} step={0.5} value={inputs.body_weight_kg} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: Number(e.target.value || 40) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+        <label className="text-[10px] font-bold text-zinc-500">{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
+          <input type="number" min={isImperial ? 88.2 : 40} max={isImperial ? 440.9 : 200} step={isImperial ? 0.1 : 0.5} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct}
           <input type="number" min={5} max={50} step={0.5} placeholder="optional" value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />

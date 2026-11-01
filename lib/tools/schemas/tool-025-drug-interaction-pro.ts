@@ -1,51 +1,34 @@
-/**
- * Tool #025 — Drug Interaction Checker Pro
- * Schema Validation using Zod
- */
-
 import { z } from 'zod';
 
-export const DrugCompoundSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  family: z.string(),
-  dosage_mg: z.number().min(1),
-  is_lipophilic: z.boolean(),
-  primary_target: z.enum(['androgen', 'estrogen', 'cortisol', 'other']),
-  half_life_hours: z.number().min(0.5).max(720),
+/** User-entered medication/compound details. No interaction rules are encoded here. */
+export const MedicationSessionEntrySchema = z.object({
+  id: z.string().uuid(),
+  itemName: z.string().trim().min(1).max(120),
+  itemType: z.enum(['prescription', 'over_the_counter', 'supplement', 'hormone_or_compound', 'other']),
+  doseDescription: z.string().trim().max(80).optional(),
+  sourceLabel: z.string().trim().max(160).optional(),
+  notes: z.string().trim().max(240).optional(),
+}).strict();
+
+export const MedicationSessionInputSchema = z.object({
+  entries: z.array(MedicationSessionEntrySchema).max(50),
+}).strict().superRefine(({ entries }, context) => {
+  const ids = new Set<string>();
+  entries.forEach((entry, index) => {
+    if (ids.has(entry.id)) {
+      context.addIssue({ code: 'custom', path: ['entries', index, 'id'], message: 'Entry IDs must be unique.' });
+    }
+    ids.add(entry.id);
+  });
 });
 
-export type DrugCompound = z.infer<typeof DrugCompoundSchema>;
+export const MedicationSessionResultSchema = z.object({
+  resultOrigin: z.literal('USER_PROVIDED'),
+  interactionAssessment: z.literal('NOT_AVAILABLE'),
+  reason: z.literal('NO_VALIDATED_INTERACTION_SOURCE_CONFIGURED'),
+  entries: z.array(MedicationSessionEntrySchema).max(50),
+}).strict();
 
-export const DrugInteractionInputSchema = z.object({
-  compounds: z.array(DrugCompoundSchema).min(2).max(6),
-  user_age: z.number().min(18).max(80),
-  user_weight_kg: z.number().min(40).max(300),
-  health_conditions: z.array(z.enum(['liver', 'heart', 'prostate', 'high_bp'])),
-  current_medications: z.array(z.string()).min(0).max(10),
-});
-
-export type DrugInteractionInput = z.infer<typeof DrugInteractionInputSchema>;
-
-export const DrugInteractionSchema = z.object({
-  compound1: z.string(),
-  compound2: z.string(),
-  interaction_type: z.enum(['additive', 'antagonist', 'enhanced_side_effect', 'contraindicated']),
-  severity: z.enum(['mild', 'moderate', 'severe', 'critical']),
-  description: z.string(),
-  recommendation: z.string(),
-});
-
-export type DrugInteraction = z.infer<typeof DrugInteractionSchema>;
-
-export const DrugInteractionResultSchema = z.object({
-  total_interactions: z.number().min(0).max(50),
-  critical_interactions: z.number().min(0).max(20),
-  moderate_interactions: z.number().min(0).max(50),
-  interactions: z.array(DrugInteractionSchema).min(0).max(50),
-  safety_score: z.number().min(0).max(100),
-  recommendations: z.array(z.string()).min(0).max(15),
-});
-
-export type DrugInteractionResult = z.infer<typeof DrugInteractionResultSchema>;
+export type MedicationSessionEntry = z.infer<typeof MedicationSessionEntrySchema>;
+export type MedicationSessionInput = z.infer<typeof MedicationSessionInputSchema>;
+export type MedicationSessionResult = z.infer<typeof MedicationSessionResultSchema>;

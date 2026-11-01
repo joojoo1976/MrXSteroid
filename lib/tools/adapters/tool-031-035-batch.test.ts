@@ -66,12 +66,14 @@ describe('tools 031-035 adapters — canonical envelope', () => {
           { marker: 'Total T', value: 400, unit: 'ng/dL', date: '2026-01-01' },
           { marker: 'Total T', value: 600, unit: 'ng/dL', date: '2026-03-01' },
         ],
-        ranges: { 'Total T': { low: 300, high: 1000, unit: 'ng/dL' } },
       },
       OPTS,
     );
     expect(out.toolId).toBe('mrx.tool.033-bloodwork-trend-analyzer');
     expect(out.result.markers[0].direction).toBe('rising');
+    expect(out.provenance.confidence).toBeNull();
+    expect(out.provenance.dataQuality).toBe('not_assessed');
+    expect(out.keyFindings.every((finding) => finding.severity === 'info')).toBe(true);
   });
 
   it('034 wraps clearance output with registry identity', () => {
@@ -79,22 +81,28 @@ describe('tools 031-035 adapters — canonical envelope', () => {
       {
         compound_name: 'Test E',
         half_life_days: 4.5,
-        last_dose_mg: 250,
+        half_life_source: 'User supplied source',
         last_dose_date: '2026-01-01',
+        as_of_date: '2026-01-31',
       },
       OPTS,
     );
     expect(out.toolId).toBe('mrx.tool.034-compound-clearance');
-    expect(out.result.days_to_clear).toBe(30);
-    expect(out.keyFindings.some((f) => f.code === 'CLEARANCE_DATE')).toBe(true);
+    expect(out.result.days_to_threshold).toBe(30);
+    expect(out.provenance.confidence).toBeNull();
+    expect(out.provenance.dataQuality).toBe('not_assessed');
+    expect(out.keyFindings.every((finding) => finding.severity === 'info')).toBe(true);
   });
 
   it('035 wraps conversion output with registry identity', () => {
     const out = buildConversionOutput(
-      { weekly_test_mg: 500, body_fat_pct: 15, age: 30 },
+      { analyte: 'testosterone', value: 500, unit: 'ng/dL', measurement_date: '2026-01-01', reading_source: 'User supplied report' },
       OPTS,
     );
     expect(out.toolId).toBe('mrx.tool.035-hormone-conversion');
-    expect(out.result.e2_status).toBe('optimal');
+    expect(out.result).toMatchObject({ status: 'CALCULATED', result_value: 17.337, result_unit: 'nmol/L' });
+    expect(out.provenance.confidence).toBeNull();
+    expect(out.provenance.dataQuality).toBe('not_assessed');
+    expect(out.keyFindings.every((finding) => finding.severity === 'info')).toBe(true);
   });
 });

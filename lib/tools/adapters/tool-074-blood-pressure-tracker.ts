@@ -31,16 +31,14 @@ export interface BloodPressureOutputOptions {
 
 export function buildBloodPressureProvenance(options: BloodPressureOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = source === 'manual' ? 0.85 : 0.75;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'mmHg',
-    measurementMethod: 'resting brachial sphygmomanometer AHA/ACC guideline classification (deterministic)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 70, high: 120, unit: 'mmHg', source: 'AHA/ACC 2017 Blood Pressure Guidelines' },
+    measurementMethod: 'single user-entered reading compared with AHA/ACC adult reference categories',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
@@ -48,32 +46,32 @@ export function buildBloodPressureKeyFindings(result: BloodPressureResult): KeyF
   const findings: KeyFinding[] = [
     {
       code: 'BP_CATEGORY',
-      labelAr: 'تصنيف ضغط الدم (AHA/ACC)',
+      labelAr: 'نطاق قراءة ضغط الدم (AHA/ACC)',
       labelEn: 'Blood pressure category',
       value: result.category,
-      severity: result.category === 'hypertensive-crisis' || result.category === 'stage-2-hypertension' ? 'important' : result.category === 'stage-1-hypertension' ? 'monitor' : 'info',
+      severity: result.category === 'severe-range' || result.category === 'stage-2-hypertension' ? 'important' : result.category === 'stage-1-hypertension' ? 'monitor' : 'info',
     },
     {
       code: 'MAP',
       labelAr: 'متوسط الضغط الشرياني (MAP)',
       labelEn: 'Mean arterial pressure (MAP)',
       value: `${result.mean_arterial_pressure} mmHg`,
-      severity: result.mean_arterial_pressure >= 105 ? 'important' : 'info',
+      severity: 'info',
     },
     {
       code: 'PULSE_PRESSURE',
       labelAr: 'ضغط النبض (Pulse Pressure)',
       labelEn: 'Pulse pressure (PP)',
       value: `${result.pulse_pressure} mmHg`,
-      severity: result.pulse_pressure > 60 ? 'important' : 'info',
+      severity: 'info',
     },
   ];
-  if (result.escalation_needed) {
+  if (result.follow_up_needed) {
     findings.push({
       code: 'ESCALATION',
-      labelAr: 'تنبيه طارئ لضغط الدم',
-      labelEn: 'Emergency BP escalation',
-      value: 'immediate_medical_evaluation_needed',
+      labelAr: 'متابعة القراءة الشديدة',
+      labelEn: 'Severe-range reading follow-up',
+      value: 'repeat_reading_then_check_symptoms',
       severity: 'important',
     });
   }

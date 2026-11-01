@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { assessLibido } from '@/lib/tools/engines/tool-016-libido-calculator';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-016-libido-calculator.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 
@@ -42,7 +41,6 @@ export default function Tool016LibidoCalculator() {
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
       <div className="space-y-4">
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Age:</label> <input type="number" value={age} onChange={(e) => setAge(parseInt(e.target.value as any))} min="14" max="80" className="w-full rounded border p-2" dir="ltr" /></div>
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Current Symptoms:</label> <select value={symptoms} onChange={(e) => setSymptoms(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="hyper">Hyper</option></select></div>

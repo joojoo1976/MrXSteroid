@@ -2,6 +2,7 @@
 /** Tool #066 — Estrogen Sensitivity Manager (dynamic UI, GPT2 spec).
  * useMemo instant recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { manageEstrogenSensitivity, type EstrogenSensitivityResult } from '@/lib/tools/engines/tool-066-estrogen-sensitivity-manager';
 import { buildEstrogenSensitivityOutput } from '@/lib/tools/adapters/tool-066-estrogen-sensitivity-manager';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -28,7 +29,7 @@ const PATTERN_COLOR: Record<string, string> = {
 export default function Tool066EstrogenSensitivityManager() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     e2_level_pg_ml: 30,
     water_retention_score: 1,
@@ -54,26 +55,26 @@ export default function Tool066EstrogenSensitivityManager() {
   const aiContext = useMemo(() => {
     if (!result || !parsedInput.success) return null;
     const now = '1970-01-01T00:00:00.000Z';
-    const output = buildEstrogenSensitivityOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+    const output = buildEstrogenSensitivityOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
     return buildAiContext({ ...output, result });
-  }, [result, parsedInput, locale]);
+  }, [result, parsedInput, locale, unitSystem]);
 
   useEffect(() => { setValidationError(parsedInput.success ? null : parsedInput.error.issues[0]?.message ?? 'Invalid input'); }, [parsedInput]);
 
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
 
   const handleSave = async () => {
     if (!parsedInput.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const output = buildEstrogenSensitivityOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildEstrogenSensitivityOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsedInput.data);
       if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
       else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
@@ -85,8 +86,8 @@ export default function Tool066EstrogenSensitivityManager() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">

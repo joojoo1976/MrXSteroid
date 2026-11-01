@@ -126,7 +126,7 @@ export function findHardcodedStrings(content: string): string[] {
     // Single Titlecase word (Submit/Save/Cancel) is a UI label: flag it
     if (/^[A-Z][a-z]+$/.test(str)) { suspicious.push(str); continue; }
     const AR2 = String.fromCharCode(92, 117, 48, 54, 48, 67) + String.fromCharCode(92, 117, 48, 54, 49, 66);
-    if (/ /.test(str) || new RegExp(AR2).test(str) || /[.!?\-]/.test(str)) {
+    if (/ /.test(str) || new RegExp(AR2).test(str) || /[.!?-]/.test(str)) {
       suspicious.push(str);
     }
   }

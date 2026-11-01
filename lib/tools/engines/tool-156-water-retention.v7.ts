@@ -1,0 +1,3 @@
+import {z} from 'zod';
+export const WaterRetentionInputSchema=z.object({water_weight_kg:z.number().finite().nonnegative().max(500),reference_weight_kg:z.number().finite().positive().max(500),note:z.string().trim().max(200).optional()}).strict();
+export function recordWaterObservation(raw:unknown){const i=WaterRetentionInputSchema.parse(raw);return {status:'CALCULATED' as const,resultType:'OBSERVATION' as const,change_kg:Number((i.water_weight_kg-i.reference_weight_kg).toFixed(3)),assumptions:['User-provided weights only','No estrogen, sodium, or clinical inference'],disclaimer:'Educational arithmetic only; not a diagnosis or estimate of fluid retention.'};}

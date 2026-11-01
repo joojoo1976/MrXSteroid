@@ -21,7 +21,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 const IDENTITY = {
     engineVersion: 'v1',
-    glossaryVersion: 'none',
+    glossaryVersion: 'mrx-core-v1',
     modelIdentifier: 'projects/p/locations/global/models/general/nmt',
     providerId: 'google-advanced-v3',
 };
@@ -93,22 +93,35 @@ beforeEach(() => {
     mockLanguage = Language.EN;
     document.body.innerHTML = '';
     installLocalStorage();
-    getHandler = () => jsonResponse({
-        ok: true,
-        languages: [
-            { code: 'fr', displayName: 'French', nativeName: 'Français', rtl: false },
-            { code: 'de', displayName: 'German', nativeName: 'Deutsch', rtl: false },
-        ],
-    });
-    postHandler = () =>
-        jsonResponse({
+    getHandler = (url) => url.includes('mode=session')
+        ? jsonResponse({ ok: true, token: 'signed-session', expiresInMs: 60_000 })
+        : jsonResponse({
             ok: true,
-            sourceLanguage: 'en',
-            targetLanguage: 'fr',
-            surface: 'hero',
-            translations: ['Commencez'],
-            identity: IDENTITY,
+            languages: [
+                { code: 'fr', displayName: 'French', nativeName: 'Français', rtl: false },
+                { code: 'de', displayName: 'German', nativeName: 'Deutsch', rtl: false },
+            ],
         });
+    postHandler = (_url, init) => {
+        const request = JSON.parse(String(init?.body ?? '{}')) as { items?: { id: string }[] };
+        return request.items
+            ? jsonResponse({
+                ok: true,
+                sourceLanguage: 'en',
+                targetLanguage: 'de',
+                surface: 'hero',
+                items: request.items.map((item) => ({ id: item.id, translatedText: 'Commencez' })),
+                identity: IDENTITY,
+            })
+            : jsonResponse({
+                ok: true,
+                sourceLanguage: 'en',
+                targetLanguage: 'fr',
+                surface: 'hero',
+                translations: ['Commencez'],
+                identity: IDENTITY,
+            });
+    };
 });
 
 afterEach(() => {

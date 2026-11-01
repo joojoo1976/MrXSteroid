@@ -224,7 +224,7 @@ export function buildTool111Output(
     provenanceSource?: DataSource;
   },
 ): ToolOutput<SubstitutionResult> {
-  const tool = requireTool('smart-food-macro-substitution');
+  const tool = requireTool('tool-111-smart-food-macro-substitution');
   const result = computeSubstitution(rawInput);
 
   return buildToolOutput<SubstitutionResult>({
@@ -275,7 +275,7 @@ function transformInput(input: EngineInput): EngineInput {
 
 // Build standardized ToolOutput from engine result
 function buildOutput(engineResult: SubstitutionResult, input: EngineInput): ToolOutput<SubstitutionResult> {
-  const tool = requireTool('smart-food-macro-substitution');
+  const tool = requireTool('tool-111-smart-food-macro-substitution');
   return buildToolOutput<SubstitutionResult>({
     toolId: tool.toolId,
     toolSlug: tool.slug,
@@ -301,7 +301,7 @@ function buildOutput(engineResult: SubstitutionResult, input: EngineInput): Tool
 
 // Export the adapter instance using the shared contract
 export const tool111Adapter = createToolAdapter<EngineInput, SubstitutionResult, EngineInput, SubstitutionResult>({
-  toolSlug: 'smart-food-macro-substitution',
+  toolSlug: 'tool-111-smart-food-macro-substitution',
   engineFn: computeSubstitution,
   schema: tool111Schema,
   transformInput,

@@ -1,0 +1,3 @@
+import {z} from 'zod';
+export const MultiHalfLifeInputSchema=z.object({compounds:z.array(z.object({name:z.string().trim().min(1).max(80),half_life_days:z.number().finite().positive().max(365)}).strict()).min(1).max(20)}).strict();
+export function calculateMultiHalfLife(raw:unknown){const i=MultiHalfLifeInputSchema.parse(raw);return {status:'CALCULATED' as const,resultType:'SCENARIO' as const,compounds:i.compounds.map(c=>({...c,remaining_after_one_half_life:0.5})),assumptions:['Independent mathematical entries','No stacking, dose, timing, or clinical interpretation'],disclaimer:'Half-life arithmetic only; not a cycle, dose, or injection schedule.'};}

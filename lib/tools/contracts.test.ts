@@ -135,6 +135,16 @@ describe('Layer 0 — provenance quality derivation', () => {
         expect(deriveDataQuality(0)).toBe('low');
     });
 
+    it('represents confidence and data quality as unassessed when no calibration exists', () => {
+        expect(deriveDataQuality(null)).toBe('not_assessed');
+        const output = createToolOutput({
+            ...baseParams(),
+            provenance: provenance({ confidence: null, dataQuality: 'not_assessed' }),
+        });
+        expect(output.provenance.confidence).toBeNull();
+        expect(output.provenance.dataQuality).toBe('not_assessed');
+    });
+
     it('clamps out-of-range and non-finite confidence instead of throwing', () => {
         expect(deriveDataQuality(7)).toBe('high');
         expect(deriveDataQuality(-3)).toBe('low');

@@ -18,26 +18,15 @@ import {
     type KeyFinding,
     type Locale,
     type SnapshotType,
-    type SeoLinks,
     type ToolOutput,
     type UnitSystem,
 } from '../contracts';
 import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
 import {
     calculateAromatizationRisk,
-    E2_CRITICAL_THRESHOLD,
-    E2_OPTIMAL_HIGH,
-    E2_OPTIMAL_LOW,
     type AromatizationRiskResult,
     type EngineInput,
 } from '../engines/aromatization-risk';
-
-/** Adult male estradiol (E2) reference band (the clinical anchor). */
-export const E2_REFERENCE_RANGE = { low: E2_OPTIMAL_LOW, high: E2_OPTIMAL_HIGH, unit: 'pg/mL' } as const;
-/** E2 above this is flagged `important` (gyno-risk threshold). */
-export const E2_CRITICAL_THRESHOLD_ADAPTER = E2_CRITICAL_THRESHOLD;
-/** AI on a non-aromatising compound is always surfaced as an `important` finding. */
-export const UNNECESSARY_AI_ALERT = 'unnecessary_ai';
 
 export interface AromatizationRiskOutputOptions {
     locale: Locale;
@@ -52,88 +41,46 @@ export interface AromatizationRiskOutputOptions {
     provenanceSource?: DataSource;
 }
 
-/** Clinical reference provenance for the projected E2 values. */
+/** Provenance for an unvalidated scenario output; it is not a lab measurement. */
 export function buildAromatizationRiskProvenance(options: AromatizationRiskOutputOptions): DataProvenance {
     const source: DataSource = options.provenanceSource ?? 'manual';
-    const confidence = source === 'manual' ? 0.9 : 0.8;
+    const confidence = null;
     return {
         source,
         recordedAt: options.recordedAt,
         timezone: options.timezone ?? 'UTC',
-        unit: E2_REFERENCE_RANGE.unit,
-        measurementMethod:
-            options.provenanceSource && options.provenanceSource !== 'manual'
-                ? 'ingested biometric'
-                : 'simulated model estimate',
+        unit: 'pg/mL',
+        measurementMethod: 'unvalidated scenario model; not a laboratory measurement',
         confidence,
         // Invariant: the bucket is ALWAYS derived, never hand-written.
         dataQuality: deriveDataQuality(confidence),
-        referenceRange: {
-            low: E2_REFERENCE_RANGE.low,
-            high: E2_REFERENCE_RANGE.high,
-            unit: E2_REFERENCE_RANGE.unit,
-            source: 'Mr. X-Steroid Book — Estrogen Management & Aromatization (Ch. 4)',
-        },
     };
 }
 
 /** Severity-ranked findings derived from the engine result. */
 export function buildAromatizationRiskKeyFindings(
     result: AromatizationRiskResult,
-    input: EngineInput,
+    _input: EngineInput,
 ): KeyFinding[] {
-    const critical = result.peakE2 > E2_CRITICAL_THRESHOLD;
-    const unnecessaryAi = input.compoundType === 'trenbolone' && input.aiProtocol !== 'none';
-
     return [
         {
             code: 'PEAK_E2',
-            labelAr: `ذروة الاستراديول: ${result.peakE2} pg/mL`,
-            labelEn: `Peak estradiol: ${result.peakE2} pg/mL`,
+            labelAr: `قيمة ذروة E2 المحسوبة بالنموذج غير المتحقق: ${result.peakE2} pg/mL`,
+            labelEn: `Unvalidated modelled peak E2 value: ${result.peakE2} pg/mL`,
             value: `${result.peakE2} pg/mL`,
-            severity: critical ? 'important' : result.peakE2 > E2_OPTIMAL_HIGH ? 'monitor' : 'info',
+            severity: 'info',
         },
         {
-            code: 'RISK_ZONE',
-            labelAr: `منطقة المخاطر عند الذروة: ${result.peakRiskZone}`,
-            labelEn: `Peak risk zone: ${result.peakRiskZone}`,
-            value: result.peakRiskZone,
-            severity: critical ? 'important' : result.peakRiskZone === 'elevated' ? 'monitor' : 'info',
-        },
-        {
-            code: 'GYNO_RISK',
-            labelAr: `درجة خطر التثدي الهرموني: ${result.gynoRiskScore}/100`,
-            labelEn: `Gynecomastia risk score: ${result.gynoRiskScore}/100`,
-            value: `${result.gynoRiskScore}`,
-            severity: result.gynoRiskScore >= 60 ? 'important' : result.gynoRiskScore >= 30 ? 'monitor' : 'info',
-        },
-        {
-            code: 'AI_RECOMMENDATION',
-            labelAr: unnecessaryAi
-                ? 'استخدام مثبطات الأروماتاز غير ضروري مع مركب لا يُأَرومَتَز'
-                : result.aiRecommendation === 'adjust_up'
-                  ? 'يُنصح بزيادة جرعة مثبط الأروماتاز'
-                  : result.aiRecommendation === 'reduce_ai'
-                    ? 'يُنصح بتقليل جرعة مثبط الأروماتاز — خطر انهيار الاستراديول'
-                    : result.aiRecommendation === 'monitor'
-                      ? 'راقب الاستراديول — قد يحتاج تدخل خفيف'
-                      : 'لا حاجة لتدخل مثبط الأروماتاز حالياً',
-            labelEn: unnecessaryAi
-                ? 'AI use unnecessary with a non-aromatising compound'
-                : result.aiRecommendation === 'adjust_up'
-                  ? 'Increase AI dose recommended'
-                  : result.aiRecommendation === 'reduce_ai'
-                    ? 'Reduce AI dose — E2 crash risk'
-                    : result.aiRecommendation === 'monitor'
-                      ? 'Monitor E2 — mild intervention may be needed'
-                      : 'No AI intervention needed at this time',
-            value: unnecessaryAi ? UNNECESSARY_AI_ALERT : result.aiRecommendation,
-            severity: unnecessaryAi ? 'important' : result.aiRecommendation === 'adjust_up' || result.aiRecommendation === 'reduce_ai' ? 'monitor' : 'info',
+            code: 'CLINICAL_ASSESSMENT',
+            labelAr: 'التقييم السريري غير متاح؛ لا يصدر النموذج درجة خطر أو توصية دوائية',
+            labelEn: 'Clinical assessment unavailable; this model provides no risk score or medication recommendation',
+            value: 'NOT_ASSESSED',
+            severity: 'info',
         },
         {
             code: 'FINAL_E2',
-            labelAr: `الاستراديول النهائي بعد الدورة: ${result.finalE2} pg/mL`,
-            labelEn: `Post-cycle final E2: ${result.finalE2} pg/mL`,
+            labelAr: `قيمة E2 المحسوبة في نهاية السيناريو: ${result.finalE2} pg/mL`,
+            labelEn: `Modelled E2 value at the end of the scenario: ${result.finalE2} pg/mL`,
             value: `${result.finalE2} pg/mL`,
             severity: 'info',
         },

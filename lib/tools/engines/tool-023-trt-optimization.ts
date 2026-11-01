@@ -15,7 +15,6 @@
 
 export interface TrtInput {
   age: number;
-  body_weight_kg: number;
   current_total_test_ng_dL?: number;
   current_free_test_pg_mL?: number;
   symptoms: 'none' | 'mild' | 'moderate' | 'severe';
@@ -37,19 +36,14 @@ export interface TrtResult {
 }
 
 export function calculateTrtOptimization(input: TrtInput): TrtResult {
-  const { age, body_weight_kg, trt_duration_months, administration } = input;
+  const { age, trt_duration_months, administration } = input;
   const current_total_test = input.current_total_test_ng_dL;
   const current_free_test = input.current_free_test_pg_mL;
   const symptoms = input.symptoms;
   const hematocrit_current = input.hematocrit_current;
   const e2_current = input.e2_current_pg_mL;
-  void body_weight_kg;
 
   //23.1. Baseline calculations
-  // Age-related testosterone decline: ~1% per year after 30
-  const ageRelatedDecline = Math.max(0, (age - 30) * 0.5); // decline since 30
-  void ageRelatedDecline;
-  
   // Target total testosterone: 500-1000 ng/dL optimal range
   const targetTotalTest = 750; // Midpoint of optimal range
   

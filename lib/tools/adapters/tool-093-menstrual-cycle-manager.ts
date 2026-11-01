@@ -31,46 +31,41 @@ export interface MenstrualCycleManagerOutputOptions {
 
 export function buildMenstrualCycleManagerProvenance(options: MenstrualCycleManagerOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.85;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'phase',
-    measurementMethod: 'menstrual calendar periodization and physiological substrate modeling (deterministic model)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 21, high: 35, unit: 'days', source: 'normal ovulatory cycle length baseline' },
+    unit: 'calendar days and user-entered flags',
+    measurementMethod: 'Manual cycle calendar log; no inferred ovulation or physiology',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
 export function buildMenstrualCycleManagerKeyFindings(result: MenstrualCycleManagerResult): KeyFinding[] {
   const findings: KeyFinding[] = [
     {
-      code: 'PHASE',
-      labelAr: 'طور الدورة الحالي',
-      labelEn: 'Current cycle phase',
-      value: result.phase_name_en,
+      code: 'CYCLE_DAY',
+      labelAr: 'يوم الدورة المدخل',
+      labelEn: 'Entered cycle day',
+      value: result.current_cycle_day,
       severity: 'info',
     },
     {
-      code: 'POWER_SCORE',
-      labelAr: 'مؤشر كفاءة القوة والأداء',
-      labelEn: 'Strength & power potential',
-      value: `${result.strength_power_potential_score}/100`,
-      severity: result.strength_power_potential_score < 60 ? 'monitor' : 'info',
+      code: 'CYCLE_LENGTH',
+      labelAr: 'طول الدورة المدخل',
+      labelEn: 'Entered cycle length',
+      value: result.cycle_length_days,
+      severity: 'info',
     },
     {
-      code: 'SUBSTRATE',
-      labelAr: 'المسار الأيضي المفضل',
-      labelEn: 'Metabolic substrate preference',
-      value: result.metabolic_substrate_preference,
+      code: 'RESULT_TYPE',
+      labelAr: 'نوع النتيجة',
+      labelEn: 'Result type',
+      value: 'USER_PROVIDED',
       severity: 'info',
     },
   ];
-  for (const r of result.recommendations) {
-    findings.push({ code: 'RECOMMENDATION', labelAr: 'توجيه فسيولوجي', labelEn: 'Physiological recommendation', value: r, severity: 'info' });
-  }
   return findings;
 }
 

@@ -2,9 +2,7 @@
  * Tool #104 - Thyroid Function & Metabolic Rate Dynamics
  * Layer 3: canonical ToolOutput envelope.
  */
-import {
-  deriveDataQuality,
-  type DataProvenance,
+import {  type DataProvenance,
   type DataSource,
   type KeyFinding,
   type Locale,
@@ -31,16 +29,14 @@ export interface ThyroidOutputOptions {
 
 export function buildThyroidProvenance(options: ThyroidOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.75;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'kcal/day',
     measurementMethod: 'Mifflin-St Jeor BMR scaled by a free-T4-ratio metabolic multiplier (educational)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 0.4, high: 4.0, unit: 'mIU/L', source: 'Standard TSH lab reference range' },
+    confidence: 0.55,
+    dataQuality: 'medium',
   };
 }
 
@@ -105,3 +101,4 @@ export function buildThyroidOutput(
     seoLinks: buildSeoLinks(tool),
   });
 }
+

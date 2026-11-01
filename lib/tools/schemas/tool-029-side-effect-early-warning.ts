@@ -1,45 +1,61 @@
-/**
- * Tool #029 — Side Effect Early Warning
- * Schema Validation using Zod
- */
-
 import { z } from 'zod';
 
-export const SideEffectSymptomSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  category: z.enum(['androgenic', 'estrogenic', 'cardiovascular', 'hepatotoxic', 'suppressive', 'other']),
-  severity: z.enum(['mild', 'moderate', 'severe', 'critical']),
-  days_noticed: z.number().min(0).max(365),
-  compound_triggers: z.array(z.string()),
-  action_required: z.enum(['monitor', 'ai_support', 'dosage_reduce', 'cycle_stop']),
+const DateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const parsed = new Date(`${value}T12:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}, 'Enter a real calendar date.');
+
+export const BloodPressureReadingSchema = z.object({
+  id: z.string().uuid(),
+  date: DateOnlySchema,
+  metric: z.literal('blood_pressure'),
+  systolicMmHg: z.number().finite().positive().max(1000),
+  diastolicMmHg: z.number().finite().positive().max(1000),
+  sourceLabel: z.string().trim().max(160).optional(),
+}).strict();
+
+export const PulseReadingSchema = z.object({
+  id: z.string().uuid(),
+  date: DateOnlySchema,
+  metric: z.literal('pulse'),
+  beatsPerMinute: z.number().finite().positive().max(1000),
+  sourceLabel: z.string().trim().max(160).optional(),
+}).strict();
+
+export const MeasurementReadingSchema = z.discriminatedUnion('metric', [BloodPressureReadingSchema, PulseReadingSchema]);
+
+export const MeasurementSummaryInputSchema = z.object({
+  readings: z.array(MeasurementReadingSchema).min(1).max(200),
+}).strict().superRefine(({ readings }, context) => {
+  const seen = new Set<string>();
+  readings.forEach((reading, index) => {
+    if (seen.has(reading.id)) {
+      context.addIssue({ code: 'custom', path: ['readings', index, 'id'], message: 'Reading IDs must be unique.' });
+    }
+    seen.add(reading.id);
+  });
 });
 
-export type SideEffectSymptom = z.infer<typeof SideEffectSymptomSchema>;
+export const DescriptiveSeriesSchema = z.object({
+  metric: z.enum(['blood_pressure_systolic', 'blood_pressure_diastolic', 'pulse']),
+  count: z.number().int().positive().max(200),
+  minimum: z.number().finite().positive(),
+  maximum: z.number().finite().positive(),
+  arithmeticMean: z.number().finite().positive(),
+  unit: z.enum(['mmHg', 'beats/min']),
+}).strict();
 
-export const SideEffectStackInputSchema = z.object({
-  compounds: z.array(z.string()).min(1).max(6),
-  cycle_day: z.number().min(1).max(365),
-  user_age: z.number().min(18).max(80),
-  experience_level: z.enum(['beginner', 'intermediate', 'advanced', 'pro']),
-  health_markers: z.object({
-    blood_pressure: z.number().min(60).max(200).optional(),
-    heart_rate: z.number().min(40).max(200).optional(),
-    recent_weight: z.number().min(30).max(300).optional(),
-    libido: z.enum(['increased', 'normal', 'decreased']).optional(),
-  }),
-});
+export const MeasurementSummaryResultSchema = z.object({
+  resultOrigin: z.literal('CALCULATED'),
+  method: z.literal('DESCRIPTIVE_ARITHMETIC_ONLY'),
+  clinicalAssessment: z.literal('NOT_AVAILABLE'),
+  readings: z.array(MeasurementReadingSchema).min(1).max(200),
+  summaries: z.array(DescriptiveSeriesSchema).min(1).max(3),
+}).strict();
 
-export type SideEffectStackInput = z.infer<typeof SideEffectStackInputSchema>;
-
-export const SideEffectEarlyWarningResultSchema = z.object({
-  predicted_side_effects: z.array(SideEffectSymptomSchema).min(0).max(30),
-  overall_risk_level: z.enum(['low', 'moderate', 'high', 'critical']),
-  risk_score: z.number().min(0).max(100),
-  monitoring_recommendations: z.array(z.string()).min(0).max(15),
-  immediate_actions: z.array(z.string()).min(0).max(10),
-  when_to_concerned: z.string(),
-});
-
-export type SideEffectEarlyWarningResult = z.infer<typeof SideEffectEarlyWarningResultSchema>;
+export type BloodPressureReading = z.infer<typeof BloodPressureReadingSchema>;
+export type PulseReading = z.infer<typeof PulseReadingSchema>;
+export type MeasurementReading = z.infer<typeof MeasurementReadingSchema>;
+export type MeasurementSummaryInput = z.infer<typeof MeasurementSummaryInputSchema>;
+export type DescriptiveSeries = z.infer<typeof DescriptiveSeriesSchema>;
+export type MeasurementSummaryResult = z.infer<typeof MeasurementSummaryResultSchema>;

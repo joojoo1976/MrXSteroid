@@ -1,14 +1,18 @@
 {
   "en": {
     "tool_name": "Drug Interaction Checker",
-    "overall_safety": "Overall Safety",
-    "requires_medical_approval": "Requires Medical Approval",
-    "summary": "Summary"
+    "unavailable_reason": "NOT_AVAILABLE — This tool has no verified, maintained drug-interaction source connected. It cannot screen medication, supplement, or compound combinations right now.",
+    "no_safety_claim": "No interaction result was produced. This does not mean a combination is safe or that no interaction exists.",
+    "next_step": "For a current review, show the complete medication and supplement list to a pharmacist or prescribing clinician. Official labeling and patient information are available from:",
+    "dailymed_label": "DailyMed: current U.S. medicine labels",
+    "fda_guidance": "FDA: Drug Interactions — What You Should Know"
   },
   "ar": {
-    "tool_name": "متChecker相互作用",
-    "overall_safety": "السلامة العامة",
-    "requires_medical_approval": "يحتاج موافقة طبية",
-    "summary": "الملخص"
+    "tool_name": "فاحص التداخلات الدوائية",
+    "unavailable_reason": "NOT_AVAILABLE — لا يتصل بهذه الأداة حالياً مصدر موثّق ومحدّث للتداخلات الدوائية؛ لذلك لا يمكنها فحص الأدوية أو المكملات أو المركبات.",
+    "no_safety_claim": "لم تُنتج الأداة نتيجة للتداخلات. هذا لا يعني أن الجمع آمن أو أن التداخل غير موجود.",
+    "next_step": "للحصول على مراجعة حديثة، اعرض قائمة الأدوية والمكملات كاملةً على صيدلي أو الطبيب الذي وصفها. تتوفر معلومات الملصقات الرسمية عبر:",
+    "dailymed_label": "DailyMed: ملصقات الأدوية الأمريكية الحالية",
+    "fda_guidance": "FDA: ما ينبغي معرفته عن التداخلات الدوائية"
   }
 }

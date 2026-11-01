@@ -1,12 +1,7 @@
 'use client';
 
-import LegacyPageShell from '../../components/legacy/LegacyPageShell';
-import BodyFatCalculator from '../../features/calculator/BodyFatCalculator';
+import BodyFatPilotTool from '@/components/tools/bodyfat-pilot';
 
 export default function bodyfatPage() {
-    return (
-        <LegacyPageShell>
-            {({ content, navigateTo }) => <BodyFatCalculator content={content} navigateTo={navigateTo} />}
-        </LegacyPageShell>
-    );
+    return <BodyFatPilotTool />;
 }

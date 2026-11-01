@@ -55,6 +55,7 @@ import {
 } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParsePctTimingInput } from '@/lib/tools/schemas/pct-timing';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const TOOL_SLUG = 'pct-timing';
 
@@ -117,8 +118,7 @@ export default function PctTimingToolComponent() {
     const tool = requireTool(TOOL_SLUG);
     const neighbors = getToolNeighbors(TOOL_SLUG);
 
-    const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-    const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
+    const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
 
     // Cycle & Stack State
     const [weeksOnCycle, setWeeksOnCycle] = useState<number>(12);
@@ -147,33 +147,8 @@ export default function PctTimingToolComponent() {
     const [saveStatus, setSaveStatus] = useState<string>('');
     const [validationError, setValidationError] = useState<string | null>(null);
 
-    const isRtl = locale === 'ar';
-
-    // Measurement system toggle with localStorage persistence
-    const handleToggleUnitSystem = useCallback((system: 'metric' | 'imperial') => {
-        setUnitSystem(system);
-        if (typeof window !== 'undefined') {
-            try {
-                localStorage.setItem('measurementSystem', system);
-            } catch {
-                // Ignore localStorage errors in private browsing/sandboxes
-            }
-        }
-    }, []);
-
     // Draft & Settings restore on mount
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const savedSystem = localStorage.getItem('measurementSystem');
-                if (savedSystem === 'metric' || savedSystem === 'imperial') {
-                    setUnitSystem(savedSystem);
-                }
-            } catch {
-                // Ignore localStorage errors
-            }
-        }
-
         const draft = loadDraft<PctTimingDraftInputs>(TOOL_SLUG);
         if (!draft) return;
         const i = draft.inputs;
@@ -397,42 +372,6 @@ export default function PctTimingToolComponent() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2.5 flex-wrap">
-                    <button
-                        type="button"
-                        onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-                        className="px-3 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-700 transition"
-                    >
-                        {isRtl ? 'English' : 'العربية'}
-                    </button>
-                    <div className="measurement-toggle flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
-                        <label className="text-[10px] text-slate-400 font-bold px-2 hidden sm:inline">
-                            {isRtl ? 'نظام القياس:' : 'Measurement System:'}
-                        </label>
-                        <button
-                            id="metric-btn"
-                            type="button"
-                            onClick={() => handleToggleUnitSystem('metric')}
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
-                                unitSystem === 'metric'
-                                    ? 'active bg-lime-500 text-slate-950 shadow-sm'
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
-                        >
-                            {isRtl ? 'متري (كغ/سم)' : 'Metric (mg/kg/cm)'}
-                        </button>
-                        <button
-                            id="imperial-btn"
-                            type="button"
-                            onClick={() => handleToggleUnitSystem('imperial')}
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
-                                unitSystem === 'imperial'
-                                    ? 'active bg-lime-500 text-slate-950 shadow-sm'
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
-                        >
-                            {isRtl ? 'إمبراطوري (رطل/إنش)' : 'Imperial (mg/lb/in)'}
-                        </button>
-                    </div>
                 </div>
             </div>
 

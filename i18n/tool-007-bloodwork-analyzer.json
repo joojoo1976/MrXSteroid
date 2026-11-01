@@ -1,16 +1,38 @@
 {
   "en": {
-    "tool_name": "Bloodwork Analyzer",
-    "overall_assessment": "Overall Assessment",
-    "hpta_status": "HPTA Status",
-    "baseline": "Baseline",
-    "current": "Current"
+    "tool_name": "Bloodwork Record Log",
+    "scope_note": "Transcribe values from a laboratory report. This session-only log does not interpret results, compare them with clinical ranges, assess HPTA status, or recommend care. It is cleared when you leave this page.",
+    "interpretation_unavailable": "Interpretation: NOT_AVAILABLE — no validated reference-range or clinical rules are configured.",
+    "marker_name": "Marker name",
+    "value": "Reported value",
+    "unit": "Unit exactly as reported",
+    "source": "Lab or report source",
+    "test_date": "Sample date",
+    "reference_interval": "Reference interval exactly as reported (optional)",
+    "add_record": "Add to this session",
+    "validation_error": "Enter a marker, finite value, unit, source, and valid sample date.",
+    "records": "Session records",
+    "empty": "No results have been added to this session.",
+    "origin_user_provided": "USER_PROVIDED · not independently verified",
+    "remove": "Remove",
+    "clear_all": "Clear session"
   },
   "ar": {
-    "tool_name": "محلل الفحو호다ق",
-    "overall_assessment": "التقييم العام",
-    "hpta_status": "حالة محور HPTA",
-    "baseline": "النقطة baselines",
-    "current": "الحالة الحالية"
+    "tool_name": "سجل نتائج التحاليل",
+    "scope_note": "أدخل القيم كما تظهر في تقرير المختبر. هذا السجل المؤقت لا يفسر النتائج ولا يقارنها بنطاقات سريرية ولا يقيّم محور HPTA ولا يوصي برعاية طبية. تُمسح البيانات عند مغادرة الصفحة.",
+    "interpretation_unavailable": "التفسير: NOT_AVAILABLE — لا توجد قواعد سريرية أو نطاقات مرجعية موثقة ومهيأة.",
+    "marker_name": "اسم المؤشر المخبري",
+    "value": "القيمة الواردة في التقرير",
+    "unit": "الوحدة كما وردت تماماً",
+    "source": "مصدر المختبر أو التقرير",
+    "test_date": "تاريخ العينة",
+    "reference_interval": "النطاق المرجعي كما ورد في التقرير (اختياري)",
+    "add_record": "إضافة إلى الجلسة",
+    "validation_error": "أدخل اسم المؤشر وقيمة محدودة ووحدة ومصدراً وتاريخ عينة صالحاً.",
+    "records": "سجلات الجلسة",
+    "empty": "لم تُضف نتائج إلى هذه الجلسة.",
+    "origin_user_provided": "USER_PROVIDED · لم يتم التحقق منه مستقلاً",
+    "remove": "حذف",
+    "clear_all": "مسح الجلسة"
   }
 }

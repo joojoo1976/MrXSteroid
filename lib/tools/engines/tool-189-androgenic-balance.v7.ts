@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const BalanceSchema=z.object({items:z.array(z.string().trim().min(1).max(100)).min(1).max(30)}).strict(); export function recordAndrogenItems(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,items:BalanceSchema.parse(raw).items,disclaimer:'User list only; no androgenic balance or optimization conclusion.'};}

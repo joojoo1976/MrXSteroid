@@ -1,0 +1,12 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/rest-timer-pilot.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1726[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates real Rest Timer v6 output [33m 314[2mms[22m[39m
+     [33m[2m✓[22m[39m counts down after start [33m 1087[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 17:15:06
+[2m   Duration [22m 3.65s[2m (transform 130ms, setup 177ms, import 294ms, tests 1.73s, environment 1.10s)[22m
+

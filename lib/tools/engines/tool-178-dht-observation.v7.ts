@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const DhtRecordSchema=z.object({observation:z.string().trim().min(1).max(300)}).strict(); export function recordDhtObservation(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:DhtRecordSchema.parse(raw),disclaimer:'User observation only; no prediction or diagnosis.'};}

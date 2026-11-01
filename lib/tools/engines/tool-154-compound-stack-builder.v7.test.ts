@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest'; import {recordCompoundStack,StackInputSchema} from './tool-154-compound-stack-builder.v7';
+describe('Tool 154 compound record',()=>{it('records entries without recommendations',()=>{const r=recordCompoundStack({entries:[{compound:'user entry',enteredByUser:true}]});expect(r.status).toBe('RECORDED');expect(r.resultType).toBe('USER_PROVIDED');});it('rejects unknown fields',()=>{expect(StackInputSchema.safeParse({entries:[],x:1}).success).toBe(false);});});

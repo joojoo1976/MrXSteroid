@@ -63,7 +63,13 @@ export function runValidation(): ValidationResult {
 
   const cat = getCatalogTools();
 
-  const toSlug = (href: string): string => href.replace(/^\/smarttools\//, '').replace(/^\//, '');
+  const toSlug = (href: string): string => {
+    const stripped = href.replace(/^\/smarttools\//, '').replace(/^\//, '');
+    // For hierarchical URLs (/smarttools/category/tool), return the tool part
+    // For flat URLs (/smarttools/tool), return the tool
+    const parts = stripped.split('/');
+    return parts[parts.length - 1];
+  };
 
   for (const t of cat) {
     smarttoolsSlugs.add(t.slug);

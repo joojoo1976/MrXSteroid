@@ -31,16 +31,14 @@ export interface RenalFunctionOutputOptions {
 
 export function buildRenalFunctionProvenance(options: RenalFunctionOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.8;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'mL/min/1.73 m2',
     measurementMethod: 'CKD-EPI 2021 creatinine equation (race-free) - educational estimate',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 90, high: 120, unit: 'mL/min/1.73 m2', source: 'KDIGO normal eGFR' },
+    confidence: 0.6,
+    dataQuality: 'medium',
   };
 }
 
@@ -101,3 +99,5 @@ export function buildRenalFunctionOutput(
     seoLinks: buildSeoLinks(tool),
   });
 }
+
+

@@ -14,8 +14,6 @@ import {
     buildAromatizationRiskKeyFindings,
     buildAromatizationRiskOutput,
     buildAromatizationRiskProvenance,
-    E2_REFERENCE_RANGE,
-    UNNECESSARY_AI_ALERT,
 } from './aromatization-risk';
 
 const validInput: EngineInput = {
@@ -73,7 +71,7 @@ describe('Tool #002 — Layer 3 canonical envelope', () => {
         expect(output.result.timeline.length).toBeGreaterThan(0);
         expect(output.calculatedAt).toBe('2026-09-21T10:00:00.000Z');
         expect(output.snapshotType).toBe('dashboard_projection');
-        expect(output.provenance.unit).toBe(E2_REFERENCE_RANGE.unit);
+        expect(output.provenance.unit).toBe('pg/mL');
     });
 
     it('is deterministic for identical injected timestamps', () => {
@@ -83,39 +81,40 @@ describe('Tool #002 — Layer 3 canonical envelope', () => {
         expect(a.snapshotType).toBe('draft');
     });
 
-    it('severity-ranks findings and cites the book in provenance', () => {
+    it('keeps model estimates informational and does not fabricate clinical provenance', () => {
         const base: AromatizationRiskResult = {
             timeline: [],
             steadyStateE2: 120,
             peakE2: 110,
             finalE2: 35,
-            peakRiskZone: 'critical',
+            peakRiskZone: 'not_assessed',
             compoundAromatizationRate: 1.0,
             aiSuppressionFactor: 0,
             bodyFatMultiplier: 1.0,
-            gynoRiskScore: 80,
-            waterRetentionRiskScore: 60,
-            crashRiskScore: 0,
-            aiRecommendation: 'adjust_up',
+            gynoRiskScore: null,
+            waterRetentionRiskScore: null,
+            crashRiskScore: null,
+            aiRecommendation: 'not_assessed',
             totalTimelineWeeks: 20,
         };
 
-        const unnecessaryAiFindings = buildAromatizationRiskKeyFindings(base, {
+        const findings = buildAromatizationRiskKeyFindings(base, {
             weeksOnCycle: 12,
             weeklyDoseMg: 500,
             bodyFatPct: 15,
             compoundType: 'trenbolone',
             aiProtocol: 'aggressive',
         });
-        const aiFinding = unnecessaryAiFindings.find((f) => f.code === 'AI_RECOMMENDATION');
-        expect(aiFinding?.severity).toBe('important');
-        expect(aiFinding?.value).toBe(UNNECESSARY_AI_ALERT);
+        const clinicalFinding = findings.find((f) => f.code === 'CLINICAL_ASSESSMENT');
+        expect(clinicalFinding?.severity).toBe('info');
+        expect(clinicalFinding?.value).toBe('NOT_ASSESSED');
+        expect(findings.map((finding) => finding.code)).not.toContain('AI_RECOMMENDATION');
+        expect(findings.map((finding) => finding.code)).not.toContain('GYNO_RISK');
 
         const ranked = buildOutput().keyFindings;
         const ranks = ranked.map((f) => ({ important: 0, monitor: 1, info: 2 } as Record<string, number>)[f.severity]);
         expect([...ranks].sort((x, y) => x - y)).toEqual(ranks);
 
-        // Book citation present in provenance reference range source.
         const provenance = buildAromatizationRiskProvenance({
             locale: 'ar',
             unitSystem: 'metric',
@@ -123,23 +122,25 @@ describe('Tool #002 — Layer 3 canonical envelope', () => {
             calculatedAt: '2026-09-21T10:00:00.000Z',
             recordedAt: '2026-09-21T10:00:00.000Z',
         });
-        expect(provenance.referenceRange?.source).toContain('Mr. X-Steroid Book');
+        expect(provenance.referenceRange).toBeUndefined();
+        expect(provenance.confidence).toBeNull();
+        expect(provenance.dataQuality).toBe('not_assessed');
     });
 
-    it('flags critical peak E2 as important', () => {
+    it('does not severity-rank unvalidated peak E2 values', () => {
         const base: AromatizationRiskResult = {
             timeline: [],
             steadyStateE2: 150,
             peakE2: 140,
             finalE2: 40,
-            peakRiskZone: 'critical',
+            peakRiskZone: 'not_assessed',
             compoundAromatizationRate: 1.0,
             aiSuppressionFactor: 0,
             bodyFatMultiplier: 1.5,
-            gynoRiskScore: 90,
-            waterRetentionRiskScore: 80,
-            crashRiskScore: 0,
-            aiRecommendation: 'adjust_up',
+            gynoRiskScore: null,
+            waterRetentionRiskScore: null,
+            crashRiskScore: null,
+            aiRecommendation: 'not_assessed',
             totalTimelineWeeks: 20,
         };
         const findings = buildAromatizationRiskKeyFindings(base, {
@@ -150,7 +151,7 @@ describe('Tool #002 — Layer 3 canonical envelope', () => {
             aiProtocol: 'none',
         });
         const peak = findings.find((f) => f.code === 'PEAK_E2');
-        expect(peak?.severity).toBe('important');
+        expect(peak?.severity).toBe('info');
     });
 
     it('carries the reference range and injected timezone in provenance', () => {
@@ -163,10 +164,10 @@ describe('Tool #002 — Layer 3 canonical envelope', () => {
             timezone: 'Africa/Cairo',
         });
 
-        expect(provenance.referenceRange?.low).toBe(E2_REFERENCE_RANGE.low);
-        expect(provenance.referenceRange?.high).toBe(E2_REFERENCE_RANGE.high);
-        expect(provenance.confidence).toBe(0.9);
-        expect(provenance.measurementMethod).toBe('simulated model estimate');
+        expect(provenance.referenceRange).toBeUndefined();
+        expect(provenance.confidence).toBeNull();
+        expect(provenance.dataQuality).toBe('not_assessed');
+        expect(provenance.measurementMethod).toContain('unvalidated scenario model');
         expect(provenance.timezone).toBe('Africa/Cairo');
     });
 });

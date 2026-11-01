@@ -1,24 +1,32 @@
 {
   "en": {
-    "tool_name": "Injection Pain Minimizer",
-    "desired_dose_ml": "Desired Volume (mL)",
-    "max_safe_volume_ml": "Max Safe Volume (mL)",
-    "pain_minimization_score": "Pain Minimization Score",
-    "recommended_site": "Recommended Site",
-    "rotation_schedule": "Rotation Schedule",
-    "solvent_ratio": "Solvent Ratio",
-    "temperature_recommendation": "Temperature Recommendation",
-    "warnings": "Warnings"
+    "tool_name": "Injection Experience Log",
+    "scope_note": "This is a temporary record of your own notes. It does not calculate injection volumes, recommend a site or technique, assess pain or reactions, or provide treatment guidance. Entries stay in this page session and are cleared when you leave.",
+    "assessment_unavailable": "Clinical assessment: NOT_AVAILABLE. This tool does not evaluate symptoms or determine whether an injection experience is medically safe.",
+    "event_date": "Date of event",
+    "site_label": "Your own label for the area (optional)",
+    "experience_notes": "Your experience or notes",
+    "validation_error": "Enter a real date and a note of up to 500 characters.",
+    "add_entry": "Add session note",
+    "session_records": "Temporary session notes",
+    "empty": "No notes have been added.",
+    "clear_all": "Clear notes",
+    "remove": "Remove",
+    "origin_user_provided": "USER_PROVIDED · not independently assessed"
   },
   "ar": {
-    "tool_name": "مخفض آلام الحقن",
-    "desired_dose_ml": "الحجم المطلوب (مل)",
-    "max_safe_volume_ml": "الحجم الآمن الأقصى (مل)",
-    "pain_minimization_score": "درء ألم",
-    "recommended_site": "الموقع الموصى به",
-    "rotation_schedule": "جدول الدوران",
-    "solvent_ratio": "نسبة المذيب",
-    "temperature_recommendation": "توصية الحرارة",
-    "warnings": "تنبيهات"
+    "tool_name": "سجل تجربة الحقن",
+    "scope_note": "هذا سجل مؤقت لملاحظاتك أنت. لا يحسب أحجام الحقن، ولا يوصي بموضع أو طريقة، ولا يقيّم الألم أو التفاعلات، ولا يقدم إرشادات علاجية. تبقى الملاحظات في جلسة الصفحة وتُمسح عند مغادرتها.",
+    "assessment_unavailable": "التقييم السريري: NOT_AVAILABLE. لا تقيّم هذه الأداة الأعراض ولا تحدد ما إذا كانت تجربة الحقن آمنة طبيًا.",
+    "event_date": "تاريخ التجربة",
+    "site_label": "تسمية المنطقة من اختيارك (اختياري)",
+    "experience_notes": "وصف التجربة أو ملاحظاتك",
+    "validation_error": "أدخل تاريخًا صحيحًا وملاحظة لا تتجاوز 500 حرف.",
+    "add_entry": "إضافة ملاحظة للجلسة",
+    "session_records": "ملاحظات مؤقتة للجلسة",
+    "empty": "لم تتم إضافة ملاحظات.",
+    "clear_all": "مسح الملاحظات",
+    "remove": "إزالة",
+    "origin_user_provided": "USER_PROVIDED · لم يتم تقييمه بشكل مستقل"
   }
 }

@@ -24,36 +24,13 @@ export function calculateGeneticPotential(input: GeneticPotentialInput): Genetic
   else score -= 4;
 
   const risk_factors: string[] = [];
-  if (familyHistory !== 'none') risk_factors.push(`Family history: ${familyHistory.replace(/_/g, ' ')} — screen relevant markers before cycling.`);
-  if (bmi > 28) risk_factors.push('BMI above athletic range — prioritize body-composition phase first.');
-  if (priorCycles >= 3) risk_factors.push('Multiple prior cycles — extended recovery and bloodwork strongly advised.');
-
-  const recommended_compounds =
-    goal === 'bulk'
-      ? ['Testosterone base', 'Progressive overload program', 'Caloric surplus plan']
-      : goal === 'cut'
-        ? ['Testosterone base', 'High-protein deficit plan', 'Conditioning protocol']
-        : ['Testosterone base', 'Balanced recomposition plan', 'Sleep/recovery protocol'];
-
-  const avoided_compounds =
-    familyHistory === 'heart_disease'
-      ? ['High-dose stimulants', 'Unmonitored oral stacks']
-      : familyHistory === 'liver_disease'
-        ? ['Oral 17-alpha-alkylated compounds', 'Alcohol during cycle']
-        : ['Unsupervised polypharmacy'];
+  if (familyHistory !== 'none') risk_factors.push(`Recorded family-history category: ${familyHistory.replace(/_/g, ' ')}.`);
+  if (bmi > 28) risk_factors.push('BMI-derived value is above 28; BMI does not distinguish fat from lean mass.');
+  if (priorCycles >= 3) risk_factors.push('Three or more prior cycles were reported; this score does not assess health or recovery.');
 
   return {
     potential_score: Math.max(0, Math.min(100, Math.round(score))),
     body_type_assessment: `${bodyType} profile (BMI ${Math.round(bmi * 10) / 10})`,
-    recommended_cycle_length: priorCycles > 0 ? 10 : 8,
-    recommended_dosage_multiplier: Math.max(0.5, Math.min(2, Math.round((score / 60) * 100) / 100)),
     risk_factors,
-    recommended_compounds,
-    avoided_compounds,
-    personalized_tips: [
-      'Use bloodwork before, mid-cycle, and post-PCT.',
-      'Track progressive overload weekly.',
-      'Keep protein high and sleep consistent.',
-    ],
   };
 }

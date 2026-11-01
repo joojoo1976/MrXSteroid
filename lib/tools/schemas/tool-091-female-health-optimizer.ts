@@ -6,6 +6,6 @@ export const FemaleHealthOptimizerInputSchema = z.object({
   bone_stress_or_joint_pains: z.boolean(),
   thyroid_cold_intolerance: z.boolean(),
   resistance_training_sessions_per_week: z.number().min(0).max(7),
-});
+}).strict();
 
 export type FemaleHealthOptimizerInput = z.infer<typeof FemaleHealthOptimizerInputSchema>;

@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const HairSchema=z.object({observation:z.string().trim().min(1).max(300),observedAt:z.string().date()}).strict(); export function recordHair(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:HairSchema.parse(raw),disclaimer:'Observation log only; no diagnosis or treatment recommendation.'};}

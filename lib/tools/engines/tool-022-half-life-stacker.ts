@@ -1,24 +1,21 @@
 /**
- * Tool #022 — Compound Half-Life Stacker
- * Layer 22: Multi-Compound Stack Timing & Ester Analysis
- * Platform: MrXSteroid.com | Core: Stack Pharmacokinetics & Cycle Timing
+ * Tool #022 — Half-Life Timing Arithmetic
  * ════════════════════════════════════════════════════════════════════════════
  * 
  * Features:
- * - Calculate optimal timing for multi-ester stacks
- * - Identify ester clearance bottlenecks
- * - Compute peak plasma time & off-cycle windows
- * - Full Measurement System Toggle (metric/imperial)
- * - i18n support (Arabic/English)
- * - Debounced state persistence
+ * - Derive schedule and timing heuristics from user-entered values
+ * - Identify the input with the longest stated half-life
+ * - Does not validate pharmacokinetics or recommend treatment timing
  */
+
+import { StackTimingInputSchema } from '../schemas/tool-022-half-life-stacker';
 
 export interface EsterCompound {
   id: number;
   name_en: string;
   name_ar: string;
   family: string;
-  ester_type: 'acetate' | 'phenylpropionate' | 'propionate' | 'decanoate' | 'undecanoate' | 'enanthate' | 'cyionate' | 'cypionate' | 'heptanoate' | 'other';
+  ester_type: 'acetate' | 'phenylpropionate' | 'propionate' | 'decanoate' | 'undecanoate' | 'enanthate' | 'cypionate' | 'heptanoate' | 'other';
   half_life_days: number;
   release_rate: 'slow' | 'medium' | 'fast';
   anabolic_score: number;
@@ -30,7 +27,6 @@ export interface StackTimingInput {
   compounds: EsterCompound[];
   cycle_length_weeks: number;
   injection_frequency: 'daily' | 'every-other-day' | '2x-week' | '1x-week';
-  user_goal: 'bulk' | 'cut' | 'recomp' | 'strength';
 }
 
 export interface StackTimingResult {
@@ -41,24 +37,11 @@ export interface StackTimingResult {
   ester_bottleneck: EsterCompound;
   optimal_injection_schedule: string[];
   compound_peak_times: Record<string, number>;
-  confidence_score: number;
 }
 
 export function calculateStackTiming(input: StackTimingInput): StackTimingResult {
-  const { compounds, cycle_length_weeks, injection_frequency, user_goal } = input;
-  
-  if (compounds.length === 0) {
-    return {
-      peak_platform_days: 0,
-      total_cycle_half_lives: 0,
-      recommended_pct_start_days: 0,
-      washout_complete_days: 0,
-      ester_bottleneck: compounds[0] || { id: 0, name_en: '', name_ar: '', family: '', ester_type: 'other', half_life_days: 0, release_rate: 'slow', anabolic_score: 0, androgenic_score: 0, description_text: '' },
-      optimal_injection_schedule: [],
-      compound_peak_times: {},
-      confidence_score: 0,
-    };
-  }
+  const validatedInput = StackTimingInputSchema.parse(input);
+  const { compounds, cycle_length_weeks, injection_frequency } = validatedInput;
   
   //22.1. Identify ester bottleneck (longest half-life)
   let maxHalfLife = 0;
@@ -74,7 +57,7 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
   const esterBottleneck = compounds[bottleneckIndex];
   
   //22.2. Calculate peak platform days (time to reach peak concentration)
-  // For simplicity: assume peak at 2-3 half-lives for most compounds
+  // Legacy heuristic only; this is not a pharmacokinetic peak model.
   const peakPlatformDays = Math.ceil(maxHalfLife * 2.5);
   
   //22.3. Total cycle half-lives
@@ -111,13 +94,6 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
     compoundPeakTimes[compound.name_en] = Math.round(compound.half_life_days * 2.5);
   }
   
-  //22.8. Confidence score
-  let confidence = 50;
-  if (compounds.length >= 2) confidence += 20;
-  if (cycle_length_weeks > 0) confidence += 15;
-  if (user_goal) confidence += 15;
-  const confidenceScore = Math.min(100, confidence);
-  
   return {
     peak_platform_days: peakPlatformDays,
     total_cycle_half_lives: Math.round(totalCycleHalfLives * 10) / 10,
@@ -126,13 +102,12 @@ export function calculateStackTiming(input: StackTimingInput): StackTimingResult
     ester_bottleneck: esterBottleneck,
     optimal_injection_schedule: optimalSlice(optimalSchedule, cycle_length_weeks),
     compound_peak_times: compoundPeakTimes,
-    confidence_score: confidenceScore,
   };
 }
 
 function optimalSlice(schedule: string[], weeks: number): string[] {
   const maxDays = weeks * 7;
-  return schedule.filter((s, i) => {
+  return schedule.filter((s) => {
     const dayNum = parseInt(s.split(' ')[1]);
     return dayNum <= maxDays;
   });

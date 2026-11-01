@@ -1,0 +1,25 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [31m❯[39m [30m[45m jsdom [49m[39m components/genius-tool-template.test.tsx [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m jsdom [49m[39m components/genius-tool-template.test.tsx[2m [ components/genius-tool-template.test.tsx ][22m
+[31m[1mReferenceError[22m: describe is not defined[39m
+[36m [2m❯[22m components/genius-tool-template.test.tsx:[2m5:1[22m[39m
+    [90m  3|[39m [35mimport[39m [33mGeniusToolTemplate[39m [35mfrom[39m [32m'@/lib/templates/genius-tool-template'[39m[33m;[39m
+    [90m  4|[39m
+    [90m  5|[39m [34mdescribe[39m([32m'GeniusToolTemplate'[39m[33m,[39m () [33m=>[39m {
+    [90m   |[39m [31m^[39m
+    [90m  6|[39m   it('renders title, status, warnings, errors and rtl direction', () =…
+    [90m  7|[39m     [34mrender[39m(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 12:54:54
+[2m   Duration [22m 1.52s[2m (transform 81ms, setup 144ms, import 0ms, tests 0ms, environment 871ms)[22m
+

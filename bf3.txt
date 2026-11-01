@@ -1,0 +1,141 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+[90mstdout[2m | components/tools/bodyfat-pilot.test.tsx[2m > [22m[2mBodyFatPilotTool integration[2m > [22m[2mcalculates real Body Fat v6 output
+[22m[39m[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.9[39m,
+    ffmi: [33m20.3[39m,
+    normalizedFFMI: [33m20.6[39m,
+    leanBodyMassKg: [33m62.3[39m,
+    fatMassKg: [33m12.7[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m24.5[39m,
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m3[39m,
+    leanMassPotentialKg: [33m14.3[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.19230000000015934[39m,
+  timestamp: [33m1792849953519[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m70[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m82[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m14.5[39m,
+    ffmi: [33m19.5[39m,
+    normalizedFFMI: [33m19.8[39m,
+    leanBodyMassKg: [33m59.8[39m,
+    fatMassKg: [33m10.2[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m22.9[39m,
+    bmr: [33m1649[39m,
+    tdee: [33m2556[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m0.8[39m,
+    leanMassPotentialKg: [33m16.7[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.06570000000010623[39m,
+  timestamp: [33m1792849953522[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m78[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m85[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m16.9[39m,
+    ffmi: [33m21.2[39m,
+    normalizedFFMI: [33m21.5[39m,
+    leanBodyMassKg: [33m64.8[39m,
+    fatMassKg: [33m13.2[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m25.5[39m,
+    bmr: [33m1729[39m,
+    tdee: [33m2680[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m3.1[39m,
+    leanMassPotentialKg: [33m11.8[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.05830000000014479[39m,
+  timestamp: [33m1792849953523[39m
+}
+[Audit] us-navy-bodyfat-v1 {
+  equationId: [32m'us-navy-bodyfat-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'bodyfat-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m72[39m,
+    neckCm: [33m38[39m,
+    waistCm: [33m82.6[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bodyFatPercentage: [33m15[39m,
+    ffmi: [33m20[39m,
+    normalizedFFMI: [33m20.3[39m,
+    leanBodyMassKg: [33m61.2[39m,
+    fatMassKg: [33m10.8[39m,
+    category: [32m'fitness'[39m,
+    bmi: [33m23.5[39m,
+    bmr: [33m1669[39m,
+    tdee: [33m2587[39m,
+    idealBodyFatMin: [33m10[39m,
+    idealBodyFatMax: [33m17[39m,
+    fatToLoseKg: [33m1.3[39m,
+    leanMassPotentialKg: [33m15.4[39m
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.04070000000001528[39m,
+  timestamp: [33m1792849953523[39m
+}
+
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/bodyfat-pilot.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 487[2mms[22m[39m
+     [33m[2m✓[22m[39m calculates real Body Fat v6 output [33m 407[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 16:52:30
+[2m   Duration [22m 3.28s[2m (transform 267ms, setup 211ms, import 513ms, tests 487ms, environment 1.60s)[22m
+

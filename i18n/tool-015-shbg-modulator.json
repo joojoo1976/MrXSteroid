@@ -1,18 +1,38 @@
 {
   "en": {
-    "tool_name": "SHBG Modulator",
+    "tool_name": "Free Testosterone Calculator",
+    "disclaimer": "This is a calculation, not a diagnosis or treatment recommendation. Interpretation depends on the laboratory method and clinical context; review results with a qualified clinician.",
+    "fixed_lab_units": "Enter values in the units printed on the fields. These laboratory units are independent of the header's metric/imperial setting.",
+    "total_testosterone": "Total testosterone (ng/dL)",
     "shbg": "SHBG (nmol/L)",
-    "free_testosterone": "Free Testosterone (ng/dL)",
-    "percentage": "Free %",
-    "bioavailable": "Bioavailable T (ng/dL)",
-    "interpretation": "Interpretation"
+    "albumin": "Albumin (g/dL)",
+    "calculate": "Calculate",
+    "partial_input": "PARTIAL — Enter all three positive lab values.",
+    "invalid_input": "INVALID — Values must be finite numbers greater than zero.",
+    "calculated_result": "CALCULATED — Vermeulen mass-action equation",
+    "free_testosterone": "Calculated free testosterone",
+    "free_percentage": "Free testosterone as a percentage of total",
+    "bioavailable": "Calculated bioavailable testosterone",
+    "formula_note": "Albumin molecular weight 66,500 g/mol; albumin association constant 3.6×10⁴ L/mol; SHBG association constant 1.0×10⁹ L/mol. No reference-range classification is applied.",
+    "source_reference": "Calculation source: Vermeulen et al., JCEM (1999), PMID 10523012, DOI 10.1210/jc.84.10.6079.",
+    "guideline_reference": "The Endocrine Society notes calculated free testosterone may be used when indicated, but ranges vary by method and assay; this tool does not interpret laboratory results."
   },
   "ar": {
-    "tool_name": "م modulator SHBG",
-    "shbg": "SHBG (nmol/L)",
-    "free_testosterone": "تستوستيرون حر (ng/dL)",
-    "percentage": "% حر",
-    "bioavailable": "تستوستيرون حيوي (ng/dL)",
-    "interpretation": "التفسير"
+    "tool_name": "حاسبة التستوستيرون الحر",
+    "disclaimer": "هذه عملية حسابية وليست تشخيصاً أو توصية علاجية. يعتمد تفسير النتيجة على طريقة المختبر والسياق السريري؛ راجع النتائج مع مختص مؤهل.",
+    "fixed_lab_units": "أدخل القيم بالوحدات الموضحة في الحقول. وحدات التحاليل هذه مستقلة عن إعداد النظام المتري أو الإمبراطوري في الهيدر.",
+    "total_testosterone": "التستوستيرون الكلي (ng/dL)",
+    "shbg": "الغلوبولين الرابط للهرمونات الجنسية SHBG (nmol/L)",
+    "albumin": "الألبومين (g/dL)",
+    "calculate": "احسب",
+    "partial_input": "PARTIAL — أدخل قيم التحاليل الثلاث الموجبة.",
+    "invalid_input": "INVALID — يجب أن تكون القيم أرقاماً محدودة وأكبر من صفر.",
+    "calculated_result": "CALCULATED — معادلة فيرمولين للاتزان الكتلي",
+    "free_testosterone": "التستوستيرون الحر المحسوب",
+    "free_percentage": "نسبة التستوستيرون الحر إلى الكلي",
+    "bioavailable": "التستوستيرون المتاح حيوياً المحسوب",
+    "formula_note": "الكتلة الجزيئية للألبومين 66,500 g/mol؛ ثابت ارتباط الألبومين 3.6×10⁴ L/mol؛ ثابت ارتباط SHBG ‏1.0×10⁹ L/mol. لا تصنف الأداة النتيجة وفق مجال مرجعي.",
+    "source_reference": "مصدر الحساب: Vermeulen وآخرون، JCEM (1999)، PMID 10523012، DOI 10.1210/jc.84.10.6079.",
+    "guideline_reference": "تشير جمعية الغدد الصماء إلى إمكان استخدام الحساب عند الحاجة، مع اختلاف المجالات بحسب الطريقة والتحليل؛ هذه الأداة لا تفسر نتائج المختبر."
   }
 }

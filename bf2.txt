@@ -1,0 +1,35 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [31m❯[39m [30m[45m jsdom [49m[39m components/tools/bodyfat-pilot.test.tsx [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m jsdom [49m[39m components/tools/bodyfat-pilot.test.tsx[2m [ components/tools/bodyfat-pilot.test.tsx ][22m
+[31m[1mError[22m: Transform failed with 1 error:
+E:/MrXSteroid-main/components/tools/bodyfat-pilot.tsx:9:5: ERROR: Expected ";" but found ":"[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mE:/MrXSteroid-main/components/tools/bodyfat-pilot.tsx[39m:9:5
+[33m  
+  [33mExpected ";" but found ":"[33m
+  7  |  
+  8  |    age: 30,
+  9  |    sex: 'male',
+     |       ^
+  10 |    heightCm: 175,
+  11 |    weightKg: 75,
+  [39m
+[90m [2m❯[22m failureErrorWithLog node_modules/vite/node_modules/esbuild/lib/main.js:[2m1467:15[22m[39m
+[90m [2m❯[22m node_modules/vite/node_modules/esbuild/lib/main.js:[2m736:50[22m[39m
+[90m [2m❯[22m responseCallbacks.<computed> node_modules/vite/node_modules/esbuild/lib/main.js:[2m603:9[22m[39m
+[90m [2m❯[22m handleIncomingPacket node_modules/vite/node_modules/esbuild/lib/main.js:[2m658:12[22m[39m
+[90m [2m❯[22m Socket.readFromStdout node_modules/vite/node_modules/esbuild/lib/main.js:[2m581:7[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 16:52:01
+[2m   Duration [22m 1.93s[2m (transform 70ms, setup 193ms, import 0ms, tests 0ms, environment 1.14s)[22m
+

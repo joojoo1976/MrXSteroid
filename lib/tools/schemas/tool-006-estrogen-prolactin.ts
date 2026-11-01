@@ -1,41 +1,22 @@
-/**
- * Tool #006 — Estrogen & Prolactin Control
- * Schema Validation using Zod
- */
-
+/** Input and output contracts for the session-only lab value record. */
 import { z } from 'zod';
 
-export const CompoundItemSchema = z.object({
-  id: z.number(),
-  name_en: z.string(),
-  name_ar: z.string(),
-  family: z.string(),
-  suppression_factor: z.number(),
-  half_life_days: z.number(),
-  is_lipophilic: z.boolean(),
-  bioavailability: z.number(),
-  default_dose_mg: z.number(),
-  description_text: z.string(),
-  aromatization_factor: z.number(),
-});
-
 export const EstrogenProlactinInputSchema = z.object({
-  e2Level: z.number().min(0).max(500),
-  prolactinLevel: z.number().min(0).max(500),
-  measurementSystem: z.enum(['metric', 'imperial']),
-  currentAI: z.string().optional(),
-  currentDA: z.string().optional(),
-  compoundStack: z.array(CompoundItemSchema),
+  e2Level: z.number().finite().min(0),
+  e2Unit: z.enum(['pg/mL', 'pmol/L']),
+  prolactinLevel: z.number().finite().min(0),
+  prolactinUnit: z.enum(['ng/mL', 'mIU/L']),
 });
 
 export const AromatizationScoreSchema = z.object({
-  riskLevel: z.enum(['LOW', 'MODERATE', 'HIGH']),
-  riskPercentage: z.number().min(0).max(100),
-  recommendedAIMg: z.number().min(0),
-  recommendedDAMg: z.number().min(0),
-  keyFindings: z.array(z.string()),
+  status: z.literal('NOT_ASSESSED'),
+  reasonCode: z.literal('UNVALIDATED_RULES'),
+  riskLevel: z.null(),
+  riskPercentage: z.null(),
+  recommendedAIMg: z.null(),
+  recommendedDAMg: z.null(),
+  keyFindings: z.tuple([]),
 });
 
-export type CompoundItem = z.infer<typeof CompoundItemSchema>;
 export type EstrogenProlactinInput = z.infer<typeof EstrogenProlactinInputSchema>;
 export type AromatizationScore = z.infer<typeof AromatizationScoreSchema>;

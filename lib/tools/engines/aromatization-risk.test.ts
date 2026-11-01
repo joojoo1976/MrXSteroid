@@ -1,6 +1,6 @@
 /**
  * lib/tools/engines/aromatization-risk.test.ts
- * Tool #002 — Layer 1 engine tests: E2 trajectory, risk zones, determinism,
+ * Tool #002 — Layer 1 engine tests: illustrative E2 curve, determinism,
  * hostile-input safety.
  */
 import { describe, it, expect } from 'vitest';
@@ -11,30 +11,14 @@ import {
     BASELINE_E2,
     COMPOUND_TYPES,
     DEFAULT_AROMATIZATION_INPUT,
-    E2_CRASH_THRESHOLD,
-    E2_CRITICAL_THRESHOLD,
-    E2_OPTIMAL_HIGH,
-    E2_OPTIMAL_LOW,
     POST_CYCLE_OBSERVATION_WEEKS,
     bodyFatFactor,
     calculateAromatizationRisk,
-    classifyE2Risk,
     steadyStateE2For,
     type EngineInput,
 } from './aromatization-risk';
 
 describe('Tool #002 — helpers', () => {
-    it('classifies E2 into five risk zones', () => {
-        expect(classifyE2Risk(5)).toBe('crashed');
-        expect(classifyE2Risk(E2_CRASH_THRESHOLD)).toBe('suppressed');
-        expect(classifyE2Risk(15)).toBe('suppressed');
-        expect(classifyE2Risk(E2_OPTIMAL_LOW)).toBe('optimal');
-        expect(classifyE2Risk(30)).toBe('optimal');
-        expect(classifyE2Risk(E2_OPTIMAL_HIGH)).toBe('optimal');
-        expect(classifyE2Risk(60)).toBe('elevated');
-        expect(classifyE2Risk(E2_CRITICAL_THRESHOLD + 1)).toBe('critical');
-    });
-
     it('body-fat factor is 1.0 at 15% and scales with adipose density', () => {
         expect(bodyFatFactor(15)).toBeCloseTo(1.0, 5);
         expect(bodyFatFactor(30)).toBeGreaterThan(bodyFatFactor(15));
@@ -101,8 +85,8 @@ describe('Tool #002 — E2 trajectory structure', () => {
     });
 });
 
-describe('Tool #002 — risk zones and scores', () => {
-    it('trenbolone with no AI produces baseline E2 and zero gyno risk', () => {
+describe('Tool #002 — illustrative scenario outputs', () => {
+    it('calculates its scenario curve but does not expose an unvalidated risk assessment', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'trenbolone',
@@ -110,11 +94,14 @@ describe('Tool #002 — risk zones and scores', () => {
         });
         expect(r.compoundAromatizationRate).toBe(0);
         expect(r.peakE2).toBe(BASELINE_E2);
-        expect(r.gynoRiskScore).toBe(0);
-        expect(r.peakRiskZone).toBe('optimal');
+        expect(r.gynoRiskScore).toBeNull();
+        expect(r.waterRetentionRiskScore).toBeNull();
+        expect(r.crashRiskScore).toBeNull();
+        expect(r.peakRiskZone).toBe('not_assessed');
+        expect(r.aiRecommendation).toBe('not_assessed');
     });
 
-    it('high-dose testosterone no AI produces elevated or critical E2', () => {
+    it('high-dose testosterone produces a higher modelled value without clinical classification', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'testosterone',
@@ -122,9 +109,9 @@ describe('Tool #002 — risk zones and scores', () => {
             bodyFatPct: 25,
             aiProtocol: 'none',
         });
-        expect(r.peakE2).toBeGreaterThan(E2_OPTIMAL_HIGH);
-        expect(['elevated', 'critical']).toContain(r.peakRiskZone);
-        expect(r.gynoRiskScore).toBeGreaterThan(0);
+        expect(r.peakE2).toBeGreaterThan(BASELINE_E2);
+        expect(r.peakRiskZone).toBe('not_assessed');
+        expect(r.gynoRiskScore).toBeNull();
     });
 
     it('AI suppression lowers peak E2 vs no AI', () => {
@@ -143,24 +130,24 @@ describe('Tool #002 — risk zones and scores', () => {
         expect(withAi.peakE2).toBeLessThan(noAi.peakE2);
     });
 
-    it('crash risk is zero without AI and positive with AI on non-aromatising compound', () => {
+    it('does not infer clinical crash risk or medication need from a model factor', () => {
         const noAi = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'trenbolone',
             aiProtocol: 'none',
         });
-        expect(noAi.crashRiskScore).toBe(0);
+        expect(noAi.crashRiskScore).toBeNull();
 
         const unnecessaryAi = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'trenbolone',
             aiProtocol: 'aggressive',
         });
-        expect(unnecessaryAi.crashRiskScore).toBeGreaterThan(0);
-        expect(unnecessaryAi.aiRecommendation).toBe('unnecessary');
+        expect(unnecessaryAi.crashRiskScore).toBeNull();
+        expect(unnecessaryAi.aiRecommendation).toBe('not_assessed');
     });
 
-    it('water-retention risk scales with body fat', () => {
+    it('keeps unsupported water-retention risk unavailable', () => {
         const lean = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             weeklyDoseMg: 1000,
@@ -171,12 +158,13 @@ describe('Tool #002 — risk zones and scores', () => {
             weeklyDoseMg: 1000,
             bodyFatPct: 30,
         });
-        expect(obese.waterRetentionRiskScore).toBeGreaterThanOrEqual(lean.waterRetentionRiskScore);
+        expect(lean.waterRetentionRiskScore).toBeNull();
+        expect(obese.waterRetentionRiskScore).toBeNull();
     });
 });
 
-describe('Tool #002 — AI recommendation logic', () => {
-    it('recommends adjust_up when E2 is critical with no AI', () => {
+describe('Tool #002 — no medication recommendations', () => {
+    it('does not recommend medication changes when the modeled E2 value is high', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'testosterone',
@@ -184,10 +172,10 @@ describe('Tool #002 — AI recommendation logic', () => {
             bodyFatPct: 35,
             aiProtocol: 'none',
         });
-        expect(r.aiRecommendation).toBe('adjust_up');
+        expect(r.aiRecommendation).toBe('not_assessed');
     });
 
-    it('recommends monitor when E2 is elevated with no AI', () => {
+    it('does not infer monitoring actions from an elevated modeled value', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'testosterone',
@@ -195,13 +183,10 @@ describe('Tool #002 — AI recommendation logic', () => {
             bodyFatPct: 15,
             aiProtocol: 'none',
         });
-        // 600mg test, 15% BF, no AI — E2 should be above optimal but maybe not critical
-        if (r.peakE2 > E2_OPTIMAL_HIGH && r.peakE2 <= E2_CRITICAL_THRESHOLD) {
-            expect(r.aiRecommendation).toBe('monitor');
-        }
+        expect(r.aiRecommendation).toBe('not_assessed');
     });
 
-    it('recommends reduce_ai when AI crashes E2 below optimal', () => {
+    it('does not recommend reducing an AI based on an unsupported curve', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'nandrolone', // low aromatization
@@ -209,16 +194,16 @@ describe('Tool #002 — AI recommendation logic', () => {
             bodyFatPct: 8,
             aiProtocol: 'aggressive',
         });
-        expect(['reduce_ai', 'none_needed']).toContain(r.aiRecommendation);
+        expect(r.aiRecommendation).toBe('not_assessed');
     });
 
-    it('recommends unnecessary for trenbolone with AI', () => {
+    it('does not label a selected factor unnecessary for a compound', () => {
         const r = calculateAromatizationRisk({
             ...DEFAULT_AROMATIZATION_INPUT,
             compoundType: 'trenbolone',
             aiProtocol: 'mild',
         });
-        expect(r.aiRecommendation).toBe('unnecessary');
+        expect(r.aiRecommendation).toBe('not_assessed');
     });
 });
 
@@ -240,8 +225,8 @@ describe('Tool #002 — determinism & hostile-input safety', () => {
         const r = calculateAromatizationRisk(hostile);
         expect(r.timeline.length).toBeGreaterThan(0);
         expect(Number.isFinite(r.peakE2)).toBe(true);
-        expect(Number.isFinite(r.gynoRiskScore)).toBe(true);
-        expect(Number.isFinite(r.crashRiskScore)).toBe(true);
+        expect(r.gynoRiskScore).toBeNull();
+        expect(r.crashRiskScore).toBeNull();
     });
 
     it('clamps dose, weeks, and body fat to bounds', () => {

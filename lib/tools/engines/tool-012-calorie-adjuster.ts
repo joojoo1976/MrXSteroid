@@ -4,71 +4,37 @@
  * Platform: MrXSteroid.com | Core: Energy Balance & Weight Management
  * ════════════════════════════════════════════════════════════════════════════
  * 
- * Features:
- * - Calculate TDEE (Total Daily Energy Expenditure) using Mifflin-St Jeor equation
- * - Adjust calories for bulking, cutting, or maintenance
- * - Track progress and auto-adjust targets
- * - Full Measurement System Toggle (metric/imperial)
- * - i18n support (Arabic/English)
- * - Debounced state persistence
+ * Deterministic estimate engine. Formula and fixed ±500 kcal goal offsets are
+ * preserved from the existing implementation; the offsets are assumptions,
+ * not individualized nutrition prescriptions.
  */
+import { CalorieInputSchema, CalorieResultSchema, type CalorieInput, type CalorieResult } from '../schemas/tool-012-calorie-adjuster';
 
-export interface CalorieInput {
-  age: number;
-  gender: 'male' | 'female';
-  height_cm?: number;  // metric
-  height_in?: number;  // imperial
-  current_weight_kg?: number;
-  current_weight_lbs?: number;
-  activity_level: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-  goal: 'bulk' | 'cut' | 'maintain';
-  weeks_per_phase: number;
-}
+export type { CalorieInput, CalorieResult } from '../schemas/tool-012-calorie-adjuster';
 
-export interface CalorieResult {
-  tdee: number;               // Total Daily Energy Expenditure
-  tdee_range: [number, number]; // Min-Max range
-  maintenance_calories: number;
-  target_calories: number;    // Goal-specific target
-  weekly_adjustment: number;  // Calories to add/lose per week
-  phase_duration_weeks: number;
-  recommendations: string[];
-}
+const ACTIVITY_MULTIPLIERS: Record<CalorieInput['activity_level'], number> = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  very_active: 1.9,
+};
 
 export function calculateTDEE(input: CalorieInput): CalorieResult {
-  const { age, gender, height_cm, height_in, current_weight_kg, current_weight_lbs, activity_level, goal, weeks_per_phase } = input;
-  
-  // Convert to metric if needed
-  let weightKg = current_weight_kg;
-  let heightCm = height_cm;
-  
-  if (current_weight_lbs && !current_weight_kg) {
-    weightKg = current_weight_lbs / 2.20462;
-  }
-  if (height_in && !height_cm) {
-    heightCm = height_in * 2.54;
-  }
-  
+  const data = CalorieInputSchema.parse(input);
+  const { age, gender, height_cm: heightCm, current_weight_kg: weightKg, activity_level, goal, weeks_per_phase } = data;
+
   // Mifflin-St Jeor Equation
   let bmr: number;
   if (gender === 'male') {
-    bmr = 10 * (weightKg ?? 0) + 6.25 * (heightCm ?? 0) - 5 * age + 5;
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
   } else {
-    bmr = 10 * (weightKg ?? 0) + 6.25 * (heightCm ?? 0) - 5 * age - 161;
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
   }
-  
-  // Activity multiplier
-  const activityMultipliers: Record<string, number> = {
-    sedentary: 1.2,
-    light: 1.375,
-    moderate: 1.55,
-    active: 1.725,
-    very_active: 1.9,
-  };
-  
-  const multiplier = activityMultipliers[activity_level] || 1.2;
+
+  const multiplier = ACTIVITY_MULTIPLIERS[activity_level];
   const tdee = Math.round(bmr * multiplier);
-  
+
   // Calculate target calories based on goal
   const maintenanceCalories = tdee;
   let targetCalories: number;
@@ -84,12 +50,11 @@ export function calculateTDEE(input: CalorieInput): CalorieResult {
       weeklyAdjustment = -3500 / 7; // ~500g per week loss
       break;
     case 'maintain':
-    default:
       targetCalories = tdee;
       weeklyAdjustment = 0;
       break;
   }
-  
+
   // Generate recommendations
   const recommendations: string[] = [];
   
@@ -109,14 +74,14 @@ export function calculateTDEE(input: CalorieInput): CalorieResult {
     recommendations.push('Maintain current weight with balanced nutrition');
     recommendations.push('Focus on performance in the gym rather than scale weight');
   }
-  
-  return {
+
+  return CalorieResultSchema.parse({
     tdee,
     tdee_range: [tdee - 100, tdee + 100],
     maintenance_calories: maintenanceCalories,
     target_calories: targetCalories,
     weekly_adjustment: weeklyAdjustment,
-    phase_duration_weeks: weeks_per_phase || 8,
+    phase_duration_weeks: weeks_per_phase,
     recommendations,
-  };
+  });
 }

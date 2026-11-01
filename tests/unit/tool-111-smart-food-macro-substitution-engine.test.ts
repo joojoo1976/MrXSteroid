@@ -786,23 +786,20 @@ describe('computeSubstitution', () => {
     expect(result.equivalenceScore).toBe(100);
   });
 
-  it('handles NaN in macros without crashing', () => {
+  it('rejects NaN in macros at the calculation boundary', () => {
     const substitute = createFoodItem({ macrosPer100g: { protein: NaN, carbs: 10, fat: 5, calories: 165 } });
-    const result = computeSubstitution(createEngineInput({ substituteFood: substitute }));
-    expect(Number.isFinite(result.equivalenceScore)).toBe(true);
-    expect(result.equivalenceScore).toBeGreaterThanOrEqual(0);
+    expect(() => computeSubstitution(createEngineInput({ substituteFood: substitute })))
+      .toThrow(/Substitute food protein must be a finite/);
   });
 
-  it('zero quantity produces zero macros', () => {
-    const result = computeSubstitution(createEngineInput({ originalQuantity: 0 }));
-    expect(result.substituteQuantity).toBe(0);
-    expect(result.originalMacros.protein).toBe(0);
-    expect(result.substituteMacros.protein).toBe(0);
+  it('rejects zero quantity instead of returning a synthetic zero result', () => {
+    expect(() => computeSubstitution(createEngineInput({ originalQuantity: 0 })))
+      .toThrow(/Original quantity must be finite and between 0 and 10000/);
   });
 
-  it('negative quantity treated as zero', () => {
-    const result = computeSubstitution(createEngineInput({ originalQuantity: -50 }));
-    expect(result.originalMacros.protein).toBe(0);
+  it('rejects negative quantity instead of treating it as zero', () => {
+    expect(() => computeSubstitution(createEngineInput({ originalQuantity: -50 })))
+      .toThrow(/Original quantity must be finite and between 0 and 10000/);
   });
 
   it('metadata includes calculationTimeMs and dataSources', () => {

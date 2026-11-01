@@ -1,28 +1,73 @@
-import { describe, it, expect } from 'vitest';
-import { calculateHydrationBalance } from './tool-097-hydration-balance-calculator';
+import { describe, expect, it } from 'vitest';
+import { calculateHydrationBalance, type HydrationBalanceCalculatorInput } from './tool-097-hydration-balance-calculator';
 
-describe('Tool #097 — Hydration Balance Calculator Engine', () => {
-  it('calculates standard fluid intake for moderate sedentary context', () => {
-    const result = calculateHydrationBalance({
-      body_weight_kg: 70,
-      training_duration_minutes_daily: 0,
-      sweat_rate_intensity: 'light',
-      climate_temperature: 'temperate',
-      caffeine_or_diuretic_intake_mg: 100,
+const MEASUREMENTS: HydrationBalanceCalculatorInput = {
+  pre_exercise_body_weight_kg: 75,
+  post_exercise_body_weight_kg: 74.2,
+  fluid_consumed_liters: 0.5,
+  urine_output_liters: 0.1,
+  exercise_duration_minutes: 60,
+};
+
+describe('Tool #097 — measured exercise sweat-rate arithmetic', () => {
+  it('calculates sweat loss and rate from the documented field equation', () => {
+    expect(calculateHydrationBalance(MEASUREMENTS)).toEqual({
+      status: 'CALCULATED',
+      resultType: 'CALCULATED',
+      sweat_loss_liters: 1.2,
+      sweat_rate_liters_per_hour: 1.2,
+      exercise_duration_hours: 1,
     });
-    expect(result.recommended_daily_fluid_liters).toBeCloseTo(2.5, 0.5);
-    expect(result.hydration_status_tier).toBe('baseline');
   });
 
-  it('elevates fluid requirements under heavy training and hot climates', () => {
-    const result = calculateHydrationBalance({
-      body_weight_kg: 95,
-      training_duration_minutes_daily: 90,
-      sweat_rate_intensity: 'heavy_profuse',
-      climate_temperature: 'hot_humid',
-      caffeine_or_diuretic_intake_mg: 400,
+  it('normalizes the result by a half-hour exercise duration', () => {
+    expect(calculateHydrationBalance({ ...MEASUREMENTS, exercise_duration_minutes: 30 })).toMatchObject({
+      sweat_loss_liters: 1.2,
+      sweat_rate_liters_per_hour: 2.4,
+      exercise_duration_hours: 0.5,
     });
-    expect(result.recommended_daily_fluid_liters).toBeGreaterThanOrEqual(5.0);
-    expect(result.hydration_status_tier).toBe('critical-hyperhydration-required');
+  });
+
+  it('accepts explicit zero fluid and urine values', () => {
+    expect(calculateHydrationBalance({
+      ...MEASUREMENTS,
+      post_exercise_body_weight_kg: 74,
+      fluid_consumed_liters: 0,
+      urine_output_liters: 0,
+    })).toMatchObject({ status: 'CALCULATED', sweat_loss_liters: 1, sweat_rate_liters_per_hour: 1 });
+  });
+
+  it('returns a mathematical zero when the entered measurements yield zero loss', () => {
+    expect(calculateHydrationBalance({
+      ...MEASUREMENTS,
+      post_exercise_body_weight_kg: 75.4,
+      fluid_consumed_liters: 0.5,
+      urine_output_liters: 0.1,
+    })).toMatchObject({ status: 'CALCULATED', sweat_loss_liters: 0, sweat_rate_liters_per_hour: 0 });
+  });
+
+  it('does not produce a negative sweat rate for inconsistent measurements', () => {
+    expect(calculateHydrationBalance({
+      ...MEASUREMENTS,
+      post_exercise_body_weight_kg: 76,
+      fluid_consumed_liters: 0,
+      urine_output_liters: 0.2,
+    })).toEqual({ status: 'NOT_AVAILABLE', reason: 'NEGATIVE_SWEAT_LOSS' });
+  });
+
+  it.each([
+    ['zero pre-exercise mass', { pre_exercise_body_weight_kg: 0 }],
+    ['negative post-exercise mass', { post_exercise_body_weight_kg: -1 }],
+    ['NaN fluid volume', { fluid_consumed_liters: Number.NaN }],
+    ['infinite urine volume', { urine_output_liters: Number.POSITIVE_INFINITY }],
+    ['zero duration', { exercise_duration_minutes: 0 }],
+    ['fractional minute duration', { exercise_duration_minutes: 1.5 }],
+    ['unrecognized input field', { unrecognized: true }],
+  ] as const)('rejects %s', (_name, overrides) => {
+    expect(() => calculateHydrationBalance({ ...MEASUREMENTS, ...overrides } as HydrationBalanceCalculatorInput)).toThrow();
+  });
+
+  it('applies the same deterministic result to repeated calls', () => {
+    expect(calculateHydrationBalance(MEASUREMENTS)).toEqual(calculateHydrationBalance(MEASUREMENTS));
   });
 });

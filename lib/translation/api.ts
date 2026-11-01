@@ -70,6 +70,9 @@ export type ApiResult<T> =
 
 export type TranslateRequest = {
     readonly sourceLanguage: string;
+    /** Server-observed canonical route to which the short-lived session is bound. */
+    readonly routePath: string;
+    readonly sessionToken: string;
     readonly targetLanguage: string;
     readonly sourceText: string;
     readonly surface: TranslationSurface;
@@ -83,8 +86,31 @@ export type TranslateResponse = {
     readonly identity: TranslationCacheIdentity;
 };
 
+export type TranslateBatchItemRequest = {
+    readonly id: string;
+    readonly sourceText: string;
+    readonly surface: TranslationSurface;
+};
+export type TranslateBatchRequest = {
+    readonly sourceLanguage: string;
+    readonly routePath: string;
+    readonly sessionToken: string;
+    readonly targetLanguage: string;
+    readonly items: readonly TranslateBatchItemRequest[];
+};
+export type TranslateBatchResponse = {
+    readonly sourceLanguage: string;
+    readonly targetLanguage: string;
+    readonly surface: string;
+    readonly items: readonly { readonly id: string; readonly translatedText: string }[];
+    readonly identity: TranslationCacheIdentity;
+};
 export type SelectableTargetsResponse = {
     readonly languages: readonly SelectableTarget[];
+};
+export type TranslationSessionResponse = {
+    readonly token: string;
+    readonly expiresInMs: number;
 };
 
 function errorResult(status: number, code: string, message: string, retryable = false): ApiResult<never> {
@@ -175,6 +201,34 @@ export async function fetchSelectableTargets(
     return { ok: true, status: response.status, data: { languages } };
 }
 
+
+export async function createTranslationSession(
+    request: Pick<TranslateRequest, 'targetLanguage' | 'surface' | 'routePath'>,
+    fetchImpl: typeof fetch = fetch
+): Promise<ApiResult<TranslationSessionResponse>> {
+    const url = `${TRANSLATE_ENDPOINT}?mode=session&target=${encodeURIComponent(request.targetLanguage)}&surface=${encodeURIComponent(request.surface)}`;
+    let response: Response;
+    try {
+        response = await fetchImpl(url, {
+            method: 'GET',
+            cache: 'no-store',
+            referrer: new URL(request.routePath, typeof window !== 'undefined' ? window.location.origin : 'https://www.mrxsteroid.com').toString(),
+            headers: { accept: 'application/json' },
+        });
+    } catch (error) {
+        return errorResult(0, 'NETWORK_ERROR', error instanceof Error ? error.message : 'The translation service is unreachable.', true);
+    }
+    let body: unknown = null;
+    try { body = await response.json(); } catch { body = null; }
+    if (!response.ok) {
+        const error = isRecord(body) && isRecord(body.error) ? body.error : {};
+        return errorResult(response.status, typeof error.code === 'string' ? error.code : 'UNEXPECTED_ERROR', typeof error.message === 'string' ? error.message : `Request failed with status ${response.status}.`, typeof error.retryable === 'boolean' ? error.retryable : response.status >= 500);
+    }
+    if (!isRecord(body) || typeof body.token !== 'string' || typeof body.expiresInMs !== 'number') {
+        return errorResult(response.status, 'MALFORMED_RESPONSE', 'The translation session response was malformed.');
+    }
+    return { ok: true, status: response.status, data: { token: body.token, expiresInMs: body.expiresInMs } };
+}
 /**
  * POST /api/translate — translate one canonical English string.
  *
@@ -206,7 +260,12 @@ export async function translateText(
         response = await fetchImpl(TRANSLATE_ENDPOINT, {
             method: 'POST',
             cache: 'no-store',
-            headers: { 'content-type': 'application/json', accept: 'application/json' },
+            referrer: new URL(request.routePath, typeof window !== 'undefined' ? window.location.origin : 'https://www.mrxsteroid.com').toString(),
+            headers: {
+                'content-type': 'application/json',
+                accept: 'application/json',
+                'x-mrx-translation-session': request.sessionToken,
+            },
             body: JSON.stringify({
                 sourceLanguage: request.sourceLanguage,
                 targetLanguage: request.targetLanguage,
@@ -263,6 +322,77 @@ export async function translateText(
             targetLanguage: typeof body.targetLanguage === 'string' ? body.targetLanguage : request.targetLanguage,
             surface: typeof body.surface === 'string' ? body.surface : request.surface,
             translations,
+            identity,
+        },
+    };
+}
+/** POST /api/translate — one bounded, ID-mapped batch. */
+export async function translateBatch(
+    request: TranslateBatchRequest,
+    fetchImpl: typeof fetch = fetch
+): Promise<ApiResult<TranslateBatchResponse>> {
+    if (request.items.length === 0) return errorResult(0, 'EMPTY_BATCH', 'No translation items supplied.');
+    if (request.items.length > 50) return errorResult(0, 'BATCH_TOO_LARGE', 'Translation batch exceeds 50 items.');
+    const ids = new Set<string>();
+    for (const item of request.items) {
+        if (!item.id || ids.has(item.id)) return errorResult(0, 'INVALID_BATCH_IDS', 'Batch IDs must be present and unique.');
+        ids.add(item.id);
+        if (!TRANSLATION_SURFACES.includes(item.surface)) return errorResult(0, 'UNKNOWN_SURFACE', 'Batch contains an unknown surface.');
+        if (!item.sourceText.trim()) return errorResult(0, 'EMPTY_SOURCE_TEXT', 'Batch contains empty source text.');
+        if (item.sourceText.length > MAX_SOURCE_CHARS) return errorResult(0, 'SOURCE_TEXT_TOO_LONG', 'Batch item exceeds the source limit.');
+    }
+
+    let response: Response;
+    try {
+        response = await fetchImpl(TRANSLATE_ENDPOINT, {
+            method: 'POST',
+            cache: 'no-store',
+            referrer: new URL(request.routePath, typeof window !== 'undefined' ? window.location.origin : 'https://www.mrxsteroid.com').toString(),
+            headers: {
+                'content-type': 'application/json',
+                accept: 'application/json',
+                'x-mrx-translation-session': request.sessionToken,
+            },
+            body: JSON.stringify({
+                sourceLanguage: request.sourceLanguage,
+                targetLanguage: request.targetLanguage,
+                items: request.items,
+            }),
+        });
+    } catch (error) {
+        return errorResult(0, 'NETWORK_ERROR', error instanceof Error ? error.message : 'The translation service is unreachable.', true);
+    }
+
+    let body: unknown = null;
+    try { body = await response.json(); } catch { body = null; }
+    if (!response.ok) {
+        const error = isRecord(body) && isRecord(body.error) ? body.error : {};
+        return errorResult(response.status, typeof error.code === 'string' ? error.code : 'UNEXPECTED_ERROR', typeof error.message === 'string' ? error.message : `Request failed with status ${response.status}.`, typeof error.retryable === 'boolean' ? error.retryable : response.status >= 500);
+    }
+    if (!isRecord(body) || !Array.isArray(body.items)) return errorResult(response.status, 'MALFORMED_RESPONSE', 'The batch response was malformed.');
+    const responseItems: { id: string; translatedText: string }[] = [];
+    const seen = new Set<string>();
+    for (const item of body.items) {
+        if (!isRecord(item) || typeof item.id !== 'string' || typeof item.translatedText !== 'string' || seen.has(item.id) || !ids.has(item.id)) {
+            return errorResult(response.status, 'INVALID_BATCH_IDS', 'The batch response IDs were invalid.');
+        }
+        seen.add(item.id);
+        responseItems.push({ id: item.id, translatedText: item.translatedText });
+    }
+    if (seen.size !== ids.size) return errorResult(response.status, 'INVALID_BATCH_IDS', 'The batch response omitted an item.');
+    const identity = asIdentity(body.identity);
+    if (!identity) return errorResult(response.status, 'MALFORMED_RESPONSE', 'The batch response carried no identity.');
+    if (body.sourceLanguage !== request.sourceLanguage || body.targetLanguage !== request.targetLanguage) {
+        return errorResult(response.status, 'MALFORMED_RESPONSE', 'The batch response language identity was invalid.');
+    }
+    return {
+        ok: true,
+        status: response.status,
+        data: {
+            sourceLanguage: request.sourceLanguage,
+            targetLanguage: request.targetLanguage,
+            surface: typeof body.surface === 'string' ? body.surface : request.items[0].surface,
+            items: responseItems,
             identity,
         },
     };

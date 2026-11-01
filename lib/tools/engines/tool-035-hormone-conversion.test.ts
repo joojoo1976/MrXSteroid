@@ -1,42 +1,55 @@
-/**
- * Tool #035 — Hormone Conversion Calculator: engine + schema verification.
- * Proves the aromatization heuristic, status bands and AI guidance.
- */
-import { describe, it, expect } from 'vitest';
+/** Tool #035 — molar-mass-derived concentration unit conversion tests. */
+import { describe, expect, it } from 'vitest';
 import { calculateHormoneConversion } from './tool-035-hormone-conversion';
 import { ConversionInputSchema, ConversionResultSchema } from '../schemas/tool-035-hormone-conversion';
 
-describe('tool-035 conversion engine', () => {
-  it('estimates optimal E2 for a lean moderate cycle', () => {
-    const input = { weekly_test_mg: 500, body_fat_pct: 15, age: 30, ai_dose_mg_per_week: 0 };
-    expect(ConversionInputSchema.safeParse(input).success).toBe(true);
-    const r = calculateHormoneConversion(input);
-    expect(ConversionResultSchema.safeParse(r).success).toBe(true);
-    // T = 500*4.5+250 = 2500; E2 = 12+500*0.045*1 = 34.5
-    expect(r.estimated_total_t_ng_dl).toBe(2500);
-    expect(r.estimated_e2_pg_ml).toBe(34.5);
-    expect(r.e2_status).toBe('optimal');
-    expect(r.ai_suggestion_mg_per_week).toBe(0);
+const base = {
+  analyte: 'testosterone' as const,
+  value: 100,
+  unit: 'ng/dL' as const,
+  measurement_date: '2026-10-25',
+  reading_source: 'Example laboratory report',
+};
+
+describe('tool-035 lab concentration unit conversion', () => {
+  it('converts testosterone ng/dL to nmol/L using its documented molar mass', () => {
+    const result = calculateHormoneConversion(base);
+    expect(ConversionResultSchema.safeParse(result).success).toBe(true);
+    expect(result).toMatchObject({ status: 'CALCULATED', analyte: 'testosterone', result_value: 3.4674, result_unit: 'nmol/L', calculation_method: 'MOLAR_MASS_DERIVED_UNIT_CONVERSION' });
+    expect(result.conversion_factor).toBe(0.03467406);
   });
 
-  it('escalates AI suggestion for high adiposity + high dose', () => {
-    const r = calculateHormoneConversion({ weekly_test_mg: 750, body_fat_pct: 28, age: 35 });
-    // bfFactor = 1+13*0.03 = 1.39; E2 = 12+750*0.045*1.39 = 58.9 -> high
-    expect(r.e2_status).toBe('high');
-    expect(r.ai_suggestion_mg_per_week).toBeGreaterThan(0);
-    expect(r.warnings.some((w) => w.includes('Body fat'))).toBe(true);
+  it('converts testosterone in the reverse direction and round-trips within display precision', () => {
+    const result = calculateHormoneConversion({ ...base, value: 100, unit: 'nmol/L' });
+    expect(result.result_value).toBe(2884);
+    expect(result.result_unit).toBe('ng/dL');
+    const back = calculateHormoneConversion({ ...base, value: result.result_value, unit: 'ng/dL' });
+    expect(back.result_value).toBeCloseTo(100, 3);
   });
 
-  it('warns on crashed E2 while on AI', () => {
-    const r = calculateHormoneConversion({ weekly_test_mg: 150, body_fat_pct: 12, age: 28, ai_dose_mg_per_week: 3.5 });
-    expect(r.estimated_e2_pg_ml).toBeLessThan(20);
-    expect(r.e2_status).toBe('low');
-    expect(r.warnings.some((w) => w.includes('reducing AI'))).toBe(true);
+  it('converts estradiol pg/mL to pmol/L and back', () => {
+    const result = calculateHormoneConversion({ ...base, analyte: 'estradiol', value: 100, unit: 'pg/mL' });
+    expect(result.result_value).toBe(367.1072);
+    expect(result.result_unit).toBe('pmol/L');
+    const back = calculateHormoneConversion({ ...base, analyte: 'estradiol', value: result.result_value, unit: 'pmol/L' });
+    expect(back.result_value).toBe(100);
   });
 
-  it('rejects invalid input through the schema', () => {
-    expect(
-      ConversionInputSchema.safeParse({ weekly_test_mg: -5, body_fat_pct: 15, age: 30 }).success,
-    ).toBe(false);
+  it('preserves zero and user provenance fields', () => {
+    const result = calculateHormoneConversion({ ...base, value: 0 });
+    expect(result.result_value).toBe(0);
+    expect(result.measurement_date).toBe(base.measurement_date);
+    expect(result.reading_source).toBe(base.reading_source);
+  });
+
+  it('rejects wrong analyte-unit combinations and invalid, missing, or impossible inputs', () => {
+    expect(ConversionInputSchema.safeParse({ ...base, analyte: 'testosterone', unit: 'pg/mL' }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, analyte: 'estradiol', unit: 'nmol/L' }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, value: -1 }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, value: Number.NaN }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, measurement_date: '2026-02-30' }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, measurement_date: '0000-01-01' }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, reading_source: '' }).success).toBe(false);
+    expect(ConversionInputSchema.safeParse({ ...base, unexpected: 'ignored?' }).success).toBe(false);
   });
 });

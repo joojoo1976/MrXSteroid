@@ -7,23 +7,17 @@
  *  - Boundaries at 0.4 / 0.6 / 0.8 of the engine's scaling factors:
  *      · doseScale = weeklyDoseMg / REFERENCE_DOSE_MG(500) → 200/300/400 mg
  *      · bodyFatFactor extrapolated points: −3 → 0.4, 3 → 0.6, 9 → 0.8
- *  - Minimum and maximum value of EVERY risk zone (the engine's five tiers:
- *    crashed / suppressed / optimal / elevated / critical).
- *  - Exact threshold-edge behaviour of classifyE2Risk.
+ *  - Output status remains explicitly not assessed; no clinical thresholds
+ *    or risk-zone classifications are exposed.
  */
 import { describe, it, expect } from 'vitest'
 import {
   calculateAromatizationRisk,
-  classifyE2Risk,
   steadyStateE2For,
   bodyFatFactor,
   DEFAULT_AROMATIZATION_INPUT,
   BASELINE_E2,
   MAX_E2_ELEVATION,
-  E2_CRASH_THRESHOLD,
-  E2_OPTIMAL_LOW,
-  E2_OPTIMAL_HIGH,
-  E2_CRITICAL_THRESHOLD,
   REFERENCE_DOSE_MG,
   type EngineInput,
 } from '../../lib/tools/engines/aromatization-risk'
@@ -71,40 +65,6 @@ describe('Tool #010 real engine — part 2: boundaries 0.4 / 0.6 / 0.8', () => {
     })
   })
 
-  describe('min & max of every risk zone (five engine tiers)', () => {
-    it('crashed: min 0, max just below the crash threshold', () => {
-      expect(classifyE2Risk(0)).toBe('crashed')
-      expect(classifyE2Risk(E2_CRASH_THRESHOLD - 0.01)).toBe('crashed')
-    })
-
-    it('suppressed: min = E2_CRASH_THRESHOLD, max just below optimal low', () => {
-      expect(classifyE2Risk(E2_CRASH_THRESHOLD)).toBe('suppressed')
-      expect(classifyE2Risk(E2_OPTIMAL_LOW - 0.01)).toBe('suppressed')
-    })
-
-    it('optimal: min = E2_OPTIMAL_LOW, max = E2_OPTIMAL_HIGH (inclusive)', () => {
-      expect(classifyE2Risk(E2_OPTIMAL_LOW)).toBe('optimal')
-      expect(classifyE2Risk(E2_OPTIMAL_HIGH)).toBe('optimal')
-    })
-
-    it('elevated: min just above optimal high, max = critical threshold (inclusive)', () => {
-      expect(classifyE2Risk(E2_OPTIMAL_HIGH + 0.01)).toBe('elevated')
-      expect(classifyE2Risk(E2_CRITICAL_THRESHOLD)).toBe('elevated')
-    })
-
-    it('critical: min just above the critical threshold, still valid at 500', () => {
-      expect(classifyE2Risk(E2_CRITICAL_THRESHOLD + 0.01)).toBe('critical')
-      expect(classifyE2Risk(500)).toBe('critical')
-    })
-
-    it('zone mapping is exhaustive and gap-free across 0–500 pg/mL', () => {
-      const allowed = new Set(['crashed', 'suppressed', 'optimal', 'elevated', 'critical'])
-      for (let e2 = 0; e2 <= 500; e2 += 0.25) {
-        expect(allowed.has(classifyE2Risk(e2))).toBe(true)
-      }
-    })
-  })
-
   describe('boundary behaviour through the public simulation API', () => {
     it('minimum clamp dose 100 mg vs maximum 2000 mg both stay finite & ordered', () => {
       const lo = calculateAromatizationRisk({ ...REF, weeklyDoseMg: 100 })
@@ -114,18 +74,16 @@ describe('Tool #010 real engine — part 2: boundaries 0.4 / 0.6 / 0.8', () => {
       expect(hi.peakE2).toBeGreaterThan(lo.peakE2)
     })
 
-    it('AI-on-non-aromatizing crash risk is exactly 0.5·80·1.5 = 60', () => {
-      // trenbolone (aromRate 0) + mild AI (0.5): pure crash risk, no benefit.
+    it('does not provide clinical crash scores or AI recommendations', () => {
       const r = calculateAromatizationRisk({ ...REF, compoundType: 'trenbolone', aiProtocol: 'mild' })
-      expect(r.crashRiskScore).toBe(60)
-      expect(r.aiRecommendation).toBe('unnecessary')
+      expect(r.crashRiskScore).toBeNull()
+      expect(r.aiRecommendation).toBe('not_assessed')
     })
 
-    it('critical-stack gyno score saturates at the 100 cap; water retention stays in band', () => {
+    it('keeps unsupported gynecomastia and water-retention scores unavailable', () => {
       const r = calculateAromatizationRisk({ ...REF, weeklyDoseMg: 2000, bodyFatPct: 35 })
-      expect(r.gynoRiskScore).toBe(100)
-      expect(r.waterRetentionRiskScore).toBeGreaterThan(0)
-      expect(r.waterRetentionRiskScore).toBeLessThanOrEqual(100)
+      expect(r.gynoRiskScore).toBeNull()
+      expect(r.waterRetentionRiskScore).toBeNull()
     })
   })
 })

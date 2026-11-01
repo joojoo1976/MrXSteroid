@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const PregnancySchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordPregnancyNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:PregnancySchema.parse(raw),disclaimer:'Note record only; no pregnancy-risk estimate or medical advice.'};}

@@ -1,0 +1,47 @@
+
+# البرومبت الوحيد النهائي - انسخ والصق في opencode - واحد فقط
+# لا يوجد برومبت آخر - هذا هو كل شيء
+
+أنت مطور خبير لمشروع MrXSteroid
+
+المشروع: E:\MrXSteroid-main
+GitHub: https://github.com/joojoo1976/MrXSteroid
+Stack: React 19 + TypeScript + Vite + Tailwind + Supabase
+
+إجمالي الأدوات: 150 أداة
+- 125 موجودة (1-125) تحتاج ترقية لـ v6 Genius
+- 25 جديدة (126-150) تحتاج بناء
+
+الملفات المصدرية (المسارات الصحيحة النهائية بعد تصحيحك):
+- E:\temp\v6-150-genius\ 
+- E:\temp\v5-genius\
+
+مهمتك الآن - 3 خطوات فقط:
+
+الخطوة 1: Audit
+اقرأ:
+- E:\MrXSteroid-main\SMARTTOOLS_TOOL_ID_INVENTORY.json
+- E:\MrXSteroid-main\supabase\schema.sql
+- E:\MrXSteroid-main\package.json
+- E:\temp\v6-150-genius\SMARTTOOLS_150_COMPLETE_INVENTORY.md
+
+اعطني تقرير بسيط: كم أداة موجودة؟ كم تحتاج ترقية؟ ما هيكلية DB؟
+
+الخطوة 2: Core
+ابنِ في E:\MrXSteroid-main\lib\engines\core\v6\:
+- ai-orchestrator.v6.ts
+- equation-validator.v6.ts  
+- cross-tool-graph.v6.ts
+انسخ من E:\temp\v6-150-genius\engines\core
+
+الخطوة 3: جرب أداة واحدة فقط
+رقي أداة واحدة فقط: body-fat-calculator رقم 1
+- أضف Super Intelligence Layer
+- أضف Dynamic Results
+- استخدم context/PreferencesContext و i18n الموجودين
+
+اختبر: npm run dev → http://localhost:5173/smarttools/body-fat-calculator
+
+لو اشتغلت، قول "جاهز لـ Batch A 1-25" وسأعطيك الأمر التالي.
+
+لا تعمل أكثر من 3 خطوات الآن. ابدأ بـ Audit فقط.

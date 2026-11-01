@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const FoodSchema=z.object({items:z.array(z.string().trim().min(1).max(100)).min(1).max(50)}).strict(); export function recordFoodItems(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,items:FoodSchema.parse(raw).items,disclaimer:'User list only; no substitution recommendation.'};}

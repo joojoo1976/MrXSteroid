@@ -8,7 +8,21 @@
     "cost_breakdown": "Cost Breakdown",
     "cost_per_week_usd": "Cost Per Week (USD)",
     "most_expensive_compound": "Most Expensive Compound",
-    "budget_savings_tips": "Budget Savings Tips"
+    "budget_savings_tips": "Budget Savings Tips",
+    "pct_duration_weeks": "PCT duration (weeks)",
+    "invalid_input": "Check the entered values and stay within the allowed ranges.",
+    "cycle_duration_weeks": "Cycle length (weeks)",
+    "calculate_cost": "Calculate cost",
+    "calculating": "Calculating...",
+    "saving": "Saving...",
+    "compounds": "Compounds",
+    "ancillary_items": "Additional cost items",
+    "item_name_en": "Item name (English)",
+    "item_name_ar": "Item name (Arabic)",
+    "entered_cost_usd": "User-entered total cost (USD)",
+    "add_compound": "Add compound cost",
+    "add_item": "Add additional cost",
+    "pct_cost_estimate_notice": "PCT amount is an illustrative estimate using assumed rates of $50 and $60 per week; it is not a quote or medical recommendation."
   },
   "ar": {
     "tool_name": "حاسبة تكاليف الدورة",
@@ -19,6 +33,20 @@
     "cost_breakdown": "تفاصيل التكلفة",
     "cost_per_week_usd": "التكلفة الأسبوعية (دولار)",
     "most_expensive_compound": "أغلى مركب",
-    "budget_savings_tips": "نصائح توفير الميزانية"
+    "budget_savings_tips": "نصائح توفير الميزانية",
+    "pct_duration_weeks": "مدة PCT (أسابيع)",
+    "invalid_input": "تحقق من القيم المدخلة والتزم بالنطاقات المسموح بها.",
+    "cycle_duration_weeks": "مدة الدورة (أسابيع)",
+    "calculate_cost": "احسب التكلفة",
+    "calculating": "جارٍ الحساب...",
+    "saving": "جارٍ الحفظ...",
+    "compounds": "المركبات",
+    "ancillary_items": "بنود تكلفة إضافية",
+    "item_name_en": "اسم البند (بالإنجليزية)",
+    "item_name_ar": "اسم البند (بالعربية)",
+    "entered_cost_usd": "التكلفة الإجمالية التي أدخلها المستخدم (دولار)",
+    "add_compound": "إضافة تكلفة مركب",
+    "add_item": "إضافة بند تكلفة",
+    "pct_cost_estimate_notice": "مبلغ PCT تقديري توضيحي باستخدام افتراض 50 و60 دولارًا أسبوعيًا؛ وليس عرض سعر أو توصية طبية."
   }
 }

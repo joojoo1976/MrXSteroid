@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { usePreferences } from '../../../context/PreferencesContext';
 import { LAB_CATEGORIES, LAB_TESTS, LAB_UI } from '@/data/labReference';
 import { BilingualText, LabTestData, LabCategory } from '@/data/labReference';
@@ -41,7 +41,6 @@ export interface UseSmartLabReferenceReturn {
   openDetails: (id: string) => void;
   closeDetails: () => void;
   unitSystem: LabUnitSystem;
-  setUnitSystem: (system: LabUnitSystem) => void;
   value: string;
   setValue: (val: string) => void;
   getAnalysis: () => LabAnalysisResult | null;
@@ -50,13 +49,12 @@ export interface UseSmartLabReferenceReturn {
 
 export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
   const { unitSystem: prefUnitSystem, isRTL } = usePreferences();
+  const unitSystem: LabUnitSystem = prefUnitSystem === 'imperial' ? 'imperial' : 'metric';
+  const previousUnitSystem = useRef(unitSystem);
 
   const [search, setSearchState] = useState('');
   const [activeCategory, setActiveCategoryState] = useState<LabCategoryFilter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [unitSystem, setUnitSystemState] = useState<LabUnitSystem>(
-    prefUnitSystem === 'imperial' ? 'imperial' : 'metric'
-  );
   const [value, setValueState] = useState('');
 
   const t = useCallback((text: BilingualText) => (isRTL ? text.ar : text.en), [isRTL]);
@@ -94,6 +92,18 @@ export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
     [selectedId]
   );
 
+  useEffect(() => {
+    if (previousUnitSystem.current === unitSystem) return;
+    if (selectedTest) {
+      const val = parseFloat(value);
+      if (!Number.isNaN(val)) {
+        const converted = convertLabValueSystem(val, previousUnitSystem.current, unitSystem, selectedTest.range);
+        setValueState(String(roundTo(converted, 6)));
+      }
+    }
+    previousUnitSystem.current = unitSystem;
+  }, [selectedTest, unitSystem, value]);
+
   const formatRangeFor = useCallback(
     (test: LabTestData, system: LabUnitSystem) => formatRange(test, system),
     []
@@ -107,22 +117,6 @@ export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
     const active = getActiveRange(selectedTest, unitSystem);
     return { ...evalResult, value: val, range: active };
   }, [selectedTest, value, unitSystem]);
-
-  const setUnitSystem = useCallback(
-    (system: LabUnitSystem) => {
-      if (system === unitSystem) return system;
-      if (selectedTest) {
-        const val = parseFloat(value);
-        if (!Number.isNaN(val)) {
-          const converted = convertLabValueSystem(val, unitSystem, system, selectedTest.range);
-          setValueState(String(roundTo(converted, 6)));
-        }
-      }
-      setUnitSystemState(system);
-      return system;
-    },
-    [unitSystem, selectedTest, value]
-  );
 
   const setSearch = useCallback((val: string) => {
     setSearchState(val);
@@ -155,7 +149,6 @@ export const useSmartLabReference = (): UseSmartLabReferenceReturn => {
     openDetails,
     closeDetails,
     unitSystem,
-    setUnitSystem,
     value,
     setValue: setValueState,
     getAnalysis,

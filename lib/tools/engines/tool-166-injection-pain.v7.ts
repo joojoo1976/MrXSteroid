@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const PainInputSchema=z.object({note:z.string().trim().min(1).max(300)}).strict(); export function recordPainNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:PainInputSchema.parse(raw),disclaimer:'User note only; no pain treatment or injection instruction.'};}

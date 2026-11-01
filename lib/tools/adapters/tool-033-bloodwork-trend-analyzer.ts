@@ -3,7 +3,6 @@
  * Pure wrapper: engine math + canonical `ToolOutput` envelope. No I/O here.
  */
 import {
-  deriveDataQuality,
   type DataProvenance,
   type DataSource,
   type KeyFinding,
@@ -31,15 +30,14 @@ export interface TrendAnalyzerOutputOptions {
 
 export function buildTrendAnalyzerProvenance(options: TrendAnalyzerOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = source === 'manual' ? 0.8 : 0.7;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
     unit: 'lab values',
-    measurementMethod: 'least-squares trend slopes over dated lab draws',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
+    measurementMethod: 'descriptive least-squares slope over user-entered dated readings; no clinical interpretation',
+    confidence: null,
+    dataQuality: 'not_assessed',
   };
 }
 
@@ -50,8 +48,10 @@ export function buildTrendAnalyzerKeyFindings(result: TrendAnalyzerResult): KeyF
       code: `TREND_${m.marker.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}`,
       labelAr: `اتجاه ${m.marker}`,
       labelEn: `${m.marker} trend`,
-      value: `${m.direction} ${m.slope_per_30d}/30d`,
-      severity: !m.in_range ? 'important' : m.velocity_alert ? 'monitor' : 'info',
+      value: m.slope_per_30d === null
+        ? `${m.direction} (${m.points} reading${m.points === 1 ? '' : 's'}; ${m.distinct_dates} distinct date${m.distinct_dates === 1 ? '' : 's'})`
+        : `${m.direction} ${m.slope_per_30d} ${m.unit}/30d (${m.points} readings)`,
+      severity: 'info',
     });
   }
   return findings;

@@ -20,7 +20,11 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-import { enforceRateLimit, clientIp } from '../../lib/ratelimit';
+import { clientIp } from '../../lib/ratelimit';
+import {
+    createTranslationRateLimiterFromEnv,
+    type TranslationRateLimiter,
+} from './rateLimit';
 import { resolveAllowedOrigin } from '../cors/corsConfig';
 import { getRuntimeLanguages } from './languages';
 import type { TranslationProvider } from './provider';
@@ -37,6 +41,7 @@ export const TRANSLATION_TARGET_QUOTA = 4;
 /** §112 — namespaced rate-limit key so translation traffic can never consume
  *  the budget of a financial or auth endpoint. */
 const RATE_LIMIT_PREFIX = 'translate';
+let translationRateLimiter: TranslationRateLimiter | null | undefined;
 
 export type TranslationSecurityVerdict =
     | { allowed: true }
@@ -68,9 +73,23 @@ export function checkOrigin(req: Request): TranslationSecurityVerdict {
 /**
  * §111 / §112 — per-IP rate limit on the translation namespace.
  */
-export async function checkRateLimit(req: Request): Promise<TranslationSecurityVerdict> {
+export async function checkRateLimit(
+    req: Request,
+    limiter?: TranslationRateLimiter | null
+): Promise<TranslationSecurityVerdict> {
+    const active = limiter === undefined
+        ? (translationRateLimiter ??= createTranslationRateLimiterFromEnv())
+        : limiter;
+    if (!active) {
+        return {
+            allowed: false,
+            status: 503,
+            code: 'TRANSLATION_PERSISTENT_LIMITER_UNAVAILABLE',
+            message: 'Translation rate limiting is not configured for this deployment.',
+        };
+    }
     const ip = clientIp(req);
-    const rate = await enforceRateLimit(`${RATE_LIMIT_PREFIX}:${ip}`);
+    const rate = await active.limit(`${RATE_LIMIT_PREFIX}:${ip}`);
     if (!rate.success) {
         return {
             allowed: false,
@@ -86,6 +105,16 @@ export async function checkRateLimit(req: Request): Promise<TranslationSecurityV
  * §113 — character quota. Checked before any provider call so a single large
  * payload cannot translate the provider's monthly spend.
  */
+
+/** Test seam; production code resolves the persistent adapter from env. */
+export function resetTranslationRateLimiter(): void {
+    translationRateLimiter = undefined;
+}
+
+export function translationRateLimiterIsPersistent(): boolean {
+    translationRateLimiter ??= createTranslationRateLimiterFromEnv();
+    return translationRateLimiter?.persistent === true;
+}
 export function checkCharacterQuota(characters: number): TranslationSecurityVerdict {
     if (characters > TRANSLATION_CHARACTER_QUOTA) {
         return {
@@ -173,7 +202,8 @@ export function listAvailableRuntimeLanguages(provider: TranslationProvider | nu
 /** Aggregate gate for the public translation endpoint. */
 export async function enforceTranslationSecurity(
     req: Request,
-    options: { textCount: number; totalCharacters: number }
+    options: { textCount: number; totalCharacters: number },
+    limiter?: TranslationRateLimiter | null
 ): Promise<TranslationSecurityVerdict> {
     const size = checkRequestSize(options.textCount, options.totalCharacters);
     if (!size.allowed) return size;
@@ -184,7 +214,7 @@ export async function enforceTranslationSecurity(
     const origin = checkOrigin(req);
     if (!origin.allowed) return origin;
 
-    const rate = await checkRateLimit(req);
+    const rate = await checkRateLimit(req, limiter);
     if (!rate.allowed) return rate;
 
     return { allowed: true };

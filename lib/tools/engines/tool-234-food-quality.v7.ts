@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const QualitySchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordFoodQuality(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:QualitySchema.parse(raw),disclaimer:'Note record only; no food-quality score.'};}

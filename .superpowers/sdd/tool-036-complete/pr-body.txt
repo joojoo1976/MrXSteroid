@@ -1,0 +1,1 @@
+DONE 100% — 6 files +1360 -38 — 53/53 engine + 11/11 component — First Load 103 kB — Flag OFF === 'true' — G8 FAIL 61/2880 Site-Wide Issue #9 — LCP ثابت 2880→2867 خارج المسار — TBT 2748→4280 — لا Three.js — لا @dnd-kit — recharts chunk منفصل — لا تغلق Issue #9 — لا ادعاء LCP <1.5s

@@ -13,11 +13,12 @@ import {
 import { buildEmergencyChecklistOutput } from '@/lib/tools/adapters/tool-146-emergency-warning-signs-checklist';
 import { useExplicitToolOutput } from '@/lib/tools/useExplicitToolOutput';
 import ToolOutputSummary from './ToolOutputSummary';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 
 const inputClass = 'accent-amber-400';
 
 export default function Tool146EmergencyWarningSignsChecklist() {
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, isRtl } = useToolDisplayPreferences();
   const [ageGroup, setAgeGroup] = useState<EmergencyAgeGroup | null>(null);
   const [answers, setAnswers] = useState<Record<string, EmergencyAnswer | null>>({});
   const tr = (ar: string, en: string) => locale === 'ar' ? ar : en;
@@ -39,10 +40,9 @@ export default function Tool146EmergencyWarningSignsChecklist() {
     ? tr('نعم', 'Yes')
     : answer === 'no' ? tr('لا', 'No') : tr('غير متأكد', 'Not sure');
 
-  return <main className="mx-auto max-w-4xl space-y-5 px-4 py-6" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+  return <main className="mx-auto max-w-4xl space-y-5 px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
     <header className="flex flex-wrap items-center justify-between gap-3">
       <h1 className="text-2xl font-black text-white">{tr('قائمة إشارات الطوارئ', 'Emergency Warning Signs Checklist')}</h1>
-      <div className="flex gap-2"><button type="button" onClick={() => { clearResult(); setLocale('ar'); }}>عربي</button><button type="button" onClick={() => { clearResult(); setLocale('en'); }}>EN</button></div>
     </header>
 
     <section className="space-y-2 rounded-xl border border-amber-700 bg-amber-950/30 p-4 text-sm text-amber-100" aria-live="polite">

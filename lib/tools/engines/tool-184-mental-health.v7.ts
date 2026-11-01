@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const MoodNoteSchema=z.object({mood:z.string().trim().min(1).max(100),note:z.string().trim().max(300).optional()}).strict(); export function recordMoodNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:MoodNoteSchema.parse(raw),disclaimer:'Mood log only; no mental-health diagnosis or risk assessment.'};}

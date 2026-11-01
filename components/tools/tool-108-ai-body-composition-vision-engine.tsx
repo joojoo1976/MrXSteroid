@@ -1,6 +1,7 @@
 'use client';
 /** Tool #108 - AI Body Composition Vision Engine (dynamic UI). */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calcVision, type VisionResult } from '@/lib/tools/engines/tool-108-ai-body-composition-vision-engine';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -32,7 +33,7 @@ interface DraftInputs {
 
 export default function Tool108VisionEngine() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     weight_kg: 80,
     height_cm: 178,
@@ -54,9 +55,17 @@ export default function Tool108VisionEngine() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
+
+  const isImperial = unitSystem === 'imperial';
+  const displayWeight = (kg: number) => isImperial ? Number((kg * 2.2046226218).toFixed(1)) : kg;
+  const canonicalWeight = (value: number) => isImperial ? value / 2.2046226218 : value;
+  const displayLength = (cm: number) => isImperial ? Number((cm / 2.54).toFixed(1)) : cm;
+  const canonicalLength = (value: number) => isImperial ? value * 2.54 : value;
+  const weightUnit = isImperial ? 'lb' : 'kg';
+  const lengthUnit = isImperial ? 'in' : 'cm';
 
   const parsed = useMemo(() => VisionInputSchema.safeParse(inputs), [inputs]);
   const result = useMemo<VisionResult | null>(() => (parsed.success ? calcVision(parsed.data) : null), [parsed]);
@@ -66,17 +75,17 @@ export default function Tool108VisionEngine() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <label className={LBL}>{t.weight_kg}
-          <input type="number" min={30} max={250} step={1} value={inputs.weight_kg} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: Number(e.target.value || 80) }))} className={INP} />
+        <label className={LBL}>{t.weight_kg.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
+          <input type="number" min={isImperial ? 66.1 : 30} max={isImperial ? 551.2 : 250} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.height_cm}
-          <input type="number" min={120} max={230} step={1} value={inputs.height_cm} onChange={(e) => setInputs((p) => ({ ...p, height_cm: Number(e.target.value || 178) }))} className={INP} />
+        <label className={LBL}>{t.height_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({lengthUnit})
+          <input type="number" min={isImperial ? 47.2 : 120} max={isImperial ? 90.6 : 230} step={isImperial ? 0.1 : 1} value={displayLength(inputs.height_cm)} onChange={(e) => setInputs((p) => ({ ...p, height_cm: canonicalLength(Number(e.target.value || (isImperial ? 70.1 : 178))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
           <input type="number" min={16} max={85} step={1} value={inputs.age_years} onChange={(e) => setInputs((p) => ({ ...p, age_years: Number(e.target.value || 30) }))} className={INP} />
@@ -86,17 +95,17 @@ export default function Tool108VisionEngine() {
             {GENDER_OPTIONS.map((s) => (<option key={s} value={s}>{t[SEX_LABEL[s]]}</option>))}
           </select>
         </label>
-        <label className={LBL}>{t.neck_cm}
-          <input type="number" min={20} max={60} step={0.5} value={inputs.neck_cm} onChange={(e) => setInputs((p) => ({ ...p, neck_cm: Number(e.target.value || 38) }))} className={INP} />
+        <label className={LBL}>{t.neck_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({lengthUnit})
+          <input type="number" min={isImperial ? 7.9 : 20} max={isImperial ? 23.6 : 60} step={isImperial ? 0.1 : 0.5} value={displayLength(inputs.neck_cm)} onChange={(e) => setInputs((p) => ({ ...p, neck_cm: canonicalLength(Number(e.target.value || (isImperial ? 15 : 38))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.waist_cm}
-          <input type="number" min={40} max={200} step={0.5} value={inputs.waist_cm} onChange={(e) => setInputs((p) => ({ ...p, waist_cm: Number(e.target.value || 92) }))} className={INP} />
+        <label className={LBL}>{t.waist_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({lengthUnit})
+          <input type="number" min={isImperial ? 15.7 : 40} max={isImperial ? 78.7 : 200} step={isImperial ? 0.1 : 0.5} value={displayLength(inputs.waist_cm)} onChange={(e) => setInputs((p) => ({ ...p, waist_cm: canonicalLength(Number(e.target.value || (isImperial ? 36.2 : 92))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.hips_cm}
-          <input type="number" min={50} max={250} step={0.5} value={inputs.hips_cm} onChange={(e) => setInputs((p) => ({ ...p, hips_cm: Number(e.target.value || 100) }))} className={INP} />
+        <label className={LBL}>{t.hips_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({lengthUnit})
+          <input type="number" min={isImperial ? 19.7 : 50} max={isImperial ? 98.4 : 250} step={isImperial ? 0.1 : 0.5} value={displayLength(inputs.hips_cm)} onChange={(e) => setInputs((p) => ({ ...p, hips_cm: canonicalLength(Number(e.target.value || (isImperial ? 39.4 : 100))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.chest_cm}
-          <input type="number" min={50} max={350} step={0.5} value={inputs.chest_cm} onChange={(e) => setInputs((p) => ({ ...p, chest_cm: Number(e.target.value || 110) }))} className={INP} />
+        <label className={LBL}>{t.chest_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({lengthUnit})
+          <input type="number" min={isImperial ? 19.7 : 50} max={isImperial ? 137.8 : 350} step={isImperial ? 0.1 : 0.5} value={displayLength(inputs.chest_cm)} onChange={(e) => setInputs((p) => ({ ...p, chest_cm: canonicalLength(Number(e.target.value || (isImperial ? 43.3 : 110))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.photo_count}
           <input type="number" min={0} max={12} step={1} value={inputs.photo_count} onChange={(e) => setInputs((p) => ({ ...p, photo_count: Number(e.target.value || 2) }))} className={INP} />

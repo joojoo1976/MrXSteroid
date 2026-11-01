@@ -14,6 +14,9 @@ export * from './unit-system';
 export * from './localization';
 export * from './persistence';
 export * from './ai-service-design';
+export * from './cross-tool-link';
+export * from './tool-identity';
+export * from './tool-excellence-inventory';
 export * from './test-utils';
 export * from './test-utils-part2';
 

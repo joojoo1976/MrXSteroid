@@ -2,6 +2,7 @@
 /** Tool #090 — Female Hormone Balance Calculator (dynamic UI, 2gpt MASTER v3.0).
  * useMemo instant recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN RTL/LTR. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateFemaleHormoneBalance, type FemaleHormoneBalanceResult } from '@/lib/tools/engines/tool-090-female-hormone-balance-calculator';
 import { buildFemaleHormoneBalanceOutput } from '@/lib/tools/adapters/tool-090-female-hormone-balance-calculator';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -37,7 +38,7 @@ const VIRILIZATION_COLOR: Record<string, string> = {
 export default function Tool090FemaleHormoneBalanceCalculator() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     cycle_length_days: 28,
     pms_symptom_severity: 'none_mild',
@@ -63,26 +64,26 @@ export default function Tool090FemaleHormoneBalanceCalculator() {
   const aiContext = useMemo(() => {
     if (!result || !parsedInput.success) return null;
     const now = '1970-01-01T00:00:00.000Z';
-    const output = buildFemaleHormoneBalanceOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+    const output = buildFemaleHormoneBalanceOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
     return buildAiContext({ ...output, result });
-  }, [result, parsedInput, locale]);
+  }, [result, parsedInput, locale, unitSystem]);
 
   useEffect(() => { setValidationError(parsedInput.success ? null : parsedInput.error.issues[0]?.message ?? 'Invalid input'); }, [parsedInput]);
 
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
 
   const handleSave = async () => {
     if (!parsedInput.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const output = buildFemaleHormoneBalanceOutput(parsedInput.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildFemaleHormoneBalanceOutput(parsedInput.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsedInput.data);
       if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
       else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
@@ -94,8 +95,8 @@ export default function Tool090FemaleHormoneBalanceCalculator() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 

@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const DetoxSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordDetoxNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:DetoxSchema.parse(raw),disclaimer:'Note record only; no detoxification optimization or medical claim.'};}

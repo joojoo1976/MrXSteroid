@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const FertilityNoteSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordFertilityNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:FertilityNoteSchema.parse(raw),disclaimer:'Educational note record only; no fertility protocol or medical advice.'};}

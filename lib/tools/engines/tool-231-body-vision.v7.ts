@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const ImageSchema=z.object({reference:z.string().trim().min(1).max(300)}).strict(); export function recordBodyImage(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:ImageSchema.parse(raw),disclaimer:'Reference record only; no image analysis or body-composition inference.'};}

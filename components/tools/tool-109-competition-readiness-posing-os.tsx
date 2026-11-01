@@ -1,6 +1,7 @@
 'use client';
 /** Tool #109 - Competition Readiness & Stage Posing OS (dynamic UI). */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { buildReadinessChecklist, type ReadinessResult } from '@/lib/tools/engines/tool-109-competition-readiness-posing-os';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -30,7 +31,7 @@ interface DraftInputs {
 
 export default function Tool109ReadinessOS() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     gender: 'female',
     show_type: 'physique',
@@ -60,8 +61,8 @@ export default function Tool109ReadinessOS() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 

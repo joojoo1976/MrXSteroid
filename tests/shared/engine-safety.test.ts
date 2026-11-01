@@ -20,14 +20,16 @@ describe('Engine Safety Integration Tests', () => {
       expect(Number.isNaN(result)).toBe(false);
     });
 
-    it('calculateAromatizationRisk never returns NaN for valid inputs', () => {
+    it('returns an explicit unassessed status and finite arithmetic-only values', () => {
       const result = calculateAromatizationRisk(DEFAULT_AROMATIZATION_INPUT);
+      expect(result.peakRiskZone).toBe('not_assessed');
+      expect(result.gynoRiskScore).toBeNull();
+      expect(result.waterRetentionRiskScore).toBeNull();
+      expect(result.crashRiskScore).toBeNull();
+      expect(result.aiRecommendation).toBe('not_assessed');
       expect(Number.isFinite(result.steadyStateE2)).toBe(true);
       expect(Number.isFinite(result.peakE2)).toBe(true);
       expect(Number.isFinite(result.finalE2)).toBe(true);
-      expect(Number.isFinite(result.gynoRiskScore)).toBe(true);
-      expect(Number.isFinite(result.waterRetentionRiskScore)).toBe(true);
-      expect(Number.isFinite(result.crashRiskScore)).toBe(true);
       expect(Number.isFinite(result.bodyFatMultiplier)).toBe(true);
       expect(Number.isFinite(result.compoundAromatizationRate)).toBe(true);
       expect(Number.isFinite(result.aiSuppressionFactor)).toBe(true);

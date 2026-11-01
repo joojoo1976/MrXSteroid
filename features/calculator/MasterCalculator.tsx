@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import { Page } from '@/shared/types/types';
-import { useMasterCalculator, CalculationGoal, ExperienceLevel, BudgetLevel, UnitSystem } from './hooks/useMasterCalculator';
+import { useMasterCalculator, CalculationGoal, ExperienceLevel, BudgetLevel } from './hooks/useMasterCalculator';
 import { usePreferences } from '../../context/PreferencesContext';
 import KineticCounter from '../../shared/ui/KineticCounter';
 
@@ -106,19 +106,6 @@ const MasterCalculator: React.FC<MasterCalculatorProps> = ({ navigateTo }) => {
                             <Target className="w-4 h-4" /> {mc.configTitle}
                         </h2>
                         {isSaving && <RefreshCw className="w-3 h-3 text-gold-500 animate-spin" />}
-                    </div>
-
-                    {/* Unit Toggle */}
-                    <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl">
-                        {(['metric', 'imperial'] as UnitSystem[]).map((u) => (
-                            <button
-                                key={u}
-                                onClick={() => setState(prev => ({ ...prev, unitSystem: u }))}
-                                className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${state.unitSystem === u ? 'bg-white dark:bg-zinc-800 text-gold-500 shadow-sm' : 'text-zinc-500'}`}
-                            >
-                                {u}
-                            </button>
-                        ))}
                     </div>
 
                     {/* Step 1: Goal */}

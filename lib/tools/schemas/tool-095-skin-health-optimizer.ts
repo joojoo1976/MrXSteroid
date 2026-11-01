@@ -10,6 +10,6 @@ export const SkinHealthOptimizerInputSchema = z.object({
   barrier_dryness_or_flaking: z.boolean(),
   sweat_hygiene_post_workout: z.enum(['immediate_shower', 'delayed_over_1hr']),
   using_topical_dht_blockers_or_salicylic: z.boolean(),
-});
+}).strict();
 
 export type SkinHealthOptimizerInput = z.infer<typeof SkinHealthOptimizerInputSchema>;

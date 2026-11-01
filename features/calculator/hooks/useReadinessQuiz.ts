@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ContentStrings } from '@/shared/types/types';
 
 interface UseReadinessQuizOptions {
@@ -36,13 +36,18 @@ const QUESTIONS_PER_SESSION = 5;
 
 export const useReadinessQuiz = ({ content }: UseReadinessQuizOptions) => {
     const allQuestions = content.quiz.questions;
+    const sessionQuestionPool = useRef(allQuestions).current;
 
-    /** Randomly select 5 questions each time the quiz starts / resets */
-    const sessionQuestions = useMemo(
-        () => shuffle(allQuestions).slice(0, QUESTIONS_PER_SESSION),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
+    // Keep SSR and the first client render deterministic. Randomness is applied
+    // only after hydration, then stored so ordinary re-renders (including the
+    // existing in-place language switch) keep the active quiz session stable.
+    const [sessionQuestions, setSessionQuestions] = useState(
+        () => sessionQuestionPool.slice(0, QUESTIONS_PER_SESSION)
     );
+
+    useEffect(() => {
+        setSessionQuestions(shuffle(sessionQuestionPool).slice(0, QUESTIONS_PER_SESSION));
+    }, [sessionQuestionPool]);
 
     const [currentQ, setCurrentQ] = useState(0);
     const [score, setScore] = useState(0);

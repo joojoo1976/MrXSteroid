@@ -2,6 +2,7 @@
 /** Tool #104 - Thyroid Function & Metabolic Rate Dynamics (dynamic UI).
  * Educational estimate only - never a diagnosis of thyroid dysfunction. */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateThyroidDynamics, type ThyroidResult } from '@/lib/tools/engines/tool-104-thyroid-metabolic-rate-dynamics';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -27,7 +28,7 @@ const LBL = 'text-[10px] font-bold text-zinc-500';
 
 export default function Tool104ThyroidDynamics() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     tsh_miu_l: 2.0,
     free_t4_ng_dl: 1.3,
@@ -46,9 +47,15 @@ export default function Tool104ThyroidDynamics() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
+
+  const isImperial = unitSystem === 'imperial';
+  const displayWeight = (kg: number) => isImperial ? Number((kg * 2.2046226218).toFixed(1)) : kg;
+  const canonicalWeight = (value: number) => isImperial ? value / 2.2046226218 : value;
+  const displayHeight = (cm: number) => isImperial ? Number((cm / 2.54).toFixed(1)) : cm;
+  const canonicalHeight = (value: number) => isImperial ? value * 2.54 : value;
 
   const parsed = useMemo(() => ThyroidInputSchema.safeParse(inputs), [inputs]);
   const result = useMemo<ThyroidResult | null>(() => (parsed.success ? calculateThyroidDynamics(parsed.data) : null), [parsed]);
@@ -58,8 +65,8 @@ export default function Tool104ThyroidDynamics() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 
@@ -82,11 +89,11 @@ export default function Tool104ThyroidDynamics() {
             <option value="female">{t.sex_female}</option>
           </select>
         </label>
-        <label className={LBL}>{t.weight_kg}
-          <input type="number" min={30} max={250} step={1} value={inputs.weight_kg} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: Number(e.target.value || 80) }))} className={INP} />
+        <label className={LBL}>{t.weight_kg.replace(/\s*\([^)]*\)\s*$/, '')} ({isImperial ? 'lb' : 'kg'})
+          <input type="number" min={isImperial ? 66.1 : 30} max={isImperial ? 551.2 : 250} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.height_cm}
-          <input type="number" min={120} max={230} step={1} value={inputs.height_cm} onChange={(e) => setInputs((p) => ({ ...p, height_cm: Number(e.target.value || 178) }))} className={INP} />
+        <label className={LBL}>{t.height_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({isImperial ? 'in' : 'cm'})
+          <input type="number" min={isImperial ? 47.2 : 120} max={isImperial ? 90.6 : 230} step={isImperial ? 0.1 : 1} value={displayHeight(inputs.height_cm)} onChange={(e) => setInputs((p) => ({ ...p, height_cm: canonicalHeight(Number(e.target.value || (isImperial ? 70.1 : 178))) }))} className={INP} />
         </label>
       </div>
 

@@ -1,14 +1,12 @@
 {
   "en": {
-    "tool_name": "Water Retention Calculator",
-    "e2_level": "Estradiol Level (pg/mL)",
-    "retention_severity": "Retention Severity",
-    "target_weight_loss": "Target Water Weight Loss (kg)"
+    "tool_name": "Water-retention tool",
+    "not_available": "NOT_AVAILABLE",
+    "model_unavailable_reason": "No validated calculation model or sourced thresholds are available. This page does not estimate fluid retention, assess severity, or provide medication or diuretic advice."
   },
   "ar": {
-    "tool_name": "حاسبة احتباس الماء",
-    "e2_level": "مستوى الإسترadiol (pg/mL)",
-    "retention_severity": "شدة الاحتباس",
-    "target_weight_loss": "فقدان الوزن المستهدف (كجم)"
+    "tool_name": "أداة احتباس السوائل",
+    "not_available": "غير متاح حالياً",
+    "model_unavailable_reason": "لا يتوفر حالياً نموذج حسابي موثّق أو حدود مستندة إلى مصادر. لا تقدّر هذه الصفحة احتباس السوائل أو شدته، ولا تقدم إرشادات دوائية أو عن مدرات البول."
   }
 }

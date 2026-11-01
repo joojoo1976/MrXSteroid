@@ -45,6 +45,10 @@ export interface PeptideProtocolResult {
   post_protocol_therapy: boolean;
 }
 
+export function isValidPeptideWeightKg(weightKg: number): boolean {
+  return Number.isFinite(weightKg) && weightKg >= 40 && weightKg <= 300;
+}
+
 export function calculatePeptideProtocol(input: PeptideProtocolInput): PeptideProtocolResult {
   const { user_weight_kg, target_compounds, goal, protocol_duration_weeks, injection_frequency } = input;
   

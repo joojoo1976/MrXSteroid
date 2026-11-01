@@ -1,88 +1,147 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import { checkDrugInteractions } from '@/lib/tools/engines/tool-025-drug-interaction-pro';
-import MeasurementToggle from './MeasurementToggle';
+import React, { useState } from 'react';
 import i18nJson from '@/i18n/tool-025-drug-interaction-pro.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import { buildMedicationSessionV7 } from '@/lib/tools/engines/tool-025-drug-interaction-pro';
+import {
+  MedicationSessionEntrySchema,
+  MedicationSessionInputSchema,
+  type MedicationSessionEntry,
+} from '@/lib/tools/schemas/tool-025-drug-interaction-pro';
 
-export default function Tool025DrugInteractionCheckerPro() {
-  const i18nData = useToolI18n(i18nJson);
-  const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
-  const { mutate: updateToolState, isPending } = useUpdateToolState();
-  const debouncedSave = useDebounce(updateToolState, 1000);
+type ItemType = MedicationSessionEntry['itemType'];
 
-  const [compounds, setCompounds] = useState<any[]>([]);
-  const [age, setAge] = useState(35);
-  const [weight, setWeight] = useState(85);
-  const [healthConditions, setHealthConditions] = useState<Array<'liver' | 'heart' | 'prostate' | 'high_bp'>>([]);
-  const [medications, setMedications] = useState([]);
-  const [result, setResult] = useState<any>(null);
-
-  useEffect(() => {
-    if (savedState?.drug_interaction_result) setResult(savedState.drug_interaction_result);
-  }, [savedState]);
-
-  const addCompound = () => {
-    const newCompound: any = {
-      id: Date.now(),
-      name_en: 'Testosterone',
-      name_ar: 'Ø§Ø®ØªØ¨Ø§Ø±ÙˆÙ†',
-      family: 'testosterone',
-      dosage_mg: 500,
-      is_lipophilic: false,
-      primary_target: 'androgen',
-      half_life_hours: 168,
-    };
-    setCompounds(prev => [...prev, newCompound]);
-  };
-
-  const check = () => {
-    const input = {
-      compounds,
-      user_age: age,
-      user_weight_kg: weight,
-      health_conditions: healthConditions,
-      current_medications: medications,
-    };
-    const r = checkDrugInteractions(input);
-    setResult(r);
-    debouncedSave({ ...savedState, drug_interaction_result: r });
-  };
-
-  return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
-      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
-      <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Stack:</label> <p className="text-zinc-500 text-sm" dir="ltr">{compounds.length} compounds</p></div>
-        <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}> Add Compound </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Age:</label> <input type="number" value={age} onChange={(e) => setAge(parseInt(e.target.value as any))} min="18" max="80" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Weight (kg):</label> <input type="number" value={weight} onChange={(e) => setWeight(parseInt(e.target.value as any))} min="40" max="300" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Health Conditions:</label> <p className="text-zinc-500 text-sm" dir="ltr">{healthConditions.length > 0 ? healthConditions.join(', ') : 'None'}</p></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Current Medications:</label> <input type="text" value={medications.join(', ') || 'None'} readOnly className="w-full rounded border p-2 border-dashed text-zinc-500" dir="ltr" /></div>
-
-        <button onClick={check} className="mt-6 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending || compounds.length < 2}> {isPending ? 'Checking...' : 'Check Interactions'} </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
-          <p className="text-zinc-600 font-bold">{i18nData.total_interactions}: {result.total_interactions}</p>
-          <p className="text-zinc-500">{i18nData.critical_interactions}: {result.critical_interactions}</p>
-          <p className="text-zinc-500">{i18nData.moderate_interactions}: {result.moderate_interactions}</p>
-          <p className="text-zinc-500">{i18nData.safety_score}: {result.safety_score}%</p>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.interactions.map((i: any, idx: any) => <li key={idx}>{i.compound1} + {i.compound2}: {i.severity} ({i.interaction_type})</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.recommendations.map((r: any, i: any) => <li key={i}>{r}</li>)}
-          </ul>
-        </div>}
-      </div>
-    </div>
-  );
+interface Draft {
+  itemName: string;
+  itemType: ItemType;
+  doseDescription: string;
+  sourceLabel: string;
+  notes: string;
 }
 
+const EMPTY_DRAFT: Draft = {
+  itemName: '',
+  itemType: 'prescription',
+  doseDescription: '',
+  sourceLabel: '',
+  notes: '',
+};
 
+export default function Tool025DrugInteractionCheckerPro() {
+  const t = useToolI18n(i18nJson);
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [entries, setEntries] = useState<MedicationSessionEntry[]>([]);
+  const [validationError, setValidationError] = useState(false);
+  const session = buildMedicationSessionV7(entries);
+
+  const updateDraft = (key: keyof Draft, value: string) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setValidationError(false);
+  };
+
+  const addEntry = () => {
+    const parsed = MedicationSessionEntrySchema.safeParse({
+      ...draft,
+      id: crypto.randomUUID(),
+      doseDescription: draft.doseDescription.trim() || undefined,
+      sourceLabel: draft.sourceLabel.trim() || undefined,
+      notes: draft.notes.trim() || undefined,
+    });
+    const candidate = parsed.success ? [...entries, parsed.data] : entries;
+    const validSession = parsed.success && candidate.length <= 50
+      ? MedicationSessionInputSchema.safeParse({ entries: candidate }).success
+      : false;
+
+    if (!parsed.success || !validSession) {
+      setValidationError(true);
+      return;
+    }
+
+    setEntries(candidate);
+    setDraft(EMPTY_DRAFT);
+    setValidationError(false);
+  };
+
+  const removeEntry = (id: string) => setEntries((current) => current.filter((entry) => entry.id !== id));
+
+  return (
+    <section className="pct-timing-tool p-6" dir={t.dir}>
+      <h2 className="mb-3 text-2xl font-bold">{t.tool_name}</h2>
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        {t.scope_note}
+      </p>
+      <p role="status" className="mb-6 rounded bg-zinc-100 p-3 text-sm">
+        {t.interaction_unavailable}
+      </p>
+
+      <div className="space-y-4">
+        <label className="block text-sm font-medium">
+          {t.item_name}
+          <input value={draft.itemName} maxLength={120} onChange={(event) => updateDraft('itemName', event.target.value)}
+            className="mt-1 w-full rounded border p-2" />
+        </label>
+
+        <label className="block text-sm font-medium">
+          {t.item_type}
+          <select value={draft.itemType} onChange={(event) => updateDraft('itemType', event.target.value)}
+            className="mt-1 w-full rounded border p-2">
+            <option value="prescription">{t.type_prescription}</option>
+            <option value="over_the_counter">{t.type_over_the_counter}</option>
+            <option value="supplement">{t.type_supplement}</option>
+            <option value="hormone_or_compound">{t.type_hormone_or_compound}</option>
+            <option value="other">{t.type_other}</option>
+          </select>
+        </label>
+
+        <label className="block text-sm font-medium">
+          {t.dose_description}
+          <input value={draft.doseDescription} maxLength={80} onChange={(event) => updateDraft('doseDescription', event.target.value)}
+            className="mt-1 w-full rounded border p-2" />
+        </label>
+
+        <label className="block text-sm font-medium">
+          {t.source_label}
+          <input value={draft.sourceLabel} maxLength={160} onChange={(event) => updateDraft('sourceLabel', event.target.value)}
+            className="mt-1 w-full rounded border p-2" />
+        </label>
+
+        <label className="block text-sm font-medium">
+          {t.notes}
+          <textarea value={draft.notes} maxLength={240} onChange={(event) => updateDraft('notes', event.target.value)}
+            className="mt-1 w-full rounded border p-2" rows={3} />
+        </label>
+
+        {validationError && <p role="alert" className="text-sm text-red-700">{t.validation_error}</p>}
+        <button type="button" onClick={addEntry} disabled={entries.length >= 50}
+          className="w-full rounded bg-blue-700 px-4 py-3 font-medium text-white disabled:opacity-50">
+          {t.add_entry} ({entries.length}/50)
+        </button>
+      </div>
+
+      <section aria-labelledby="tool-025-session-heading" className="mt-8 rounded bg-zinc-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 id="tool-025-session-heading" className="font-semibold">{t.session_list}: {session.entries.length}</h3>
+          {entries.length > 0 && <button type="button" onClick={() => setEntries([])} className="rounded border px-3 py-2 text-sm">{t.clear_all}</button>}
+        </div>
+        {session.entries.length === 0 ? <p className="mt-3 text-sm text-zinc-600">{t.empty}</p> : (
+          <ul className="mt-3 space-y-3">
+            {session.entries.map((entry) => (
+              <li key={entry.id} className="flex items-start justify-between gap-3 rounded border bg-white p-3">
+                <div>
+                  <div className="font-medium">{entry.itemName}</div>
+                  <div className="mt-1 text-sm text-zinc-600">{t[`type_${entry.itemType}`]}</div>
+                  {entry.doseDescription && <div className="mt-1 text-sm text-zinc-600">{t.dose_description}: {entry.doseDescription}</div>}
+                  {entry.sourceLabel && <div className="mt-1 text-sm text-zinc-600">{t.source_label}: {entry.sourceLabel}</div>}
+                  {entry.notes && <div className="mt-1 text-sm text-zinc-600">{t.notes}: {entry.notes}</div>}
+                  <div className="mt-2 text-xs text-zinc-500">{t.origin_user_provided}</div>
+                </div>
+                <button type="button" onClick={() => removeEntry(entry.id)} className="rounded border px-2 py-1 text-sm">{t.remove}</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </section>
+  );
+}

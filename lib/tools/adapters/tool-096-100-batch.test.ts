@@ -24,33 +24,42 @@ describe('Batch #096–#100 Adapters', () => {
       using_5ar_inhibitor_or_minoxidil: false,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-096-hair-nail-tracker');
-    expect(output.keyFindings.some((f) => f.code === 'HAIR_VITALITY')).toBe(true);
-    expect(output.provenance.unit).toBe('score');
+    expect(output.result).toMatchObject({ status: 'RECORDED', resultType: 'USER_PROVIDED' });
+    expect(output.keyFindings.some((f) => f.code === 'OBSERVED_SHEDDING')).toBe(true);
+    expect(output.provenance.unit).toBe('user-entered observations');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 
   it('tool-097 adapter emits valid ToolOutput structure', () => {
     const output = buildHydrationBalanceCalculatorOutput({
-      body_weight_kg: 80,
-      training_duration_minutes_daily: 60,
-      sweat_rate_intensity: 'moderate',
-      climate_temperature: 'temperate',
-      caffeine_or_diuretic_intake_mg: 200,
+      pre_exercise_body_weight_kg: 80,
+      post_exercise_body_weight_kg: 79.2,
+      fluid_consumed_liters: 0.5,
+      urine_output_liters: 0.1,
+      exercise_duration_minutes: 60,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-097-hydration-balance-calculator');
-    expect(output.keyFindings.some((f) => f.code === 'DAILY_FLUID')).toBe(true);
-    expect(output.provenance.unit).toBe('L');
+    expect(output.result).toMatchObject({ status: 'CALCULATED', resultType: 'CALCULATED', sweat_loss_liters: 1.2, sweat_rate_liters_per_hour: 1.2 });
+    expect(output.keyFindings.some((f) => f.code === 'SWEAT_RATE_CALCULATED')).toBe(true);
+    expect(output.provenance.unit).toBe('L and L/h');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
+    expect(output.provenance.referenceRange).toBeUndefined();
   });
 
   it('tool-098 adapter emits valid ToolOutput structure', () => {
     const output = buildSodiumPotassiumManagerOutput({
       daily_sodium_mg: 3200,
       daily_potassium_mg: 3500,
-      aldosterone_stress_or_aas: false,
-      resting_blood_pressure_systolic: 120,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-098-sodium-potassium-manager');
+    expect(output.result).toMatchObject({ status: 'CALCULATED', resultType: 'CALCULATED', sodium_to_potassium_ratio: 0.91 });
     expect(output.keyFindings.some((f) => f.code === 'NA_K_RATIO')).toBe(true);
-    expect(output.provenance.unit).toBe('ratio');
+    expect(output.provenance.unit).toBe('mg/mg ratio');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
+    expect(output.provenance.referenceRange).toBeUndefined();
   });
 
   it('tool-099 adapter emits valid ToolOutput structure', () => {
@@ -62,8 +71,12 @@ describe('Batch #096–#100 Adapters', () => {
       fermented_food_or_probiotic_intake: true,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-099-digestive-health-optimizer');
-    expect(output.keyFindings.some((f) => f.code === 'DIGESTIVE_SCORE')).toBe(true);
-    expect(output.provenance.unit).toBe('score');
+    expect(output.result).toMatchObject({ status: 'RECORDED', resultType: 'USER_PROVIDED' });
+    expect(output.keyFindings.some((f) => f.code === 'OBSERVED_REFLUX_FREQUENCY')).toBe(true);
+    expect(output.provenance.unit).toBe('user-entered observations');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
+    expect(output.provenance.referenceRange).toBeUndefined();
   });
 
   it('tool-100 adapter emits valid ToolOutput structure', () => {
@@ -75,7 +88,8 @@ describe('Batch #096–#100 Adapters', () => {
       active_red_flag_symptoms_count: 0,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-100-comprehensive-report-generator');
-    expect(output.keyFindings.some((f) => f.code === 'UNIFIED_INDEX')).toBe(true);
-    expect(output.provenance.unit).toBe('score');
+    expect(output.keyFindings.some((f) => f.code === 'RESULT_TYPE')).toBe(true);
+    expect(output.provenance.unit).toBe('user-entered observations');
   });
 });
+

@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const MoodSchema=z.object({mood:z.string().trim().min(1).max(100),note:z.string().trim().max(300).optional()}).strict(); export function recordMood(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:MoodSchema.parse(raw),disclaimer:'Mood record only; no optimization or diagnosis.'};}

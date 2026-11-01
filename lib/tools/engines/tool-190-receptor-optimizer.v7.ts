@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const ReceptorNoteSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordReceptorNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:ReceptorNoteSchema.parse(raw),disclaimer:'Note record only; no receptor sensitivity optimization.'};}

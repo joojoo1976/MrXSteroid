@@ -11,7 +11,6 @@ import { ContentStrings, Page } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useGeneticPotential } from './hooks/useGeneticPotential';
-import { UnitToggle } from '../../shared/ui/UnitToggle';
 
 interface GeneticPotentialCalculatorProps {
   content: ContentStrings;
@@ -218,7 +217,6 @@ const GeneticPotentialCalculator: React.FC<GeneticPotentialCalculatorProps> = ({
 
       {/* AdSlot: Top Banner */}
       <div className="mb-12 flex flex-col items-center gap-6">
-        <UnitToggle className="scale-125 shadow-2xl border-white/10" />
         <AdPlaceholder slotId="genetic_top_banner" format="horizontal" content={content} />
       </div>
 

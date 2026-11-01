@@ -1,6 +1,12 @@
 {
   "en": {
-    "tool_name": "Hair & Nail Tracker",
+    "tool_name": "Hair & Nail Observation Log",
+    "scope": "Record hair, scalp, and nail observations without diagnosing hair loss or suggesting treatment.",
+    "choose": "Choose an observation",
+    "recorded": "USER_PROVIDED — observations recorded without inference.",
+    "recorded_title": "Recorded observations",
+    "complete_inputs": "Complete the observation selections before recording.",
+    "limits": "These observations do not establish alopecia, follicle miniaturization, scalp infection, nutrient deficiency, or treatment need.",
     "daily_shedding": "Daily Hair Shedding Volume",
     "shedding_under_50": "Normal (< 50 hairs/day)",
     "shedding_50_100": "Moderate (50–100 hairs/day)",
@@ -19,7 +25,13 @@
     "disclaimer": "Educational trichological screening for androgen-sensitive follicular miniaturization and keratin matrix integrity. Not a clinical dermatology diagnosis for alopecia areata or scarring alopecias. Consult a trichologist or dermatologist for clinical scalp evaluation."
   },
   "ar": {
-    "tool_name": "متتبع الشعر والأظافر",
+    "tool_name": "سجل ملاحظات الشعر والأظافر",
+    "scope": "سجّل ملاحظات الشعر وفروة الرأس والأظافر دون تشخيص التساقط أو اقتراح علاج.",
+    "choose": "اختر الملاحظة",
+    "recorded": "USER_PROVIDED — سُجلت الملاحظات دون استنتاج.",
+    "recorded_title": "الملاحظات المسجلة",
+    "complete_inputs": "أكمل اختيارات الملاحظات قبل التسجيل.",
+    "limits": "لا تثبت هذه الملاحظات وجود ثعلبة أو ترقق بصيلات أو عدوى فروة أو نقصًا غذائيًا أو حاجة لعلاج.",
     "daily_shedding": "معدل تساقط الشعر اليومي",
     "shedding_under_50": "طبيعي (أقل من 50 شعرة/يوم)",
     "shedding_50_100": "متوسط (50 إلى 100 شعرة/يوم)",

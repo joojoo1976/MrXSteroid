@@ -1,9 +1,5 @@
-/**
- * Tool #035 — Hormone Conversion Calculator (Layer 3: persistence + AI adapter).
- * Pure wrapper: engine math + canonical `ToolOutput` envelope. No I/O here.
- */
+/** Tool #035 — conversion-only adapter; no health interpretation. */
 import {
-  deriveDataQuality,
   type DataProvenance,
   type DataSource,
   type KeyFinding,
@@ -29,38 +25,27 @@ export interface ConversionOutputOptions {
   provenanceSource?: DataSource;
 }
 
-export function buildConversionProvenance(options: ConversionOutputOptions): DataProvenance {
-  const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = source === 'manual' ? 0.65 : 0.55;
+export function buildConversionProvenance(options: ConversionOutputOptions, result: ConversionResult): DataProvenance {
   return {
-    source,
+    source: options.provenanceSource ?? 'manual',
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'pg/mL',
-    measurementMethod: 'documented aromatization heuristic — serum labs required for confirmation',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 20, high: 40, unit: 'pg/mL', source: 'Male E2 reference band' },
+    unit: result.result_unit,
+    originalUnit: result.input_unit,
+    measurementMethod: 'molar-mass-derived unit conversion; user-entered result source is not verified',
+    confidence: null,
+    dataQuality: 'not_assessed',
   };
 }
 
 export function buildConversionKeyFindings(result: ConversionResult): KeyFinding[] {
-  return [
-    {
-      code: 'ESTIMATED_E2',
-      labelAr: 'الإستراديول التقديري',
-      labelEn: 'Estimated Estradiol',
-      value: `${result.estimated_e2_pg_ml} pg/mL (${result.e2_status})`,
-      severity: result.e2_status === 'optimal' ? 'info' : result.e2_status === 'very-high' ? 'important' : 'monitor',
-    },
-    {
-      code: 'TEST_E2_RATIO',
-      labelAr: 'نسبة T:E2',
-      labelEn: 'T:E2 Ratio',
-      value: result.test_to_e2_ratio,
-      severity: 'info',
-    },
-  ];
+  return [{
+    code: 'HORMONE_UNIT_CONVERSION',
+    labelAr: 'تحويل وحدة تركيز مخبري',
+    labelEn: 'Lab Concentration Unit Conversion',
+    value: `${result.result_value} ${result.result_unit}`,
+    severity: 'info',
+  }];
 }
 
 export function buildConversionOutput(
@@ -78,7 +63,7 @@ export function buildConversionOutput(
     snapshotType: options.snapshotType,
     accessTier: tool.accessTier,
     result,
-    provenance: buildConversionProvenance(options),
+    provenance: buildConversionProvenance(options, result),
     keyFindings: buildConversionKeyFindings(result),
     seoLinks: buildSeoLinks(tool),
   });

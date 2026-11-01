@@ -31,46 +31,41 @@ export interface HairNailTrackerOutputOptions {
 
 export function buildHairNailTrackerProvenance(options: HairNailTrackerOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.75;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'score',
-    measurementMethod: 'trichological shedding kinetics and follicular miniaturization scoring (deterministic model)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 75, high: 100, unit: 'score', source: 'healthy hair follicle retention baseline' },
+    unit: 'user-entered observations',
+    measurementMethod: 'Manual hair, scalp, and nail observation log; no inferred diagnosis',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
 export function buildHairNailTrackerKeyFindings(result: HairNailTrackerResult): KeyFinding[] {
   const findings: KeyFinding[] = [
     {
-      code: 'HAIR_VITALITY',
-      labelAr: 'مؤشر حيوية بصيلات الشعر',
-      labelEn: 'Hair follicle vitality score',
-      value: `${result.hair_follicle_vitality_score}/100`,
-      severity: result.hair_follicle_vitality_score <= 45 ? 'important' : result.hair_follicle_vitality_score <= 70 ? 'monitor' : 'info',
+      code: 'OBSERVED_SHEDDING',
+      labelAr: 'ملاحظة تساقط الشعر',
+      labelEn: 'Entered shedding observation',
+      value: result.daily_shedding_rate,
+      severity: 'info',
     },
     {
-      code: 'ALOPECIA_TIER',
-      labelAr: 'تصنيف خطر التساقط الأندروجيني',
-      labelEn: 'Androgenic alopecia risk tier',
-      value: result.androgenic_alopecia_risk_tier,
-      severity: result.androgenic_alopecia_risk_tier === 'accelerated-miniaturization' ? 'important' : 'info',
+      code: 'OBSERVED_SCALP',
+      labelAr: 'ملاحظة فروة الرأس',
+      labelEn: 'Entered scalp observation',
+      value: result.scalp_sebum_inflammation,
+      severity: 'info',
     },
     {
-      code: 'KERATIN_TIER',
-      labelAr: 'حالة مصفوفة الكيراتين والأظافر',
-      labelEn: 'Keratin matrix health',
-      value: result.keratin_matrix_health_tier,
-      severity: result.keratin_matrix_health_tier === 'compromised-brittle' ? 'monitor' : 'info',
+      code: 'RESULT_TYPE',
+      labelAr: 'نوع النتيجة',
+      labelEn: 'Result type',
+      value: 'USER_PROVIDED',
+      severity: 'info',
     },
   ];
-  for (const r of result.support_recommendations) {
-    findings.push({ code: 'RECOMMENDATION', labelAr: 'توجيه العناية', labelEn: 'Care recommendation', value: r, severity: 'info' });
-  }
   return findings;
 }
 

@@ -5,14 +5,26 @@
     "strength": "Strength (kg)",
     "body_fat": "Body Fat %",
     "add_entry": "Add Entry",
-    "trend_analyzer": "Trend Analyzer"
+    "trend_analyzer": "Trend Analyzer",
+    "date": "Date",
+    "notes": "Notes",
+    "notes_placeholder": "e.g., Felt strong today, good pump...",
+    "saving": "Saving...",
+    "saving_to_account": "Saving to your account...",
+    "progress_entries": "Progress entries"
   },
   "ar": {
     "tool_name": "متابع التقدم",
     "weight": "الوزن (كجم)",
     "strength": "القوة (كجم)",
     "body_fat": "نسبة الدهون %",
-    "add_entry": "إضافة entrée",
-    "trend_analyzer": "محلل الاتجاهات"
+    "add_entry": "إضافة سجل",
+    "trend_analyzer": "محلل الاتجاهات",
+    "date": "التاريخ",
+    "notes": "ملاحظات",
+    "notes_placeholder": "مثال: شعرت بالقوة اليوم...",
+    "saving": "جارٍ الحفظ...",
+    "saving_to_account": "جارٍ الحفظ في حسابك...",
+    "progress_entries": "سجلات التقدم"
   }
 }

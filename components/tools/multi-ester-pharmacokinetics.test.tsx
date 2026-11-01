@@ -7,6 +7,7 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import MultiEsterPKToolComponent from './multi-ester-pharmacokinetics';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
+import { withToolPreferences } from './tool-preferences.test-utils';
 
 const TOOL_SLUG = 'multi-ester-pharmacokinetics';
 
@@ -29,21 +30,19 @@ beforeAll(() => {
 
 describe('MultiEsterPKToolComponent (Layer 5 UI)', () => {
     it('renders the registry-backed title in Arabic RTL by default', () => {
-        const { container } = render(<MultiEsterPKToolComponent />);
+        const { container } = render(withToolPreferences(<MultiEsterPKToolComponent />, 'ar', 'metric'));
         const tool = requireTool(TOOL_SLUG);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(tool.titleAr);
         expect(container.firstChild).toHaveAttribute('dir', 'rtl');
     });
 
-    it('toggles locale AR → EN and unit system metric → imperial', () => {
-        render(<MultiEsterPKToolComponent />);
-
-        fireEvent.click(screen.getByRole('button', { name: 'English (LTR)' }));
+    it('follows the global locale and measurement preferences without local controls', () => {
+        const { rerender } = render(withToolPreferences(<MultiEsterPKToolComponent />, 'ar', 'metric'));
+        expect(screen.queryByRole('button', { name: 'English (LTR)' })).not.toBeInTheDocument();
+        rerender(withToolPreferences(<MultiEsterPKToolComponent />, 'en', 'imperial'));
         const tool = requireTool(TOOL_SLUG);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(tool.titleEn);
-
-        fireEvent.click(screen.getByRole('button', { name: 'Metric (kg)' }));
-        expect(screen.getByRole('button', { name: 'Imperial (lbs)' })).toBeInTheDocument();
+        expect(screen.getByText(/Body Weight \(lbs\)/)).toBeInTheDocument();
     });
 
     it('always shows the Save-to-Bio-Dashboard action and the registry prev/next footer', () => {

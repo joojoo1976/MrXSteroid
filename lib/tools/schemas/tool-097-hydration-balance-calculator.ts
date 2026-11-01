@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
+/** Bounds protect the calculator from malformed values; they are not guidance. */
 export const HydrationBalanceCalculatorInputSchema = z.object({
-  body_weight_kg: z.number().min(30).max(250),
-  training_duration_minutes_daily: z.number().min(0).max(360),
-  sweat_rate_intensity: z.enum(['light', 'moderate', 'heavy_profuse']),
-  climate_temperature: z.enum(['temperate', 'hot_humid']),
-  caffeine_or_diuretic_intake_mg: z.number().min(0).max(2000),
-});
+  pre_exercise_body_weight_kg: z.number().finite().min(1).max(500),
+  post_exercise_body_weight_kg: z.number().finite().min(1).max(500),
+  fluid_consumed_liters: z.number().finite().min(0).max(100),
+  urine_output_liters: z.number().finite().min(0).max(100),
+  exercise_duration_minutes: z.number().finite().int().min(1).max(1440),
+}).strict();
 
 export type HydrationBalanceCalculatorInput = z.infer<typeof HydrationBalanceCalculatorInputSchema>;

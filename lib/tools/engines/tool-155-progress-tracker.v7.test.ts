@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest'; import {recordProgress,ProgressInputSchema} from './tool-155-progress-tracker.v7';
+describe('Tool 155 progress log',()=>{it('records metrics',()=>{expect(recordProgress({entries:[{recordedOn:'2026-10-26',metric:'weight',value:80,unit:'kg'}]}).status).toBe('RECORDED');});it('rejects unknown fields',()=>{expect(ProgressInputSchema.safeParse({entries:[],extra:1}).success).toBe(false);});});

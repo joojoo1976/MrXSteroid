@@ -21,12 +21,7 @@ export type GeneticPotentialInput = z.infer<typeof GeneticPotentialInputSchema>;
 export const GeneticPotentialResultSchema = z.object({
   potential_score: z.number().min(0).max(100),
   body_type_assessment: z.string(),
-  recommended_cycle_length: z.number().min(1).max(52),
-  recommended_dosage_multiplier: z.number().min(0.5).max(2),
   risk_factors: z.array(z.string()),
-  recommended_compounds: z.array(z.string()),
-  avoided_compounds: z.array(z.string()),
-  personalized_tips: z.array(z.string()),
 });
 
 export type GeneticPotentialResult = z.infer<typeof GeneticPotentialResultSchema>;

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tool #102 — Subcutaneous vs. Intramuscular PK Modeler
  * Layer 3: canonical ToolOutput envelope.
  */
@@ -88,6 +88,7 @@ export function buildSubqVsImOutput(
     seoLinks: buildSeoLinks(tool),
   });
 }
+
 
 
 

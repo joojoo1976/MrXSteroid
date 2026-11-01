@@ -43,6 +43,10 @@ import { getRuntimeLanguages, getVerifiedRuntimeTargets, validateTargetLanguage 
 import { GoogleAdvancedTranslationProvider, GOOGLE_GENERAL_NMT_MODEL } from '../server/translation/googleProvider';
 import { TranslationProviderError, type TranslationProvider } from '../server/translation/provider';
 import { TranslationRuntimeError, translateRequest, listSelectableTargets } from '../server/translation/runtime';
+import { issueTranslationSession } from '../server/translation/session';
+import { MemoryTranslationBudgetStore } from '../server/translation/budget';
+import { MemoryTranslationRateLimiter } from '../server/translation/rateLimit';
+import { TranslationCircuitBreaker } from '../server/translation/circuitBreaker';
 
 /** Names only. The owner populates these; the script never echoes a value. */
 export const REQUIRED_SECRET_NAMES = [
@@ -193,6 +197,9 @@ function runtimeDeps(
     clientIp: string = DEFAULT_SMOKE_CLIENT_IP,
     resolve: (provider: TranslationProvider) => Promise<ReadonlySet<string>> = resolveVerifiedTargets
 ) {
+    const requestPayload = payload as { targetLanguage?: string; surface?: string };
+    const sessionSecret = 'translation-smoke-session-secret-at-least-32-characters';
+    const routePath = '/';
     return {
         // No Origin header: §110 permits same-origin/SSR/CLI callers.
         request: new Request('https://localhost/api/translate', {
@@ -203,6 +210,29 @@ function runtimeDeps(
         createProvider,
         resolveVerifiedTargets: resolve,
         clientId: `translation-google-smoke:${clientIp}`,
+        routePath,
+        sessionSecret,
+        sessionToken: issueTranslationSession({
+            sessionId: `smoke-${clientIp}`,
+            targetLanguage: requestPayload.targetLanguage ?? 'fr',
+            routePath,
+            routeClass: 'PUBLIC_TRANSLATABLE',
+            surface: requestPayload.surface ?? 'hero',
+            ttlMs: 60_000,
+            maxRequests: 100,
+            maxCharacters: 100_000,
+        }, sessionSecret),
+        budgetStore: new MemoryTranslationBudgetStore(),
+        budgetLimits: {
+            maxSessionRequests: 100,
+            maxSessionCharacters: 100_000,
+            maxRouteCharacters: 100_000,
+            maxDailyCharacters: 100_000,
+            maxGlobalDailyCharacters: 1_000_000,
+            maxTargetsPerDay: 4,
+        },
+        rateLimiter: new MemoryTranslationRateLimiter(1_000),
+        circuitBreaker: new TranslationCircuitBreaker({ failureThreshold: 5, openDurationMs: 60_000 }),
     };
 }
 

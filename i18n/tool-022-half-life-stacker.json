@@ -8,8 +8,18 @@
     "ester_bottleneck": "Ester Bottleneck",
     "optimal_injection_schedule": "Optimal Injection Schedule",
     "compound_peak_times": "Compound Peak Times",
-    "confidence_score": "Confidence Score",
-    "cycle_length_weeks": "Cycle Length (weeks)"
+    "cycle_length_weeks": "Cycle Length (weeks)",
+    "injection_frequency": "Injection Frequency",
+    "daily": "Daily",
+    "every_other_day": "Every other day",
+    "twice_weekly": "Twice per week",
+    "weekly": "Weekly",
+    "add_compound": "Add compound",
+    "calculate": "Calculate timing",
+    "calculating": "Calculating...",
+    "saving": "Saving...",
+    "disclaimer": "Timing values use simplified assumptions and user-entered half-lives. They are not validated pharmacokinetic results and must not guide injection or PCT timing.",
+    "invalid_input": "Review the inputs and correct any values outside the allowed range."
   },
   "ar": {
     "tool_name": "معالج نصف العمر للمركبات",
@@ -20,7 +30,17 @@
     "ester_bottleneck": "زجاجة Ester",
     "optimal_injection_schedule": "جدول الحقن الأمثل",
     "compound_peak_times": "أوقات الذروة المركبة",
-    "confidence_score": "درونة الثقة",
-    "cycle_length_weeks": "مدة الدورة (أسابيع)"
+    "cycle_length_weeks": "مدة الدورة (أسابيع)",
+    "injection_frequency": "تكرار الحقن",
+    "daily": "يوميًا",
+    "every_other_day": "يومًا بعد يوم",
+    "twice_weekly": "مرتان أسبوعيًا",
+    "weekly": "أسبوعيًا",
+    "add_compound": "إضافة مركب",
+    "calculate": "حساب التوقيت",
+    "calculating": "جارٍ الحساب...",
+    "saving": "جارٍ الحفظ...",
+    "disclaimer": "قيم التوقيت مبنية على افتراضات مبسطة وأنصاف أعمار يُدخلها المستخدم. ليست نتائج حركية دوائية معتمدة ولا ينبغي استخدامها لتحديد توقيت الحقن أو PCT.",
+    "invalid_input": "راجع المدخلات وصحّح أي قيمة خارج النطاق المسموح."
   }
 }

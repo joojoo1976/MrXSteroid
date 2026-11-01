@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const DopamineSchema=z.object({note:z.string().trim().min(1).max(300),observedAt:z.string().date()}).strict(); export function recordDopamine(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:DopamineSchema.parse(raw),disclaimer:'User note record only; no dopamine measurement or interpretation.'};}

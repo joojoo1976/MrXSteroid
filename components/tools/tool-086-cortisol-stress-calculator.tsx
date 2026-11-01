@@ -2,6 +2,7 @@
 /** Tool #086 — Cortisol Stress Calculator (dynamic UI, 2gpt MASTER v3.0).
  * useMemo instant recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN RTL/LTR. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateCortisolStress, type CortisolStressResult } from '@/lib/tools/engines/tool-086-cortisol-stress-calculator';
 import { buildCortisolStressOutput } from '@/lib/tools/adapters/tool-086-cortisol-stress-calculator';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -32,7 +33,7 @@ const TIER_COLOR: Record<string, string> = {
 export default function Tool086CortisolStressCalculator() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     morning_exhaustion_rating: 4,
     evening_tired_but_wired: false,
@@ -90,8 +91,8 @@ export default function Tool086CortisolStressCalculator() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">

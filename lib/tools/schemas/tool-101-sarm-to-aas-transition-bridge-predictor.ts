@@ -1,4 +1,4 @@
-﻿import { z } from 'zod';
+import { z } from 'zod';
 
 export const SarmToAasTransitionInputSchema = z.object({
   sarm_compound: z.enum([
@@ -9,7 +9,7 @@ export const SarmToAasTransitionInputSchema = z.object({
     'yk11',
     'cardarine_gw501516',
   ]),
-  sarm_use_weeks: z.number().min(1).max(104),
+  sarm_use_weeks: z.number().finite().min(1).max(104),
   suppression_severity: z.enum(['mild', 'moderate', 'severe']),
   prior_aas_use: z.boolean(),
   target_aas_ester: z.enum([
@@ -23,8 +23,9 @@ export const SarmToAasTransitionInputSchema = z.object({
     'testosterone_undecanoate',
   ]),
   has_current_bloodwork: z.boolean(),
-});
+}).strict();
 
 export type SarmToAasTransitionInput = z.infer<typeof SarmToAasTransitionInputSchema>;
+
 
 

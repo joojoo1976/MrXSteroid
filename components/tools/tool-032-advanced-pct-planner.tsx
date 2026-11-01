@@ -3,6 +3,7 @@
  * recompute, Zod validation, auto-draft, standard Save-to-Bio-Dashboard,
  * AR/EN RTL/LTR, registry prev/next, structured AI context (no external call). */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { planAdvancedPCT, type PctCompound } from '@/lib/tools/engines/tool-032-advanced-pct-planner';
 import { buildPctPlannerOutput } from '@/lib/tools/adapters/tool-032-advanced-pct-planner';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -18,7 +19,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 export default function Tool032AdvancedPctPlanner() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [hcgUsed, setHcgUsed] = useState(false);
   const [compounds, setCompounds] = useState<PctCompound[]>([
     { name_en: 'Testosterone Enanthate', ester_half_life_days: 4.5, weekly_dose_mg: 500, last_dose_date: today(), suppression_factor: 1 },
@@ -74,8 +75,8 @@ export default function Tool032AdvancedPctPlanner() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <label className="mb-4 flex items-center gap-2 text-xs font-bold text-zinc-400">

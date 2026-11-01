@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const CycleIntervalSchema=z.object({start:z.string().date(),end:z.string().date()}).strict(); export function recordCycleInterval(raw:unknown){const i=CycleIntervalSchema.parse(raw);return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:i,disclaimer:'Date record only; no cycle optimization or recommendation.'};}

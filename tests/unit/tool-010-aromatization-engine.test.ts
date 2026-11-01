@@ -7,16 +7,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   calculateAromatizationRisk,
-  classifyE2Risk,
   steadyStateE2For,
   bodyFatFactor,
   DEFAULT_AROMATIZATION_INPUT,
   COMPOUND_TYPES,
   AI_PROTOCOLS,
-  E2_CRITICAL_THRESHOLD,
-  E2_OPTIMAL_HIGH,
-  E2_OPTIMAL_LOW,
-  E2_CRASH_THRESHOLD,
   POST_CYCLE_OBSERVATION_WEEKS,
   BASELINE_E2,
   type EngineInput,
@@ -64,19 +59,6 @@ describe('Tool #010 - Aromatization Risk Engine', () => {
         bodyFatPct: 99,
       })
       expect(Number.isFinite(overdosed.peakE2)).toBe(true)
-    })
-  })
-
-  describe('E2 risk classification', () => {
-    it('classifies E2 into five risk zones', () => {
-      expect(classifyE2Risk(5)).toBe('crashed')
-      expect(classifyE2Risk(E2_CRASH_THRESHOLD)).toBe('suppressed')
-      expect(classifyE2Risk(15)).toBe('suppressed')
-      expect(classifyE2Risk(E2_OPTIMAL_LOW)).toBe('optimal')
-      expect(classifyE2Risk(30)).toBe('optimal')
-      expect(classifyE2Risk(E2_OPTIMAL_HIGH)).toBe('optimal')
-      expect(classifyE2Risk(60)).toBe('elevated')
-      expect(classifyE2Risk(E2_CRITICAL_THRESHOLD + 1)).toBe('critical')
     })
   })
 

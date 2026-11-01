@@ -57,6 +57,10 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const segments = pathname.split('/');
     const pathLocale = normalizeLang(segments[1]);
+    // Next can invoke middleware again after resolving a locale rewrite. Keep
+    // the original explicit prefix on that rewritten request so browser/cookie
+    // preferences cannot replace the URL's locale during the second pass.
+    const inheritedPathLocale = normalizeLang(request.headers.get('x-mrx-path-locale'));
 
     // --- Signals -------------------------------------------------------------
     const explicitLang = normalizeLang(request.cookies.get('mrx_explicit_language')?.value);
@@ -72,6 +76,7 @@ export function middleware(request: NextRequest) {
     // request is not re-pinned to a geo-derived language (spec §11, §13, §91).
     let lang: SupportedLang;
     if (pathLocale) lang = pathLocale;                 // explicit URL intent wins
+    else if (inheritedPathLocale) lang = inheritedPathLocale; // preserve rewrite intent
     else if (explicitLang) lang = explicitLang;        // user's manual choice
     else if (resolvedCookie) lang = resolvedCookie;    // saved locale preference
     else if (country) lang = languageForCountry(country); // live IP geolocation
@@ -93,6 +98,7 @@ export function middleware(request: NextRequest) {
 
     let response: NextResponse;
     if (pathLocale) {
+        requestHeaders.set('x-mrx-path-locale', pathLocale);
         const rest = segments.slice(2).join('/');
         const destination = request.nextUrl.clone();
         destination.pathname = '/' + rest;

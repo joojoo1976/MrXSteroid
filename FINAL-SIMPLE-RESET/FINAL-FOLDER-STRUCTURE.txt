@@ -1,0 +1,29 @@
+
+E:\
+├── MrXSteroid-main\          ← مشروعك الأصلي (لا تغير اسمه)
+│   ├── app\
+│   ├── components\
+│   ├── context\PreferencesContext.tsx
+│   ├── i18n\
+│   ├── supabase\schema.sql
+│   ├── SMARTTOOLS_TOOL_ID_INVENTORY.json
+│   └── package.json
+│
+└── temp\                     ← فك الضغط هنا فقط
+    ├── v6-150-genius\        ← إطار 150 أداة (صح)
+    │   ├── MASTER_PROMPT_v6_150_TOOLS_GENIUS.md
+    │   ├── SMARTTOOLS_150_COMPLETE_INVENTORY.md
+    │   ├── registry\tools.registry.v6.150.ts
+    │   ├── supabase\schema.v6.150.sql
+    │   └── engines\core\
+    │
+    └── v5-genius\            ← كود 11 أداة مفصل (صح)
+        ├── README_GENIUS.md
+        ├── engines\tools\126-*.v5.ts إلى 136-*.v5.ts
+        └── engines\core\future\
+
+لا يوجد مجلدات أخرى تبدأ بـ mrxsteroid- في E:\temp\
+
+المسارات النهائية الصحيحة في opencode:
+- E:\temp\v6-150-genius\
+- E:\temp\v5-genius\

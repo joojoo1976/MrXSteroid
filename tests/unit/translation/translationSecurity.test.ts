@@ -23,6 +23,7 @@ import {
 import { getRuntimeLanguages } from '../../../server/translation/languages';
 import { MAX_SOURCE_CHARS } from '../../../server/translation/contracts';
 import type { TranslationProvider } from '../../../server/translation/provider';
+import { MemoryTranslationRateLimiter } from '../../../server/translation/rateLimit';
 
 const request = (headers: Record<string, string> = {}) =>
     new Request('https://www.mrxsteroid.com/api/translate', { headers });
@@ -124,7 +125,7 @@ describe('T1 · security · rate limit (§111, §112)', () => {
     it('rate limits on a translation-namespaced key', async () => {
         // The in-memory limiter allows a burst then trips; either outcome must be
         // a well-formed verdict, and the namespace must never be a financial one.
-        const first = await checkRateLimit(request());
+        const first = await checkRateLimit(request(), new MemoryTranslationRateLimiter());
         expect(typeof first.allowed).toBe('boolean');
         if (!first.allowed) {
             expect(first.status).toBe(429);
@@ -185,7 +186,7 @@ describe('T1 · security · aggregate gate', () => {
         const verdict = await enforceTranslationSecurity(request(), {
             textCount: 2,
             totalCharacters: 40,
-        });
+        }, new MemoryTranslationRateLimiter());
         expect(verdict.allowed).toBe(true);
     });
 });

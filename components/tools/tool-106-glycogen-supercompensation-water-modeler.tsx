@@ -1,6 +1,7 @@
 'use client';
 /** Tool #106 - Glycogen Supercompensation & Water Retention Modeler (dynamic UI). */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calcGlycogenModel, type GlycogenInput, type GlycogenResult } from '@/lib/tools/engines/tool-106-glycogen-supercompensation-water-modeler';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -28,7 +29,7 @@ interface DraftInputs {
 
 export default function Tool106GlycogenModeler() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     body_weight_kg: 82,
     lean_mass_kg: 70,
@@ -46,9 +47,16 @@ export default function Tool106GlycogenModeler() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
+
+  const isImperial = unitSystem === 'imperial';
+  const displayWeight = (kg: number) => isImperial ? Number((kg * 2.2046226218).toFixed(1)) : kg;
+  const canonicalWeight = (value: number) => isImperial ? value / 2.2046226218 : value;
+  const displayWater = (liters: number) => isImperial ? Number((liters * 33.8140227).toFixed(1)) : liters;
+  const weightUnit = isImperial ? 'lb' : 'kg';
+  const waterUnit = isImperial ? 'fl oz' : 'L';
 
   const parsed = useMemo(() => GlycogenInputSchema.safeParse(inputs), [inputs]);
   const result = useMemo<GlycogenResult | null>(() => (parsed.success ? calcGlycogenModel(parsed.data as GlycogenInput) : null), [parsed]);
@@ -58,18 +66,18 @@ export default function Tool106GlycogenModeler() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.inputs}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <label className={LBL}>{t.body_weight}
-          <input type="number" min={35} max={220} step={1} value={inputs.body_weight_kg} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: Number(e.target.value || 82) }))} className={INP} />
+        <label className={LBL}>{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
+          <input type="number" min={isImperial ? 77.2 : 35} max={isImperial ? 485 : 220} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 180.8 : 82))) }))} className={INP} />
         </label>
-        <label className={LBL}>{t.lean_mass}
-          <input type="number" min={18} max={160} step={1} value={inputs.lean_mass_kg} onChange={(e) => setInputs((p) => ({ ...p, lean_mass_kg: Number(e.target.value || 70) }))} className={INP} />
+        <label className={LBL}>{t.lean_mass.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
+          <input type="number" min={isImperial ? 39.7 : 18} max={isImperial ? 352.7 : 160} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.lean_mass_kg)} onChange={(e) => setInputs((p) => ({ ...p, lean_mass_kg: canonicalWeight(Number(e.target.value || (isImperial ? 154.3 : 70))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.training_load}
           <select value={inputs.training_load} onChange={(e) => setInputs((p) => ({ ...p, training_load: e.target.value }))} className={SEL}>
@@ -95,7 +103,7 @@ export default function Tool106GlycogenModeler() {
             <h2 className="text-sm font-black text-lime-400 mb-3">{t.results}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <Metric label={t.glycogen_total} value={`${result.total_glycogen_g} g`} />
-              <Metric label={t.water} value={`${result.water_retention_liters} L`} />
+              <Metric label={t.water} value={`${displayWater(result.water_retention_liters)} ${waterUnit}`} />
               <Metric label={t.carb_budget_day} value={`${result.carb_budget_per_day_g} g/kg`} />
               <Metric label={t.glycogen_ceiling} value={`${result.muscle_glycogen_g} g`} />
               <Metric label={t.carbs_total} value={`${result.total_carb_g} g`} />

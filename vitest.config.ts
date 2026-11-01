@@ -100,6 +100,7 @@ export default defineConfig({
                     // project ONLY, never in the node project.
                     setupFiles: ['./vitest.setup.ts'],
                     include: [
+                        'app/**/*.test.tsx',
                         'components/**/*.test.tsx',
                         'components/**/*.test.ts',
                         // T3 client integration. DOM-dependent suites are named
@@ -108,6 +109,9 @@ export default defineConfig({
                         'lib/translation/**/*.dom.test.ts',
                         'context/**/*.test.tsx',
                         'shared/ui/**/*.test.tsx',
+                        // Component DOM tests moved outside `components/` avoid
+                        // the app's dynamic component loader treating test files as runtime modules.
+                        'tests/unit/components/**/*.test.tsx',
                         // The guest-claim page (`/claim-order`) is a legacy page
                         // with a DOM + fetch + auth lifecycle, so its suite runs
                         // here. Not matched by any node-project include.

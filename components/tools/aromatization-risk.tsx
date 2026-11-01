@@ -3,7 +3,7 @@
 /**
  * components/tools/aromatization-risk.tsx
  * ═══════════════════════════════════════════════════════════════════════════
- *  Tool #002 — Layer 5: Aromatization Risk & Estradiol (E2) Management Modeler
+ *  Tool #002 — Layer 5: Unvalidated Aromatization Scenario Model
  *  (Tailwind + Recharts + AR/EN RTL + pg/mL ↔ pmol/L units).
  * ═══════════════════════════════════════════════════════════════════════════
  * State protocol (spec §5):
@@ -22,15 +22,12 @@ import {
     Tooltip,
     CartesianGrid,
     Legend,
-    ReferenceLine,
 } from 'recharts';
 import {
     calculateAromatizationRisk,
     type AiProtocol,
     type CompoundType,
     type EngineInput,
-    E2_CRITICAL_THRESHOLD,
-    E2_OPTIMAL_HIGH,
 } from '@/lib/tools/engines/aromatization-risk';
 import { buildAromatizationRiskOutput } from '@/lib/tools/adapters/aromatization-risk';
 import {
@@ -43,6 +40,7 @@ import {
 } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseAromatizationRiskInput } from '@/lib/tools/schemas/aromatization-risk';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const TOOL_SLUG = 'aromatization-risk';
 
@@ -67,10 +65,10 @@ const COMPOUND_OPTIONS: Array<{ value: CompoundType; ar: string; en: string }> =
 ];
 
 const AI_OPTIONS: Array<{ value: AiProtocol; ar: string; en: string }> = [
-    { value: 'none', ar: 'بدون مثبط أروماتاز', en: 'No AI' },
-    { value: 'mild', ar: 'خفيف (Arimidex 0.25mg)', en: 'Mild (Arimidex 0.25mg E3D)' },
-    { value: 'standard', ar: 'قياسي (Arimidex 0.5mg)', en: 'Standard (Arimidex 0.5mg E3D)' },
-    { value: 'aggressive', ar: 'قوي (Exemestane 25mg)', en: 'Aggressive (Exemestane 25mg ED)' },
+    { value: 'none', ar: 'عامل افتراضي 0%', en: 'Hypothetical factor 0%' },
+    { value: 'mild', ar: 'عامل افتراضي 50%', en: 'Hypothetical factor 50%' },
+    { value: 'standard', ar: 'عامل افتراضي 72%', en: 'Hypothetical factor 72%' },
+    { value: 'aggressive', ar: 'عامل افتراضي 88%', en: 'Hypothetical factor 88%' },
 ];
 
 const PHASE_COLORS: Record<string, string> = {
@@ -78,20 +76,11 @@ const PHASE_COLORS: Record<string, string> = {
     post_cycle: '#10b981',
 };
 
-const RISK_COLORS: Record<string, string> = {
-    crashed: '#6366f1',
-    suppressed: '#3b82f6',
-    optimal: '#10b981',
-    elevated: '#f59e0b',
-    critical: '#ef4444',
-};
-
 export default function AromatizationRiskToolComponent() {
     const tool = requireTool(TOOL_SLUG);
     const neighbors = getToolNeighbors(TOOL_SLUG);
 
-    const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-    const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
+    const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
     const [weeksOnCycle, setWeeksOnCycle] = useState<number>(12);
     const [weeklyDoseMg, setWeeklyDoseMg] = useState<number>(500);
     const [bodyFatPct, setBodyFatPct] = useState<number>(15);
@@ -100,8 +89,6 @@ export default function AromatizationRiskToolComponent() {
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [saveStatus, setSaveStatus] = useState<string>('');
     const [validationError, setValidationError] = useState<string | null>(null);
-
-    const isRtl = locale === 'ar';
 
     // Draft restore (once, on mount) — corrupt/stale drafts are discarded safely.
     useEffect(() => {
@@ -132,15 +119,11 @@ export default function AromatizationRiskToolComponent() {
         unitSystem === 'metric'
             ? `${pgml.toFixed(0)} pg/mL`
             : `${(pgml * PMOL_PER_PGML).toFixed(0)} pmol/L`;
-    const refHigh = unitSystem === 'metric' ? E2_OPTIMAL_HIGH : Math.round(E2_OPTIMAL_HIGH * PMOL_PER_PGML);
-    const criticalRef = unitSystem === 'metric' ? E2_CRITICAL_THRESHOLD : Math.round(E2_CRITICAL_THRESHOLD * PMOL_PER_PGML);
-
     const chartData = useMemo(
         () =>
             result.timeline.map((p) => ({
                 week: p.weekNumber,
                 e2: unitSystem === 'metric' ? p.estradiolPgml : Math.round(p.estradiolPgml * PMOL_PER_PGML),
-                riskZone: p.riskZone,
                 phase: p.phase,
             })),
         [result, unitSystem],
@@ -236,25 +219,14 @@ export default function AromatizationRiskToolComponent() {
                     </h1>
                     <p className="text-xs md:text-sm text-slate-400 mt-1">
                         {isRtl
-                            ? 'محاكي مخاطر الأروماتزة ومستوى الاستراديول (E2) أثناء الكورسات الهرمونية وبعدها.'
-                            : 'Estradiol (E2) trajectory modeler for aromatization risk and AI management during anabolic cycles.'}
+                            ? 'منحنى حسابي افتراضي مبني على ثوابت غير متحقق منها سريرياً. لا يحسب المخاطر ولا يوصي بالأدوية أو تعديل الجرعات.'
+                            : 'Illustrative arithmetic curve using constants that are not clinically validated. It does not assess risk or recommend medication or dose changes.'}
                     </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700 transition"
-                    >
-                        {isRtl ? 'English (LTR)' : 'عربي (RTL)'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-lime-400 rounded-lg border border-slate-700 transition"
-                    >
-                        {unitSystem === 'metric' ? `Metric (${e2UnitLabel})` : `Imperial (${e2UnitLabel})`}
-                    </button>
+                    <p role="note" className="mt-3 rounded border border-amber-500/50 bg-amber-950/40 p-3 text-xs text-amber-100">
+                        {isRtl
+                            ? 'قيم E2 المعروضة مخرجات نموذج غير متحقق منها وليست قياسات مخبرية أو توقعات سريرية. لم تتوفر أدلة موثقة لهذه الثوابت؛ لا تستخدم النتائج لاتخاذ قرار صحي أو دوائي.'
+                            : 'Displayed E2 values are unvalidated model outputs, not laboratory measurements or clinical predictions. Verified evidence for these constants is unavailable; do not use these results for health or medication decisions.'}
+                    </p>
                 </div>
             </div>
 
@@ -283,7 +255,9 @@ export default function AromatizationRiskToolComponent() {
 
                     <div>
                         <label htmlFor="ar-dose" className="block text-xs font-medium text-slate-400 mb-1">
-                            {isRtl ? `الجرعة الأسبوعية: ${weeklyDoseMg} ملغ` : `Weekly Dose: ${weeklyDoseMg} mg`}
+                            {isRtl
+                                ? `مدخل سيناريو افتراضي: ${weeklyDoseMg} ملغ/أسبوع (ليس توصية جرعة)`
+                                : `Hypothetical scenario input: ${weeklyDoseMg} mg/week (not a dose recommendation)`}
                         </label>
                         <input
                             id="ar-dose"
@@ -333,7 +307,7 @@ export default function AromatizationRiskToolComponent() {
 
                     <div>
                         <label htmlFor="ar-ai" className="block text-xs font-medium text-slate-400 mb-1">
-                            {isRtl ? 'بروتوكول مثبط الأروماتاز (AI)' : 'Aromatase Inhibitor (AI) Protocol'}
+                            {isRtl ? 'عامل الكبت الافتراضي في النموذج (ليس جرعة دواء)' : 'Hypothetical model suppression factor (not a drug dose)'}
                         </label>
                         <select
                             id="ar-ai"
@@ -367,7 +341,7 @@ export default function AromatizationRiskToolComponent() {
                                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                                     <XAxis dataKey="week" stroke="#94a3b8" tick={{ fontSize: 10 }} />
-                                    <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} domain={[0, criticalRef + 40]} />
+                                    <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} domain={[0, 'auto']} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#020617', borderColor: '#475569', borderRadius: '8px', fontSize: '12px' }}
                                         formatter={(val: number | string) => {
@@ -376,8 +350,6 @@ export default function AromatizationRiskToolComponent() {
                                         }}
                                     />
                                     <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                                    <ReferenceLine y={refHigh} stroke="#10b981" strokeDasharray="5 3" label={{ value: `${isRtl ? 'أقصى طبيعي' : 'Optimal High'} ${refHigh}`, fontSize: 9, fill: '#10b981' }} />
-                                    <ReferenceLine y={criticalRef} stroke="#ef4444" strokeDasharray="5 3" label={{ value: `${isRtl ? 'حرج' : 'Critical'} ${criticalRef}`, fontSize: 9, fill: '#ef4444' }} />
                                     <Area type="monotone" dataKey="e2" name={isRtl ? 'الاستراديول (E2)' : 'Estradiol (E2)'} stroke="#ec4899" fillOpacity={0.25} fill="#ec4899" strokeWidth={2.5} />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -387,24 +359,22 @@ export default function AromatizationRiskToolComponent() {
                     {/* Telemetry cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'ذروة E2' : 'Peak E2'}</span>
-                            <span className="text-base font-bold font-mono" style={{ color: RISK_COLORS[result.peakRiskZone] ?? '#ec4899' }}>
+                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'ذروة E2 المحسوبة بالنموذج' : 'Modelled peak E2'}</span>
+                            <span className="text-base font-bold font-mono text-slate-200">
                                 {formatE2(result.peakE2).split(' ')[0]}
                             </span>
                             <span className="text-[10px] text-slate-500 block">{e2UnitLabel}</span>
                         </div>
                         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'خطر التثدي' : 'Gyno Risk'}</span>
-                            <span className="text-base font-bold text-red-400 font-mono">{result.gynoRiskScore}</span>
-                            <span className="text-[10px] text-slate-500 block">/100</span>
+                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'تقييم التثدي السريري' : 'Clinical gynecomastia risk'}</span>
+                            <span className="text-sm font-bold text-slate-300">{isRtl ? 'غير متاح' : 'NOT ASSESSED'}</span>
                         </div>
                         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'خطر الانهيار' : 'Crash Risk'}</span>
-                            <span className="text-base font-bold text-indigo-400 font-mono">{result.crashRiskScore}</span>
-                            <span className="text-[10px] text-slate-500 block">/100</span>
+                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'تقييم المخاطر السريرية' : 'Clinical risk assessment'}</span>
+                            <span className="text-sm font-bold text-slate-300">{isRtl ? 'غير متاح' : 'NOT ASSESSED'}</span>
                         </div>
                         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'معامل AI' : 'AI Factor'}</span>
+                            <span className="text-[10px] text-slate-400 block">{isRtl ? 'معامل افتراضي' : 'Hypothetical model factor'}</span>
                             <span className="text-base font-bold text-cyan-400 font-mono">{Math.round(result.aiSuppressionFactor * 100)}%</span>
                             <span className="text-[10px] text-slate-500 block">{isRtl ? 'كبت' : 'suppression'}</span>
                         </div>
@@ -456,14 +426,14 @@ export default function AromatizationRiskToolComponent() {
                 </div>
             </div>
 
-            {/* Book context / disclaimer */}
+            {/* Model limits */}
             <div className="mt-6 p-4 rounded-xl border border-slate-800 bg-slate-900/40">
                 <div className="flex items-start gap-3">
                     <span className="text-lg"></span>
                     <p className="text-xs text-slate-400 leading-relaxed">
                         {isRtl
-                            ? 'وفقاً لكتاب Mr. X-Steroid (الفصل الرابع)، يعتمد تحوّل الأندروجين إلى استراديول على قابلية المركب للأروماتزة وكثافة إنزيم الأروماتاز في الأنسجة الدهنية وقوة مثبطات الأروماتاز. تُصنّف النتائج في خمس مناطق: منهار، مكبوت، أمثل، مرتفع، حرج. النتائج نموذج تعليمي وليست استشارة طبية.'
-                            : 'Per Mr. X-Steroid Book (Ch. 4), androgen-to-estradiol conversion depends on compound aromatization propensity, adipose aromatase density, and AI enzyme suppression. Results are classified into five zones: crashed, suppressed, optimal, elevated, critical. Results are an educational model, not medical advice.'}
+                            ? 'المعادلات والثوابت الموروثة في هذه الأداة لم تُتحقق بمصدر علمي محدد في هذا المشروع. المنحنى يعرض نتيجة حسابية وفق الافتراضات المخفية في النموذج ولا يصف استجابة جسم شخص بعينه. لا يصدر تشخيصاً أو درجة خطورة أو توصية علاجية.'
+                            : 'The inherited equations and constants in this tool have not been verified against a specific scientific source in this project. The curve is arithmetic under the model assumptions and does not describe an individual physiological response. No diagnosis, risk score, or treatment recommendation is produced.'}
                     </p>
                 </div>
             </div>

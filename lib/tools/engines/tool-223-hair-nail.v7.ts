@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const HairNailSchema=z.object({observation:z.string().trim().min(1).max(300),observedAt:z.string().date()}).strict(); export function recordHairNail(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:HairNailSchema.parse(raw),disclaimer:'Observation record only; no growth assessment.'};}

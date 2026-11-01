@@ -1,0 +1,351 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+[90mstdout[2m | components/tools/macro-pilot.test.tsx[2m > [22m[2mMacroPilotTool integration[2m > [22m[2mcalculates real Macro v6 output from inputs
+[22m[39m[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2633[39m,
+    proteinGrams: [33m184[39m,
+    carbsGrams: [33m290[39m,
+    fatGrams: [33m82[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m35.1[39m,
+    proteinPerKg: [33m2.5[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m3.9[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.12160000000017135[39m,
+  timestamp: [33m1792837181886[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'cut'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2238[39m,
+    proteinGrams: [33m196[39m,
+    carbsGrams: [33m196[39m,
+    fatGrams: [33m75[39m,
+    phase: [32m'cut'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m29.8[39m,
+    proteinPerKg: [33m2.6[39m,
+    fatPerKg: [33m1[39m,
+    carbsPerKg: [33m2.6[39m,
+    weeklyWeightChangeKg: [33m-0.5[39m,
+    dietAdherenceScore: [33m85[39m,
+    mealTimingSuggestions: [
+      [32m'Prioritize protein at every meal (4-5 meals)'[39m,
+      [32m'Carbs around workout window for energy'[39m
+    ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.050200000000131695[39m,
+  timestamp: [33m1792837181888[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'bulk'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2896[39m,
+    proteinGrams: [33m217[39m,
+    carbsGrams: [33m326[39m,
+    fatGrams: [33m80[39m,
+    phase: [32m'bulk'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m38.6[39m,
+    proteinPerKg: [33m2.9[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m4.3[39m,
+    weeklyWeightChangeKg: [33m0.25[39m,
+    dietAdherenceScore: [33m90[39m,
+    mealTimingSuggestions: [
+      [32m'Spread calories across 5-6 meals'[39m,
+      [32m'Post-workout carb + protein shake recommended'[39m
+    ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.02549999999996544[39m,
+  timestamp: [33m1792837181888[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m70[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1649[39m,
+    tdee: [33m2556[39m,
+    targetCalories: [33m2556[39m,
+    proteinGrams: [33m179[39m,
+    carbsGrams: [33m281[39m,
+    fatGrams: [33m80[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m36.5[39m,
+    proteinPerKg: [33m2.6[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m4[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028999999999996362[39m,
+  timestamp: [33m1792837181889[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m80[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1749[39m,
+    tdee: [33m2711[39m,
+    targetCalories: [33m2711[39m,
+    proteinGrams: [33m190[39m,
+    carbsGrams: [33m298[39m,
+    fatGrams: [33m84[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m33.9[39m,
+    proteinPerKg: [33m2.4[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m3.7[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.023899999999912325[39m,
+  timestamp: [33m1792837181889[39m
+}
+
+ [31m❯[39m [30m[45m jsdom [49m[39m components/tools/macro-pilot.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 261[2mms[22m[39m
+     [32m✓[39m calculates real Macro v6 output from inputs[32m 238[2mms[22m[39m
+[31m     [31m×[31m shows a validation error for invalid input without rendering NaN[39m[32m 21[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m jsdom [49m[39m components/tools/macro-pilot.test.tsx[2m > [22mMacroPilotTool integration[2m > [22mshows a validation error for invalid input without rendering NaN
+[31m[1mTestingLibraryElementError[22m: Found multiple elements with the text of: /weight/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<input[31m
+  [33mvalue[31m=[32m"75"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<input[31m
+  [33mvalue[31m=[32m"75"[31m
+[36m/>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<section[31m
+      [33mclass[31m=[32m"genius-tool-template"[31m
+      [33mdata-locale[31m=[32m"en"[31m
+      [33mdata-status[31m=[32m"ready"[31m
+      [33mdata-theme[31m=[32m"light"[31m
+      [33mdata-tool-id[31m=[32m"mrx.tool.macro"[31m
+      [33mdata-unit-system[31m=[32m"metric"[31m
+      [33mdir[31m=[32m"ltr"[31m
+    [36m>[31m
+      [36m<header[31m
+        [33mclass[31m=[32m"genius-tool-template__header"[31m
+      [36m>[31m
+        [36m<h1>[31m
+          [0mMacro Pilot[0m
+        [36m</h1>[31m
+        [36m<p>[31m
+          [0mPilot integration using Macro v6[0m
+        [36m</p>[31m
+      [36m</header>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__status"[31m
+        [33mrole[31m=[32m"status"[31m
+      [36m>[31m
+        [0mready[0m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__inputs"[31m
+      [36m>[31m
+        [36m<div>[31m
+          [36m<label>[31m
+            [0mAge [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"30"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mWeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"75"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mHeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"175"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<button[31m
+            [33mtype[31m=[32m"button"[31m
+          [36m>[31m
+            [0mCalculate[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__results"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mdata-testid[31m=[32m"macro-result"[31m
+        [36m>[31m
+          [0m2633 kcal | P 184g | C 290g | F 82g[0m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</section>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<section[31m
+      [33mclass[31m=[32m"genius-tool-template"[31m
+      [33mdata-locale[31m=[32m"en"[31m
+      [33mdata-status[31m=[32m"idle"[31m
+      [33mdata-theme[31m=[32m"light"[31m
+      [33mdata-tool-id[31m=[32m"mrx.tool.macro"[31m
+      [33mdata-unit-system[31m=[32m"metric"[31m
+      [33mdir[31m=[32m"ltr"[31m
+    [36m>[31m
+      [36m<header[31m
+        [33mclass[31m=[32m"genius-tool-template__header"[31m
+      [36m>[31m
+        [36m<h1>[31m
+          [0mMacro Pilot[0m
+        [36m</h1>[31m
+        [36m<p>[31m
+          [0mPilot integration using Macro v6[0m
+        [36m</p>[31m
+      [36m</header>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__status"[31m
+        [33mrole[31m=[32m"status"[31m
+      [36m>[31m
+        [0midle[0m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__inputs"[31m
+      [36m>[31m
+        [36m<div>[31m
+          [36m<label>[31m
+            [0mAge [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"30"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mWeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"75"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mHeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"175"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<button[31m
+            [33mtype[31m=[32m"button"[31m
+          [36m>[31m
+            [0mCalculate[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</section>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m components/tools/macro-pilot.test.tsx:[2m18:29[22m[39m
+    [90m 16|[39m   it('shows a validation error for invalid input without rendering NaN…
+    [90m 17|[39m     [34mrender[39m([33m<[39m[33mMacroPilotTool[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m 18|[39m     fireEvent.change(screen.getByLabelText(/weight/i), { target: { val…
+    [90m   |[39m                             [31m^[39m
+    [90m 19|[39m     fireEvent.click(screen.getByRole('button', { name: /calculate/i })…
+    [90m 20|[39m     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDoc…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 13:19:40
+[2m   Duration [22m 1.89s[2m (transform 191ms, setup 139ms, import 323ms, tests 261ms, environment 893ms)[22m
+

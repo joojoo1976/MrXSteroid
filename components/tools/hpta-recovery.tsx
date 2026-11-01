@@ -40,6 +40,7 @@ import {
 } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseHptaRecoveryInput } from '@/lib/tools/schemas/hpta-recovery';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const TOOL_SLUG = 'hpta-recovery';
 
@@ -77,16 +78,13 @@ export default function HptaRecoveryToolComponent() {
     const tool = requireTool(TOOL_SLUG);
     const neighbors = getToolNeighbors(TOOL_SLUG);
 
-    const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-    const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
+    const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
     const [weeksOnCycle, setWeeksOnCycle] = useState<number>(12);
     const [compoundPotency, setCompoundPotency] = useState<CompoundPotency>('heavy');
     const [pctProtocol, setPctProtocol] = useState<PctProtocol>('aggressive_mrx');
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [saveStatus, setSaveStatus] = useState<string>('');
     const [validationError, setValidationError] = useState<string | null>(null);
-
-    const isRtl = locale === 'ar';
 
     // Draft restore (once, on mount) — corrupt/stale drafts are discarded safely.
     useEffect(() => {
@@ -190,7 +188,6 @@ export default function HptaRecoveryToolComponent() {
         }
     }, [weeksOnCycle, compoundPotency, pctProtocol, locale, unitSystem, isRtl]);
 
-    const testoUnitLabel = unitSystem === 'metric' ? 'ng/dL' : 'nmol/L';
     const formatTesto = (pct: number) =>
         unitSystem === 'metric'
             ? `${Math.round((pct / 100) * BASELINE_NGDL)} ng/dL`
@@ -221,22 +218,6 @@ export default function HptaRecoveryToolComponent() {
                             ? 'محاكي التثبيط المحوري واستعادة نشاط HPTA الزمني بعد الكورسات الهرمونية.'
                             : 'Time-course modeler for HPTA suppression and endogenous-T rebound after anabolic cycles.'}
                     </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700 transition"
-                    >
-                        {isRtl ? 'English (LTR)' : 'عربي (RTL)'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
-                        className="px-3 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-lime-400 rounded-lg border border-slate-700 transition"
-                    >
-                        {unitSystem === 'metric' ? `Metric (${testoUnitLabel})` : `Imperial (${testoUnitLabel})`}
-                    </button>
                 </div>
             </div>
 

@@ -2,6 +2,7 @@
 /** Tool #043 — Prolactin Management Pro (dynamic UI). useMemo instant recompute,
  * Zod validation, auto-draft, Bio-Dashboard save, AR/EN, prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { manageProlactin, type ProlactinResult } from '@/lib/tools/engines/tool-043-prolactin-management';
 import { buildProlactinOutput } from '@/lib/tools/adapters/tool-043-prolactin-management';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -22,7 +23,7 @@ const SYMPTOM_AR: Record<Symptom, string> = { libido_loss: 'انخفاض الر�
 export default function Tool043ProlactinManagement() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({ prolactin_ng_ml: 18, uses_19_nor: true, weekly_cabergoline_mcg: 0, symptoms: [] });
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
@@ -42,19 +43,19 @@ export default function Tool043ProlactinManagement() {
   const aiContext = useMemo(() => {
     if (!result || !parsed.success) return null;
     const now = '1970-01-01T00:00:00.000Z';
-    const output = buildProlactinOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+    const output = buildProlactinOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
     return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
+  }, [result, parsed, locale, unitSystem]);
 
   useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
 
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
 
   const toggleSymptom = (s: DraftInputs['symptoms'][number]) => setInputs((p) => ({ ...p, symptoms: p.symptoms.includes(s) ? p.symptoms.filter((x) => x !== s) : [...p.symptoms, s] }));
 
@@ -63,7 +64,7 @@ export default function Tool043ProlactinManagement() {
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const output = buildProlactinOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildProlactinOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
       if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
       else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
@@ -77,8 +78,8 @@ export default function Tool043ProlactinManagement() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">

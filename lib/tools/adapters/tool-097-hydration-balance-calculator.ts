@@ -1,7 +1,3 @@
-/**
- * Tool #097 — Hydration Balance Calculator
- * Layer 3: canonical ToolOutput envelope.
- */
 import {
   deriveDataQuality,
   type DataProvenance,
@@ -12,7 +8,7 @@ import {
   type ToolOutput,
   type UnitSystem,
 } from '../contracts';
-import { buildToolOutput, requireTool, buildSeoLinks } from '../registry';
+import { buildToolOutput, buildSeoLinks, requireTool } from '../registry';
 import {
   calculateHydrationBalance,
   type HydrationBalanceCalculatorInput,
@@ -30,51 +26,59 @@ export interface HydrationBalanceCalculatorOutputOptions {
 }
 
 export function buildHydrationBalanceCalculatorProvenance(options: HydrationBalanceCalculatorOutputOptions): DataProvenance {
-  const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.85;
   return {
-    source,
+    source: options.provenanceSource ?? 'manual',
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'L',
-    measurementMethod: 'metabolic body water turnover and thermoregulatory sweat rate modeling (deterministic model)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 2.0, high: 4.5, unit: 'L', source: 'sports clinical daily fluid recommendation' },
+    unit: 'L and L/h',
+    originalUnit: options.unitSystem === 'imperial' ? 'lb and US fl oz' : 'kg and L',
+    measurementMethod: 'User-entered pre/post exercise body mass and fluid volumes; NATA field sweat-loss equation',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
-export function buildHydrationBalanceCalculatorKeyFindings(result: HydrationBalanceCalculatorResult): KeyFinding[] {
-  const findings: KeyFinding[] = [
+export function buildHydrationBalanceCalculatorKeyFindings(result: HydrationBalanceCalculatorResult, locale: Locale): KeyFinding[] {
+  if (result.status === 'NOT_AVAILABLE') {
+    return [{
+      code: result.reason,
+      labelAr: 'تعذر حساب معدل التعرق',
+      labelEn: 'Sweat-rate calculation unavailable',
+      value: result.reason,
+      severity: 'info',
+    }];
+  }
+
+  const ar = locale === 'ar';
+  return [
     {
-      code: 'DAILY_FLUID',
-      labelAr: 'الاحتياج اليومي الكلي المقترح من السوائل',
-      labelEn: 'Recommended daily fluid intake',
-      value: `${result.recommended_daily_fluid_liters} L`,
-      severity: result.recommended_daily_fluid_liters >= 5.0 ? 'important' : 'info',
+      code: 'SWEAT_LOSS_MEASURED',
+      labelAr: 'فقد العرق المحسوب من القياسات',
+      labelEn: 'Measured sweat loss calculation',
+      value: `${result.sweat_loss_liters} L`,
+      severity: 'info',
     },
     {
-      code: 'SWEAT_LOSS',
-      labelAr: 'تقدير فقدان السوائل أثناء التمرين',
-      labelEn: 'Exercise sweat loss estimate',
-      value: `${result.sweat_loss_estimate_liters} L`,
-      severity: result.sweat_loss_estimate_liters >= 2.0 ? 'monitor' : 'info',
+      code: 'SWEAT_RATE_CALCULATED',
+      labelAr: 'معدل التعرق المحسوب',
+      labelEn: 'Calculated sweat rate',
+      value: `${result.sweat_rate_liters_per_hour} L/h`,
+      severity: 'info',
     },
     {
-      code: 'HYDRATION_TIER',
-      labelAr: 'مستوى متطلبات الترطيب',
-      labelEn: 'Hydration demand tier',
-      value: result.hydration_status_tier,
-      severity: result.hydration_status_tier === 'critical-hyperhydration-required' ? 'important' : 'info',
+      code: 'RESULT_TYPE',
+      labelAr: 'نوع النتيجة',
+      labelEn: 'Result type',
+      value: ar ? 'حساب رياضي' : 'CALCULATED',
+      severity: 'info',
     },
   ];
-  for (const g of result.hydration_guidelines) {
-    findings.push({ code: 'GUIDELINE', labelAr: 'إرشاد ترطيب', labelEn: 'Hydration guideline', value: g, severity: 'info' });
-  }
-  return findings;
 }
 
-export function buildHydrationBalanceCalculatorOutput(rawInput: HydrationBalanceCalculatorInput, options: HydrationBalanceCalculatorOutputOptions): ToolOutput<HydrationBalanceCalculatorResult> {
+export function buildHydrationBalanceCalculatorOutput(
+  rawInput: HydrationBalanceCalculatorInput,
+  options: HydrationBalanceCalculatorOutputOptions,
+): ToolOutput<HydrationBalanceCalculatorResult> {
   const tool = requireTool('tool-097-hydration-balance-calculator');
   const result = calculateHydrationBalance(rawInput);
   return buildToolOutput<HydrationBalanceCalculatorResult>({
@@ -87,7 +91,7 @@ export function buildHydrationBalanceCalculatorOutput(rawInput: HydrationBalance
     accessTier: tool.accessTier,
     result,
     provenance: buildHydrationBalanceCalculatorProvenance(options),
-    keyFindings: buildHydrationBalanceCalculatorKeyFindings(result),
+    keyFindings: buildHydrationBalanceCalculatorKeyFindings(result, options.locale),
     seoLinks: buildSeoLinks(tool),
   });
 }

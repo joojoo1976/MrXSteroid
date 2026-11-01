@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const LifetimeSchema=z.object({start:z.string().date(),note:z.string().trim().max(300).optional()}).strict(); export function recordLifetimeNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:LifetimeSchema.parse(raw),disclaimer:'Date/note record only; no treatment planning or medical recommendation.'};}

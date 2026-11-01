@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchSelectableTargets, translateText, TRANSLATE_ENDPOINT } from './api';
+import { fetchSelectableTargets, createTranslationSession, translateBatch, translateText, TRANSLATE_ENDPOINT } from './api';
 
 const IDENTITY = {
     engineVersion: 'v1',
@@ -120,6 +120,8 @@ describe('T3 · api · GET /api/translate', () => {
 describe('T3 · api · POST /api/translate', () => {
     const valid = {
         sourceLanguage: 'en',
+        routePath: '/',
+        sessionToken: 'signed-session',
         targetLanguage: 'fr',
         sourceText: 'Get started',
         surface: 'hero' as const,
@@ -134,6 +136,8 @@ describe('T3 · api · POST /api/translate', () => {
         expect(url).toBe(TRANSLATE_ENDPOINT);
         expect(init.method).toBe('POST');
         expect(init.cache).toBe('no-store');
+        expect(init.referrer).toBe('https://www.mrxsteroid.com/');
+        expect(init.headers).toMatchObject({ 'x-mrx-translation-session': 'signed-session' });
         expect(JSON.parse(init.body as string)).toEqual({
             sourceLanguage: 'en',
             targetLanguage: 'fr',
@@ -227,5 +231,51 @@ describe('T3 · api · POST /api/translate', () => {
         const result = await translateText(valid, fetchImpl as unknown as typeof fetch);
         expect(result.ok).toBe(false);
         if (!result.ok) expect(result.error.code).toBe('NETWORK_ERROR');
+    });
+});
+
+describe('T1-B · api · translation session', () => {
+    it('requests a route-bound short-lived session without persisting it', async () => {
+        const fetchImpl = vi.fn(async () => jsonResponse({ ok: true, token: 'signed', expiresInMs: 1000 }));
+        const result = await createTranslationSession({ targetLanguage: 'de', surface: 'hero', routePath: '/about' }, fetchImpl as unknown as typeof fetch);
+        expect(result.ok).toBe(true);
+        const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+        expect(url).toContain('mode=session');
+        expect(init.referrer).toBe('https://www.mrxsteroid.com/about');
+        expect(init.cache).toBe('no-store');
+    });
+});
+describe('T2 · api · POST batch /api/translate', () => {
+    const valid = {
+        sourceLanguage: 'en', routePath: '/about', sessionToken: 'signed', targetLanguage: 'de',
+        items: [
+            { id: 'a', sourceText: 'First sentence', surface: 'public-content' as const },
+            { id: 'b', sourceText: 'Second sentence', surface: 'public-content' as const },
+        ],
+    };
+    it('sends stable IDs and accepts a complete bijective response', async () => {
+        const fetchImpl = vi.fn(async () => jsonResponse({
+            ok: true, sourceLanguage: 'en', targetLanguage: 'de', surface: 'public-content', identity: IDENTITY,
+            items: [{ id: 'a', translatedText: 'Erste' }, { id: 'b', translatedText: 'Zweite' }],
+        }));
+        const result = await translateBatch(valid, fetchImpl as never);
+        expect(result.ok).toBe(true);
+        const body = JSON.parse(String((fetchImpl.mock.calls[0][1] as RequestInit).body));
+        expect(body.items.map((item: { id: string }) => item.id)).toEqual(['a', 'b']);
+    });
+    it.each([
+        ['missing', [{ id: 'a', translatedText: 'Erste' }]],
+        ['duplicate', [{ id: 'a', translatedText: 'Erste' }, { id: 'a', translatedText: 'Noch' }]],
+        ['unexpected', [{ id: 'a', translatedText: 'Erste' }, { id: 'x', translatedText: 'Falsch' }]],
+    ])('rejects %s response IDs', async (_label, items) => {
+        const result = await translateBatch(valid, (async () => jsonResponse({ ok: true, sourceLanguage: 'en', targetLanguage: 'de', surface: 'public-content', identity: IDENTITY, items })) as never);
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe('INVALID_BATCH_IDS');
+    });
+    it('rejects duplicate request IDs without a network call', async () => {
+        const fetchImpl = vi.fn();
+        const result = await translateBatch({ ...valid, items: [valid.items[0], valid.items[0]] }, fetchImpl as never);
+        expect(result.ok).toBe(false);
+        expect(fetchImpl).not.toHaveBeenCalled();
     });
 });

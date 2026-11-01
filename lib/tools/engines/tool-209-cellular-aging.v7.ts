@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const AgingSchema=z.object({value:z.number().finite().nonnegative().max(1000000),unit:z.string().trim().min(1).max(30)}).strict(); export function recordAgingValue(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:AgingSchema.parse(raw),disclaimer:'User value record only; no cellular-aging estimate.'};}

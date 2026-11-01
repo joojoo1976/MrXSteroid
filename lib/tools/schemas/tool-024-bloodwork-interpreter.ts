@@ -1,41 +1,40 @@
-/**
- * Tool #024 — Post-Cycle Bloodwork Interpreter
- * Schema Validation using Zod
- */
-
 import { z } from 'zod';
 
-export const BloodworkMarkerSchema = z.object({
-  name_en: z.string(),
-  name_ar: z.string(),
-  value: z.number(),
-  reference_low: z.number(),
-  reference_high: z.number(),
-  unit: z.string(),
-  result_status: z.enum(['low', 'normal', 'high', 'critical']),
+const DateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const parsed = new Date(`${value}T12:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}, 'Enter a real calendar date.');
+
+export const BloodworkComparisonRecordSchema = z.object({
+  id: z.string().uuid(),
+  markerName: z.string().trim().min(1).max(120),
+  value: z.number().finite(),
+  unit: z.string().trim().min(1).max(24),
+  referenceLow: z.number().finite(),
+  referenceHigh: z.number().finite(),
+  sourceLabel: z.string().trim().min(1).max(160),
+  sampleDate: DateOnlySchema,
+}).strict().superRefine((record, context) => {
+  if (record.referenceLow >= record.referenceHigh) {
+    context.addIssue({ code: 'custom', path: ['referenceHigh'], message: 'Upper reference limit must exceed lower reference limit.' });
+  }
 });
 
-export type BloodworkMarker = z.infer<typeof BloodworkMarkerSchema>;
+export const BloodworkComparisonInputSchema = z.object({
+  records: z.array(BloodworkComparisonRecordSchema).min(1).max(30),
+}).strict();
 
-export const PostCycleBloodworkInputSchema = z.object({
-  markers: z.array(BloodworkMarkerSchema).min(1).max(30),
-  cycle_duration_weeks: z.number().min(1).max(52),
-  pct_compounds: z.array(z.string()).min(0).max(10),
-  pct_duration_weeks: z.number().min(1).max(26),
-  days_since_pct_end: z.number().min(0).max(365),
-});
+export const BloodworkIntervalResultSchema = z.object({
+  record: BloodworkComparisonRecordSchema,
+  relation: z.enum(['BELOW_ENTERED_INTERVAL', 'WITHIN_ENTERED_INTERVAL', 'ABOVE_ENTERED_INTERVAL']),
+}).strict();
 
-export type PostCycleBloodworkInput = z.infer<typeof PostCycleBloodworkInputSchema>;
+export const BloodworkComparisonResultSchema = z.object({
+  resultOrigin: z.literal('CALCULATED'),
+  comparisons: z.array(BloodworkIntervalResultSchema).min(1).max(30),
+}).strict();
 
-export const PostCycleBloodworkResultSchema = z.object({
-  overall_recovery_status: z.enum(['excellent', 'good', 'partial', 'poor']),
-  hormonal_recovery: z.enum(['complete', 'incomplete', 'none']),
-  liver_function: z.enum(['normal', 'elevated', 'concerning']),
-  cardiovascular: z.enum(['normal', 'elevated', 'concerning']),
-  estrogen_status: z.enum(['low', 'normal', 'high', 'critical']),
-  recommendations: z.array(z.string()).min(0).max(15),
-  followup_marker: z.string(),
-  days_to_next_test: z.number().min(0).max(90),
-});
-
-export type PostCycleBloodworkResult = z.infer<typeof PostCycleBloodworkResultSchema>;
+export type BloodworkComparisonRecord = z.infer<typeof BloodworkComparisonRecordSchema>;
+export type BloodworkComparisonInput = z.infer<typeof BloodworkComparisonInputSchema>;
+export type BloodworkIntervalResult = z.infer<typeof BloodworkIntervalResultSchema>;
+export type BloodworkComparisonResult = z.infer<typeof BloodworkComparisonResultSchema>;

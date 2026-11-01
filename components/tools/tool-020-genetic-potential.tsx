@@ -3,12 +3,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { calculateGeneticPotential } from '@/lib/tools/engines/tool-020-genetic-potential';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-020-genetic-potential.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+
+const KG_PER_LB = 2.20462;
+const CM_PER_IN = 2.54;
 
 export default function Tool020GeneticPotential() {
   const i18nData = useToolI18n(i18nJson);
+  const { unitSystem, isRtl } = useToolDisplayPreferences();
   const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
@@ -35,40 +39,38 @@ export default function Tool020GeneticPotential() {
     setResult(r);
     debouncedSave({ ...savedState, genetic_potential: r });
   };
+  const weightUnit = unitSystem === 'imperial' ? 'lb' : 'kg';
+  const heightUnit = unitSystem === 'imperial' ? 'in' : 'cm';
+  const displayedWeight = unitSystem === 'imperial' ? currentWeight * KG_PER_LB : currentWeight;
+  const displayedHeight = unitSystem === 'imperial' ? height / CM_PER_IN : height;
+  const parseDisplayedWeight = (value: string) => {
+    const displayed = Number(value);
+    return Number.isFinite(displayed) ? (unitSystem === 'imperial' ? displayed / KG_PER_LB : displayed) : 0;
+  };
+  const parseDisplayedHeight = (value: string) => {
+    const displayed = Number(value);
+    return Number.isFinite(displayed) ? (unitSystem === 'imperial' ? displayed * CM_PER_IN : displayed) : 0;
+  };
 
   return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
+    <div className="pct-timing-tool p-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
+      <p className="mb-4 text-sm text-amber-700">{i18nData.disclaimer}</p>
       <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Age:</label> <input type="number" value={age} onChange={(e) => setAge(parseInt(e.target.value as any))} min="14" max="80" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Training Experience (years):</label> <input type="number" value={trainingYears} onChange={(e) => setTrainingYears(parseInt(e.target.value as any))} min="0" max="50" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Prior Cycles:</label> <input type="number" value={priorCycles} onChange={(e) => setPriorCycles(parseInt(e.target.value as any))} min="0" max="20" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Family History:</label> <select value={familyHistory} onChange={(e) => setFamilyHistory(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="none">None</option><option value="baldness">Baldness</option><option value="heart_disease">Heart Disease</option><option value="liver_disease">Liver Disease</option><option value="other">Other</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Body Type:</label> <select value={bodyType} onChange={(e) => setBodyType(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="ectomorph">Ectomorph</option><option value="mesomorph">Mesomorph</option><option value="endomorph">Endomorph</option><option value="mixed">Mixed</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Goal:</label> <select value={goal} onChange={(e) => setGoal(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">Bulk</option><option value="cut">Cut</option><option value="recomp">Recomp</option><option value="strength">Strength</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Current Weight (kg):</label> <input type="number" value={currentWeight} onChange={(e) => setCurrentWeight(parseInt(e.target.value as any))} min="30" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Height (cm):</label> <input type="number" value={height} onChange={(e) => setHeight(parseInt(e.target.value as any))} min="100" max="250" className="w-full rounded border p-2" dir="ltr" /></div>
-        <button onClick={calculate} className="mt-4 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? 'Calculating...' : 'Calculate Potential'} </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.age}:</label> <input type="number" value={age} onChange={(e) => setAge(parseInt(e.target.value as any))} min="14" max="80" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.training_experience}:</label> <input type="number" value={trainingYears} onChange={(e) => setTrainingYears(parseInt(e.target.value as any))} min="0" max="50" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.prior_cycles}:</label> <input type="number" value={priorCycles} onChange={(e) => setPriorCycles(parseInt(e.target.value as any))} min="0" max="20" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.family_history}:</label> <select value={familyHistory} onChange={(e) => setFamilyHistory(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="none">{i18nData.none}</option><option value="baldness">{i18nData.baldness}</option><option value="heart_disease">{i18nData.heart_disease}</option><option value="liver_disease">{i18nData.liver_disease}</option><option value="other">{i18nData.other}</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.body_type}:</label> <select value={bodyType} onChange={(e) => setBodyType(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="ectomorph">{i18nData.ectomorph}</option><option value="mesomorph">{i18nData.mesomorph}</option><option value="endomorph">{i18nData.endomorph}</option><option value="mixed">{i18nData.mixed}</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.goal}:</label> <select value={goal} onChange={(e) => setGoal(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="bulk">{i18nData.bulk}</option><option value="cut">{i18nData.cut}</option><option value="recomp">{i18nData.recomp}</option><option value="strength">{i18nData.strength}</option></select></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.current_weight} ({weightUnit}):</label> <input type="number" value={Number(displayedWeight.toFixed(2))} onChange={(e) => setCurrentWeight(parseDisplayedWeight(e.target.value))} min={unitSystem === 'imperial' ? 66.14 : 30} max={unitSystem === 'imperial' ? 440.92 : 200} step="any" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.height} ({heightUnit}):</label> <input type="number" value={Number(displayedHeight.toFixed(2))} onChange={(e) => setHeight(parseDisplayedHeight(e.target.value))} min={unitSystem === 'imperial' ? 39.37 : 100} max={unitSystem === 'imperial' ? 98.43 : 250} step="any" className="w-full rounded border p-2" dir="ltr" /></div>
+        <button onClick={calculate} className="mt-4 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? i18nData.calculating : i18nData.calculate_indicator} </button>
+        {isPending && <p className="mt-2 text-sm text-zinc-500">{i18nData.saving_to_account}</p>}
 
-        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
-          <p className="text-zinc-600 font-bold">Potential Score: {result.potential_score}/100</p>
-          <p className="text-zinc-500">{i18nData.body_type_assessment}: {result.body_type_assessment}</p>
-          <p className="text-zinc-500">{i18nData.recommended_cycle_length}: {result.recommended_cycle_length} weeks</p>
-          <p className="text-zinc-500">{i18nData.recommended_dosage_multiplier}x dosage multiplier</p>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.risk_factors.map((r: any, i: any) => <li key={i}>{r}</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.recommended_compounds.map((c: any, i: any) => <li key={i}>{c}</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.avoided_compounds.map((a: any, i: any) => <li key={i}>{a}</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.personalized_tips.map((t: any, i: any) => <li key={i}>{t}</li>)}
-          </ul>
+        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir={isRtl ? 'rtl' : 'ltr'}>
+          <p className="text-zinc-600 font-bold">{i18nData.indicator_score}: {result.potential_score}/100</p>
+          <p className="text-zinc-500">{i18nData.body_type_assessment}: {i18nData.score_context}</p>
         </div>}
       </div>
     </div>

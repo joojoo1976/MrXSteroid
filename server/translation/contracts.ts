@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { validateTargetLanguage, type ProviderCapability } from './languages';
+import { TRANSLATION_GLOSSARY_VERSION } from './glossary';
+export { TRANSLATION_GLOSSARY_VERSION } from './glossary';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -25,8 +27,6 @@ import { validateTargetLanguage, type ProviderCapability } from './languages';
 /** §33 — bump when translation logic changes so stale cache entries separate. */
 export const TRANSLATION_ENGINE_VERSION = 'v1';
 
-/** §34 — bump when the glossary changes; no glossary exists yet. */
-export const TRANSLATION_GLOSSARY_VERSION = 'none';
 
 /**
  * §3 / §4 / §5 / §37 — the sole permitted runtime translation source.
@@ -144,7 +144,8 @@ export type TranslationContractErrorCode =
     | 'CANONICAL_TARGET_NOT_ALLOWED'
     | 'LANGUAGE_DISABLED'
     | 'NOT_RUNTIME_TRANSLATABLE'
-    | 'PROVIDER_UNSUPPORTED';
+    | 'PROVIDER_UNSUPPORTED'
+    | 'INVALID_BATCH_IDS';
 
 export type TranslationContractError = {
     ok: false;

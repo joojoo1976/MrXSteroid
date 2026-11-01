@@ -1,28 +1,29 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { manageSodiumPotassium } from './tool-098-sodium-potassium-manager';
 
-describe('Tool #098 — Sodium-Potassium Manager Engine', () => {
-  it('identifies balanced electrolyte intake with normal blood pressure', () => {
-    const result = manageSodiumPotassium({
-      daily_sodium_mg: 3000,
-      daily_potassium_mg: 3800,
-      aldosterone_stress_or_aas: false,
-      resting_blood_pressure_systolic: 118,
+describe('Tool #098 — sodium/potassium ratio arithmetic', () => {
+  it('calculates the entered mg-to-mg ratio without classification', () => {
+    expect(manageSodiumPotassium({ daily_sodium_mg: 3000, daily_potassium_mg: 3800 })).toEqual({
+      status: 'CALCULATED', resultType: 'CALCULATED', sodium_to_potassium_ratio: 0.79,
     });
-    expect(result.sodium_to_potassium_ratio).toBeLessThan(1.0);
-    expect(result.electrolyte_balance_tier).toBe('optimal');
-    expect(result.cardiovascular_strain_index).toBeLessThan(30);
   });
 
-  it('flags high risk when sodium heavily outweighs potassium alongside hypertension', () => {
-    const result = manageSodiumPotassium({
-      daily_sodium_mg: 6000,
-      daily_potassium_mg: 2000,
-      aldosterone_stress_or_aas: true,
-      resting_blood_pressure_systolic: 145,
-    });
-    expect(result.sodium_to_potassium_ratio).toBeGreaterThan(2.5);
-    expect(result.electrolyte_balance_tier).toBe('potassium-deficient-high-risk');
-    expect(result.cardiovascular_strain_index).toBeGreaterThanOrEqual(70);
+  it('allows zero sodium while requiring a positive potassium denominator', () => {
+    expect(manageSodiumPotassium({ daily_sodium_mg: 0, daily_potassium_mg: 2000 }).sodium_to_potassium_ratio).toBe(0);
+    expect(() => manageSodiumPotassium({ daily_sodium_mg: 100, daily_potassium_mg: 0 })).toThrow();
+  });
+
+  it.each([
+    { daily_sodium_mg: -1, daily_potassium_mg: 2000 },
+    { daily_sodium_mg: Number.NaN, daily_potassium_mg: 2000 },
+    { daily_sodium_mg: 100, daily_potassium_mg: Number.POSITIVE_INFINITY },
+    { daily_sodium_mg: 100, daily_potassium_mg: 2000, extra: true },
+  ])('rejects malformed or unsupported input', (input) => {
+    expect(() => manageSodiumPotassium(input as never)).toThrow();
+  });
+
+  it('is deterministic', () => {
+    const input = { daily_sodium_mg: 2500, daily_potassium_mg: 3500 };
+    expect(manageSodiumPotassium(input)).toEqual(manageSodiumPotassium(input));
   });
 });

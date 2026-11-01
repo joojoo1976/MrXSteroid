@@ -24,8 +24,11 @@ describe('Batch #091–#095 Adapters', () => {
       resistance_training_sessions_per_week: 4,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-091-female-health-optimizer');
-    expect(output.keyFindings.some((f) => f.code === 'VITALITY_SCORE')).toBe(true);
-    expect(output.provenance.unit).toBe('score');
+    expect(output.result).toMatchObject({ status: 'RECORDED', resultType: 'USER_PROVIDED' });
+    expect(output.keyFindings.some((f) => f.code === 'OBSERVED_ENERGY')).toBe(true);
+    expect(output.provenance.unit).toBe('user-entered observations');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 
   it('tool-092 adapter emits valid ToolOutput structure', () => {
@@ -36,8 +39,10 @@ describe('Batch #091–#095 Adapters', () => {
       monitoring_bloodwork_planned: true,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-092-female-dosage-calculator');
-    expect(output.keyFindings.some((f) => f.code === 'VIRILIZATION_RISK')).toBe(true);
-    expect(output.provenance.unit).toBe('ratio');
+    expect(output.result.status).toBe('NOT_AVAILABLE');
+    expect(output.keyFindings.some((f) => f.code === 'NO_VALIDATED_FEMALE_DOSING_MODEL')).toBe(true);
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 
   it('tool-093 adapter emits valid ToolOutput structure', () => {
@@ -48,8 +53,11 @@ describe('Batch #091–#095 Adapters', () => {
       high_intensity_training_focus: true,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-093-menstrual-cycle-manager');
-    expect(output.keyFindings.some((f) => f.code === 'PHASE')).toBe(true);
-    expect(output.provenance.unit).toBe('phase');
+    expect(output.result).toMatchObject({ status: 'RECORDED', resultType: 'USER_PROVIDED' });
+    expect(output.keyFindings.some((f) => f.code === 'CYCLE_DAY')).toBe(true);
+    expect(output.provenance.unit).toBe('calendar days and user-entered flags');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 
   it('tool-094 adapter emits valid ToolOutput structure', () => {
@@ -60,8 +68,10 @@ describe('Batch #091–#095 Adapters', () => {
       unprotected_intercourse_during_exposure: false,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-094-pregnancy-risk-calculator');
-    expect(output.keyFindings.some((f) => f.code === 'TERATOGENIC_RISK')).toBe(true);
-    expect(output.provenance.unit).toBe('risk');
+    expect(output.result.status).toBe('NOT_AVAILABLE');
+    expect(output.keyFindings.some((f) => f.code === 'NO_PRODUCT_SPECIFIC_PREGNANCY_GUIDANCE')).toBe(true);
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 
   it('tool-095 adapter emits valid ToolOutput structure', () => {
@@ -73,7 +83,10 @@ describe('Batch #091–#095 Adapters', () => {
       using_topical_dht_blockers_or_salicylic: true,
     }, OPTS);
     expect(output.toolSlug).toBe('tool-095-skin-health-optimizer');
-    expect(output.keyFindings.some((f) => f.code === 'CLARITY_SCORE')).toBe(true);
-    expect(output.provenance.unit).toBe('score');
+    expect(output.result).toMatchObject({ status: 'RECORDED', resultType: 'USER_PROVIDED' });
+    expect(output.keyFindings.some((f) => f.code === 'OBSERVED_SEBUM')).toBe(true);
+    expect(output.provenance.unit).toBe('user-entered observations');
+    expect(output.provenance.confidence).toBeNull();
+    expect(output.provenance.dataQuality).toBe('not_assessed');
   });
 });

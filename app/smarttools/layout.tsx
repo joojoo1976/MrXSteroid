@@ -3,6 +3,8 @@
 import type { Metadata } from 'next';
 import SmartToolsHeader from '@/components/layouts/SmartToolsHeader';
 import GlobalFooterWrapper from '@/components/layouts/GlobalFooterWrapper';
+import SmartToolsAIExperience from '@/components/smarttools/SmartToolsAIExperience';
+import { SmartToolsSessionContextProvider } from '@/context/SmartToolsSessionContext';
 
 export const metadata: Metadata = {
     title: 'Smart Tools',
@@ -31,9 +33,11 @@ export default function SmartToolsLayout({
     return (
         <div className="min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100">
             <SmartToolsHeader />
-            <div className="flex-1 pt-24 md:pt-28">
-                {children}
-            </div>
+            <SmartToolsSessionContextProvider>
+                <div className="flex-1 pt-24 md:pt-28">
+                    <SmartToolsAIExperience>{children}</SmartToolsAIExperience>
+                </div>
+            </SmartToolsSessionContextProvider>
             <GlobalFooterWrapper />
         </div>
     );

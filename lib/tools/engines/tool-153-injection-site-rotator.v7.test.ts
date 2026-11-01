@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest'; import {recordSiteRotation,InjectionSiteRotationInputSchema} from './tool-153-injection-site-rotator.v7';
+describe('Tool 153 rotation log',()=>{it('records entries',()=>{expect(recordSiteRotation({entries:[{site:'user label',usedOn:'2026-10-26'}]}).status).toBe('RECORDED');});it('rejects extra fields',()=>{expect(InjectionSiteRotationInputSchema.safeParse({entries:[],extra:true}).success).toBe(false);});});

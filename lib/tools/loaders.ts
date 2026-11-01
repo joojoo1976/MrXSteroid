@@ -23,6 +23,12 @@ const SLUG_RE = /^[a-z0-9-]+$/;
  */
 export function toolLoaders(slug: string): (() => Promise<ToolComponentModule>) | null {
   if (!SLUG_RE.test(slug)) return null;
+  if (slug === 'tool-146-ai-safety-gate-emergency-protocol') {
+    return () => import('@/components/tools/tool-146-ai-safety-gate-emergency-protocol') as Promise<ToolComponentModule>;
+  }
+  if (slug === 'tool-147-scientific-evidence-explorer') {
+    return () => import('@/components/tools/tool-147-scientific-evidence-explorer') as Promise<ToolComponentModule>;
+  }
   return () => import(`@/components/tools/${slug}`) as Promise<ToolComponentModule>;
 }
 

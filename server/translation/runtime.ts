@@ -42,12 +42,21 @@ import {
     type TranslationSurface,
 } from './contracts';
 import { getVerifiedRuntimeTargets } from './languages';
+import { glossaryTermsForTarget } from './glossary';
+import { protectTranslationValues, validateAndRestoreTranslation } from './placeholders';
+import { classifyTranslationRoute, isSurfaceAllowedForRoute } from './policy';
+import { verifyTranslationSession } from './session';
+import type { TranslationBudgetLimits, TranslationBudgetStore } from './budget';
+import type { TranslationRateLimiter } from './rateLimit';
+import type { TranslationAuditSink } from './audit';
+import { noopTranslationAuditSink, safeTranslationAuditEvent } from './audit';
+import type { TranslationCircuitBreakerLike } from './circuitBreaker';
+import { TranslationCircuitOpenError } from './circuitBreaker';
 import {
     checkCharacterQuota,
     checkOrigin,
     checkRateLimit,
     checkRequestSize,
-    checkTargetQuota,
     isTargetWithinAllowlist,
     TRANSLATION_CHARACTER_QUOTA,
 } from './security';
@@ -63,6 +72,7 @@ export type TranslationRuntimeErrorCode =
     | 'SOURCE_TEXT_TOO_LONG'
     | 'BATCH_TOO_LARGE'
     | 'EMPTY_BATCH'
+    | 'INVALID_BATCH_IDS'
     | 'UNKNOWN_SURFACE'
     | 'UNKNOWN_LANGUAGE'
     | 'CANONICAL_TARGET_NOT_ALLOWED'
@@ -79,7 +89,17 @@ export type TranslationRuntimeErrorCode =
     | 'UNSUPPORTED_LANGUAGE'
     | 'PROVIDER_ERROR'
     | 'TIMEOUT'
-    | 'QUOTA_EXCEEDED';
+    | 'QUOTA_EXCEEDED'
+    | 'TRANSLATION_TOKEN_MISMATCH'
+    | 'TRANSLATION_SESSION_REQUIRED'
+    | 'TRANSLATION_SESSION_INVALID'
+    | 'TRANSLATION_SESSION_EXPIRED'
+    | 'TRANSLATION_SESSION_CONTEXT_MISMATCH'
+    | 'TRANSLATION_ROUTE_BLOCKED'
+    | 'TRANSLATION_BUDGET_EXCEEDED'
+    | 'TRANSLATION_PERSISTENT_LIMITER_UNAVAILABLE'
+    | 'TRANSLATION_CIRCUIT_OPEN'
+    | 'TRANSLATION_STORAGE_UNAVAILABLE';
 
 export class TranslationRuntimeError extends Error {
     readonly code: TranslationRuntimeErrorCode;
@@ -120,6 +140,7 @@ const CONTRACT_STATUS: Record<TranslationContractErrorCode, number> = {
     SOURCE_TEXT_TOO_LONG: 413,
     BATCH_TOO_LARGE: 413,
     EMPTY_BATCH: 400,
+    INVALID_BATCH_IDS: 400,
     UNKNOWN_SURFACE: 400,
     UNKNOWN_LANGUAGE: 400,
     CANONICAL_TARGET_NOT_ALLOWED: 400,
@@ -155,6 +176,15 @@ export type TranslationRuntimeDeps = {
     readonly resolveVerifiedTargets: (provider: TranslationProvider) => Promise<ReadonlySet<string>>;
     /** Stable per-caller id used for quotas and rate limiting. */
     readonly clientId: string;
+    /** Server-observed route; never copied from the JSON payload. */
+    readonly routePath?: string;
+    readonly sessionToken?: string;
+    readonly sessionSecret?: string;
+    readonly budgetStore?: TranslationBudgetStore | null;
+    readonly budgetLimits?: TranslationBudgetLimits;
+    readonly rateLimiter?: TranslationRateLimiter | null;
+    readonly circuitBreaker?: TranslationCircuitBreakerLike;
+    readonly audit?: TranslationAuditSink;
 };
 
 /**
@@ -173,7 +203,48 @@ export async function translateRequest(deps: TranslationRuntimeDeps): Promise<Tr
     }
 
     const request = contract.value;
-    const texts = [request.sourceText];
+    const audit = deps.audit ?? noopTranslationAuditSink;
+    const routePath = deps.routePath ?? new URL(deps.request.url).pathname;
+    const policy = classifyTranslationRoute(routePath);
+    if (!policy.translatable || !isSurfaceAllowedForRoute(routePath, request.surface)) {
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: 'TRANSLATION_ROUTE_BLOCKED', routeClass: policy.routeClass, surface: request.surface }));
+        throw new TranslationRuntimeError('TRANSLATION_ROUTE_BLOCKED', 'This route is not eligible for runtime translation.', 403);
+    }
+    if (!deps.sessionToken || !deps.sessionSecret) {
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: 'TRANSLATION_SESSION_REQUIRED', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage }));
+        throw new TranslationRuntimeError('TRANSLATION_SESSION_REQUIRED', 'A translation session is required.', 401);
+    }
+    const verifiedSession = verifyTranslationSession(deps.sessionToken, deps.sessionSecret);
+    if (!verifiedSession.ok) {
+        const status = verifiedSession.code === 'TRANSLATION_SESSION_EXPIRED' ? 401 : 403;
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: verifiedSession.code, routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage }));
+        throw new TranslationRuntimeError(verifiedSession.code, 'The translation session is invalid or expired.', status);
+    }
+    const claims = verifiedSession.claims;
+    if (
+        claims.targetLanguage !== request.targetLanguage ||
+        claims.sourceLanguage !== request.sourceLanguage ||
+        claims.routePath !== routePath ||
+        claims.routeClass !== policy.routeClass ||
+        claims.surface !== request.surface
+    ) {
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: 'TRANSLATION_SESSION_CONTEXT_MISMATCH', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage }));
+        throw new TranslationRuntimeError('TRANSLATION_SESSION_CONTEXT_MISMATCH', 'The translation session does not match this request.', 403);
+    }
+    if (!deps.budgetStore || !deps.budgetLimits) {
+        throw new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Shared translation storage is not configured.', 503, true);
+    }
+    if (!deps.rateLimiter) {
+        throw new TranslationRuntimeError('TRANSLATION_PERSISTENT_LIMITER_UNAVAILABLE', 'Translation rate limiting is not configured.', 503, true);
+    }
+    if (!deps.circuitBreaker) {
+        throw new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Distributed translation resilience is not configured.', 503, true);
+    }
+    const protection = protectTranslationValues(
+        request.sourceText,
+        glossaryTermsForTarget(request.targetLanguage)
+    );
+    const texts = [protection.protectedText];
     const totalCharacters = request.sourceText.length;
 
     // 4 — provider selection.
@@ -229,19 +300,55 @@ export async function translateRequest(deps: TranslationRuntimeDeps): Promise<Tr
     // 7 — security boundary. Reached only for a request that is already
     // contract-valid, so quota spend is bounded rather than sprayed.
     const deny = await enforceBoundary(deps, texts.length, totalCharacters);
-    if (deny) throw deny;
-
+    if (deny) {
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: deny.code, routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
+        throw deny;
+    }
+    let budget;
+    try {
+        budget = await deps.budgetStore.consume({
+            sessionId: claims.sessionId,
+            sessionExpiresAt: claims.expiresAt,
+            clientId: deps.clientId,
+            routePath,
+            targetLanguage: request.targetLanguage,
+            characters: totalCharacters,
+        }, {
+            ...deps.budgetLimits,
+            maxSessionRequests: Math.min(deps.budgetLimits.maxSessionRequests, claims.maxRequests),
+            maxSessionCharacters: Math.min(deps.budgetLimits.maxSessionCharacters, claims.maxCharacters),
+        });
+    } catch {
+        throw new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Shared translation storage is unavailable.', 503, true);
+    }
+    if (!budget.allowed) {
+        audit(safeTranslationAuditEvent({ event: 'request_rejected', code: budget.scope === 'target' ? 'TARGET_QUOTA_EXCEEDED' : 'TRANSLATION_BUDGET_EXCEEDED', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
+        if (budget.scope === 'target') {
+            throw new TranslationRuntimeError('TARGET_QUOTA_EXCEEDED', 'Translation target-language budget exceeded.', 429);
+        }
+        throw new TranslationRuntimeError('TRANSLATION_BUDGET_EXCEEDED', 'Translation budget exceeded.', 429);
+    }
     // 8 — provider invocation.
     let output: ProviderTranslationOutput;
     try {
-        output = await provider.translate({
+        const operation = () => provider.translate({
             sourceLanguage: request.sourceLanguage,
             targetLanguage: request.targetLanguage,
             texts,
             surface: request.surface,
         });
+        output = await deps.circuitBreaker.execute(operation);
     } catch (error) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'TRANSLATION_STORAGE_UNAVAILABLE') {
+            audit(safeTranslationAuditEvent({ event: 'request_rejected', code: 'TRANSLATION_STORAGE_UNAVAILABLE', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
+            throw new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Shared translation storage is unavailable.', 503, true);
+        }
+        if (error instanceof TranslationCircuitOpenError) {
+            audit(safeTranslationAuditEvent({ event: 'circuit_open', code: 'TRANSLATION_CIRCUIT_OPEN', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
+            throw new TranslationRuntimeError('TRANSLATION_CIRCUIT_OPEN', error.message, 503, true);
+        }
         if (error instanceof TranslationProviderError) {
+            audit(safeTranslationAuditEvent({ event: 'provider_failure', code: error.code, routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
             throw new TranslationRuntimeError(
                 error.code as TranslationRuntimeErrorCode,
                 error.message,
@@ -257,11 +364,28 @@ export async function translateRequest(deps: TranslationRuntimeDeps): Promise<Tr
         );
     }
 
+    if (output.texts.length !== texts.length || typeof output.texts[0] !== 'string') {
+        throw new TranslationRuntimeError(
+            'PROVIDER_ERROR',
+            'The translation provider returned an unexpected translation count.',
+            502
+        );
+    }
+    const restored = validateAndRestoreTranslation(output.texts[0], protection);
+    if (!restored.ok) {
+        throw new TranslationRuntimeError(
+            'TRANSLATION_TOKEN_MISMATCH',
+            'The translation response did not preserve protected values.',
+            502
+        );
+    }
+
+    audit(safeTranslationAuditEvent({ event: 'request_allowed', routeClass: policy.routeClass, surface: request.surface, targetLanguage: request.targetLanguage, characters: totalCharacters }));
     return {
         sourceLanguage: request.sourceLanguage,
         targetLanguage: request.targetLanguage,
         surface: request.surface,
-        translations: output.texts,
+        translations: [restored.text],
         identity: {
             engineVersion: request.engineVersion,
             glossaryVersion: request.glossaryVersion,
@@ -283,13 +407,15 @@ async function enforceBoundary(
     const quota = checkCharacterQuota(totalCharacters);
     if (!quota.allowed) return toRuntimeError(quota);
 
-    const targetQuota = checkTargetQuota(deps.clientId, String((deps.payload as { targetLanguage?: string })?.targetLanguage ?? ''));
-    if (!targetQuota.allowed) return toRuntimeError(targetQuota);
-
     const origin = checkOrigin(deps.request);
     if (!origin.allowed) return toRuntimeError(origin);
 
-    const rate = await checkRateLimit(deps.request);
+    let rate;
+    try {
+        rate = await checkRateLimit(deps.request, deps.rateLimiter);
+    } catch {
+        return new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Shared translation storage is unavailable.', 503, true);
+    }
     if (!rate.allowed) return toRuntimeError(rate);
 
     return null;

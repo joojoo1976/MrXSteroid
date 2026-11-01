@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 /** Tool #105 — AI Health Data Fusion Hub & Timeline (dynamic UI).
  * Local, user-supplied data only. No FHIR / wearable / external integration. */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { fuseHealthData, type HealthEvent, type HealthEventCategory } from '@/lib/tools/engines/tool-105-ai-health-data-fusion-hub';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -39,7 +40,7 @@ function blankEvent(): DraftEvent {
 
 export default function Tool105HealthFusion() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({ events: [blankEvent()], consent_given: false, authenticated: false });
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
@@ -83,8 +84,6 @@ export default function Tool105HealthFusion() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale("ar")} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === "ar" ? "bg-lime-500 text-slate-950" : "bg-zinc-800 text-zinc-300"}`}>عربي</button>
-          <button type="button" onClick={() => setLocale("en")} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === "en" ? "bg-lime-500 text-slate-950" : "bg-zinc-800 text-zinc-300"}`}>EN</button>
         </div>
       </div>
 

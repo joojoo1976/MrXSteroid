@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const BoneNoteSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordBoneNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:BoneNoteSchema.parse(raw),disclaimer:'User note only; no bone-density optimization or diagnosis.'};}

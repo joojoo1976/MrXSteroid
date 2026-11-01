@@ -1,22 +1,32 @@
 {
   "en": {
-    "tool_name": "Compound Stacking Synergy",
-    "synergy_score": "Synergy Score",
-    "overall_assessment": "Overall Assessment",
-    "compound_pair_interactions": "Compound Pair Interactions",
-    "recommended_additions": "Recommended Additions",
-    "avoided_pairs": "Avoided Pairs",
-    "protocol_tips": "Protocol Tips",
-    "best_for_goal": "Best For Goal"
+    "tool_name": "Compound Scenario Comparison Worksheet",
+    "scope_note": "This worksheet displays two lists that you provide. It does not calculate synergy or compatibility, recommend compounds, assess health effects or safety, or provide a protocol. Entries exist only for this page session and are cleared when you leave.",
+    "assessment_unavailable": "Compatibility assessment: NOT_AVAILABLE. No validated compatibility source or rules are configured.",
+    "scenario_a": "Scenario A",
+    "scenario_b": "Scenario B",
+    "scenario_name": "Scenario label",
+    "items_one_per_line": "Items, one per line (1–10)",
+    "notes_optional": "Your notes (optional)",
+    "validation_error": "Enter a label and between 1 and 10 item names for each scenario; keep each field within its length limit.",
+    "compare": "Display both user-entered scenarios",
+    "reset": "Clear worksheet",
+    "manual_comparison": "User-entered lists",
+    "origin_user_provided": "USER_PROVIDED"
   },
   "ar": {
-    "tool_name": "التآزر المركب",
-    "synergy_score": "درية التآزر",
-    "overall_assessment": "التقييم العام",
-    "compound_pair_interactions": "تفاعلات أزواج المركبات",
-    "recommended_additions": "إضافات موصى بها",
-    "avoided_pairs": "أزواج يجب تجنبها",
-    "protocol_tips": "نصائح البروتوكول",
-    "best_for_goal": "الأفضل للأهداف"
+    "tool_name": "ورقة مقارنة السيناريوهات والمركّبات",
+    "scope_note": "تعرض هذه الورقة قائمتين تدخلُهما أنت. لا تحسب التآزر أو التوافق، ولا توصي بمركّبات، ولا تقيّم الآثار الصحية أو السلامة، ولا تقدم بروتوكولًا. تبقى البيانات في جلسة الصفحة وتُمسح عند مغادرتها.",
+    "assessment_unavailable": "تقييم التوافق: NOT_AVAILABLE. لا يوجد مصدر أو قواعد توافق معتمدة ومهيأة.",
+    "scenario_a": "السيناريو أ",
+    "scenario_b": "السيناريو ب",
+    "scenario_name": "اسم السيناريو",
+    "items_one_per_line": "العناصر، عنصر واحد في كل سطر (1–10)",
+    "notes_optional": "ملاحظاتك (اختياري)",
+    "validation_error": "أدخل اسمًا ومن 1 إلى 10 عناصر لكل سيناريو، والتزم بحدود أطوال الحقول.",
+    "compare": "اعرض السيناريوهين كما أدخلتهما",
+    "reset": "مسح الورقة",
+    "manual_comparison": "القوائم التي أدخلها المستخدم",
+    "origin_user_provided": "USER_PROVIDED"
   }
 }

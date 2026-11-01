@@ -7,9 +7,11 @@
 export interface ClearanceInput {
   compound_name: string;
   half_life_days: number;
-  last_dose_mg: number;
+  half_life_source: string;
   /** ISO-8601 date of the last dose. */
   last_dose_date: string;
+  /** Explicit calculation date (UTC calendar date) keeps the engine deterministic. */
+  as_of_date: string;
   /** Residual fraction that defines "cleared" (default 0.01 = 1%). */
   threshold_fraction?: number;
 }
@@ -17,66 +19,96 @@ export interface ClearanceInput {
 export interface ClearancePoint {
   days_after_last_dose: number;
   date: string;
-  remaining_mg: number;
   remaining_percent: number;
 }
 
 export interface ClearanceResult {
-  days_to_clear: number;
-  clearance_date: string;
+  days_to_threshold: number;
+  threshold_date: string;
   days_elapsed: number;
-  current_remaining_mg: number;
-  current_remaining_percent: number;
-  already_clear: boolean;
+  modeled_remaining_percent: number;
+  threshold_reached: boolean;
+  threshold_fraction: number;
   curve: ClearancePoint[];
-  note: string;
+  model_note: string;
 }
 
 const DAY_MS = 86400000;
+
+function parseUtcCalendarDate(value: string, field: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) throw new RangeError(`${field} must be an ISO calendar date (YYYY-MM-DD)`);
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  if (year < 1) throw new RangeError(`${field} must use a year from 0001 through 9999`);
+  const parsed = new Date(0);
+  parsed.setUTCHours(0, 0, 0, 0);
+  parsed.setUTCFullYear(year, month - 1, day);
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) {
+    throw new RangeError(`${field} is not a valid calendar date`);
+  }
+  return parsed.getTime();
+}
+
+function formatUtcCalendarDate(epoch: number, field: string): string {
+  const date = new Date(epoch);
+  const year = date.getUTCFullYear();
+  if (!Number.isFinite(epoch) || year < 0 || year > 9999) throw new RangeError(`${field} is outside the supported date range`);
+  return `${String(year).padStart(4, '0')}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+}
 
 export function calculateCompoundClearance(input: ClearanceInput): ClearanceResult {
   const {
     compound_name,
     half_life_days,
-    last_dose_mg,
+    half_life_source,
     last_dose_date,
+    as_of_date,
     threshold_fraction = 0.01,
   } = input;
 
-  // 34.1 Days to reach threshold: t = hl * log2(1/f)
-  const daysToClear = Math.max(1, Math.ceil(half_life_days * (Math.log(1 / threshold_fraction) / Math.log(2))));
+  if (!compound_name.trim()) throw new RangeError('compound_name is required');
+  if (!half_life_source.trim()) throw new RangeError('half_life_source is required');
+  if (!Number.isFinite(half_life_days) || half_life_days <= 0) throw new RangeError('half_life_days must be finite and positive');
+  if (!Number.isFinite(threshold_fraction) || threshold_fraction <= 0 || threshold_fraction >= 1) {
+    throw new RangeError('threshold_fraction must be between 0 and 1');
+  }
 
-  const anchor = Date.parse(last_dose_date);
-  const base = Number.isNaN(anchor) ? Date.now() : anchor;
-  const clearanceDate = new Date(base + daysToClear * DAY_MS).toISOString().slice(0, 10);
+  // First-order single-exponential fraction reaches f at t = t½ * log2(1/f).
+  const daysToThreshold = Math.max(1, Math.ceil(half_life_days * (Math.log(1 / threshold_fraction) / Math.log(2))));
 
-  const daysElapsed = Math.max(0, Math.floor((Date.now() - base) / DAY_MS));
+  const base = parseUtcCalendarDate(last_dose_date, 'last_dose_date');
+  const asOf = parseUtcCalendarDate(as_of_date, 'as_of_date');
+  if (asOf < base) throw new RangeError('as_of_date cannot be before last_dose_date');
+  const thresholdDate = formatUtcCalendarDate(base + daysToThreshold * DAY_MS, 'threshold_date');
+
+  const daysElapsed = Math.floor((asOf - base) / DAY_MS);
   const decay = (days: number) => Math.pow(0.5, days / half_life_days);
-  const currentRemainingMg = Math.round(last_dose_mg * decay(daysElapsed) * 100) / 100;
-  const currentRemainingPercent = Math.round(decay(daysElapsed) * 10000) / 100;
-  const alreadyClear = daysElapsed >= daysToClear;
+  const modeledRemainingPercent = Math.round(decay(daysElapsed) * 10000) / 100;
+  const thresholdReached = decay(daysElapsed) <= threshold_fraction;
 
-  // 34.2 Residual curve at each half-life multiple 0..5 plus the clearance point
+  // Curve at half-life multiples 0..5 plus the user-selected model threshold.
   const curve: ClearancePoint[] = [];
   const marks = [0, 1, 2, 3, 4, 5].map((k) => Math.round(k * half_life_days));
-  const allMarks = [...new Set([...marks, daysToClear])].sort((a, b) => a - b);
+  const allMarks = [...new Set([...marks, daysToThreshold])].sort((a, b) => a - b);
   for (const d of allMarks) {
     curve.push({
       days_after_last_dose: d,
-      date: new Date(base + d * DAY_MS).toISOString().slice(0, 10),
-      remaining_mg: Math.round(last_dose_mg * decay(d) * 100) / 100,
+      date: formatUtcCalendarDate(base + d * DAY_MS, 'curve_date'),
       remaining_percent: Math.round(decay(d) * 10000) / 100,
     });
   }
 
   return {
-    days_to_clear: daysToClear,
-    clearance_date: clearanceDate,
+    days_to_threshold: daysToThreshold,
+    threshold_date: thresholdDate,
     days_elapsed: daysElapsed,
-    current_remaining_mg: currentRemainingMg,
-    current_remaining_percent: currentRemainingPercent,
-    already_clear: alreadyClear,
+    modeled_remaining_percent: modeledRemainingPercent,
+    threshold_reached: thresholdReached,
+    threshold_fraction,
     curve,
-    note: `${compound_name}: < ${threshold_fraction * 100}% residual after ${daysToClear} days (~${(daysToClear / half_life_days).toFixed(1)} half-lives)`,
+    model_note: `${compound_name}: hypothetical single-exponential fraction model using a user-entered, unverified half-life. The ${(threshold_fraction * 100).toPrecision(4)}% threshold is a mathematical setting, not a medical clearance or safety standard. Repeated dosing, absorption, distribution, active metabolites, formulation, and individual pharmacokinetics are not modeled.`,
   };
 }

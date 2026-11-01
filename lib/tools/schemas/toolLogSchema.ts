@@ -56,7 +56,7 @@ export const dataProvenanceSchema = z.object({
     originalUnit: z.string().min(1).max(32).optional(),
     measurementMethod: z.string().max(120).optional(),
     deviceId: z.string().max(120).optional(),
-    confidence: finite(0, 1),
+    confidence: finite(0, 1).nullable(),
     dataQuality: z.enum(DATA_QUALITIES),
     referenceRange: referenceRangeSchema.optional(),
 }).strict();

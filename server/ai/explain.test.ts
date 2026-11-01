@@ -42,10 +42,57 @@ describe('AI explain runtime', () => {
   });
 
   it('uses the model path when the provider succeeds', async () => {
-    const provider = noopProvider(() => Promise.resolve('شرح من النموذج.'));
+    const complete = vi.fn(() => Promise.resolve('شرح من النموذج.'));
+    const provider = noopProvider(complete);
     const res = await explainRequest(BASE, { provider });
     expect(res.source).toBe('model');
     expect(res.explanation).toBe('شرح من النموذج.');
+    expect(complete.mock.calls[0][0]).toContain('بيانات غير موثوقة');
+    expect(complete.mock.calls[0][0]).toContain('لا تقدّم تشخيصًا');
+    expect(complete.mock.calls[0][1]).toContain('وصف الأداة: قياس مخاطر الأعراض الجانبية');
+  });
+
+  it('tells the model that no personal result context was provided', async () => {
+    const complete = vi.fn(() => Promise.resolve('This tool estimates a score.'));
+    const res = await explainRequest({ ...BASE, locale: 'en', context: undefined, question: 'What does my score mean?' }, { provider: noopProvider(complete) });
+
+    expect(res.source).toBe('model');
+    expect(complete.mock.calls[0][0]).toContain('No results were provided for this tool');
+    expect(complete.mock.calls[0][1]).toContain('No findings were supplied');
+    expect(complete.mock.calls[0][1]).toContain('What does my score mean?');
+  });
+
+  it('adds Tool 149-specific limits for fitness, nutrition, health and medication requests in English', async () => {
+    const complete = vi.fn(() => Promise.resolve('This simulator only provides arithmetic scenarios.'));
+    await explainRequest({
+      ...BASE,
+      toolSlug: 'tool-149-physique-trajectory-simulator',
+      locale: 'en',
+      context: undefined,
+      question: 'Give me the best diet and training plan to reach this target safely.',
+    }, { provider: noopProvider(complete) });
+
+    const systemPrompt = complete.mock.calls[0][0];
+    expect(systemPrompt).toContain('Tool-specific boundary');
+    expect(systemPrompt).toContain('Do not provide or imply training, nutrition, or medication recommendations');
+    expect(systemPrompt).toContain('does not assess health or predict real-world outcomes');
+    expect(complete.mock.calls[0][1]).toContain('Give me the best diet and training plan');
+  });
+
+  it('adds Tool 149-specific limits for fitness, nutrition, health and medication requests in Arabic', async () => {
+    const complete = vi.fn(() => Promise.resolve('هذه الأداة تقدم سيناريوهات حسابية فقط.'));
+    await explainRequest({
+      ...BASE,
+      toolSlug: 'tool-149-physique-trajectory-simulator',
+      locale: 'ar',
+      context: undefined,
+      question: 'اقترح أفضل خطة تدريب وتغذية للوصول إلى هذا الهدف بأمان.',
+    }, { provider: noopProvider(complete) });
+
+    const systemPrompt = complete.mock.calls[0][0];
+    expect(systemPrompt).toContain('قيد خاص بهذه الأداة');
+    expect(systemPrompt).toContain('لا تقدّم أو توحِ بتوصية تدريب أو تغذية أو دواء');
+    expect(systemPrompt).toContain('لا يقيّم الصحة ولا يتنبأ بالنتائج الواقعية');
   });
 
   it('falls back when the provider throws (calculations never break)', async () => {

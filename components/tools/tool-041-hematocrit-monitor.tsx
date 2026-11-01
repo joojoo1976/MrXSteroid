@@ -2,6 +2,7 @@
 /** Tool #041 — Hematocrit Monitor (dynamic UI, GPT2 spec). useMemo instant
  * recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN, prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { monitorHematocrit, type HematocritResult } from '@/lib/tools/engines/tool-041-hematocrit-monitor';
 import { buildHematocritOutput } from '@/lib/tools/adapters/tool-041-hematocrit-monitor';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -20,7 +21,7 @@ const BAND_COLOR: Record<string, string> = { normal: 'text-lime-400', borderline
 export default function Tool041HematocritMonitor() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({ readings: [{ hct_pct: 45, date: today() }, { hct_pct: 48, date: today() }], sex: 'male', on_cycle: true, weeks_remaining: 8 });
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
@@ -40,19 +41,19 @@ export default function Tool041HematocritMonitor() {
   const aiContext = useMemo(() => {
     if (!result || !parsed.success) return null;
     const now = '1970-01-01T00:00:00.000Z';
-    const output = buildHematocritOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+    const output = buildHematocritOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
     return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
+  }, [result, parsed, locale, unitSystem]);
 
   useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
 
   useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
+    const key = JSON.stringify(inputs) + locale + unitSystem;
     if (prevDraftKey.current === key) return;
     prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
 
   const addReading = () => setInputs((p) => (p.readings.length >= 24 ? p : { ...p, readings: [...p.readings, { hct_pct: 48, date: today() }] }));
 
@@ -61,7 +62,7 @@ export default function Tool041HematocritMonitor() {
     setIsSaving(true);
     try {
       const now = new Date().toISOString();
-      const output = buildHematocritOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
+      const output = buildHematocritOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
       const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
       if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
       else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
@@ -73,8 +74,8 @@ export default function Tool041HematocritMonitor() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.readings}</h2>

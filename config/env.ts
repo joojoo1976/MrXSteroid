@@ -65,6 +65,17 @@ const envSchema = z.object({
     TRANSLATION_CIRCUIT_BREAKER_THRESHOLD: z.coerce.number().int().positive().default(5),
     /** §114 — budget guard: characters per window before translation is refused. */
     TRANSLATION_BUDGET_CHARS: z.coerce.number().int().positive().default(2_000_000),
+    /** HMAC secret for short-lived translation sessions. Server-only. */
+    TRANSLATION_SESSION_SECRET: z.string().min(32).optional(),
+    TRANSLATION_SESSION_TTL_MS: z.coerce.number().int().positive().max(900_000).optional(),
+    TRANSLATION_SESSION_MAX_REQUESTS: z.coerce.number().int().positive().max(20).optional(),
+    TRANSLATION_SESSION_MAX_CHARACTERS: z.coerce.number().int().positive().max(30_000).optional(),
+    TRANSLATION_ROUTE_BUDGET_CHARS: z.coerce.number().int().positive().max(1_000_000).optional(),
+    TRANSLATION_DAILY_BUDGET_CHARS: z.coerce.number().int().positive().max(500_000).optional(),
+    TRANSLATION_MAX_TARGETS_PER_DAY: z.coerce.number().int().positive().max(12).optional(),
+    TRANSLATION_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().max(60).optional(),
+    TRANSLATION_REDIS_TIMEOUT_MS: z.coerce.number().int().positive().max(10_000).optional(),
+    TRANSLATION_CIRCUIT_OPEN_MS: z.coerce.number().int().positive().max(900_000).optional(),
 });
 
 const parseEnv = () => {
@@ -99,6 +110,16 @@ const parseEnv = () => {
         TRANSLATION_GLOSSARY_VERSION: readEnv('TRANSLATION_GLOSSARY_VERSION'),
         TRANSLATION_CIRCUIT_BREAKER_THRESHOLD: readEnv('TRANSLATION_CIRCUIT_BREAKER_THRESHOLD'),
         TRANSLATION_BUDGET_CHARS: readEnv('TRANSLATION_BUDGET_CHARS'),
+        TRANSLATION_SESSION_SECRET: readEnv('TRANSLATION_SESSION_SECRET'),
+        TRANSLATION_SESSION_TTL_MS: readEnv('TRANSLATION_SESSION_TTL_MS'),
+        TRANSLATION_SESSION_MAX_REQUESTS: readEnv('TRANSLATION_SESSION_MAX_REQUESTS'),
+        TRANSLATION_SESSION_MAX_CHARACTERS: readEnv('TRANSLATION_SESSION_MAX_CHARACTERS'),
+        TRANSLATION_ROUTE_BUDGET_CHARS: readEnv('TRANSLATION_ROUTE_BUDGET_CHARS'),
+        TRANSLATION_DAILY_BUDGET_CHARS: readEnv('TRANSLATION_DAILY_BUDGET_CHARS'),
+        TRANSLATION_MAX_TARGETS_PER_DAY: readEnv('TRANSLATION_MAX_TARGETS_PER_DAY'),
+        TRANSLATION_RATE_LIMIT_PER_MINUTE: readEnv('TRANSLATION_RATE_LIMIT_PER_MINUTE'),
+        TRANSLATION_REDIS_TIMEOUT_MS: readEnv('TRANSLATION_REDIS_TIMEOUT_MS'),
+        TRANSLATION_CIRCUIT_OPEN_MS: readEnv('TRANSLATION_CIRCUIT_OPEN_MS'),
     };
 
     const parsed = envSchema.safeParse(processEnv);

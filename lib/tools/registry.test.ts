@@ -8,6 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { Page } from '@/shared/types/types';
+import { getPublishedCatalogTools } from './smartToolsCatalog4';
+import { toHierarchicalHref } from './categories';
 import {
     TOOL_REGISTRY,
     ToolRegistryError,
@@ -71,8 +73,29 @@ describe('Tool registry — integrity', () => {
     it('points every registered href at a real App Router page folder', () => {
         for (const tool of TOOL_REGISTRY) {
             const segment = tool.href.replace(/^\//, '');
-            const pageFile = join(APP_DIR, segment, 'page.tsx');
-            expect(existsSync(pageFile), `missing route for ${tool.slug}: app/${segment}/page.tsx`).toBe(true);
+            // For hierarchical routes (/smarttools/category/tool), the page is the dynamic route
+            // For legacy flat routes, check the specific page.tsx
+            const isHierarchical = segment.startsWith('smarttools/') && segment.split('/').length === 3;
+            let pageFile: string;
+            if (isHierarchical) {
+                // Dynamic route: /smarttools/[category]/[tool]/page.tsx
+                const parts = segment.split('/');
+                pageFile = join(APP_DIR, 'smarttools', '[category]', '[tool]', 'page.tsx');
+            } else {
+                pageFile = join(APP_DIR, segment, 'page.tsx');
+            }
+            expect(existsSync(pageFile), `missing route for ${tool.slug}: app/${isHierarchical ? 'smarttools/[category]/[tool]' : segment}/page.tsx`).toBe(true);
+        }
+    });
+
+    it('matches every published catalog route to its category-first Registry href', () => {
+        const publishedBySlug = new Map(getPublishedCatalogTools().map((tool) => [tool.slug, tool]));
+        for (const tool of TOOL_REGISTRY) {
+            const catalogTool = publishedBySlug.get(tool.slug);
+            expect(catalogTool, `missing published catalog entry for ${tool.slug}`).toBeDefined();
+            const canonical = toHierarchicalHref(tool.slug);
+            expect(tool.href, `${tool.slug} Registry href should be category-first`).toBe(canonical);
+            expect(catalogTool?.href, `${tool.slug} catalog href should match Registry href`).toBe(tool.href);
         }
     });
 
@@ -137,8 +160,8 @@ describe('Tool registry — prev/next link-graph (SEO §7)', () => {
         const links = getToolNeighbors('multi-ester-pharmacokinetics');
         expect(links.prevTool.slug).toBe('halflife');
         expect(links.nextTool.slug).toBe('aromatization-risk');
-        expect(links.nextTool.titleAr).toBe('محاكي مخاطر الأروماتزة والاستراديول');
-        expect(links.nextTool.titleEn).toBe('Aromatization Risk & E2 Management Modeler');
+        expect(links.nextTool.titleAr).toBe('سيناريو حسابي افتراضي للأروماتزة والاستراديول');
+        expect(links.nextTool.titleEn).toBe('Unvalidated Aromatization Scenario Model');
     });
 
     it('links Tool #003 backwards to Tool #002 and forward to Tool #004', () => {
@@ -175,7 +198,7 @@ describe('Tool registry — prev/next link-graph (SEO §7)', () => {
             const tool = requireTool(slug);
             expect(tool.stackStatus, `${slug} must be fully layered`).toBe('layered');
             expect(tool.toolId).toBe(`mrx.tool.${slug}`);
-            expect(tool.href).toBe(`/smarttools/${slug}`);
+            expect(tool.href).toBe(toHierarchicalHref(slug));
         }
     });
 

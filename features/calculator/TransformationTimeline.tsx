@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
 import {
     Zap, BicepsFlexed, Trophy, Flag, Star, Droplet, Flame, Brain, Info,
     ChevronLeft, ChevronRight, Activity, Dumbbell, TrendingUp, BookOpen,
-    ShieldCheck, Scale, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
+    ShieldCheck, Ruler, Timer, Percent, Gauge, LineChart, HeartPulse,
     Target, CalendarDays, CheckCircle2, Sparkles, RotateCcw, Copy, Check, Table2, ChevronDown, Diamond, RefreshCcw,
 } from 'lucide-react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
@@ -625,9 +625,8 @@ const ChartTooltip: React.FC<{
 // ═══════════════════════════════════════════════════════════════════════════
 
 const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content }) => {
-    const { isRTL, unitSystem, setUnitSystem } = usePreferences();
+    const { isRTL, unitSystem } = usePreferences();
     const isAr = isRTL;
-    const isMetric = unitSystem === 'metric';
     const L = content.timelineLabels;
 
     const {
@@ -1164,28 +1163,6 @@ const TransformationTimeline: React.FC<{ content: ContentStrings }> = ({ content
                             </AnimatePresence>
                             <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 basis-full">{L.engineSubtitle}</p>
                             {G && <p className="text-[11px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 basis-full leading-relaxed">{G.engine.caption}</p>}
-                        </div>
-
-                        {/* Unit toggle */}
-                        <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800" role="group" aria-label={L.unitSystemLabel}>
-                            <button
-                                type="button"
-                                onClick={() => setUnitSystem('metric')}
-                                aria-pressed={isMetric}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${isMetric ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
-                            >
-                                <Scale className="w-3.5 h-3.5" />
-                                {L.metric} · kg
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setUnitSystem('imperial')}
-                                aria-pressed={!isMetric}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${!isMetric ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
-                            >
-                                <Ruler className="w-3.5 h-3.5" />
-                                {L.imperial} · lbs
-                            </button>
                         </div>
 
                         {/* Reset inputs */}

@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const MealSchema=z.object({description:z.string().trim().min(1).max(400)}).strict(); export function recordMealDescription(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:MealSchema.parse(raw),disclaimer:'Description record only; no image analysis or calorie estimate.'};}

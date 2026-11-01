@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const BreakSchema=z.object({start:z.string().date(),end:z.string().date()}).strict(); export function recordBreakDates(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:BreakSchema.parse(raw),disclaimer:'Date record only; no recovery or cycle recommendation.'};}

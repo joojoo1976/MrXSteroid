@@ -1,60 +1,114 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
+import { useMemo, useState, type ChangeEvent } from 'react';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { calculateSHBG } from '@/lib/tools/engines/tool-015-shbg-modulator';
-import MeasurementToggle from './MeasurementToggle';
+import { SHBGInputSchema, type SHBGInput, type SHBGResult } from '@/lib/tools/schemas/tool-015-shbg-modulator';
+import { buildSHBGOutput } from '@/lib/tools/adapters/tool-015-shbg-modulator';
+import { useExplicitToolOutput } from '@/lib/tools/useExplicitToolOutput';
 import i18nJson from '@/i18n/tool-015-shbg-modulator.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
+import ToolOutputSummary from './ToolOutputSummary';
+
+type Draft = { total_testosterone_ng_dL: string; shbg_nmol_L: string; albumin_g_dL: string };
+const blank: Draft = { total_testosterone_ng_dL: '', shbg_nmol_L: '', albumin_g_dL: '' };
+const inputClass = 'w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-white';
 
 export default function Tool015SHBGModulator() {
-  const i18nData = useToolI18n(i18nJson);
-  const { data: savedState, isLoading: stateLoading } = useUserToolState('user-id');
-  const { mutate: updateToolState, isPending } = useUpdateToolState();
-  const debouncedSave = useDebounce(updateToolState, 1000);
+  const t = useToolI18n(i18nJson);
+  const { isRtl, unitSystem, locale } = useToolDisplayPreferences();
+  const [draft, setDraft] = useState<Draft>(blank);
+  const [result, setResult] = useState<SHBGResult | null>(null);
+  const [status, setStatus] = useState<'PARTIAL' | 'INVALID' | 'CALCULATED'>('PARTIAL');
+  const parsedInput = useMemo(() => SHBGInputSchema.safeParse({
+    total_testosterone_ng_dL: Number(draft.total_testosterone_ng_dL),
+    shbg_nmol_L: Number(draft.shbg_nmol_L),
+    albumin_g_dL: Number(draft.albumin_g_dL),
+  }), [draft]);
+  const { output, calculate: publishOutput, reset: resetOutput } = useExplicitToolOutput<SHBGInput, SHBGResult>(
+    parsedInput.success ? parsedInput.data : null,
+  );
 
-  const [input, setInput] = useState({
-    total_testosterone_ng_dL: 600,
-    shbg_nmol_L: 40,
-    sex: 'male' as 'male' | 'female',
-  });
-
-  const [result, setResult] = useState<any>(null);
-
-  useEffect(() => {
-    if (savedState?.shbg_result) setResult(savedState.shbg_result);
-  }, [savedState]);
-
-  const calculate = () => {
-    const r = calculateSHBG(input as any);
-    setResult(r);
-    debouncedSave({ ...savedState, shbg_result: r });
+  const update = (key: keyof Draft, value: string) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setResult(null);
+    setStatus('PARTIAL');
+    resetOutput();
   };
 
-  return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
-      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
-      <div className="space-y-4">
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Total Testosterone (ng/dL):</label> <input type="number" value={input.total_testosterone_ng_dL} onChange={(e) => setInput({...input, total_testosterone_ng_dL: parseFloat(e.target.value as any)})} min="50" max="2000" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">SHBG (nmol/L):</label> <input type="number" value={input.shbg_nmol_L} onChange={(e) => setInput({...input, shbg_nmol_L: parseFloat(e.target.value as any)})} min="1" max="200" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label className="block text-sm font-medium mb-2" dir="ltr">Sex:</label> <select value={input.sex} onChange={(e) => setInput({...input, sex: e.target.value as any})} className="w-full rounded border p-2" dir="ltr"><option value="male">Male</option><option value="female">Female</option></select></div>
-        <button onClick={calculate} className="mt-4 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending}> {isPending ? 'Calculating...' : 'Calculate Free T'} </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
+  const calculate = () => {
+    if (Object.values(draft).some((value) => value.trim() === '')) {
+      setStatus('PARTIAL');
+      setResult(null);
+      resetOutput();
+      return;
+    }
+    if (!parsedInput.success) {
+      setStatus('INVALID');
+      setResult(null);
+      resetOutput();
+      return;
+    }
+    try {
+      const next = calculateSHBG(parsedInput.data);
+      setResult(next);
+      setStatus('CALCULATED');
+      publishOutput(parsedInput.data, (input, options) => buildSHBGOutput(input, next, options), locale, unitSystem);
+    } catch (calculationError) {
+      if (calculationError instanceof RangeError) {
+        setResult(null);
+        setStatus('INVALID');
+        resetOutput();
+        return;
+      }
+      throw calculationError;
+    }
+  };
 
-        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
-          <p className="text-zinc-600 font-bold">{i18nData.shbg}: {result.shbg_nmol_L} nmol/L</p>
-          <p className="text-zinc-500">{i18nData.shbg_reference_range}: {result.shbg_reference_range[0]}-{result.shbg_reference_range[1]} nmol/L</p>
-          <p className="text-zinc-600">{i18nData.free_testosterone}: {result.free_testosterone_ng_dL} ng/dL</p>
-          <p className="text-zinc-500">{i18nData.percentage}: {result.free_testosterone_percentage}%</p>
-          <p className="text-zinc-500">{i18nData.bioavailable}: {result.bioavailable_testosterone_ng_dL} ng/dL</p>
-          <p className="text-zinc-600">{i18nData.interpretation}: {result.interpretation}</p>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.recommendations.map((r: any, i: any) => <li key={i}>{r}</li>)}
-          </ul>
-        </div>}
-      </div>
-    </div>
+  const setField = (key: keyof Draft) => (event: ChangeEvent<HTMLInputElement>) => update(key, event.target.value);
+  const format = (value: number) => Number(value.toFixed(2));
+
+  return (
+    <section className="pct-timing-tool space-y-4 p-6" dir={isRtl ? 'rtl' : 'ltr'} aria-labelledby="tool-015-title">
+      <h1 id="tool-015-title" className="text-2xl font-bold">{t.tool_name}</h1>
+      <p className="text-sm text-amber-200">{t.disclaimer}</p>
+      <p className="text-xs text-zinc-400">{t.fixed_lab_units}</p>
+
+      <label className="block space-y-1 text-sm">
+        <span>{t.total_testosterone}</span>
+        <input aria-label={t.total_testosterone} className={inputClass} type="number" min="0" step="any" value={draft.total_testosterone_ng_dL} onChange={setField('total_testosterone_ng_dL')} dir="ltr" />
+      </label>
+      <label className="block space-y-1 text-sm">
+        <span>{t.shbg}</span>
+        <input aria-label={t.shbg} className={inputClass} type="number" min="0" step="any" value={draft.shbg_nmol_L} onChange={setField('shbg_nmol_L')} dir="ltr" />
+      </label>
+      <label className="block space-y-1 text-sm">
+        <span>{t.albumin}</span>
+        <input aria-label={t.albumin} className={inputClass} type="number" min="0" step="any" value={draft.albumin_g_dL} onChange={setField('albumin_g_dL')} dir="ltr" />
+      </label>
+
+      <button type="button" onClick={calculate} className="rounded bg-blue-600 px-4 py-2 font-medium text-white">
+        {t.calculate}
+      </button>
+
+      {status !== 'CALCULATED' && (
+        <p role="status" className={status === 'INVALID' ? 'text-red-400' : 'text-amber-300'}>
+          {status === 'INVALID' ? t.invalid_input : t.partial_input}
+        </p>
+      )}
+
+      {result && (
+        <div className="space-y-2 rounded border border-zinc-700 p-4" aria-live="polite">
+          <p className="font-semibold">{t.calculated_result}</p>
+          <p>{t.free_testosterone}: {format(result.free_testosterone_ng_dL)} ng/dL ({format(result.free_testosterone_nmol_L)} nmol/L)</p>
+          <p>{t.free_percentage}: {format(result.free_testosterone_percentage)}%</p>
+          <p>{t.bioavailable}: {format(result.bioavailable_testosterone_ng_dL)} ng/dL ({format(result.bioavailable_testosterone_nmol_L)} nmol/L)</p>
+          <p className="text-xs text-zinc-400">{t.formula_note}</p>
+          <p className="text-xs"><a className="underline" href="https://doi.org/10.1210/jc.84.10.6079" target="_blank" rel="noreferrer">{t.source_reference}</a></p>
+          <p className="text-xs"><a className="underline" href="https://doi.org/10.1210/jc.2018-00229" target="_blank" rel="noreferrer">{t.guideline_reference}</a></p>
+        </div>
+      )}
+      {output && <ToolOutputSummary output={output} locale={locale} />}
+    </section>
   );
 }
-

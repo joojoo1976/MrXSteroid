@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect -- provider effects synchronize async capability and DOM adapter lifecycle */
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -36,21 +37,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePreferences } from './PreferencesContext';
 import { Language } from '@/shared/types/types';
-import { RUNTIME_SOURCE_LANGUAGE, type TranslationSurface } from '@/server/translation/contracts';
+import { RUNTIME_SOURCE_LANGUAGE } from '@/server/translation/contracts';
 import {
     fetchSelectableTargets,
-    translateText,
     type ApiResult,
     type SelectableTarget,
     type TranslateApiError,
 } from '@/lib/translation/api';
 import {
-    englishSourceKey,
     runtimeTranslationCache,
     sameTranslationIdentity,
     type TranslationCacheIdentity,
 } from '@/lib/translation/cache';
-import { createL2Scanner, L2_DEFAULT_MAX_REQUESTS, type L2TranslateFn } from '@/lib/translation/scanner';
+import { createT2BatchEngine } from '@/lib/translation/batchEngine';
 import { RuntimeTranslationContext, type RuntimeTranslationStatus } from './RuntimeTranslationContext';
 
 /** House convention: `mrx_`-prefixed client preference keys. */
@@ -102,7 +101,7 @@ export const RuntimeTranslationProvider: React.FC<{ children: React.ReactNode }>
     const identityRef = useRef<TranslationCacheIdentity | null>(null);
     const [refreshToken, setRefreshToken] = useState(0);
 
-    const scannerRef = useRef<ReturnType<typeof createL2Scanner> | null>(null);
+    const scannerRef = useRef<ReturnType<typeof createT2BatchEngine> | null>(null);
 
     // Leaving the English experience (or unmounting) must give the document its
     // English back, so the scanner is always restored rather than left applied.
@@ -190,6 +189,9 @@ export const RuntimeTranslationProvider: React.FC<{ children: React.ReactNode }>
         }
     }, [target, status, targets, restoreDocument]);
 
+    const routePath = typeof window !== 'undefined'
+        ? (window.location.pathname.replace(/^\/(?:ar|en)(?=\/|$)/, '') || '/')
+        : '/';
     // ── L2 scan for the selected target ───────────────────────────────────────
     useEffect(() => {
         if (!isEnglishExperience || status !== 'ready' || target === null) {
@@ -202,55 +204,20 @@ export const RuntimeTranslationProvider: React.FC<{ children: React.ReactNode }>
         }
         if (typeof document === 'undefined') return;
 
-        const translate: L2TranslateFn = async (text, surface: TranslationSurface) => {
-            // Capability is re-checked here: a cached entry is only usable while
-            // the target is still in the verified set.
-            if (!targets.some((entry) => entry.code === target)) {
-                return { ok: false, code: 'PROVIDER_UNSUPPORTED', retryable: false };
-            }
-
-            const currentIdentity = identityRef.current;
-            const key = currentIdentity ? englishSourceKey(target, text, currentIdentity) : null;
-
-            if (key) {
-                const cached = runtimeTranslationCache.get(key);
-                if (cached && cached.length > 0) {
-                    return { ok: true, text: cached[0], fromCache: true };
-                }
-            }
-
-            const result = await translateText({
-                sourceLanguage: RUNTIME_SOURCE_LANGUAGE,
-                targetLanguage: target,
-                sourceText: text,
-                surface,
-            });
-
-            if (!result.ok) {
-                return { ok: false, code: result.error.code, retryable: result.error.retryable };
-            }
-
-            if (!sameTranslationIdentity(identityRef.current, result.data.identity)) {
-                identityRef.current = result.data.identity;
-                setIdentity(result.data.identity);
-            }
-
-            // Stored under the identity the response actually carried, never under
-            // a guessed or previously seen one.
-            runtimeTranslationCache.set(
-                englishSourceKey(target, text, result.data.identity),
-                result.data.translations
-            );
-            return { ok: true, text: result.data.translations[0] };
-        };
-
-        const scanner = createL2Scanner({
+        const scanner = createT2BatchEngine({
             root: document.body,
             target,
-            translate,
-            maxRequests: L2_DEFAULT_MAX_REQUESTS,
-        });
-        scannerRef.current = scanner;
+            routePath,
+            sourceLocale: RUNTIME_SOURCE_LANGUAGE,
+            cache: runtimeTranslationCache,
+            identity: identityRef.current,
+            onIdentity: (nextIdentity) => {
+                if (!sameTranslationIdentity(identityRef.current, nextIdentity)) {
+                    identityRef.current = nextIdentity;
+                    setIdentity(nextIdentity);
+                }
+            },
+        });        scannerRef.current = scanner;
 
         void scanner.scan().then((report) => {
             if (report.failure) {
@@ -271,7 +238,7 @@ export const RuntimeTranslationProvider: React.FC<{ children: React.ReactNode }>
             scanner.restore();
             scannerRef.current = null;
         };
-    }, [isEnglishExperience, status, target, targets, restoreDocument]);
+    }, [isEnglishExperience, status, target, targets, restoreDocument, routePath]);
 
     useEffect(() => restoreDocument, [restoreDocument]);
 

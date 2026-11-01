@@ -1,119 +1,79 @@
 /**
- * Tool #033 — Bloodwork Trend Analyzer
- * Least-squares trend slopes per marker + range flags + velocity alerts.
- * Pure calculation engine (no I/O, no DB).
+ * Tool #033 — descriptive trend arithmetic for user-entered lab readings.
+ * No clinical ranges, advice, inference, storage, or network access.
  */
+import {
+  TrendAnalyzerInputSchema,
+  type TrendAnalyzerInput,
+  type TrendAnalyzerResult,
+} from '../schemas/tool-033-bloodwork-trend-analyzer';
+export type { TrendAnalyzerInput, TrendAnalyzerResult } from '../schemas/tool-033-bloodwork-trend-analyzer';
 
-export interface LabReading {
-  marker: string;
-  value: number;
-  unit: string;
-  /** ISO-8601 date of the draw. */
-  date: string;
-}
+export type LabReading = TrendAnalyzerInput['readings'][number];
+export type TrendDirection = 'rising' | 'falling' | 'stable' | 'insufficient_data';
+export type MarkerTrend = TrendAnalyzerResult['markers'][number];
 
-export interface MarkerRange {
-  low: number;
-  high: number;
-  unit: string;
-}
+const DAY_MS = 86_400_000;
 
-export interface TrendAnalyzerInput {
-  readings: LabReading[];
-  ranges: Record<string, MarkerRange>;
-}
-
-export type TrendDirection = 'rising' | 'falling' | 'stable';
-
-export interface MarkerTrend {
-  marker: string;
-  unit: string;
-  latest_value: number;
-  latest_date: string;
-  slope_per_30d: number;
-  direction: TrendDirection;
-  in_range: boolean;
-  velocity_alert: boolean;
-  points: number;
-}
-
-export interface TrendAnalyzerResult {
-  markers: MarkerTrend[];
-  summary: string[];
-}
-
-const DAY_MS = 86400000;
-
-function leastSquaresSlope(xs: number[], ys: number[]): number {
-  const n = xs.length;
-  if (n < 2) return 0;
-  const meanX = xs.reduce((a, b) => a + b, 0) / n;
-  const meanY = ys.reduce((a, b) => a + b, 0) / n;
-  let num = 0;
-  let den = 0;
-  for (let i = 0; i < n; i++) {
-    num += (xs[i] - meanX) * (ys[i] - meanY);
-    den += (xs[i] - meanX) * (xs[i] - meanX);
+function leastSquaresSlopePerDay(xs: number[], ys: number[]): number | null {
+  if (xs.length < 2 || new Set(xs).size < 2) return null;
+  const meanX = xs.reduce((sum, value) => sum + value, 0) / xs.length;
+  const meanY = ys.reduce((sum, value) => sum + value, 0) / ys.length;
+  let numerator = 0;
+  let denominator = 0;
+  for (let index = 0; index < xs.length; index += 1) {
+    numerator += (xs[index] - meanX) * (ys[index] - meanY);
+    denominator += (xs[index] - meanX) ** 2;
   }
-  return den === 0 ? 0 : num / den;
+  return denominator > 0 ? numerator / denominator : null;
 }
 
-export function analyzeBloodworkTrends(input: TrendAnalyzerInput): TrendAnalyzerResult {
-  const { readings, ranges } = input;
-  const summary: string[] = [];
+function compareStrings(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
 
-  // 33.1 Group readings per marker, sorted by date
-  const groups = new Map<string, LabReading[]>();
-  for (const r of readings) {
-    if (!Number.isFinite(r.value)) continue;
-    const t = Date.parse(r.date);
-    if (Number.isNaN(t)) continue;
-    const list = groups.get(r.marker) ?? [];
-    list.push(r);
-    groups.set(r.marker, list);
+/**
+ * Calculates a least-squares slope over entered dates. Repeated same-day
+ * readings are retained as separate observations; at least two distinct dates
+ * are required. Direction is based only on the rounded displayed slope.
+ */
+export function analyzeBloodworkTrends(rawInput: TrendAnalyzerInput): TrendAnalyzerResult {
+  const { readings } = TrendAnalyzerInputSchema.parse(rawInput);
+  const groups = new Map<string, typeof readings>();
+  for (const reading of readings) {
+    const group = groups.get(reading.marker) ?? [];
+    group.push(reading);
+    groups.set(reading.marker, group);
   }
 
   const markers: MarkerTrend[] = [];
-  for (const [marker, list] of groups) {
-    const sorted = [...list].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
-    const t0 = Date.parse(sorted[0].date);
-    const xs = sorted.map((r) => (Date.parse(r.date) - t0) / DAY_MS);
-    const ys = sorted.map((r) => r.value);
-    const slopePerDay = leastSquaresSlope(xs, ys);
-    const slopePer30d = Math.round(slopePerDay * 30 * 100) / 100;
-
-    const range = ranges[marker];
+  for (const [marker, group] of groups) {
+    const sorted = [...group].sort((left, right) => compareStrings(left.date, right.date));
+    const firstDay = Date.parse(`${sorted[0].date}T00:00:00.000Z`);
+    const xs = sorted.map((reading) => (Date.parse(`${reading.date}T00:00:00.000Z`) - firstDay) / DAY_MS);
+    const ys = sorted.map((reading) => reading.value);
+    const distinctDates = new Set(sorted.map((reading) => reading.date)).size;
+    const rawSlopePerDay = leastSquaresSlopePerDay(xs, ys);
+    const slopePer30Days = rawSlopePerDay === null
+      ? null
+      : Math.round(rawSlopePerDay * 30 * 100) / 100;
+    const direction: TrendDirection = slopePer30Days === null
+      ? 'insufficient_data'
+      : slopePer30Days > 0 ? 'rising' : slopePer30Days < 0 ? 'falling' : 'stable';
     const latest = sorted[sorted.length - 1];
-    const inRange = range ? latest.value >= range.low && latest.value <= range.high : true;
-
-    // 33.2 Direction: slope must exceed 2% of range width (or 2% of value) per 30d
-    const scale = range ? range.high - range.low : Math.abs(latest.value) || 1;
-    const threshold = Math.max(scale * 0.02, 1e-9);
-    const direction: TrendDirection =
-      slopePer30d > threshold ? 'rising' : slopePer30d < -threshold ? 'falling' : 'stable';
-
-    // 33.3 Velocity alert: 30-day move larger than 25% of range width
-    const velocityAlert = range ? Math.abs(slopePer30d) > (range.high - range.low) * 0.25 : false;
 
     markers.push({
       marker,
       unit: latest.unit,
       latest_value: latest.value,
-      latest_date: latest.date.slice(0, 10),
-      slope_per_30d: slopePer30d,
+      latest_date: latest.date,
+      slope_per_30d: slopePer30Days,
       direction,
-      in_range: inRange,
-      velocity_alert: velocityAlert,
       points: sorted.length,
+      distinct_dates: distinctDates,
     });
-
-    if (!inRange) summary.push(`${marker}: latest ${latest.value} ${latest.unit} is OUT of range`);
-    if (velocityAlert) summary.push(`${marker}: rapid ${direction} move (${slopePer30d}/30d) — retest soon`);
   }
 
-  markers.sort((a, b) => a.marker.localeCompare(b.marker));
-  if (markers.length === 0) summary.push('No valid readings — add marker, value and date');
-  else if (summary.length === 0) summary.push('All tracked markers stable and within range');
-
-  return { markers, summary };
+  markers.sort((left, right) => compareStrings(left.marker, right.marker));
+  return { markers };
 }

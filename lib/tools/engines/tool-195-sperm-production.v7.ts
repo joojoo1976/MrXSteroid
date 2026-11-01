@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const SpermSchema=z.object({note:z.string().trim().min(1).max(300)}).strict(); export function recordSperm(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:SpermSchema.parse(raw),disclaimer:'Note record only; no fertility optimization or treatment advice.'};}

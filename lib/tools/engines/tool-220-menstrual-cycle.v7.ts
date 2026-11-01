@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const CycleSchema=z.object({start:z.string().date(),note:z.string().trim().max(300).optional()}).strict(); export function recordMenstrual(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:CycleSchema.parse(raw),disclaimer:'Date record only; no menstrual, fertility, or pregnancy assessment.'};}

@@ -1,30 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { trackHairNailStatus } from './tool-096-hair-nail-tracker';
-
-describe('Tool #096 — Hair & Nail Tracker Engine', () => {
-  it('computes robust vitality when shedding is low and no thinning is present', () => {
-    const result = trackHairNailStatus({
-      daily_shedding_rate: 'normal_under_50',
-      temporal_vertex_thinning: false,
-      scalp_sebum_inflammation: 'none',
-      nail_brittleness_or_ridging: false,
-      using_5ar_inhibitor_or_minoxidil: false,
-    });
-    expect(result.hair_follicle_vitality_score).toBeGreaterThanOrEqual(75);
-    expect(result.androgenic_alopecia_risk_tier).toBe('minimal');
-    expect(result.keratin_matrix_health_tier).toBe('robust');
-  });
-
-  it('detects accelerated miniaturization when shedding is high and thinning is present', () => {
-    const result = trackHairNailStatus({
-      daily_shedding_rate: 'excessive_over_100',
-      temporal_vertex_thinning: true,
-      scalp_sebum_inflammation: 'severe_seborrheic_dermatitis',
-      nail_brittleness_or_ridging: true,
-      using_5ar_inhibitor_or_minoxidil: false,
-    });
-    expect(result.hair_follicle_vitality_score).toBeLessThan(45);
-    expect(result.androgenic_alopecia_risk_tier).toBe('accelerated-miniaturization');
-    expect(result.keratin_matrix_health_tier).toBe('compromised-brittle');
-  });
-});
+const INPUT={daily_shedding_rate:'normal_under_50' as const,temporal_vertex_thinning:false,scalp_sebum_inflammation:'none' as const,nail_brittleness_or_ridging:false,using_5ar_inhibitor_or_minoxidil:false};
+describe('Tool #096 — hair and nail observation log',()=>{it('records observations without a risk score',()=>expect(trackHairNailStatus(INPUT)).toEqual({status:'RECORDED',resultType:'USER_PROVIDED',...INPUT}));it('preserves concerning observations without diagnosis',()=>expect(trackHairNailStatus({...INPUT,daily_shedding_rate:'excessive_over_100',temporal_vertex_thinning:true,scalp_sebum_inflammation:'severe_seborrheic_dermatitis',nail_brittleness_or_ridging:true})).toMatchObject({status:'RECORDED',resultType:'USER_PROVIDED'}));it('rejects malformed fields',()=>expect(()=>trackHairNailStatus({...INPUT,extra:true} as never)).toThrow());});

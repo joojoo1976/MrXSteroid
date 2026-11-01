@@ -6,15 +6,20 @@ import { getCatalogTools, getPublishedCatalogTools } from './smartToolsCatalog4'
 
 export const SMART_TOOL_CATEGORY_SLUGS = [
   'nutrition',
+  'ai-nutrition-vision',
   'body-composition',
   'pharmacokinetics',
   'hormonal-health',
   'medical-monitoring',
   'injection-formulation',
+  'homebrew-chemistry',
   'cycle-management',
   'training-recovery',
+  'contest-prep',
   'reproductive-wellbeing',
   'platform-ai',
+  'ai-behavior',
+  'measurement-conversion',
 ] as const;
 
 export type SmartToolCategory = (typeof SMART_TOOL_CATEGORY_SLUGS)[number];
@@ -32,15 +37,20 @@ export interface SmartToolCategoryDefinition {
 
 export const SMART_TOOL_CATEGORIES: readonly SmartToolCategoryDefinition[] = [
   { slug: 'nutrition', nameAr: 'التغذية والسعرات', nameEn: 'Nutrition & Calories', descriptionAr: 'السعرات والماكروز وتخطيط التغذية', descriptionEn: 'Calories, macros and meal planning', icon: 'Apple', order: 10, safetyLevel: 'general' },
+  { slug: 'ai-nutrition-vision', nameAr: 'تحليل الوجبات والتغذية', nameEn: 'Meal Analysis & Nutrition', descriptionAr: 'أدوات التغذية وتحليل الوجبات والملصقات', descriptionEn: 'Nutrition, meal analysis and label tools', icon: 'ScanSearch', order: 15, safetyLevel: 'general' },
   { slug: 'body-composition', nameAr: 'تركيب الجسم', nameEn: 'Body Composition', descriptionAr: 'الوزن والدهون واحتباس الماء', descriptionEn: 'Weight, body-fat and water retention', icon: 'Scale', order: 20, safetyLevel: 'general' },
   { slug: 'pharmacokinetics', nameAr: 'الحركية الدوائية ونصف العمر', nameEn: 'Pharmacokinetics & Half-Life', descriptionAr: 'الإسترات ونصف العمر وتوقيت المركبات', descriptionEn: 'Esters, half-lives and compound timing', icon: 'Timer', order: 30, safetyLevel: 'general' },
   { slug: 'hormonal-health', nameAr: 'الصحة الهرمونية', nameEn: 'Hormonal Health', descriptionAr: 'الإستروجين والبرولاكتين وHPTA وTRT', descriptionEn: 'Estrogen, prolactin, HPTA and TRT', icon: 'Activity', order: 40, safetyLevel: 'health' },
   { slug: 'medical-monitoring', nameAr: 'المراقبة الطبية والسلامة', nameEn: 'Medical Monitoring & Safety', descriptionAr: 'الفحوصات والقلب والتفاعلات والآثار الجانبية', descriptionEn: 'Bloodwork, cardio, interactions and side effects', icon: 'ShieldCheck', order: 50, safetyLevel: 'health' },
   { slug: 'injection-formulation', nameAr: 'الحقن والتركيبات', nameEn: 'Injection & Formulation', descriptionAr: 'مواقع الحقن والأحجام وتقليل الألم', descriptionEn: 'Injection sites, volumes and pain reduction', icon: 'Syringe', order: 60, safetyLevel: 'health' },
+  { slug: 'homebrew-chemistry', nameAr: 'مراجع القياس الكيميائي والسلامة', nameEn: 'Chemical Measurement & Safety', descriptionAr: 'مراجع وقياسات عامة مع حدود سلامة واضحة', descriptionEn: 'General references and measurements with explicit safety limits', icon: 'FlaskConical', order: 65, safetyLevel: 'high-risk' },
   { slug: 'cycle-management', nameAr: 'إدارة الدورات', nameEn: 'Cycle Management', descriptionAr: 'بناء الستاك وتوقيت PCT والتكاليف', descriptionEn: 'Stack building, PCT timing and cycle costs', icon: 'Layers', order: 70, safetyLevel: 'general' },
   { slug: 'training-recovery', nameAr: 'التدريب والاستشفاء', nameEn: 'Training & Recovery', descriptionAr: 'الإمكانات الوراثية والتقدم والتعافي', descriptionEn: 'Genetic potential, progress and recovery', icon: 'Dumbbell', order: 80, safetyLevel: 'general' },
+  { slug: 'contest-prep', nameAr: 'التحضير للمنافسات', nameEn: 'Contest Preparation', descriptionAr: 'سجلات التحضير وملاحظات الأداء مع حدود النماذج', descriptionEn: 'Contest preparation and performance records with model limitations', icon: 'Trophy', order: 85, safetyLevel: 'health' },
   { slug: 'reproductive-wellbeing', nameAr: 'الصحة الإنجابية', nameEn: 'Reproductive Wellbeing', descriptionAr: 'بروتوكولات HCG وSERM والخصوبة', descriptionEn: 'HCG/SERM protocols and fertility', icon: 'Heart', order: 90, safetyLevel: 'health' },
   { slug: 'platform-ai', nameAr: 'أدوات المنصة والذكاء الاصطناعي', nameEn: 'Platform & AI Tools', descriptionAr: 'أدوات المنصة القادمة والتكاملات الذكية', descriptionEn: 'Upcoming platform and AI integrations', icon: 'Sparkles', order: 100, safetyLevel: 'general' },
+  { slug: 'ai-behavior', nameAr: 'السلوك والسياق اليدوي', nameEn: 'Behavior & Manual Context', descriptionAr: 'سجلات يدوية ومحدودة، دون تنبؤ آلي أو مشاركة تلقائية للبيانات', descriptionEn: 'Bounded user records without automated prediction or data sharing', icon: 'ListChecks', order: 105, safetyLevel: 'high-risk' },
+  { slug: 'measurement-conversion', nameAr: 'القياس والتحويل', nameEn: 'Measurement & Conversion', descriptionAr: 'حسابات تعليمية عامة للكميات والوحدات', descriptionEn: 'General educational quantity and unit calculations', icon: 'Scale', order: 110, safetyLevel: 'general' },
 ];
 
 export function getCategory(slug: string): SmartToolCategoryDefinition | null {
@@ -49,6 +59,25 @@ export function getCategory(slug: string): SmartToolCategoryDefinition | null {
 
 /** Rattachement outil → catégorie (slug du catalogue → slug de catégorie). */
 export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
+  'bmi': 'body-composition',
+  'one-rep-max': 'training-recovery',
+  'strength-standards': 'training-recovery',
+  'rest-timer': 'training-recovery',
+  'bmr-tdee': 'nutrition',
+  'protein-needs': 'nutrition',
+  'water-intake': 'nutrition',
+  // Legacy tools #1-9
+  'macro': 'nutrition',
+  'bodyfat': 'body-composition',
+  'injection': 'injection-formulation',
+  'halflife': 'pharmacokinetics',
+  'lab': 'medical-monitoring',
+  'genetic': 'training-recovery',
+  'cycle': 'cycle-management',
+  'timeline': 'training-recovery',
+  'master-calculator': 'nutrition',
+
+  // Special layered tools
   'multi-ester-pharmacokinetics': 'pharmacokinetics',
   'hpta-recovery': 'hormonal-health',
   'aromatization-risk': 'hormonal-health',
@@ -162,7 +191,7 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-108-ai-body-composition-vision-engine': 'body-composition',
   'tool-109-competition-readiness-posing-os': 'cycle-management',
   'tool-110-ai-meal-vision-scanner': 'nutrition',
-  'tool-111-smart-food-macro-substitution-engine': 'nutrition',
+  'tool-111-smart-food-macro-substitution': 'nutrition',
   'tool-112-food-quality-micronutrient-diversity-score': 'nutrition',
   'tool-113-ai-grocery-basket-meal-cost-optimizer': 'nutrition',
   'tool-114-restaurant-macro-navigator': 'nutrition',
@@ -195,13 +224,115 @@ export const TOOL_CATEGORY: Readonly<Record<string, SmartToolCategory>> = {
   'tool-141-carrier-oil-viscosity-syringe-pressure': 'injection-formulation',
   'tool-142-compound-purity-active-yield-estimator': 'injection-formulation',
   'tool-143-storage-stability-thermal-degradation-estimator': 'injection-formulation',
-  'tool-144-homebrew-chemistry-calculator': 'injection-formulation',
+  'tool-144-homebrew-chemistry-calculator': 'measurement-conversion',
   'tool-145-habit-intelligence-consistency-coach': 'platform-ai',
   'tool-146-ai-safety-gate-emergency-protocol': 'platform-ai',
   'tool-147-scientific-evidence-explorer': 'platform-ai',
   'tool-148-personal-fitness-memory-layer': 'platform-ai',
   'tool-149-physique-trajectory-simulator': 'body-composition',
   'tool-150-ai-performance-command-center': 'platform-ai',
+  'tool-236-restaurant-macro-navigator': 'ai-nutrition-vision',
+  'tool-237-intra-workout-volumizer': 'ai-nutrition-vision',
+  'tool-238-fiber-type-adaptation-score': 'contest-prep',
+  'tool-239-peptide-reconstitution': 'homebrew-chemistry',
+  'tool-240-raw-powder-density-engine': 'homebrew-chemistry',
+  'tool-241-solvent-ratio': 'homebrew-chemistry',
+  'tool-242-dosage-unit-conversion-engine': 'homebrew-chemistry',
+  'tool-243-carrier-oil-viscosity-estimator': 'homebrew-chemistry',
+  'tool-244-purity-yield-estimator': 'homebrew-chemistry',
+  'tool-245-storage-stability-estimator': 'homebrew-chemistry',
+  'tool-246-homebrew-chemistry': 'homebrew-chemistry',
+  'tool-247-habit-intelligence-coach': 'ai-behavior',
+  'tool-250-personal-fitness-memory-layer': 'ai-behavior',
+  'tool-252-command-center': 'ai-behavior',
+  'tool-251-physique-trajectory-simulator': 'ai-behavior',
+  'tool-249-scientific-evidence-explorer': 'ai-behavior',
+  'tool-248-safety-gate-emergency-protocol': 'ai-behavior',
+  'tool-151-accumulation-half-life-simulator': 'pharmacokinetics',
+  'tool-152-side-effect-tracker': 'reproductive-wellbeing',
+  'tool-153-injection-site-rotator': 'pharmacokinetics',
+  'tool-154-compound-stack-builder': 'pharmacokinetics',
+  'tool-155-progress-tracker': 'reproductive-wellbeing',
+  'tool-156-water-retention': 'pharmacokinetics',
+  'tool-157-multi-compound-half-life': 'pharmacokinetics',
+  'tool-158-volume-measurement': 'pharmacokinetics',
+  'tool-159-compound-half-life-stacker': 'pharmacokinetics',
+  'tool-160-genetic-potential': 'body-composition',
+  'tool-161-peptide-protocol-planner': 'pharmacokinetics',
+  'tool-162-oral-cycle-planner': 'pharmacokinetics',
+  'tool-163-trt-optimization-engine': 'pharmacokinetics',
+  'tool-164-post-cycle-bloodwork-interpreter': 'pharmacokinetics',
+  'tool-165-drug-interaction-checker-pro': 'pharmacokinetics',
+  'tool-166-injection-pain-minimizer': 'pharmacokinetics',
+  'tool-167-ester-conversion': 'pharmacokinetics',
+  'tool-168-compound-stacking-synergy': 'pharmacokinetics',
+  'tool-169-side-effect-early-warning': 'pharmacokinetics',
+  'tool-170-cycle-cost': 'pharmacokinetics',
+  'tool-171-cycle-length-optimizer': 'pharmacokinetics',
+  'tool-172-bloodwork-trend-analyzer': 'pharmacokinetics',
+  'tool-173-compound-clearance': 'pharmacokinetics',
+  'tool-174-hormone-conversion': 'pharmacokinetics',
+  'tool-175-injection-schedule-planner': 'pharmacokinetics',
+  'tool-176-side-effect-probability': 'pharmacokinetics',
+  'tool-177-stack-compatibility-checker': 'pharmacokinetics',
+  'tool-178-dht-side-effect-predictor': 'reproductive-wellbeing',
+  'tool-179-cycle-break-planner': 'reproductive-wellbeing',
+  'tool-180-trt-lifetime': 'reproductive-wellbeing',
+  'tool-181-fertility-preservation-guide': 'reproductive-wellbeing',
+  'tool-182-cardiovascular-risk-assessor': 'medical-monitoring',
+  'tool-183-bone-density-optimizer': 'medical-monitoring',
+  'tool-184-mental-health-monitor': 'medical-monitoring',
+  'tool-185-peptide-dosage': 'pharmacokinetics',
+  'tool-186-growth-hormone-protocol-planner': 'medical-monitoring',
+  'tool-187-insulin-conversion': 'medical-monitoring',
+  'tool-188-glucose-tracker': 'medical-monitoring',
+  'tool-189-androgenic-balance': 'pharmacokinetics',
+  'tool-190-androgen-receptor-optimizer': 'pharmacokinetics',
+  'tool-191-5-alpha-conversion': 'pharmacokinetics',
+  'tool-192-hair-loss-tracker': 'reproductive-wellbeing',
+  'tool-193-prostate-health-manager': 'medical-monitoring',
+  'tool-194-testicular-suppression': 'reproductive-wellbeing',
+  'tool-195-sperm-production-optimizer': 'reproductive-wellbeing',
+  'tool-196-estrogen-sensitivity-manager': 'reproductive-wellbeing',
+  'tool-197-gynecomastia-tracker': 'reproductive-wellbeing',
+  'tool-198-detoxification-optimizer': 'medical-monitoring',
+  'tool-199-oxidative-stress': 'medical-monitoring',
+  'tool-200-antioxidant-manager': 'medical-monitoring',
+  'tool-201-systemic-inflammation': 'medical-monitoring',
+  'tool-202-immune-system-optimizer': 'medical-monitoring',
+  'tool-203-arterial-health-manager': 'medical-monitoring',
+  'tool-204-blood-viscosity': 'medical-monitoring',
+  'tool-205-nitric-oxide-optimizer': 'medical-monitoring',
+  'tool-206-endothelial-health-manager': 'medical-monitoring',
+  'tool-207-fat-metabolism': 'medical-monitoring',
+  'tool-208-mitochondrial-optimizer': 'medical-monitoring',
+  'tool-209-cellular-aging': 'medical-monitoring',
+  'tool-210-telomere-manager': 'medical-monitoring',
+  'tool-211-anti-aging-inflammation': 'medical-monitoring',
+  'tool-212-cognitive-enhancer': 'medical-monitoring',
+  'tool-213-cortisol-stress': 'medical-monitoring',
+  'tool-214-mood-optimizer': 'medical-monitoring',
+  'tool-215-dopamine-tracker': 'medical-monitoring',
+  'tool-216-serotonin-manager': 'medical-monitoring',
+  'tool-217-female-hormone-balance': 'reproductive-wellbeing',
+  'tool-218-female-health-optimizer': 'reproductive-wellbeing',
+  'tool-219-female-dosage': 'measurement-conversion',
+  'tool-220-menstrual-cycle-manager': 'reproductive-wellbeing',
+  'tool-221-pregnancy-risk': 'reproductive-wellbeing',
+  'tool-222-skin-health-optimizer': 'medical-monitoring',
+  'tool-223-hair-nail-tracker': 'medical-monitoring',
+  'tool-224-digestive-health-optimizer': 'medical-monitoring',
+  'tool-225-comprehensive-report-generator': 'ai-nutrition-vision',
+  'tool-226-sarm-to-aas-transition-predictor': 'pharmacokinetics',
+  'tool-227-subq-vs-im-pk-modeler': 'pharmacokinetics',
+  'tool-228-health-data-fusion-hub': 'ai-nutrition-vision',
+  'tool-229-glycogen-supercompensation-modeler': 'contest-prep',
+  'tool-230-peak-week-manipulator': 'contest-prep',
+  'tool-231-body-composition-vision-engine': 'ai-nutrition-vision',
+  'tool-232-meal-vision-scanner': 'ai-nutrition-vision',
+  'tool-233-food-substitution-engine': 'ai-nutrition-vision',
+  'tool-234-food-quality-score': 'ai-nutrition-vision',
+  'tool-235-grocery-basket-optimizer': 'ai-nutrition-vision',
 
 };
 
@@ -231,3 +362,25 @@ export function getPublishedToolsByCategory(category: SmartToolCategory): SmartT
 export function isCategory(slug: string): slug is SmartToolCategory {
   return (SMART_TOOL_CATEGORY_SLUGS as readonly string[]).includes(slug);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

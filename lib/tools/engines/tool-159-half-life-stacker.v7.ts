@@ -1,0 +1,3 @@
+import {z} from 'zod';
+export const HalfLifeStackInputSchema=z.object({half_lives_days:z.array(z.number().finite().positive().max(365)).min(1).max(20),interval_days:z.number().finite().positive().max(365)}).strict();
+export function calculateHalfLifeScenario(raw:unknown){const i=HalfLifeStackInputSchema.parse(raw);return {status:'CALCULATED' as const,resultType:'SCENARIO' as const,decay_factors:i.half_lives_days.map(h=>Number(Math.pow(.5,i.interval_days/h).toFixed(6))),assumptions:['Independent exponential decay factors','No timing recommendation or clinical interpretation'],disclaimer:'Mathematical decay scenario only; not an injection schedule.'};}

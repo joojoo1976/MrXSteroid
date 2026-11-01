@@ -1,0 +1,18 @@
+﻿===== lighthouse-tool036.report.json =====
+finalUrl  = http://localhost:3111/smarttools/injection-formulation/tool-036-injection-schedule
+fetchTime = 2026-10-17T16:18:32.438Z
+formFactor= mobile  LH=13.5.0
+document  = status=200 bytes=10845
+documentURL= http://localhost:3111/smarttools/injection-formulation/tool-036-injection-schedule
+lcp audit score= displayTitle=
+details.items raw:
+
+===== lighthouse-tool035-baseline =====
+finalUrl  = http://localhost:3111/smarttools/pharmacokinetics/tool-035-hormone-conversion
+fetchTime = 2026-10-17T16:24:17.141Z
+formFactor= mobile  LH=13.5.0
+document  = status=200 bytes=10932
+documentURL= http://localhost:3111/smarttools/pharmacokinetics/tool-035-hormone-conversion
+lcp audit score= displayTitle=
+details.items raw:
+

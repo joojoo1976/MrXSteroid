@@ -3,6 +3,7 @@
  * recompute, Zod validation, auto-draft via shared adapter, standard
  * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calculateCycleLength, type CycleLengthCompound } from '@/lib/tools/engines/tool-031-cycle-length-optimizer';
 import { buildCycleLengthOutput } from '@/lib/tools/adapters/tool-031-cycle-length-optimizer';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -27,7 +28,7 @@ const EXPS: Array<{ value: Experience; en: string; ar: string }> = [
 export default function Tool031CycleLengthOptimizer() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [goal, setGoal] = useState<Goal>('bulk');
   const [experience, setExperience] = useState<Experience>('intermediate');
   const [previousCycles, setPreviousCycles] = useState(2);
@@ -87,8 +88,8 @@ export default function Tool031CycleLengthOptimizer() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">

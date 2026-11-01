@@ -31,46 +31,41 @@ export interface FemaleHealthOptimizerOutputOptions {
 
 export function buildFemaleHealthOptimizerProvenance(options: FemaleHealthOptimizerOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.75;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'score',
-    measurementMethod: 'energy availability, iron stores and endocrine vitality scoring (deterministic model)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 75, high: 100, unit: 'score', source: 'optimal athletic resilience index' },
+    unit: 'user-entered observations',
+    measurementMethod: 'Manual energy, iron, symptom, and training observation log; no inferred health state',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
 export function buildFemaleHealthOptimizerKeyFindings(result: FemaleHealthOptimizerResult): KeyFinding[] {
   const findings: KeyFinding[] = [
     {
-      code: 'VITALITY_SCORE',
-      labelAr: 'مؤشر الحيوية والمرونة الأنثوية',
-      labelEn: 'Female vitality score',
-      value: `${result.female_vitality_score}/100`,
-      severity: result.female_vitality_score <= 45 ? 'important' : result.female_vitality_score <= 70 ? 'monitor' : 'info',
+      code: 'OBSERVED_ENERGY',
+      labelAr: 'ملاحظة توافر الطاقة',
+      labelEn: 'Entered energy observation',
+      value: result.energy_availability_adequacy,
+      severity: 'info',
     },
     {
-      code: 'RESILIENCE_TIER',
-      labelAr: 'تصنيف المرونة الرياضية',
-      labelEn: 'Athletic resilience tier',
-      value: result.athletic_resilience_tier,
-      severity: result.athletic_resilience_tier === 'high-reds-risk' ? 'important' : 'info',
+      code: 'OBSERVED_FERRITIN',
+      labelAr: 'ملاحظة حالة الفيريتين المدخلة',
+      labelEn: 'Entered ferritin observation',
+      value: result.ferritin_status,
+      severity: 'info',
     },
     {
-      code: 'SUPPORT_PRIORITY',
-      labelAr: 'أولوية الدعم الغذائي والمعدني',
-      labelEn: 'Nutrition and iron support priority',
-      value: result.iron_energy_support_priority,
-      severity: result.iron_energy_support_priority === 'urgent-clinical-review' ? 'important' : 'info',
+      code: 'RESULT_TYPE',
+      labelAr: 'نوع النتيجة',
+      labelEn: 'Result type',
+      value: 'USER_PROVIDED',
+      severity: 'info',
     },
   ];
-  for (const w of result.warnings) {
-    findings.push({ code: 'WARNING', labelAr: 'تنبيه', labelEn: 'Warning', value: w, severity: 'monitor' });
-  }
   return findings;
 }
 

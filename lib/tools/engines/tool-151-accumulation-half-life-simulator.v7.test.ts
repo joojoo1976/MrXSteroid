@@ -1,0 +1,3 @@
+import { describe, expect, it } from 'vitest';
+import { calculateAccumulationScenario, AccumulationInputSchema } from './tool-151-accumulation-half-life-simulator.v7';
+describe('Tool 151 accumulation scenario',()=>{it('calculates deterministic scenario values',()=>{const r=calculateAccumulationScenario({initial_amount:100,half_life_days:4,interval_days:4,simulation_days:12});expect(r.status).toBe('CALCULATED');expect(r.resultType).toBe('SCENARIO');expect(r.accumulation_factor).toBe(2);});it('rejects unknown fields',()=>{expect(AccumulationInputSchema.safeParse({initial_amount:1,half_life_days:1,interval_days:1,simulation_days:1,extra:1}).success).toBe(false);});});

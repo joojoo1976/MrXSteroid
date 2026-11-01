@@ -15,12 +15,9 @@
  *               aromatase substrate clears.
  *               E2(w) = E2_base + (E2_peak − E2_base) · e^(−Δw/τ_decay)
  *
- * The model encodes three pillars from "Mr. X-Steroid Book" Ch. 4 (Estrogen
- * Management): (1) compound-specific aromatization propensity, (2) adipose-
- * tissue aromatase density (body-fat scaling), and (3) AI (aromatase
- * inhibitor) enzyme suppression. Risk is bucketed into five zones — crashed,
- * suppressed, optimal, elevated, critical — each with a bilingual clinical
- * note.
+ * This legacy model is retained only as an illustrative arithmetic scenario.
+ * Its formula and parameters have not been validated against clinical data;
+ * it does not estimate an individual's estradiol level or clinical risk.
  *
  * PURE MODULE — no React, no DOM, no Supabase, no `Date`, no I/O.
  */
@@ -55,23 +52,15 @@ export const AI_PROTOCOLS: readonly AiProtocol[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Physiological constants (Tool #002 spec §2)
+// Legacy scenario parameters. These values are unvalidated and are not
+// physiological reference values, dosing guidance, or clinical thresholds.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Baseline estradiol for a healthy adult male (mid-range, pg/mL). */
+/** Arbitrary model baseline (pg/mL); not a clinical reference value. */
 export const BASELINE_E2 = 30;
-/** E2 reference band lower bound (pg/mL) — below is "suppressed". */
-export const E2_OPTIMAL_LOW = 20;
-/** E2 reference band upper bound (pg/mL) — above is "elevated". */
-export const E2_OPTIMAL_HIGH = 45;
-/** E2 above this is "critical" (gyno-risk threshold, pg/mL). */
-export const E2_CRITICAL_THRESHOLD = 80;
-/** E2 below this is "crashed" (AI overuse, joint/libido crash, pg/mL). */
-export const E2_CRASH_THRESHOLD = 10;
 /**
- * Max E2 elevation at the reference protocol (500 mg/wk testosterone, 15% BF,
- * no AI). Real-world peak E2 at that protocol lands ~80-120 pg/mL above
- * baseline, per Mr. X-Steroid Book Ch. 4.
+ * Arbitrary maximum elevation parameter retained for reproducibility of the
+ * legacy scenario equation. It has no verified empirical or clinical basis.
  */
 export const MAX_E2_ELEVATION = 100;
 /** Reference weekly dose (mg) — the 1.0× dose-scaling anchor. */
@@ -83,12 +72,7 @@ export const E2_DECAY_TAU_WEEKS = 2;
 /** Weeks of post-cycle E2 observation simulated after the cycle ends. */
 export const POST_CYCLE_OBSERVATION_WEEKS = 8;
 
-/**
- * Compound-specific aromatization propensity (fraction of androgen load that
- * the aromatase enzyme converts to estradiol). Trenbolone is 5α-reduced and
- * cannot aromatize; testosterone is the canonical substrate. Per Mr. X-Steroid
- * Book Ch. 4.
- */
+/** Unvalidated relative model multipliers, not biological conversion rates. */
 export const AROMATIZATION_RATES: Record<CompoundType, number> = {
     testosterone: 1.0, // direct aromatase substrate
     methandienone: 0.9, // Dianabol — highly estrogenic
@@ -98,12 +82,7 @@ export const AROMATIZATION_RATES: Record<CompoundType, number> = {
     trenbolone: 0.0, // 5α-reduced — cannot convert to estrogen
 };
 
-/**
- * AI (aromatase inhibitor) enzyme suppression factors — the fraction of
- * aromatase activity neutralised. Per Mr. X-Steroid Book Ch. 4 (Estrogen
- * Management). Mild = Arimidex 0.25 mg E3D; Standard = 0.5 mg E3D; Aggressive
- * = 1 mg ED or Exemestane 25 mg ED (suicide inhibitor).
- */
+/** Unvalidated hypothetical scenario factors; they are not medication doses. */
 export const AI_SUPPRESSION_FACTORS: Record<AiProtocol, number> = {
     none: 0.0,
     mild: 0.5,
@@ -111,11 +90,7 @@ export const AI_SUPPRESSION_FACTORS: Record<AiProtocol, number> = {
     aggressive: 0.88,
 };
 
-/**
- * Body-fat aromatase density multiplier. Aromatase is concentrated in adipose
- * tissue (~2.5× muscle per unit mass). Normalised so 15% BF = 1.0× (lean
- * adult male reference). Per Mr. X-Steroid Book Ch. 4.
- */
+/** Unvalidated body-fat scenario multiplier; not a measured biological value. */
 export function bodyFatFactor(bodyFatPct: number): number {
     return 0.5 + bodyFatPct / 30;
 }
@@ -137,7 +112,7 @@ export interface EngineInput {
     aiProtocol: AiProtocol;
 }
 
-export type E2RiskZone = 'crashed' | 'suppressed' | 'optimal' | 'elevated' | 'critical';
+export type E2RiskZone = 'not_assessed';
 
 export type AromatizationPhase = 'on_cycle' | 'post_cycle';
 
@@ -171,14 +146,12 @@ export interface AromatizationRiskResult {
     aiSuppressionFactor: number;
     /** Body-fat-derived aromatase multiplier. */
     bodyFatMultiplier: number;
-    /** Gynecomastia risk score (0–100). */
-    gynoRiskScore: number;
-    /** Water-retention risk score (0–100). */
-    waterRetentionRiskScore: number;
-    /** Estrogen-crash risk score (0–100, from AI overuse). */
-    crashRiskScore: number;
-    /** Bilingual AI recommendation code. */
-    aiRecommendation: 'none_needed' | 'monitor' | 'adjust_up' | 'reduce_ai' | 'unnecessary';
+    /** Unsupported clinical risk metrics are deliberately unavailable. */
+    gynoRiskScore: null;
+    waterRetentionRiskScore: null;
+    crashRiskScore: null;
+    /** No medication recommendation is generated by this unvalidated model. */
+    aiRecommendation: 'not_assessed';
     totalTimelineWeeks: number;
 }
 
@@ -203,18 +176,6 @@ const safeEnum = <T extends string>(value: unknown, allowed: readonly T[], fallb
 };
 
 /**
- * Classify an E2 level (pg/mL) into a risk zone.
- * Per Mr. X-Steroid Book Ch. 4 reference bands for adult males.
- */
-export function classifyE2Risk(e2Pgml: number): E2RiskZone {
-    if (e2Pgml < E2_CRASH_THRESHOLD) return 'crashed';
-    if (e2Pgml < E2_OPTIMAL_LOW) return 'suppressed';
-    if (e2Pgml <= E2_OPTIMAL_HIGH) return 'optimal';
-    if (e2Pgml <= E2_CRITICAL_THRESHOLD) return 'elevated';
-    return 'critical';
-}
-
-/**
  * Steady-state E2 ceiling for a given protocol.
  * ΔE2_max = MAX_E2_ELEVATION · aromRate · doseScale · bfFactor · (1 − aiSupp)
  */
@@ -234,52 +195,7 @@ export function steadyStateE2For(input: EngineInput): number {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Risk scores (0–100) — bilingual clinical context
-// ─────────────────────────────────────────────────────────────────────────────
-
-function gynoRiskFor(e2Peak: number, aromRate: number, weeksOnCycle: number): number {
-    if (e2Peak <= E2_OPTIMAL_HIGH) return 0;
-    const excess = e2Peak - E2_OPTIMAL_HIGH;
-    const durationFactor = clamp(weeksOnCycle / 16, 0.5, 1.5);
-    const score = (excess / (E2_CRITICAL_THRESHOLD - E2_OPTIMAL_HIGH)) * 70 * durationFactor + aromRate * 20;
-    return round2(clamp(score, 0, 100));
-}
-
-function waterRetentionRiskFor(e2Peak: number, bodyFatPct: number): number {
-    if (e2Peak <= E2_OPTIMAL_HIGH) return 0;
-    const excess = e2Peak - E2_OPTIMAL_HIGH;
-    const bfFactor = clamp(bodyFatPct / 25, 0.4, 1.6);
-    const score = (excess / (E2_CRITICAL_THRESHOLD - E2_OPTIMAL_HIGH)) * 60 * bfFactor;
-    return round2(clamp(score, 0, 100));
-}
-
-function crashRiskFor(aiProtocol: AiProtocol, aromRate: number, e2Peak: number): number {
-    if (aiProtocol === 'none') return 0;
-    const aiSupp = AI_SUPPRESSION_FACTORS[aiProtocol];
-    // AI on a non-aromatising compound is pure crash risk with zero benefit.
-    const compoundMismatch = aromRate === 0 ? 1.5 : 1.0;
-    // If E2 is already low, AI pushes it into crash territory.
-    const e2Pressure = e2Peak < E2_OPTIMAL_LOW ? 1.4 : 1.0;
-    const score = aiSupp * 80 * compoundMismatch * e2Pressure;
-    return round2(clamp(score, 0, 100));
-}
-
-function aiRecommendationFor(
-    peakE2: number,
-    aromRate: number,
-    aiProtocol: AiProtocol,
-): AromatizationRiskResult['aiRecommendation'] {
-    if (aromRate === 0 && aiProtocol !== 'none') return 'unnecessary';
-    if (peakE2 < E2_CRASH_THRESHOLD) return 'reduce_ai';
-    if (peakE2 < E2_OPTIMAL_LOW && aiProtocol !== 'none') return 'reduce_ai';
-    if (peakE2 > E2_CRITICAL_THRESHOLD) return 'adjust_up';
-    if (peakE2 > E2_OPTIMAL_HIGH && aiProtocol === 'none') return 'monitor';
-    if (peakE2 > E2_OPTIMAL_HIGH && (aiProtocol === 'mild')) return 'monitor';
-    return 'none_needed';
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Bilingual milestone notes (Tool #002 spec §6 — phase stepper)
+// Bilingual milestone notes for the legacy scenario curve
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface MilestoneNote {
@@ -292,49 +208,36 @@ function milestoneNote(
     phase: AromatizationPhase,
     weeksOnCycle: number,
     e2: number,
-    riskZone: E2RiskZone,
     isFinal: boolean,
 ): MilestoneNote {
     if (isFinal) {
         return {
-            ar: 'اكتمل منحنى التدهور والتعافي للاستراديول',
-            en: 'E2 decay-and-recovery curve complete',
+            ar: 'اكتمل السيناريو الحسابي؛ ليس قياساً أو توقعاً سريرياً',
+            en: 'Arithmetic scenario complete; not a measurement or clinical prediction',
         };
     }
     if (week === 1) {
         return {
-            ar: 'الأسبوع 1: بدء نشاط إنزيم الأروماتاز وارتفاع الاستراديول',
-            en: 'Week 1: aromatase activation — E2 rising',
+            ar: 'الأسبوع 1: نقطة أولى في المنحنى الحسابي',
+            en: 'Week 1: first point in the arithmetic curve',
         };
     }
     if (week === weeksOnCycle) {
         return {
-            ar: `الأسبوع ${weeksOnCycle}: ذروة الاستراديول — ${e2.toFixed(0)} pg/mL`,
-            en: `Week ${weeksOnCycle}: peak E2 — ${e2.toFixed(0)} pg/mL`,
+            ar: `الأسبوع ${weeksOnCycle}: نهاية مرحلة السيناريو المدخلة — ${e2.toFixed(0)} pg/mL`,
+            en: `Week ${weeksOnCycle}: end of the entered scenario phase — ${e2.toFixed(0)} pg/mL`,
         };
     }
     if (phase === 'post_cycle' && week === weeksOnCycle + 1) {
         return {
-            ar: 'نهاية الدورة: بدء انحسار الاستراديول نحو الخط الأساسي',
-            en: 'Cycle end: E2 decaying toward baseline',
-        };
-    }
-    if (riskZone === 'critical') {
-        return {
-            ar: 'منطقة حرجة: خطر التثدي الهرموني — تدخّل فوري مطلوب',
-            en: 'Critical zone: gyno risk — immediate intervention required',
-        };
-    }
-    if (riskZone === 'crashed') {
-        return {
-            ar: 'انهيار الاستراديول: فرط استخدام مثبطات الأروماتاز',
-            en: 'E2 crashed: AI over-suppression',
+            ar: 'بداية الجزء الحسابي اللاحق؛ لا يمثل تعافياً أو تصفية دوائية',
+            en: 'Start of the later arithmetic segment; not recovery or drug clearance',
         };
     }
     if (phase === 'post_cycle') {
         return {
-            ar: 'مرحلة ما بعد الدورة: تعافي الاستراديول',
-            en: 'Post-cycle: E2 normalising',
+            ar: 'الجزء الحسابي اللاحق؛ لا يثبت تعافياً أو عودةً إلى الطبيعي',
+            en: 'Later arithmetic segment; it does not establish recovery or normalization',
         };
     }
     return { ar: '', en: '' };
@@ -388,7 +291,6 @@ export function calculateAromatizationRisk(rawInput: EngineInput): Aromatization
         }
 
         e2 = round2(clamp(e2, 1, 500));
-        const riskZone = classifyE2Risk(e2);
         const aromataseActivity = aromRate * doseScale * bfFactor * (phase === 'on_cycle' ? 1 : decayFractionAt(week, weeksOnCycle));
         const aiActive = phase === 'on_cycle' ? aiSupp : 0;
 
@@ -397,7 +299,6 @@ export function calculateAromatizationRisk(rawInput: EngineInput): Aromatization
             phase,
             weeksOnCycle,
             e2,
-            riskZone,
             week === totalTimelineWeeks,
         );
 
@@ -407,33 +308,26 @@ export function calculateAromatizationRisk(rawInput: EngineInput): Aromatization
             estradiolPgml: e2,
             aromataseActivityPct: round2(clamp(aromataseActivity * 100, 0, 100)),
             aiSuppressionPct: round2(aiActive * 100),
-            riskZone,
+            riskZone: 'not_assessed',
             milestoneNoteAr: note.ar,
             milestoneNoteEn: note.en,
         });
     }
 
     const finalE2 = timeline[timeline.length - 1].estradiolPgml;
-    const peakRiskZone = classifyE2Risk(peakE2);
-
-    const gynoRiskScore = gynoRiskFor(peakE2, aromRate, weeksOnCycle);
-    const waterRetentionRiskScore = waterRetentionRiskFor(peakE2, bf);
-    const crashRiskScore = crashRiskFor(ai, aromRate, peakE2);
-    const aiRecommendation = aiRecommendationFor(peakE2, aromRate, ai);
-
     return {
         timeline,
         steadyStateE2: round2(steadyStateE2),
         peakE2: round2(peakE2),
         finalE2,
-        peakRiskZone,
+        peakRiskZone: 'not_assessed',
         compoundAromatizationRate: aromRate,
         aiSuppressionFactor: aiSupp,
         bodyFatMultiplier: round2(bfFactor),
-        gynoRiskScore,
-        waterRetentionRiskScore,
-        crashRiskScore,
-        aiRecommendation,
+        gynoRiskScore: null,
+        waterRetentionRiskScore: null,
+        crashRiskScore: null,
+        aiRecommendation: 'not_assessed',
         totalTimelineWeeks,
     };
 }
@@ -444,7 +338,7 @@ function decayFractionAt(week: number, weeksOnCycle: number): number {
     return Math.exp(-(week - weeksOnCycle) / E2_DECAY_TAU_WEEKS);
 }
 
-/** Safe default protocol — 500 mg/wk testosterone, 15% BF, 12 weeks, no AI. */
+/** Legacy model defaults only; they are not a recommended protocol or guidance. */
 export const DEFAULT_AROMATIZATION_INPUT: EngineInput = {
     weeksOnCycle: 12,
     weeklyDoseMg: 500,

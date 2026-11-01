@@ -1,6 +1,7 @@
 'use client';
 /** Tool #110 - AI Meal Vision Scanner & Portion Estimator (dynamic UI). */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { calcMealEstimate, type MealMealInput, type MealResult } from '@/lib/tools/engines/tool-110-ai-meal-vision-scanner';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -42,7 +43,7 @@ interface DraftInputs {
   photo_consent: string;
 }
 
-const DEFAULT_FOOD_CSV = 'chicken breast, white rice, broccoli';
+const DEFAULT_FOOD_CSV = '';
 
 function splitFood(csv: string): string[] {
   return csv.split(',').map((s) => s.trim()).filter((s) => s.length > 0).slice(0, 24);
@@ -50,7 +51,7 @@ function splitFood(csv: string): string[] {
 
 export default function Tool110MealVisionScanner() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [foodCsv, setFoodCsv] = useState(DEFAULT_FOOD_CSV);
   const [inputs, setInputs] = useState<DraftInputs>({
     meal_type: 'lunch',
@@ -83,10 +84,6 @@ export default function Tool110MealVisionScanner() {
     <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
-        </div>
       </div>
 
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.inputs}</h2>
@@ -191,3 +188,4 @@ function Metric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

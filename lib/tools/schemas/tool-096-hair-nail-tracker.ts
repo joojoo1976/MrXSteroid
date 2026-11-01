@@ -6,6 +6,6 @@ export const HairNailTrackerInputSchema = z.object({
   scalp_sebum_inflammation: z.enum(['none', 'mild_pruritus', 'severe_seborrheic_dermatitis']),
   nail_brittleness_or_ridging: z.boolean(),
   using_5ar_inhibitor_or_minoxidil: z.boolean(),
-});
+}).strict();
 
 export type HairNailTrackerInput = z.infer<typeof HairNailTrackerInputSchema>;

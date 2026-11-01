@@ -31,46 +31,41 @@ export interface SkinHealthOptimizerOutputOptions {
 
 export function buildSkinHealthOptimizerProvenance(options: SkinHealthOptimizerOutputOptions): DataProvenance {
   const source: DataSource = options.provenanceSource ?? 'manual';
-  const confidence = 0.75;
   return {
     source,
     recordedAt: options.recordedAt,
     timezone: options.timezone ?? 'UTC',
-    unit: 'score',
-    measurementMethod: 'sebaceous hyperactivity and follicular inflammation scoring (deterministic model)',
-    confidence,
-    dataQuality: deriveDataQuality(confidence),
-    referenceRange: { low: 75, high: 100, unit: 'score', source: 'calm clear skin baseline index' },
+    unit: 'user-entered observations',
+    measurementMethod: 'Manual skin observation log; no inferred dermatological state',
+    confidence: null,
+    dataQuality: deriveDataQuality(null),
   };
 }
 
 export function buildSkinHealthOptimizerKeyFindings(result: SkinHealthOptimizerResult): KeyFinding[] {
   const findings: KeyFinding[] = [
     {
-      code: 'CLARITY_SCORE',
-      labelAr: 'مؤشر صفاء وصحة الجلد',
-      labelEn: 'Skin clarity score',
-      value: `${result.skin_clarity_score}/100`,
-      severity: result.skin_clarity_score <= 45 ? 'important' : result.skin_clarity_score <= 70 ? 'monitor' : 'info',
+      code: 'OBSERVED_SEBUM',
+      labelAr: 'ملاحظة إفراز الدهون',
+      labelEn: 'Entered sebum observation',
+      value: result.sebum_production_level,
+      severity: 'info',
     },
     {
-      code: 'RISK_TIER',
-      labelAr: 'تصنيف المخاطر الجلدية',
-      labelEn: 'Dermatological risk tier',
-      value: result.dermatological_risk_tier,
-      severity: result.dermatological_risk_tier === 'severe-cystic-inflammatory-flare' ? 'important' : result.dermatological_risk_tier === 'moderate-breakout-risk' ? 'monitor' : 'info',
+      code: 'OBSERVED_ACNE',
+      labelAr: 'ملاحظة نمط الآفات',
+      labelEn: 'Entered lesion observation',
+      value: result.acne_lesion_distribution,
+      severity: 'info',
     },
     {
-      code: 'PROTOCOL_PRIORITY',
-      labelAr: 'أولوية العناية بالبشرة',
-      labelEn: 'Skincare protocol priority',
-      value: result.skincare_protocol_priority,
-      severity: result.skincare_protocol_priority === 'clinical-dermatology-escalation' ? 'important' : 'info',
+      code: 'RESULT_TYPE',
+      labelAr: 'نوع النتيجة',
+      labelEn: 'Result type',
+      value: 'USER_PROVIDED',
+      severity: 'info',
     },
   ];
-  for (const w of result.warnings) {
-    findings.push({ code: 'WARNING', labelAr: 'تنبيه', labelEn: 'Warning', value: w, severity: 'monitor' });
-  }
   return findings;
 }
 

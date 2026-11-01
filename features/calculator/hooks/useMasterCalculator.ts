@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { Json } from '../../../shared/types/db_types';
 import { FormulaEngine, FormulaResult } from '../services/formulaEngine';
 import { usePreferences } from '../../../context/PreferencesContext';
+import { convertWeightSystem } from '../lib/unitSystemConversion';
 
 export type CalculationGoal = 'bulking' | 'cutting' | 'trt' | 'sports';
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'pro';
@@ -30,7 +31,10 @@ export interface CalculationResult extends FormulaResult {
 
 export const useMasterCalculator = () => {
     const { user } = useAuth();
-    const { language, currency } = usePreferences();
+    const { language, currency, unitSystem } = usePreferences();
+    const latestUnitSystem = useRef(unitSystem);
+    latestUnitSystem.current = unitSystem;
+    const previousUnitSystem = useRef(unitSystem);
     const [state, setState] = useState<CalculationState>({
         goal: 'bulking',
         substance: 'test_e',
@@ -38,13 +42,25 @@ export const useMasterCalculator = () => {
         weight: 85,
         age: 30,
         budget: 'medium',
-        unitSystem: 'metric'
+        unitSystem
     });
 
     const [result, setResult] = useState<CalculationResult | null>(null);
     const [advice, setAdvice] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Keep this legacy tool's numeric display in step with the shared header.
+    useEffect(() => {
+        const previous = previousUnitSystem.current;
+        previousUnitSystem.current = unitSystem;
+        if (previous === unitSystem) return;
+        setState((current) => ({
+            ...current,
+            weight: convertWeightSystem(current.weight, current.unitSystem, unitSystem),
+            unitSystem,
+        }));
+    }, [unitSystem]);
 
     // 1. Hydrate User Data from Supabase
     useEffect(() => {
@@ -62,7 +78,14 @@ export const useMasterCalculator = () => {
                     .single();
 
                 if (data && !error) {
-                    setState(data.inputs as unknown as CalculationState);
+                    const savedInputs = data.inputs as unknown as CalculationState;
+                    const preferredSystem = latestUnitSystem.current;
+                    const savedSystem = savedInputs.unitSystem === 'imperial' ? 'imperial' : 'metric';
+                    setState({
+                        ...savedInputs,
+                        weight: convertWeightSystem(savedInputs.weight, savedSystem, preferredSystem),
+                        unitSystem: preferredSystem,
+                    });
                     setResult(data.results as unknown as CalculationResult);
                 }
             } catch {

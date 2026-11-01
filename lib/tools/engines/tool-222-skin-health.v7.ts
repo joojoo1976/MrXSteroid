@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const NoteSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordSkinNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:NoteSchema.parse(raw),disclaimer:'Note record only; no skin-health optimization.'};}

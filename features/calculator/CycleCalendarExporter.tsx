@@ -4,7 +4,6 @@ import React from 'react';
 import { CalendarCheck, Target, X, Plus, Download, Lock, Sparkles, RefreshCw, EyeOff } from 'lucide-react';
 import BrandLogo from '../../shared/ui/BrandLogo';
 import SystemGuideCard from '../../shared/ui/SystemGuideCard';
-import { UnitToggle } from '../../shared/ui/UnitToggle';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useCycleCalendarExporter } from './hooks/useCycleCalendarExporter';
@@ -156,10 +155,6 @@ const CycleCalendarExporter: React.FC<CycleCalendarExporterProps> = ({ content, 
                     <div className="bg-white dark:bg-background p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                         <h3 className="font-bold mb-4">{content.cycleArchitect.configLabel}</h3>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.unitSystemLabel}</span>
-                                <UnitToggle />
-                            </div>
                             <div className="flex items-center justify-between">
                                 <span className={`text-base text-zinc-600 dark:text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>{content.cycleArchitect.stealthModeLabel}</span>
                                 <button aria-label={content.cycleArchitect.toggleStealth} onClick={() => setStealthMode(!stealthMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${stealthMode ? 'bg-gold-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>

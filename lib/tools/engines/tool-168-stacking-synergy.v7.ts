@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const SynergyInputSchema=z.object({items:z.array(z.string().trim().min(1).max(100)).min(1).max(30)}).strict(); export function recordStackItems(raw:unknown){const i=SynergyInputSchema.parse(raw);return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,items:i.items,disclaimer:'User list only; no synergy or compatibility conclusion.'};}

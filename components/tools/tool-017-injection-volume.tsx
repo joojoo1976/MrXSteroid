@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { calculateInjectionVolume } from '@/lib/tools/engines/tool-017-injection-volume';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-017-injection-volume.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 
@@ -53,7 +52,6 @@ export default function Tool017InjectionVolumeCalculator() {
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
       <div className="space-y-4">
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Target Muscle:</label> <select value={targetMuscle} onChange={(e) => setTargetMuscle(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="deltoid">Deltoid</option><option value="glutes">Glutes</option><option value="quads">Quads</option><option value="pectorals">Pectorals</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option></select></div>
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Compound Viscosity:</label> <select value={compoundViscosity} onChange={(e) => setCompoundViscosity(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>

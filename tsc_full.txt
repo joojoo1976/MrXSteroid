@@ -1,0 +1,11 @@
+app/smarttools/bmr-tdee/page.tsx(8,83): error TS2322: Type 'string' is not assignable to type 'number'.
+app/smarttools/protein-needs/page.tsx(8,39): error TS2345: Argument of type '{ weightKg: number; goal: "maintain"; }' is not assignable to parameter of type 'ProteinNeedsInput'.
+  Property 'activityLevel' is missing in type '{ weightKg: number; goal: "maintain"; }' but required in type 'ProteinNeedsInput'.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(6,34): error TS2307: Cannot find module '@/lib/core/adaptive-context.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(7,38): error TS2307: Cannot find module '@/lib/engines/macro.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(8,31): error TS2307: Cannot find module '@/lib/core/event-bus.v7' or its corresponding type declarations.
+app/smarttools/tool-111-smart-food-macro-substitution/page.tsx(9,25): error TS2307: Cannot find module '@/components/tools/macro/MacroToolUI.v7' or its corresponding type declarations.
+app/smarttools/water-intake/page.tsx(8,53): error TS2322: Type 'string' is not assignable to type 'number'.
+lib/legacy-routes.ts(8,14): error TS2739: Type '{ home: string; dashboard: string; diagnostic: string; login: string; signup: string; profile: string; about: string; sitemap: string; accessibility: string; gdpr: string; ccpa: string; blog: string; ... 151 more ...; "tool-117-intra-workout-nutrient-volumizer": string; }' is missing the following properties from type 'Record<Page, string>': bmi, "one-rep-max", "strength-standards", "rest-timer"
+
+E:\MrXSteroid-main>

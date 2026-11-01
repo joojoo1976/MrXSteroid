@@ -9,7 +9,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   calculateAromatizationRisk,
-  classifyE2Risk,
   steadyStateE2For,
   bodyFatFactor,
   DEFAULT_AROMATIZATION_INPUT,
@@ -26,9 +25,9 @@ function expectAllFinite(result: ReturnType<typeof calculateAromatizationRisk>) 
   expect(Number.isFinite(result.peakE2)).toBe(true)
   expect(Number.isFinite(result.steadyStateE2)).toBe(true)
   expect(Number.isFinite(result.finalE2)).toBe(true)
-  expect(Number.isFinite(result.gynoRiskScore)).toBe(true)
-  expect(Number.isFinite(result.waterRetentionRiskScore)).toBe(true)
-  expect(Number.isFinite(result.crashRiskScore)).toBe(true)
+  expect(result.gynoRiskScore).toBeNull()
+  expect(result.waterRetentionRiskScore).toBeNull()
+  expect(result.crashRiskScore).toBeNull()
   expect(Number.isFinite(result.bodyFatMultiplier)).toBe(true)
   expect(Number.isFinite(result.compoundAromatizationRate)).toBe(true)
   expect(Number.isFinite(result.aiSuppressionFactor)).toBe(true)
@@ -126,12 +125,11 @@ describe('Tool #010 real engine — part 3: hostile inputs & sensitivity', () =>
       expect(dbol).toBeGreaterThan(tren)
     })
 
-    it('critical scenarios classify consistently; safe scenarios stay optimal', () => {
+    it('does not classify modeled values as clinical risk zones', () => {
       const critical = calculateAromatizationRisk({ ...REF, weeklyDoseMg: 2000, bodyFatPct: 35 })
-      expect(critical.peakRiskZone).toBe(classifyE2Risk(critical.peakE2))
-      expect(['elevated', 'critical']).toContain(critical.peakRiskZone)
+      expect(critical.peakRiskZone).toBe('not_assessed')
       const safe = calculateAromatizationRisk({ ...REF, compoundType: 'trenbolone' })
-      expect(safe.peakRiskZone).toBe('optimal')
+      expect(safe.peakRiskZone).toBe('not_assessed')
     })
   })
 

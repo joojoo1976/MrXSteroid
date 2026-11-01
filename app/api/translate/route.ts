@@ -48,11 +48,21 @@ import {
     createGoogleProviderFromEnv,
 } from '../../../server/translation/googleProvider';
 import type { TranslationProvider } from '../../../server/translation/provider';
+import { classifyTranslationRoute, resolveRequestRoutePath } from '../../../server/translation/policy';
+import { checkOrigin } from '../../../server/translation/security';
+import { issueTranslationSession } from '../../../server/translation/session';
+import { createTranslationBudgetStore, type TranslationBudgetLimits } from '../../../server/translation/budget';
+import { createTranslationRateLimiter, type TranslationRateLimiter } from '../../../server/translation/rateLimit';
+import { createDistributedTranslationCircuitBreaker } from '../../../server/translation/circuitBreaker';
+import { loadTranslationConfig, TranslationConfigError, type TranslationConfig } from '../../../server/translation/config';
+import { safeTranslationAuditEvent, type TranslationAuditSink } from '../../../server/translation/audit';
+import { isRuntimeTranslatable } from '../../../server/translation/languages';
 import {
     TranslationRuntimeError,
     listSelectableTargets,
     translateRequest,
 } from '../../../server/translation/runtime';
+import { translateBatchRequest } from '../../../server/translation/batchRuntime';
 
 /** nodejs is required: the Google adapter uses node:crypto for the JWT grant. */
 export const runtime = 'nodejs';
@@ -61,7 +71,57 @@ export const dynamic = 'force-dynamic';
 const NO_STORE = {
     'Cache-Control': 'no-store',
 } as const;
+const translationAuditSink: TranslationAuditSink = (event) => {
+    console.info(safeTranslationAuditEvent(event));
+};
 
+function productionSecurityConfig(): TranslationConfig {
+    return loadTranslationConfig(process.env, { requireProductionInfrastructure: true });
+}
+
+function budgetStore(config: TranslationConfig) {
+    return createTranslationBudgetStore(config);
+}
+
+function rateLimiter(config: TranslationConfig): TranslationRateLimiter | null {
+    return createTranslationRateLimiter(config);
+}
+
+function budgetLimits(config: TranslationConfig): TranslationBudgetLimits {
+    return {
+        maxSessionRequests: config.sessionMaxRequests,
+        maxSessionCharacters: config.sessionMaxCharacters,
+        maxRouteCharacters: config.routeBudgetCharacters,
+        maxDailyCharacters: config.dailyBudgetCharacters,
+        maxGlobalDailyCharacters: config.globalDailyBudgetCharacters,
+        maxTargetsPerDay: config.maxTargetsPerDay,
+    };
+}
+
+function circuitBreaker(config: TranslationConfig) {
+    return createDistributedTranslationCircuitBreaker({
+        upstashUrl: config.upstashUrl,
+        upstashToken: config.upstashToken,
+        failureThreshold: config.circuitFailureThreshold,
+        openDurationMs: config.circuitOpenMs,
+        redisTimeoutMs: config.redisTimeoutMs,
+    });
+}
+
+function translationSecurityInfrastructure(config: TranslationConfig) {
+    const budget = budgetStore(config);
+    const rate = rateLimiter(config);
+    const circuit = circuitBreaker(config);
+    if (!budget || !rate || !circuit) {
+        throw new TranslationRuntimeError(
+            'TRANSLATION_PERSISTENT_LIMITER_UNAVAILABLE',
+            'Translation security infrastructure is not configured.',
+            503,
+            true
+        );
+    }
+    return { budget, rate, circuit };
+}
 /** Server-only credential resolution. Never returns credential material. */
 function createProvider(): TranslationProvider | null {
     return createGoogleProviderFromEnv();
@@ -106,14 +166,29 @@ export async function POST(req: Request) {
     }
 
     try {
-        const result = await translateRequest({
+        const securityConfig = productionSecurityConfig();
+        const security = translationSecurityInfrastructure(securityConfig);
+        const common = {
             request: req,
             payload,
             createProvider,
             resolveVerifiedTargets,
             clientId: clientIp(req),
-        });
-
+            routePath: resolveRequestRoutePath(req) ?? '/__missing__',
+            sessionToken: req.headers.get('x-mrx-translation-session') ?? undefined,
+            sessionSecret: securityConfig.sessionSecret ?? undefined,
+            budgetStore: security.budget,
+            budgetLimits: budgetLimits(securityConfig),
+            rateLimiter: security.rate,
+            circuitBreaker: security.circuit,
+            audit: translationAuditSink,
+        };
+        const isBatch = payload !== null && typeof payload === 'object' && Array.isArray((payload as { items?: unknown }).items);
+        if (isBatch) {
+            const result = await translateBatchRequest(common);
+            return NextResponse.json({ ok: true, ...result }, { headers: NO_STORE });
+        }
+        const result = await translateRequest(common);
         return NextResponse.json(
             {
                 ok: true,
@@ -121,12 +196,14 @@ export async function POST(req: Request) {
                 targetLanguage: result.targetLanguage,
                 surface: result.surface,
                 translations: result.translations,
-                // §33 — the caller folds this into its cache key.
                 identity: result.identity,
             },
             { headers: NO_STORE }
         );
     } catch (error) {
+        if (error instanceof TranslationConfigError) {
+            return errorResponse(new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Translation security infrastructure is not configured.', 503, true));
+        }
         if (error instanceof TranslationRuntimeError) {
             return errorResponse(error);
         }
@@ -139,11 +216,54 @@ export async function POST(req: Request) {
 }
 
 /** §22 / §23 — capability-aware language list for the selector. */
-export async function GET() {
+export async function GET(req: Request) {
     try {
+        const url = new URL(req.url);
+        if (url.searchParams.get('mode') === 'session') {
+            const origin = checkOrigin(req);
+            if (!origin.allowed) throw new TranslationRuntimeError('ORIGIN_NOT_ALLOWED', 'Request origin is not permitted.', 403);
+            const securityConfig = productionSecurityConfig();
+            translationSecurityInfrastructure(securityConfig);
+            if (!securityConfig.sessionSecret) {
+                throw new TranslationRuntimeError(
+                    'TRANSLATION_PERSISTENT_LIMITER_UNAVAILABLE',
+                    'Translation security infrastructure is not configured.',
+                    503,
+                    true
+                );
+            }
+            const targetLanguage = (url.searchParams.get('target') ?? '').toLowerCase().trim();
+            const surface = (url.searchParams.get('surface') ?? '').trim();
+            const routePath = resolveRequestRoutePath(req) ?? '';
+            const policy = classifyTranslationRoute(routePath);
+            if (!isRuntimeTranslatable(targetLanguage) || !policy.translatable || !policy.allowedSurfaces.includes(surface as never)) {
+                throw new TranslationRuntimeError('TRANSLATION_ROUTE_BLOCKED', 'Translation session scope is not permitted.', 403);
+            }
+            const sessionId = crypto.randomUUID();
+            const token = issueTranslationSession({
+                sessionId,
+                targetLanguage,
+                routePath,
+                routeClass: policy.routeClass,
+                surface,
+                ttlMs: securityConfig.sessionTtlMs,
+                maxRequests: securityConfig.sessionMaxRequests,
+                maxCharacters: securityConfig.sessionMaxCharacters,
+            }, securityConfig.sessionSecret);
+            translationAuditSink({
+                event: 'session_issued',
+                routeClass: policy.routeClass,
+                surface,
+                targetLanguage,
+            });
+            return NextResponse.json({ ok: true, token, expiresInMs: securityConfig.sessionTtlMs }, { headers: NO_STORE });
+        }
         const languages = await listSelectableTargets(createProvider, resolveVerifiedTargets);
         return NextResponse.json({ ok: true, languages }, { headers: NO_STORE });
     } catch (error) {
+        if (error instanceof TranslationConfigError) {
+            return errorResponse(new TranslationRuntimeError('TRANSLATION_STORAGE_UNAVAILABLE', 'Translation security infrastructure is not configured.', 503, true));
+        }
         if (error instanceof TranslationRuntimeError) {
             return errorResponse(error);
         }

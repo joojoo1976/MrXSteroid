@@ -24,7 +24,6 @@ export const StackTimingInputSchema = z.object({
   compounds: z.array(EsterCompoundSchema).min(1).max(6),
   cycle_length_weeks: z.number().min(1).max(52),
   injection_frequency: z.enum(['daily', 'every-other-day', '2x-week', '1x-week']),
-  user_goal: z.enum(['bulk', 'cut', 'recomp', 'strength']),
 });
 
 export type StackTimingInput = z.infer<typeof StackTimingInputSchema>;
@@ -35,9 +34,8 @@ export const StackTimingResultSchema = z.object({
   recommended_pct_start_days: z.number().min(1).max(365),
   washout_complete_days: z.number().min(1).max(365),
   ester_bottleneck: EsterCompoundSchema,
-  optimal_injection_schedule: z.array(z.string()).min(0).max(52),
+  optimal_injection_schedule: z.array(z.string()).min(0).max(364),
   compound_peak_times: z.record(z.string(), z.number()),
-  confidence_score: z.number().min(0).max(100),
 });
 
 export type StackTimingResult = z.infer<typeof StackTimingResultSchema>;

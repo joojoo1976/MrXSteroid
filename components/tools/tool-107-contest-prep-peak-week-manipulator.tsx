@@ -1,6 +1,7 @@
 'use client';
 /** Tool #107 - Contest Prep Peak-Week Manipulator (dynamic UI). */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { buildPhaseTimeline, type ContestPrepResult } from '@/lib/tools/engines/tool-107-contest-prep-peak-week-manipulator';
 import { AUTO_DRAFT_DEBOUNCE_MS, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { requireTool } from '@/lib/tools/registry';
@@ -29,7 +30,7 @@ interface DraftInputs {
 
 export default function Tool107ContestPrep() {
   requireTool(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({
     days_until_show: 30,
     sex: 'male',
@@ -47,9 +48,16 @@ export default function Tool107ContestPrep() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
+    const timer = setTimeout(() => saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }), AUTO_DRAFT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputs, locale]);
+  }, [inputs, locale, unitSystem]);
+
+  const isImperial = unitSystem === 'imperial';
+  const displayWeight = (kg: number) => isImperial ? Number((kg * 2.2046226218).toFixed(1)) : kg;
+  const canonicalWeight = (value: number) => isImperial ? value / 2.2046226218 : value;
+  const displayWater = (liters: number) => isImperial ? Number((liters * 33.8140227).toFixed(1)) : liters;
+  const weightUnit = isImperial ? 'lb' : 'kg';
+  const waterUnit = isImperial ? 'fl oz' : 'L';
 
   const parsed = useMemo(() => ContestPrepInputSchema.safeParse(inputs), [inputs]);
   const result = useMemo<ContestPrepResult | null>(() => (parsed.success ? buildPhaseTimeline(parsed.data) : null), [parsed]);
@@ -59,8 +67,8 @@ export default function Tool107ContestPrep() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
 
@@ -73,8 +81,8 @@ export default function Tool107ContestPrep() {
             {SEX_OPTIONS.map((s) => (<option key={s} value={s}>{t[s === 'male' ? 'sex_male' : 'sex_female']}</option>))}
           </select>
         </label>
-        <label className={LBL}>{t.weight_kg}
-          <input type="number" min={40} max={200} step={1} value={inputs.weight_kg} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: Number(e.target.value || 82) }))} className={INP} />
+        <label className={LBL}>{t.weight_kg.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
+          <input type="number" min={isImperial ? 88.2 : 40} max={isImperial ? 440.9 : 200} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 180.8 : 82))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.hydration}
           <select value={inputs.hydration_status} onChange={(e) => setInputs((p) => ({ ...p, hydration_status: e.target.value }))} className={SEL}>
@@ -126,7 +134,7 @@ export default function Tool107ContestPrep() {
               </div>
               <div>
                 <div className="text-[9px] text-zinc-500">{t.water_ref}</div>
-                <div className="font-mono text-lime-400">{result.water_ref_liters[0]} - {result.water_ref_liters[1]} L</div>
+                <div className="font-mono text-lime-400">{displayWater(result.water_ref_liters[0])} - {displayWater(result.water_ref_liters[1])} {waterUnit}</div>
               </div>
             </div>
           </div>

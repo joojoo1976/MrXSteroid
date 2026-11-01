@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { assessHPTARecovery } from '@/lib/tools/engines/tool-018-hpta-recovery';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-018-hpta-recovery.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 
@@ -57,7 +56,6 @@ export default function Tool018HPTARecovery() {
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
       <div className="space-y-4">
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Stage:</label> <select value={stage} onChange={(e) => setStage(e.target.value as any)} className="w-full rounded border p-2" dir="ltr"><option value="suppressed">Suppressed</option><option value="partial">Partial Recovery</option><option value="fully_recovered">Fully Recovered</option><option value="unknown">Unknown</option></select></div>
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Expected Recovery (weeks):</label> <input type="number" value={expectedRecovery} onChange={(e) => setExpectedRecovery(parseInt(e.target.value as any))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>

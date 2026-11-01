@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const ValueSchema=z.object({value:z.number().finite().nonnegative().max(1000000),unit:z.string().trim().min(1).max(30)}).strict(); export function recordFatValue(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:ValueSchema.parse(raw),disclaimer:'User value record only; no fat-metabolism estimate.'};}

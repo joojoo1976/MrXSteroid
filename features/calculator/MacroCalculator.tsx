@@ -17,7 +17,6 @@ import BrandLogo from '../../shared/ui/BrandLogo';
 import AdPlaceholder from '../../shared/ui/AdPlaceholder';
 import { ContentStrings, Page } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
-import { UnitToggle } from '../../shared/ui/UnitToggle';
 import SystemGuideCard from '../../shared/ui/SystemGuideCard';
 import { useMacroCalculator } from './hooks/useMacroCalculator';
 
@@ -301,7 +300,6 @@ const MacroCalculator: React.FC<MacroCalculatorProps> = ({ content, navigateTo }
 
       {/* AdSlot: Top */}
       <div className="mb-12 relative z-30 flex flex-col items-center gap-6">
-        <UnitToggle className="scale-125 shadow-2xl border-white/10" />
         <AdPlaceholder slotId="macro_top_banner" format="horizontal" content={content} />
       </div>
 

@@ -8,6 +8,7 @@ import {
   type AdherenceLevel,
   type EngineInput,
   type SubstitutionResult,
+  computeSubstitution,
 } from '../engines/staging/tool-111-smart-food-macro-substitution-engine';
 import { Tool111InputSchema, tryParseTool111Input, parseTool111Input, DEFAULT_TOOL_111_INPUT } from '../schemas/tool-111-smart-food-macro-substitution';
 import {
@@ -81,12 +82,37 @@ describe('Tool #111 — Layer 2 schema boundary', () => {
     expect(tryParseTool111Input({ ...validInput, unitSystem: 'custom' as never }).ok).toBe(false);
   });
 });
+describe('Tool #111 — direct engine boundary', () => {
+  it('rejects non-finite or out-of-range quantities from direct callers', () => {
+    expect(() => computeSubstitution({ ...validInput, originalQuantity: Number.NaN })).toThrow(RangeError);
+    expect(() => computeSubstitution({ ...validInput, originalQuantity: -1 })).toThrow(RangeError);
+    expect(() => computeSubstitution({ ...validInput, originalQuantity: 10001 })).toThrow(RangeError);
+  });
+
+  it('rejects invalid macro profiles and target values instead of converting them to zero', () => {
+    const invalidOriginal = {
+      ...validInput,
+      originalFood: { ...validInput.originalFood, macrosPer100g: { ...validInput.originalFood.macrosPer100g, protein: Number.POSITIVE_INFINITY } },
+    };
+    const invalidSubstitute = {
+      ...validInput,
+      substituteFood: { ...validInput.substituteFood, macrosPer100g: { ...validInput.substituteFood.macrosPer100g, fat: -1 } },
+    };
+    expect(() => computeSubstitution(invalidOriginal)).toThrow(/protein must be a finite/);
+    expect(() => computeSubstitution(invalidSubstitute)).toThrow(/fat must be a finite/);
+    expect(() => computeSubstitution({ ...validInput, targetMacros: { protein: Number.NaN } })).toThrow(/Target protein/);
+  });
+
+  it('rejects unknown runtime units before conversion', () => {
+    expect(() => computeSubstitution({ ...validInput, originalUnit: 'stone' as never })).toThrow(/Unsupported original unit/);
+  });
+});
 describe('Tool #111 — Layer 3 canonical envelope', () => {
   it('wraps the engine result in the registry-derived envelope', () => {
     const output = buildOutput();
 
-    expect(output.toolId).toBe('mrx.tool.smart-food-macro-substitution');
-    expect(output.toolSlug).toBe('smart-food-macro-substitution');
+    expect(output.toolId).toBe('mrx.tool.111-smart-food-macro-substitution');
+    expect(output.toolSlug).toBe('tool-111-smart-food-macro-substitution');
     expect(output.accessTier).toBe('free');
     // neighbors: tool-110-ai-meal-vision-scanner (1260) <-> smart-food-macro-substitution (1270)
     expect(output.seoLinks.prevTool.slug).toBe('tool-110-ai-meal-vision-scanner');
@@ -304,7 +330,7 @@ describe('Tool #111 — Adapter pipeline', () => {
     const result = tool111Adapter.execute(validInput);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.output.toolSlug).toBe('smart-food-macro-substitution');
+      expect(result.output.toolSlug).toBe('tool-111-smart-food-macro-substitution');
       expect(result.output.result.substituteQuantity).toBeGreaterThan(0);
     }
   });

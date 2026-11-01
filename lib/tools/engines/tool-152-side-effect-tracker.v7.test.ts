@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest'; import {recordSideEffects,SideEffectLogInputSchema} from './tool-152-side-effect-tracker.v7';
+describe('Tool 152 symptom log',()=>{it('records user entries',()=>{const r=recordSideEffects({entries:[{symptom:'headache',observedAt:'2026-10-26',severity:'user_noted'}]});expect(r.status).toBe('RECORDED');expect(r.resultType).toBe('USER_PROVIDED');});it('rejects extra fields',()=>{expect(SideEffectLogInputSchema.safeParse({entries:[],extra:1}).success).toBe(false);});});

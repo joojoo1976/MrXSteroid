@@ -3,6 +3,7 @@
  * recompute, Zod validation, auto-draft via shared adapter, standard
  * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import { trackLiverEnzymes, type LiverTrackerResult } from '@/lib/tools/engines/tool-039-liver-enzyme-tracker';
 import { buildLiverTrackerOutput } from '@/lib/tools/adapters/tool-039-liver-enzyme-tracker';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
@@ -23,7 +24,7 @@ const STATUS_COLOR: Record<string, string> = { normal: 'text-lime-400', elevated
 export default function Tool039LiverEnzymeTracker() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const [locale, setLocale] = useState<'ar' | 'en'>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [inputs, setInputs] = useState<DraftInputs>({ readings: [{ marker: 'ALT', value: 45, unit: 'U/L', date: new Date().toISOString().slice(0, 10) }], oral_steroids: false, alcohol_drinks_per_week: 0, uses_tudca: true });
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
@@ -79,8 +80,8 @@ export default function Tool039LiverEnzymeTracker() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setLocale('ar')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'ar' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>عربي</button>
-          <button type="button" onClick={() => setLocale('en')} className={`px-3 py-1 text-xs font-bold rounded-lg ${locale === 'en' ? 'bg-lime-500 text-slate-950' : 'bg-zinc-800 text-zinc-300'}`}>EN</button>
+
+
         </div>
       </div>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.markers}</h2>

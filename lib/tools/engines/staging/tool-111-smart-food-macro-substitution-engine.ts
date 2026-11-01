@@ -559,6 +559,7 @@ export const EQUIVALENCE_THRESHOLDS = { excellent: 90, good: 75, fair: 60, poor:
  * PURE FUNCTION - no side effects, deterministic
  */
 export function computeSubstitution(input: EngineInput): SubstitutionResult {
+  assertValidCalculationInput(input);
   const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
   
   const originalFood = input.originalFood;
@@ -642,4 +643,38 @@ export function computeSubstitution(input: EngineInput): SubstitutionResult {
     limitations,
     metadata,
   };
+}
+
+/** Reject invalid values at the engine boundary instead of sanitizing them to zero. */
+function assertValidCalculationInput(input: EngineInput): void {
+  if (!Number.isFinite(input.originalQuantity) || input.originalQuantity <= 0 || input.originalQuantity > 10000) {
+    throw new RangeError('Original quantity must be finite and between 0 and 10000.');
+  }
+  if (!Object.prototype.hasOwnProperty.call(TO_CANONICAL, input.originalUnit)) {
+    throw new RangeError(`Unsupported original unit: ${String(input.originalUnit)}`);
+  }
+
+  for (const [foodName, food] of [['Original food', input.originalFood], ['Substitute food', input.substituteFood]] as const) {
+    for (const key of ['protein', 'carbs', 'fat', 'calories'] as const) {
+      const value = food.macrosPer100g[key];
+      if (!Number.isFinite(value) || value < 0) {
+        throw new RangeError(`${foodName} ${key} must be a finite, non-negative number.`);
+      }
+    }
+    for (const key of ['fiber', 'sugar', 'sodium'] as const) {
+      const value = food.macrosPer100g[key];
+      if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+        throw new RangeError(`${foodName} ${key} must be a finite, non-negative number when provided.`);
+      }
+    }
+  }
+
+  if (input.targetMacros) {
+    for (const key of ['protein', 'carbs', 'fat', 'calories'] as const) {
+      const value = input.targetMacros[key];
+      if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+        throw new RangeError(`Target ${key} must be a finite, non-negative number when provided.`);
+      }
+    }
+  }
 }

@@ -36,10 +36,14 @@
  */
 
 import { RUNTIME_SOURCE_LANGUAGE } from '@/server/translation/contracts';
+import {
+    normalizeForTranslationCache,
+    TRANSLATION_CACHE_NORMALIZATION_VERSION,
+} from '@/server/translation/normalization';
 
 /** House convention: `mrx:<domain>:v<N>:…`, matching mrx:tool-draft:v1 and mrx:calculate. */
 export const TRANSLATION_CACHE_PREFIX = 'mrx:translate';
-export const TRANSLATION_CACHE_VERSION = 1;
+export const TRANSLATION_CACHE_VERSION = 2;
 
 /** §33 — the identity a caller must fold into its cache key. */
 export type TranslationCacheIdentity = {
@@ -51,6 +55,7 @@ export type TranslationCacheIdentity = {
 
 export type TranslationCacheEntry = {
     readonly sourceText: string;
+    readonly normalizedSource: string;
     readonly translations: readonly string[];
     readonly identity: TranslationCacheIdentity;
     readonly storedAt: number;
@@ -125,8 +130,9 @@ export function translationCacheKey(input: TranslationCacheKeyInput): string {
         segment(identity.glossaryVersion),
         segment(identity.providerId),
         segment(identity.modelIdentifier),
-        String(input.sourceText.length),
-        textFingerprint(input.sourceText),
+        segment(TRANSLATION_CACHE_NORMALIZATION_VERSION),
+        String(normalizeForTranslationCache(input.sourceText).length),
+        textFingerprint(normalizeForTranslationCache(input.sourceText)),
     ].join(':');
 }
 
@@ -180,8 +186,9 @@ export class TranslationCache {
             this.entries.delete(key);
             return null;
         }
-        // Guard 1: exact source text (defeats any fingerprint collision).
-        if (entry.sourceText !== input.sourceText) return null;
+        // Guard 1: normalized identity (defeats fingerprint collisions while
+        // allowing canonically equivalent Unicode/whitespace variants).
+        if (entry.normalizedSource !== normalizeForTranslationCache(input.sourceText)) return null;
         // Guard 2: identity still current.
         if (!sameTranslationIdentity(entry.identity, input.identity)) return null;
         // A copy, so a caller cannot corrupt the stored entry.
@@ -195,6 +202,7 @@ export class TranslationCache {
         this.entries.delete(key);
         this.entries.set(key, {
             sourceText: input.sourceText,
+            normalizedSource: normalizeForTranslationCache(input.sourceText),
             translations: [...translations],
             identity: { ...input.identity },
             storedAt: this.now(),

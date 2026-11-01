@@ -1,0 +1,181 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+ [31m❯[39m [30m[45m jsdom [49m[39m components/tools/bodyfat-pilot.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1626[2mms[22m[39m
+[31m     [31m×[31m calculates real Body Fat v6 output[39m[33m 1541[2mms[22m[39m
+     [32m✓[39m shows validation error for invalid input[32m 82[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m jsdom [49m[39m components/tools/bodyfat-pilot.test.tsx[2m > [22mBodyFatPilotTool integration[2m > [22mcalculates real Body Fat v6 output
+[31m[1mTestingLibraryElementError[22m: Unable to find an element by: [data-testid="bodyfat-result"]
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<section[31m
+      [33mclass[31m=[32m"genius-tool-template"[31m
+      [33mdata-locale[31m=[32m"en"[31m
+      [33mdata-status[31m=[32m"error"[31m
+      [33mdata-theme[31m=[32m"light"[31m
+      [33mdata-tool-id[31m=[32m"mrx.tool.bodyfat"[31m
+      [33mdata-unit-system[31m=[32m"metric"[31m
+      [33mdir[31m=[32m"ltr"[31m
+    [36m>[31m
+      [36m<header[31m
+        [33mclass[31m=[32m"genius-tool-template__header"[31m
+      [36m>[31m
+        [36m<h1>[31m
+          [0mBody Fat Pilot[0m
+        [36m</h1>[31m
+        [36m<p>[31m
+          [0mPilot integration using Body Fat v6[0m
+        [36m</p>[31m
+      [36m</header>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__status"[31m
+        [33mrole[31m=[32m"status"[31m
+      [36m>[31m
+        [0merror[0m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__errors"[31m
+        [33mrole[31m=[32m"alert"[31m
+      [36m>[31m
+        [36m<p>[31m
+          [0mValidation failed: age: Required but missing[0m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"genius-tool-template__inputs"[31m
+      [36m>[31m
+        [36m<div>[31m
+          [36m<label>[31m
+            [0mWeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"75"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mHeight [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"175"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mNeck [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"38"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<label>[31m
+            [0mWaist [0m
+            [36m<input[31m
+              [33mvalue[31m=[32m"85"[31m
+            [36m/>[31m
+          [36m</label>[31m
+          [36m<button[31m
+            [33mtype[31m=[32m"button"[31m
+          [36m>[31m
+            [0mCalculate[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</section>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<html>[31m
+  [36m<head />[31m
+  [36m<body>[31m
+    [36m<div>[31m
+      [36m<section[31m
+        [33mclass[31m=[32m"genius-tool-template"[31m
+        [33mdata-locale[31m=[32m"en"[31m
+        [33mdata-status[31m=[32m"error"[31m
+        [33mdata-theme[31m=[32m"light"[31m
+        [33mdata-tool-id[31m=[32m"mrx.tool.bodyfat"[31m
+        [33mdata-unit-system[31m=[32m"metric"[31m
+        [33mdir[31m=[32m"ltr"[31m
+      [36m>[31m
+        [36m<header[31m
+          [33mclass[31m=[32m"genius-tool-template__header"[31m
+        [36m>[31m
+          [36m<h1>[31m
+            [0mBody Fat Pilot[0m
+          [36m</h1>[31m
+          [36m<p>[31m
+            [0mPilot integration using Body Fat v6[0m
+          [36m</p>[31m
+        [36m</header>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"genius-tool-template__status"[31m
+          [33mrole[31m=[32m"status"[31m
+        [36m>[31m
+          [0merror[0m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"genius-tool-template__errors"[31m
+          [33mrole[31m=[32m"alert"[31m
+        [36m>[31m
+          [36m<p>[31m
+            [0mValidation failed: age: Required but missing[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"genius-tool-template__inputs"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<label>[31m
+              [0mWeight [0m
+              [36m<input[31m
+                [33mvalue[31m=[32m"75"[31m
+              [36m/>[31m
+            [36m</label>[31m
+            [36m<label>[31m
+              [0mHeight [0m
+              [36m<input[31m
+                [33mvalue[31m=[32m"175"[31m
+              [36m/>[31m
+            [36m</label>[31m
+            [36m<label>[31m
+              [0mNeck [0m
+              [36m<input[31m
+                [33mvalue[31m=[32m"38"[31m
+              [36m/>[31m
+            [36m</label>[31m
+            [36m<label>[31m
+              [0mWaist [0m
+              [36m<input[31m
+                [33mvalue[31m=[32m"85"[31m
+              [36m/>[31m
+            [36m</label>[31m
+            [36m<button[31m
+              [33mtype[31m=[32m"button"[31m
+            [36m>[31m
+              [0mCalculate[0m
+            [36m</button>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</section>[31m
+    [36m</div>[31m
+  [36m</body>[31m
+[36m</html>[31m[39m
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m components/tools/bodyfat-pilot.test.tsx:[2m12:11[22m[39m
+    [90m 10|[39m     [34mrender[39m([33m<[39m[33mBodyFatPilotTool[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m 11|[39m     fireEvent.click(screen.getByRole('button', { name: /calculate/i })…
+    [90m 12|[39m     await waitFor(() => expect(screen.getByTestId('bodyfat-result')).t…
+    [90m   |[39m           [31m^[39m
+    [90m 13|[39m     const text = screen.getByTestId('bodyfat-result').textContent ?? '…
+    [90m 14|[39m     [34mexpect[39m(text)[33m.[39m[34mtoMatch[39m([36m/Body fat/[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 16:50:57
+[2m   Duration [22m 8.01s[2m (transform 625ms, setup 787ms, import 1.96s, tests 1.63s, environment 3.14s)[22m
+

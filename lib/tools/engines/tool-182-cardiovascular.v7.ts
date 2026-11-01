@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const CardioNoteSchema=z.object({note:z.string().trim().min(1).max(400)}).strict(); export function recordCardioNote(raw:unknown){return {status:'RECORDED' as const,resultType:'USER_PROVIDED' as const,entry:CardioNoteSchema.parse(raw),disclaimer:'User note only; no cardiovascular risk assessment.'};}

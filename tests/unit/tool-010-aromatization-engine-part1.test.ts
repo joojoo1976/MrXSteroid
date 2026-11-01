@@ -3,7 +3,7 @@
  *
  * Rewritten against the REAL engine API of
  * lib/tools/engines/aromatization-risk.ts:
- *   calculateAromatizationRisk(input) · classifyE2Risk · steadyStateE2For ·
+ *   calculateAromatizationRisk(input) · steadyStateE2For ·
  *   bodyFatFactor
  * (the previous revision imported non-existent symbols
  * `calculateAromatizationTier` / `totalAromatization` / `analyzeScenario`).
@@ -15,7 +15,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   calculateAromatizationRisk,
-  classifyE2Risk,
   steadyStateE2For,
   bodyFatFactor,
   DEFAULT_AROMATIZATION_INPUT,
@@ -70,7 +69,7 @@ describe('Tool #010 real engine — part 1: reference scenarios', () => {
       expect(r.steadyStateE2).toBe(BASELINE_E2)
       expect(r.peakE2).toBe(BASELINE_E2)
       expect(r.finalE2).toBe(BASELINE_E2)
-      expect(r.peakRiskZone).toBe('optimal')
+      expect(r.peakRiskZone).toBe('not_assessed')
     })
 
     it('methandienone (0.9) steady-state = 30 + 90 = 120', () => {
@@ -87,34 +86,10 @@ describe('Tool #010 real engine — part 1: reference scenarios', () => {
       expect(AI_SUPPRESSION_FACTORS.mild).toBe(0.5)
     })
 
-    it('risk scores stay inside the documented 0–100 bands', () => {
+    it('unsupported clinical risk scores are unavailable', () => {
       const r = calculateAromatizationRisk(REF)
       for (const s of [r.gynoRiskScore, r.waterRetentionRiskScore, r.crashRiskScore]) {
-        expect(Number.isFinite(s)).toBe(true)
-        expect(s).toBeGreaterThanOrEqual(0)
-        expect(s).toBeLessThanOrEqual(100)
-      }
-    })
-  })
-
-  describe('classifyE2Risk — known zone lookups', () => {
-    it('classifies the documented reference values', () => {
-      expect(classifyE2Risk(5)).toBe('crashed')
-      expect(classifyE2Risk(15)).toBe('suppressed')
-      expect(classifyE2Risk(30)).toBe('optimal')
-      expect(classifyE2Risk(60)).toBe('elevated')
-      expect(classifyE2Risk(120)).toBe('critical')
-    })
-
-    it('peakRiskZone always equals classifyE2Risk(peakE2)', () => {
-      for (const input of [
-        REF,
-        { ...REF, weeklyDoseMg: 1500 },
-        { ...REF, compoundType: 'trenbolone' as const },
-        { ...REF, bodyFatPct: 35 },
-      ]) {
-        const r = calculateAromatizationRisk(input)
-        expect(r.peakRiskZone).toBe(classifyE2Risk(r.peakE2))
+        expect(s).toBeNull()
       }
     })
   })

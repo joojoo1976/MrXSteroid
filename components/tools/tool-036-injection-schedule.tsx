@@ -5,6 +5,7 @@
  * Heavy widgets (dnd-kit calendar, recharts chart) are lazy via next/dynamic
  * with ssr:false so neither enters First Load JS. */
 import React, { useEffect, useRef, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import dynamic from 'next/dynamic';
 import {
   ESTER_PROFILES,
@@ -127,7 +128,7 @@ function formatCountdown(ms: number, locale: Locale): string {
 }
 
 export default function Tool036InjectionSchedule() {
-  const [locale, setLocale] = useState<Locale>('ar');
+  const { locale } = useToolDisplayPreferences();
   const [compoundId, setCompoundId] = useState('testosterone-enanthate');
   const [weeklyDoseMg, setWeeklyDoseMg] = useState(250);
   const [concentration, setConcentration] = useState(250);
@@ -224,13 +225,7 @@ export default function Tool036InjectionSchedule() {
           {label('title', locale)}
         </h1>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="rounded border border-white/10 px-2 py-1 text-xs"
-            onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-          >
-            {locale === 'ar' ? 'EN' : 'ع'}
-          </button>
+
           <button
             type="button"
             data-testid="pdf-export"

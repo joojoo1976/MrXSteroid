@@ -18,10 +18,9 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import i18nData from '@/i18n/hcg-serm-protocol.json';
-import MeasurementToggle, {
+import {
     kgToLbs,
     lbsToKg,
-    type MeasurementSystem,
 } from './MeasurementToggle';
 import {
     calculateHcgSermProtocol,
@@ -44,6 +43,7 @@ import {
 } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { tryParseHcgSermEngineInput } from '@/lib/tools/schemas/hcg-serm-protocol';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const TOOL_SLUG = 'hcg-serm-protocol';
 
@@ -59,8 +59,7 @@ interface HcgSermDraftInputs {
 export default function HcgSermProtocolToolComponent() {
     const neighbors = getToolNeighbors(TOOL_SLUG);
 
-    const [locale, setLocale] = useState<'ar' | 'en'>('ar');
-    const [unitSystem, setUnitSystem] = useState<MeasurementSystem>('metric');
+    const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
 
     // Input States
     const [compounds, setCompounds] = useState<Array<{ id: string; catalogId: string; weeklyDoseMg: number }>>([
@@ -82,7 +81,6 @@ export default function HcgSermProtocolToolComponent() {
     const [saveStatus, setSaveStatus] = useState<string>('');
     const [validationError, setValidationError] = useState<string | null>(null);
 
-    const isRtl = locale === 'ar';
     const t = isRtl ? i18nData.ar : i18nData.en;
 
     // Draft restore on mount
@@ -268,20 +266,6 @@ export default function HcgSermProtocolToolComponent() {
                     <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-3xl">
                         {t.subtitle}
                     </p>
-                </div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                    <button
-                        type="button"
-                        onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
-                        className="px-3 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-700 transition"
-                    >
-                        {isRtl ? 'English' : 'العربية'}
-                    </button>
-                    <MeasurementToggle
-                        unitSystem={unitSystem}
-                        onChange={(sys) => setUnitSystem(sys)}
-                        isRtl={isRtl}
-                    />
                 </div>
             </div>
 

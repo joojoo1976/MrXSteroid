@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import { calculateCardioRisk } from '@/lib/tools/engines/tool-019-cardio-monitor';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-019-cardio-monitor.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 
@@ -48,7 +47,6 @@ export default function Tool019CardioMonitor() {
   return (
     <div className="pct-timing-tool p-6" dir={i18nData.dir}>
       <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <MeasurementToggle />
       <div className="space-y-4">
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Systolic BP (mmHg):</label> <input type="number" value={systolic} onChange={(e) => setSystolic(parseInt(e.target.value as any))} min="60" max="250" className="w-full rounded border p-2" dir="ltr" /></div>
         <div><label className="block text-sm font-medium mb-2" dir="ltr">Diastolic BP (mmHg):</label> <input type="number" value={diastolic} onChange={(e) => setDiastolic(parseInt(e.target.value as any))} min="40" max="150" className="w-full rounded border p-2" dir="ltr" /></div>

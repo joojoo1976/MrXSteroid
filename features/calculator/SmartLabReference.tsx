@@ -21,7 +21,6 @@ import {
   ArrowUpToLine,
   ArrowDownToLine,
   Ruler,
-  Globe,
   ScanSearch,
   Info,
   TrendingUp,
@@ -114,7 +113,6 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
     openDetails,
     closeDetails,
     unitSystem,
-    setUnitSystem,
     value,
     setValue,
     getAnalysis,
@@ -251,22 +249,6 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
           </div>
         </div>
 
-        {/* Unit System Toggle */}
-        <div className="flex justify-center">
-          <div className="inline-flex items-center gap-1 p-1.5 rounded-2xl bg-zinc-100/80 dark:bg-background/80 border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl shadow-inner">
-            <UnitToggleButton
-              active={unitSystem === 'metric'}
-              onClick={() => setUnitSystem('metric')}
-              label={t(LAB_UI.metric)}
-            />
-            <UnitToggleButton
-              active={unitSystem === 'imperial'}
-              onClick={() => setUnitSystem('imperial')}
-              label={t(LAB_UI.imperial)}
-            />
-          </div>
-        </div>
-
         {/* Category Pills */}
         <div className="flex flex-wrap justify-center gap-2.5">
           <CategoryPill
@@ -389,7 +371,6 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
           <DetailModal
             test={selectedTest}
             unitSystem={unitSystem}
-            setUnitSystem={setUnitSystem}
             value={value}
             setValue={setValue}
             analysis={analysis}
@@ -403,26 +384,6 @@ const SmartLabReference: React.FC<SmartLabReferenceProps> = ({ content, navigate
 };
 
 /* ─────────────── Small Presentational Pieces ─────────────── */
-
-const UnitToggleButton: React.FC<{
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}> = ({ active, onClick, label }) => (
-  <motion.button
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.96 }}
-    onClick={onClick}
-    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
-      active
-        ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30'
-        : 'text-zinc-500 dark:text-zinc-400 hover:text-gold-500'
-    }`}
-  >
-    {active ? <Globe className="w-3.5 h-3.5" /> : <Ruler className="w-3.5 h-3.5" />}
-    {label}
-  </motion.button>
-);
 
 const CategoryPill: React.FC<{
   active: boolean;
@@ -479,7 +440,6 @@ const HintChip: React.FC<{
 interface DetailModalProps {
   test: LabTestData;
   unitSystem: LabUnitSystem;
-  setUnitSystem: (system: LabUnitSystem) => void;
   value: string;
   setValue: (val: string) => void;
   analysis: ReturnType<ReturnType<typeof useSmartLabReference>['getAnalysis']> | null;
@@ -490,7 +450,6 @@ interface DetailModalProps {
 const DetailModal: React.FC<DetailModalProps> = ({
   test,
   unitSystem,
-  setUnitSystem,
   value,
   setValue,
   analysis,
@@ -545,25 +504,16 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
 
         <div className="p-5 md:p-6 space-y-6">
-          {/* Unit Toggle + Reference Range */}
+          {/* Header-selected units + reference range */}
           <div className="rounded-3xl bg-zinc-50 dark:bg-background/40 border border-zinc-200 dark:border-zinc-800 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
                 <Ruler className="w-4 h-4 text-gold-500" />
                 {t(LAB_UI.referenceRange)}
               </h3>
-              <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-inner">
-                <ModalUnitToggle
-                  active={unitSystem === 'metric'}
-                  onClick={() => setUnitSystem('metric')}
-                  label={t(LAB_UI.metric)}
-                />
-                <ModalUnitToggle
-                  active={unitSystem === 'imperial'}
-                  onClick={() => setUnitSystem('imperial')}
-                  label={t(LAB_UI.imperial)}
-                />
-              </div>
+              <span className="rounded-lg border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500">
+                {unitSystem === 'metric' ? t(LAB_UI.metric) : t(LAB_UI.imperial)}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -726,23 +676,6 @@ const DetailModal: React.FC<DetailModalProps> = ({
     </motion.div>
   );
 };
-
-const ModalUnitToggle: React.FC<{
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}> = ({ active, onClick, label }) => (
-  <button
-    onClick={onClick}
-    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
-      active
-        ? 'bg-gold-500 text-black shadow'
-        : 'text-zinc-400 hover:text-gold-500'
-    }`}
-  >
-    {label}
-  </button>
-);
 
 const DirectionSection: React.FC<{
   icon: React.ElementType;

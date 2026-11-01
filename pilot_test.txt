@@ -1,0 +1,188 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mE:/MrXSteroid-main[39m
+
+[90mstdout[2m | components/tools/macro-pilot.test.tsx[2m > [22m[2mMacroPilotTool integration[2m > [22m[2mcalculates real Macro v6 output from inputs
+[22m[39m[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2633[39m,
+    proteinGrams: [33m184[39m,
+    carbsGrams: [33m290[39m,
+    fatGrams: [33m82[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m35.1[39m,
+    proteinPerKg: [33m2.5[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m3.9[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.1150000000000091[39m,
+  timestamp: [33m1792836278017[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'cut'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2238[39m,
+    proteinGrams: [33m196[39m,
+    carbsGrams: [33m196[39m,
+    fatGrams: [33m75[39m,
+    phase: [32m'cut'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m29.8[39m,
+    proteinPerKg: [33m2.6[39m,
+    fatPerKg: [33m1[39m,
+    carbsPerKg: [33m2.6[39m,
+    weeklyWeightChangeKg: [33m-0.5[39m,
+    dietAdherenceScore: [33m85[39m,
+    mealTimingSuggestions: [
+      [32m'Prioritize protein at every meal (4-5 meals)'[39m,
+      [32m'Carbs around workout window for energy'[39m
+    ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.04490000000009786[39m,
+  timestamp: [33m1792836278019[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m75[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'bulk'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1699[39m,
+    tdee: [33m2633[39m,
+    targetCalories: [33m2896[39m,
+    proteinGrams: [33m217[39m,
+    carbsGrams: [33m326[39m,
+    fatGrams: [33m80[39m,
+    phase: [32m'bulk'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m38.6[39m,
+    proteinPerKg: [33m2.9[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m4.3[39m,
+    weeklyWeightChangeKg: [33m0.25[39m,
+    dietAdherenceScore: [33m90[39m,
+    mealTimingSuggestions: [
+      [32m'Spread calories across 5-6 meals'[39m,
+      [32m'Post-workout carb + protein shake recommended'[39m
+    ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.045200000000022555[39m,
+  timestamp: [33m1792836278020[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m70[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1649[39m,
+    tdee: [33m2556[39m,
+    targetCalories: [33m2556[39m,
+    proteinGrams: [33m179[39m,
+    carbsGrams: [33m281[39m,
+    fatGrams: [33m80[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m36.5[39m,
+    proteinPerKg: [33m2.6[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m4[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.04090000000019245[39m,
+  timestamp: [33m1792836278020[39m
+}
+[Audit] mifflin-st-jeor-macro-v1 {
+  equationId: [32m'mifflin-st-jeor-macro-v1'[39m,
+  equationVersion: [32m'1.0.0'[39m,
+  correlationId: [32m'macro-v6'[39m,
+  inputs: {
+    age: [33m30[39m,
+    sex: [32m'male'[39m,
+    heightCm: [33m175[39m,
+    weightKg: [33m80[39m,
+    activityLevel: [33m1.55[39m,
+    phase: [32m'maintenance'[39m,
+    unitSystem: [32m'metric'[39m
+  },
+  outputs: {
+    bmr: [33m1749[39m,
+    tdee: [33m2711[39m,
+    targetCalories: [33m2711[39m,
+    proteinGrams: [33m190[39m,
+    carbsGrams: [33m298[39m,
+    fatGrams: [33m84[39m,
+    phase: [32m'maintenance'[39m,
+    macros: { protein: [36m[Object][39m, carbs: [36m[Object][39m, fat: [36m[Object][39m },
+    caloriesPerKg: [33m33.9[39m,
+    proteinPerKg: [33m2.4[39m,
+    fatPerKg: [33m1.1[39m,
+    carbsPerKg: [33m3.7[39m,
+    weeklyWeightChangeKg: [33m0[39m,
+    dietAdherenceScore: [33m100[39m,
+    mealTimingSuggestions: [ [32m'3-4 balanced meals per day'[39m, [32m'Protein every 3-4 hours'[39m ]
+  },
+  validation: { valid: [33mtrue[39m, warnings: [] },
+  computationTimeMs: [33m0.028999999999996362[39m,
+  timestamp: [33m1792836278020[39m
+}
+
+ [32m✓[39m [30m[45m jsdom [49m[39m components/tools/macro-pilot.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 249[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 13:04:36
+[2m   Duration [22m 1.85s[2m (transform 189ms, setup 158ms, import 329ms, tests 249ms, environment 848ms)[22m
+

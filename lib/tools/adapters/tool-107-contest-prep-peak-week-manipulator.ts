@@ -92,3 +92,4 @@ export function buildContestPrepOutput(
     seoLinks: buildSeoLinks(tool),
   });
 }
+

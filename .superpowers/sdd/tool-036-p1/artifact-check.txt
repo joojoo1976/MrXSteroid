@@ -1,0 +1,12 @@
+﻿--- build-flagon-clean.txt ---
+(no tool-036 line)
+--- build-flagON2.txt ---
+Γö£ ╞Æ /smarttools/tool-036-injection-schedule                          567 B         103 kB
+--- build-retry.txt ---
+Γö£ ╞Æ /smarttools/tool-036-injection-schedule                          567 B         103 kB
+--- build.txt ---
+Γö£ ╞Æ /smarttools/tool-036-injection-schedule                          567 B         103 kB
+
+lighthouse-tool036: perf=67 LCP=2253 FCP=2253 TBT=2831 CLS=0 req=37 url=http://localhost:3111/smarttools/injection-formulation/tool-036-injection-schedule
+lighthouse-tool035-baseline : MISSING
+

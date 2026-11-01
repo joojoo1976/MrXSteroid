@@ -14,23 +14,25 @@ export interface BloodPressureInput {
   systolic_mmhg: number; // 70..240
   diastolic_mmhg: number; // 40..150
   heart_rate_bpm?: number; // 40..200
-  on_antihypertensive_medication: boolean;
 }
 
 export interface BloodPressureResult {
-  category: 'normal' | 'elevated' | 'stage-1-hypertension' | 'stage-2-hypertension' | 'hypertensive-crisis';
+  category: 'normal' | 'elevated' | 'stage-1-hypertension' | 'stage-2-hypertension' | 'severe-range';
   mean_arterial_pressure: number;
   pulse_pressure: number;
-  escalation_needed: boolean;
+  follow_up_needed: boolean;
   warnings: string[];
 }
 
 export function trackBloodPressure(input: BloodPressureInput): BloodPressureResult {
-  const {
-    systolic_mmhg,
-    diastolic_mmhg,
-    on_antihypertensive_medication,
-  } = input;
+  const { systolic_mmhg, diastolic_mmhg } = input;
+
+  if (!Number.isFinite(systolic_mmhg) || !Number.isFinite(diastolic_mmhg)) {
+    throw new RangeError('Blood pressure values must be finite numbers');
+  }
+  if (systolic_mmhg <= diastolic_mmhg) {
+    throw new RangeError('Systolic pressure must be greater than diastolic pressure');
+  }
 
   const warnings: string[] = ['educational_bp_tracking_screen'];
 
@@ -38,12 +40,12 @@ export function trackBloodPressure(input: BloodPressureInput): BloodPressureResu
   const mean_arterial_pressure = Math.round((diastolic_mmhg + (systolic_mmhg - diastolic_mmhg) / 3) * 10) / 10;
 
   let category: BloodPressureResult['category'];
-  let escalation_needed = false;
+  let follow_up_needed = false;
 
   if (systolic_mmhg > 180 || diastolic_mmhg > 120) {
-    category = 'hypertensive-crisis';
-    escalation_needed = true;
-    warnings.push('hypertensive_crisis_emergency_medical_attention_required');
+    category = 'severe-range';
+    follow_up_needed = true;
+    warnings.push('severe_range_repeat_after_1min_and_check_symptoms');
   } else if (systolic_mmhg >= 140 || diastolic_mmhg >= 90) {
     category = 'stage-2-hypertension';
     warnings.push('stage_2_hypertension_physician_consultation_indicated');
@@ -56,19 +58,11 @@ export function trackBloodPressure(input: BloodPressureInput): BloodPressureResu
     category = 'normal';
   }
 
-  if (pulse_pressure > 60) {
-    warnings.push('elevated_pulse_pressure_may_indicate_arterial_stiffness');
-  }
-
-  if (on_antihypertensive_medication && (category === 'stage-1-hypertension' || category === 'stage-2-hypertension')) {
-    warnings.push('blood_pressure_uncontrolled_despite_medication');
-  }
-
   return {
     category,
     mean_arterial_pressure,
     pulse_pressure,
-    escalation_needed,
+    follow_up_needed,
     warnings: [...new Set(warnings)],
   };
 }

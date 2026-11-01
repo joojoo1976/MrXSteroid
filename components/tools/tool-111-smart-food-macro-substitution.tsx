@@ -1,12 +1,12 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useCallback } from 'react';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
-import MeasurementToggle from './MeasurementToggle';
 import i18nJson from '@/i18n/tool-111-smart-food-macro-substitution.json';
 import { tryParseTool111Input } from '@/lib/tools/schemas/tool-111-smart-food-macro-substitution';
 import { tool111Adapter } from '@/lib/tools/adapters/tool-111-smart-food-macro-substitution';
 import type { EngineInput, SubstitutionResult } from '@/lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 type MacroFields = { protein: string; carbs: string; fat: string; calories: string };
 
@@ -48,8 +48,6 @@ type FormData = {
   targetCarbs: string;
   targetFat: string;
   targetCalories: string;
-  unitSystem: EngineInput['unitSystem'];
-  locale: EngineInput['locale'];
 };
 
 type ValidationErrors = {
@@ -68,7 +66,6 @@ function emptyFormData(): FormData {
     originalMacros: { ...EMPTY_MACROS }, substituteMacros: { ...EMPTY_MACROS },
     originalQuantity: '100', originalUnit: 'g',
     targetProtein: '', targetCarbs: '', targetFat: '', targetCalories: '',
-    unitSystem: 'metric', locale: 'en',
   };
 }
 
@@ -98,7 +95,7 @@ function toMacroProfile(macros: MacroFields): EngineInput['originalFood']['macro
 
 export default function Tool111SmartFoodMacroSubstitution() {
   const t = useToolI18n(i18nJson);
-  const isRtl = t.dir === 'rtl';
+  const { locale, unitSystem, isRtl } = useToolDisplayPreferences();
 
   const [formData, setFormData] = useState<FormData>(emptyFormData);
   const [displayState, setDisplayState] = useState<DisplayState>('idle');
@@ -122,10 +119,10 @@ export default function Tool111SmartFoodMacroSubstitution() {
       originalQuantity: parseFloat(fd.originalQuantity) || 0,
       originalUnit: fd.originalUnit,
       targetMacros: Object.keys(targetMacros).length > 0 ? targetMacros : undefined,
-      unitSystem: fd.unitSystem,
-      locale: fd.locale,
+      unitSystem,
+      locale,
     };
-  }, []);
+  }, [locale, unitSystem]);
 
   const handleCalculate = useCallback(() => {
     setValidationErrors({});
@@ -221,7 +218,6 @@ export default function Tool111SmartFoodMacroSubstitution() {
       <header className="mb-8">
         <h1 className="text-2xl font-bold">{t.tool_name}</h1>
         <p className="text-sm text-zinc-500 mt-1">{t.tool_description}</p>
-        <MeasurementToggle />
       </header>
       <div className="mb-6 p-3 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm">
         {t.disclaimer}
@@ -391,16 +387,6 @@ export default function Tool111SmartFoodMacroSubstitution() {
             </select>
             {validationErrors.originalUnit && <p className="text-xs text-rose-500">{validationErrors.originalUnit}</p>}
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t.unit_system}</label>
-            <select value={formData.unitSystem}
-              onChange={(e) => setFormData((d) => ({ ...d, unitSystem: e.target.value as EngineInput['unitSystem'] }))}
-              className="w-full rounded border p-2">
-              <option value="metric">{t.unit_system_metric}</option>
-              <option value="imperial">{t.unit_system_imperial}</option>
-            </select>
-            {validationErrors.unitSystem && <p className="text-xs text-rose-500">{validationErrors.unitSystem}</p>}
-          </div>
         </div>
 
         <fieldset className="border rounded p-4 flex flex-col gap-4">
@@ -421,17 +407,6 @@ export default function Tool111SmartFoodMacroSubstitution() {
           </div>
           {validationErrors.targetMacros && <p className="text-xs text-rose-500">{validationErrors.targetMacros}</p>}
         </fieldset>
-
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">{t.locale}</label>
-          <select value={formData.locale}
-            onChange={(e) => setFormData((d) => ({ ...d, locale: e.target.value as EngineInput['locale'] }))}
-            className="w-full rounded border p-2">
-            <option value="ar">{t.locale_ar}</option>
-            <option value="en">{t.locale_en}</option>
-          </select>
-          {validationErrors.locale && <p className="text-xs text-rose-500">{validationErrors.locale}</p>}
-        </div>
 
         {Object.keys(validationErrors).length > 0 && (
           <div className="p-3 rounded bg-rose-50 border border-rose-200 text-rose-700 text-sm mb-4">
