@@ -43,6 +43,7 @@ const mocks = vi.hoisted(() => {
         getCalculatorHistory: vi.fn(),
         deleteCalculatorHistory: vi.fn(),
         from: vi.fn(),
+        eq: vi.fn(),
         maybeSingle: vi.fn(),
         upsert: vi.fn(),
         toastSuccess: vi.fn(),
@@ -112,10 +113,11 @@ describe('UserDashboard', () => {
         mocks.upsert.mockResolvedValue({ error: null });
         mocks.from.mockImplementation(() => ({
             select: () => ({
-                eq: () => ({ maybeSingle: mocks.maybeSingle }),
+                eq: mocks.eq,
             }),
             upsert: mocks.upsert,
         }));
+        mocks.eq.mockReturnValue({ maybeSingle: mocks.maybeSingle });
     });
 
     it('renders the overview from real history and profile data', async () => {
@@ -196,5 +198,31 @@ describe('UserDashboard', () => {
 
         await user.click(screen.getByTestId('nav-reports'));
         expect(screen.getByTestId('reports-empty')).toHaveTextContent(/no reports/i);
+    });
+
+    it('scopes dashboard reads to the signed-in user', async () => {
+        render(<UserDashboard />);
+
+        await waitFor(() => {
+            expect(mocks.eq).toHaveBeenCalledWith('user_id', 'user-1');
+        });
+        expect(mocks.from).toHaveBeenCalledWith('user_dashboard_data');
+    });
+
+    it('opens the mobile navigation drawer', async () => {
+        const user = userEvent.setup();
+        render(<UserDashboard />);
+
+        await user.click(screen.getByLabelText('Open navigation'));
+        expect(screen.getAllByLabelText('Close navigation').length).toBeGreaterThan(0);
+    });
+
+    it('shows a generic error banner without leaking internal details', async () => {
+        mocks.getCalculatorHistory.mockRejectedValueOnce(new Error('internal-db-detail'));
+
+        render(<UserDashboard />);
+
+        expect(await screen.findByText(/Some data could not be loaded/i)).toBeInTheDocument();
+        expect(screen.queryByText(/internal-db-detail/i)).not.toBeInTheDocument();
     });
 });
