@@ -387,7 +387,7 @@ export function pickPreferredRecord(
     const priorityDiff =
         (PROVENANCE_PRIORITY[b.provenance.source] ?? 0) - (PROVENANCE_PRIORITY[a.provenance.source] ?? 0);
     if (priorityDiff !== 0) return priorityDiff > 0 ? b : a;
-    const confidenceDiff = b.provenance.confidence - a.provenance.confidence;
+    const confidenceDiff = (b.provenance.confidence ?? 0) - (a.provenance.confidence ?? 0);
     if (confidenceDiff !== 0) return confidenceDiff > 0 ? b : a;
     const timeA = Date.parse(a.provenance.recordedAt);
     const timeB = Date.parse(b.provenance.recordedAt);
@@ -438,7 +438,7 @@ export function weightedAverage(records: readonly NormalizedHealthRecord[]): num
     let weightSum = 0;
     let valueSum = 0;
     for (const record of records) {
-        const weight = Math.max(record.provenance.confidence, 0.01);
+        const weight = Math.max(record.provenance.confidence ?? 0, 0.01);
         weightSum += weight;
         valueSum += record.value * weight;
     }
@@ -556,7 +556,7 @@ export function mapToFHIRResource(
     return {
         resourceType: 'Observation',
         id: options.id ?? buildObservationId(record),
-        status: record.provenance.confidence >= 0.9 ? 'final' : 'preliminary',
+        status: record.provenance.confidence !== null && record.provenance.confidence >= 0.9 ? 'final' : 'preliminary',
         category: [
             {
                 coding: [
@@ -584,7 +584,7 @@ export function mapToFHIRResource(
         ...(record.provenance.deviceId ? { device: { display: record.provenance.deviceId } } : {}),
         note: [
             {
-                text: `source=${record.provenance.source}; confidence=${record.provenance.confidence.toFixed(2)}; quality=${record.provenance.dataQuality}; tz=${record.provenance.timezone}`,
+                text: `source=${record.provenance.source}; confidence=${record.provenance.confidence === null ? 'not assessed' : record.provenance.confidence.toFixed(2)}; quality=${record.provenance.dataQuality}; tz=${record.provenance.timezone}`,
             },
         ],
     };
