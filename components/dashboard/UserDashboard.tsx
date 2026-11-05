@@ -482,21 +482,67 @@ export default function UserDashboard() {
                         {usage.length === 0 ? (
                             <p className="mt-4 text-xs text-muted-foreground">{copy.noToolUsage}</p>
                         ) : (
-                            <ul className="mt-4 space-y-3">
-                                {usage.map((group) => {
-                                    const max = Math.max(...usage.map((entry) => entry.count), 1);
-                                    return (
-                                        <li key={group.tool}>
-                                            <div className="flex items-center justify-between gap-2 text-xs">
-                                                <span className="truncate font-semibold text-foreground">{group.label}</span>
-                                                <span className="text-muted-foreground">{group.count}</span>
-                                            </div>
-                                            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                                                <div className="h-full rounded-full bg-gradient-to-r from-gold-600 to-amber-300" style={{ width: `${Math.round((group.count / max) * 100)}%` }} />
-                                            </div>
-                                        </li>
-                                    );
-                                })}
+                            <div className="mt-4 flex items-center gap-4">
+                                <div
+                                    className="relative h-24 w-24 shrink-0 rounded-full"
+                                    role="img"
+                                    aria-label={copy.toolUsageTitle}
+                                    style={{
+                                        background: `conic-gradient(${usage
+                                            .map((group, index) => {
+                                                const total = usage.reduce((sum, entry) => sum + entry.count, 0) || 1;
+                                                const start = usage.slice(0, index).reduce((sum, entry) => sum + entry.count, 0) / total * 100;
+                                                const end = start + (group.count / total) * 100;
+                                                const shades = ['rgb(234 179 8)', 'rgb(250 204 21)', 'rgb(217 119 6)', 'rgb(180 83 9)', 'rgb(120 53 15)'];
+                                                return `${shades[index % shades.length]} ${start}% ${end}%`;
+                                            })
+                                            .join(', ')})`,
+                                    }}
+                                >
+                                    <span className="absolute inset-3 flex items-center justify-center rounded-full bg-card text-xs font-black text-foreground">
+                                        {toolsUsed}
+                                    </span>
+                                </div>
+                                <ul className="min-w-0 flex-1 space-y-2">
+                                    {usage.map((group, index) => {
+                                        const max = Math.max(...usage.map((entry) => entry.count), 1);
+                                        const shades = ['bg-gold-500', 'bg-amber-400', 'bg-amber-600', 'bg-amber-700', 'bg-amber-900'];
+                                        return (
+                                            <li key={group.tool}>
+                                                <div className="flex items-center justify-between gap-2 text-xs">
+                                                    <span className="truncate font-semibold text-foreground">{group.label}</span>
+                                                    <span className="text-muted-foreground">{group.count}</span>
+                                                </div>
+                                                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                                                    <div className={`h-full rounded-full ${shades[index % shades.length]}`} style={{ width: `${Math.round((group.count / max) * 100)}%` }} />
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-card/60 p-5 backdrop-blur-xl">
+                        <h3 className="text-sm font-bold text-foreground">{language === 'ar' ? 'رؤى' : 'Insights'}</h3>
+                        <p className="text-xs text-muted-foreground">{language === 'ar' ? 'مستمدة من نتائجك المحفوظة' : 'Derived from your saved results'}</p>
+                        {history.length === 0 ? (
+                            <p className="mt-4 text-xs text-muted-foreground">{copy.noToolUsage}</p>
+                        ) : (
+                            <ul className="mt-4 space-y-2 text-sm">
+                                <li className="flex items-center justify-between rounded-lg border border-border bg-background/30 px-3 py-2">
+                                    <span className="text-muted-foreground">{language === 'ar' ? 'الأداة الأكثر استخداماً' : 'Most used tool'}</span>
+                                    <span className="font-bold text-foreground">{usage[0]?.label || '—'}</span>
+                                </li>
+                                <li className="flex items-center justify-between rounded-lg border border-border bg-background/30 px-3 py-2">
+                                    <span className="text-muted-foreground">{language === 'ar' ? 'نتائج هذا الأسبوع' : 'Results this week'}</span>
+                                    <span className="font-bold text-foreground">{weekCount}</span>
+                                </li>
+                                <li className="flex items-center justify-between rounded-xl border border-border bg-background/30 px-3 py-2">
+                                    <span className="text-muted-foreground">{language === 'ar' ? 'المرحلة الحالية' : 'Current phase'}</span>
+                                    <span className="font-bold text-foreground">{phaseLabel}</span>
+                                </li>
                             </ul>
                         )}
                     </div>
