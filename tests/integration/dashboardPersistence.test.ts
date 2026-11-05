@@ -16,6 +16,29 @@ import {
 } from '../../server/dashboard/dashboardService';
 import { GET as getAdminMetrics, POST as postAdminMetrics } from '../../app/api/dashboard/metrics/route';
 
+/**
+ * The admin guard fails closed with 500 when Supabase env is absent, before it
+ * can inspect the Authorization header. To exercise the unauthenticated branch
+ * we provide dummy values for the duration of the call only, then restore them
+ * so the real-DB test above keeps its "no client configured" behaviour.
+ */
+async function withSupabaseEnvConfigured<T>(fn: () => Promise<T>): Promise<T> {
+    const urlKey = 'NEXT_PUBLIC_SUPABASE_URL';
+    const anonKey = 'NEXT_PUBLIC_SUPABASE_ANON_KEY';
+    const previousUrl = process.env[urlKey];
+    const previousAnon = process.env[anonKey];
+    process.env[urlKey] = 'https://test-project.supabase.co';
+    process.env[anonKey] = 'test-anon-key';
+    try {
+        return await fn();
+    } finally {
+        if (previousUrl === undefined) delete process.env[urlKey];
+        else process.env[urlKey] = previousUrl;
+        if (previousAnon === undefined) delete process.env[anonKey];
+        else process.env[anonKey] = previousAnon;
+    }
+}
+
 describe('Dashboard Persistence & Supabase Analytics Suite', () => {
 
     describe('Admin Metrics Snapshot Pipeline', () => {
@@ -33,26 +56,28 @@ describe('Dashboard Persistence & Supabase Analytics Suite', () => {
             }
         });
 
-        it('retrieves latest metrics via GET /api/dashboard/metrics', async () => {
+        // The metrics route is admin-only. Anonymous callers are rejected before
+        // any service-role client is constructed. The full authenticated
+        // contract (401/403/read-only/admin) is covered by
+        // tests/security/dashboardMetricsRouteAuth.test.ts.
+        it('rejects anonymous GET /api/dashboard/metrics with 401', async () => {
             const req = new NextRequest('http://localhost:3000/api/dashboard/metrics?type=daily_summary');
-            const res = await getAdminMetrics(req);
-            expect(res.status).toBe(200);
+            const res = await withSupabaseEnvConfigured(() => getAdminMetrics(req));
+            expect(res.status).toBe(401);
 
             const data = await res.json();
-            expect(data.ok).toBe(true);
-            expect(data.metrics).toBeDefined();
+            expect(data.metrics).toBeUndefined();
         });
 
-        it('triggers fresh metric calculation via POST /api/dashboard/metrics', async () => {
+        it('rejects anonymous POST /api/dashboard/metrics with 401', async () => {
             const req = new NextRequest('http://localhost:3000/api/dashboard/metrics', {
                 method: 'POST',
             });
-            const res = await postAdminMetrics(req);
-            expect(res.status).toBe(200);
+            const res = await withSupabaseEnvConfigured(() => postAdminMetrics(req));
+            expect(res.status).toBe(401);
 
             const data = await res.json();
-            expect(data.ok).toBe(true);
-            expect(data.metrics).toBeDefined();
+            expect(data.metrics).toBeUndefined();
         });
     });
 

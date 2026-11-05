@@ -31,8 +31,8 @@ export type SnapshotType = 'draft' | 'submitted_snapshot' | 'dashboard_projectio
 /** Where a biometric value physically came from. */
 export type DataSource = 'manual' | 'healthkit' | 'health_connect' | 'fhir' | 'device' | 'import';
 
-/** Coarse quality bucket derived from `DataProvenance.confidence`. */
-export type DataQuality = 'high' | 'medium' | 'low';
+/** Coarse source-quality bucket; it may be explicitly unassessed. */
+export type DataQuality = 'high' | 'medium' | 'low' | 'not_assessed';
 
 /** Clinical urgency of a surfaced finding. */
 export type FindingSeverity = 'info' | 'monitor' | 'important';
@@ -46,7 +46,7 @@ export const UNIT_SYSTEMS = ['metric', 'imperial'] as const;
 export const ACCESS_TIERS = ['free', 'premium'] as const;
 export const SNAPSHOT_TYPES = ['draft', 'submitted_snapshot', 'dashboard_projection'] as const;
 export const DATA_SOURCES = ['manual', 'healthkit', 'health_connect', 'fhir', 'device', 'import'] as const;
-export const DATA_QUALITIES = ['high', 'medium', 'low'] as const;
+export const DATA_QUALITIES = ['high', 'medium', 'low', 'not_assessed'] as const;
 export const FINDING_SEVERITIES = ['info', 'monitor', 'important'] as const;
 
 /** Default render locale for a first (unauthenticated) paint. */
@@ -109,8 +109,8 @@ export interface DataProvenance {
     originalUnit?: string;
     measurementMethod?: string;
     deviceId?: string;
-    /** 0.0 … 1.0 — drives `dataQuality`. */
-    confidence: number;
+    /** Calibrated confidence when available; null means it was not assessed. */
+    confidence: number | null;
     dataQuality: DataQuality;
     referenceRange?: ReferenceRange;
 }
@@ -120,7 +120,8 @@ export const CONFIDENCE_HIGH_THRESHOLD = 0.9;
 export const CONFIDENCE_MEDIUM_THRESHOLD = 0.7;
 
 /** Maps a 0.0 … 1.0 confidence onto the persisted quality bucket. */
-export function deriveDataQuality(confidence: number): DataQuality {
+export function deriveDataQuality(confidence: number | null | undefined): DataQuality {
+    if (confidence === null || confidence === undefined) return 'not_assessed';
     const safe = Number.isFinite(confidence) ? Math.min(Math.max(confidence, 0), 1) : 0;
     if (safe >= CONFIDENCE_HIGH_THRESHOLD) return 'high';
     if (safe >= CONFIDENCE_MEDIUM_THRESHOLD) return 'medium';
@@ -272,6 +273,9 @@ export function createToolOutput<T>(params: ToolOutputParams<T>): ToolOutput<T> 
     }
     assertOneOf(provenance.source, DATA_SOURCES, 'provenance.source');
     assertOneOf(provenance.dataQuality, DATA_QUALITIES, 'provenance.dataQuality');
+    if (provenance.confidence !== null && (!Number.isFinite(provenance.confidence) || provenance.confidence < 0 || provenance.confidence > 1)) {
+        throw new ToolContractError('provenance.confidence must be null or a finite value from 0 to 1');
+    }
     assertIsoTimestamp(provenance.recordedAt, 'provenance.recordedAt');
     if (!provenance.unit) {
         throw new ToolContractError('provenance.unit is required');
@@ -336,5 +340,6 @@ export function formatProvenance(provenance: DataProvenance): string {
     const original = provenance.originalUnit && provenance.originalUnit !== provenance.unit
         ? ` (from ${provenance.originalUnit})`
         : '';
-    return `${provenance.source}${method}${device} · ${provenance.recordedAt} · ${provenance.unit}${original} · ${provenance.dataQuality}(${provenance.confidence.toFixed(2)})`;
+    const confidence = provenance.confidence === null ? 'not assessed' : provenance.confidence.toFixed(2);
+    return `${provenance.source}${method}${device} · ${provenance.recordedAt} · ${provenance.unit}${original} · ${provenance.dataQuality}(${confidence})`;
 }
