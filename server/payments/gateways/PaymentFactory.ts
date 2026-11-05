@@ -173,12 +173,12 @@ static detectKashierAccountFromMerchantId(merchantId: string): KashierGateway | 
         return stripeInstance;
     }
 
-    private static getKashierEgypt(): KashierGateway {
+    static getKashierEgypt(): KashierGateway {
         if (!kashierEgyptInstance) kashierEgyptInstance = new KashierGateway('egypt');
         return kashierEgyptInstance;
     }
 
-private static getKashierGlobal(): KashierGateway {
+    static getKashierGlobal(): KashierGateway {
         if (!kashierGlobalInstance) kashierGlobalInstance = new KashierGateway('global');
         return kashierGlobalInstance;
     }

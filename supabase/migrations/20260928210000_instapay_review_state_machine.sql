@@ -215,6 +215,7 @@ CREATE OR REPLACE FUNCTION public.approve_instapay_receipt(
 ) RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 DECLARE
     v_receipt RECORD;
@@ -368,7 +369,7 @@ BEGIN
         v_fulfillment_result JSONB;
         v_gateway_fee_minor INT := 0;
         v_gross_minor INT := round(v_amount * 100);
-        v_net_minor INT := v_gross_minor;
+        v_net_amount_minor INT := v_gross_minor;
         v_beneficiary_id UUID;
         v_reserve_beneficiary_id UUID;
         v_beneficiary_share INT;
