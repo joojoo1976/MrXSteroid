@@ -94,6 +94,7 @@ export interface CombinedCheckoutSessionResult {
     idempotent: boolean;
     paymentLegs?: PaymentLeg[];
     isMultiLeg?: boolean;
+    resumeToken?: string;
 }
 
 export interface CombinedPaymentSessionParams {
@@ -360,6 +361,7 @@ export async function createCombinedCheckoutSession(
         : (isMultiLegOrder ? 'multi_leg' : (isServiceOrder ? 'kashier_link' : 'fourthwall'));
 
     let invoiceId: string;
+    const guestResumeToken = randomUUID();
     {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
@@ -382,6 +384,7 @@ export async function createCombinedCheckoutSession(
                 idempotency_key: idempotencyKey,
                 metadata: {
                     ...(input.metadata || {}),
+                    guest_resume_token: guestResumeToken,
                     order_kind: 'combined',
                     lines: orderLines,
                     subtotal: totals.subtotal,
@@ -615,6 +618,7 @@ export async function createCombinedCheckoutSession(
             gateway_reference_id: providerSessionId,
             metadata: {
                 ...(input.metadata || {}),
+                guest_resume_token: guestResumeToken,
                 order_kind: 'combined',
                 lines: orderLines,
                 subtotal: totals.subtotal,
@@ -652,6 +656,21 @@ export async function createCombinedCheckoutSession(
         })
         .eq('id', intent.id);
 
+    // P0: Sanitize payment legs for public client response.
+    // Store complete provider-session information on the server (persisted above).
+    // Return only the currently payable leg's session URL to the client.
+    // Set all downstream pending legs' sessionUrl values to null in the initial public response.
+    const clientSafeLegs = isMultiLegOrder
+        ? finalLegs.map((leg, idx) => ({
+            ...leg,
+            isPayable: idx === 0,
+            sessionUrl: idx === 0 ? leg.sessionUrl : null,
+        }))
+        : finalLegs.map((leg) => ({
+            ...leg,
+            isPayable: true,
+        }));
+
     return {
         invoiceId,
         orderId,
@@ -669,7 +688,8 @@ export async function createCombinedCheckoutSession(
         shippingCost: totals.shippingCost,
         discount: totals.discount,
         idempotent: false,
-        paymentLegs: finalLegs,
+        paymentLegs: clientSafeLegs,
         isMultiLeg: isMultiLegOrder,
+        resumeToken: guestResumeToken,
     };
 }
