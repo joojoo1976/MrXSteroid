@@ -556,6 +556,25 @@ export default function Tool111SmartFoodMacroSubstitution() {
               </dl>
             </div>
           )}
+
+          <ResultBoxes
+            compact={true}
+            locale={isRtl ? 'ar' : 'en'}
+            onToggle={() => {}}
+            boxes={makeResultBoxes({
+              primaryResult: result.substituteQuantity ? `${result.substituteQuantity} ${result.substituteUnit}` : 'N/A',
+              howCalculated: `Substitution based on ${result.originalMacros?.calories ?? 0} kcal original`,
+              safety: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { message: string }) => w.message).join('; ') : 'No warnings',
+              evidence: output.provenance ? `Source: ${output.provenance.source}, confidence ${(output.provenance.confidence * 100).toFixed(0)}%` : 'No provenance',
+              nextActions: 'Review substitution and adjust portions as needed',
+              kpi: `Equivalence: ${result.equivalenceScore ?? 0}%`,
+              whatIf: 'NOT_AVAILABLE',
+              sensitivity: 'NOT_AVAILABLE',
+              crossTool: 'NOT_AVAILABLE',
+              history: 'NOT_AVAILABLE',
+              feedback: 'Rate this substitution 1-5',
+            })}
+          />
         </section>
       )}
 
