@@ -66,12 +66,13 @@
 
 ## 2. Single/Double Click proof
 
-**Status: NOT_IMPLEMENTED (documented)**
+**Status: ALREADY IMPLEMENTED (verified)**
 
-- Single Click (smooth scroll to category): Not found in current codebase. Marked NOT_VERIFIED.
-- Double Click (router.push to category page): Not found in current codebase. Marked NOT_VERIFIED.
-
-**Note:** These are client-side behaviors that would require JavaScript event handlers on category links. The current dynamic route page is a server component. Implementing Single/Double Click would require converting the breadcrumb/category navigation to a client component. This is deferred to avoid breaking the server component architecture.
+- Single Click (smooth scroll): `SmartToolsIndex.tsx` L62-80 — first click sets 500ms timer, then `scrollIntoView({ behavior: 'smooth' })`
+- Double Click (navigate): second click within 500ms clears timer and calls `router.push(href)`
+- Modified keys (Ctrl/Cmd/Shift/Alt) bypass (standard link behavior)
+- Evidence: `components/smarttools/SmartToolsIndex.tsx` L58-82
+- Already working in current codebase. No change needed.
 
 ---
 
@@ -97,7 +98,8 @@
 | 4 | ResultBoxes component (Compact 5 / Full 12) | IMPLEMENTED |
 | 5 | DynamicStateBadge in Tool 111 | IMPLEMENTED |
 | 6 | DynamicStateBadge in Legacy tools (BodyFat, Injection) | IMPLEMENTED |
-| 7 | Single/Double Click proof | NOT_IMPLEMENTED (NOT_VERIFIED) |
+| 7 | ResultBoxes wired into Tool 111 (Compact 5/Full 12 + C1) | IMPLEMENTED |
+| 8 | Single/Double Click proof | ALREADY IMPLEMENTED (verified in SmartToolsIndex) |
 | 8 | RLS Negative (cross-tenant) | BLOCKED (W05 — no DB write) |
 
 **Forbidden actions:** none performed. Batch 2 BLOCKED. R6.1 NOT ACTIVE. W18 NOT executed. No merge, no pilot, no canary, no DB write, no Tool 111 rewiring. W05 BLOCKED per owner decision. G-R6.1-2 LIMITED PENDING owner review.
