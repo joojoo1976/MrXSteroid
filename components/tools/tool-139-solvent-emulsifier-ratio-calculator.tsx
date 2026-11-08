@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
 import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 import { calculateSolventRatio } from '@/lib/tools/engines/tool-139-solvent-emulsifier-ratio-calculator';
 import { SolventRatioInputSchema } from '@/lib/tools/schemas/tool-139-solvent-emulsifier-ratio-calculator';
 
@@ -42,7 +43,9 @@ export default function Tool139SolventRatio() {
 
         {result && (
           <div className="space-y-2">
-            <div className="font-bold">{isRtl ? 'النسبة A' : 'Ratio A'}: {result.ratioA ?? 'N/A'} ({result.percentageA ?? 'N/A'}%)</div>
+            <GeniusTooltip label={isRtl ? 'النسبة A' : 'Ratio A'} description="Ratio A = solvent A / total. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+              <div className="font-bold">{isRtl ? 'النسبة A' : 'Ratio A'}: {result.ratioA ?? 'N/A'} ({result.percentageA ?? 'N/A'}%)</div>
+            </GeniusTooltip>
             <div className="font-bold">{isRtl ? 'النسبة B' : 'Ratio B'}: {result.ratioB ?? 'N/A'} ({result.percentageB ?? 'N/A'}%)</div>
             <div className="text-sm text-zinc-500">{isRtl ? 'المجموع' : 'Total'}: {result.totalMl} mL</div>
             <p className="text-xs text-zinc-400">{result.scope_notice}</p>

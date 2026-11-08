@@ -5,6 +5,7 @@ import { useToolI18n } from '@/lib/tools/i18nHelper';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
 import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 import { calculatePoseCoach } from '@/lib/tools/engines/tool-132-ai-pose-form-coach';
 import { PoseCoachInputSchema } from '@/lib/tools/schemas/tool-132-ai-pose-form-coach';
 
@@ -57,7 +58,9 @@ export default function Tool132PoseCoach() {
                 <span className="text-xs text-zinc-400">({item.importance})</span>
               </label>
             ))}
-            <div className="font-bold mt-2">{isRtl ? 'النتيجة' : 'Form Score'}: {result.formScore ?? 'N/A'}%</div>
+            <GeniusTooltip label={isRtl ? 'نتيجة الشكل' : 'Form Score'} description="Form score from checklist (passed/total). NOT_AVAILABLE for video analysis." source="engine" locale={isRtl ? 'ar' : 'en'}>
+              <div className="font-bold mt-2">{isRtl ? 'النتيجة' : 'Form Score'}: {result.formScore ?? 'N/A'}%</div>
+            </GeniusTooltip>
             <p className="text-sm text-zinc-500">{result.personalizedCue}</p>
             <p className="text-xs text-zinc-400">{result.source}</p>
           </div>

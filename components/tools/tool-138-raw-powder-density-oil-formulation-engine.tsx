@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
 import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 import { calculateDensity } from '@/lib/tools/engines/tool-138-raw-powder-density-oil-formulation-engine';
 import { DensityInputSchema } from '@/lib/tools/schemas/tool-138-raw-powder-density-oil-formulation-engine';
 
@@ -42,7 +43,9 @@ export default function Tool138Density() {
 
         {result && (
           <div className="space-y-2">
-            <div className="font-bold">{isRtl ? 'الكثافة' : 'Density'}: {result.densityGPerMl ?? 'N/A'} g/mL</div>
+            <GeniusTooltip label={isRtl ? 'الكثافة' : 'Density'} description="Density = mass g / volume mL. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+              <div className="font-bold">{isRtl ? 'الكثافة' : 'Density'}: {result.densityGPerMl ?? 'N/A'} g/mL</div>
+            </GeniusTooltip>
             <div className="text-sm text-zinc-500">{isRtl ? 'الكتلة' : 'Mass'}: {result.massG} g | {isRtl ? 'الحجم' : 'Volume'}: {result.volumeMl} mL</div>
             <p className="text-xs text-zinc-400">{result.scope_notice}</p>
           </div>

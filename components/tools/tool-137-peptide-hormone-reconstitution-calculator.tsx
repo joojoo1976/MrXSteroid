@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
 import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 import { calculateReconstitution } from '@/lib/tools/engines/tool-137-peptide-hormone-reconstitution-calculator';
 import { ReconstitutionInputSchema } from '@/lib/tools/schemas/tool-137-peptide-hormone-reconstitution-calculator';
 
@@ -33,7 +34,9 @@ export default function Tool137Reconstitution() {
       <div className="mb-6 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'الببتيد (mg)' : 'Peptide (mg)'}</label>
-          <input type="number" min={0} value={peptideMg} onChange={(e) => setPeptideMg(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          <GeniusTooltip label={isRtl ? 'الببتيد (mg)' : 'Peptide (mg)'} description="Total peptide mass in milligrams. User input." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <input type="number" min={0} value={peptideMg} onChange={(e) => setPeptideMg(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          </GeniusTooltip>
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'المذيب (mL)' : 'Solvent (mL)'}</label>
@@ -42,7 +45,9 @@ export default function Tool137Reconstitution() {
 
         {result && (
           <div className="space-y-2">
-            <div className="font-bold">{isRtl ? 'التركيز' : 'Concentration'}: {result.concentrationMgPerMl ?? 'N/A'} mg/mL</div>
+            <GeniusTooltip label={isRtl ? 'التركيز' : 'Concentration'} description="Concentration = peptide mg / solvent mL. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+              <div className="font-bold">{isRtl ? 'التركيز' : 'Concentration'}: {result.concentrationMgPerMl ?? 'N/A'} mg/mL</div>
+            </GeniusTooltip>
             <div className="text-sm text-zinc-500">{isRtl ? 'الببتيد' : 'Peptide'}: {result.totalPeptideMg} mg | {isRtl ? 'المذيب' : 'Solvent'}: {result.totalSolventMl} mL</div>
             <p className="text-xs text-zinc-400">{result.scope_notice}</p>
           </div>

@@ -9,6 +9,7 @@ import type { EngineInput, SubstitutionResult } from '@/lib/tools/engines/stagin
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
 import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 
 type MacroFields = { protein: string; carbs: string; fat: string; calories: string };
 
@@ -469,7 +470,9 @@ export default function Tool111SmartFoodMacroSubstitution() {
             </div>
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
               <h3 className="text-sm font-bold mb-3">{t.equivalence_score}</h3>
-              <div className="text-2xl font-mono font-bold" data-testid="equivalence-score">{formatNum(result.equivalenceScore)}</div>
+              <GeniusTooltip label={t.equivalence_score} description="Equivalence score from engine output" source="engine" locale={isRtl ? 'ar' : 'en'}>
+                <div className="text-2xl font-mono font-bold" data-testid="equivalence-score">{formatNum(result.equivalenceScore)}</div>
+              </GeniusTooltip>
               <div className="text-sm text-zinc-500">{translateEquivalence(result.equivalenceLevel)}</div>
             </div>
           </div>
