@@ -425,14 +425,18 @@ export default function Tool111SmartFoodMacroSubstitution() {
         )}
 
         <div className="flex gap-3">
-          <button onClick={handleCalculate} disabled={displayState === 'validating'}
-            className="w-full py-3 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            {displayState === 'validating' ? t.calculating : t.calculate}
-          </button>
-          <button onClick={handleReset}
-            className="w-full py-3 rounded bg-zinc-200 text-zinc-800 font-medium hover:bg-zinc-300 transition-colors">
-            {t.optional}
-          </button>
+          <GeniusTooltip label={t.calculate} description="Run macro substitution calculation. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+            <button onClick={handleCalculate} disabled={displayState === 'validating'}
+              className="w-full py-3 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              {displayState === 'validating' ? t.calculating : t.calculate}
+            </button>
+          </GeniusTooltip>
+          <GeniusTooltip label={t.reset} description="Clear all inputs and results. Static action." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <button onClick={handleReset}
+              className="w-full py-3 rounded bg-zinc-200 text-zinc-800 font-medium hover:bg-zinc-300 transition-colors">
+              {t.optional}
+            </button>
+          </GeniusTooltip>
         </div>
       </section>
 
