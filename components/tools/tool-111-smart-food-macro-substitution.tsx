@@ -465,7 +465,9 @@ export default function Tool111SmartFoodMacroSubstitution() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
               <h3 className="text-sm font-bold mb-3">{t.substitute_quantity}</h3>
-              <div className="text-2xl font-mono font-bold">{formatNum(result.substituteQuantity)}</div>
+              <GeniusTooltip label={t.substitute_quantity} description="Substitute quantity from engine output" source="engine" locale={isRtl ? 'ar' : 'en'}>
+                <div className="text-2xl font-mono font-bold">{formatNum(result.substituteQuantity)}</div>
+              </GeniusTooltip>
               <div className="text-sm text-zinc-500">{result.substituteUnit}</div>
             </div>
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
@@ -568,7 +570,9 @@ export default function Tool111SmartFoodMacroSubstitution() {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {(['energy', 'hunger', 'fatigue', 'sleep', 'mood'] as const).map((key) => (
                   <div key={key} className="flex flex-col gap-1">
-                    <label className="text-xs font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}: {feelings[key]}</label>
+                    <GeniusTooltip label={key.charAt(0).toUpperCase() + key.slice(1)} description={`Self-reported ${key} level (0-100). User input, not engine-derived.`} source="static" locale={isRtl ? 'ar' : 'en'}>
+                      <label className="text-xs font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}: {feelings[key]}</label>
+                    </GeniusTooltip>
                     <input
                       type="range"
                       min={0}
@@ -576,6 +580,7 @@ export default function Tool111SmartFoodMacroSubstitution() {
                       value={feelings[key]}
                       onChange={(e) => setFeelings((f) => ({ ...f, [key]: Number(e.target.value) }))}
                       className="w-full"
+                      aria-label={key}
                     />
                   </div>
                 ))}

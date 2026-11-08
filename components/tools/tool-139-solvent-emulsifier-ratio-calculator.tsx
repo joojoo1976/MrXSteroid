@@ -34,7 +34,9 @@ export default function Tool139SolventRatio() {
       <div className="mb-6 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'المذيب A (mL)' : 'Solvent A (mL)'}</label>
-          <input type="number" min={0} value={solventAMl} onChange={(e) => setSolventAMl(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          <GeniusTooltip label={isRtl ? 'المذيب A (mL)' : 'Solvent A (mL)'} description="Solvent A volume in milliliters. User input." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <input type="number" min={0} value={solventAMl} onChange={(e) => setSolventAMl(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          </GeniusTooltip>
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'المذيب B (mL)' : 'Solvent B (mL)'}</label>
@@ -52,9 +54,11 @@ export default function Tool139SolventRatio() {
           </div>
         )}
 
-        <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
-          {isRtl ? 'حساب' : 'Calculate'}
-        </button>
+        <GeniusTooltip label={isRtl ? 'حساب' : 'Calculate'} description="Run ratio calculation. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+          <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
+            {isRtl ? 'حساب' : 'Calculate'}
+          </button>
+        </GeniusTooltip>
       </div>
 
       {result && (

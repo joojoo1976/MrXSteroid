@@ -40,7 +40,9 @@ export default function Tool137Reconstitution() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'المذيب (mL)' : 'Solvent (mL)'}</label>
-          <input type="number" min={0} value={solventMl} onChange={(e) => setSolventMl(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          <GeniusTooltip label={isRtl ? 'المذيب (mL)' : 'Solvent (mL)'} description="Total solvent volume in milliliters. User input." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <input type="number" min={0} value={solventMl} onChange={(e) => setSolventMl(e.target.value)} className="w-full rounded border p-2" dir="ltr" />
+          </GeniusTooltip>
         </div>
 
         {result && (
@@ -53,9 +55,11 @@ export default function Tool137Reconstitution() {
           </div>
         )}
 
-        <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
-          {isRtl ? 'حساب' : 'Calculate'}
-        </button>
+        <GeniusTooltip label={isRtl ? 'حساب' : 'Calculate'} description="Run reconstitution calculation. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+          <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
+            {isRtl ? 'حساب' : 'Calculate'}
+          </button>
+        </GeniusTooltip>
       </div>
 
       {result && (

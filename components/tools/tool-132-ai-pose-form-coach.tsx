@@ -35,13 +35,15 @@ export default function Tool132PoseCoach() {
       <div className="mb-6 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">{isRtl ? 'التمرين' : 'Exercise'}</label>
-          <select value={exercise} onChange={(e) => setExercise(e.target.value)} className="w-full rounded border p-2">
+          <GeniusTooltip label={isRtl ? 'التمرين' : 'Exercise'} description="Select the exercise to check form. User input." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <select value={exercise} onChange={(e) => setExercise(e.target.value)} className="w-full rounded border p-2">
             <option value="squat">Squat</option>
             <option value="deadlift">Deadlift</option>
             <option value="bench">Bench Press</option>
             <option value="overhead_press">Overhead Press</option>
             <option value="row">Row</option>
           </select>
+          </GeniusTooltip>
         </div>
 
         {result && (
@@ -66,9 +68,11 @@ export default function Tool132PoseCoach() {
           </div>
         )}
 
-        <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
-          {isRtl ? 'حساب' : 'Calculate'}
-        </button>
+        <GeniusTooltip label={isRtl ? 'حساب' : 'Calculate'} description="Run form checklist calculation. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+          <button onClick={handleCalculate} className="w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700">
+            {isRtl ? 'حساب' : 'Calculate'}
+          </button>
+        </GeniusTooltip>
       </div>
 
       {result && (
