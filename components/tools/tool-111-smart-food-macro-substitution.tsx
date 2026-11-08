@@ -562,17 +562,18 @@ export default function Tool111SmartFoodMacroSubstitution() {
             locale={isRtl ? 'ar' : 'en'}
             onToggle={() => {}}
             boxes={makeResultBoxes({
-              primaryResult: result.substituteQuantity ? `${result.substituteQuantity} ${result.substituteUnit}` : 'N/A',
-              howCalculated: `Substitution based on ${result.originalMacros?.calories ?? 0} kcal original`,
-              safety: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { message: string }) => w.message).join('; ') : 'No warnings',
-              evidence: output.provenance ? `Source: ${output.provenance.source}, confidence ${(output.provenance.confidence * 100).toFixed(0)}%` : 'No provenance',
-              nextActions: 'Review substitution and adjust portions as needed',
-              kpi: `Equivalence: ${result.equivalenceScore ?? 0}%`,
+              medicalAdvice: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { message: string }) => w.message).join('; ') : 'No medical advice',
+              generalAdvice: result.substituteQuantity ? `Substitute ${result.substituteQuantity} ${result.substituteUnit} for equivalent macros` : 'NOT_AVAILABLE',
+              currentFeeling: 'NOT_AVAILABLE',
+              predictions: 'NOT_AVAILABLE',
+              aiCoach: 'NOT_AVAILABLE',
+              top3Reasoning: 'NOT_AVAILABLE',
+              safety: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { code: string; message: string }) => `${w.code}: ${w.message}`).join('; ') : 'No warnings',
               whatIf: 'NOT_AVAILABLE',
-              sensitivity: 'NOT_AVAILABLE',
-              crossTool: 'NOT_AVAILABLE',
-              history: 'NOT_AVAILABLE',
-              feedback: 'Rate this substitution 1-5',
+              explainableAI: output.provenance ? `Calculation based on ${output.provenance.measurementMethod ?? 'unspecified'} method, source: ${output.provenance.source}` : 'NOT_AVAILABLE',
+              uncertainty: output.provenance ? `Confidence: ${(output.provenance.confidence * 100).toFixed(0)}%, Equivalence: ${result.equivalenceScore ?? 0}%` : 'NOT_AVAILABLE',
+              alternativePaths: 'NOT_AVAILABLE',
+              nextStepCrossTool: 'Review substitution → Macro Optimizer / Meal Planner',
             })}
           />
         </section>
