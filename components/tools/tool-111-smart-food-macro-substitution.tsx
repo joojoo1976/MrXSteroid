@@ -105,6 +105,8 @@ export default function Tool111SmartFoodMacroSubstitution() {
   const [result, setResult] = useState<SubstitutionResult | null>(null);
   const [output, setOutput] = useState<any>(null);
   const [adapterError, setAdapterError] = useState<string | null>(null);
+  const [feelings, setFeelings] = useState({ energy: 50, hunger: 50, fatigue: 50, sleep: 50, mood: 50 });
+  const [whatIfPct, setWhatIfPct] = useState(0);
 
   const buildEngineInput = useCallback((fd: FormData): EngineInput => {
     const targetMacros: EngineInput['targetMacros'] = {};
@@ -557,19 +559,44 @@ export default function Tool111SmartFoodMacroSubstitution() {
             </div>
           )}
 
+          {result && (
+            <div className="rounded bg-zinc-50 p-4 border border-zinc-200 mb-4">
+              <h3 className="text-sm font-bold mb-3">{isRtl ? 'الإحساس الحالي' : 'Current Feeling'}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {(['energy', 'hunger', 'fatigue', 'sleep', 'mood'] as const).map((key) => (
+                  <div key={key} className="flex flex-col gap-1">
+                    <label className="text-xs font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}: {feelings[key]}</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={feelings[key]}
+                      onChange={(e) => setFeelings((f) => ({ ...f, [key]: Number(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <ResultBoxes
             compact={true}
             locale={isRtl ? 'ar' : 'en'}
             onToggle={() => {}}
             boxes={makeResultBoxes({
-              medicalAdvice: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { message: string }) => w.message).join('; ') : 'No medical advice',
+              medicalAdvice: 'This is not medical advice. Consult a qualified professional before making dietary changes.',
               generalAdvice: result.substituteQuantity ? `Substitute ${result.substituteQuantity} ${result.substituteUnit} for equivalent macros` : 'NOT_AVAILABLE',
-              currentFeeling: 'NOT_AVAILABLE',
+              currentFeeling: `Energy: ${feelings.energy}, Hunger: ${feelings.hunger}, Fatigue: ${feelings.fatigue}, Sleep: ${feelings.sleep}, Mood: ${feelings.mood}. AI: ${feelings.energy > 70 ? 'High energy — good for training' : feelings.energy < 30 ? 'Low energy — consider rest' : 'Moderate energy — proceed normally'}`,
               predictions: 'NOT_AVAILABLE',
               aiCoach: 'NOT_AVAILABLE',
-              top3Reasoning: 'NOT_AVAILABLE',
+              top3Reasoning: result.warnings && result.warnings.length > 0
+                ? result.warnings.slice(0, 3).map((w: { code: string; message: string }, i: number) => `${i + 1}. ${w.code}: ${w.message}`).join(' | ')
+                : result.macroDeltas
+                  ? `1. Protein delta: ${result.macroDeltas.protein ?? 0}g | 2. Carbs delta: ${result.macroDeltas.carbs ?? 0}g | 3. Fat delta: ${result.macroDeltas.fat ?? 0}g`
+                  : 'No reasoning available',
               safety: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { code: string; message: string }) => `${w.code}: ${w.message}`).join('; ') : 'No warnings',
-              whatIf: 'NOT_AVAILABLE',
+              whatIf: result.substituteQuantity ? `+20%: ${((result.substituteQuantity * 1.2).toFixed(1))} ${result.substituteUnit} | -20%: ${((result.substituteQuantity * 0.8).toFixed(1))} ${result.substituteUnit}` : 'NOT_AVAILABLE',
               explainableAI: output.provenance ? `Calculation based on ${output.provenance.measurementMethod ?? 'unspecified'} method, source: ${output.provenance.source}` : 'NOT_AVAILABLE',
               uncertainty: output.provenance ? `Confidence: ${(output.provenance.confidence * 100).toFixed(0)}%, Equivalence: ${result.equivalenceScore ?? 0}%` : 'NOT_AVAILABLE',
               alternativePaths: 'NOT_AVAILABLE',
