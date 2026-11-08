@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { DynamicStateBadge } from '@/components/tools/DynamicStateBadge';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useLegacyNavigation } from '../../lib/use-legacy-navigation';
 import { Page, ContentStrings } from '@/shared/types/types';
@@ -29,6 +30,9 @@ export default function LegacyPageShell({ children }: LegacyPageShellProps) {
         <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100">
             <LegacyHeader navigateTo={navigateTo} currentPage={currentPage} />
             <main className="flex-1 pt-32 pb-20 container mx-auto px-4 animate-fade-in">
+                <div className="mb-4">
+                    <DynamicStateBadge state="empty" locale={isRTL ? 'ar' : 'en'} />
+                </div>
                 {children({ content, navigateTo })}
             </main>
             <GlobalFooterWrapper />

@@ -7,6 +7,8 @@ import { tryParseTool111Input } from '@/lib/tools/schemas/tool-111-smart-food-ma
 import { tool111Adapter } from '@/lib/tools/adapters/tool-111-smart-food-macro-substitution';
 import type { EngineInput, SubstitutionResult } from '@/lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
+import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
 
 type MacroFields = { protein: string; carbs: string; fat: string; calories: string };
 
@@ -222,6 +224,11 @@ export default function Tool111SmartFoodMacroSubstitution() {
       <div className="mb-6 p-3 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm">
         {t.disclaimer}
       </div>
+      <DynamicStateBadge
+        state={computeDynamicState(['originalFood', 'originalMacros'], { originalFood: formData.originalFood, originalMacros: formData.originalMacros }).state}
+        locale={isRtl ? 'ar' : 'en'}
+        missingFields={computeDynamicState(['originalFood', 'originalMacros'], { originalFood: formData.originalFood, originalMacros: formData.originalMacros }).missing}
+      />
       <section className="mb-8 space-y-6">
         <h2 className="text-lg font-semibold">{t.inputs}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
