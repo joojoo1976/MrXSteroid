@@ -73,12 +73,23 @@ export default async function ToolPage({
     offers: { '@type': 'Offer', price: entry.accessTier === 'free' ? '0' : undefined, priceCurrency: 'USD' },
   };
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      { '@type': 'Question', name: `What does ${entry.titleEn} calculate?`, acceptedAnswer: { '@type': 'Answer', text: entry.descriptionEn } },
+      { '@type': 'Question', name: 'Is this tool medical advice?', acceptedAnswer: { '@type': 'Answer', text: 'No. This tool is educational only. Consult a qualified professional.' } },
+      { '@type': 'Question', name: 'Which tool should I use next?', acceptedAnswer: { '@type': 'Answer', text: `Next: ${neighbors.nextTool.titleEn} (${toHierarchicalHref(neighbors.nextTool.slug) ?? '/smarttools'})` } },
+    ],
+  };
+
   const ToolComponent = await getToolComponent(entry.slug);
   if (!ToolComponent) notFound();
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-6 flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-gold-500 transition-colors">{isAr ? 'الرئيسية' : 'Home'}</Link>

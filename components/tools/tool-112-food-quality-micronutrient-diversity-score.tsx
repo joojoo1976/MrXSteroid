@@ -144,7 +144,7 @@ export default function Tool112FoodQualityScore() {
 
       <div className="mb-4">
         <label className={LBL}>{t.days_tracked}
-          <input type="number" min={1} max={30} step={1} value={inputs.days_tracked} onChange={(e) => setInputs((p) => ({ ...p, days_tracked: Number(e.target.value || 3) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={30} step={1} value={inputs.days_tracked} onChange={(e) => setInputs((p) => ({ ...p, days_tracked: Number(e.target.value || 3) }))} className={INP} />
         </label>
       </div>
 
@@ -172,10 +172,10 @@ export default function Tool112FoodQualityScore() {
                 </select>
               </label>
               <label className={LBL}>{t.serving_size} ({unitSystem === 'metric' ? 'g' : 'oz'})
-                <input type="number" min={1} max={unitSystem === 'metric' ? 2000 : 70} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? food.serving_size_g : Number((food.serving_size_g / 28.3495).toFixed(1))} onChange={(e) => updateFood(idx, 'serving_size_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 2000 : 70} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? food.serving_size_g : Number((food.serving_size_g / 28.3495).toFixed(1))} onChange={(e) => updateFood(idx, 'serving_size_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
               </label>
               <label className={LBL}>{t.calories}
-                <input type="number" min={0} max={5000} step={1} value={food.calories_per_serving} onChange={(e) => updateFood(idx, 'calories_per_serving', Number(e.target.value || 50))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={5000} step={1} value={food.calories_per_serving} onChange={(e) => updateFood(idx, 'calories_per_serving', Number(e.target.value || 50))} className={INP} />
               </label>
               <label className={LBL}>{t.micronutrients}
                 <div className="flex flex-wrap gap-1 mt-1">

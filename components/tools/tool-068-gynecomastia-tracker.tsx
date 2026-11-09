@@ -103,10 +103,10 @@ export default function Tool068GynecomastiaTracker() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.duration_weeks}
-          <input type="number" min={0} max={52} step={1} value={inputs.duration_weeks} onChange={(e) => setInputs((p) => ({ ...p, duration_weeks: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={52} step={1} value={inputs.duration_weeks} onChange={(e) => setInputs((p) => ({ ...p, duration_weeks: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.lump_size}
-          <input type="number" min={0} max={10} step={0.5} value={inputs.lump_size_cm} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, lump_size_cm: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={10} step={0.5} value={inputs.lump_size_cm} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, lump_size_cm: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 md:col-span-2">
           <input type="checkbox" checked={inputs.has_tenderness_or_itching} onChange={(e) => setInputs((p) => ({ ...p, has_tenderness_or_itching: e.target.checked }))} className="rounded" />

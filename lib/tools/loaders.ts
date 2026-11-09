@@ -23,6 +23,11 @@ const SLUG_RE = /^[a-z0-9-]+$/;
  */
 export function toolLoaders(slug: string): (() => Promise<ToolComponentModule>) | null {
   if (!SLUG_RE.test(slug)) return null;
+  if (slug === 'macro') {
+    // Phase 2 ruling: macro bespoke renders macro-pilot (catalog component);
+    // preserve that engine through the shared dynamic route. Never legacy.
+    return () => import('@/components/tools/macro-pilot') as Promise<ToolComponentModule>;
+  }
   if (slug === 'tool-108-ai-body-composition-vision-engine') {
     // Phase 1: the bespoke route rendered the V6 pilot; preserve that UX
     // through the shared dynamic route (ing C4/C5/C8/C11 stay NOT_AVAILABLE).

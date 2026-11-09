@@ -95,13 +95,13 @@ export default function Tool084CognitiveEnhancer() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.deep_work_hours}
-          <input type="number" min={0} max={12} step={0.5} value={inputs.daily_focused_deep_work_hours} onChange={(e) => setInputs((p) => ({ ...p, daily_focused_deep_work_hours: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={12} step={0.5} value={inputs.daily_focused_deep_work_hours} onChange={(e) => setInputs((p) => ({ ...p, daily_focused_deep_work_hours: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.caffeine_mg}
-          <input type="number" min={0} max={800} step={25} value={inputs.caffeine_daily_mg} onChange={(e) => setInputs((p) => ({ ...p, caffeine_daily_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={800} step={25} value={inputs.caffeine_daily_mg} onChange={(e) => setInputs((p) => ({ ...p, caffeine_daily_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_hours}
-          <input type="number" min={3} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours: Number(e.target.value || 3) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={3} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours: Number(e.target.value || 3) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 pt-2">
           <input type="checkbox" checked={inputs.regular_aerobic_exercise} onChange={(e) => setInputs((p) => ({ ...p, regular_aerobic_exercise: e.target.checked }))} className="rounded" />

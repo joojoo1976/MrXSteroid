@@ -282,7 +282,7 @@ export default function Tool010CompoundStackBuilder() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">{i18nData.dose_label} ({isMetric ? i18nData.unit_mg_week : i18nData.unit_oz_week}):</label>
-            <input
+            <input data-r6-slider="true"
               type="number"
               value={isMetric ? weeklyDose : parseFloat(mgToOz(weeklyDose).toFixed(6))}
               onChange={(e) => {
@@ -298,7 +298,7 @@ export default function Tool010CompoundStackBuilder() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">{i18nData.weeks_label}</label>
-            <input type="number" value={weeks} onChange={(e) => setWeeks(parseInt(e.target.value) || 1)} min="1" max="52" className="w-full rounded border p-2" />
+            <input data-r6-slider="true" type="number" value={weeks} onChange={(e) => setWeeks(parseInt(e.target.value) || 1)} min="1" max="52" className="w-full rounded border p-2" />
           </div>
         </div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}>

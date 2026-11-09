@@ -92,7 +92,7 @@ export default function Tool039LiverEnzymeTracker() {
               {MARKERS.map((m) => (<option key={m} value={m}>{m}</option>))}
             </select>
             <label className="text-[10px] text-zinc-500">{t.value}
-              <input type="number" min={0} max={5000} value={r.value} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, value: e.target.value === '' ? 0 : Number(e.target.value) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" min={0} max={5000} value={r.value} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, value: e.target.value === '' ? 0 : Number(e.target.value) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <input value={r.unit} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)) }))} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder="U/L" />
             <input type="date" value={r.date.slice(0, 10)} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)) }))} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
@@ -109,7 +109,7 @@ export default function Tool039LiverEnzymeTracker() {
           <input type="checkbox" checked={inputs.uses_tudca} onChange={(e) => setInputs((p) => ({ ...p, uses_tudca: e.target.checked }))} className="accent-lime-500" />{t.tudca}
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.alcohol} (drinks/wk)
-          <input type="number" min={0} max={100} value={inputs.alcohol_drinks_per_week} onChange={(e) => setInputs((p) => ({ ...p, alcohol_drinks_per_week: Math.round(e.target.value === '' ? 0 : Number(e.target.value)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={100} value={inputs.alcohol_drinks_per_week} onChange={(e) => setInputs((p) => ({ ...p, alcohol_drinks_per_week: Math.round(e.target.value === '' ? 0 : Number(e.target.value)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

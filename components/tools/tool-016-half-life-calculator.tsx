@@ -110,7 +110,7 @@ export default function Tool016HalfLifeCalculator() {
             </label>
             <label className="block space-y-1 text-sm" htmlFor={`tool-016-half-life-${index}`}>
               <span>{t.user_half_life}</span>
-              <input id={`tool-016-half-life-${index}`} className={inputClass} type="number" min="0" max="1000000" step="any" value={compound.half_life_days} onChange={(event) => updateCompound(index, 'half_life_days', event.target.value)} dir="ltr" />
+              <input data-r6-slider="true" id={`tool-016-half-life-${index}`} className={inputClass} type="number" min="0" max="1000000" step="any" value={compound.half_life_days} onChange={(event) => updateCompound(index, 'half_life_days', event.target.value)} dir="ltr" />
             </label>
             <label className="block space-y-1 text-sm" htmlFor={`tool-016-source-${index}`}>
               <span>{t.source}</span>
@@ -125,7 +125,7 @@ export default function Tool016HalfLifeCalculator() {
 
       <label className="block space-y-1 text-sm" htmlFor="tool-016-remaining">
         <span>{t.remaining_percent}</span>
-        <input id="tool-016-remaining" className={inputClass} type="number" min="0" max="100" step="any" value={remainingPercent} onChange={setRemaining} dir="ltr" />
+        <input data-r6-slider="true" id="tool-016-remaining" className={inputClass} type="number" min="0" max="100" step="any" value={remainingPercent} onChange={setRemaining} dir="ltr" />
       </label>
       <button type="button" className="rounded bg-blue-600 px-4 py-2 font-semibold text-white" onClick={calculate}>{t.calculate}</button>
 

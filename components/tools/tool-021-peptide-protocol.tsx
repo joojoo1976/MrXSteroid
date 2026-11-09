@@ -80,7 +80,7 @@ export default function Tool021PeptideProtocolPlanner() {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2" htmlFor="tool-021-weight" dir={i18nData.dir}>{i18nData.user_weight} ({displayedWeightUnit}):</label>
-          <input
+          <input data-r6-slider="true"
             id="tool-021-weight"
             type="number"
             value={Number.isFinite(displayedWeight) ? Number(displayedWeight.toFixed(1)) : ''}
@@ -100,7 +100,7 @@ export default function Tool021PeptideProtocolPlanner() {
           {weightError && <p id="tool-021-weight-error" role="alert" className="mt-1 text-sm text-red-700">{i18nData.weight_error}</p>}
         </div>
         <div><label className="block text-sm font-medium mb-2" htmlFor="tool-021-goal" dir={i18nData.dir}>{i18nData.goal}:</label> <select id="tool-021-goal" value={goal} onChange={(e) => setGoal(e.target.value as PeptideProtocolInput['goal'])} className="w-full rounded border p-2" dir={i18nData.dir}><option value="recovery">{i18nData.goal_recovery}</option><option value="muscle_growth">{i18nData.goal_muscle_growth}</option><option value="fat_loss">{i18nData.goal_fat_loss}</option><option value="anti_aging">{i18nData.goal_anti_aging}</option></select></div>
-        <div><label className="block text-sm font-medium mb-2" htmlFor="tool-021-duration" dir={i18nData.dir}>{i18nData.protocol_duration}:</label> <input id="tool-021-duration" type="number" value={protocolDuration} onChange={(e) => setProtocolDuration(parseInt(e.target.value, 10))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
+        <div><label className="block text-sm font-medium mb-2" htmlFor="tool-021-duration" dir={i18nData.dir}>{i18nData.protocol_duration}:</label> <input data-r6-slider="true" id="tool-021-duration" type="number" value={protocolDuration} onChange={(e) => setProtocolDuration(parseInt(e.target.value, 10))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
         <div><label className="block text-sm font-medium mb-2" htmlFor="tool-021-frequency" dir={i18nData.dir}>{i18nData.injection_frequency}:</label> <select id="tool-021-frequency" value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value as PeptideProtocolInput['injection_frequency'])} className="w-full rounded border p-2" dir={i18nData.dir}><option value="daily">{i18nData.daily}</option><option value="every-other-day">{i18nData.every_other_day}</option><option value="3x-week">{i18nData.three_times_weekly}</option><option value="weekly">{i18nData.weekly}</option></select></div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}>{i18nData.add_compound}</button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">{i18nData.saving}</p>}

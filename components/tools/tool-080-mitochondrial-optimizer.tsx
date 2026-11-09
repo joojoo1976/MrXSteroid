@@ -95,13 +95,13 @@ export default function Tool080MitochondrialOptimizer() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.zone2_hours}
-          <input type="number" min={0} max={20} step={0.5} value={inputs.zone2_weekly_hours} onChange={(e) => setInputs((p) => ({ ...p, zone2_weekly_hours: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={20} step={0.5} value={inputs.zone2_weekly_hours} onChange={(e) => setInputs((p) => ({ ...p, zone2_weekly_hours: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hiit_sessions}
-          <input type="number" min={0} max={7} step={1} value={inputs.hiit_sessions_per_week} onChange={(e) => setInputs((p) => ({ ...p, hiit_sessions_per_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={7} step={1} value={inputs.hiit_sessions_per_week} onChange={(e) => setInputs((p) => ({ ...p, hiit_sessions_per_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_quality}
-          <input type="number" min={1} max={10} step={0.5} value={inputs.sleep_quality_score} onChange={(e) => setInputs((p) => ({ ...p, sleep_quality_score: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={0.5} value={inputs.sleep_quality_score} onChange={(e) => setInputs((p) => ({ ...p, sleep_quality_score: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <div className="flex flex-col gap-2 justify-center">
           <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500">

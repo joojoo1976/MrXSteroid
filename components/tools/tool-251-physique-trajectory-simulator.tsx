@@ -129,15 +129,15 @@ export default function Tool251() {
 
       <label className="block text-sm">
         {weightLabel} ({weightUnit})
-        <input aria-label={`${weightLabel} (${weightUnit})`} type="number" min={unitSystem === 'imperial' ? '0.22' : '0.1'} max={unitSystem === 'imperial' ? '1102.31' : '500'} step="any" inputMode="decimal" dir="ltr" value={fields.weight} onChange={(event) => update('weight', event.target.value)} className="mt-1 w-full rounded border p-2" />
+        <input data-r6-slider="true" aria-label={`${weightLabel} (${weightUnit})`} type="number" min={unitSystem === 'imperial' ? '0.22' : '0.1'} max={unitSystem === 'imperial' ? '1102.31' : '500'} step="any" inputMode="decimal" dir="ltr" value={fields.weight} onChange={(event) => update('weight', event.target.value)} className="mt-1 w-full rounded border p-2" />
       </label>
       <label className="block text-sm">
         {currentFatLabel} (%)
-        <input aria-label={`${currentFatLabel} (%)`} type="number" min="3" max="70" step="any" inputMode="decimal" dir="ltr" value={fields.current} onChange={(event) => update('current', event.target.value)} className="mt-1 w-full rounded border p-2" />
+        <input data-r6-slider="true" aria-label={`${currentFatLabel} (%)`} type="number" min="3" max="70" step="any" inputMode="decimal" dir="ltr" value={fields.current} onChange={(event) => update('current', event.target.value)} className="mt-1 w-full rounded border p-2" />
       </label>
       <label className="block text-sm">
         {targetFatLabel} (%)
-        <input aria-label={`${targetFatLabel} (%)`} type="number" min="3" max="70" step="any" inputMode="decimal" dir="ltr" value={fields.target} onChange={(event) => update('target', event.target.value)} className="mt-1 w-full rounded border p-2" />
+        <input data-r6-slider="true" aria-label={`${targetFatLabel} (%)`} type="number" min="3" max="70" step="any" inputMode="decimal" dir="ltr" value={fields.target} onChange={(event) => update('target', event.target.value)} className="mt-1 w-full rounded border p-2" />
       </label>
       <label className="block text-sm">
         {rateLabel}

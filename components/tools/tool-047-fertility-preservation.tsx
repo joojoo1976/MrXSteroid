@@ -76,7 +76,7 @@ export default function Tool047FertilityPreservation() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={60} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={60} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.suppression_level}
           <select value={inputs.suppression_level} onChange={(e) => setInputs((p) => ({ ...p, suppression_level: Number(e.target.value) as 1 | 2 | 3 }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
@@ -86,7 +86,7 @@ export default function Tool047FertilityPreservation() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.planning_horizon_months}
-          <input type="number" min={0} max={36} value={inputs.planning_horizon_months} onChange={(e) => setInputs((p) => ({ ...p, planning_horizon_months: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={36} value={inputs.planning_horizon_months} onChange={(e) => setInputs((p) => ({ ...p, planning_horizon_months: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.uses_hcg} onChange={(e) => setInputs((p) => ({ ...p, uses_hcg: e.target.checked }))} className="accent-lime-500" />{t.uses_hcg}

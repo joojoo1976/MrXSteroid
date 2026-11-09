@@ -79,10 +79,10 @@ export default function Tool061HairLossTracker() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.norwood_stage}
-          <input type="number" min={1} max={7} step={1} value={inputs.norwood_stage} onChange={(e) => setInputs((p) => ({ ...p, norwood_stage: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={inputs.norwood_stage} onChange={(e) => setInputs((p) => ({ ...p, norwood_stage: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weeks_since_start}
-          <input type="number" min={0} max={260} step={1} value={inputs.weeks_since_start} onChange={(e) => setInputs((p) => ({ ...p, weeks_since_start: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={260} step={1} value={inputs.weeks_since_start} onChange={(e) => setInputs((p) => ({ ...p, weeks_since_start: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500 md:col-span-2">{t.weekly_shed_counts}
           <input type="text" value={inputs.shed_raw} onChange={(e) => setInputs((p) => ({ ...p, shed_raw: e.target.value }))} placeholder="40,50,60" className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />

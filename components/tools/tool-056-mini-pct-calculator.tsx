@@ -83,10 +83,10 @@ export default function Tool056MiniPctCalculator() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.cycle_weeks}
-          <input type="number" min={1} max={52} value={inputs.cycle_weeks} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={52} value={inputs.cycle_weeks} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.last_dose_days_ago}
-          <input type="number" min={0} max={365} value={inputs.last_dose_days_ago} onChange={(e) => setInputs((p) => ({ ...p, last_dose_days_ago: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={365} value={inputs.last_dose_days_ago} onChange={(e) => setInputs((p) => ({ ...p, last_dose_days_ago: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

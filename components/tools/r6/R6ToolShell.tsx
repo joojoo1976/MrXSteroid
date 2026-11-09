@@ -17,6 +17,11 @@ import { DynamicStateBadge, type DynamicState } from '@/components/tools/Dynamic
 import { ResultBoxes } from '@/components/tools/ResultBoxes';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 import { buildR6Boxes, type R6BoxSource } from '@/lib/tools/r6/boxes';
+import { getPhase2Manifest } from '@/lib/tools/r6/phase2-manifest';
+import { R6CapabilityContract } from '@/components/tools/r6/R6CapabilityContract';
+import { R6PieChart } from '@/components/tools/r6/R6PieChart';
+import { R6WhatIf } from '@/components/tools/r6/R6WhatIf';
+import { R6CrossToolGraph } from '@/components/tools/r6/R6CrossToolGraph';
 import type { R6ManifestEntry } from '@/lib/tools/r6/manifest';
 
 type FieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -466,6 +471,7 @@ export function R6ToolShell({ entry, locale: localeProp, children }: R6ToolShell
   }, [isAr]);
 
   const boxes = buildR6Boxes(entry, locale);
+  const phase2 = getPhase2Manifest(entry.slug, entry.categorySlug);
   const viewportWidth = typeof window === 'undefined' ? 1024 : window.innerWidth;
   const tipLeft = tip
     ? Math.min(Math.max(tip.rect.left + tip.rect.width / 2, 132), Math.max(132, viewportWidth - 132))
@@ -484,6 +490,10 @@ export function R6ToolShell({ entry, locale: localeProp, children }: R6ToolShell
             <DynamicStateBadge state={dynamic.state} locale={locale} missingFields={dynamic.missing} />
           </div>
           <ResultBoxes compact={false} locale={locale} boxes={boxes} />
+          <R6PieChart manifest={phase2} locale={locale} />
+          <R6WhatIf manifest={phase2} locale={locale} />
+          <R6CrossToolGraph entry={entry} manifest={phase2} locale={locale} />
+          <R6CapabilityContract manifest={phase2} locale={locale} />
         </section>
       )}
 

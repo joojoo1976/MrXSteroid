@@ -13,6 +13,12 @@ describe('R6 Phase 1 bespoke normalization', () => {
     expect(component?.name).toContain('Pilot');
   });
 
+  it('resolves macro to the macro pilot (not legacy)', async () => {
+    const component = await getToolComponent('macro');
+    expect(component).not.toBeNull();
+    expect(component?.name).toContain('Pilot');
+  }, 30000);
+
   it('resolves all 18 former bespoke slugs to a component', async () => {
     const slugs = [
       'tool-126-neuromuscular-explosiveness-modeler',

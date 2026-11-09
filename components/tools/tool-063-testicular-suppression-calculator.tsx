@@ -75,10 +75,10 @@ export default function Tool063TesticularSuppressionCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.weeks_on_cycle}
-          <input type="number" min={0} max={104} step={1} value={inputs.weeks_on_cycle} onChange={(e) => setInputs((p) => ({ ...p, weeks_on_cycle: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={104} step={1} value={inputs.weeks_on_cycle} onChange={(e) => setInputs((p) => ({ ...p, weeks_on_cycle: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={70} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 18) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={70} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 18) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500 md:col-span-2">{t.suppression_tier}
           <select value={inputs.suppression_tier} onChange={(e) => setInputs((p) => ({ ...p, suppression_tier: e.target.value as DraftInputs['suppression_tier'] }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
