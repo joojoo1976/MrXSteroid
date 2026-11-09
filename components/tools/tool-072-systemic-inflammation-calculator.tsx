@@ -102,13 +102,13 @@ export default function Tool072SystemicInflammationCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.hs_crp}
-          <input type="number" min={0.1} max={30} step={0.1} value={inputs.hs_crp_mg_l} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, hs_crp_mg_l: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.1} max={30} step={0.1} value={inputs.hs_crp_mg_l} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, hs_crp_mg_l: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.waist_circ}
-          <input type="number" min={60} max={150} step={1} value={inputs.waist_circumference_cm} onChange={(e) => setInputs((p) => ({ ...p, waist_circumference_cm: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={60} max={150} step={1} value={inputs.waist_circumference_cm} onChange={(e) => setInputs((p) => ({ ...p, waist_circumference_cm: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_hours}
-          <input type="number" min={3} max={12} step={0.5} value={inputs.sleep_hours_per_night} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours_per_night: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={3} max={12} step={0.5} value={inputs.sleep_hours_per_night} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours_per_night: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <div className="flex flex-col gap-2 pt-2 md:col-span-2">
           <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500">

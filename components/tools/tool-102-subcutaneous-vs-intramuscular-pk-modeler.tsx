@@ -69,10 +69,10 @@ export default function Tool102SubqVsIm() {
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-3 mb-4'>
         <label className={LBL}>{t.dose}
-          <input type='number' min={1} max={3000} value={inputs.dose_mg} onChange={(e) => setInputs((p) => ({ ...p, dose_mg: Number(e.target.value || 1) }))} className={INP} />
+          <input data-r6-slider="true" type='number' min={1} max={3000} value={inputs.dose_mg} onChange={(e) => setInputs((p) => ({ ...p, dose_mg: Number(e.target.value || 1) }))} className={INP} />
         </label>
         <label className={LBL}>{t.conc}
-          <input type='number' min={5} max={300} value={inputs.concentration_mg_ml} onChange={(e) => setInputs((p) => ({ ...p, concentration_mg_ml: Number(e.target.value || 5) }))} className={INP} />
+          <input data-r6-slider="true" type='number' min={5} max={300} value={inputs.concentration_mg_ml} onChange={(e) => setInputs((p) => ({ ...p, concentration_mg_ml: Number(e.target.value || 5) }))} className={INP} />
         </label>
         <label className={LBL}>{t.site}
           <select value={inputs.site_anatomy} onChange={(e) => setInputs((p) => ({ ...p, site_anatomy: e.target.value }))} className={SEL}>
@@ -80,10 +80,10 @@ export default function Tool102SubqVsIm() {
           </select>
         </label>
         <label className={LBL}>{t.half_life}
-          <input type='number' min={0.5} max={30} step={0.5} value={inputs.elimination_half_life_days} onChange={(e) => setInputs((p) => ({ ...p, elimination_half_life_days: Number(e.target.value || 0.5) }))} className={INP} />
+          <input data-r6-slider="true" type='number' min={0.5} max={30} step={0.5} value={inputs.elimination_half_life_days} onChange={(e) => setInputs((p) => ({ ...p, elimination_half_life_days: Number(e.target.value || 0.5) }))} className={INP} />
         </label>
         <label className={LBL}>{t.interval}
-          <input type='number' min={0.5} max={30} step={0.5} value={inputs.injection_interval_days} onChange={(e) => setInputs((p) => ({ ...p, injection_interval_days: Number(e.target.value || 0.5) }))} className={INP} />
+          <input data-r6-slider="true" type='number' min={0.5} max={30} step={0.5} value={inputs.injection_interval_days} onChange={(e) => setInputs((p) => ({ ...p, injection_interval_days: Number(e.target.value || 0.5) }))} className={INP} />
         </label>
       </div>
 

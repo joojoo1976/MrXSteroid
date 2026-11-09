@@ -92,22 +92,22 @@ export default function Tool121MuscleGroupRecovery() {
           </select>
         </label>
         <label className={LBL}>{t.sets}
-          <input type="number" min={1} max={20} step={1} value={inputs.sets} onChange={(e) => updateInput('sets', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={20} step={1} value={inputs.sets} onChange={(e) => updateInput('sets', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.rpe}
-          <input type="number" min={1} max={10} step={1} value={inputs.rpe} onChange={(e) => updateInput('rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={inputs.rpe} onChange={(e) => updateInput('rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.frequency}
-          <input type="number" min={1} max={7} step={1} value={inputs.frequency_per_week} onChange={(e) => updateInput('frequency_per_week', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={inputs.frequency_per_week} onChange={(e) => updateInput('frequency_per_week', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
-          <input type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
+          <input data-r6-slider="true" type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep_hours}
-          <input type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
         </label>
         <label className={LBL}>{t.protein}
-          <input type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.stress}
           <select value={inputs.stress_level} onChange={(e) => updateInput('stress_level', Number(e.target.value))} className={SEL}>
@@ -115,7 +115,7 @@ export default function Tool121MuscleGroupRecovery() {
           </select>
         </label>
         <label className={LBL}>{t.training_age}
-          <input type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
         </label>
       </div>
 

@@ -121,7 +121,7 @@ export default function Tool125FiberTypeTension() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.profile_section}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <label className={LBL}>{t.age}
-          <input type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
+          <input data-r6-slider="true" type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
         </label>
         <label className={LBL}>{t.sex}
           <select value={inputs.sex} onChange={(e) => updateInput('sex', e.target.value)} className={SEL}>
@@ -130,38 +130,38 @@ export default function Tool125FiberTypeTension() {
           </select>
         </label>
         <label className={LBL}>{t.height} ({lengthUnit})
-          <input type="number" min={unitSystem === 'metric' ? 100 : 39.4} max={unitSystem === 'metric' ? 250 : 98.4} step={1} value={displayLength(inputs.height_cm)} onChange={(e) => updateInput('height_cm', storeLength(Number(e.target.value || (unitSystem === 'metric' ? 178 : 70.1))))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 100 : 39.4} max={unitSystem === 'metric' ? 250 : 98.4} step={1} value={displayLength(inputs.height_cm)} onChange={(e) => updateInput('height_cm', storeLength(Number(e.target.value || (unitSystem === 'metric' ? 178 : 70.1))))} className={INP} />
         </label>
         <label className={LBL}>{t.body_weight} ({massUnit})
-          <input type="number" min={unitSystem === 'metric' ? 30 : 66} max={unitSystem === 'metric' ? 300 : 661} step={unitSystem === 'metric' ? 0.1 : 0.5} value={displayMass(inputs.body_weight_kg)} onChange={(e) => updateInput('body_weight_kg', storeMass(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 30 : 66} max={unitSystem === 'metric' ? 300 : 661} step={unitSystem === 'metric' ? 0.1 : 0.5} value={displayMass(inputs.body_weight_kg)} onChange={(e) => updateInput('body_weight_kg', storeMass(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))))} className={INP} />
         </label>
         <label className={LBL}>{t.training_age}
-          <input type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.avg_volume}
-          <input type="number" min={0} max={200} step={1} value={inputs.avg_weekly_volume_sets} onChange={(e) => updateInput('avg_weekly_volume_sets', Number(e.target.value || 80))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={200} step={1} value={inputs.avg_weekly_volume_sets} onChange={(e) => updateInput('avg_weekly_volume_sets', Number(e.target.value || 80))} className={INP} />
         </label>
         <label className={LBL}>{t.avg_rpe}
-          <input type="number" min={1} max={10} step={0.1} value={inputs.avg_intensity_rpe} onChange={(e) => updateInput('avg_intensity_rpe', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={0.1} value={inputs.avg_intensity_rpe} onChange={(e) => updateInput('avg_intensity_rpe', Number(e.target.value || 8))} className={INP} />
         </label>
       </div>
 
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.performance_section}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.max_reps_bench}
-          <input type="number" min={0} max={100} step={1} value={inputs.max_reps_225_bench} onChange={(e) => updateInput('max_reps_225_bench', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0} max={100} step={1} value={inputs.max_reps_225_bench} onChange={(e) => updateInput('max_reps_225_bench', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.max_reps_squat}
-          <input type="number" min={0} max={100} step={1} value={inputs.max_reps_135_squat} onChange={(e) => updateInput('max_reps_135_squat', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0} max={100} step={1} value={inputs.max_reps_135_squat} onChange={(e) => updateInput('max_reps_135_squat', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.vertical_jump} ({lengthUnit})
-          <input type="number" min={1} max={unitSystem === 'metric' ? 100 : 39.4} step={1} value={inputs.vertical_jump_cm === undefined ? '' : displayLength(inputs.vertical_jump_cm)} onChange={(e) => updateInput('vertical_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 100 : 39.4} step={1} value={inputs.vertical_jump_cm === undefined ? '' : displayLength(inputs.vertical_jump_cm)} onChange={(e) => updateInput('vertical_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.broad_jump} ({lengthUnit})
-          <input type="number" min={1} max={unitSystem === 'metric' ? 400 : 157.5} step={1} value={inputs.broad_jump_cm === undefined ? '' : displayLength(inputs.broad_jump_cm)} onChange={(e) => updateInput('broad_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 400 : 157.5} step={1} value={inputs.broad_jump_cm === undefined ? '' : displayLength(inputs.broad_jump_cm)} onChange={(e) => updateInput('broad_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.sprint_30m}
-          <input type="number" min={2} max={10} step={0.1} value={inputs.sprint_30m_time} onChange={(e) => updateInput('sprint_30m_time', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={2} max={10} step={0.1} value={inputs.sprint_30m_time} onChange={(e) => updateInput('sprint_30m_time', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
       </div>
 
@@ -207,19 +207,19 @@ export default function Tool125FiberTypeTension() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.strength_tests}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className={LBL}>{t.max_reps_bench}
-          <input type="number" min={0} max={100} step={1} value={inputs.max_reps_225_bench} onChange={(e) => updateInput('max_reps_225_bench', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0} max={100} step={1} value={inputs.max_reps_225_bench} onChange={(e) => updateInput('max_reps_225_bench', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.max_reps_squat}
-          <input type="number" min={0} max={100} step={1} value={inputs.max_reps_135_squat} onChange={(e) => updateInput('max_reps_135_squat', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0} max={100} step={1} value={inputs.max_reps_135_squat} onChange={(e) => updateInput('max_reps_135_squat', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.vertical_jump} ({lengthUnit})
-          <input type="number" min={1} max={unitSystem === 'metric' ? 100 : 39.4} step={1} value={inputs.vertical_jump_cm === undefined ? '' : displayLength(inputs.vertical_jump_cm)} onChange={(e) => updateInput('vertical_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 100 : 39.4} step={1} value={inputs.vertical_jump_cm === undefined ? '' : displayLength(inputs.vertical_jump_cm)} onChange={(e) => updateInput('vertical_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.broad_jump} ({lengthUnit})
-          <input type="number" min={1} max={unitSystem === 'metric' ? 400 : 157.5} step={1} value={inputs.broad_jump_cm === undefined ? '' : displayLength(inputs.broad_jump_cm)} onChange={(e) => updateInput('broad_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 400 : 157.5} step={1} value={inputs.broad_jump_cm === undefined ? '' : displayLength(inputs.broad_jump_cm)} onChange={(e) => updateInput('broad_jump_cm', e.target.value ? storeLength(Number(e.target.value)) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.sprint_30m}
-          <input type="number" min={2} max={10} step={0.1} value={inputs.sprint_30m_time} onChange={(e) => updateInput('sprint_30m_time', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={2} max={10} step={0.1} value={inputs.sprint_30m_time} onChange={(e) => updateInput('sprint_30m_time', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
       </div>
 

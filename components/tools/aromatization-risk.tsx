@@ -241,7 +241,7 @@ export default function AromatizationRiskToolComponent() {
                         <label htmlFor="ar-weeks" className="block text-xs font-medium text-slate-400 mb-1">
                             {isRtl ? `مدة الدورة: ${weeksOnCycle} أسبوع` : `Cycle Duration: ${weeksOnCycle} weeks`}
                         </label>
-                        <input
+                        <input data-r6-slider="true"
                             id="ar-weeks"
                             type="range"
                             min={4}
@@ -259,7 +259,7 @@ export default function AromatizationRiskToolComponent() {
                                 ? `مدخل سيناريو افتراضي: ${weeklyDoseMg} ملغ/أسبوع (ليس توصية جرعة)`
                                 : `Hypothetical scenario input: ${weeklyDoseMg} mg/week (not a dose recommendation)`}
                         </label>
-                        <input
+                        <input data-r6-slider="true"
                             id="ar-dose"
                             type="range"
                             min={100}
@@ -275,7 +275,7 @@ export default function AromatizationRiskToolComponent() {
                         <label htmlFor="ar-bf" className="block text-xs font-medium text-slate-400 mb-1">
                             {isRtl ? `نسبة دهون الجسم: ${bodyFatPct}%` : `Body Fat: ${bodyFatPct}%`}
                         </label>
-                        <input
+                        <input data-r6-slider="true"
                             id="ar-bf"
                             type="range"
                             min={6}

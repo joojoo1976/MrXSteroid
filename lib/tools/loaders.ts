@@ -23,6 +23,11 @@ const SLUG_RE = /^[a-z0-9-]+$/;
  */
 export function toolLoaders(slug: string): (() => Promise<ToolComponentModule>) | null {
   if (!SLUG_RE.test(slug)) return null;
+  if (slug === 'tool-108-ai-body-composition-vision-engine') {
+    // Phase 1: the bespoke route rendered the V6 pilot; preserve that UX
+    // through the shared dynamic route (ing C4/C5/C8/C11 stay NOT_AVAILABLE).
+    return () => import('@/components/tools/body-composition-vision-pilot') as Promise<ToolComponentModule>;
+  }
   if (slug === 'tool-146-ai-safety-gate-emergency-protocol') {
     return () => import('@/components/tools/tool-146-ai-safety-gate-emergency-protocol') as Promise<ToolComponentModule>;
   }

@@ -266,7 +266,7 @@ export default function Tool115SupplementNavigator() {
                   </label>
                   <label className="flex flex-col gap-0.5" style={{ fontSize: '9px' }}>
                     <span>{t.sample_size}</span>
-                    <input type="number" min={1} max={10000} step={1} value={study.sample_size ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'sample_size', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                    <input data-r6-slider="true" type="number" min={1} max={10000} step={1} value={study.sample_size ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'sample_size', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                   </label>
                   <label className="flex flex-col gap-0.5" style={{ fontSize: '9px' }}>
                     <span>{t.effect_size}</span>
@@ -274,15 +274,15 @@ export default function Tool115SupplementNavigator() {
                   </label>
                   <label className="flex flex-col gap-0.5" style={{ fontSize: '9px' }}>
                     <span>{t.p_value}</span>
-                    <input type="number" min={0} max={1} step={0.001} value={study.p_value ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'p_value', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                    <input data-r6-slider="true" type="number" min={0} max={1} step={0.001} value={study.p_value ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'p_value', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                   </label>
                   <label className="flex flex-col gap-0.5" style={{ fontSize: '9px' }}>
                     <span>{t.quality_score}</span>
-                    <input type="number" min={0} max={10} step={0.5} value={study.quality_score ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'quality_score', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                    <input data-r6-slider="true" type="number" min={0} max={10} step={0.5} value={study.quality_score ?? ''} onChange={(e) => updateStudy(idx, studyIdx, 'quality_score', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                   </label>
                   <label className="flex flex-col gap-0.5" style={{ fontSize: '9px' }}>
                     <span>{t.year}</span>
-                    <input type="number" min={1950} max={2030} step={1} value={study.year} onChange={(e) => updateStudy(idx, studyIdx, 'year', Number(e.target.value || 2020))} className={INP} />
+                    <input data-r6-slider="true" type="number" min={1950} max={2030} step={1} value={study.year} onChange={(e) => updateStudy(idx, studyIdx, 'year', Number(e.target.value || 2020))} className={INP} />
                   </label>
                   {supp.studies.length > 1 && (
                     <button type="button" onClick={() => removeStudy(idx, studyIdx)} className="text-red-400 hover:text-red-300 text-xs self-center">{t.remove}</button>

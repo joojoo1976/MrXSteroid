@@ -79,13 +79,13 @@ export default function Tool062ProstateHealthManager() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={30} max={90} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 30) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={30} max={90} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 30) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.psa_ng_ml}
-          <input type="number" min={0} max={50} step={0.1} value={inputs.psa_ng_ml} onChange={(e) => setInputs((p) => ({ ...p, psa_ng_ml: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={50} step={0.1} value={inputs.psa_ng_ml} onChange={(e) => setInputs((p) => ({ ...p, psa_ng_ml: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500 md:col-span-2">{t.psa_prev_1y_ng_ml}
-          <input type="number" min={0} max={50} step={0.1} value={inputs.psa_prev_1y_ng_ml} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, psa_prev_1y_ng_ml: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={50} step={0.1} value={inputs.psa_prev_1y_ng_ml} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, psa_prev_1y_ng_ml: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

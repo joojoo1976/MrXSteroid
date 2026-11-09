@@ -500,7 +500,7 @@ export default function PctTimingToolComponent() {
                                             <label className="text-[10px] text-slate-400 block mb-0.5">
                                                 {isRtl ? 'الجرعة (ملغ/أسبوع)' : 'Weekly Dose (mg)'}
                                             </label>
-                                            <input
+                                            <input data-r6-slider="true"
                                                 type="number"
                                                 value={c.doseMgPerWeek}
                                                 min={50}
@@ -514,7 +514,7 @@ export default function PctTimingToolComponent() {
                                             <label className="text-[10px] text-slate-400 block mb-0.5">
                                                 {isRtl ? 'نصف العمر (أيام)' : 'Half-Life (days)'}
                                             </label>
-                                            <input
+                                            <input data-r6-slider="true"
                                                 type="number"
                                                 value={c.halfLifeDays}
                                                 min={0.2}
@@ -553,7 +553,7 @@ export default function PctTimingToolComponent() {
                                 <label className="text-[11px] text-slate-400 font-semibold block mb-1">
                                     {isRtl ? `مدة الدورة: ${weeksOnCycle} أسبوع` : `Cycle Duration: ${weeksOnCycle} wks`}
                                 </label>
-                                <input
+                                <input data-r6-slider="true"
                                     type="range"
                                     min={4}
                                     max={24}
@@ -602,7 +602,7 @@ export default function PctTimingToolComponent() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <input
+                                <input data-r6-slider="true"
                                     type="range"
                                     min={unitSystem === 'metric' ? 40 : 88}
                                     max={unitSystem === 'metric' ? 160 : 352}
@@ -613,7 +613,7 @@ export default function PctTimingToolComponent() {
                                     }}
                                     className="flex-1 accent-lime-500 bg-slate-800 rounded-lg cursor-pointer"
                                 />
-                                <input
+                                <input data-r6-slider="true"
                                     id="weight-input"
                                     type="number"
                                     min={unitSystem === 'metric' ? 40 : 88}
@@ -643,7 +643,7 @@ export default function PctTimingToolComponent() {
                                 </label>
                                 <span className="text-xs font-black text-lime-400 font-mono">{bodyFatPct}%</span>
                             </div>
-                            <input
+                            <input data-r6-slider="true"
                                 type="range"
                                 min={6}
                                 max={40}

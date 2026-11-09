@@ -98,22 +98,22 @@ export default function Tool124DeloadModeler() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.inputs}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <label className={LBL}>{t.training_age}
-          <input type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.weekly_volume}
-          <input type="number" min={0} max={300} step={1} value={inputs.weekly_volume_sets} onChange={(e) => updateInput('weekly_volume_sets', Number(e.target.value || 80))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={300} step={1} value={inputs.weekly_volume_sets} onChange={(e) => updateInput('weekly_volume_sets', Number(e.target.value || 80))} className={INP} />
         </label>
         <label className={LBL}>{t.avg_rpe}
-          <input type="number" min={1} max={10} step={0.1} value={inputs.avg_weekly_rpe} onChange={(e) => updateInput('avg_weekly_rpe', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={0.1} value={inputs.avg_weekly_rpe} onChange={(e) => updateInput('avg_weekly_rpe', Number(e.target.value || 8))} className={INP} />
         </label>
         <label className={LBL}>{t.frequency}
-          <input type="number" min={1} max={7} step={1} value={inputs.frequency_per_week} onChange={(e) => updateInput('frequency_per_week', Number(e.target.value || 4))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={inputs.frequency_per_week} onChange={(e) => updateInput('frequency_per_week', Number(e.target.value || 4))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
-          <input type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
+          <input data-r6-slider="true" type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep}
-          <input type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
         </label>
         <label className={LBL}>{t.stress}
           <select value={inputs.stress_level} onChange={(e) => updateInput('stress_level', Number(e.target.value))} className={SEL}>
@@ -156,10 +156,10 @@ export default function Tool124DeloadModeler() {
           </select>
         </label>
         <label className={LBL}>{t.last_deload}
-          <input type="number" min={0} max={52} step={1} value={inputs.last_deload_weeks_ago} onChange={(e) => updateInput('last_deload_weeks_ago', Number(e.target.value || 4))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={52} step={1} value={inputs.last_deload_weeks_ago} onChange={(e) => updateInput('last_deload_weeks_ago', Number(e.target.value || 4))} className={INP} />
         </label>
         <label className={LBL}>{t.planned_deload}
-          <input type="number" min={1} max={12} step={1} value={inputs.planned_deload_frequency_weeks} onChange={(e) => updateInput('planned_deload_frequency_weeks', Number(e.target.value || 6))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={12} step={1} value={inputs.planned_deload_frequency_weeks} onChange={(e) => updateInput('planned_deload_frequency_weeks', Number(e.target.value || 6))} className={INP} />
         </label>
       </div>
 

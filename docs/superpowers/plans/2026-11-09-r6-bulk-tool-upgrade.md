@@ -55,7 +55,7 @@ tool-133-rep-tempo-velocity-loss-analyzer         tool-146-ai-safety-gate-emerge
                                                   tool-149-physique-trajectory-simulator
 ```
 
-Phase 0 therefore covers **250 of 268** routes through the shared shell (`268 − 18`), of which 5 are frozen (progress line only). The remaining 18 are Phase 1 route-normalization work: each bespoke page renders a different pilot component, so they must be migrated deliberately, not blanket-wrapped. No tool is claimed as upgraded until its route exposes the shell.
+Phase 0 therefore covers **250 of 268** routes through the shared shell (`268 − 18`), of which 5 are frozen (progress line only). The remaining 18 were migrated in Phase 1: 17 bespoke pages deleted (dynamic route now serves them) + tool-108 loader override preserving its V6 pilot engine. Coverage is now **267 of 268** (only `/smarttools/nutrition/macro` bespoke remains, outside the owner's 18). No tool is claimed as upgraded until its route exposes the shell.
 
 ## File Structure
 

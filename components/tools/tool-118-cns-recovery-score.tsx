@@ -102,19 +102,19 @@ export default function Tool118CNSRecoveryScore() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.inputs}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.hrv_current}
-          <input type="number" min={10} max={300} step={1} value={inputs.hrv_ms} onChange={(e) => updateInput('hrv_ms', Number(e.target.value || 55))} className={INP} />
+          <input data-r6-slider="true" type="number" min={10} max={300} step={1} value={inputs.hrv_ms} onChange={(e) => updateInput('hrv_ms', Number(e.target.value || 55))} className={INP} />
         </label>
         <label className={LBL}>{t.hrv_baseline}
-          <input type="number" min={10} max={300} step={1} value={inputs.hrv_baseline_ms} onChange={(e) => updateInput('hrv_baseline_ms', Number(e.target.value || 60))} className={INP} />
+          <input data-r6-slider="true" type="number" min={10} max={300} step={1} value={inputs.hrv_baseline_ms} onChange={(e) => updateInput('hrv_baseline_ms', Number(e.target.value || 60))} className={INP} />
         </label>
         <label className={LBL}>{t.rhr_current}
-          <input type="number" min={30} max={150} step={1} value={inputs.resting_hr_bpm} onChange={(e) => updateInput('resting_hr_bpm', Number(e.target.value || 58))} className={INP} />
+          <input data-r6-slider="true" type="number" min={30} max={150} step={1} value={inputs.resting_hr_bpm} onChange={(e) => updateInput('resting_hr_bpm', Number(e.target.value || 58))} className={INP} />
         </label>
         <label className={LBL}>{t.rhr_baseline}
-          <input type="number" min={30} max={150} step={1} value={inputs.resting_hr_baseline_bpm} onChange={(e) => updateInput('resting_hr_baseline_bpm', Number(e.target.value || 55))} className={INP} />
+          <input data-r6-slider="true" type="number" min={30} max={150} step={1} value={inputs.resting_hr_baseline_bpm} onChange={(e) => updateInput('resting_hr_baseline_bpm', Number(e.target.value || 55))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep_hours}
-          <input type="number" min={0} max={24} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 7.5))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={24} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 7.5))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep_quality}
           <select value={inputs.sleep_quality} onChange={(e) => updateInput('sleep_quality', Number(e.target.value))} className={SEL}>
@@ -122,10 +122,10 @@ export default function Tool118CNSRecoveryScore() {
           </select>
         </label>
         <label className={LBL}>{t.body_temp.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? '°C' : '°F'})
-          <input type="number" min={unitSystem === 'metric' ? 34 : 93.2} max={unitSystem === 'metric' ? 42 : 107.6} step={unitSystem === 'metric' ? 0.1 : 0.2} value={unitSystem === 'metric' ? inputs.body_temp_c : Number((inputs.body_temp_c * 9 / 5 + 32).toFixed(1))} onChange={(e) => { const value = Number(e.target.value || (unitSystem === 'metric' ? 36.8 : 98.2)); updateInput('body_temp_c', unitSystem === 'metric' ? value : (value - 32) * 5 / 9); }} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 34 : 93.2} max={unitSystem === 'metric' ? 42 : 107.6} step={unitSystem === 'metric' ? 0.1 : 0.2} value={unitSystem === 'metric' ? inputs.body_temp_c : Number((inputs.body_temp_c * 9 / 5 + 32).toFixed(1))} onChange={(e) => { const value = Number(e.target.value || (unitSystem === 'metric' ? 36.8 : 98.2)); updateInput('body_temp_c', unitSystem === 'metric' ? value : (value - 32) * 5 / 9); }} className={INP} />
         </label>
         <label className={LBL}>{t.body_temp_baseline.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? '°C' : '°F'})
-          <input type="number" min={unitSystem === 'metric' ? 34 : 93.2} max={unitSystem === 'metric' ? 42 : 107.6} step={unitSystem === 'metric' ? 0.1 : 0.2} value={unitSystem === 'metric' ? inputs.body_temp_baseline_c : Number((inputs.body_temp_baseline_c * 9 / 5 + 32).toFixed(1))} onChange={(e) => { const value = Number(e.target.value || (unitSystem === 'metric' ? 36.6 : 97.9)); updateInput('body_temp_baseline_c', unitSystem === 'metric' ? value : (value - 32) * 5 / 9); }} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 34 : 93.2} max={unitSystem === 'metric' ? 42 : 107.6} step={unitSystem === 'metric' ? 0.1 : 0.2} value={unitSystem === 'metric' ? inputs.body_temp_baseline_c : Number((inputs.body_temp_baseline_c * 9 / 5 + 32).toFixed(1))} onChange={(e) => { const value = Number(e.target.value || (unitSystem === 'metric' ? 36.6 : 97.9)); updateInput('body_temp_baseline_c', unitSystem === 'metric' ? value : (value - 32) * 5 / 9); }} className={INP} />
         </label>
       </div>
 
@@ -146,10 +146,10 @@ export default function Tool118CNSRecoveryScore() {
             </select>
           </label>
           <label className={LBL}>{t.load_change}
-            <input type="number" min={-100} max={200} step={1} value={inputs.training_load_change_pct} onChange={(e) => updateInput('training_load_change_pct', Number(e.target.value || 0))} className={INP} />
+            <input data-r6-slider="true" type="number" min={-100} max={200} step={1} value={inputs.training_load_change_pct} onChange={(e) => updateInput('training_load_change_pct', Number(e.target.value || 0))} className={INP} />
           </label>
           <label className={LBL}>{t.days_deload}
-            <input type="number" min={0} max={365} step={1} value={inputs.days_since_deload} onChange={(e) => updateInput('days_since_deload', Number(e.target.value || 10))} className={INP} />
+            <input data-r6-slider="true" type="number" min={0} max={365} step={1} value={inputs.days_since_deload} onChange={(e) => updateInput('days_since_deload', Number(e.target.value || 10))} className={INP} />
           </label>
           <label className={LBL}>{t.illness_recent}
             <select value={inputs.illness_recent ? 'true' : 'false'} onChange={(e) => updateInput('illness_recent', e.target.value === 'true')} className={SEL}>

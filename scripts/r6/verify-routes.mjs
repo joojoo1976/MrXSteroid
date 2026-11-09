@@ -42,11 +42,16 @@ for (const file of fs.readdirSync(catalogDir).filter((f) => /^smartToolsCatalog.
 }
 const hrefBySlug = new Map();
 const metaBySlug = new Map();
-const entryRe = /toolId:\s*'([^']+)'[\s\S]*?slug:\s*'([^']+)'[\s\S]*?href:\s*'([^']+)'[\s\S]*?titleEn:\s*'((?:[^'\\]|\\.)*)'[\s\S]*?titleAr:\s*'((?:[^'\\]|\\.)*)'/g;
+// Parse slug + href in proximity (short window) rather than chaining through
+// titleEn/titleAr, which can skip an entry when Arabic strings contain escapes.
+const hrefRe = /slug:\s*'([^']+)'[\s\S]{0,400}?href:\s*'([^']+)'/g;
 let match;
-while ((match = entryRe.exec(catalog))) {
-  hrefBySlug.set(match[2], match[3]);
-  metaBySlug.set(match[2], { titleEn: match[4], titleAr: match[5] });
+while ((match = hrefRe.exec(catalog))) {
+  hrefBySlug.set(match[1], match[2]);
+}
+const metaRe = /slug:\s*'([^']+)'[\s\S]{0,800}?titleEn:\s*'((?:[^'\\]|\\.)*)'[\s\S]{0,400}?titleAr:\s*'((?:[^'\\]|\\.)*)'/g;
+while ((match = metaRe.exec(catalog))) {
+  metaBySlug.set(match[1], { titleEn: match[2], titleAr: match[3] });
 }
 
 async function waitForServer(timeoutMs = 120_000) {

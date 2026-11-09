@@ -107,16 +107,16 @@ export default function Tool078EndothelialHealthManager() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.systolic_bp}
-          <input type="number" min={80} max={220} step={1} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: Number(e.target.value || 80) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={80} max={220} step={1} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: Number(e.target.value || 80) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.fasting_glucose}
-          <input type="number" min={50} max={300} step={1} placeholder="optional" value={inputs.fasting_glucose_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, fasting_glucose_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={50} max={300} step={1} placeholder="optional" value={inputs.fasting_glucose_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, fasting_glucose_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hscrp}
-          <input type="number" min={0.1} max={20} step={0.1} placeholder="optional" value={inputs.high_sensitivity_crp_mg_l} onChange={(e) => setInputs((p) => ({ ...p, high_sensitivity_crp_mg_l: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.1} max={20} step={0.1} placeholder="optional" value={inputs.high_sensitivity_crp_mg_l} onChange={(e) => setInputs((p) => ({ ...p, high_sensitivity_crp_mg_l: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.aerobic_mins}
-          <input type="number" min={0} max={180} step={5} value={inputs.daily_aerobic_movement_mins} onChange={(e) => setInputs((p) => ({ ...p, daily_aerobic_movement_mins: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={180} step={5} value={inputs.daily_aerobic_movement_mins} onChange={(e) => setInputs((p) => ({ ...p, daily_aerobic_movement_mins: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500">
           <input type="checkbox" checked={inputs.smoker_or_vaper} onChange={(e) => setInputs((p) => ({ ...p, smoker_or_vaper: e.target.checked }))} className="rounded" />
