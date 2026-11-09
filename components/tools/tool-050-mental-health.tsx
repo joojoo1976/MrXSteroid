@@ -99,7 +99,7 @@ export default function Tool050MentalHealth() {
         {inputs.mood_scores.map((m, i) => (
           <div key={i} className="grid grid-cols-2 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
             <label className="text-[10px] font-bold text-zinc-500">{t.score}
-              <input type="number" min={1} max={10} value={m.score} onChange={(e) => setInputs((p) => ({ ...p, mood_scores: p.mood_scores.map((x, j) => (j === i ? { ...x, score: Math.min(10, Math.max(1, Math.round(num(e)))) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" min={1} max={10} value={m.score} onChange={(e) => setInputs((p) => ({ ...p, mood_scores: p.mood_scores.map((x, j) => (j === i ? { ...x, score: Math.min(10, Math.max(1, Math.round(num(e)))) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <label className="text-[10px] font-bold text-zinc-500">{t.date}
               <input type="date" value={m.date.slice(0, 10)} onChange={(e) => setInputs((p) => ({ ...p, mood_scores: p.mood_scores.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
@@ -110,13 +110,13 @@ export default function Tool050MentalHealth() {
       <button type="button" onClick={addMood} disabled={inputs.mood_scores.length >= 30} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_entry}</button>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_hours_avg}
-          <input type="number" min={0} max={14} step={0.5} value={inputs.sleep_hours_avg} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours_avg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={14} step={0.5} value={inputs.sleep_hours_avg} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours_avg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.irritability_episodes}
-          <input type="number" min={0} max={28} value={inputs.irritability_episodes} onChange={(e) => setInputs((p) => ({ ...p, irritability_episodes: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={28} value={inputs.irritability_episodes} onChange={(e) => setInputs((p) => ({ ...p, irritability_episodes: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.aggression_episodes}
-          <input type="number" min={0} max={28} value={inputs.aggression_episodes} onChange={(e) => setInputs((p) => ({ ...p, aggression_episodes: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={28} value={inputs.aggression_episodes} onChange={(e) => setInputs((p) => ({ ...p, aggression_episodes: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.uses_19_nor} onChange={(e) => setInputs((p) => ({ ...p, uses_19_nor: e.target.checked }))} className="accent-lime-500" />{t.uses_19_nor}

@@ -112,7 +112,7 @@ export default function Tool117IntraWorkoutVolumizer() {
           </select>
         </label>
         <label className={LBL}>{t.duration}
-          <input type="number" min={15} max={480} step={5} value={inputs.duration_min} onChange={(e) => updateInput('duration_min', Number(e.target.value || 90))} className={INP} />
+          <input data-r6-slider="true" type="number" min={15} max={480} step={5} value={inputs.duration_min} onChange={(e) => updateInput('duration_min', Number(e.target.value || 90))} className={INP} />
         </label>
         <label className={LBL}>{t.intensity}
           <select value={inputs.intensity} onChange={(e) => updateInput('intensity', e.target.value)} className={SEL}>
@@ -125,7 +125,7 @@ export default function Tool117IntraWorkoutVolumizer() {
           </select>
         </label>
         <label className={LBL}>{locale === 'ar' ? 'معدل التعرق' : 'Sweat Rate'} ({unitSystem === 'metric' ? (locale === 'ar' ? 'مل/ساعة' : 'ml/h') : 'fl oz/h'}{locale === 'ar' ? '، اختياري' : ', optional'})
-          <input type="number" min={unitSystem === 'metric' ? 100 : 3} max={unitSystem === 'metric' ? 3000 : 101} step={unitSystem === 'metric' ? 50 : 1} value={unitSystem === 'metric' ? inputs.sweat_rate_ml_per_h : Number((inputs.sweat_rate_ml_per_h / 29.5735).toFixed(1))} onChange={(e) => updateInput('sweat_rate_ml_per_h', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 1000 : 33.8)) * (unitSystem === 'metric' ? 1 : 29.5735)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 100 : 3} max={unitSystem === 'metric' ? 3000 : 101} step={unitSystem === 'metric' ? 50 : 1} value={unitSystem === 'metric' ? inputs.sweat_rate_ml_per_h : Number((inputs.sweat_rate_ml_per_h / 29.5735).toFixed(1))} onChange={(e) => updateInput('sweat_rate_ml_per_h', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 1000 : 33.8)) * (unitSystem === 'metric' ? 1 : 29.5735)))} className={INP} />
         </label>
         <label className={LBL}>{t.goal}
           <select value={inputs.goal} onChange={(e) => updateInput('goal', e.target.value)} className={SEL}>
@@ -137,16 +137,16 @@ export default function Tool117IntraWorkoutVolumizer() {
       <h3 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.current_intake_optional}</h3>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
         <label className={LBL}>{t.current_carbs}
-          <input type="number" min={0} max={120} step={1} value={inputs.current_carbs} onChange={(e) => updateInput('current_carbs', Number(e.target.value || 30))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={120} step={1} value={inputs.current_carbs} onChange={(e) => updateInput('current_carbs', Number(e.target.value || 30))} className={INP} />
         </label>
         <label className={LBL}>{t.current_sodium}
-          <input type="number" min={0} max={2000} step={10} value={inputs.current_sodium} onChange={(e) => updateInput('current_sodium', Number(e.target.value || 300))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={2000} step={10} value={inputs.current_sodium} onChange={(e) => updateInput('current_sodium', Number(e.target.value || 300))} className={INP} />
         </label>
         <label className={LBL}>{locale === 'ar' ? 'السوائل الحالية' : 'Current fluid'} ({unitSystem === 'metric' ? (locale === 'ar' ? 'مل/ساعة' : 'ml/h') : 'fl oz/h'})
-          <input type="number" min={0} max={unitSystem === 'metric' ? 2000 : 68} step={unitSystem === 'metric' ? 10 : 0.5} value={unitSystem === 'metric' ? inputs.current_fluid : Number((inputs.current_fluid / 29.5735).toFixed(1))} onChange={(e) => updateInput('current_fluid', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 500 : 16.9)) * (unitSystem === 'metric' ? 1 : 29.5735)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={unitSystem === 'metric' ? 2000 : 68} step={unitSystem === 'metric' ? 10 : 0.5} value={unitSystem === 'metric' ? inputs.current_fluid : Number((inputs.current_fluid / 29.5735).toFixed(1))} onChange={(e) => updateInput('current_fluid', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 500 : 16.9)) * (unitSystem === 'metric' ? 1 : 29.5735)))} className={INP} />
         </label>
         <label className={LBL}>{t.current_eaa}
-          <input type="number" min={0} max={20} step={0.5} value={inputs.current_eaa} onChange={(e) => updateInput('current_eaa', Number(e.target.value || 5))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={20} step={0.5} value={inputs.current_eaa} onChange={(e) => updateInput('current_eaa', Number(e.target.value || 5))} className={INP} />
         </label>
       </div>
 

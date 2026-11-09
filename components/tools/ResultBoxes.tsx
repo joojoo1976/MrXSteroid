@@ -9,12 +9,20 @@ export interface ResultBoxProps {
   compact?: boolean;
 }
 
+export type ResultBoxSource = 'engine' | 'static' | 'not_available';
+
 export interface ResultBoxesProps {
   compact: boolean;
   locale?: 'ar' | 'en';
-  boxes: Array<{ id: string; title: string; content: React.ReactNode }>;
+  boxes: Array<{ id: string; title: string; content: React.ReactNode; source?: ResultBoxSource }>;
   onToggle?: (compact: boolean) => void;
 }
+
+const SOURCE_BADGES: Record<ResultBoxSource, { en: string; ar: string; className: string }> = {
+  engine: { en: 'engine', ar: 'المحرك', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' },
+  static: { en: 'static', ar: 'ثابت', className: 'bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300' },
+  not_available: { en: 'NOT_AVAILABLE', ar: 'غير متاح', className: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300' },
+};
 
 // Genius 12 Box taxonomy — fixed order, fixed IDs
 const GENIUS12_META: Array<{ id: string; titleEn: string; titleAr: string; color: string }> = [
@@ -66,7 +74,17 @@ export function ResultBoxes({ compact, locale = 'en', boxes, onToggle }: ResultB
         const title = isAr ? (meta?.titleAr ?? box.title) : (meta?.titleEn ?? box.title);
         return (
           <div key={box.id} className={`p-4 rounded border ${meta?.color ?? 'bg-zinc-800 border-zinc-700'}`} data-box-id={box.id}>
-            <h3 className="font-bold text-sm mb-2">{title}</h3>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <h3 className="font-bold text-sm">{title}</h3>
+              {box.source && (
+                <span
+                  data-source={box.source}
+                  className={`rounded px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${SOURCE_BADGES[box.source].className}`}
+                >
+                  {SOURCE_BADGES[box.source][isAr ? 'ar' : 'en']}
+                </span>
+              )}
+            </div>
             <div className="text-sm text-zinc-300">{box.content}</div>
           </div>
         );

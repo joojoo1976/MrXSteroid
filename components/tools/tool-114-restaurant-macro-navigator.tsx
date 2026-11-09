@@ -195,16 +195,16 @@ export default function Tool114RestaurantMacroNavigator() {
               <h4 className="text-xs font-bold text-zinc-400">{t.known_nutrition_optional}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <label className={LBL}>{t.calories}
-                  <input type="number" min={0} max={5000} step={1} value={item.known_calories ?? ''} onChange={(e) => updateItem(idx, 'known_calories', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                  <input data-r6-slider="true" type="number" min={0} max={5000} step={1} value={item.known_calories ?? ''} onChange={(e) => updateItem(idx, 'known_calories', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                 </label>
                 <label className={LBL}>{t.protein}
-                  <input type="number" min={0} max={300} step={1} value={item.known_protein_g ?? ''} onChange={(e) => updateItem(idx, 'known_protein_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                  <input data-r6-slider="true" type="number" min={0} max={300} step={1} value={item.known_protein_g ?? ''} onChange={(e) => updateItem(idx, 'known_protein_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                 </label>
                 <label className={LBL}>{t.carbs}
-                  <input type="number" min={0} max={500} step={1} value={item.known_carbs_g ?? ''} onChange={(e) => updateItem(idx, 'known_carbs_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                  <input data-r6-slider="true" type="number" min={0} max={500} step={1} value={item.known_carbs_g ?? ''} onChange={(e) => updateItem(idx, 'known_carbs_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                 </label>
                 <label className={LBL}>{t.fat}
-                  <input type="number" min={0} max={200} step={1} value={item.known_fat_g ?? ''} onChange={(e) => updateItem(idx, 'known_fat_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                  <input data-r6-slider="true" type="number" min={0} max={200} step={1} value={item.known_fat_g ?? ''} onChange={(e) => updateItem(idx, 'known_fat_g', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
                 </label>
               </div>
               <p className="text-[9px] text-zinc-500">{t.known_nutrition_hint}</p>
@@ -221,7 +221,7 @@ export default function Tool114RestaurantMacroNavigator() {
                     <input type="text" maxLength={100} value={ing.name} onChange={(e) => updateIngredient(idx, ingIdx, 'name', e.target.value)} className={INP} placeholder={t.ingredient_placeholder} />
                   </label>
                   <label className="w-24" style={{ fontSize: '9px' }}>{t.weight_g} ({unitSystem === 'metric' ? 'g' : 'oz'})
-                    <input type="number" min={1} max={unitSystem === 'metric' ? 2000 : 70} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? ing.estimated_weight_g : Number((ing.estimated_weight_g / 28.3495).toFixed(1))} onChange={(e) => updateIngredient(idx, ingIdx, 'estimated_weight_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
+                    <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 2000 : 70} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? ing.estimated_weight_g : Number((ing.estimated_weight_g / 28.3495).toFixed(1))} onChange={(e) => updateIngredient(idx, ingIdx, 'estimated_weight_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
                   </label>
                   <button type="button" onClick={() => removeIngredient(idx, ingIdx)} className="text-red-400 hover:text-red-300 text-xs w-16">{t.remove}</button>
                 </div>

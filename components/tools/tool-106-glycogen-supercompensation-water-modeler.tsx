@@ -74,10 +74,10 @@ export default function Tool106GlycogenModeler() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.inputs}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
-          <input type="number" min={isImperial ? 77.2 : 35} max={isImperial ? 485 : 220} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 180.8 : 82))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={isImperial ? 77.2 : 35} max={isImperial ? 485 : 220} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 180.8 : 82))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.lean_mass.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
-          <input type="number" min={isImperial ? 39.7 : 18} max={isImperial ? 352.7 : 160} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.lean_mass_kg)} onChange={(e) => setInputs((p) => ({ ...p, lean_mass_kg: canonicalWeight(Number(e.target.value || (isImperial ? 154.3 : 70))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={isImperial ? 39.7 : 18} max={isImperial ? 352.7 : 160} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.lean_mass_kg)} onChange={(e) => setInputs((p) => ({ ...p, lean_mass_kg: canonicalWeight(Number(e.target.value || (isImperial ? 154.3 : 70))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.training_load}
           <select value={inputs.training_load} onChange={(e) => setInputs((p) => ({ ...p, training_load: e.target.value }))} className={SEL}>
@@ -85,13 +85,13 @@ export default function Tool106GlycogenModeler() {
           </select>
         </label>
         <label className={LBL}>{t.carbs_per_kg}
-          <input type="number" min={4} max={16} step={0.5} value={inputs.target_carbs_g_per_kg} onChange={(e) => setInputs((p) => ({ ...p, target_carbs_g_per_kg: Number(e.target.value || 8) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={4} max={16} step={0.5} value={inputs.target_carbs_g_per_kg} onChange={(e) => setInputs((p) => ({ ...p, target_carbs_g_per_kg: Number(e.target.value || 8) }))} className={INP} />
         </label>
         <label className={LBL}>{t.days}
-          <input type="number" min={1} max={7} step={1} value={inputs.days} onChange={(e) => setInputs((p) => ({ ...p, days: Number(e.target.value || 3) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={inputs.days} onChange={(e) => setInputs((p) => ({ ...p, days: Number(e.target.value || 3) }))} className={INP} />
         </label>
         <label className={LBL}>{t.baseline}
-          <input type="number" min={0} max={200} step={5} value={inputs.baseline_glycogen_g} onChange={(e) => setInputs((p) => ({ ...p, baseline_glycogen_g: Number(e.target.value || 120) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={200} step={5} value={inputs.baseline_glycogen_g} onChange={(e) => setInputs((p) => ({ ...p, baseline_glycogen_g: Number(e.target.value || 120) }))} className={INP} />
         </label>
       </div>
 

@@ -159,16 +159,16 @@ export default function Tool122RPE_RIR_Velocity() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.target_set}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <label className={LBL}>{t.target_weight} ({massUnit})
-          <input type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayWeight(inputs.target_weight_kg)} onChange={(e) => updateInput('target_weight_kg', storeWeight(Number(e.target.value || (unitSystem === 'metric' ? 100 : 220.5))))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayWeight(inputs.target_weight_kg)} onChange={(e) => updateInput('target_weight_kg', storeWeight(Number(e.target.value || (unitSystem === 'metric' ? 100 : 220.5))))} className={INP} />
         </label>
         <label className={LBL}>{t.target_velocity}
-          <input type="number" min={0.01} max={3} step={0.01} value={inputs.target_velocity_m_s} onChange={(e) => updateInput('target_velocity_m_s', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0.01} max={3} step={0.01} value={inputs.target_velocity_m_s} onChange={(e) => updateInput('target_velocity_m_s', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.target_rpe}
-          <input type="number" min={1} max={10} step={1} value={inputs.target_rpe} onChange={(e) => updateInput('target_rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={inputs.target_rpe} onChange={(e) => updateInput('target_rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
         <label className={LBL}>{t.target_rir}
-          <input type="number" min={0} max={10} step={1} value={inputs.target_rir} onChange={(e) => updateInput('target_rir', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+          <input data-r6-slider="true" type="number" min={0} max={10} step={1} value={inputs.target_rir} onChange={(e) => updateInput('target_rir', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
         </label>
       </div>
 
@@ -177,10 +177,10 @@ export default function Tool122RPE_RIR_Velocity() {
         {inputs.velocity_profile.map((vp, idx) => (
           <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <label className={LBL}>{t.weight} ({massUnit})
-              <input type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayWeight(vp.weight_kg)} onChange={(e) => updateProfile(idx, 'weight_kg', storeWeight(Number(e.target.value || (unitSystem === 'metric' ? 60 : 132.3))))} className={INP} />
+              <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayWeight(vp.weight_kg)} onChange={(e) => updateProfile(idx, 'weight_kg', storeWeight(Number(e.target.value || (unitSystem === 'metric' ? 60 : 132.3))))} className={INP} />
             </label>
             <label className={LBL}>{t.velocity}
-              <input type="number" min={0.01} max={3} step={0.01} value={vp.velocity_m_s} onChange={(e) => updateProfile(idx, 'velocity_m_s', Number(e.target.value || 0.5))} className={INP} />
+              <input data-r6-slider="true" type="number" min={0.01} max={3} step={0.01} value={vp.velocity_m_s} onChange={(e) => updateProfile(idx, 'velocity_m_s', Number(e.target.value || 0.5))} className={INP} />
             </label>
             {inputs.velocity_profile.length > 2 && (
               <button type="button" onClick={() => removeProfile(idx)} className="self-end text-red-400 hover:text-red-300 text-xs px-2 py-1">{t.remove}</button>

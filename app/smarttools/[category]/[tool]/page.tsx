@@ -8,6 +8,9 @@ import { getCategory, getCategoryOfSlug, toHierarchicalHref } from '@/lib/tools/
 import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
 import { getToolNeighbors } from '@/lib/tools/registry';
+import { R6Progress } from '@/components/tools/r6/R6Progress';
+import { R6ToolShell } from '@/components/tools/r6/R6ToolShell';
+import { getR6ManifestEntry } from '@/lib/tools/r6/manifest';
 
 export function generateStaticParams(): Array<{ category: string; tool: string }> {
   return getPublishedCatalogTools()
@@ -54,6 +57,7 @@ export default async function ToolPage({
   const neighbors = getToolNeighbors(entry.slug);
   const prevHref = toHierarchicalHref(neighbors.prevTool.slug);
   const nextHref = toHierarchicalHref(neighbors.nextTool.slug);
+  const r6 = getR6ManifestEntry(entry.slug);
 
   const canonical = `https://mrxsteroid.com/smarttools/${cat.slug}/${entry.slug}`;
   const jsonLd = {
@@ -85,8 +89,16 @@ export default async function ToolPage({
           <span>/</span>
           <span className="text-gold-500 font-bold" aria-current="page">{title}</span>
         </nav>
+        {r6 && <R6Progress index={r6.index} total={r6.total} locale={locale} />}
         <SafetyNotice category={cat.slug} />
-        <ToolComponent />
+        {r6 && !r6.hasOwnBoxes ? (
+          <R6ToolShell entry={r6} locale={locale}>
+            <ToolComponent />
+          </R6ToolShell>
+        ) : (
+          <ToolComponent />
+        )}
+        {r6 && <R6Progress index={r6.index} total={r6.total} locale={locale} />}
         <nav className="mt-8 flex items-center justify-between text-sm" aria-label={isAr ? 'التنقل بين الأدوات' : 'Tool navigation'}>
           {prevHref ? (
             <Link href={prevHref} className="text-gold-500 hover:underline">

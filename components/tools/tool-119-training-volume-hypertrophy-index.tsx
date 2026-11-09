@@ -122,22 +122,22 @@ export default function Tool119VolumeHypertrophy() {
                 </select>
               </label>
               <label className={LBL}>{t.sets}
-                <input type="number" min={1} max={50} step={1} value={ex.sets} onChange={(e) => updateExercise(idx, 'sets', Number(e.target.value || 3))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={50} step={1} value={ex.sets} onChange={(e) => updateExercise(idx, 'sets', Number(e.target.value || 3))} className={INP} />
               </label>
               <label className={LBL}>{t.reps}
-                <input type="number" min={1} max={100} step={1} value={ex.reps} onChange={(e) => updateExercise(idx, 'reps', Number(e.target.value || 10))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={100} step={1} value={ex.reps} onChange={(e) => updateExercise(idx, 'reps', Number(e.target.value || 10))} className={INP} />
               </label>
               <label className={LBL}>{t.weight.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-                <input type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? ex.weight_kg : Number((ex.weight_kg * 2.20462).toFixed(1))} onChange={(e) => updateExercise(idx, 'weight_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 60 : 132)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+                <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? ex.weight_kg : Number((ex.weight_kg * 2.20462).toFixed(1))} onChange={(e) => updateExercise(idx, 'weight_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 60 : 132)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
               </label>
               <label className={LBL}>{t.rpe}
-                <input type="number" min={1} max={10} step={1} value={ex.rpe} onChange={(e) => updateExercise(idx, 'rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={ex.rpe} onChange={(e) => updateExercise(idx, 'rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
               </label>
               <label className={LBL}>{t.percent_1rm}
-                <input type="number" min={1} max={100} step={1} value={ex.percent_1rm} onChange={(e) => updateExercise(idx, 'percent_1rm', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                <input data-r6-slider="true" type="number" min={1} max={100} step={1} value={ex.percent_1rm} onChange={(e) => updateExercise(idx, 'percent_1rm', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
               </label>
               <label className={LBL}>{t.frequency}
-                <input type="number" min={1} max={7} step={1} value={ex.frequency_per_week} onChange={(e) => updateExercise(idx, 'frequency_per_week', Number(e.target.value || 2))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={ex.frequency_per_week} onChange={(e) => updateExercise(idx, 'frequency_per_week', Number(e.target.value || 2))} className={INP} />
               </label>
             </div>
           </div>

@@ -111,19 +111,19 @@ export default function Tool079FatMetabolismCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
-          <input type="number" min={isImperial ? 88.2 : 40} max={isImperial ? 440.9 : 200} step={isImperial ? 0.1 : 0.5} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={isImperial ? 88.2 : 40} max={isImperial ? 440.9 : 200} step={isImperial ? 0.1 : 0.5} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct}
-          <input type="number" min={5} max={50} step={0.5} placeholder="optional" value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={50} step={0.5} placeholder="optional" value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.vo2max}
-          <input type="number" min={20} max={85} step={1} placeholder="optional" value={inputs.vo2max_ml_kg_min} onChange={(e) => setInputs((p) => ({ ...p, vo2max_ml_kg_min: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={20} max={85} step={1} placeholder="optional" value={inputs.vo2max_ml_kg_min} onChange={(e) => setInputs((p) => ({ ...p, vo2max_ml_kg_min: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.heart_rate}
-          <input type="number" min={50} max={210} step={1} value={inputs.heart_rate_bpm} onChange={(e) => setInputs((p) => ({ ...p, heart_rate_bpm: Number(e.target.value || 50) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={50} max={210} step={1} value={inputs.heart_rate_bpm} onChange={(e) => setInputs((p) => ({ ...p, heart_rate_bpm: Number(e.target.value || 50) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.resting_hr}
-          <input type="number" min={40} max={100} step={1} value={inputs.resting_heart_rate_bpm} onChange={(e) => setInputs((p) => ({ ...p, resting_heart_rate_bpm: Number(e.target.value || 40) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={40} max={100} step={1} value={inputs.resting_heart_rate_bpm} onChange={(e) => setInputs((p) => ({ ...p, resting_heart_rate_bpm: Number(e.target.value || 40) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 pt-4">
           <input type="checkbox" checked={inputs.fasted_state} onChange={(e) => setInputs((p) => ({ ...p, fasted_state: e.target.checked }))} className="rounded" />

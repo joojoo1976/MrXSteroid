@@ -77,7 +77,7 @@ export default function Tool048CardiovascularRisk() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sex}
           <select value={inputs.sex} onChange={(e) => setInputs((p) => ({ ...p, sex: e.target.value as 'male' | 'female' }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
@@ -86,13 +86,13 @@ export default function Tool048CardiovascularRisk() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.systolic_bp}
-          <input type="number" min={80} max={220} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={80} max={220} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.total_cholesterol}
-          <input type="number" min={100} max={400} value={inputs.total_cholesterol} onChange={(e) => setInputs((p) => ({ ...p, total_cholesterol: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={100} max={400} value={inputs.total_cholesterol} onChange={(e) => setInputs((p) => ({ ...p, total_cholesterol: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hdl}
-          <input type="number" min={20} max={110} value={inputs.hdl} onChange={(e) => setInputs((p) => ({ ...p, hdl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={20} max={110} value={inputs.hdl} onChange={(e) => setInputs((p) => ({ ...p, hdl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <div className="flex flex-col justify-center gap-2">
           <label className="flex items-center gap-2 text-xs font-bold text-zinc-400">

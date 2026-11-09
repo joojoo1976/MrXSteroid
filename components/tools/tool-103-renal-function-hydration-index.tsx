@@ -82,10 +82,10 @@ export default function Tool103RenalFunctionHydration() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.creatinine}
-          <input type="number" min={0.1} max={20} step={0.1} value={inputs.serum_creatinine_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, serum_creatinine_mg_dl: Number(e.target.value || 1) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0.1} max={20} step={0.1} value={inputs.serum_creatinine_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, serum_creatinine_mg_dl: Number(e.target.value || 1) }))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
-          <input type="number" min={18} max={100} value={inputs.age_years} onChange={(e) => setInputs((p) => ({ ...p, age_years: Number(e.target.value || 30) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={18} max={100} value={inputs.age_years} onChange={(e) => setInputs((p) => ({ ...p, age_years: Number(e.target.value || 30) }))} className={INP} />
         </label>
         <label className={LBL}>{t.sex}
           <select value={inputs.sex} onChange={(e) => setInputs((p) => ({ ...p, sex: e.target.value as DraftInputs['sex'] }))} className={SEL}>
@@ -94,13 +94,13 @@ export default function Tool103RenalFunctionHydration() {
           </select>
         </label>
         <label className={LBL}>{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({weightUnit})
-          <input type="number" min={unitSystem === 'metric' ? 30 : 66.1} max={unitSystem === 'metric' ? 250 : 551.2} step={unitSystem === 'metric' ? 1 : 0.1} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 30 : 66.1} max={unitSystem === 'metric' ? 250 : 551.2} step={unitSystem === 'metric' ? 1 : 0.1} value={displayWeight(inputs.body_weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, body_weight_kg: canonicalWeight(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.fluid_intake.replace(/\s*\([^)]*\)\s*$/, '')} ({fluidUnit})
-          <input type="number" min={0} max={unitSystem === 'metric' ? 15 : 507.2} step={unitSystem === 'metric' ? 0.1 : 0.1} value={displayFluid(inputs.fluid_intake_liters)} onChange={(e) => setInputs((p) => ({ ...p, fluid_intake_liters: canonicalFluid(Number(e.target.value || (unitSystem === 'metric' ? 2.5 : 84.5))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={unitSystem === 'metric' ? 15 : 507.2} step={unitSystem === 'metric' ? 0.1 : 0.1} value={displayFluid(inputs.fluid_intake_liters)} onChange={(e) => setInputs((p) => ({ ...p, fluid_intake_liters: canonicalFluid(Number(e.target.value || (unitSystem === 'metric' ? 2.5 : 84.5))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.training_sweat.replace(/\s*\([^)]*\)\s*$/, '')} ({fluidUnit})
-          <input type="number" min={0} max={unitSystem === 'metric' ? 10 : 338.1} step={unitSystem === 'metric' ? 0.1 : 0.1} value={displayFluid(inputs.training_sweat_liters)} onChange={(e) => setInputs((p) => ({ ...p, training_sweat_liters: canonicalFluid(Number(e.target.value || (unitSystem === 'metric' ? 0.5 : 16.9))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={unitSystem === 'metric' ? 10 : 338.1} step={unitSystem === 'metric' ? 0.1 : 0.1} value={displayFluid(inputs.training_sweat_liters)} onChange={(e) => setInputs((p) => ({ ...p, training_sweat_liters: canonicalFluid(Number(e.target.value || (unitSystem === 'metric' ? 0.5 : 16.9))) }))} className={INP} />
         </label>
         <label className={`${LBL} md:col-span-3`}>{t.climate}
           <select value={inputs.climate} onChange={(e) => setInputs((p) => ({ ...p, climate: e.target.value as DraftInputs['climate'] }))} className={SEL}>

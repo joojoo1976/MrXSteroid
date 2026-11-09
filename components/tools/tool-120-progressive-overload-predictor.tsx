@@ -101,28 +101,28 @@ export default function Tool120OverloadPredictor() {
           <input type="text" maxLength={100} value={inputs.exercise} onChange={(e) => updateInput('exercise', e.target.value)} className={INP} placeholder={t.exercise_placeholder} />
         </label>
         <label className={LBL}>{t.current_1rm.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-          <input type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? inputs.current_1rm_kg : Number((inputs.current_1rm_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('current_1rm_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 100 : 220.5)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? inputs.current_1rm_kg : Number((inputs.current_1rm_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('current_1rm_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 100 : 220.5)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
         </label>
         <label className={LBL}>{t.current_volume.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-          <input type="number" min={0} max={unitSystem === 'metric' ? 100000 : 220462} step={1} value={unitSystem === 'metric' ? inputs.current_volume_load_kg : Number((inputs.current_volume_load_kg * 2.20462).toFixed(0))} onChange={(e) => updateInput('current_volume_load_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 5000 : 11023)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={unitSystem === 'metric' ? 100000 : 220462} step={1} value={unitSystem === 'metric' ? inputs.current_volume_load_kg : Number((inputs.current_volume_load_kg * 2.20462).toFixed(0))} onChange={(e) => updateInput('current_volume_load_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 5000 : 11023)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
         </label>
         <label className={LBL}>{t.current_freq}
-          <input type="number" min={1} max={7} step={1} value={inputs.current_frequency} onChange={(e) => updateInput('current_frequency', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={7} step={1} value={inputs.current_frequency} onChange={(e) => updateInput('current_frequency', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.baseline_1rm.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-          <input type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? inputs.baseline_1rm_kg : Number((inputs.baseline_1rm_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('baseline_1rm_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 1 : 2.2} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={unitSystem === 'metric' ? inputs.baseline_1rm_kg : Number((inputs.baseline_1rm_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('baseline_1rm_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
         </label>
         <label className={LBL}>{t.baseline_volume.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-          <input type="number" min={0} max={unitSystem === 'metric' ? 100000 : 220462} step={1} value={unitSystem === 'metric' ? inputs.baseline_volume_load_kg : Number((inputs.baseline_volume_load_kg * 2.20462).toFixed(0))} onChange={(e) => updateInput('baseline_volume_load_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 3000 : 6614)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={unitSystem === 'metric' ? 100000 : 220462} step={1} value={unitSystem === 'metric' ? inputs.baseline_volume_load_kg : Number((inputs.baseline_volume_load_kg * 2.20462).toFixed(0))} onChange={(e) => updateInput('baseline_volume_load_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 3000 : 6614)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
         </label>
         <label className={LBL}>{t.body_weight.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'kg' : 'lb'})
-          <input type="number" min={unitSystem === 'metric' ? 30 : 66} max={unitSystem === 'metric' ? 300 : 661} step={unitSystem === 'metric' ? 0.1 : 0.5} value={unitSystem === 'metric' ? inputs.body_weight_kg : Number((inputs.body_weight_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('body_weight_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 30 : 66} max={unitSystem === 'metric' ? 300 : 661} step={unitSystem === 'metric' ? 0.1 : 0.5} value={unitSystem === 'metric' ? inputs.body_weight_kg : Number((inputs.body_weight_kg * 2.20462).toFixed(1))} onChange={(e) => updateInput('body_weight_kg', Number((Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4)) / (unitSystem === 'metric' ? 1 : 2.20462)).toFixed(3)))} className={INP} />
         </label>
         <label className={LBL}>{t.height.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'cm' : 'in'})
-          <input type="number" min={unitSystem === 'metric' ? 100 : 39.4} max={unitSystem === 'metric' ? 250 : 98.4} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? inputs.height_cm : Number((inputs.height_cm / 2.54).toFixed(1))} onChange={(e) => updateInput('height_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 178 : 70.1)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 100 : 39.4} max={unitSystem === 'metric' ? 250 : 98.4} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? inputs.height_cm : Number((inputs.height_cm / 2.54).toFixed(1))} onChange={(e) => updateInput('height_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 178 : 70.1)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
-          <input type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
+          <input data-r6-slider="true" type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
         </label>
         <label className={LBL}>{t.sex}
           <select value={inputs.sex} onChange={(e) => updateInput('sex', e.target.value)} className={SEL}>
@@ -131,28 +131,28 @@ export default function Tool120OverloadPredictor() {
           </select>
         </label>
         <label className={LBL}>{t.training_age}
-          <input type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.weekly_increase}
-          <input type="number" min={0} max={20} step={0.1} value={inputs.weekly_load_increase_pct} onChange={(e) => updateInput('weekly_load_increase_pct', Number(e.target.value || 2.5))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={20} step={0.1} value={inputs.weekly_load_increase_pct} onChange={(e) => updateInput('weekly_load_increase_pct', Number(e.target.value || 2.5))} className={INP} />
         </label>
         <label className={LBL}>{t.deload_freq}
-          <input type="number" min={0} max={12} step={1} value={inputs.deload_frequency_weeks} onChange={(e) => updateInput('deload_frequency_weeks', Number(e.target.value || 6))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={12} step={1} value={inputs.deload_frequency_weeks} onChange={(e) => updateInput('deload_frequency_weeks', Number(e.target.value || 6))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep_hours}
-          <input type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
         </label>
         <label className={LBL}>{t.protein_intake}
-          <input type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.wrist_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'cm' : 'in'})
-          <input type="number" min={unitSystem === 'metric' ? 10 : 3.9} max={unitSystem === 'metric' ? 25 : 9.8} step={unitSystem === 'metric' ? 0.1 : 0.05} value={unitSystem === 'metric' ? inputs.wrist_cm : Number((inputs.wrist_cm / 2.54).toFixed(2))} onChange={(e) => updateInput('wrist_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 17 : 6.7)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 10 : 3.9} max={unitSystem === 'metric' ? 25 : 9.8} step={unitSystem === 'metric' ? 0.1 : 0.05} value={unitSystem === 'metric' ? inputs.wrist_cm : Number((inputs.wrist_cm / 2.54).toFixed(2))} onChange={(e) => updateInput('wrist_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 17 : 6.7)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
         </label>
         <label className={LBL}>{t.ankle_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({unitSystem === 'metric' ? 'cm' : 'in'})
-          <input type="number" min={unitSystem === 'metric' ? 10 : 3.9} max={unitSystem === 'metric' ? 30 : 11.8} step={unitSystem === 'metric' ? 0.1 : 0.05} value={unitSystem === 'metric' ? inputs.ankle_cm : Number((inputs.ankle_cm / 2.54).toFixed(2))} onChange={(e) => updateInput('ankle_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 22 : 8.7)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
+          <input data-r6-slider="true" type="number" min={unitSystem === 'metric' ? 10 : 3.9} max={unitSystem === 'metric' ? 30 : 11.8} step={unitSystem === 'metric' ? 0.1 : 0.05} value={unitSystem === 'metric' ? inputs.ankle_cm : Number((inputs.ankle_cm / 2.54).toFixed(2))} onChange={(e) => updateInput('ankle_cm', Number((Number(e.target.value || (unitSystem === 'metric' ? 22 : 8.7)) * (unitSystem === 'metric' ? 1 : 2.54)).toFixed(2)))} className={INP} />
         </label>
         <label className={LBL}>{t.days_since_deload}
-          <input type="number" min={0} max={365} step={1} value={inputs.days_since_deload} onChange={(e) => updateInput('days_since_deload', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={365} step={1} value={inputs.days_since_deload} onChange={(e) => updateInput('days_since_deload', Number(e.target.value || 3))} className={INP} />
         </label>
       </div>
 

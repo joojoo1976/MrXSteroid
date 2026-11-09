@@ -101,10 +101,10 @@ export default function Tool037SideEffectProbability() {
               {FAMILIES.map((f) => (<option key={f} value={f}>{f}</option>))}
             </select>
             <label className="text-[10px] text-zinc-500">mg/wk
-              <input type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <label className="text-[10px] text-zinc-500">ref mg/wk
-              <input type="number" min={1} max={5000} value={c.reference_dose_mg} onChange={(e) => updateCompound(i, { reference_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.reference_dose_mg} onChange={(e) => updateCompound(i, { reference_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <button type="button" onClick={() => removeCompound(i)} disabled={inputs.compounds.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
           </div>
@@ -113,13 +113,13 @@ export default function Tool037SideEffectProbability() {
       <button type="button" onClick={addCompound} disabled={inputs.compounds.length >= 8} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_compound}</button>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct} %
-          <input type="number" min={5} max={60} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={60} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.cycle_weeks}
-          <input type="number" min={1} max={52} value={inputs.cycle_weeks} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks: Math.round(num(e.target.value, 1)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={52} value={inputs.cycle_weeks} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks: Math.round(num(e.target.value, 1)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.uses_ai} onChange={(e) => setInputs((p) => ({ ...p, uses_ai: e.target.checked }))} className="accent-lime-500" />{t.uses_ai}
