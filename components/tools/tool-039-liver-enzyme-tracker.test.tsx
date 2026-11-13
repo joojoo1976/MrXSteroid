@@ -547,4 +547,55 @@ describe('Tool 039 GENIUS-12 boxes and CORE-5', () => {
 
     expect(document.querySelector('[data-r6-genius="tool-039"]')).toBeNull();
   });
+
+  describe('P-01, P-02, P-03, P-04 enhancements', () => {
+    it('renders the P-01 gauge meter when result is available', async () => {
+      renderTool();
+      completeAllFields('112', '2026-01-01');
+      await settle();
+
+      const meter = document.querySelector('[data-r6-acg-gauge="ALT"]');
+      expect(meter).not.toBeNull();
+      expect(meter?.getAttribute('role')).toBe('meter');
+      expect(meter?.getAttribute('aria-valuenow')).toBe('112');
+    });
+
+    it('renders the P-02 De Ritis ratio card when ALT and AST have matching draw dates', async () => {
+      renderTool();
+      addReading();
+      fillReading(1, '40', '2026-03-01');
+
+      addReading();
+      // change marker of reading 2 to AST
+      fireEvent.change(screen.getByLabelText('Marker 2'), { target: { value: 'AST' } });
+      fillReading(2, '80', '2026-03-01');
+
+      answer('On oral steroids', 'No');
+      answer('Using TUDCA', 'No');
+      fillAlcohol('0');
+
+      await settle();
+
+      const deRitisCard = document.querySelector('[data-r6-deritis="true"]');
+      expect(deRitisCard).not.toBeNull();
+      expect(deRitisCard?.textContent).toContain('2.00');
+    });
+
+    it('renders P-03 Scan Report button and opens local OCR modal', () => {
+      renderTool();
+      const scanBtn = screen.getByText(/Upload Lab Report/i);
+      expect(scanBtn).toBeInTheDocument();
+      fireEvent.click(scanBtn);
+      expect(screen.getByText(/Local Report Scanner/i)).toBeInTheDocument();
+    });
+
+    it('renders P-04 Doctor Summary PDF export button when result is FULL', async () => {
+      renderTool();
+      completeAllFields('112', '2026-01-01');
+      await settle();
+
+      const pdfBtn = screen.getByText(/Download Doctor Summary \(PDF\)/i);
+      expect(pdfBtn).toBeInTheDocument();
+    });
+  });
 });

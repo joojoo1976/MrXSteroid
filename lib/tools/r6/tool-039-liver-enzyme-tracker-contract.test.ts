@@ -18,6 +18,8 @@ import {
   TOOL_039_STATUS_THRESHOLDS,
   TOOL_039_VALUE_RANGE,
   buildLiverTrackerCsv,
+  classifyAcgElevation,
+  computeDeRitisRatio,
   daysSinceDate,
   labFreshness,
 } from './tool-039-liver-enzyme-tracker-contract';
@@ -240,5 +242,91 @@ describe('Tool 039 R6.1 input contract', () => {
     expect(csv).toContain('uses_tudca,false');
     expect(csv).toContain('uln_multiple');
     expect(csv).toContain('LFTs, mildly elevated');
+  });
+
+  describe('P-01: ACG 2017 Elevation Classification', () => {
+    it('classifies normal when multiple <= 1.0', () => {
+      expect(classifyAcgElevation(0.8, 45)).toBe('normal');
+      expect(classifyAcgElevation(1.0, 56)).toBe('normal');
+    });
+
+    it('classifies borderline when 1.0 < multiple < 2.0', () => {
+      expect(classifyAcgElevation(1.1, 62)).toBe('borderline');
+      expect(classifyAcgElevation(1.99, 111)).toBe('borderline');
+    });
+
+    it('classifies mild when 2.0 <= multiple < 5.0', () => {
+      expect(classifyAcgElevation(2.0, 112)).toBe('mild');
+      expect(classifyAcgElevation(4.9, 274)).toBe('mild');
+    });
+
+    it('classifies moderate when 5.0 <= multiple <= 15.0', () => {
+      expect(classifyAcgElevation(5.0, 280)).toBe('moderate');
+      expect(classifyAcgElevation(15.0, 840)).toBe('moderate');
+    });
+
+    it('classifies severe when multiple > 15.0 and absolute <= 10000', () => {
+      expect(classifyAcgElevation(15.1, 845)).toBe('severe');
+      expect(classifyAcgElevation(50.0, 2800)).toBe('severe');
+    });
+
+    it('classifies massive when absolute value > 10,000 IU/L', () => {
+      expect(classifyAcgElevation(200.0, 10500)).toBe('massive');
+      expect(classifyAcgElevation(5.0, 12000)).toBe('massive');
+    });
+  });
+
+  describe('P-02: De Ritis Ratio (AST/ALT)', () => {
+    it('computes exact ratio when ALT and AST have matching date and unit', () => {
+      const readings = [
+        { marker: 'ALT' as const, value: 50, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'AST' as const, value: 40, unit: 'U/L', date: '2026-03-01' },
+      ];
+      const result = computeDeRitisRatio(readings);
+      expect(result).not.toBeNull();
+      expect(result?.ratio).toBe(0.8);
+      expect(result?.drawDate).toBe('2026-03-01');
+      expect(result?.interpretation).toBe('ast_lt_alt');
+    });
+
+    it('interprets ratio >= 1.0 correctly', () => {
+      const readings = [
+        { marker: 'ALT' as const, value: 40, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'AST' as const, value: 80, unit: 'U/L', date: '2026-03-01' },
+      ];
+      const result = computeDeRitisRatio(readings);
+      expect(result?.ratio).toBe(2.0);
+      expect(result?.interpretation).toBe('ast_gt_alt');
+    });
+
+    it('returns null when draw dates do not match', () => {
+      const readings = [
+        { marker: 'ALT' as const, value: 50, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'AST' as const, value: 40, unit: 'U/L', date: '2026-03-02' },
+      ];
+      expect(computeDeRitisRatio(readings)).toBeNull();
+    });
+
+    it('returns null when ALT is missing or AST is missing', () => {
+      expect(computeDeRitisRatio([{ marker: 'ALT' as const, value: 50, unit: 'U/L', date: '2026-03-01' }])).toBeNull();
+      expect(computeDeRitisRatio([{ marker: 'AST' as const, value: 40, unit: 'U/L', date: '2026-03-01' }])).toBeNull();
+    });
+
+    it('returns null when ALT is 0 to prevent division by zero', () => {
+      const readings = [
+        { marker: 'ALT' as const, value: 0, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'AST' as const, value: 40, unit: 'U/L', date: '2026-03-01' },
+      ];
+      expect(computeDeRitisRatio(readings)).toBeNull();
+    });
+
+    it('returns null when multiple conflicting readings exist for same marker on same date', () => {
+      const readings = [
+        { marker: 'ALT' as const, value: 50, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'ALT' as const, value: 60, unit: 'U/L', date: '2026-03-01' },
+        { marker: 'AST' as const, value: 40, unit: 'U/L', date: '2026-03-01' },
+      ];
+      expect(computeDeRitisRatio(readings)).toBeNull();
+    });
   });
 });

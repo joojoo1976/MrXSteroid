@@ -26,6 +26,7 @@ import {
   TOOL_039_SOURCES,
   TOOL_039_VALUE_RANGE,
   buildLiverTrackerCsv,
+  computeDeRitisRatio,
   labFreshness,
   type Tool039Marker,
 } from '@/lib/tools/r6/tool-039-liver-enzyme-tracker-contract';
@@ -274,6 +275,8 @@ export default function LiverTrackerGenius({ locale, input, output, options }: L
   );
 
   // ── Shared renderers (C1 identity between compact and full) ──────────────
+  const deRitis = useMemo(() => computeDeRitisRatio(input.readings), [input.readings]);
+
   const renderPrimaryResult = (): React.ReactNode => (
     <div data-r6-core="c1" className="space-y-2 text-sm">
       <div className="flex flex-wrap items-baseline gap-2">
@@ -298,6 +301,32 @@ export default function LiverTrackerGenius({ locale, input, output, options }: L
           );
         })}
       </ul>
+
+      {/* P-02: De Ritis Ratio (AST/ALT) Educational Card */}
+      {deRitis ? (
+        <div data-r6-card="de-ritis" data-r6-deritis="true" className="rounded-lg border border-cyan-800/60 bg-cyan-950/20 p-3 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-bold text-xs text-cyan-200">{t.deritis_title}</span>
+            <span className="rounded bg-cyan-900/60 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300">
+              {t.deritis_badge}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-lg font-black text-cyan-300">{deRitis.ratioFormatted}</span>
+            <span className="text-[10px] text-zinc-400 font-mono">
+              (AST: {deRitis.astValue} U/L ÷ ALT: {deRitis.altValue} U/L · {deRitis.date})
+            </span>
+          </div>
+          <p className="text-[11px] leading-relaxed text-zinc-300">
+            {t.deritis_explanation}
+          </p>
+        </div>
+      ) : (
+        <p className="text-[10px] text-zinc-500 italic">
+          {t.deritis_insufficient}
+        </p>
+      )}
+
       <p className="text-xs text-zinc-400">
         <span className="font-bold">{t.c1_confidence_label}:</span> {t.c1_confidence_value}
       </p>

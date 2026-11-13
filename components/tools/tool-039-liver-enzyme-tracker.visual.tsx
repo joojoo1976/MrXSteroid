@@ -642,16 +642,40 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
                     {bar.value} {bar.unit} · {bar.ulnMultiple.toFixed(2)}× ULN · {statusLabel(bar.status)}
                   </span>
                 </span>
-                <span className="relative mt-1 block h-3 w-full rounded bg-zinc-800" aria-hidden="true">
-                  <span
-                    className="absolute inset-y-0 left-0 rounded bg-cyan-500"
-                    style={{ width: `${bar.fillPercent}%` }}
-                  />
-                  <span
-                    className="absolute inset-y-[-4px] w-0.5 bg-amber-400"
-                    style={{ left: `${bar.referencePercent}%` }}
-                  />
-                </span>
+                {/* P-01: Tricolor Reference Range Gauge with ACG 2017 boundary zones */}
+                <div
+                  className="mt-1.5 space-y-1"
+                  role="meter"
+                  data-r6-acg-gauge={bar.marker}
+                  aria-label={bar.marker}
+                  aria-valuenow={bar.value}
+                  aria-valuemin={0}
+                  aria-valuemax={bar.scaleMax}
+                  aria-valuetext={`${bar.value} ${bar.unit}, ${bar.ulnMultiple.toFixed(2)}x ULN`}
+                >
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-zinc-800 flex">
+                    {/* Zone 1: Normal (Green) */}
+                    <div style={{ width: `${bar.referencePercent}%` }} className="h-full bg-emerald-500/40 border-r border-emerald-400/60" title={t.acg_normal} />
+                    {/* Zone 2: Borderline/Mild Elevation (Amber) */}
+                    <div style={{ width: `${Math.min(100 - bar.referencePercent, bar.referencePercent * 1.5)}%` }} className="h-full bg-amber-500/40 border-r border-amber-400/60" title={t.acg_borderline} />
+                    {/* Zone 3: Marked/Severe Elevation (Rose/Red) */}
+                    <div className="h-full flex-1 bg-rose-500/40" title={t.acg_severe} />
+                    {/* Needle Indicator for user reading */}
+                    <div
+                      className="absolute top-0 bottom-0 w-1.5 -ml-0.5 rounded-full bg-white shadow-md z-10 border border-zinc-950"
+                      style={{ left: `${Math.min(99, Math.max(1, bar.fillPercent))}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] text-zinc-400 font-mono">
+                    <span>0</span>
+                    <span className="text-emerald-400">1× ULN ({bar.referenceLimit})</span>
+                    {bar.acgElevationBand && (
+                      <span className="font-sans text-amber-300 font-bold">
+                        {t[`acg_${bar.acgElevationBand}`] ?? bar.acgElevationBand}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </button>
             </li>
           ))}

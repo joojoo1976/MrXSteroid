@@ -16,7 +16,12 @@
  *   - the documented Pie/Donut applicability decision.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { TOOL_039_REFERENCE_LIMITS, type Tool039Marker } from './tool-039-liver-enzyme-tracker-contract';
+import {
+  TOOL_039_REFERENCE_LIMITS,
+  classifyAcgElevation,
+  type Tool039AcgElevationBand,
+  type Tool039Marker,
+} from './tool-039-liver-enzyme-tracker-contract';
 
 export interface Tool039ReadingPoint {
   /** Draw date exactly as entered (YYYY-MM-DD). */
@@ -63,6 +68,8 @@ export interface Tool039BarRow {
   /** value / referenceLimit, rounded to 2 decimals (the engine's own multiple). */
   ulnMultiple: number;
   status: string;
+  /** ACG 2017 elevation band for ALT / AST (null for GGT, ALP, bilirubin). */
+  acgElevationBand: Tool039AcgElevationBand | null;
   /** Bar width as a percentage of the row's own scale (0-100). */
   fillPercent: number;
   /** Position of the reference-limit marker on the same scale (0-100). */
@@ -181,6 +188,8 @@ export function buildLiverTrackerSeries(
 export function buildLiverTrackerBars(series: Tool039MarkerSeries[]): Tool039BarRow[] {
   return series.map((entry) => {
     const scaleMax = Math.max(entry.referenceLimit, entry.latestValue) * 1.2;
+    const isAcgMarker = entry.marker === 'ALT' || entry.marker === 'AST';
+    const acgElevationBand = isAcgMarker ? classifyAcgElevation(entry.ulnMultiple, entry.latestValue) : null;
     return {
       marker: entry.marker,
       unit: entry.unit,
@@ -188,6 +197,7 @@ export function buildLiverTrackerBars(series: Tool039MarkerSeries[]): Tool039Bar
       referenceLimit: entry.referenceLimit,
       ulnMultiple: entry.ulnMultiple,
       status: entry.status,
+      acgElevationBand,
       fillPercent: scaleMax === 0 ? 0 : Math.min(100, (entry.latestValue / scaleMax) * 100),
       referencePercent: scaleMax === 0 ? 0 : Math.min(100, (entry.referenceLimit / scaleMax) * 100),
       scaleMax,

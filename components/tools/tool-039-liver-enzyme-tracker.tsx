@@ -32,10 +32,13 @@ import {
   TOOL_039_ALCOHOL_RANGE,
   TOOL_039_DEBOUNCE_MS,
   TOOL_039_VALUE_RANGE,
+  computeDeRitisRatio,
   labFreshness,
 } from '@/lib/tools/r6/tool-039-liver-enzyme-tracker-contract';
 import LiverTrackerGenius from './tool-039-liver-enzyme-tracker.genius';
 import LiverTrackerVisual from './tool-039-liver-enzyme-tracker.visual';
+import Tool039OcrModal, { type ExtractedReading } from './tool-039-liver-enzyme-tracker.ocr';
+import DoctorSummaryPdfButton from './tool-039-liver-enzyme-tracker.pdf';
 import {
   Tool039HistoryProvider,
   Tool039HistorySaveAction,
@@ -272,6 +275,7 @@ export default function Tool039LiverEnzymeTracker() {
     signature: '',
     state: { kind: 'idle' },
   });
+  const [isOcrOpen, setIsOcrOpen] = useState(false);
 
   useEffect(() => {
     if (!parsed || !parsed.success) return;
@@ -425,6 +429,12 @@ export default function Tool039LiverEnzymeTracker() {
   const result = output?.result ?? null;
   const parsedInput = parsed && parsed.success ? parsed.data : null;
 
+  /** De Ritis Ratio (P-02) computed when input is valid. */
+  const deRitis = useMemo(() => {
+    if (!parsedInput) return null;
+    return computeDeRitisRatio(parsedInput.readings);
+  }, [parsedInput]);
+
   /** Freshness of the newest reading (lab data = 90 days). */
   const freshness = useMemo(() => {
     const dates = inputs.readings.map((reading) => reading.date).filter((date) => date.trim() !== '').sort();
@@ -550,14 +560,24 @@ export default function Tool039LiverEnzymeTracker() {
           })}
         </div>
 
-        <button
-          type="button"
-          onClick={addReading}
-          disabled={inputs.readings.length >= 100}
-          className="w-full rounded-lg bg-lime-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-lime-400 disabled:opacity-40"
-        >
-          + {t.add_reading}
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={addReading}
+            disabled={inputs.readings.length >= 100}
+            className="flex-1 rounded-lg bg-lime-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-lime-400 disabled:opacity-40"
+          >
+            + {t.add_reading}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOcrOpen(true)}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/50 bg-cyan-950/40 px-4 py-2 text-xs font-bold text-cyan-300 transition hover:bg-cyan-900/50"
+          >
+            <span>📷</span>
+            <span>{t.ocr_button_label || 'Upload Lab Report (Scan / PDF)'}</span>
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {answerGroup('oralSteroids', t.oral_steroids, t.help_oral_steroids)}
@@ -686,10 +706,24 @@ export default function Tool039LiverEnzymeTracker() {
 
             <p className="mt-3 text-[11px] leading-5 text-zinc-500">{t.interpretation}</p>
 
-            {/* Local, device-only history. Owner decision D-08 (Option A):
-                nothing is written without an explicit consent AND an explicit
-                user action. */}
-            <Tool039HistorySaveAction locale={locale} input={parsedInput} result={result} />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-3">
+              {/* Local, device-only history. Owner decision D-08 (Option A):
+                  nothing is written without an explicit consent AND an explicit
+                  user action. */}
+              <Tool039HistorySaveAction locale={locale} input={parsedInput} result={result} />
+
+              {/* P-04 Doctor Summary PDF Export */}
+              <DoctorSummaryPdfButton
+                locale={locale}
+                input={parsedInput}
+                result={result}
+                deRitis={deRitis}
+                labels={{
+                  exportButton: t.pdf_export_button || 'Download Doctor Summary (PDF)',
+                  disclaimer: t.pdf_disclaimer || t.disclaimer,
+                }}
+              />
+            </div>
           </section>
         )}
 
@@ -705,6 +739,37 @@ export default function Tool039LiverEnzymeTracker() {
         )}
         </section>
       </Tool039HistoryProvider>
+
+      {/* P-03 Local Privacy-Preserving OCR Modal */}
+      <Tool039OcrModal
+        locale={locale}
+        isOpen={isOcrOpen}
+        onClose={() => setIsOcrOpen(false)}
+        onConfirm={(confirmedReadings: ExtractedReading[]) => {
+          const newDrafts: ReadingDraft[] = confirmedReadings.map((reading) => ({
+            id: `ocr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            marker: reading.marker as Marker,
+            value: String(reading.value),
+            date: reading.date,
+          }));
+          setInputs((prev) => ({
+            ...prev,
+            readings: [...prev.readings.filter((reading) => reading.value.trim() !== ''), ...newDrafts],
+          }));
+          setIsOcrOpen(false);
+        }}
+        labels={{
+          title: t.ocr_modal_title || 'Local Report Scanner',
+          desc: t.ocr_modal_desc || 'Extract lab readings client-side.',
+          dropHint: t.ocr_drop_hint || 'Drop file here',
+          extracting: t.ocr_extracting || 'Analyzing document...',
+          reviewTitle: t.ocr_review_title || 'Review Extracted Readings',
+          reviewDesc: t.ocr_review_desc || 'Review before adding.',
+          confirm: t.ocr_confirm_button || 'Confirm & Transfer',
+          cancel: t.ocr_cancel_button || 'Cancel',
+          noReadings: t.ocr_no_readings_found || 'No readings found.',
+        }}
+      />
 
       <nav className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-zinc-800 pt-4 text-xs md:flex-row" aria-label={t.tool_navigation}>
         <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 transition hover:text-lime-400">

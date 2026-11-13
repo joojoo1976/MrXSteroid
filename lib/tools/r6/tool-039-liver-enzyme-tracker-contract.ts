@@ -439,3 +439,64 @@ export function labFreshness(isoDate: string, referenceIsoDate: string): {
   if (ageDays === null) return { ageDays: null, stale: false };
   return { ageDays, stale: ageDays > TOOL_039_LAB_FRESHNESS_DAYS };
 }
+
+/**
+ * P-01: ACG 2017 clinical elevation classification thresholds for ALT / AST.
+ * Boundary condition: half-open intervals [A, B) to prevent category overlap.
+ */
+export type Tool039AcgElevationBand = 'normal' | 'borderline' | 'mild' | 'moderate' | 'severe' | 'massive';
+
+export function classifyAcgElevation(multiple: number, absoluteValue?: number): Tool039AcgElevationBand {
+  if (absoluteValue !== undefined && absoluteValue > 10000) return 'massive';
+  if (multiple <= 1.0) return 'normal';
+  if (multiple < 2.0) return 'borderline';
+  if (multiple < 5.0) return 'mild';
+  if (multiple <= 15.0) return 'moderate';
+  return 'severe';
+}
+
+/**
+ * P-02: De Ritis Ratio calculation contract (pure function).
+ * Conditions:
+ * 1. ALT and AST both present.
+ * 2. Exact same draw date.
+ * 3. Exact same unit (U/L).
+ * 4. ALT > 0 (prevents division by zero).
+ * 5. Returns null if ambiguous (multiple conflicting readings on the same date) or criteria unmet.
+ */
+export interface Tool039DeRitisResult {
+  astValue: number;
+  altValue: number;
+  date: string;
+  drawDate: string;
+  ratio: number;
+  ratioFormatted: string;
+  interpretation: 'ast_lt_alt' | 'ast_gt_alt';
+}
+
+export function computeDeRitisRatio(
+  readings: Array<{ marker: string; value: number; unit: string; date: string }>
+): Tool039DeRitisResult | null {
+  const dates = [...new Set(readings.map(r => r.date))];
+  for (const date of dates) {
+    const asts = readings.filter(r => r.marker === 'AST' && r.date === date);
+    const alts = readings.filter(r => r.marker === 'ALT' && r.date === date);
+    if (asts.length === 1 && alts.length === 1) {
+      const ast = asts[0];
+      const alt = alts[0];
+      if (ast.unit === alt.unit && alt.value > 0) {
+        const ratio = Number((ast.value / alt.value).toFixed(2));
+        return {
+          astValue: ast.value,
+          altValue: alt.value,
+          date,
+          drawDate: date,
+          ratio,
+          ratioFormatted: ratio.toFixed(2),
+          interpretation: ratio >= 1.0 ? 'ast_gt_alt' : 'ast_lt_alt',
+        };
+      }
+    }
+  }
+  return null;
+}
