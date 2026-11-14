@@ -158,7 +158,9 @@ function ensureSliderStyle(): void {
   style.textContent = `
 .r6-slider{position:relative;padding-top:1.35rem;margin-top:.35rem;}
 .r6-slider__bubble{position:absolute;top:0;transform:translateX(-50%);border-radius:.375rem;background:#18181b;color:#fafafa;font-size:.7rem;font-weight:700;line-height:1;padding:.3rem .45rem;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.35);}
+[dir="rtl"] .r6-slider__bubble{transform:translateX(50%);}
 .r6-slider__range{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:9999px;outline:none;background:linear-gradient(to right,#eab308 0%,#eab308 var(--r6-fill,0%),#3f3f46 var(--r6-fill,0%),#3f3f46 100%);}
+[dir="rtl"] .r6-slider__range{background:linear-gradient(to left,#eab308 0%,#eab308 var(--r6-fill,0%),#3f3f46 var(--r6-fill,0%),#3f3f46 100%);}
 .r6-slider__range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #eab308;box-shadow:0 1px 4px rgba(0,0,0,.4);cursor:pointer;}
 .r6-slider__range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #eab308;box-shadow:0 1px 4px rgba(0,0,0,.4);cursor:pointer;}
 .r6-slider__native{accent-color:#eab308;}
@@ -405,7 +407,13 @@ export function R6ToolShell({ entry, locale: localeProp, children }: R6ToolShell
         const syncVisual = (value: number) => {
           const clamped = Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
           const pct = ((clamped - min) / (max - min)) * 100;
-          bubble.style.left = `${Math.min(97, Math.max(3, pct))}%`;
+          if (isAr) {
+            bubble.style.right = `${Math.min(97, Math.max(3, pct))}%`;
+            bubble.style.left = 'auto';
+          } else {
+            bubble.style.left = `${Math.min(97, Math.max(3, pct))}%`;
+            bubble.style.right = 'auto';
+          }
           bubble.textContent = `${clamped}`;
           if (range) {
             range.value = String(clamped);
@@ -420,6 +428,9 @@ export function R6ToolShell({ entry, locale: localeProp, children }: R6ToolShell
           rangeControl.min = String(min);
           rangeControl.max = String(max);
           rangeControl.step = String(step);
+          if (isAr) {
+            rangeControl.setAttribute('dir', 'rtl');
+          }
           rangeControl.className = 'r6-slider__range';
           rangeControl.setAttribute('aria-label', isAr ? `شريط ${label}` : `${label} slider`);
           rangeControl.value = field.value !== '' ? field.value : String(min);

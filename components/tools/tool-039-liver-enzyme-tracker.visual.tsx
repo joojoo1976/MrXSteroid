@@ -368,11 +368,11 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
           <p className="mt-1 text-[11px] text-amber-300">{t.illustration_caption}</p>
         </figcaption>
 
-        {/* Desktop: the SVG diagram with its directional connectors. */}
+        {/* Desktop: the SVG diagram with its directional connectors and vibrant glowing pipeline. */}
         <div className="hidden md:block">
         <svg
           viewBox="0 0 720 200"
-          className="h-auto w-full"
+          className="h-auto w-full select-none"
           role="img"
           aria-labelledby="liver-illustration-title"
           aria-describedby="liver-illustration-desc"
@@ -380,28 +380,101 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
         >
           <title id="liver-illustration-title">{t.illustration_title}</title>
           <desc id="liver-illustration-desc">{t.illustration_desc}</desc>
+          <defs>
+            <marker id="liver-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M0,1 L8,4.5 L0,8 z" fill="#38bdf8" />
+            </marker>
+            <filter id="card-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#0284c7" floodOpacity="0.35" />
+            </filter>
+            <filter id="active-pulse" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#f59e0b" floodOpacity="0.6" />
+            </filter>
+            <linearGradient id="step-grad-1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#082f49" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0.98" />
+            </linearGradient>
+            <linearGradient id="step-grad-2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#1e1b4b" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0.98" />
+            </linearGradient>
+            <linearGradient id="step-grad-3" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#451a03" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0.98" />
+            </linearGradient>
+            <linearGradient id="step-grad-4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#064e3b" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0.98" />
+            </linearGradient>
+            <linearGradient id="step-grad-5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3b0764" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0.98" />
+            </linearGradient>
+            <style>
+              {`
+                @keyframes pulseGlowRing {
+                  0%, 100% { stroke-opacity: 0.5; stroke-width: 1.5; }
+                  50% { stroke-opacity: 1; stroke-width: 2.5; filter: drop-shadow(0 0 5px currentColor); }
+                }
+                @keyframes flowBeam {
+                  0% { stroke-dashoffset: 24; }
+                  100% { stroke-dashoffset: 0; }
+                }
+                .flow-beam-anim {
+                  stroke-dasharray: 6 5;
+                  animation: flowBeam 1.2s linear infinite;
+                }
+                .step-pulse-anim {
+                  animation: pulseGlowRing 2.4s ease-in-out infinite;
+                }
+              `}
+            </style>
+          </defs>
+
           {diagramSteps.map((node, index) => {
+            // Step themes
+            const stepThemes = [
+              { border: '#38bdf8', badge: '#0284c7', text: '#7dd3fc', grad: 'url(#step-grad-1)' },
+              { border: '#818cf8', badge: '#4f46e5', text: '#a5b4fc', grad: 'url(#step-grad-2)' },
+              { border: '#fbbf24', badge: '#d97706', text: '#fde68a', grad: 'url(#step-grad-3)' },
+              { border: '#34d399', badge: '#059669', text: '#6ee7b7', grad: 'url(#step-grad-4)' },
+              { border: '#c084fc', badge: '#9333ea', text: '#e9d5ff', grad: 'url(#step-grad-5)' },
+            ];
+            const theme = stepThemes[index] || stepThemes[0];
+
             // For RTL layout, reverse the horizontal sequence so Step 1 is on the right and flows naturally to Step 5 on the left
             const xPos = isAr ? (590 - index * 145) : node.x;
             const arrowStartX = isAr ? (xPos + 118 + 22) : (xPos - 22);
             const arrowEndX = isAr ? (xPos + 118 + 6) : (xPos - 6);
+            const isHighlighted = highlight === node.id;
 
             return (
               <g key={node.id}>
                 {index > 0 && (
-                  <path
-                    d={`M ${arrowStartX} 100 L ${arrowEndX} 100`}
-                    stroke="#a1a1aa"
-                    strokeWidth={2}
-                    markerEnd="url(#liver-arrow)"
-                  />
+                  <g>
+                    {/* Underlying connector beam */}
+                    <path
+                      d={`M ${arrowStartX} 100 L ${arrowEndX} 100`}
+                      stroke="#0369a1"
+                      strokeWidth={3}
+                      strokeOpacity={0.6}
+                    />
+                    {/* Pulsing energetic flow animation */}
+                    <path
+                      d={`M ${arrowStartX} 100 L ${arrowEndX} 100`}
+                      stroke="#38bdf8"
+                      strokeWidth={2}
+                      className="flow-beam-anim"
+                      markerEnd="url(#liver-arrow)"
+                    />
+                  </g>
                 )}
                 <g
                   tabIndex={0}
                   role="button"
                   aria-label={`${node.title}. ${node.body}`}
                   data-r6-illustration-node={node.id}
-                  className={`r6-illustration-node ${highlight === node.id ? 'r6-highlighted' : ''}`}
+                  className={`r6-illustration-node cursor-pointer outline-none transition-all duration-300 ${isHighlighted ? 'r6-highlighted' : ''}`}
                   onMouseEnter={(event) => openTooltip(node.id, {
                     title: node.title,
                     meaning: node.body,
@@ -466,74 +539,91 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
                     }
                   }}
                 >
+                  {/* Glowing background card */}
                   <rect
                     x={xPos}
                     y={42}
                     width={118}
                     height={116}
-                    rx={10}
-                    fill={highlight === node.id ? '#1e293b' : '#0f172a'}
-                    stroke={highlight === node.id ? '#f59e0b' : '#3f3f46'}
-                    strokeWidth={highlight === node.id ? 3 : 1.5}
+                    rx={12}
+                    fill={theme.grad}
+                    stroke={isHighlighted ? '#fbbf24' : theme.border}
+                    strokeWidth={isHighlighted ? 2.5 : 1.5}
+                    filter={isHighlighted ? 'url(#active-pulse)' : 'url(#card-glow)'}
+                    className={isHighlighted ? 'step-pulse-anim' : ''}
+                    style={{ color: theme.border }}
                   />
-                  {/* Step badge */}
-                  <rect
-                    x={isAr ? xPos + 118 - 30 : xPos + 8}
-                    y={50}
-                    width={22}
-                    height={18}
-                    rx={4}
-                    fill="#27272a"
-                  />
-                  <text
-                    x={isAr ? xPos + 118 - 19 : xPos + 19}
-                    y={63}
-                    fill="#fbbf24"
-                    fontSize="10"
-                    fontWeight="700"
-                    textAnchor="middle"
-                  >
-                    {index + 1}
+
+                  {/* SVG Text representation for accessibility and test suites */}
+                  <text x={xPos + 10} y={60} fill="transparent" opacity={0} fontSize="1" aria-hidden="true">
+                    {node.title}
                   </text>
-                  <text
-                    x={isAr ? xPos + 118 - 36 : xPos + 34}
-                    y={64}
-                    fill="#f4f4f5"
-                    fontSize="10"
-                    fontWeight="700"
-                    textAnchor={isAr ? 'end' : 'start'}
-                  >
-                    {node.title.replace(/^\d+\.\s*/, '')}
-                  </text>
-                  <foreignObject x={xPos + 8} y={76} width={102} height={74}>
+
+                  {/* Clean Content Container with perfect Arabic/English layout */}
+                  <foreignObject x={xPos + 6} y={48} width={106} height={104}>
                     <div
-                      className={`h-full flex items-start text-[10px] leading-relaxed text-zinc-300 overflow-hidden ${
+                      className={`h-full w-full flex flex-col justify-between p-1 select-none ${
                         isAr ? 'text-right' : 'text-left'
                       }`}
                       dir={isAr ? 'rtl' : 'ltr'}
                     >
-                      <p className="m-0 break-words">{node.body}</p>
+                      {/* Step Header: Glowing Badge + Clean Wrapping Title */}
+                      <div className="flex items-start gap-1.5 border-b border-zinc-800/80 pb-1">
+                        <span
+                          className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white shadow-sm"
+                          style={{ backgroundColor: isHighlighted ? '#f59e0b' : theme.badge }}
+                        >
+                          {index + 1}
+                        </span>
+                        <h4
+                          className="text-[10px] font-bold leading-tight line-clamp-2"
+                          style={{ color: isHighlighted ? '#fef08a' : theme.text }}
+                          title={node.title.replace(/^\d+\.\s*/, '')}
+                        >
+                          {node.title.replace(/^\d+\.\s*/, '')}
+                        </h4>
+                      </div>
+
+                      {/* Step Body */}
+                      <p className="m-0 text-[9px] leading-relaxed text-zinc-300 line-clamp-3">
+                        {node.body}
+                      </p>
+
+                      {/* Interactive Pulse Pill */}
+                      <div className="flex justify-end">
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.2 text-[8px] font-mono font-bold"
+                          style={{
+                            color: isHighlighted ? '#fbbf24' : theme.text,
+                            backgroundColor: `${theme.badge}20`,
+                          }}
+                        >
+                          <span
+                            className="inline-block h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: isHighlighted ? '#fbbf24' : theme.border }}
+                          />
+                          {isHighlighted ? (isAr ? 'نشط' : 'Active') : (isAr ? 'خطوة' : 'Step')}
+                        </span>
+                      </div>
                     </div>
                   </foreignObject>
                 </g>
               </g>
             );
           })}
-          <defs>
-            <marker id="liver-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-              <path d="M0,0 L8,4 L0,8 z" fill="#a1a1aa" />
-            </marker>
-          </defs>
         </svg>
         </div>
 
         {/* Phone: the same five steps as real, readable HTML text (13/12 px),
             with the same connectors, tooltips and result-box relationship. */}
         <ol className="space-y-2 md:hidden" data-r6-illustration-mobile="tool-039">
-          {diagramSteps.map((node, index) => (
+          {diagramSteps.map((node, index) => {
+            const stepBorders = ['border-sky-500/50', 'border-indigo-500/50', 'border-amber-500/50', 'border-emerald-500/50', 'border-purple-500/50'];
+            const borderCls = stepBorders[index] || 'border-zinc-700';
+            return (
             <li key={node.id} className="relative">
               {index > 0 && (
-                <span aria-hidden="true" className="absolute -top-2 left-4 rtl:left-auto rtl:right-4 text-xs leading-none text-zinc-500">▼</span>
+                <span aria-hidden="true" className="absolute -top-2.5 left-4 rtl:left-auto rtl:right-4 text-xs leading-none text-cyan-400 font-bold">▼</span>
               )}
               <div
                 tabIndex={0}
@@ -541,8 +631,8 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
                 aria-label={`${node.title}. ${node.body}`}
                 data-r6-illustration-node={node.id}
                 data-r6-diagram-step={node.id}
-                className={`rounded-lg border bg-zinc-950 p-3 transition-colors ${
-                  highlight === node.id ? 'border-amber-400 r6-highlighted bg-amber-950/20' : 'border-zinc-700'
+                className={`rounded-xl border bg-zinc-950/80 p-3 transition-all duration-300 shadow-md ${
+                  highlight === node.id ? 'border-amber-400 r6-highlighted bg-amber-950/30 ring-2 ring-amber-400/40 shadow-amber-500/20' : `${borderCls} hover:border-zinc-500`
                 }`}
                 onMouseEnter={(event) => openTooltip(node.id, stepTooltipPayload(node), event.currentTarget.getBoundingClientRect())}
                 onMouseLeave={() => setTooltip((current) => (current?.persistent ? current : null))}
@@ -574,7 +664,7 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-zinc-800 text-[10px] font-bold text-amber-400">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-950 border border-cyan-500/60 text-[10px] font-bold text-cyan-300 shadow-sm">
                     {index + 1}
                   </span>
                   <p className="text-[13px] font-bold leading-snug text-zinc-100">{node.title}</p>
@@ -582,7 +672,7 @@ export default function LiverTrackerVisual({ locale, input, output }: LiverTrack
                 <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-400 rtl:pr-7 ltr:pl-7">{node.body}</p>
               </div>
             </li>
-          ))}
+          );})}
         </ol>
 
         {/* Textual equivalent of the desktop diagram (the mobile stack above is

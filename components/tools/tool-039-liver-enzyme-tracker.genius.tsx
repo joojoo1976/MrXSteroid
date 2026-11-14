@@ -71,6 +71,13 @@ const BOX_TINT = [
   'bg-yellow-950/20 border-yellow-900',
 ];
 
+const STATUS_COLOR: Record<string, string> = {
+  normal: 'text-emerald-400',
+  elevated: 'text-amber-400',
+  high: 'text-orange-400',
+  critical: 'text-rose-400',
+};
+
 export interface LiverTrackerGeniusProps {
   locale: 'ar' | 'en';
   input: LiverTrackerInput;
@@ -437,25 +444,46 @@ export default function LiverTrackerGenius({ locale, input, output, options }: L
     </div>
   );
 
+  const statusIcon = (status: string): string => {
+    switch (status) {
+      case 'normal':
+        return '🟢';
+      case 'elevated':
+        return '🟡';
+      case 'high':
+        return '🟠';
+      case 'critical':
+        return '🔴';
+      default:
+        return '⚪';
+    }
+  };
+
   const kpi = (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <div className="rounded border border-zinc-800 bg-zinc-950/70 p-2 text-center">
-        <span className="block text-[10px] text-zinc-500">{t.overall_status}</span>
-        <span className="font-mono text-sm font-bold text-zinc-100">{statusLabel(result.overall_status)}</span>
+    <div data-r6-core="kpi" className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-2.5 text-center shadow-sm">
+        <span className="block text-[10px] font-medium text-zinc-400">{t.overall_status}</span>
+        <div className="mt-1 flex items-center justify-center gap-1.5">
+          <span className="text-xs">{statusIcon(result.overall_status)}</span>
+          <span className={`font-mono text-sm font-black ${STATUS_COLOR[result.overall_status] ?? 'text-zinc-300'}`}>
+            {statusLabel(result.overall_status)}
+          </span>
+        </div>
       </div>
-      <div className="rounded border border-zinc-800 bg-zinc-950/70 p-2 text-center">
-        <span className="block text-[10px] text-zinc-500">{t.kpi_top_multiple}</span>
-        <span className="font-mono text-sm font-bold text-zinc-100">
-          {result.markers[0] ? `${result.markers[0].uln_multiple.toFixed(2)}×` : '—'}
+      <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-2.5 text-center shadow-sm">
+        <span className="block text-[10px] font-medium text-zinc-400">{t.kpi_top_multiple}</span>
+        <span className="mt-1 block font-mono text-sm font-black text-amber-400">
+          {result.markers[0] ? `${result.markers[0].uln_multiple.toFixed(2)}× ULN` : '—'}
         </span>
       </div>
-      <div className="rounded border border-zinc-800 bg-zinc-950/70 p-2 text-center">
-        <span className="block text-[10px] text-zinc-500">{t.marker_count}</span>
-        <span className="font-mono text-sm font-bold text-zinc-100">{result.markers.length}</span>
+      <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-2.5 text-center shadow-sm">
+        <span className="block text-[10px] font-medium text-zinc-400">{t.marker_count}</span>
+        <span className="mt-1 block font-mono text-sm font-black text-cyan-400">{result.markers.length}</span>
       </div>
-      <div className="rounded border border-zinc-800 bg-zinc-950/70 p-2 text-center">
-        <span className="block text-[10px] text-zinc-500">{t.freshness_label}</span>
-        <span className={`text-sm font-bold ${freshness.stale ? 'text-amber-400' : 'text-lime-400'}`}>
+      <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-2.5 text-center shadow-sm">
+        <span className="block text-[10px] font-medium text-zinc-400">{t.freshness_label}</span>
+        <span className={`mt-1 inline-flex items-center gap-1 text-xs font-bold ${freshness.stale ? 'text-amber-400' : 'text-emerald-400'}`}>
+          <span className={`h-1.5 w-1.5 rounded-full ${freshness.stale ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
           {freshness.ageDays === null ? '—' : freshness.stale ? t.freshness_stale : t.freshness_current}
         </span>
       </div>
@@ -558,9 +586,18 @@ export default function LiverTrackerGenius({ locale, input, output, options }: L
           <p className="text-xs text-zinc-400">{t.box8_intro}</p>
           <ul className="space-y-2">
             {relatedTools.map((tool) => (
-              <li key={tool.slug} className="rounded border border-zinc-800 bg-zinc-950/70 p-2">
-                <a href={tool.href} className="text-xs font-bold text-cyan-300 underline">{tool.title}</a>
-                <p className="mt-1 text-[11px] font-mono text-zinc-500" dir="ltr">
+              <li key={tool.slug} className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-3 transition hover:border-cyan-800/60">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <a href={tool.href} className="text-xs font-bold text-cyan-300 underline hover:text-cyan-200">{tool.title}</a>
+                  <a
+                    href={tool.href}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-950/60 px-2.5 py-1 text-[11px] font-bold text-cyan-300 transition hover:bg-cyan-900/60"
+                  >
+                    <span>⚡</span>
+                    <span>{isAr ? 'فتح الأداة المرتبطة' : 'Open Linked Tool'}</span>
+                  </a>
+                </div>
+                <p className="mt-1.5 text-[11px] font-mono text-zinc-500" dir="ltr">
                   {tool.contract.sourceToolId} → {tool.contract.targetToolId}
                 </p>
                 <p className="mt-1 text-[11px] text-zinc-400">
