@@ -374,6 +374,19 @@ export default function Tool039LiverEnzymeTracker() {
     ));
   };
 
+  const loadSampleData = () => {
+    setInputs({
+      readings: [
+        { id: `liver-sample-1`, marker: 'ALT', value: '65', date: '2026-11-10' },
+        { id: `liver-sample-2`, marker: 'AST', value: '45', date: '2026-11-10' },
+        { id: `liver-sample-3`, marker: 'GGT', value: '38', date: '2026-11-10' },
+      ],
+      oralSteroids: 'yes',
+      alcohol: '14',
+      usesTudca: 'yes',
+    });
+  };
+
   /** Deleting the last reading is allowed and returns the tool to EMPTY. */
   const removeReading = (id: string) => {
     setInputs((prev) => ({
@@ -568,6 +581,15 @@ export default function Tool039LiverEnzymeTracker() {
             className="flex-1 rounded-lg bg-lime-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-lime-400 disabled:opacity-40"
           >
             + {t.add_reading}
+          </button>
+          <button
+            type="button"
+            onClick={loadSampleData}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-950/40 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-900/50"
+            title={isRtl ? 'ملء قراءات استرشادية لعرض كافة أقسام الأداة ونتائج Genius فوراً' : 'Load sample readings to view all tool charts and Genius boxes immediately'}
+          >
+            <span>⚡</span>
+            <span>{isRtl ? 'تجربة بيانات نموذجية (عرض كامل الأداة)' : 'Load Sample Data (Show Full Analysis)'}</span>
           </button>
           <button
             type="button"
