@@ -77,7 +77,7 @@ export default function Tool049BoneDensity() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sex}
           <select value={inputs.sex} onChange={(e) => setInputs((p) => ({ ...p, sex: e.target.value as 'male' | 'female' }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
@@ -86,16 +86,16 @@ export default function Tool049BoneDensity() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.uses_ai_years}
-          <input type="number" min={0} max={30} step={0.5} value={inputs.uses_ai_years} onChange={(e) => setInputs((p) => ({ ...p, uses_ai_years: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={0.5} value={inputs.uses_ai_years} onChange={(e) => setInputs((p) => ({ ...p, uses_ai_years: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weekly_resistance_sessions}
-          <input type="number" min={0} max={14} value={inputs.weekly_resistance_sessions} onChange={(e) => setInputs((p) => ({ ...p, weekly_resistance_sessions: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={14} value={inputs.weekly_resistance_sessions} onChange={(e) => setInputs((p) => ({ ...p, weekly_resistance_sessions: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.calcium_mg_daily}
-          <input type="number" min={0} max={3000} value={inputs.calcium_mg_daily} onChange={(e) => setInputs((p) => ({ ...p, calcium_mg_daily: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={3000} value={inputs.calcium_mg_daily} onChange={(e) => setInputs((p) => ({ ...p, calcium_mg_daily: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.vitamin_d_iu_daily}
-          <input type="number" min={0} max={10000} value={inputs.vitamin_d_iu_daily} onChange={(e) => setInputs((p) => ({ ...p, vitamin_d_iu_daily: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={10000} value={inputs.vitamin_d_iu_daily} onChange={(e) => setInputs((p) => ({ ...p, vitamin_d_iu_daily: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.smoker} onChange={(e) => setInputs((p) => ({ ...p, smoker: e.target.checked }))} className="accent-lime-500" />{t.smoker}

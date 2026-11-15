@@ -95,16 +95,16 @@ export default function Tool085SleepQualityManager() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_duration}
-          <input type="number" min={3} max={14} step={0.5} value={inputs.sleep_duration_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_duration_hours: Number(e.target.value || 3) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={3} max={14} step={0.5} value={inputs.sleep_duration_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_duration_hours: Number(e.target.value || 3) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.latency}
-          <input type="number" min={0} max={120} step={5} value={inputs.sleep_latency_minutes} onChange={(e) => setInputs((p) => ({ ...p, sleep_latency_minutes: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={120} step={5} value={inputs.sleep_latency_minutes} onChange={(e) => setInputs((p) => ({ ...p, sleep_latency_minutes: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.awakenings}
-          <input type="number" min={0} max={10} step={1} value={inputs.night_awakenings_count} onChange={(e) => setInputs((p) => ({ ...p, night_awakenings_count: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={10} step={1} value={inputs.night_awakenings_count} onChange={(e) => setInputs((p) => ({ ...p, night_awakenings_count: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.rested_score}
-          <input type="number" min={1} max={10} step={1} value={inputs.morning_rested_feeling_score} onChange={(e) => setInputs((p) => ({ ...p, morning_rested_feeling_score: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={inputs.morning_rested_feeling_score} onChange={(e) => setInputs((p) => ({ ...p, morning_rested_feeling_score: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 pt-3">
           <input type="checkbox" checked={inputs.caffeine_within_6h_of_bedtime} onChange={(e) => setInputs((p) => ({ ...p, caffeine_within_6h_of_bedtime: e.target.checked }))} className="rounded" />

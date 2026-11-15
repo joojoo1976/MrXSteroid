@@ -135,7 +135,7 @@ export default function Tool116NutritionGapOptimizer() {
           </select>
         </label>
         <label className={LBL}>{t.days}
-          <input type="number" min={1} max={30} step={1} value={inputs.days_tracked} onChange={(e) => updateProfile('days_tracked', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={30} step={1} value={inputs.days_tracked} onChange={(e) => updateProfile('days_tracked', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.fasting_goal}
           <select value={inputs.fasting_goal ?? ''} onChange={(e) => updateProfile('fasting_goal', e.target.value || undefined)} className={SEL}>
@@ -154,7 +154,7 @@ export default function Tool116NutritionGapOptimizer() {
           <input type="time" value={inputs.typical_sleep_time} onChange={(e) => updateProfile('typical_sleep_time', e.target.value)} className={INP} />
         </label>
         <label className={LBL}>{t.current_fasting}
-          <input type="number" min={8} max={23} step={1} value={inputs.current_fasting_window} onChange={(e) => updateProfile('current_fasting_window', Number(e.target.value || 14))} className={INP} />
+          <input data-r6-slider="true" type="number" min={8} max={23} step={1} value={inputs.current_fasting_window} onChange={(e) => updateProfile('current_fasting_window', Number(e.target.value || 14))} className={INP} />
         </label>
       </div>
 
@@ -171,14 +171,14 @@ export default function Tool116NutritionGapOptimizer() {
                 <input type="text" maxLength={100} value={food.name} onChange={(e) => updateFood(idx, 'name', e.target.value)} className={INP} placeholder={t.food_placeholder} />
               </label>
               <label className={LBL}>{t.amount_g} ({unitSystem === 'metric' ? 'g' : 'oz'})
-                <input type="number" min={1} max={unitSystem === 'metric' ? 5000 : 176} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? food.amount_g : Number((food.amount_g / 28.3495).toFixed(1))} onChange={(e) => updateFood(idx, 'amount_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 5000 : 176} step={unitSystem === 'metric' ? 1 : 0.1} value={unitSystem === 'metric' ? food.amount_g : Number((food.amount_g / 28.3495).toFixed(1))} onChange={(e) => updateFood(idx, 'amount_g', Math.round(Number(e.target.value || (unitSystem === 'metric' ? 100 : 3.5)) * (unitSystem === 'metric' ? 1 : 28.3495)))} className={INP} />
               </label>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
               {NUTRIENTS.map((nutrient) => (
                 <label key={nutrient} className={LBL} style={{ fontSize: '8px' }}>
                   {t[`nutrient_${nutrient}`]}
-                  <input type="number" min={0} max={10000} step={0.1} value={food.nutrients[nutrient] ?? ''} onChange={(e) => updateNutrient(idx, nutrient, e.target.value === '' ? undefined : Number(e.target.value))} className={INP} style={{ padding: '2px' }} />
+                  <input data-r6-slider="true" type="number" min={0} max={10000} step={0.1} value={food.nutrients[nutrient] ?? ''} onChange={(e) => updateNutrient(idx, nutrient, e.target.value === '' ? undefined : Number(e.target.value))} className={INP} style={{ padding: '2px' }} />
                 </label>
               ))}
             </div>

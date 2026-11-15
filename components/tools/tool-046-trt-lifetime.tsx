@@ -83,7 +83,7 @@ export default function Tool046TrtLifetime() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.method}
           <select value={inputs.method} onChange={(e) => setInputs((p) => ({ ...p, method: e.target.value as DraftInputs['method'] }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
@@ -93,16 +93,16 @@ export default function Tool046TrtLifetime() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weekly_testosterone_mg}
-          <input type="number" min={25} max={300} value={inputs.weekly_testosterone_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_testosterone_mg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={25} max={300} value={inputs.weekly_testosterone_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_testosterone_mg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.years_on_trt}
-          <input type="number" min={0} max={60} step={0.5} value={inputs.years_on_trt} onChange={(e) => setInputs((p) => ({ ...p, years_on_trt: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={60} step={0.5} value={inputs.years_on_trt} onChange={(e) => setInputs((p) => ({ ...p, years_on_trt: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.monthly_med_cost_usd}
-          <input type="number" min={0} max={1000} value={inputs.monthly_med_cost_usd} onChange={(e) => setInputs((p) => ({ ...p, monthly_med_cost_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={1000} value={inputs.monthly_med_cost_usd} onChange={(e) => setInputs((p) => ({ ...p, monthly_med_cost_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.monitoring_annual_cost_usd}
-          <input type="number" min={0} max={5000} value={inputs.monitoring_annual_cost_usd} onChange={(e) => setInputs((p) => ({ ...p, monitoring_annual_cost_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={5000} value={inputs.monitoring_annual_cost_usd} onChange={(e) => setInputs((p) => ({ ...p, monitoring_annual_cost_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

@@ -93,22 +93,22 @@ export default function Tool040LipidProfileOptimizer() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.ldl} (mg/dL)
-          <input type="number" min={0} max={600} value={inputs.ldl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, ldl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={600} value={inputs.ldl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, ldl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hdl} (mg/dL)
-          <input type="number" min={0} max={200} value={inputs.hdl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, hdl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={200} value={inputs.hdl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, hdl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.tg} (mg/dL)
-          <input type="number" min={0} max={2000} value={inputs.triglycerides_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, triglycerides_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={2000} value={inputs.triglycerides_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, triglycerides_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sbp} (mmHg)
-          <input type="number" min={80} max={260} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: Math.round(num(e.target.value, 80)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={80} max={260} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: Math.round(num(e.target.value, 80)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weeks_remaining}
-          <input type="number" min={0} max={52} value={inputs.weeks_remaining} onChange={(e) => setInputs((p) => ({ ...p, weeks_remaining: Math.round(num(e.target.value, 0)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={52} value={inputs.weeks_remaining} onChange={(e) => setInputs((p) => ({ ...p, weeks_remaining: Math.round(num(e.target.value, 0)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.smoker} onChange={(e) => setInputs((p) => ({ ...p, smoker: e.target.checked }))} className="accent-lime-500" />{t.smoker}

@@ -42,7 +42,7 @@ export default function Tool143StorageLabelChecker() {
     const displayed = canonical === '' ? '' : String(Number(celsiusToDisplay(canonical).toFixed(4)));
     const min = unitSystem === 'imperial' ? -459.67 : -273.15;
     const max = unitSystem === 'imperial' ? 1832 : 1000;
-    return <label className={fieldClass}>{label} ({temperatureUnit})<input className={inputClass} type="number" step="any" min={min} max={max} value={displayed} onChange={(event) => {
+    return <label className={fieldClass}>{label} ({temperatureUnit})<input data-r6-slider="true" className={inputClass} type="number" step="any" min={min} max={max} value={displayed} onChange={(event) => {
       const raw = event.target.value;
       update(key, raw === '' ? '' : String(displayToCelsius(Number(raw))));
     }} /></label>;

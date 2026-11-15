@@ -141,22 +141,22 @@ export default function Tool113GroceryOptimizer() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.targets_section}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.daily_calories}
-          <input type="number" min={500} max={10000} step={50} value={inputs.daily_calories} onChange={(e) => setInputs((p) => ({ ...p, daily_calories: Number(e.target.value || 2500) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={500} max={10000} step={50} value={inputs.daily_calories} onChange={(e) => setInputs((p) => ({ ...p, daily_calories: Number(e.target.value || 2500) }))} className={INP} />
         </label>
         <label className={LBL}>{t.daily_protein}
-          <input type="number" min={20} max={500} step={5} value={inputs.daily_protein} onChange={(e) => setInputs((p) => ({ ...p, daily_protein: Number(e.target.value || 180) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={20} max={500} step={5} value={inputs.daily_protein} onChange={(e) => setInputs((p) => ({ ...p, daily_protein: Number(e.target.value || 180) }))} className={INP} />
         </label>
         <label className={LBL}>{t.daily_carbs}
-          <input type="number" min={20} max={1000} step={10} value={inputs.daily_carbs} onChange={(e) => setInputs((p) => ({ ...p, daily_carbs: Number(e.target.value || 250) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={20} max={1000} step={10} value={inputs.daily_carbs} onChange={(e) => setInputs((p) => ({ ...p, daily_carbs: Number(e.target.value || 250) }))} className={INP} />
         </label>
         <label className={LBL}>{t.daily_fat}
-          <input type="number" min={10} max={300} step={5} value={inputs.daily_fat} onChange={(e) => setInputs((p) => ({ ...p, daily_fat: Number(e.target.value || 85) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={10} max={300} step={5} value={inputs.daily_fat} onChange={(e) => setInputs((p) => ({ ...p, daily_fat: Number(e.target.value || 85) }))} className={INP} />
         </label>
         <label className={LBL}>{t.budget}
-          <input type="number" min={1} max={100000} step={1} value={inputs.budget_usd} onChange={(e) => setInputs((p) => ({ ...p, budget_usd: Number(e.target.value || 100) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={100000} step={1} value={inputs.budget_usd} onChange={(e) => setInputs((p) => ({ ...p, budget_usd: Number(e.target.value || 100) }))} className={INP} />
         </label>
         <label className={LBL}>{t.days}
-          <input type="number" min={1} max={30} step={1} value={inputs.days} onChange={(e) => setInputs((p) => ({ ...p, days: Number(e.target.value || 7) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={1} max={30} step={1} value={inputs.days} onChange={(e) => setInputs((p) => ({ ...p, days: Number(e.target.value || 7) }))} className={INP} />
         </label>
       </div>
 
@@ -173,7 +173,7 @@ export default function Tool113GroceryOptimizer() {
                 <input type="text" maxLength={100} value={item.name} onChange={(e) => updateItem(idx, 'name', e.target.value)} className={INP} placeholder={t.name_placeholder} />
               </label>
               <label className={LBL}>{t.price}
-                <input type="number" min={0.01} max={10000} step={0.01} value={item.price_per_unit} onChange={(e) => updateItem(idx, 'price_per_unit', Number(e.target.value || 1))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0.01} max={10000} step={0.01} value={item.price_per_unit} onChange={(e) => updateItem(idx, 'price_per_unit', Number(e.target.value || 1))} className={INP} />
               </label>
               <label className={LBL}>{t.unit}
                 <select value={item.unit} onChange={(e) => updateItem(idx, 'unit', e.target.value)} className={SEL}>
@@ -181,7 +181,7 @@ export default function Tool113GroceryOptimizer() {
                 </select>
               </label>
               <label className={LBL}>{t.unit_size.replace(/\s*\([^)]*\)\s*$/, '')} ({massDisplayUnit})
-                <input
+                <input data-r6-slider="true"
                   type="number"
                   min={unitSystem === 'metric' ? 1 : Number((1 / massDisplayFactor).toFixed(4))}
                   max={unitSystem === 'metric' ? 50000 : Number((50000 / massDisplayFactor).toFixed(2))}
@@ -197,22 +197,22 @@ export default function Tool113GroceryOptimizer() {
                 </select>
               </label>
               <label className={LBL}>{t.min_qty}
-                <input type="number" min={0} max={1000} step={1} value={item.min_quantity} onChange={(e) => updateItem(idx, 'min_quantity', Number(e.target.value || 1))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={1000} step={1} value={item.min_quantity} onChange={(e) => updateItem(idx, 'min_quantity', Number(e.target.value || 1))} className={INP} />
               </label>
               <label className={LBL}>{t.max_qty}
-                <input type="number" min={1} max={1000} step={1} value={item.max_quantity} onChange={(e) => updateItem(idx, 'max_quantity', Number(e.target.value || 10))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={1000} step={1} value={item.max_quantity} onChange={(e) => updateItem(idx, 'max_quantity', Number(e.target.value || 10))} className={INP} />
               </label>
               <label className={LBL}>{t.protein_100g}
-                <input type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.protein} onChange={(e) => updateMacro(idx, 'protein', Number(e.target.value || 20))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.protein} onChange={(e) => updateMacro(idx, 'protein', Number(e.target.value || 20))} className={INP} />
               </label>
               <label className={LBL}>{t.carbs_100g}
-                <input type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.carbs} onChange={(e) => updateMacro(idx, 'carbs', Number(e.target.value || 5))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.carbs} onChange={(e) => updateMacro(idx, 'carbs', Number(e.target.value || 5))} className={INP} />
               </label>
               <label className={LBL}>{t.fat_100g}
-                <input type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.fat} onChange={(e) => updateMacro(idx, 'fat', Number(e.target.value || 3))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={100} step={0.5} value={item.macros_per_100g.fat} onChange={(e) => updateMacro(idx, 'fat', Number(e.target.value || 3))} className={INP} />
               </label>
               <label className={LBL}>{t.calories_100g}
-                <input type="number" min={0} max={900} step={1} value={item.macros_per_100g.calories} onChange={(e) => updateMacro(idx, 'calories', Number(e.target.value || 130))} className={INP} />
+                <input data-r6-slider="true" type="number" min={0} max={900} step={1} value={item.macros_per_100g.calories} onChange={(e) => updateMacro(idx, 'calories', Number(e.target.value || 130))} className={INP} />
               </label>
             </div>
           </div>

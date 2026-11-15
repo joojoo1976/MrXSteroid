@@ -215,7 +215,7 @@ export default function MultiEsterPKToolComponent() {
                             <label htmlFor="pk-body-weight" className="block text-xs font-medium text-slate-400 mb-1">
                                 {isRtl ? `وزن الجسم (${weightUnitLabel})` : `Body Weight (${unitSystem === 'metric' ? 'kg' : 'lbs'})`}
                             </label>
-                            <input
+                            <input data-r6-slider="true"
                                 id="pk-body-weight"
                                 type="number"
                                 min={unitSystem === 'metric' ? 30 : 66}
@@ -230,7 +230,7 @@ export default function MultiEsterPKToolComponent() {
                             <label htmlFor="pk-sim-days" className="block text-xs font-medium text-slate-400 mb-1">
                                 {isRtl ? 'مدة المحاكاة (أيام)' : 'Simulation Scope (Days)'}
                             </label>
-                            <input
+                            <input data-r6-slider="true"
                                 id="pk-sim-days"
                                 type="number"
                                 min={7}
@@ -267,7 +267,7 @@ export default function MultiEsterPKToolComponent() {
                                 <span className="text-slate-500 font-mono w-5">#{index + 1}</span>
                                 <div className="w-16">
                                     <label htmlFor={`pk-day-${inj.id}`} className="block text-[10px] text-slate-500">{isRtl ? 'اليوم' : 'Day'}</label>
-                                    <input
+                                    <input data-r6-slider="true"
                                         id={`pk-day-${inj.id}`}
                                         type="number"
                                         min={0}
@@ -296,7 +296,7 @@ export default function MultiEsterPKToolComponent() {
 
                                 <div className="w-20">
                                     <label htmlFor={`pk-dose-${inj.id}`} className="block text-[10px] text-slate-500">{isRtl ? 'الجرعة (mg)' : 'Dose (mg)'}</label>
-                                    <input
+                                    <input data-r6-slider="true"
                                         id={`pk-dose-${inj.id}`}
                                         type="number"
                                         min={1}

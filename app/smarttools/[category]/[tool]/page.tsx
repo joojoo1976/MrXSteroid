@@ -2,10 +2,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { getPublishedCatalogTools } from '@/lib/tools/smartToolsCatalog4';
-import { getCategory, getCategoryOfSlug } from '@/lib/tools/categories';
+import { getCategory, getCategoryOfSlug, toHierarchicalHref } from '@/lib/tools/categories';
 import { getToolComponent } from '@/lib/tools/loaders';
 import { SafetyNotice } from '@/components/tools/SafetyNotice';
+import { getToolNeighbors } from '@/lib/tools/registry';
+import { R6Progress } from '@/components/tools/r6/R6Progress';
+import { R6ToolShell } from '@/components/tools/r6/R6ToolShell';
+import { getR6ManifestEntry } from '@/lib/tools/r6/manifest';
 
 export function generateStaticParams(): Array<{ category: string; tool: string }> {
   return getPublishedCatalogTools()
@@ -43,6 +48,17 @@ export default async function ToolPage({
   const cat = getCategory(category);
   if (!entry || !cat || getCategoryOfSlug(entry.slug) !== cat.slug) notFound();
 
+  const h = await headers();
+  const locale = h.get('x-locale') === 'ar' ? 'ar' : 'en';
+  const isAr = locale === 'ar';
+  const title = isAr ? entry.titleAr : entry.titleEn;
+  const catName = isAr ? cat.nameAr : cat.nameEn;
+
+  const neighbors = getToolNeighbors(entry.slug);
+  const prevHref = toHierarchicalHref(neighbors.prevTool.slug);
+  const nextHref = toHierarchicalHref(neighbors.nextTool.slug);
+  const r6 = getR6ManifestEntry(entry.slug);
+
   const canonical = `https://mrxsteroid.com/smarttools/${cat.slug}/${entry.slug}`;
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -57,24 +73,55 @@ export default async function ToolPage({
     offers: { '@type': 'Offer', price: entry.accessTier === 'free' ? '0' : undefined, priceCurrency: 'USD' },
   };
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      { '@type': 'Question', name: `What does ${entry.titleEn} calculate?`, acceptedAnswer: { '@type': 'Answer', text: entry.descriptionEn } },
+      { '@type': 'Question', name: 'Is this tool medical advice?', acceptedAnswer: { '@type': 'Answer', text: 'No. This tool is educational only. Consult a qualified professional.' } },
+      { '@type': 'Question', name: 'Which tool should I use next?', acceptedAnswer: { '@type': 'Answer', text: `Next: ${neighbors.nextTool.titleEn} (${toHierarchicalHref(neighbors.nextTool.slug) ?? '/smarttools'})` } },
+    ],
+  };
+
   const ToolComponent = await getToolComponent(entry.slug);
   if (!ToolComponent) notFound();
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-6 flex items-center gap-2 text-xs text-zinc-500" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-gold-500 transition-colors">Home</Link>
+        <nav className="mb-6 flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-gold-500 transition-colors">{isAr ? 'الرئيسية' : 'Home'}</Link>
           <span>/</span>
-          <Link href="/smarttools" className="hover:text-gold-500 transition-colors">Smart Tools</Link>
+          <Link href="/smarttools" className="hover:text-gold-500 transition-colors">{isAr ? 'الأدوات الذكية' : 'Smart Tools'}</Link>
           <span>/</span>
-          <Link href={`/smarttools/${cat.slug}`} className="hover:text-gold-500 transition-colors">{cat.nameEn}</Link>
+          <Link href={`/smarttools/${cat.slug}`} className="hover:text-gold-500 transition-colors">{catName}</Link>
           <span>/</span>
-          <span className="text-gold-500 font-bold">{entry.titleEn}</span>
+          <span className="text-gold-500 font-bold" aria-current="page">{title}</span>
         </nav>
+        {r6 && <R6Progress index={r6.index} total={r6.total} locale={locale} />}
         <SafetyNotice category={cat.slug} />
-        <ToolComponent />
+        {r6 && !r6.hasOwnBoxes ? (
+          <R6ToolShell entry={r6} locale={locale}>
+            <ToolComponent />
+          </R6ToolShell>
+        ) : (
+          <ToolComponent />
+        )}
+        {r6 && <R6Progress index={r6.index} total={r6.total} locale={locale} />}
+        <nav className="mt-8 flex items-center justify-between text-sm" aria-label={isAr ? 'التنقل بين الأدوات' : 'Tool navigation'}>
+          {prevHref ? (
+            <Link href={prevHref} className="text-gold-500 hover:underline">
+              {isAr ? `← ${neighbors.prevTool.titleAr}` : `← ${neighbors.prevTool.titleEn}`}
+            </Link>
+          ) : <span />}
+          {nextHref ? (
+            <Link href={nextHref} className="text-gold-500 hover:underline">
+              {isAr ? `${neighbors.nextTool.titleAr} →` : `${neighbors.nextTool.titleEn} →`}
+            </Link>
+          ) : <span />}
+        </nav>
       </div>
     </>
   );

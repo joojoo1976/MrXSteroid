@@ -76,13 +76,13 @@ export default function Tool051PeptideDosageCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.vial_mg}
-          <input type="number" min={0.1} max={100} step={0.1} value={inputs.vial_mg} onChange={(e) => setInputs((p) => ({ ...p, vial_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.1} max={100} step={0.1} value={inputs.vial_mg} onChange={(e) => setInputs((p) => ({ ...p, vial_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.bac_water_ml}
-          <input type="number" min={0.1} max={10} step={0.1} value={inputs.bac_water_ml} onChange={(e) => setInputs((p) => ({ ...p, bac_water_ml: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.1} max={10} step={0.1} value={inputs.bac_water_ml} onChange={(e) => setInputs((p) => ({ ...p, bac_water_ml: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.desired_dose_mg}
-          <input type="number" min={0.01} max={10} step={0.01} value={inputs.desired_dose_mg} onChange={(e) => setInputs((p) => ({ ...p, desired_dose_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.01} max={10} step={0.01} value={inputs.desired_dose_mg} onChange={(e) => setInputs((p) => ({ ...p, desired_dose_mg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

@@ -128,22 +128,22 @@ export default function Tool123JointStress() {
       <h2 className="mb-2 text-xs font-black text-zinc-400 uppercase">{t.profile_section}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <label className={LBL}>{t.age}
-          <input type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
+          <input data-r6-slider="true" type="number" min={13} max={100} step={1} value={inputs.age} onChange={(e) => updateInput('age', Number(e.target.value || 28))} className={INP} />
         </label>
         <label className={LBL}>{t.training_age}
-          <input type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={30} step={1} value={inputs.training_age_years} onChange={(e) => updateInput('training_age_years', Number(e.target.value || 3))} className={INP} />
         </label>
         <label className={LBL}>{t.sleep_hours}
-          <input type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
+          <input data-r6-slider="true" type="number" min={4} max={12} step={0.5} value={inputs.sleep_hours} onChange={(e) => updateInput('sleep_hours', Number(e.target.value || 8))} className={INP} />
         </label>
         <label className={LBL}>{t.protein}
-          <input type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={5} step={0.1} value={inputs.protein_g_per_kg} onChange={(e) => updateInput('protein_g_per_kg', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.collagen}
-          <input type="number" min={0} max={50} step={1} value={inputs.collagen_intake_g} onChange={(e) => updateInput('collagen_intake_g', Number(e.target.value || 10))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={50} step={1} value={inputs.collagen_intake_g} onChange={(e) => updateInput('collagen_intake_g', Number(e.target.value || 10))} className={INP} />
         </label>
         <label className={LBL}>{t.omega3}
-          <input type="number" min={0} max={10} step={0.1} value={inputs.omega3_g} onChange={(e) => updateInput('omega3_g', Number(e.target.value || 2))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0} max={10} step={0.1} value={inputs.omega3_g} onChange={(e) => updateInput('omega3_g', Number(e.target.value || 2))} className={INP} />
         </label>
         <label className={LBL}>{t.injuries}
           <input type="text" maxLength={500} value={inputs.previous_injuries.join(', ')} onChange={(e) => updateArray('previous_injuries', e.target.value)} className={INP} placeholder={t.injuries_placeholder} />
@@ -171,16 +171,16 @@ export default function Tool123JointStress() {
                 </select>
               </label>
               <label className={LBL}>{t.sets}
-                <input type="number" min={1} max={20} step={1} value={ex.sets} onChange={(e) => updateExercise(idx, 'sets', Number(e.target.value || 3))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={20} step={1} value={ex.sets} onChange={(e) => updateExercise(idx, 'sets', Number(e.target.value || 3))} className={INP} />
               </label>
               <label className={LBL}>{t.reps}
-                <input type="number" min={1} max={50} step={1} value={ex.reps} onChange={(e) => updateExercise(idx, 'reps', Number(e.target.value || 10))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={50} step={1} value={ex.reps} onChange={(e) => updateExercise(idx, 'reps', Number(e.target.value || 10))} className={INP} />
               </label>
               <label className={LBL}>{t.weight} ({massUnit})
-                <input type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayLoad(ex.weight_kg)} onChange={(e) => updateExercise(idx, 'weight_kg', storeLoad(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))))} className={INP} />
+                <input data-r6-slider="true" type="number" min={1} max={unitSystem === 'metric' ? 500 : 1102} step={unitSystem === 'metric' ? 0.5 : 1} value={displayLoad(ex.weight_kg)} onChange={(e) => updateExercise(idx, 'weight_kg', storeLoad(Number(e.target.value || (unitSystem === 'metric' ? 80 : 176.4))))} className={INP} />
               </label>
               <label className={LBL}>{t.rpe}
-                <input type="number" min={1} max={10} step={1} value={ex.rpe} onChange={(e) => updateExercise(idx, 'rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
+                <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={ex.rpe} onChange={(e) => updateExercise(idx, 'rpe', e.target.value ? Number(e.target.value) : undefined)} className={INP} placeholder="—" />
               </label>
               <label className={LBL}>{t.rom}
                 <select value={ex.range_of_motion} onChange={(e) => updateExercise(idx, 'range_of_motion', e.target.value)} className={SEL}>

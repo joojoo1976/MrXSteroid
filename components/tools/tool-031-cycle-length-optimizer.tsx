@@ -104,7 +104,7 @@ export default function Tool031CycleLengthOptimizer() {
           </select>
         </label>
         <label className="text-xs font-bold text-zinc-500">{t.previous_cycles}
-          <input type="number" min={0} max={30} value={previousCycles} onChange={(e) => setPreviousCycles(Math.max(0, Math.min(30, Number(e.target.value) || 0)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={30} value={previousCycles} onChange={(e) => setPreviousCycles(Math.max(0, Math.min(30, Number(e.target.value) || 0)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" />
         </label>
       </div>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.compounds}</h2>
@@ -113,13 +113,13 @@ export default function Tool031CycleLengthOptimizer() {
           <div key={i} className="grid grid-cols-2 md:grid-cols-5 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
             <input value={c.name_en} onChange={(e) => updateCompound(i, { name_en: e.target.value })} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder="Name" />
             <label className="text-[10px] text-zinc-500">SF 0-5
-              <input type="number" step={0.1} min={0} max={5} value={c.suppression_factor} onChange={(e) => updateCompound(i, { suppression_factor: Number(e.target.value) || 0 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" step={0.1} min={0} max={5} value={c.suppression_factor} onChange={(e) => updateCompound(i, { suppression_factor: Number(e.target.value) || 0 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <label className="text-[10px] text-zinc-500">HL d
-              <input type="number" step={0.1} min={0.5} max={60} value={c.half_life_days} onChange={(e) => updateCompound(i, { half_life_days: Number(e.target.value) || 0.5 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" step={0.1} min={0.5} max={60} value={c.half_life_days} onChange={(e) => updateCompound(i, { half_life_days: Number(e.target.value) || 0.5 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <label className="text-[10px] text-zinc-500">mg/wk
-              <input type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: Number(e.target.value) || 1 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: Number(e.target.value) || 1 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
             </label>
             <button type="button" onClick={() => setCompounds((p) => p.filter((_, j) => j !== i))} disabled={compounds.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
           </div>

@@ -85,14 +85,14 @@ export default function Tool034CompoundClearance() {
           <input value={compoundName} onChange={(e) => setCompoundName(e.target.value)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white" />
         </label>
         <label className="text-xs font-bold text-zinc-500">{t.half_life_days}
-          <input type="number" step={0.1} min={0.5} max={365} value={Number.isFinite(halfLife) ? halfLife : ''} onChange={(e) => setHalfLife(e.target.value === '' ? Number.NaN : Number(e.target.value))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+          <input data-r6-slider="true" type="number" step={0.1} min={0.5} max={365} value={Number.isFinite(halfLife) ? halfLife : ''} onChange={(e) => setHalfLife(e.target.value === '' ? Number.NaN : Number(e.target.value))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
         </label>
         <label className="text-xs font-bold text-zinc-500">{t.half_life_source}
           <input value={halfLifeSource} onChange={(e) => setHalfLifeSource(e.target.value)} maxLength={500} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white" />
           <span className="mt-1 block font-normal">{t.add_source_note}</span>
         </label>
         <label className="text-xs font-bold text-zinc-500">{t.threshold_percent}
-          <input type="number" min={0.1} max={20} step={0.1} value={Number.isFinite(thresholdPercent) ? thresholdPercent : ''} onChange={(e) => setThresholdPercent(e.target.value === '' ? Number.NaN : Number(e.target.value))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
+          <input data-r6-slider="true" type="number" min={0.1} max={20} step={0.1} value={Number.isFinite(thresholdPercent) ? thresholdPercent : ''} onChange={(e) => setThresholdPercent(e.target.value === '' ? Number.NaN : Number(e.target.value))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />
         </label>
         <label className="text-xs font-bold text-zinc-500">{t.last_dose_date}
           <input type="date" value={lastDoseDate.slice(0, 10)} onChange={(e) => setLastDoseDate(e.target.value)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" dir="ltr" />

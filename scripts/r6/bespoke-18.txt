@@ -1,0 +1,19 @@
+# Phase 1 bespoke routes — 18 hierarchical pages shadowing the dynamic route
+components/tools/tool-108-ai-body-composition-vision-engine.tsx
+components/tools/tool-126-neuromuscular-explosiveness-modeler.tsx
+components/tools/tool-127-ai-daily-readiness-explainer.tsx
+components/tools/tool-128-training-load-acute-chronic-ratio.tsx
+components/tools/tool-129-ai-adaptive-training-planner.tsx
+components/tools/tool-130-ai-plateau-detective.tsx
+components/tools/tool-131-transformation-forecast-trajectory-engine.tsx
+components/tools/tool-133-rep-tempo-velocity-loss-analyzer.tsx
+components/tools/tool-134-mobility-movement-symmetry-screen.tsx
+components/tools/tool-135-exercise-substitution-ai.tsx
+components/tools/tool-136-physique-golden-ratio-score.tsx
+components/tools/tool-140-dosage-unit-conversion-engine.tsx
+components/tools/tool-143-storage-stability-thermal-degradation-estimator.tsx
+components/tools/tool-144-homebrew-chemistry-calculator.tsx
+components/tools/tool-145-habit-intelligence-consistency-coach.tsx
+components/tools/tool-146-ai-safety-gate-emergency-protocol.tsx
+components/tools/tool-148-personal-fitness-memory-layer.tsx
+components/tools/tool-149-physique-trajectory-simulator.tsx

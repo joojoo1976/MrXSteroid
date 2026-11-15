@@ -77,16 +77,16 @@ export default function Tool055InsulinSensitivityOptimizer() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.fasting_glucose}
-          <input type="number" min={40} max={400} value={inputs.fasting_glucose} onChange={(e) => setInputs((p) => ({ ...p, fasting_glucose: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={40} max={400} value={inputs.fasting_glucose} onChange={(e) => setInputs((p) => ({ ...p, fasting_glucose: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.fasting_insulin}
-          <input type="number" min={0.5} max={100} step={0.5} value={inputs.fasting_insulin} onChange={(e) => setInputs((p) => ({ ...p, fasting_insulin: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0.5} max={100} step={0.5} value={inputs.fasting_insulin} onChange={(e) => setInputs((p) => ({ ...p, fasting_insulin: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weekly_training_sessions}
-          <input type="number" min={0} max={14} value={inputs.weekly_training_sessions} onChange={(e) => setInputs((p) => ({ ...p, weekly_training_sessions: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={14} value={inputs.weekly_training_sessions} onChange={(e) => setInputs((p) => ({ ...p, weekly_training_sessions: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.sleep_hours}
-          <input type="number" min={0} max={14} step={0.5} value={inputs.sleep_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={14} step={0.5} value={inputs.sleep_hours} onChange={(e) => setInputs((p) => ({ ...p, sleep_hours: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

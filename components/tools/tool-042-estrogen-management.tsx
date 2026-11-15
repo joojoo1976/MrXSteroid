@@ -85,19 +85,19 @@ export default function Tool042EstrogenManagement() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.e2}
-          <input type="number" min={5} max={500} value={inputs.e2_pg_ml} onChange={(e) => setInputs((p) => ({ ...p, e2_pg_ml: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={500} value={inputs.e2_pg_ml} onChange={(e) => setInputs((p) => ({ ...p, e2_pg_ml: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weekly_test}
-          <input type="number" min={0} max={1000} value={inputs.weekly_testosterone_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_testosterone_mg: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={1000} value={inputs.weekly_testosterone_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_testosterone_mg: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.body_fat}
-          <input type="number" min={5} max={60} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={60} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
           <input type="checkbox" checked={inputs.taking_ai} onChange={(e) => setInputs((p) => ({ ...p, taking_ai: e.target.checked }))} className="accent-lime-500" />{t.taking_ai}
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.ai_dose}
-          <input type="number" min={0} max={7} step={0.25} value={inputs.weekly_ai_dose_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_ai_dose_mg: num(e.target.value, 0) }))} disabled={!inputs.taking_ai} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono disabled:opacity-40" />
+          <input data-r6-slider="true" type="number" min={0} max={7} step={0.25} value={inputs.weekly_ai_dose_mg} onChange={(e) => setInputs((p) => ({ ...p, weekly_ai_dose_mg: num(e.target.value, 0) }))} disabled={!inputs.taking_ai} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono disabled:opacity-40" />
         </label>
       </div>
       <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.symptoms}</h2>

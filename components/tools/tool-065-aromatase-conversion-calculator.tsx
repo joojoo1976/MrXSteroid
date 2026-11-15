@@ -75,10 +75,10 @@ export default function Tool065AromataseConversionCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.testosterone_mg_week}
-          <input type="number" min={25} max={1000} step={25} value={inputs.testosterone_mg_week} onChange={(e) => setInputs((p) => ({ ...p, testosterone_mg_week: Number(e.target.value || 25) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={25} max={1000} step={25} value={inputs.testosterone_mg_week} onChange={(e) => setInputs((p) => ({ ...p, testosterone_mg_week: Number(e.target.value || 25) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct}
-          <input type="number" min={5} max={50} step={0.5} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: Number(e.target.value || 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={50} step={0.5} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: Number(e.target.value || 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500 md:col-span-2">{t.aromatase_inhibitor}
           <select value={inputs.aromatase_inhibitor} onChange={(e) => setInputs((p) => ({ ...p, aromatase_inhibitor: e.target.value as DraftInputs['aromatase_inhibitor'] }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">

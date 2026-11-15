@@ -97,10 +97,10 @@ export default function Tool086CortisolStressCalculator() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.exhaustion_rating}
-          <input type="number" min={1} max={10} step={1} value={inputs.morning_exhaustion_rating} onChange={(e) => setInputs((p) => ({ ...p, morning_exhaustion_rating: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={10} step={1} value={inputs.morning_exhaustion_rating} onChange={(e) => setInputs((p) => ({ ...p, morning_exhaustion_rating: Number(e.target.value || 1) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.caffeine_cups}
-          <input type="number" min={0} max={15} step={1} value={inputs.daily_caffeine_cups} onChange={(e) => setInputs((p) => ({ ...p, daily_caffeine_cups: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={15} step={1} value={inputs.daily_caffeine_cups} onChange={(e) => setInputs((p) => ({ ...p, daily_caffeine_cups: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hrv_trend}
           <select value={inputs.resting_heart_rate_variability_trend} onChange={(e) => setInputs((p) => ({ ...p, resting_heart_rate_variability_trend: e.target.value as HrvTrend }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono">
@@ -110,7 +110,7 @@ export default function Tool086CortisolStressCalculator() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.intense_training}
-          <input type="number" min={0} max={14} step={1} value={inputs.intense_training_sessions_weekly} onChange={(e) => setInputs((p) => ({ ...p, intense_training_sessions_weekly: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={14} step={1} value={inputs.intense_training_sessions_weekly} onChange={(e) => setInputs((p) => ({ ...p, intense_training_sessions_weekly: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.life_stressors}
           <select value={inputs.life_stressors_level} onChange={(e) => setInputs((p) => ({ ...p, life_stressors_level: e.target.value as StressLevel }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono">

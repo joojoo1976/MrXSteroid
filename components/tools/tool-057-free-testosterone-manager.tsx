@@ -77,13 +77,13 @@ export default function Tool057FreeTestosteroneManager() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.total_test_ng_dl}
-          <input type="number" min={10} max={3000} value={inputs.total_test_ng_dl} onChange={(e) => setInputs((p) => ({ ...p, total_test_ng_dl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={10} max={3000} value={inputs.total_test_ng_dl} onChange={(e) => setInputs((p) => ({ ...p, total_test_ng_dl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.shbg_nmol_l}
-          <input type="number" min={5} max={200} value={inputs.shbg_nmol_l} onChange={(e) => setInputs((p) => ({ ...p, shbg_nmol_l: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={200} value={inputs.shbg_nmol_l} onChange={(e) => setInputs((p) => ({ ...p, shbg_nmol_l: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.albumin_g_dl}
-          <input type="number" min={3} max={6} step={0.1} value={inputs.albumin_g_dl} onChange={(e) => setInputs((p) => ({ ...p, albumin_g_dl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={3} max={6} step={0.1} value={inputs.albumin_g_dl} onChange={(e) => setInputs((p) => ({ ...p, albumin_g_dl: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

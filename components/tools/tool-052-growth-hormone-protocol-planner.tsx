@@ -76,10 +76,10 @@ export default function Tool052GrowthHormoneProtocolPlanner() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.bodyweight_kg}
-          <input type="number" min={30} max={200} value={inputs.bodyweight_kg} onChange={(e) => setInputs((p) => ({ ...p, bodyweight_kg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={30} max={200} value={inputs.bodyweight_kg} onChange={(e) => setInputs((p) => ({ ...p, bodyweight_kg: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.weekly_iu_total}
-          <input type="number" min={2} max={60} value={inputs.weekly_iu_total} onChange={(e) => setInputs((p) => ({ ...p, weekly_iu_total: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={2} max={60} value={inputs.weekly_iu_total} onChange={(e) => setInputs((p) => ({ ...p, weekly_iu_total: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.protocol_pattern}
           <select value={inputs.protocol_pattern} onChange={(e) => setInputs((p) => ({ ...p, protocol_pattern: e.target.value as '5on2off' | 'daily' }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
@@ -88,10 +88,10 @@ export default function Tool052GrowthHormoneProtocolPlanner() {
           </select>
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.months}
-          <input type="number" min={1} max={24} value={inputs.months} onChange={(e) => setInputs((p) => ({ ...p, months: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={1} max={24} value={inputs.months} onChange={(e) => setInputs((p) => ({ ...p, months: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.cost_per_iu_usd}
-          <input type="number" min={0} max={100} step={0.5} value={inputs.cost_per_iu_usd} onChange={(e) => setInputs((p) => ({ ...p, cost_per_iu_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={100} step={0.5} value={inputs.cost_per_iu_usd} onChange={(e) => setInputs((p) => ({ ...p, cost_per_iu_usd: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
       </div>
       {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}

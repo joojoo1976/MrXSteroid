@@ -1,0 +1,31 @@
+# Batch 03 — 28 codemod targets: 8 bespoke (now shell-covered) + 20 fresh
+# Bespoke-8 (sliders deferred from Phase 1):
+components/tools/tool-149-physique-trajectory-simulator.tsx
+components/tools/tool-131-transformation-forecast-trajectory-engine.tsx
+components/tools/tool-129-ai-adaptive-training-planner.tsx
+components/tools/tool-134-mobility-movement-symmetry-screen.tsx
+components/tools/tool-136-physique-golden-ratio-score.tsx
+components/tools/tool-140-dosage-unit-conversion-engine.tsx
+components/tools/tool-143-storage-stability-thermal-degradation-estimator.tsx
+components/tools/tool-144-homebrew-chemistry-calculator.tsx
+# Fresh next-20 (bounded min+max rank order):
+components/tools/tool-080-mitochondrial-optimizer.tsx
+components/tools/tool-084-cognitive-enhancer.tsx
+components/tools/tool-086-cortisol-stress-calculator.tsx
+components/tools/tool-112-food-quality-micronutrient-diversity-score.tsx
+components/tools/tool-251-physique-trajectory-simulator.tsx
+components/tools/tool-010-compound-stack-builder.tsx
+components/tools/tool-016-half-life-calculator.tsx
+components/tools/tool-021-peptide-protocol.tsx
+components/tools/tool-034-compound-clearance.tsx
+components/tools/tool-039-liver-enzyme-tracker.tsx
+components/tools/tool-041-hematocrit-monitor.tsx
+components/tools/tool-043-prolactin-management.tsx
+components/tools/tool-044-dht-side-effects.tsx
+components/tools/tool-047-fertility-preservation.tsx
+components/tools/tool-056-mini-pct-calculator.tsx
+components/tools/tool-061-hair-loss-tracker.tsx
+components/tools/tool-063-testicular-suppression-calculator.tsx
+components/tools/tool-065-aromatase-conversion-calculator.tsx
+components/tools/tool-067-estrogen-balance-calculator.tsx
+components/tools/tool-068-gynecomastia-tracker.tsx

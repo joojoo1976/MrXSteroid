@@ -72,16 +72,16 @@ export default function Tool104ThyroidDynamics() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className={LBL}>{t.tsh}
-          <input type="number" min={0.01} max={100} step={0.01} value={inputs.tsh_miu_l} onChange={(e) => setInputs((p) => ({ ...p, tsh_miu_l: Number(e.target.value || 2) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0.01} max={100} step={0.01} value={inputs.tsh_miu_l} onChange={(e) => setInputs((p) => ({ ...p, tsh_miu_l: Number(e.target.value || 2) }))} className={INP} />
         </label>
         <label className={LBL}>{t.free_t4}
-          <input type="number" min={0.1} max={10} step={0.1} value={inputs.free_t4_ng_dl} onChange={(e) => setInputs((p) => ({ ...p, free_t4_ng_dl: Number(e.target.value || 1.3) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0.1} max={10} step={0.1} value={inputs.free_t4_ng_dl} onChange={(e) => setInputs((p) => ({ ...p, free_t4_ng_dl: Number(e.target.value || 1.3) }))} className={INP} />
         </label>
         <label className={LBL}>{t.free_t3}
-          <input type="number" min={0.5} max={20} step={0.1} value={inputs.free_t3_pg_ml} onChange={(e) => setInputs((p) => ({ ...p, free_t3_pg_ml: Number(e.target.value || 3) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={0.5} max={20} step={0.1} value={inputs.free_t3_pg_ml} onChange={(e) => setInputs((p) => ({ ...p, free_t3_pg_ml: Number(e.target.value || 3) }))} className={INP} />
         </label>
         <label className={LBL}>{t.age}
-          <input type="number" min={18} max={120} value={inputs.age_years} onChange={(e) => setInputs((p) => ({ ...p, age_years: Number(e.target.value || 30) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={18} max={120} value={inputs.age_years} onChange={(e) => setInputs((p) => ({ ...p, age_years: Number(e.target.value || 30) }))} className={INP} />
         </label>
         <label className={LBL}>{t.sex}
           <select value={inputs.sex} onChange={(e) => setInputs((p) => ({ ...p, sex: e.target.value as DraftInputs['sex'] }))} className={SEL}>
@@ -90,10 +90,10 @@ export default function Tool104ThyroidDynamics() {
           </select>
         </label>
         <label className={LBL}>{t.weight_kg.replace(/\s*\([^)]*\)\s*$/, '')} ({isImperial ? 'lb' : 'kg'})
-          <input type="number" min={isImperial ? 66.1 : 30} max={isImperial ? 551.2 : 250} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={isImperial ? 66.1 : 30} max={isImperial ? 551.2 : 250} step={isImperial ? 0.1 : 1} value={displayWeight(inputs.weight_kg)} onChange={(e) => setInputs((p) => ({ ...p, weight_kg: canonicalWeight(Number(e.target.value || (isImperial ? 176.4 : 80))) }))} className={INP} />
         </label>
         <label className={LBL}>{t.height_cm.replace(/\s*\([^)]*\)\s*$/, '')} ({isImperial ? 'in' : 'cm'})
-          <input type="number" min={isImperial ? 47.2 : 120} max={isImperial ? 90.6 : 230} step={isImperial ? 0.1 : 1} value={displayHeight(inputs.height_cm)} onChange={(e) => setInputs((p) => ({ ...p, height_cm: canonicalHeight(Number(e.target.value || (isImperial ? 70.1 : 178))) }))} className={INP} />
+          <input data-r6-slider="true" type="number" min={isImperial ? 47.2 : 120} max={isImperial ? 90.6 : 230} step={isImperial ? 0.1 : 1} value={displayHeight(inputs.height_cm)} onChange={(e) => setInputs((p) => ({ ...p, height_cm: canonicalHeight(Number(e.target.value || (isImperial ? 70.1 : 178))) }))} className={INP} />
         </label>
       </div>
 

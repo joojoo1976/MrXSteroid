@@ -412,7 +412,7 @@ export default function HcgSermProtocolToolComponent() {
                                         <label className="text-[10px] text-slate-400 block mb-0.5">
                                             {isRtl ? 'الجرعة الأسبوعية (ملغ/أسبوع)' : 'Weekly Dose (mg/wk)'}
                                         </label>
-                                        <input
+                                        <input data-r6-slider="true"
                                             type="number"
                                             value={c.weeklyDoseMg}
                                             min={10}
@@ -441,7 +441,7 @@ export default function HcgSermProtocolToolComponent() {
                                 </label>
                                 <span className="text-xs font-black text-lime-400 font-mono">{cycleWeeks}w</span>
                             </div>
-                            <input
+                            <input data-r6-slider="true"
                                 type="range"
                                 min={4}
                                 max={48}
@@ -464,7 +464,7 @@ export default function HcgSermProtocolToolComponent() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <input
+                                <input data-r6-slider="true"
                                     type="range"
                                     min={unitSystem === 'metric' ? 40 : 88}
                                     max={unitSystem === 'metric' ? 160 : 352}
@@ -475,7 +475,7 @@ export default function HcgSermProtocolToolComponent() {
                                     }}
                                     className="flex-1 accent-lime-500 bg-slate-800 rounded-lg cursor-pointer"
                                 />
-                                <input
+                                <input data-r6-slider="true"
                                     type="number"
                                     min={unitSystem === 'metric' ? 40 : 88}
                                     max={unitSystem === 'metric' ? 160 : 352}

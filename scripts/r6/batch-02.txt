@@ -1,0 +1,30 @@
+# Batch 02 — next 28 codemod targets (nutrition + body composition + training focus, top bounded inputs)
+# Excludes batch-01 (23), frozen 5, bespoke 18 route-fix set, and 108 pilot (0 bounded, route now serves pilot).
+components/tools/tool-125-fiber-type-mechanical-tension-score.tsx
+components/tools/tool-113-ai-grocery-basket-meal-cost-optimizer.tsx
+components/tools/tool-123-joint-stress-connective-tissue-index.tsx
+components/tools/tool-118-cns-recovery-score.tsx
+components/tools/tool-124-deload-frequency-fatigue-modeler.tsx
+components/tools/tool-121-muscle-group-recovery-modeler.tsx
+components/tools/pct-timing.tsx
+components/tools/tool-040-lipid-profile-optimizer.tsx
+components/tools/tool-075-arterial-health-manager.tsx
+components/tools/tool-020-genetic-potential.tsx
+components/tools/hcg-serm-protocol.tsx
+components/tools/multi-ester-pharmacokinetics.tsx
+components/tools/tool-064-sperm-production-optimizer.tsx
+components/tools/tool-069-detoxification-optimizer.tsx
+components/tools/tool-078-endothelial-health-manager.tsx
+components/tools/tool-085-sleep-quality-manager.tsx
+components/tools/tool-102-subcutaneous-vs-intramuscular-pk-modeler.tsx
+components/tools/tool-115-supplement-evidence-bio-stack-navigator.tsx
+components/tools/tool-116-nutrition-gap-fasting-window-optimizer.tsx
+components/tools/aromatization-risk.tsx
+components/tools/tool-032-advanced-pct-planner.tsx
+components/tools/tool-045-cycle-break-planner.tsx
+components/tools/tool-051-peptide-dosage-calculator.tsx
+components/tools/tool-057-free-testosterone-manager.tsx
+components/tools/tool-058-androgenic-balance-calculator.tsx
+components/tools/tool-062-prostate-health-manager.tsx
+components/tools/tool-070-oxidative-stress-calculator.tsx
+components/tools/tool-072-systemic-inflammation-calculator.tsx

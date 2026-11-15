@@ -209,13 +209,13 @@ export default function Tool149PhysiqueTrajectorySimulator() {
 
     <section className="grid gap-3 sm:grid-cols-2">
       <label className="text-xs text-zinc-300">{tr('الوزن الحالي', 'Current weight')} ({mass})
-        <input aria-label={`${tr('الوزن الحالي', 'Current weight')} (${mass})`} className={inputClass} type="number" min="0" max={unit === 'metric' ? 500 : 1102.31} step="any" value={displayMass(effectiveDraft.current_weight_kg)} onChange={(event) => update((old) => ({ ...old, current_weight_kg: toCanonical(event.target.value) }), 'current_weight_kg')} />
+        <input data-r6-slider="true" aria-label={`${tr('الوزن الحالي', 'Current weight')} (${mass})`} className={inputClass} type="number" min="0" max={unit === 'metric' ? 500 : 1102.31} step="any" value={displayMass(effectiveDraft.current_weight_kg)} onChange={(event) => update((old) => ({ ...old, current_weight_kg: toCanonical(event.target.value) }), 'current_weight_kg')} />
       </label>
       <label className="text-xs text-zinc-300">{tr('نسبة الدهون الحالية (%)', 'Current body-fat percentage (%)')}
-        <input aria-label={tr('نسبة الدهون الحالية (%)', 'Current body-fat percentage (%)')} className={inputClass} type="number" min="3" max="70" step="any" value={effectiveDraft.current_body_fat_pct} onChange={(event) => update((old) => ({ ...old, current_body_fat_pct: event.target.value }), 'current_body_fat_pct')} />
+        <input data-r6-slider="true" aria-label={tr('نسبة الدهون الحالية (%)', 'Current body-fat percentage (%)')} className={inputClass} type="number" min="3" max="70" step="any" value={effectiveDraft.current_body_fat_pct} onChange={(event) => update((old) => ({ ...old, current_body_fat_pct: event.target.value }), 'current_body_fat_pct')} />
       </label>
       <label className="text-xs text-zinc-300">{tr('نسبة الدهون المستهدفة (%)', 'Target body-fat percentage (%)')}
-        <input aria-label={tr('نسبة الدهون المستهدفة (%)', 'Target body-fat percentage (%)')} className={inputClass} type="number" min="3" max="70" step="any" value={effectiveDraft.target_body_fat_pct} onChange={(event) => update((old) => ({ ...old, target_body_fat_pct: event.target.value }), 'target_body_fat_pct')} />
+        <input data-r6-slider="true" aria-label={tr('نسبة الدهون المستهدفة (%)', 'Target body-fat percentage (%)')} className={inputClass} type="number" min="3" max="70" step="any" value={effectiveDraft.target_body_fat_pct} onChange={(event) => update((old) => ({ ...old, target_body_fat_pct: event.target.value }), 'target_body_fat_pct')} />
       </label>
     </section>
 
@@ -223,7 +223,7 @@ export default function Tool149PhysiqueTrajectorySimulator() {
       <h2 className="font-bold text-white">{tr('معدلات التغير التي تختارها', 'User-selected change rates')}</h2>
       {draft.weekly_rates_kg_per_week.map((rate, index) => <div key={index} className="flex items-end gap-3">
         <label className="flex-1 text-xs text-zinc-300">{tr(`معدل السيناريو ${index + 1}`, `Scenario rate ${index + 1}`)} ({mass}/{tr('أسبوع', 'week')})
-          <input aria-label={`${tr(`معدل السيناريو ${index + 1}`, `Scenario rate ${index + 1}`)} (${mass}/${tr('أسبوع', 'week')})`} className={inputClass} type="number" min="0" max={unit === 'metric' ? 2 : 4.40924} step="any" value={displayRate(rate)} onChange={(event) => update((old) => ({ ...old, weekly_rates_kg_per_week: old.weekly_rates_kg_per_week.map((item, itemIndex) => itemIndex === index ? toCanonical(event.target.value) : item) }))} />
+          <input data-r6-slider="true" aria-label={`${tr(`معدل السيناريو ${index + 1}`, `Scenario rate ${index + 1}`)} (${mass}/${tr('أسبوع', 'week')})`} className={inputClass} type="number" min="0" max={unit === 'metric' ? 2 : 4.40924} step="any" value={displayRate(rate)} onChange={(event) => update((old) => ({ ...old, weekly_rates_kg_per_week: old.weekly_rates_kg_per_week.map((item, itemIndex) => itemIndex === index ? toCanonical(event.target.value) : item) }))} />
         </label>
         <button type="button" disabled={draft.weekly_rates_kg_per_week.length <= 1} onClick={() => update((old) => ({ ...old, weekly_rates_kg_per_week: old.weekly_rates_kg_per_week.filter((_, itemIndex) => itemIndex !== index) }))} className="rounded-lg border border-zinc-600 px-3 py-2 text-sm text-white disabled:opacity-40">{tr('إزالة', 'Remove')}</button>
       </div>)}

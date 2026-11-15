@@ -99,16 +99,16 @@ export default function Tool069DetoxificationOptimizer() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.daily_water.replace(/\s*\([^)]*\)\s*$/, '')} ({waterUnit})
-          <input type="number" min={isImperial ? 16.9 : 0.5} max={isImperial ? 202.9 : 6.0} step={isImperial ? 0.1 : 0.25} value={displayWater(inputs.daily_water_liters)} onChange={(e) => setInputs((p) => ({ ...p, daily_water_liters: canonicalWater(Number(e.target.value || (isImperial ? 101.4 : 3.0))) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={isImperial ? 16.9 : 0.5} max={isImperial ? 202.9 : 6.0} step={isImperial ? 0.1 : 0.25} value={displayWater(inputs.daily_water_liters)} onChange={(e) => setInputs((p) => ({ ...p, daily_water_liters: canonicalWater(Number(e.target.value || (isImperial ? 101.4 : 3.0))) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.daily_fiber}
-          <input type="number" min={5} max={60} step={1} value={inputs.daily_fiber_grams} onChange={(e) => setInputs((p) => ({ ...p, daily_fiber_grams: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={5} max={60} step={1} value={inputs.daily_fiber_grams} onChange={(e) => setInputs((p) => ({ ...p, daily_fiber_grams: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.cruciferous_servings}
-          <input type="number" min={0} max={21} step={1} value={inputs.cruciferous_servings_week} onChange={(e) => setInputs((p) => ({ ...p, cruciferous_servings_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={21} step={1} value={inputs.cruciferous_servings_week} onChange={(e) => setInputs((p) => ({ ...p, cruciferous_servings_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.alcohol_drinks}
-          <input type="number" min={0} max={50} step={1} value={inputs.alcohol_drinks_week} onChange={(e) => setInputs((p) => ({ ...p, alcohol_drinks_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={0} max={50} step={1} value={inputs.alcohol_drinks_week} onChange={(e) => setInputs((p) => ({ ...p, alcohol_drinks_week: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 md:col-span-2">
           <input type="checkbox" checked={inputs.takes_nac_or_glutathione_support} onChange={(e) => setInputs((p) => ({ ...p, takes_nac_or_glutathione_support: e.target.checked }))} className="rounded" />

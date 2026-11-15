@@ -7,6 +7,9 @@ import { tryParseTool111Input } from '@/lib/tools/schemas/tool-111-smart-food-ma
 import { tool111Adapter } from '@/lib/tools/adapters/tool-111-smart-food-macro-substitution';
 import type { EngineInput, SubstitutionResult } from '@/lib/tools/engines/staging/tool-111-smart-food-macro-substitution-engine';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { DynamicStateBadge, computeDynamicState } from '@/components/tools/DynamicStateBadge';
+import { ResultBoxes, makeResultBoxes } from '@/components/tools/ResultBoxes';
+import { GeniusTooltip } from '@/components/tools/GeniusTooltip';
 
 type MacroFields = { protein: string; carbs: string; fat: string; calories: string };
 
@@ -103,6 +106,8 @@ export default function Tool111SmartFoodMacroSubstitution() {
   const [result, setResult] = useState<SubstitutionResult | null>(null);
   const [output, setOutput] = useState<any>(null);
   const [adapterError, setAdapterError] = useState<string | null>(null);
+  const [feelings, setFeelings] = useState({ energy: 50, hunger: 50, fatigue: 50, sleep: 50, mood: 50 });
+  const [whatIfPct, setWhatIfPct] = useState(0);
 
   const buildEngineInput = useCallback((fd: FormData): EngineInput => {
     const targetMacros: EngineInput['targetMacros'] = {};
@@ -222,6 +227,11 @@ export default function Tool111SmartFoodMacroSubstitution() {
       <div className="mb-6 p-3 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm">
         {t.disclaimer}
       </div>
+      <DynamicStateBadge
+        state={computeDynamicState(['originalFood', 'originalMacros'], { originalFood: formData.originalFood, originalMacros: formData.originalMacros }).state}
+        locale={isRtl ? 'ar' : 'en'}
+        missingFields={computeDynamicState(['originalFood', 'originalMacros'], { originalFood: formData.originalFood, originalMacros: formData.originalMacros }).missing}
+      />
       <section className="mb-8 space-y-6">
         <h2 className="text-lg font-semibold">{t.inputs}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -415,14 +425,18 @@ export default function Tool111SmartFoodMacroSubstitution() {
         )}
 
         <div className="flex gap-3">
-          <button onClick={handleCalculate} disabled={displayState === 'validating'}
-            className="w-full py-3 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            {displayState === 'validating' ? t.calculating : t.calculate}
-          </button>
-          <button onClick={handleReset}
-            className="w-full py-3 rounded bg-zinc-200 text-zinc-800 font-medium hover:bg-zinc-300 transition-colors">
-            {t.optional}
-          </button>
+          <GeniusTooltip label={t.calculate} description="Run macro substitution calculation. From engine." source="engine" locale={isRtl ? 'ar' : 'en'}>
+            <button onClick={handleCalculate} disabled={displayState === 'validating'}
+              className="w-full py-3 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              {displayState === 'validating' ? t.calculating : t.calculate}
+            </button>
+          </GeniusTooltip>
+          <GeniusTooltip label={t.reset} description="Clear all inputs and results. Static action." source="static" locale={isRtl ? 'ar' : 'en'}>
+            <button onClick={handleReset}
+              className="w-full py-3 rounded bg-zinc-200 text-zinc-800 font-medium hover:bg-zinc-300 transition-colors">
+              {t.optional}
+            </button>
+          </GeniusTooltip>
         </div>
       </section>
 
@@ -455,12 +469,16 @@ export default function Tool111SmartFoodMacroSubstitution() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
               <h3 className="text-sm font-bold mb-3">{t.substitute_quantity}</h3>
-              <div className="text-2xl font-mono font-bold">{formatNum(result.substituteQuantity)}</div>
+              <GeniusTooltip label={t.substitute_quantity} description="Substitute quantity from engine output" source="engine" locale={isRtl ? 'ar' : 'en'}>
+                <div className="text-2xl font-mono font-bold">{formatNum(result.substituteQuantity)}</div>
+              </GeniusTooltip>
               <div className="text-sm text-zinc-500">{result.substituteUnit}</div>
             </div>
             <div className="rounded bg-zinc-50 p-4 border border-zinc-200">
               <h3 className="text-sm font-bold mb-3">{t.equivalence_score}</h3>
-              <div className="text-2xl font-mono font-bold" data-testid="equivalence-score">{formatNum(result.equivalenceScore)}</div>
+              <GeniusTooltip label={t.equivalence_score} description="Equivalence score from engine output" source="engine" locale={isRtl ? 'ar' : 'en'}>
+                <div className="text-2xl font-mono font-bold" data-testid="equivalence-score">{formatNum(result.equivalenceScore)}</div>
+              </GeniusTooltip>
               <div className="text-sm text-zinc-500">{translateEquivalence(result.equivalenceLevel)}</div>
             </div>
           </div>
@@ -549,6 +567,54 @@ export default function Tool111SmartFoodMacroSubstitution() {
               </dl>
             </div>
           )}
+
+          {result && (
+            <div className="rounded bg-zinc-50 p-4 border border-zinc-200 mb-4">
+              <h3 className="text-sm font-bold mb-3">{isRtl ? 'الإحساس الحالي' : 'Current Feeling'}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {(['energy', 'hunger', 'fatigue', 'sleep', 'mood'] as const).map((key) => (
+                  <div key={key} className="flex flex-col gap-1">
+                    <GeniusTooltip label={key.charAt(0).toUpperCase() + key.slice(1)} description={`Self-reported ${key} level (0-100). User input, not engine-derived.`} source="static" locale={isRtl ? 'ar' : 'en'}>
+                      <label className="text-xs font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}: {feelings[key]}</label>
+                    </GeniusTooltip>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={feelings[key]}
+                      onChange={(e) => setFeelings((f) => ({ ...f, [key]: Number(e.target.value) }))}
+                      className="w-full"
+                      aria-label={key}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <ResultBoxes
+            compact={true}
+            locale={isRtl ? 'ar' : 'en'}
+            onToggle={() => {}}
+            boxes={makeResultBoxes({
+              medicalAdvice: 'This is not medical advice. Consult a qualified professional before making dietary changes.',
+              generalAdvice: result.substituteQuantity ? `Substitute ${result.substituteQuantity} ${result.substituteUnit} for equivalent macros` : 'NOT_AVAILABLE',
+              currentFeeling: `Energy: ${feelings.energy}, Hunger: ${feelings.hunger}, Fatigue: ${feelings.fatigue}, Sleep: ${feelings.sleep}, Mood: ${feelings.mood}. AI: ${feelings.energy > 70 ? 'High energy — good for training' : feelings.energy < 30 ? 'Low energy — consider rest' : 'Moderate energy — proceed normally'}`,
+              predictions: 'NOT_AVAILABLE',
+              aiCoach: 'NOT_AVAILABLE',
+              top3Reasoning: result.warnings && result.warnings.length > 0
+                ? result.warnings.slice(0, 3).map((w: { code: string; message: string }, i: number) => `${i + 1}. ${w.code}: ${w.message}`).join(' | ')
+                : result.macroDeltas
+                  ? `1. Protein delta: ${result.macroDeltas.protein ?? 0}g | 2. Carbs delta: ${result.macroDeltas.carbs ?? 0}g | 3. Fat delta: ${result.macroDeltas.fat ?? 0}g`
+                  : 'No reasoning available',
+              safety: result.warnings && result.warnings.length > 0 ? result.warnings.map((w: { code: string; message: string }) => `${w.code}: ${w.message}`).join('; ') : 'No warnings',
+              whatIf: result.substituteQuantity ? `+20%: ${((result.substituteQuantity * 1.2).toFixed(1))} ${result.substituteUnit} | -20%: ${((result.substituteQuantity * 0.8).toFixed(1))} ${result.substituteUnit}` : 'NOT_AVAILABLE',
+              explainableAI: output.provenance ? `Calculation based on ${output.provenance.measurementMethod ?? 'unspecified'} method, source: ${output.provenance.source}` : 'NOT_AVAILABLE',
+              uncertainty: output.provenance ? `Confidence: ${(output.provenance.confidence * 100).toFixed(0)}%, Equivalence: ${result.equivalenceScore ?? 0}%` : 'NOT_AVAILABLE',
+              alternativePaths: 'NOT_AVAILABLE',
+              nextStepCrossTool: 'Review substitution → Macro Optimizer / Meal Planner',
+            })}
+          />
         </section>
       )}
 

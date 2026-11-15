@@ -110,22 +110,22 @@ export default function Tool075ArterialHealthManager() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input type="number" min={20} max={90} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={20} max={90} step={1} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.systolic}
-          <input type="number" min={70} max={240} step={1} value={inputs.systolic_mmhg} onChange={(e) => setInputs((p) => ({ ...p, systolic_mmhg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={70} max={240} step={1} value={inputs.systolic_mmhg} onChange={(e) => setInputs((p) => ({ ...p, systolic_mmhg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.diastolic}
-          <input type="number" min={40} max={150} step={1} value={inputs.diastolic_mmhg} onChange={(e) => setInputs((p) => ({ ...p, diastolic_mmhg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={40} max={150} step={1} value={inputs.diastolic_mmhg} onChange={(e) => setInputs((p) => ({ ...p, diastolic_mmhg: Number(e.target.value || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.total_chol}
-          <input type="number" min={100} max={500} step={5} value={inputs.total_cholesterol_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, total_cholesterol_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={100} max={500} step={5} value={inputs.total_cholesterol_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, total_cholesterol_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.hdl}
-          <input type="number" min={10} max={150} step={1} value={inputs.hdl_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, hdl_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={10} max={150} step={1} value={inputs.hdl_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, hdl_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.triglycerides}
-          <input type="number" min={30} max={1000} step={5} value={inputs.triglycerides_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, triglycerides_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-slider="true" type="number" min={30} max={1000} step={5} value={inputs.triglycerides_mg_dl} placeholder="optional" onChange={(e) => setInputs((p) => ({ ...p, triglycerides_mg_dl: e.target.value }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
         </label>
         <label className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 md:col-span-3 pt-2">
           <input type="checkbox" checked={inputs.smoker} onChange={(e) => setInputs((p) => ({ ...p, smoker: e.target.checked }))} className="rounded" />
