@@ -22,6 +22,7 @@ import { WORLD_COUNTRIES, EGYPT_GOVERNORATES } from '../../shared/lib/locationDa
 import { PhoneInput } from '../../shared/ui/PhoneInput';
 import { env } from '../../config/env';
 import { StripePaymentElement, type StripePaymentElementHandle } from './StripePaymentElement';
+import { MultiLegCheckoutCoordinator } from './MultiLegCheckoutCoordinator';
 
 export interface NewPricingTier extends PricingTier {
     id: ProductVariant;
@@ -120,6 +121,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         stripeInvoiceId,
         isStripeReady,
         setIsStripeReady,
+        // Multi-leg checkout coordinator
+        multiLegSession,
+        clearMultiLegSession,
 } = useCheckout({
         content,
         lang,
@@ -212,7 +216,22 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
+        <>
+            {/* ── Multi-leg checkout coordinator overlay ── */}
+            {multiLegSession && (
+                <MultiLegCheckoutCoordinator
+                    invoiceId={multiLegSession.invoiceId}
+                    resumeToken={multiLegSession.resumeToken}
+                    initialLegs={multiLegSession.legs}
+                    isAr={isAr}
+                    onCompleted={() => {
+                        clearMultiLegSession();
+                        onSuccess?.();
+                    }}
+                    onCancel={clearMultiLegSession}
+                />
+            )}
+            <form onSubmit={onSubmit} className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
             
             {/* ════════════════════════════════════════════════════════════
                 1. REGION / LOCATION TOGGLE (داخل مصر 🇪🇬 / خارج مصر 🌍)
@@ -1277,6 +1296,7 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
                 </Card>
             </div>
         </form>
+        </>
     );
 };
 

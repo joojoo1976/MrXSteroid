@@ -390,8 +390,21 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 return { code: 'amount_mismatch' };
             }
 
-            // ── Atomic Multi-Leg Database Settlement ────────────────────────
-            // Attempts atomic RPC row-lock settlement; fails closed if RPC reports an error
+            // ── Atomic Multi-Leg Database Settlement (P0 & P1 Remediation) ───
+            // 1. Strict Contract & Fail-Closed Verification (Finding 3):
+            // Do not accept success: true as sufficient proof without full shape and consistency verification.
+            let rpcOutcome: {
+                success?: boolean;
+                invoice_status?: string;
+                can_fulfill?: boolean;
+                idempotent?: boolean;
+                target_leg_id?: string;
+                total_paid?: number;
+                invoice_amount?: number;
+                error?: string;
+                message?: string;
+            };
+
             try {
                 const { data: rpcRes, error: rpcErr } = await supabase.rpc('settle_invoice_payment_leg', {
                     p_invoice_id: invoiceId,
@@ -401,50 +414,119 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                     p_currency: verdict.currency || (existing as any)?.currency || 'USD',
                     p_status: 'succeeded',
                 });
-                if (rpcErr || rpcRes?.success === false) {
-                    console.error('[Fulfillment] settle_invoice_payment_leg failed:', rpcErr?.message || rpcRes?.error || rpcRes?.message);
+
+                if (rpcErr || !rpcRes || typeof rpcRes !== 'object') {
+                    console.error(
+                        '[Fulfillment] settle_invoice_payment_leg failed or invalid RPC response:',
+                        rpcErr?.message || rpcRes
+                    );
                     return { code: 'unresolved' };
-                } else if (rpcRes?.success) {
-                    console.log(`✅ [Fulfillment] settle_invoice_payment_leg atomic RPC succeeded: invoice_status=${rpcRes.invoice_status}`);
                 }
+
+                rpcOutcome = rpcRes as any;
             } catch (rpcCallErr) {
                 console.error('[Fulfillment] settle_invoice_payment_leg RPC threw error:', rpcCallErr);
                 return { code: 'unresolved' };
             }
 
-            // Persist the updated legs in invoice metadata and database
-            await supabase
-                .from('invoices')
-                .update({
-                    metadata: {
-                        ...metadata,
-                        payment_legs: legVerdictRes.updatedLegs,
-                    },
-                    payment_status: legVerdictRes.consolidatedStatus,
-                    updated_at: nowIso(),
-                })
-                .eq('id', invoiceId);
-
-            try {
-                const { persistPaymentLegs } = await import('./multiLegPaymentService');
-                await persistPaymentLegs(supabase, legVerdictRes.updatedLegs);
-            } catch (err) {
-                console.warn('[Fulfillment] persistPaymentLegs error (non-fatal):', err);
+            // A. Validate top-level success
+            if (rpcOutcome.success !== true) {
+                console.error('[Fulfillment] settle_invoice_payment_leg returned success !== true:', rpcOutcome);
+                return { code: 'unresolved' };
             }
 
-            // If not all legs are settled, transition to partially_paid and stop!
-            if (!legVerdictRes.canGrantEntitlement) {
-                console.log(
-                    `⏳ [Fulfillment] Invoice ${invoiceId} is partially paid (status=${legVerdictRes.consolidatedStatus}). Entitlements gated until full settlement.`
-                );
+            // B. Legitimate Idempotent Response Handling
+            if (rpcOutcome.idempotent === true) {
+                if (
+                    rpcOutcome.invoice_status === 'paid' &&
+                    rpcOutcome.can_fulfill === false
+                ) {
+                    console.log(`♻️ [Fulfillment] Invoice ${invoiceId} already settled — idempotent ack`);
+                    return { code: 'already_processed' };
+                }
+                console.error('[Fulfillment] Idempotent response failed contract validation:', rpcOutcome);
+                return { code: 'unresolved' };
+            }
+
+            // C. Validate full documented response shape and types
+            const hasValidShape =
+                typeof rpcOutcome.invoice_status === 'string' &&
+                ['partially_paid', 'paid'].includes(rpcOutcome.invoice_status) &&
+                typeof rpcOutcome.can_fulfill === 'boolean' &&
+                typeof rpcOutcome.target_leg_id === 'string' &&
+                rpcOutcome.target_leg_id.trim().length > 0 &&
+                typeof rpcOutcome.total_paid === 'number' &&
+                !Number.isNaN(rpcOutcome.total_paid) &&
+                rpcOutcome.total_paid >= 0 &&
+                typeof rpcOutcome.invoice_amount === 'number' &&
+                !Number.isNaN(rpcOutcome.invoice_amount) &&
+                rpcOutcome.invoice_amount > 0;
+
+            if (!hasValidShape) {
+                console.error('[Fulfillment] settle_invoice_payment_leg response missing fields or invalid types:', rpcOutcome);
+                return { code: 'unresolved' };
+            }
+
+            // D. Consistency & Contradiction verification
+            if (rpcOutcome.can_fulfill === true) {
+                const satisfiesAmount = rpcOutcome.total_paid! >= rpcOutcome.invoice_amount! - 0.01;
+                if (rpcOutcome.invoice_status !== 'paid' || !satisfiesAmount) {
+                    console.error(
+                        `[Fulfillment] Contradictory RPC response: can_fulfill=true but invoice_status=${rpcOutcome.invoice_status}, total_paid=${rpcOutcome.total_paid}, invoice_amount=${rpcOutcome.invoice_amount}`
+                    );
+                    return { code: 'unresolved' };
+                }
+            } else {
+                if (rpcOutcome.invoice_status === 'paid') {
+                    console.error('[Fulfillment] Contradictory RPC response: invoice_status=paid but can_fulfill=false');
+                    return { code: 'unresolved' };
+                }
+            }
+
+            console.log(
+                `✅ [Fulfillment] settle_invoice_payment_leg contract validated: invoice_status=${rpcOutcome.invoice_status}, can_fulfill=${rpcOutcome.can_fulfill}, total_paid=${rpcOutcome.total_paid}/${rpcOutcome.invoice_amount}`
+            );
+
+            // 3. Concurrency & Regression Protection (P0):
+            // Database RPC is the SOLE source of truth for payment_status and leg statuses.
+            // NEVER overwrite payment_status with legVerdictRes.consolidatedStatus!
+            // Sync metadata.payment_legs strictly from authoritative DB table invoice_payment_legs:
+            try {
+                const { data: dbLegs } = await supabase
+                    .from('invoice_payment_legs')
+                    .select('*')
+                    .eq('invoice_id', invoiceId)
+                    .order('leg_index', { ascending: true });
+
+                const authoritativeLegs = dbLegs && dbLegs.length > 0 ? dbLegs : legVerdictRes.updatedLegs;
+
+                // Update metadata ONLY — DO NOT touch payment_status (it was set atomically by the RPC)
                 await supabase
-                    .from('orders')
+                    .from('invoices')
                     .update({
-                        payment_status: 'partially_paid',
+                        metadata: {
+                            ...metadata,
+                            payment_legs: authoritativeLegs,
+                        },
                         updated_at: nowIso(),
                     })
-                    .eq('invoice_id', invoiceId);
+                    .eq('id', invoiceId);
 
+                // If DB table was empty (e.g. legacy invoice before migration), seed table safely
+                if (!dbLegs || dbLegs.length === 0) {
+                    const { persistPaymentLegs } = await import('./multiLegPaymentService');
+                    await persistPaymentLegs(supabase, legVerdictRes.updatedLegs);
+                }
+            } catch (metaErr) {
+                console.warn('[Fulfillment] metadata sync note (non-fatal):', metaErr);
+            }
+
+            // 4. Entitlement Decision Tied to Authoritative DB Settlement (Fix 1):
+            // can_fulfill is returned directly by the atomic Postgres function
+            if (!rpcOutcome.can_fulfill) {
+                console.log(
+                    `⏳ [Fulfillment] Invoice ${invoiceId} is partially paid (status=${rpcOutcome.invoice_status}). Entitlements gated until full settlement.`
+                );
                 if (source === 'webhook' && providerEventId) {
                     await supabase
                         .from('webhook_events')
