@@ -18,8 +18,11 @@
  */
 import React, { useState } from 'react';
 import type { ToolOutput } from '@/lib/tools/contracts';
-import type { HematocritInput, HematocritResult } from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
-import type { HematocritMonitorBuildOptions } from '@/lib/tools/r6/tool-041-hematocrit-monitor-pipeline';
+import type { HematocritInput } from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
+import type {
+  HematocritMonitorBuildOptions,
+  HematocritResult,
+} from '@/lib/tools/r6/tool-041-hematocrit-monitor-pipeline';
 import { runHematocritMonitor } from '@/lib/tools/r6/tool-041-hematocrit-monitor-pipeline';
 import { requireTool } from '@/lib/tools/registry';
 import i18nJson from '@/i18n/tool-041-hematocrit-monitor.json';

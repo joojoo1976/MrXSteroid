@@ -15,12 +15,14 @@
 import { createToolSchema } from '@/lib/shared/schema-contract';
 import { createToolOutput, type ToolOutput, isToolOutput } from '@/lib/tools/contracts';
 import { requireTool, buildSeoLinks } from '@/lib/tools/registry';
-import { manageEstrogen } from '@/lib/tools/engines/tool-042-estrogen-management';
+import {
+  manageEstrogen,
+  type EstrogenResult,
+} from '@/lib/tools/engines/tool-042-estrogen-management';
 import {
   EstrogenInputSchema,
   EstrogenResultSchema,
   type EstrogenInput,
-  type EstrogenResult,
 } from '@/lib/tools/schemas/tool-042-estrogen-management';
 
 // Input contract + runtime validation boundary (Zod).

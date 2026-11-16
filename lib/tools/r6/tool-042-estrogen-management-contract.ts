@@ -18,7 +18,14 @@
  *
  * Pure module: no storage, no network, no session.
  */
-import { EstrogenInputSchema, type EstrogenInput, type EstrogenResult } from '@/lib/tools/schemas/tool-042-estrogen-management';
+import {
+  EstrogenInputSchema,
+  EstrogenResultSchema,
+  type EstrogenInput,
+} from '@/lib/tools/schemas/tool-042-estrogen-management';
+
+/** The result shape, derived from the canonical schema (no engine import). */
+type EstrogenResult = ReturnType<typeof EstrogenResultSchema.parse>;
 
 /* ── Input shape used by the UI while the user is still typing ─────────────── */
 

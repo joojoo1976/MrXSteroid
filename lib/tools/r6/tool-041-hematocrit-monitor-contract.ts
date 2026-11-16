@@ -16,7 +16,14 @@
  *
  * Pure module: no storage, no network, no session.
  */
-import { HematocritInputSchema, type HematocritInput, type HematocritResult } from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
+import {
+  HematocritInputSchema,
+  HematocritResultSchema,
+  type HematocritInput,
+} from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
+
+/** The result shape, derived from the canonical schema (no engine import). */
+type HematocritResult = ReturnType<typeof HematocritResultSchema.parse>;
 
 /* ── Input shape used by the UI while the user is still typing ─────────────── */
 

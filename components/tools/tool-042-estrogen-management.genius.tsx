@@ -20,8 +20,11 @@
  */
 import React, { useState } from 'react';
 import type { ToolOutput } from '@/lib/tools/contracts';
-import type { EstrogenInput, EstrogenResult } from '@/lib/tools/schemas/tool-042-estrogen-management';
-import type { EstrogenManagementBuildOptions } from '@/lib/tools/r6/tool-042-estrogen-management-pipeline';
+import type { EstrogenInput } from '@/lib/tools/schemas/tool-042-estrogen-management';
+import type {
+  EstrogenManagementBuildOptions,
+  EstrogenResult,
+} from '@/lib/tools/r6/tool-042-estrogen-management-pipeline';
 import { runEstrogenManagement } from '@/lib/tools/r6/tool-042-estrogen-management-pipeline';
 import { requireTool } from '@/lib/tools/registry';
 import i18nJson from '@/i18n/tool-042-estrogen-management.json';

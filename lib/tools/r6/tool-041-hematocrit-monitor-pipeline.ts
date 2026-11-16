@@ -15,12 +15,14 @@
 import { createToolSchema } from '@/lib/shared/schema-contract';
 import { createToolOutput, type ToolOutput, isToolOutput } from '@/lib/tools/contracts';
 import { requireTool, buildSeoLinks } from '@/lib/tools/registry';
-import { monitorHematocrit } from '@/lib/tools/engines/tool-041-hematocrit-monitor';
+import {
+  monitorHematocrit,
+  type HematocritResult,
+} from '@/lib/tools/engines/tool-041-hematocrit-monitor';
 import {
   HematocritInputSchema,
   HematocritResultSchema,
   type HematocritInput,
-  type HematocritResult,
 } from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
 
 // Input contract + runtime validation boundary (Zod).
