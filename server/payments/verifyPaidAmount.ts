@@ -45,10 +45,13 @@ export interface AmountVerification {
 export async function verifyPaidAmount(
     invoiceId: string,
     paidAmount?: number,
-    supabaseClient?: SupabaseClient
+    supabaseClient?: SupabaseClient,
+    paidCurrency?: string
 ): Promise<AmountVerification> {
-    if (paidAmount === undefined || paidAmount === null || Number.isNaN(paidAmount)) {
-        return { ok: true };
+    // Fail-Closed: Never return ok:true when paidAmount is missing or invalid
+    if (paidAmount === undefined || paidAmount === null || Number.isNaN(paidAmount) || paidAmount <= 0) {
+        console.warn(`⚠️ [VerifyAmount] Missing or invalid paidAmount for invoice ${invoiceId} — refusing to activate (fail-closed)`);
+        return { ok: false };
     }
 
     const supabase = supabaseClient || getSupabaseAdmin();
@@ -58,11 +61,19 @@ export async function verifyPaidAmount(
         .eq('id', invoiceId)
         .single();
 
-    if (invoiceError || !invoice) {
+    if (invoiceError || !invoice || !invoice.currency || invoice.amount === null || invoice.amount === undefined) {
         console.warn(
-            `⚠️ [VerifyAmount] Invoice ${invoiceId} not resolvable (${invoiceError?.message ?? 'no row'}) — refusing to activate`
+            `⚠️ [VerifyAmount] Invoice ${invoiceId} not resolvable or missing amount/currency (${invoiceError?.message ?? 'incomplete row'}) — refusing to activate`
         );
         return { ok: false };
+    }
+
+    // Currency verification if reported
+    if (paidCurrency && invoice.currency && paidCurrency.toUpperCase() !== invoice.currency.toUpperCase()) {
+        console.error(
+            `❌ [VerifyAmount] Currency mismatch for invoice ${invoiceId}: paid ${paidCurrency} vs expected ${invoice.currency}`
+        );
+        return { ok: false, expected: Number(invoice.amount), paid: Number(paidAmount), currency: invoice.currency };
     }
 
     const expected = Number(invoice.amount);

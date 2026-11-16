@@ -19,6 +19,7 @@ import {
     CANONICAL_PRODUCTS,
     type CanonicalProductId,
 } from '../../../../server/payments/merchantResolver';
+import { resolveEffectiveUserId } from '../../../../server/auth/resolveUser';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,12 +85,22 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // IDOR Defense: verify caller identity and forbid creating sessions for another user
+        const userResolution = await resolveEffectiveUserId(req, body.userId);
+        if (!userResolution.success) {
+            return NextResponse.json(
+                { error: userResolution.error },
+                { status: userResolution.status }
+            );
+        }
+        const effectiveUserId = userResolution.effectiveUserId;
+
         const session = await createCheckoutSession({
             tierId,
             email: body.email,
             fullName: body.fullName,
             country: body.country,
-            userId: body.userId,
+            userId: effectiveUserId,
             locale: body.locale,
             quantity: body.quantity,
             shippingProviderId: body.shippingProviderId,

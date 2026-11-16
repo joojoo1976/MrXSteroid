@@ -207,11 +207,18 @@ async function uploadReceipt(
         throw new Error('Failed to upload receipt');
     }
 
-    // Get private URL (requires authentication to access)
-    const { data: urlData } = supabase.storage.from(RECEIPT_BUCKET).getPublicUrl(path);
+    // Generate a temporary signed URL (1 hour) — never generate an unauthenticated publicUrl
+    const { data: signedData, error: signedError } = await supabase.storage
+        .from(RECEIPT_BUCKET)
+        .createSignedUrl(path, 60 * 60);
+
+    if (signedError || !signedData?.signedUrl) {
+        console.error('[InstaPay] Signed URL generation error:', signedError);
+        throw new Error('Failed to generate secure receipt URL');
+    }
 
     return {
-        url: urlData.publicUrl,
+        url: signedData.signedUrl,
         path: data.path,
     };
 }
