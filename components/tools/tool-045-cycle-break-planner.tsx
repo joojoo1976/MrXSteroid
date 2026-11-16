@@ -1,141 +1,379 @@
 'use client';
-/** Tool #045 — Cycle Break Planner (dynamic UI). useMemo instant recompute,
- * Zod validation, auto-draft, Bio-Dashboard save, AR/EN, prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+/**
+ * components/tools/tool-045-cycle-break-planner.tsx
+ *
+ * Tool #045 — Cycle Break Planner (R6.1 tool).
+ *
+ * What this component does, and what it deliberately does NOT do:
+ *   - every calculation goes through the R6 pipeline
+ *     (`runCycleBreakPlanner`), which validates the input and calls the
+ *     authoritative V6 engine (`planCycleBreak`) — the UI never calls the
+ *     engine or the legacy adapter directly;
+ *   - the tool starts EMPTY: no cycle length, compound name, half-life,
+ *     suppression estimate or bloodwork answer is pre-filled, because a
+ *     fabricated default would be a fabricated plan;
+ *   - the states EMPTY / PARTIAL / FULL / INVALID / DEGRADED are explicit and
+ *     follow the documented order EMPTY → INVALID → PARTIAL → FULL/DEGRADED;
+ *   - the engine's own warnings are preserved; nothing here invents a PCT drug,
+ *     a dose, a diagnosis or a new threshold;
+ *   - there is NO persistence of any kind: no draft, no dashboard snapshot, no
+ *     session, no cloud storage (W18). The rating in box 12 is session-only and
+ *     says so.
+ */
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { planCycleBreak, type CycleBreakResult } from '@/lib/tools/engines/tool-045-cycle-break-planner';
-import { buildCycleBreakOutput } from '@/lib/tools/adapters/tool-045-cycle-break-planner';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { CycleBreakInputSchema } from '@/lib/tools/schemas/tool-045-cycle-break-planner';
+import {
+  runCycleBreakPlanner,
+  type CycleBreakBuildOptions,
+} from '@/lib/tools/r6/tool-045-cycle-break-planner-pipeline';
+import {
+  TOOL_045_LIMITS,
+  evaluateCycleBreakDraft,
+  formatDays,
+  formatWeeks,
+  type Tool045Draft,
+  type Tool045FieldId,
+  type Tool045IssueCode,
+  type Tool045UiState,
+} from '@/lib/tools/r6/tool-045-cycle-break-planner-contract';
+import Tool045Genius from './tool-045-cycle-break-planner.genius';
 import i18nJson from '@/i18n/tool-045-cycle-break-planner.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-045-cycle-break-planner';
-interface CompoundUI { name_en: string; half_life_days: number; suppression_factor: number }
-interface DraftInputs { cycle_weeks_used: number; compounds: CompoundUI[]; wants_bloodwork: boolean }
+
+const emptyCompound = (): Tool045Draft['compounds'][number] => ({
+  name: '',
+  halfLife: '',
+  suppression: '',
+});
+
+const EMPTY_DRAFT: Tool045Draft = {
+  cycleWeeks: '',
+  compounds: [emptyCompound()],
+  wantsBloodwork: '',
+};
+
+const STATE_KEY: Record<Tool045UiState, string> = {
+  EMPTY: 'state_empty',
+  PARTIAL: 'state_partial',
+  FULL: 'state_full',
+  INVALID: 'state_invalid',
+  DEGRADED: 'state_degraded',
+};
+
+const HINT_KEY: Record<Tool045UiState, string> = {
+  EMPTY: 'state_hint_empty',
+  PARTIAL: 'state_hint_partial',
+  FULL: 'state_hint_full',
+  INVALID: 'state_hint_invalid',
+  DEGRADED: 'state_hint_degraded',
+};
+
+const ERROR_KEY: Record<Tool045IssueCode, string> = {
+  invalid_number: 'error_invalid_number',
+  out_of_range: 'error_out_of_range',
+  required: 'error_required',
+};
 
 export default function Tool045CycleBreakPlanner() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
   const { locale, unitSystem } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>({ cycle_weeks_used: 12, compounds: [{ name_en: 'Testosterone Enanthate', half_life_days: 4.5, suppression_factor: 2 }], wants_bloodwork: true });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const prevDraftKey = useRef('');
+  const uid = useId();
 
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+  const [draft, setDraft] = useState<Tool045Draft>(EMPTY_DRAFT);
 
-  const parsed = useMemo(() => CycleBreakInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo<CycleBreakResult | null>(() => (parsed.success ? planCycleBreak(parsed.data) : null), [parsed]);
+  const options = useMemo<CycleBreakBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale,
+      unitSystem,
+      snapshotType: 'submitted_snapshot',
+      timezone: 'UTC',
+      source: 'manual',
+    }),
+    [locale, unitSystem],
+  );
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildCycleBreakOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale, unitSystem]);
+  const evaluation = evaluateCycleBreakDraft(draft);
+  const run = evaluation.input ? runCycleBreakPlanner(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
 
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
+  const uiState: Tool045UiState =
+    evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
 
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale + unitSystem;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [inputs, locale, unitSystem]);
+  const issueFor = (field: Tool045FieldId, compoundIndex: number | null = null) =>
+    evaluation.issues.find(
+      (issue) => issue.field === field && issue.compoundIndex === compoundIndex,
+    );
 
-  const updateCompound = (i: number, patch: Partial<CompoundUI>) => setInputs((p) => ({ ...p, compounds: p.compounds.map((c, j) => (j === i ? { ...c, ...patch } : c)) }));
+  const issueMessage = (code: Tool045IssueCode): string => t[ERROR_KEY[code]] ?? t.error_required;
 
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    try {
-      const now = new Date().toISOString();
-      const output = buildCycleBreakOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
-  };
+  const setField = (patch: Partial<Tool045Draft>) =>
+    setDraft((previous) => ({ ...previous, ...patch }));
 
-  const num = (v: string, fallback: number) => (v === '' ? fallback : Number(v));
+  const setCompound = (index: number, patch: Partial<Tool045Draft['compounds'][number]>) =>
+    setDraft((previous) => ({
+      ...previous,
+      compounds: previous.compounds.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, ...patch } : row,
+      ),
+    }));
+
+  const addCompound = () =>
+    setDraft((previous) =>
+      previous.compounds.length >= TOOL_045_LIMITS.maxCompounds
+        ? previous
+        : { ...previous, compounds: [...previous.compounds, emptyCompound()] },
+    );
+
+  const removeCompound = (index: number) =>
+    setDraft((previous) =>
+      previous.compounds.length <= 1
+        ? previous
+        : { ...previous, compounds: previous.compounds.filter((_, rowIndex) => rowIndex !== index) },
+    );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-5xl px-4 py-6"
+      aria-labelledby={`${uid}-title`}
+      data-r6-tool={TOOL_SLUG}
+    >
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">
+          {t.tool_name}
+        </h1>
+        <div
+          data-r6-state={uiState}
+          aria-live="polite"
+          className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <label className="block text-[10px] font-bold text-zinc-500 mb-3">{t.cycle_weeks}
-        <input data-r6-slider="true" type="number" min={4} max={52} value={inputs.cycle_weeks_used} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks_used: Math.round(num(e.target.value, 4)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-      </label>
-      <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.compounds}</h2>
-      <div className="space-y-2 mb-3">
-        {inputs.compounds.map((c, i) => (
-          <div key={i} className="grid grid-cols-2 md:grid-cols-4 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
-            <input value={c.name_en} onChange={(e) => updateCompound(i, { name_en: e.target.value })} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder={t.name} />
-            <label className="text-[10px] text-zinc-500">{t.half_life}
-              <input data-r6-slider="true" type="number" min={0.5} max={30} step={0.5} value={c.half_life_days} onChange={(e) => updateCompound(i, { half_life_days: num(e.target.value, 0.5) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <label className="text-[10px] text-zinc-500">{t.suppression}
-              <input data-r6-slider="true" type="number" min={1} max={3} value={c.suppression_factor} onChange={(e) => updateCompound(i, { suppression_factor: Math.round(num(e.target.value, 1)) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <button type="button" onClick={() => setInputs((p) => (p.compounds.length <= 1 ? p : { ...p, compounds: p.compounds.filter((_, j) => j !== i) }))} disabled={inputs.compounds.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <button type="button" onClick={() => setInputs((p) => (p.compounds.length >= 8 ? p : { ...p, compounds: [...p.compounds, { name_en: '', half_life_days: 4.5, suppression_factor: 2 }] }))} disabled={inputs.compounds.length >= 8} className="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_compound}</button>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.wants_bloodwork} onChange={(e) => setInputs((p) => ({ ...p, wants_bloodwork: e.target.checked }))} className="accent-lime-500" />{t.bloodwork}
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_cycle_weeks}
+          <input
+            data-r6-field="cycle-weeks"
+            data-r6-slider="true"
+            type="number"
+            inputMode="numeric"
+            min={TOOL_045_LIMITS.cycleWeeksMin}
+            max={TOOL_045_LIMITS.cycleWeeksMax}
+            step={1}
+            value={draft.cycleWeeks}
+            aria-required="true"
+            aria-invalid={issueFor('cycleWeeks') ? true : undefined}
+            aria-describedby={issueFor('cycleWeeks') ? `${uid}-cycle-weeks-error` : undefined}
+            onChange={(event) => setField({ cycleWeeks: event.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+          />
+          {issueFor('cycleWeeks') && (
+            <span id={`${uid}-cycle-weeks-error`} className="mt-0.5 block text-[10px] font-bold text-red-400">
+              {issueMessage(issueFor('cycleWeeks')!.code)}
+            </span>
+          )}
+        </label>
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_wants_bloodwork}
+          <select
+            data-r6-field="wants-bloodwork"
+            aria-required="true"
+            value={draft.wantsBloodwork}
+            onChange={(event) =>
+              setField({ wantsBloodwork: event.target.value as Tool045Draft['wantsBloodwork'] })
+            }
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
+            <option value="yes">{t.yes}</option>
+            <option value="no">{t.no}</option>
+          </select>
         </label>
       </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-3 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.clear_days}</span><span className="text-2xl font-black text-lime-400 font-mono">{result.days_to_full_clear}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.pct_window}</span><span className="text-lg font-bold font-mono text-amber-400">D+{result.pct_start_day} · {result.pct_duration_weeks}{isRtl ? 'أسابيع' : 'wk'}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.baseline}</span><span className="text-lg font-bold font-mono text-cyan-400">{result.total_weeks_to_baseline} {isRtl ? 'أسبوع' : 'wk'}</span></div>
-          </div>
-          <h3 className="text-xs font-black text-zinc-300 mb-2">{t.milestones}</h3>
-          <ol className="space-y-1 mb-3">
-            {result.recovery_milestones.map((m, i) => (
-              <li key={i} className="flex items-center gap-3 rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-1.5 text-xs">
-                <span className="font-mono font-bold text-lime-400">W{m.week}</span>
-                <span className="text-zinc-300">{isRtl ? m.label_ar : m.label_en}</span>
+
+      <fieldset className="mb-3">
+        <legend className="mb-1 text-sm font-black text-zinc-700 dark:text-zinc-200">
+          {t.compounds_title}
+        </legend>
+        <p className="mb-2 text-[10px] text-zinc-500">{t.compounds_hint}</p>
+        <div className="space-y-2">
+          {draft.compounds.map((row, index) => (
+            <div
+              key={index}
+              data-r6-compound={String(index)}
+              className="grid grid-cols-1 gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 md:grid-cols-4"
+            >
+              <label className="text-[10px] font-bold text-zinc-500">
+                {t.field_compound_name}
+                <input
+                  data-r6-field={`compound-name-${index}`}
+                  type="text"
+                  value={row.name}
+                  aria-required="true"
+                  aria-invalid={issueFor('compoundName', index) ? true : undefined}
+                  aria-describedby={
+                    issueFor('compoundName', index) ? `${uid}-compound-name-${index}-error` : undefined
+                  }
+                  onChange={(event) => setCompound(index, { name: event.target.value })}
+                  className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+                />
+                {issueFor('compoundName', index) && (
+                  <span
+                    id={`${uid}-compound-name-${index}-error`}
+                    className="mt-0.5 block text-[10px] font-bold text-red-400"
+                  >
+                    {issueMessage(issueFor('compoundName', index)!.code)}
+                  </span>
+                )}
+              </label>
+              <label className="text-[10px] font-bold text-zinc-500">
+                {t.field_half_life}
+                <input
+                  data-r6-field={`half-life-${index}`}
+                  data-r6-slider="true"
+                  type="number"
+                  inputMode="decimal"
+                  min={TOOL_045_LIMITS.halfLifeMin}
+                  max={TOOL_045_LIMITS.halfLifeMax}
+                  step={0.5}
+                  value={row.halfLife}
+                  aria-required="true"
+                  aria-invalid={issueFor('halfLife', index) ? true : undefined}
+                  aria-describedby={
+                    issueFor('halfLife', index) ? `${uid}-half-life-${index}-error` : undefined
+                  }
+                  onChange={(event) => setCompound(index, { halfLife: event.target.value })}
+                  className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+                />
+                {issueFor('halfLife', index) && (
+                  <span
+                    id={`${uid}-half-life-${index}-error`}
+                    className="mt-0.5 block text-[10px] font-bold text-red-400"
+                  >
+                    {issueMessage(issueFor('halfLife', index)!.code)}
+                  </span>
+                )}
+              </label>
+              <label className="text-[10px] font-bold text-zinc-500">
+                {t.field_suppression}
+                <select
+                  data-r6-field={`suppression-${index}`}
+                  aria-required="true"
+                  value={row.suppression}
+                  onChange={(event) =>
+                    setCompound(index, {
+                      suppression: event.target.value as Tool045Draft['compounds'][number]['suppression'],
+                    })
+                  }
+                  className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+                >
+                  <option value="">{t.not_answered}</option>
+                  <option value="1">{t.suppression_1}</option>
+                  <option value="2">{t.suppression_2}</option>
+                  <option value="3">{t.suppression_3}</option>
+                </select>
+              </label>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  data-r6-action={`remove-compound-${index}`}
+                  aria-label={`${t.remove_compound} ${index + 1}`}
+                  disabled={draft.compounds.length <= 1}
+                  onClick={() => removeCompound(index)}
+                  className="w-full rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-xs font-bold text-red-300 disabled:opacity-30"
+                >
+                  {t.remove_compound}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          data-r6-action="add-compound"
+          disabled={draft.compounds.length >= TOOL_045_LIMITS.maxCompounds}
+          onClick={addCompound}
+          className="mt-2 rounded-lg bg-zinc-800 px-4 py-1.5 text-xs font-bold text-zinc-200 hover:bg-zinc-700 disabled:opacity-40"
+        >
+          + {t.add_compound}
+        </button>
+      </fieldset>
+
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <ul className="list-disc space-y-0.5 ps-4 text-xs font-bold text-red-300">
+            {evaluation.issues.map((issue, index) => (
+              <li key={`${issue.field}-${issue.compoundIndex ?? 'top'}-${issue.code}-${index}`}>
+                {issueMessage(issue.code)}
               </li>
             ))}
-          </ol>
-          {result.warnings.length > 0 && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 mb-3">
-              <span className="text-[10px] font-bold text-amber-400 block mb-1">{t.warnings}</span>
-              <ul className="space-y-0.5 text-xs text-amber-300">{result.warnings.map((w, i) => (<li key={i}>• {w}</li>))}</ul>
-            </div>
-          )}
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
+          </ul>
+        </div>
+      )}
+
+      {uiState === 'FULL' && result && (
+        <div
+          data-r6-summary="full"
+          className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-center md:grid-cols-4"
+        >
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.clear_days}</span>
+            <span className="font-mono text-2xl font-black text-lime-300">
+              {formatDays(result.days_to_full_clear)} {t.unit_days}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.pct_start_day}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">
+              D+{formatDays(result.pct_start_day)}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.pct_duration}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">
+              {formatWeeks(result.pct_duration_weeks)} {t.unit_weeks}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.baseline_weeks}</span>
+            <span className="font-mono text-xl font-bold text-cyan-300">
+              {formatWeeks(result.total_weeks_to_baseline)} {t.unit_weeks}
+            </span>
           </div>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">
+          {t.state_hint_degraded}
+        </div>
+      )}
+
+      <Tool045Genius
+        locale={locale}
+        state={uiState}
+        draft={draft}
+        input={evaluation.input}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">
+        {tool.toolId} · v{tool.version}
+      </p>
+    </section>
   );
 }
