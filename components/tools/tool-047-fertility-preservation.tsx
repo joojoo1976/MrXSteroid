@@ -1,130 +1,305 @@
 'use client';
-/** Tool #047 — Fertility Preservation Guide (dynamic UI, GPT2 spec). useMemo instant
- * recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN, prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+/**
+ * components/tools/tool-047-fertility-preservation.tsx
+ *
+ * Tool #047 — Fertility Preservation Guide (R6.1 tool).
+ *
+ * What this component does, and what it deliberately does NOT do:
+ *   - every calculation goes through the R6 pipeline
+ *     (`runFertilityPreservation`), which validates the input and calls the
+ *     authoritative V6 engine (`assessFertility`) — the UI never calls the
+ *     engine or the legacy adapter directly;
+ *   - the tool starts EMPTY: no age, suppression level, HCG answer or planning
+ *     horizon is pre-filled, because a fabricated default would be a fabricated
+ *     fertility projection;
+ *   - the states EMPTY / PARTIAL / FULL / INVALID / DEGRADED are explicit and
+ *     follow the documented order EMPTY → INVALID → PARTIAL → FULL/DEGRADED;
+ *   - a typed `0` planning horizon is a real value ("no horizon stated"), never
+ *     "not answered";
+ *   - the engine's own protocol hints and warnings are preserved and only
+ *     mapped to localisation keys; the UI never invents a threshold, a fertility
+ *     treatment, a prescription or a semen-analysis result;
+ *   - the legacy adapter's invented `confidence: 0.85` and invented
+ *     reference range (`0–95 %`, "documented suppression-severity tiers") are
+ *     deliberately NOT reused;
+ *   - there is NO persistence of any kind: no draft, no dashboard snapshot, no
+ *     session, no cloud storage (W18). The rating in box 12 is session-only and
+ *     says so.
+ */
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { assessFertility, type FertilityResult } from '@/lib/tools/engines/tool-047-fertility-preservation';
-import { buildFertilityOutput } from '@/lib/tools/adapters/tool-047-fertility-preservation';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { FertilityInputSchema } from '@/lib/tools/schemas/tool-047-fertility-preservation';
+import {
+  runFertilityPreservation,
+  type FertilityBuildOptions,
+} from '@/lib/tools/r6/tool-047-fertility-preservation-pipeline';
+import {
+  TOOL_047_LIMITS,
+  evaluateFertilityDraft,
+  formatMonths,
+  formatPct,
+  suppressionLevelKey,
+  type Tool047Draft,
+  type Tool047FieldId,
+  type Tool047Hcg,
+  type Tool047IssueCode,
+  type Tool047SuppressionLevel,
+  type Tool047UiState,
+} from '@/lib/tools/r6/tool-047-fertility-preservation-contract';
+import Tool047Genius from './tool-047-fertility-preservation.genius';
 import i18nJson from '@/i18n/tool-047-fertility-preservation.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-047-fertility-preservation';
-interface DraftInputs { age: number; suppression_level: 1 | 2 | 3; uses_hcg: boolean; planning_horizon_months: number }
 
-const num = (e: React.ChangeEvent<HTMLInputElement>) => e.target.value === '' ? 0 : Number(e.target.value);
+const EMPTY_DRAFT: Tool047Draft = {
+  age: '',
+  suppressionLevel: '',
+  usesHcg: '',
+  horizonMonths: '',
+};
+
+const STATE_KEY: Record<Tool047UiState, string> = {
+  EMPTY: 'state_empty',
+  PARTIAL: 'state_partial',
+  FULL: 'state_full',
+  INVALID: 'state_invalid',
+  DEGRADED: 'state_degraded',
+};
+
+const HINT_KEY: Record<Tool047UiState, string> = {
+  EMPTY: 'state_hint_empty',
+  PARTIAL: 'state_hint_partial',
+  FULL: 'state_hint_full',
+  INVALID: 'state_hint_invalid',
+  DEGRADED: 'state_hint_degraded',
+};
+
+const ERROR_KEY: Record<Tool047IssueCode, string> = {
+  invalid_number: 'error_invalid_number',
+  out_of_range: 'error_out_of_range',
+  required: 'error_required',
+  schema_mismatch: 'error_schema_mismatch',
+};
 
 export default function Tool047FertilityPreservation() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
   const { locale, unitSystem } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>({ age: 30, suppression_level: 2, uses_hcg: false, planning_horizon_months: 12 });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const prevDraftKey = useRef('');
+  const uid = useId();
 
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+  const [draft, setDraft] = useState<Tool047Draft>(EMPTY_DRAFT);
 
-  const parsed = useMemo(() => FertilityInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo<FertilityResult | null>(() => (parsed.success ? assessFertility(parsed.data) : null), [parsed]);
+  const options = useMemo<FertilityBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale,
+      unitSystem,
+      snapshotType: 'submitted_snapshot',
+      timezone: 'UTC',
+      source: 'manual',
+    }),
+    [locale, unitSystem],
+  );
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildFertilityOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale, unitSystem]);
+  const evaluation = evaluateFertilityDraft(draft);
+  const run = evaluation.input ? runFertilityPreservation(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
 
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
+  const uiState: Tool047UiState =
+    evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
 
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale + unitSystem;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [inputs, locale, unitSystem]);
+  const issueFor = (field: Tool047FieldId) =>
+    evaluation.issues.find((issue) => issue.field === field);
 
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    try {
-      const now = new Date().toISOString();
-      const output = buildFertilityOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
-  };
+  const issueMessage = (code: Tool047IssueCode): string => t[ERROR_KEY[code]] ?? t.error_required;
+
+  const setField = (patch: Partial<Tool047Draft>) =>
+    setDraft((previous) => ({ ...previous, ...patch }));
+
+  const ageIssue = issueFor('age');
+  const horizonIssue = issueFor('horizonMonths');
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-5xl px-4 py-6"
+      aria-labelledby={`${uid}-title`}
+      data-r6-tool={TOOL_SLUG}
+    >
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">
+          {t.tool_name}
+        </h1>
+        <div
+          data-r6-state={uiState}
+          aria-live="polite"
+          className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input data-r6-slider="true" type="number" min={18} max={60} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: num(e) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_age}
+          <input
+            data-r6-field="age"
+            data-r6-slider="true"
+            type="number"
+            inputMode="decimal"
+            min={TOOL_047_LIMITS.ageMin}
+            max={TOOL_047_LIMITS.ageMax}
+            step={1}
+            value={draft.age}
+            aria-required="true"
+            aria-invalid={ageIssue ? true : undefined}
+            aria-describedby={ageIssue ? `${uid}-age-error` : undefined}
+            onChange={(event) => setField({ age: event.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+          />
+          {ageIssue && (
+            <span id={`${uid}-age-error`} className="mt-0.5 block text-[10px] font-bold text-red-400">
+              {issueMessage(ageIssue.code)}
+            </span>
+          )}
         </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.suppression_level}
-          <select value={inputs.suppression_level} onChange={(e) => setInputs((p) => ({ ...p, suppression_level: Number(e.target.value) as 1 | 2 | 3 }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
-            <option value={1}>{t.level_1}</option>
-            <option value={2}>{t.level_2}</option>
-            <option value={3}>{t.level_3}</option>
+
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_suppression_level}
+          <select
+            data-r6-field="suppressionLevel"
+            aria-required="true"
+            value={draft.suppressionLevel}
+            onChange={(event) =>
+              setField({ suppressionLevel: event.target.value as Tool047SuppressionLevel })
+            }
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
+            <option value="1">{t.level_1}</option>
+            <option value="2">{t.level_2}</option>
+            <option value="3">{t.level_3}</option>
           </select>
         </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.planning_horizon_months}
-          <input data-r6-slider="true" type="number" min={0} max={36} value={inputs.planning_horizon_months} onChange={(e) => setInputs((p) => ({ ...p, planning_horizon_months: Math.round(num(e)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_uses_hcg}
+          <select
+            data-r6-field="usesHcg"
+            aria-required="true"
+            value={draft.usesHcg}
+            onChange={(event) => setField({ usesHcg: event.target.value as Tool047Hcg })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
+            <option value="yes">{t.yes}</option>
+            <option value="no">{t.no}</option>
+          </select>
         </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.uses_hcg} onChange={(e) => setInputs((p) => ({ ...p, uses_hcg: e.target.checked }))} className="accent-lime-500" />{t.uses_hcg}
+
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_horizon_months}
+          <input
+            data-r6-field="horizonMonths"
+            data-r6-slider="true"
+            type="number"
+            inputMode="decimal"
+            min={TOOL_047_LIMITS.horizonMin}
+            max={TOOL_047_LIMITS.horizonMax}
+            step={1}
+            value={draft.horizonMonths}
+            aria-required="true"
+            aria-invalid={horizonIssue ? true : undefined}
+            aria-describedby={horizonIssue ? `${uid}-horizon-error` : undefined}
+            onChange={(event) => setField({ horizonMonths: event.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+          />
+          {horizonIssue && (
+            <span
+              id={`${uid}-horizon-error`}
+              className="mt-0.5 block text-[10px] font-bold text-red-400"
+            >
+              {issueMessage(horizonIssue.code)}
+            </span>
+          )}
         </label>
       </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.impact}</span><span className={`text-2xl font-black font-mono ${result.fertility_impact_pct >= 65 ? 'text-red-400' : result.fertility_impact_pct >= 50 ? 'text-amber-400' : 'text-lime-400'}`}>{result.fertility_impact_pct}%</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.recovery}</span><span className="text-2xl font-black text-white font-mono">{result.recovery_projection_months}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.within_horizon}</span><span className={`text-xl font-bold font-mono ${result.within_horizon ? 'text-lime-400' : 'text-red-400'}`}>{result.within_horizon ? (isRtl ? 'نعم' : 'YES') : (isRtl ? 'لا' : 'No')}</span></div>
+
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <ul className="list-disc space-y-0.5 ps-4 text-xs font-bold text-red-300">
+            {evaluation.issues.map((issue, index) => (
+              <li key={`${issue.field}-${issue.code}-${index}`}>{issueMessage(issue.code)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {uiState === 'FULL' && result && (
+        <div
+          data-r6-summary="full"
+          className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-center md:grid-cols-4"
+        >
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_impact}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">
+              {formatPct(result.fertility_impact_pct)}
+            </span>
           </div>
-          {result.protocol_hints.length > 0 && (
-            <div className="rounded-lg border border-zinc-700 bg-zinc-950 p-3 mb-3">
-              <span className="text-[10px] font-bold text-zinc-400 block mb-1">{t.protocol_hints}</span>
-              <ul className="space-y-0.5 text-xs text-zinc-300">{result.protocol_hints.map((h, i) => (<li key={i}>• {h}</li>))}</ul>
-            </div>
-          )}
-          {result.warnings.length > 0 && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 mb-3">
-              <span className="text-[10px] font-bold text-red-400 block mb-1">{t.warnings}</span>
-              <ul className="space-y-0.5 text-xs text-red-300">{result.warnings.map((w, i) => (<li key={i}>• {w}</li>))}</ul>
-            </div>
-          )}
-          <p className="text-[10px] text-zinc-500">{t.disclaimer}</p>
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_recovery}</span>
+            <span className="font-mono text-xl font-bold text-lime-300">
+              {formatMonths(result.recovery_projection_months)} {t.unit_months}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_within_horizon}</span>
+            <span className="text-sm font-bold text-zinc-100">
+              {result.within_horizon ? t.yes : t.no}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_level}</span>
+            <span className="text-sm font-bold text-zinc-100">
+              {t[suppressionLevelKey(evaluation.input?.suppression_level ?? 1)]}
+            </span>
           </div>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">
+          {t.state_hint_degraded}
+        </div>
+      )}
+
+      <Tool047Genius
+        locale={locale}
+        state={uiState}
+        draft={draft}
+        input={evaluation.input}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{
+          slug: neighbors.prevTool.slug,
+          titleEn: neighbors.prevTool.titleEn,
+          titleAr: neighbors.prevTool.titleAr,
+        }}
+        nextTool={{
+          slug: neighbors.nextTool.slug,
+          titleEn: neighbors.nextTool.titleEn,
+          titleAr: neighbors.nextTool.titleAr,
+        }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">
+        {tool.toolId} · v{tool.version}
+      </p>
+    </section>
   );
 }
