@@ -9,10 +9,6 @@ import i18nJson from '@/i18n/tool-016-half-life-calculator.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 import {
   TOOL_016_CROSS_TOOL_LINKS,
-  TOOL_016_LIMITS,
-  TOOL_016_SOURCES,
-  TOOL_016_ASSUMPTIONS,
-  TOOL_016_MODEL,
   buildHalfLifeCsv,
   formatDays,
   mirroredElapsedDays,

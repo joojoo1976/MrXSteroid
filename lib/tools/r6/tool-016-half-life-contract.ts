@@ -11,8 +11,6 @@
  */
 import {
   HalfLifeInputSchema,
-  HalfLifeResultSchema,
-  HalfLifeCompoundResultSchema,
   type HalfLifeInput,
   type HalfLifeResult,
 } from '@/lib/tools/schemas/tool-016-half-life-calculator';

@@ -5,7 +5,6 @@ import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { r6RunHalfLife, type R6HalfLifeBuildOptions } from '@/lib/tools/r6/tool-016-half-life-pipeline';
 import {
   TOOL_016_LIMITS,
-  TOOL_016_ASSUMPTIONS,
   evaluateHalfLifeDraft,
   formatDays,
   type Tool016CompoundDraft,
