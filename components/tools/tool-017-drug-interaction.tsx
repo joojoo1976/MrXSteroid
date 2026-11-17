@@ -1,30 +1,66 @@
 'use client';
-
-import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
-import { useToolI18n } from '@/lib/tools/i18nHelper';
+import React, { useId, useMemo } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
+import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
+import { runDrugInteraction, type DrugInteractionBuildOptions } from '@/lib/tools/r6/tool-017-drug-interaction-pipeline';
+import { evaluateDrugInteractionDraft, type Tool017UiState } from '@/lib/tools/r6/tool-017-drug-interaction-contract';
+import Tool017Genius from './tool-017-drug-interaction.genius';
 import i18nJson from '@/i18n/tool-017-drug-interaction.json';
-import { checkDrugInteractions } from '@/lib/tools/engines/tool-017-drug-interaction';
+import { pickToolI18n } from '@/lib/tools/i18nHelper';
+
+const TOOL_SLUG = 'tool-017-drug-interaction';
+const STATE_KEY: Record<Tool017UiState, string> = { EMPTY:'state_empty', PARTIAL:'state_partial', FULL:'state_full', INVALID:'state_invalid', DEGRADED:'state_degraded' };
+const HINT_KEY: Record<Tool017UiState, string> = { EMPTY:'state_hint_empty', PARTIAL:'state_hint_partial', FULL:'state_hint_full', INVALID:'state_hint_invalid', DEGRADED:'state_hint_degraded' };
 
 export default function Tool017DrugInteraction() {
-  const t = useToolI18n(i18nJson);
-  const { isRtl } = useToolDisplayPreferences();
-  const result = checkDrugInteractions();
+  const tool = requireTool(TOOL_SLUG);
+  const neighbors = getToolNeighbors(TOOL_SLUG);
+  const { locale, unitSystem } = useToolDisplayPreferences();
+  const t = pickToolI18n(i18nJson, locale);
+  const isRtl = locale === 'ar';
+  const uid = useId();
+
+  const options = useMemo<DrugInteractionBuildOptions>(
+    () => ({ calculatedAt: new Date().toISOString(), recordedAt: new Date().toISOString(), locale, unitSystem, snapshotType: 'submitted_snapshot', timezone: 'UTC', source: 'manual' }),
+    [locale, unitSystem],
+  );
+
+  const evaluation = evaluateDrugInteractionDraft();
+  const run = evaluation.input ? runDrugInteraction(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+  const uiState: Tool017UiState = evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
 
   return (
-    <section className="pct-timing-tool space-y-4 p-6" dir={isRtl ? 'rtl' : 'ltr'} aria-labelledby="tool-017-title">
-      <h1 id="tool-017-title" className="text-2xl font-bold">{t.tool_name}</h1>
-      <div role="status" className="rounded-lg border border-amber-500/50 bg-amber-950/20 p-4 text-amber-100">
-        <p className="font-bold">{result.status}</p>
-        <p className="mt-2 text-sm">{t.unavailable_reason}</p>
-        <p className="mt-2 text-sm">{t.no_safety_claim}</p>
+    <section dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto max-w-5xl px-4 py-6" aria-labelledby={`${uid}-title`} data-r6-tool={TOOL_SLUG}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
+        <div data-r6-state={uiState} aria-live="polite" className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+          {t.state_label}: {t[STATE_KEY[uiState]]}
+        </div>
       </div>
-      <div className="space-y-2 text-sm text-zinc-300">
-        <p>{t.next_step}</p>
-        <ul className="list-disc space-y-1 ps-5">
-          <li><a className="underline" href="https://dailymed.nlm.nih.gov/dailymed/" target="_blank" rel="noreferrer">{t.dailymed_label}</a></li>
-          <li><a className="underline" href="https://www.fda.gov/drugs/resources-drugs/drug-interactions-what-you-should-know" target="_blank" rel="noreferrer">{t.fda_guidance}</a></li>
-        </ul>
-      </div>
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 rounded-2xl border border-amber-500/40 bg-amber-950/20 p-4">
+          <p className="text-sm font-bold text-amber-200">{result.status}</p>
+          <p className="mt-1 text-xs text-zinc-300">{t.unavailable_reason}</p>
+          <p className="mt-1 text-xs text-zinc-400">{t.no_safety_claim}</p>
+        </div>
+      )}
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">{t.state_hint_degraded}</div>
+      )}
+
+      <Tool017Genius
+        locale={locale}
+        state={uiState}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
     </section>
   );
 }
