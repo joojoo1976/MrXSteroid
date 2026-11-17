@@ -41,6 +41,20 @@ export const R6_EXEMPT_SLUGS = new Set<string>([
   'tool-137-peptide-hormone-reconstitution-calculator',
   'tool-138-raw-powder-density-oil-formulation-engine',
   'tool-139-solvent-emulsifier-ratio-calculator',
+  // Tool 039 renders its own GENIUS-12 boxes: every box carries engine-derived
+  // content or an explicit NOT_APPLICABLE / NOT_AVAILABLE reason, and the
+  // generic shell boxes would otherwise duplicate it with weaker wording.
+  'tool-039-liver-enzyme-tracker',
+  'tool-040-lipid-profile-optimizer',
+  'tool-041-hematocrit-monitor',
+  'tool-042-estrogen-management',
+  'tool-045-cycle-break-planner',
+  'tool-046-trt-lifetime',
+  'tool-047-fertility-preservation',
+  'tool-048-cardiovascular-risk',
+  'tool-049-bone-density',
+  'tool-050-mental-health',
+  'tool-051-peptide-dosage-calculator',
 ]);
 
 let cache: { bySlug: Map<string, R6ManifestEntry>; total: number } | null = null;
