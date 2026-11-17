@@ -1,0 +1,270 @@
+{
+  "deployment": "dpl_E1n1DmQYYQRnuofhbcHiAjPT8LsL",
+  "ok": 29,
+  "fail": 0,
+  "total": 29,
+  "checkedAt": "2026-11-17T22:13:37.924Z",
+  "results": [
+    {
+      "route": "/smarttools/hormonal-health/tool-006-estrogen-prolactin",
+      "html": true,
+      "appErr": false,
+      "title": "Estradiol &amp; Prolactin Record",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 89668
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-015-shbg-modulator",
+      "html": true,
+      "appErr": false,
+      "title": "SHBG Modulator",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 88035
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-023-trt-optimization",
+      "html": true,
+      "appErr": false,
+      "title": "TRT Optimization",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 86999
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-035-hormone-conversion",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25226
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-040-lipid-profile-optimizer",
+      "html": true,
+      "appErr": false,
+      "title": "Lipid Profile Optimizer",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 82156
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-041-hematocrit-monitor",
+      "html": true,
+      "appErr": false,
+      "title": "Hematocrit Monitor",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 96485
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-042-estrogen-management",
+      "html": true,
+      "appErr": false,
+      "title": "Estrogen Management Pro",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 96685
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-043-prolactin-management",
+      "html": true,
+      "appErr": false,
+      "title": "Prolactin Management Pro",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 91801
+    },
+    {
+      "route": "/smarttools/hormonal-health/tool-044-dht-side-effects",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25207
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-045-cycle-break-planner",
+      "html": true,
+      "appErr": false,
+      "title": "Cycle Break Planner",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 95477
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-046-trt-lifetime-calculator",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25244
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-047-fertility-preservation",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25241
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-048-cardiovascular-risk-assessor",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25265
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-049-bone-density-optimizer",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25247
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-050-mental-health-monitor",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25244
+    },
+    {
+      "route": "/smarttools/injection-formulation/tool-051-peptide-dosage-calculator",
+      "html": true,
+      "appErr": false,
+      "title": "Peptide Dosage Calculator",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 93409
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-016-half-life-calculator",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25235
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-022-oral-vs-injectable",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25229
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-027-ester-conversion",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25223
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-031-blast-cruise",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25198
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-034-compound-clearance",
+      "html": true,
+      "appErr": false,
+      "title": "Smart Tools | Mr. X-Steroid",
+      "r6State": false,
+      "r6Genius": false,
+      "len": 25229
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-008-side-effect-tracker",
+      "html": true,
+      "appErr": false,
+      "title": "Side Effect Tracker",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 103473
+    },
+    {
+      "route": "/smarttools/body-composition/tool-014-water-retention",
+      "html": true,
+      "appErr": false,
+      "title": "Water Retention Assessor",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 98728
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-017-drug-interaction",
+      "html": true,
+      "appErr": false,
+      "title": "Drug Interaction Checker",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 99916
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-025-drug-interaction-pro",
+      "html": true,
+      "appErr": false,
+      "title": "Medication &amp; Compound Session List",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 101326
+    },
+    {
+      "route": "/smarttools/injection-formulation/tool-026-injection-pain",
+      "html": true,
+      "appErr": false,
+      "title": "Injection Experience Log",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 100790
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-029-side-effect-early-warning",
+      "html": true,
+      "appErr": false,
+      "title": "Personal Measurement Summary",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 101797
+    },
+    {
+      "route": "/smarttools/medical-monitoring/tool-037-side-effect-probability",
+      "html": true,
+      "appErr": false,
+      "title": "Side Effect Probability Calculator",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 102272
+    },
+    {
+      "route": "/smarttools/cycle-management/tool-038-stack-compatibility",
+      "html": true,
+      "appErr": false,
+      "title": "Stack Compatibility Checker",
+      "r6State": true,
+      "r6Genius": true,
+      "len": 100439
+    }
+  ]
+}
