@@ -1,212 +1,142 @@
 'use client';
-
-import React, { useState } from 'react';
-import i18nJson from '@/i18n/tool-029-side-effect-early-warning.json';
-import { useToolI18n } from '@/lib/tools/i18nHelper';
-import { summarizeMeasurementReadingsV7 } from '@/lib/tools/engines/tool-029-side-effect-early-warning';
+import React, { useId, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
+import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
+import { runSideEffectEarlyWarning, type SideEffectEarlyWarningBuildOptions } from '@/lib/tools/r6/tool-029-side-effect-early-warning-pipeline';
 import {
-  MeasurementReadingSchema,
-  MeasurementSummaryInputSchema,
+  evaluateDraftReading,
+  evaluateSession,
+  buildReadingFromDraft,
+  type Tool029Draft,
+  type Tool029UiState,
   type MeasurementReading,
-  type MeasurementSummaryResult,
-} from '@/lib/tools/schemas/tool-029-side-effect-early-warning';
+} from '@/lib/tools/r6/tool-029-side-effect-early-warning-contract';
+import Tool029Genius from './tool-029-side-effect-early-warning.genius';
+import i18nJson from '@/i18n/tool-029-side-effect-early-warning.json';
+import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
-interface Draft {
-  date: string;
-  metric: 'blood_pressure' | 'pulse';
-  systolicMmHg: string;
-  diastolicMmHg: string;
-  beatsPerMinute: string;
-  sourceLabel: string;
-}
-
-const EMPTY_DRAFT: Draft = {
-  date: '',
-  metric: 'blood_pressure',
-  systolicMmHg: '',
-  diastolicMmHg: '',
-  beatsPerMinute: '',
-  sourceLabel: '',
-};
-
-function numberOrInvalid(value: string): number {
-  return value.trim() === '' ? Number.NaN : Number(value);
-}
+const TOOL_SLUG = 'tool-029-side-effect-early-warning';
+const EMPTY_DRAFT: Tool029Draft = { date: '', metric: 'blood_pressure', systolicMmHg: '', diastolicMmHg: '', beatsPerMinute: '', sourceLabel: '' };
+const STATE_KEY: Record<Tool029UiState, string> = { EMPTY:'state_empty', PARTIAL:'state_partial', FULL:'state_full', INVALID:'state_invalid', DEGRADED:'state_degraded' };
+const HINT_KEY: Record<Tool029UiState, string> = { EMPTY:'state_hint_empty', PARTIAL:'state_hint_partial', FULL:'state_hint_full', INVALID:'state_hint_invalid', DEGRADED:'state_hint_degraded' };
 
 export default function Tool029MeasurementSummary() {
-  const t = useToolI18n(i18nJson);
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
-  const [readings, setReadings] = useState<MeasurementReading[]>([]);
-  const [result, setResult] = useState<MeasurementSummaryResult | null>(null);
-  const [validationError, setValidationError] = useState(false);
+  const tool = requireTool(TOOL_SLUG);
+  const neighbors = getToolNeighbors(TOOL_SLUG);
+  const { locale, unitSystem } = useToolDisplayPreferences();
+  const t = pickToolI18n(i18nJson, locale);
+  const isRtl = locale === 'ar';
+  const uid = useId();
 
-  const updateDraft = (key: keyof Draft, value: string) => {
-    setDraft((current) => ({ ...current, [key]: value }));
-    setResult(null);
-    setValidationError(false);
-  };
+  const [draft, setDraft] = useState<Tool029Draft>(EMPTY_DRAFT);
+  const [readings, setReadings] = useState<MeasurementReading[]>([]);
+
+  const options = useMemo<SideEffectEarlyWarningBuildOptions>(
+    () => ({ calculatedAt: new Date().toISOString(), recordedAt: new Date().toISOString(), locale, unitSystem, snapshotType: 'submitted_snapshot', timezone: 'UTC', source: 'manual' }),
+    [locale, unitSystem],
+  );
+
+  const evaluation = evaluateSession(readings, draft);
+  const run = evaluation.input ? runSideEffectEarlyWarning(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+  const uiState: Tool029UiState = evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
+
+  const draftEval = evaluateDraftReading(draft);
+  const canAdd = draftEval.valid && readings.length < 200;
 
   const addReading = () => {
-    const base = {
-      id: crypto.randomUUID(),
-      date: draft.date,
-      metric: draft.metric,
-      sourceLabel: draft.sourceLabel.trim() || undefined,
-    };
-    const candidate = draft.metric === 'blood_pressure'
-      ? {
-          ...base,
-          metric: 'blood_pressure' as const,
-          systolicMmHg: numberOrInvalid(draft.systolicMmHg),
-          diastolicMmHg: numberOrInvalid(draft.diastolicMmHg),
-        }
-      : {
-          ...base,
-          metric: 'pulse' as const,
-          beatsPerMinute: numberOrInvalid(draft.beatsPerMinute),
-        };
-    const parsed = MeasurementReadingSchema.safeParse(candidate);
-    const allReadings = parsed.success ? [...readings, parsed.data] : readings;
-    const validSession = parsed.success && allReadings.length <= 200
-      ? MeasurementSummaryInputSchema.safeParse({ readings: allReadings }).success
-      : false;
-    if (!parsed.success || !validSession) {
-      setValidationError(true);
-      return;
-    }
-    setReadings(allReadings);
+    if (!canAdd) return;
+    const reading = buildReadingFromDraft(draft);
+    if (!reading) return;
+    setReadings((prev) => [...prev, reading]);
     setDraft(EMPTY_DRAFT);
-    setResult(null);
-    setValidationError(false);
   };
+  const removeReading = (id: string) => setReadings((prev) => prev.filter((r) => r.id !== id));
+  const setField = (patch: Partial<Tool029Draft>) => setDraft((p) => ({ ...p, ...patch }));
 
-  const summarize = () => {
-    const parsed = MeasurementSummaryInputSchema.safeParse({ readings });
-    if (!parsed.success) {
-      setValidationError(true);
-      setResult(null);
-      return;
-    }
-    setResult(summarizeMeasurementReadingsV7(parsed.data.readings));
-    setValidationError(false);
-  };
-
-  const removeReading = (id: string) => {
-    setReadings((current) => current.filter((reading) => reading.id !== id));
-    setResult(null);
-  };
-
-  const reset = () => {
-    setDraft(EMPTY_DRAFT);
-    setReadings([]);
-    setResult(null);
-    setValidationError(false);
-  };
-
-  const formatValue = (value: number) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+  const fmt = (v: number) => new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', { maximumFractionDigits: 2 }).format(v);
 
   return (
-    <section className="pct-timing-tool p-6" dir={t.dir}>
-      <h2 className="mb-3 text-2xl font-bold">{t.tool_name}</h2>
-      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{t.scope_note}</p>
-      <p role="status" className="mb-6 rounded bg-zinc-100 p-3 text-sm">{t.assessment_unavailable}</p>
+    <section dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto max-w-5xl px-4 py-6" aria-labelledby={`${uid}-title`} data-r6-tool={TOOL_SLUG}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
+        <div data-r6-state={uiState} aria-live="polite" className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+          {t.state_label}: {t[STATE_KEY[uiState]]}
+        </div>
+      </div>
+      <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100">{t.scope_note}</p>
 
-      <div className="space-y-4">
-        <label className="block text-sm font-medium">
-          {t.reading_date}
-          <input type="date" value={draft.date} onChange={(event) => updateDraft('date', event.target.value)}
-            className="mt-1 w-full rounded border p-2" dir="ltr" />
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="text-[10px] font-bold text-zinc-500">{t.reading_date}
+          <input data-r6-field="date" type="date" value={draft.date} onChange={(e) => setField({ date: e.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white" />
         </label>
-        <label className="block text-sm font-medium">
-          {t.measurement_type}
-          <select value={draft.metric} onChange={(event) => updateDraft('metric', event.target.value)} className="mt-1 w-full rounded border p-2">
+        <label className="text-[10px] font-bold text-zinc-500">{t.measurement_type}
+          <select data-r6-field="metric" value={draft.metric} onChange={(e) => setField({ metric: e.target.value as Tool029Draft['metric'] })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white">
             <option value="blood_pressure">{t.blood_pressure}</option>
             <option value="pulse">{t.pulse}</option>
           </select>
         </label>
-
-        {draft.metric === 'blood_pressure' ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-medium">
-              {t.systolic}
-              <input type="number" step="any" value={draft.systolicMmHg} onChange={(event) => updateDraft('systolicMmHg', event.target.value)}
-                className="mt-1 w-full rounded border p-2" dir="ltr" />
-            </label>
-            <label className="block text-sm font-medium">
-              {t.diastolic}
-              <input type="number" step="any" value={draft.diastolicMmHg} onChange={(event) => updateDraft('diastolicMmHg', event.target.value)}
-                className="mt-1 w-full rounded border p-2" dir="ltr" />
-            </label>
-          </div>
-        ) : (
-          <label className="block text-sm font-medium">
-            {t.pulse_value}
-            <input type="number" step="any" value={draft.beatsPerMinute} onChange={(event) => updateDraft('beatsPerMinute', event.target.value)}
-              className="mt-1 w-full rounded border p-2" dir="ltr" />
+        {draft.metric === 'blood_pressure' ? (<>
+          <label className="text-[10px] font-bold text-zinc-500">{t.systolic}
+            <input data-r6-field="systolicMmHg" type="number" step="any" value={draft.systolicMmHg} onChange={(e) => setField({ systolicMmHg: e.target.value })}
+              className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
+          </label>
+          <label className="text-[10px] font-bold text-zinc-500">{t.diastolic}
+            <input data-r6-field="diastolicMmHg" type="number" step="any" value={draft.diastolicMmHg} onChange={(e) => setField({ diastolicMmHg: e.target.value })}
+              className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
+          </label>
+        </>) : (
+          <label className="text-[10px] font-bold text-zinc-500">{t.pulse_value}
+            <input data-r6-field="beatsPerMinute" type="number" step="any" value={draft.beatsPerMinute} onChange={(e) => setField({ beatsPerMinute: e.target.value })}
+              className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
           </label>
         )}
-
-        <label className="block text-sm font-medium">
-          {t.source_label}
-          <input value={draft.sourceLabel} maxLength={160} onChange={(event) => updateDraft('sourceLabel', event.target.value)}
-            className="mt-1 w-full rounded border p-2" />
+        <label className="text-[10px] font-bold text-zinc-500 md:col-span-2">{t.source_label}
+          <input data-r6-field="sourceLabel" type="text" maxLength={160} value={draft.sourceLabel} onChange={(e) => setField({ sourceLabel: e.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white" />
         </label>
-        {validationError && <p role="alert" className="text-sm text-red-700">{t.validation_error}</p>}
-        <button type="button" onClick={addReading} disabled={readings.length >= 200}
-          className="w-full rounded bg-zinc-700 px-4 py-3 font-medium text-white disabled:opacity-50">
-          {t.add_reading} ({readings.length}/200)
-        </button>
       </div>
+      <button type="button" onClick={addReading} disabled={!canAdd} className="mb-4 rounded border border-zinc-600 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40">{t.add_reading} ({readings.length}/200)</button>
 
-      <section aria-labelledby="tool-029-readings-heading" className="mt-7 rounded bg-zinc-50 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 id="tool-029-readings-heading" className="font-semibold">{t.session_readings}</h3>
-          {readings.length > 0 && <button type="button" onClick={reset} className="rounded border px-3 py-2 text-sm">{t.clear_all}</button>}
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <p className="text-xs font-bold text-red-300">{t.validation_error}</p>
         </div>
-        {readings.length === 0 ? <p className="mt-3 text-sm text-zinc-600">{t.empty}</p> : (
-          <ul className="mt-3 space-y-3">
-            {readings.map((reading) => (
-              <li key={reading.id} className="flex items-start justify-between gap-3 rounded border bg-white p-3">
-                <div>
-                  <div className="font-medium">{reading.date} · {reading.metric === 'blood_pressure' ? t.blood_pressure : t.pulse}</div>
-                  <div className="mt-1 text-sm text-zinc-600">
-                    {reading.metric === 'blood_pressure'
-                      ? `${t.systolic}: ${reading.systolicMmHg} mmHg · ${t.diastolic}: ${reading.diastolicMmHg} mmHg`
-                      : `${t.pulse_value}: ${reading.beatsPerMinute} beats/min`}
-                  </div>
-                  {reading.sourceLabel && <div className="mt-1 text-xs text-zinc-500">{t.source_label}: {reading.sourceLabel}</div>}
-                  <div className="mt-1 text-xs text-zinc-500">{t.origin_user_provided}</div>
-                </div>
-                <button type="button" onClick={() => removeReading(reading.id)} className="rounded border px-2 py-1 text-sm">{t.remove}</button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <button type="button" onClick={summarize} disabled={readings.length === 0}
-            className="rounded bg-blue-700 px-4 py-3 font-medium text-white disabled:opacity-50">{t.summarize}</button>
-          {readings.length > 0 && <button type="button" onClick={reset} className="rounded border px-4 py-3 font-medium">{t.reset_all}</button>}
-        </div>
-      </section>
-
-      {result && (
-        <section aria-labelledby="tool-029-summary-heading" className="mt-6 rounded border p-4">
-          <h3 id="tool-029-summary-heading" className="font-semibold">{t.descriptive_summary}</h3>
-          <p className="mt-1 text-xs text-zinc-500">{result.resultOrigin} · {result.method} · {result.clinicalAssessment}</p>
-          <p className="mt-2 text-sm text-zinc-600">{t.summary_limit}</p>
-          <ul className="mt-3 space-y-3">
-            {result.summaries.map((summary) => (
-              <li key={summary.metric} className="rounded bg-zinc-50 p-3">
-                <div className="font-medium">{t[summary.metric]}</div>
-                <div className="mt-1 text-sm">{t.observation_count}: {summary.count}</div>
-                <div className="mt-1 text-sm">{t.minimum}: {formatValue(summary.minimum)} {summary.unit}</div>
-                <div className="mt-1 text-sm">{t.maximum}: {formatValue(summary.maximum)} {summary.unit}</div>
-                <div className="mt-1 text-sm">{t.arithmetic_mean}: {formatValue(summary.arithmeticMean)} {summary.unit}</div>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
+
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+          <p className="text-sm font-bold text-zinc-100">{t.descriptive_summary}</p>
+          <p className="mt-1 text-xs text-zinc-400">{result.readings.length} {t.observation_count}</p>
+          <ul className="mt-2 space-y-2">{result.summaries.map((s) => (
+            <li key={s.metric} className="rounded border border-zinc-800 bg-zinc-950/70 p-2 text-xs text-zinc-200">
+              <span className="font-bold">{t[s.metric] ?? s.metric}</span>: {t.minimum} {fmt(s.minimum)} · {t.maximum} {fmt(s.maximum)} · {t.arithmetic_mean} {fmt(s.arithmeticMean)} {s.unit}
+            </li>
+          ))}</ul>
+        </div>
+      )}
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">{t.state_hint_degraded}</div>
+      )}
+
+      <Tool029Genius
+        locale={locale}
+        state={uiState}
+        readings={readings}
+        result={result}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+        onRemove={removeReading}
+        t={t}
+        fmt={fmt}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
     </section>
   );
 }
