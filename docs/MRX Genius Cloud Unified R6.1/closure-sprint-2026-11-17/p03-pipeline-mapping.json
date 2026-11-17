@@ -1,0 +1,284 @@
+﻿[
+    {
+        "file":  "one-rep-max-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-006-estrogen-prolactin-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-007-bloodwork-analyzer-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-008-side-effect-tracker-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-009-injection-site-rotator-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-010-compound-stack-builder-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-011-progress-tracker-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-012-calorie-adjuster-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-013-macro-optimizer-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-014-water-retention-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "WaterRetentionResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-015-shbg-modulator-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "SHBGResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-016-half-life-pipeline.ts",
+        "run":  false,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-017-drug-interaction-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "DrugInteractionResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-018-hpta-recovery-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-019-cardio-monitor-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-020-genetic-potential-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "GeneticPotentialResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-021-peptide-protocol-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "PeptideProtocolResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-022-half-life-stacker-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "StackTimingResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-023-trt-optimization-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "TrtResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-024-bloodwork-interpreter-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "BloodworkComparisonResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-025-drug-interaction-pro-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "MedicationSessionResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-026-injection-pain-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "InjectionExperienceResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-027-ester-conversion-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-028-stacking-synergy-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "StackComparisonResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-029-side-effect-early-warning-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "MeasurementSummaryResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-030-cycle-cost-calculator-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "CycleCostResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-031-cycle-length-optimizer-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "CycleLengthResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-032-advanced-pct-planner-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "PctPlannerResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-033-bloodwork-trend-analyzer-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "TrendAnalyzerResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-034-compound-clearance-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "ClearanceResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-035-hormone-conversion-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "ConversionResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-036-injection-schedule-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "InjectionScheduleResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-037-side-effect-probability-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "SideEffectRiskResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-038-stack-compatibility-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "StackCompatibilityResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-039-liver-enzyme-tracker-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "LiverTrackerResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-040-lipid-profile-optimizer-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "LipidOptimizerResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-041-hematocrit-monitor-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "HematocritResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-042-estrogen-management-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "EstrogenResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-043-prolactin-management-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "ProlactinResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-044-dht-side-effects-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "DhtResultSchema",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-045-cycle-break-planner-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-046-trt-lifetime-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-047-fertility-preservation-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-048-cardiovascular-risk-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-049-bone-density-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-050-mental-health-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    },
+    {
+        "file":  "tool-051-peptide-dosage-pipeline.ts",
+        "run":  true,
+        "resultSchemas":  "",
+        "hasResultValidation":  false
+    }
+]
