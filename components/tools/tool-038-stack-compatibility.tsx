@@ -1,142 +1,87 @@
 'use client';
-/** Tool #038 — Stack Compatibility Checker (dynamic UI, GPT2 spec). useMemo
- * instant recompute, Zod validation, auto-draft via shared adapter, standard
- * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { checkStackCompatibility, type StackCompatibilityResult } from '@/lib/tools/engines/tool-038-stack-compatibility';
-import { buildStackCompatibilityOutput } from '@/lib/tools/adapters/tool-038-stack-compatibility';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { StackCompatibilityInputSchema } from '@/lib/tools/schemas/tool-038-stack-compatibility';
+import { runStackCompatibility, type StackCompatibilityBuildOptions } from '@/lib/tools/r6/tool-038-stack-compatibility-pipeline';
+import {
+  TOOL_038_FAMILIES,
+  evaluateStackCompatibilityDraft,
+  type Tool038Draft,
+  type Tool038UiState,
+  type Tool038ItemDraft,
+} from '@/lib/tools/r6/tool-038-stack-compatibility-contract';
+import Tool038Genius from './tool-038-stack-compatibility.genius';
 import i18nJson from '@/i18n/tool-038-stack-compatibility.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-038-stack-compatibility';
-type Family = 'testosterone' | 'nandrolone' | 'trenbolone' | 'dht' | 'oral' | 'ai' | 'serm' | 'support';
-interface ItemUI { name_en: string; family: Family; weekly_dose_mg: number; hepatotoxic: boolean }
-interface DraftInputs { items: ItemUI[] }
-
-const DEFAULT_ITEM: ItemUI = { name_en: 'Testosterone Enanthate', family: 'testosterone', weekly_dose_mg: 500, hepatotoxic: false };
-
-const VERDICT_COLOR: Record<string, string> = { compatible: 'text-lime-400 border-lime-500/40', caution: 'text-amber-400 border-amber-500/40', incompatible: 'text-red-400 border-red-500/40' };
-const FLAG_COLOR: Record<string, string> = { info: 'text-zinc-400', monitor: 'text-amber-400', important: 'text-red-400' };
+const emptyItem = (): Tool038ItemDraft => ({ nameEn: '', family: '', weeklyDoseMg: '', hepatotoxic: false });
+const EMPTY_DRAFT: Tool038Draft = { items: [emptyItem()] };
+const STATE_KEY: Record<Tool038UiState, string> = { EMPTY:'state_empty', PARTIAL:'state_partial', FULL:'state_full', INVALID:'state_invalid', DEGRADED:'state_degraded' };
+const HINT_KEY: Record<Tool038UiState, string> = { EMPTY:'state_hint_empty', PARTIAL:'state_hint_partial', FULL:'state_hint_full', INVALID:'state_hint_invalid', DEGRADED:'state_hint_degraded' };
 
 export default function Tool038StackCompatibility() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const { locale } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>({ items: [DEFAULT_ITEM] });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevDraftKey = useRef('');
+  const uid = useId();
+  const [draft, setDraft] = useState<Tool038Draft>(EMPTY_DRAFT);
 
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+  const options = useMemo<StackCompatibilityBuildOptions>(
+    () => ({ calculatedAt: new Date().toISOString(), recordedAt: new Date().toISOString(), locale, unitSystem, snapshotType: 'submitted_snapshot', timezone: 'UTC', source: 'manual' }),
+    [locale, unitSystem],
+  );
 
-  const parsed = useMemo(() => StackCompatibilityInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo<StackCompatibilityResult | null>(() => (parsed.success ? checkStackCompatibility(parsed.data) : null), [parsed]);
+  const evaluation = evaluateStackCompatibilityDraft(draft);
+  const run = evaluation.input ? runStackCompatibility(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+  const uiState: Tool038UiState = evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildStackCompatibilityOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
-
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
-
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [inputs, locale]);
-
-  const addItem = () => setInputs((p) => (p.items.length >= 10 ? p : { ...p, items: [...p.items, { name_en: '', family: 'testosterone' as Family, weekly_dose_mg: 250, hepatotoxic: false }] }));
-  const removeItem = (i: number) => setInputs((p) => (p.items.length <= 1 ? p : { ...p, items: p.items.filter((_, j) => j !== i) }));
-
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    setSaveStatus(isRtl ? 'جاري الحفظ...' : 'Saving...');
-    try {
-      const now = new Date().toISOString();
-      const output = buildStackCompatibilityOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
-  };
+  const updateItem = (i: number, key: keyof Tool038ItemDraft, value: string | boolean) => setDraft(p => ({ ...p, items: p.items.map((it, idx) => idx === i ? { ...it, [key]: value } : it) }));
+  const addItem = () => { if (draft.items.length < 12) setDraft(p => ({ ...p, items: [...p.items, emptyItem()] })); };
+  const removeItem = (i: number) => { if (draft.items.length > 1) setDraft(p => ({ ...p, items: p.items.filter((_, idx) => idx !== i) })); };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto max-w-5xl px-4 py-6" aria-labelledby={`${uid}-title`} data-r6-tool={TOOL_SLUG}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
+        <div data-r6-state={uiState} aria-live="polite" className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.items}</h2>
-      <div className="space-y-2 mb-3">
-        {inputs.items.map((it, i) => (
-          <div key={i} className="grid grid-cols-2 md:grid-cols-5 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
-            <input value={it.name_en} onChange={(e) => setInputs((p) => ({ ...p, items: p.items.map((x, j) => (j === i ? { ...x, name_en: e.target.value } : x)) }))} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder="Name" />
-            <select value={it.family} onChange={(e) => setInputs((p) => ({ ...p, items: p.items.map((x, j) => (j === i ? { ...x, family: e.target.value as ItemUI['family'] } : x)) }))} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
-              {['testosterone', 'nandrolone', 'trenbolone', 'dht', 'oral', 'ai', 'serm', 'support'].map((f) => (<option key={f} value={f}>{f}</option>))}
-            </select>
-            <label className="text-[10px] text-zinc-500">mg/wk
-              <input type="number" min={0} max={5000} value={it.weekly_dose_mg} onChange={(e) => setInputs((p) => ({ ...p, items: p.items.map((x, j) => (j === i ? { ...x, weekly_dose_mg: e.target.value === '' ? 0 : Number(e.target.value) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
-              <input type="checkbox" checked={it.hepatotoxic} onChange={(e) => setInputs((p) => ({ ...p, items: p.items.map((x, j) => (j === i ? { ...x, hepatotoxic: e.target.checked } : x)) }))} className="accent-lime-500" />hepatotoxic
-            </label>
-            <button type="button" onClick={() => removeItem(i)} disabled={inputs.items.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
-          </div>
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100">{t.scope_note}</p>
+
+      <div className="mb-4 space-y-3">
+        {draft.items.map((it, i) => (
+          <fieldset key={i} className="space-y-2 rounded border border-zinc-700 p-3" data-r6-field="items">
+            <legend className="px-2 text-xs font-semibold text-zinc-200">{t.item} {i+1}</legend>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <label className="text-[10px] font-bold text-zinc-500">{t.item_name}<input className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={it.nameEn} maxLength={80} onChange={(e)=>updateItem(i,'nameEn',e.target.value)} /></label>
+              <label className="text-[10px] font-bold text-zinc-500">{t.family}<select className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={it.family} onChange={(e)=>updateItem(i,'family',e.target.value)}><option value="">{t.not_answered}</option>{TOOL_038_FAMILIES.map(f=><option key={f} value={f}>{t[`family_${f}`]??f}</option>)}</select></label>
+              <label className="text-[10px] font-bold text-zinc-500">{t.weekly_dose_mg}<input type="number" min={0} max={5000} step={1} className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={it.weeklyDoseMg} onChange={(e)=>updateItem(i,'weeklyDoseMg',e.target.value)} /></label>
+              <label className="flex items-center gap-2 pt-4 text-xs font-bold text-zinc-400"><input type="checkbox" checked={it.hepatotoxic} onChange={(e)=>updateItem(i,'hepatotoxic',e.target.checked)} /> {t.hepatotoxic}</label>
+            </div>
+            {draft.items.length > 1 && <button type="button" className="rounded border border-zinc-600 px-3 py-1 text-xs text-zinc-200" onClick={()=>removeItem(i)}>{t.remove_item}</button>}
+          </fieldset>
         ))}
       </div>
-      <button type="button" onClick={addItem} disabled={inputs.items.length >= 10} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_item}</button>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-2 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-lime-500/40"><span className="text-[10px] text-zinc-400 block">{t.score}</span><span className="text-2xl font-black text-lime-400 font-mono">{result.score_0_100}/100</span></div>
-            <div className={`bg-zinc-950 p-3 rounded-lg border ${VERDICT_COLOR[result.verdict] ?? 'border-zinc-800'}`}><span className="text-[10px] text-zinc-400 block">{t.verdict}</span><span className="text-xl font-bold font-mono">{result.verdict}</span></div>
-          </div>
-          <div className="text-xs text-zinc-400 mb-3">{t.androgen_burden}: <span className="font-mono text-cyan-400 font-bold">{result.androgen_burden_mg_per_week} mg/wk</span></div>
-          <h3 className="text-xs font-black text-zinc-300 mb-2">{t.flags}</h3>
-          {result.flags.length > 0 ? (
-            <ul className="space-y-1 text-xs mb-3">
-              {result.flags.map((f, i) => (
-                <li key={i} className="rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-1.5">
-                  <span className={`font-bold ${FLAG_COLOR[f.severity] ?? 'text-zinc-300'}`}>{f.severity === 'important' ? '⚠' : f.severity === 'monitor' ? '▲' : 'ℹ'} {f.message}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-zinc-500 mb-3">—</p>
-          )}
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
-          </div>
+      <button type="button" className="mb-4 rounded border border-zinc-600 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40" onClick={addItem} disabled={draft.items.length >= 12}>{t.add_item}</button>
+
+      {uiState === 'INVALID' && <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3"><p className="text-xs font-bold text-red-300">{t.validation_error}</p></div>}
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+          <p className="text-sm font-bold text-zinc-100">{t.score}: {result.score_0_100} — {result.verdict}</p>
+          <p className="mt-1 text-xs text-zinc-400">{t.androgen_burden}: {result.androgen_burden_mg_per_week} mg/week</p>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+      {uiState === 'DEGRADED' && <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">{t.state_hint_degraded}</div>}
+
+      <Tool038Genius locale={locale} state={uiState} draft={draft} input={evaluation.input} output={run?.ok?run.output:null} options={options} result={result} prevTool={{slug:neighbors.prevTool.slug,titleEn:neighbors.prevTool.titleEn,titleAr:neighbors.prevTool.titleAr}} nextTool={{slug:neighbors.nextTool.slug,titleEn:neighbors.nextTool.titleEn,titleAr:neighbors.nextTool.titleAr}} t={t} />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
+    </section>
   );
 }
