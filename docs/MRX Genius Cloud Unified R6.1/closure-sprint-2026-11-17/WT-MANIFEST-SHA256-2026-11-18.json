@@ -1,0 +1,2978 @@
+﻿[
+    {
+        "status":  " M",
+        "path":  "components/tools/GeniusTooltip.tsx",
+        "p03_intended":  false,
+        "sha256":  "EC9DD1EDA475AC65111AFC6502B49A96FAFEB6AA69A5BA677C13D4FEAF728045"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/bmi-pilot.tsx",
+        "p03_intended":  false,
+        "sha256":  "A6660DCE56A69A33A0105C596B543376919D3A88788D1D6BCCE0630DAFA29922"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/macro-pilot.module.css",
+        "p03_intended":  false,
+        "sha256":  "44BD936E3311FA0F9C4272D5A220EAFECBA4E1A91E118134355EF0E9F9EE3D4A"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/macro-pilot.tsx",
+        "p03_intended":  false,
+        "sha256":  "A84454576A99847EF6982186C676D6CB0574157DF2843E1E6163AB83B67BFEF0"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/one-rep-max-pilot.tsx",
+        "p03_intended":  false,
+        "sha256":  "D64075E2466F605C87DBF162559F6827BA87043E69E80B4ED4D1E21520C5B10A"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/protein-needs-pilot.tsx",
+        "p03_intended":  false,
+        "sha256":  "D30EFB7B87DB1570A15F81E4D7867F4581BAF7E2B1AF62468BAB09E147404113"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-006-estrogen-prolactin.tsx",
+        "p03_intended":  false,
+        "sha256":  "E21123CB873954D2296FCE6CCD1C3746B3907ABE01F787A71C09271A424071B0"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-007-bloodwork-analyzer.tsx",
+        "p03_intended":  false,
+        "sha256":  "C41FAE516630DC23A876D08BC9836ABD0A4F41B1982FAE5CD449BCE8C2DA79EB"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-009-injection-site-rotator.tsx",
+        "p03_intended":  false,
+        "sha256":  "FCE2F417F49D34C776A0B6CDD87F16CECAA81185615E8E4FC325C25DC007EE01"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-010-compound-stack-builder.tsx",
+        "p03_intended":  false,
+        "sha256":  "5DC25580ED6D30B9C15FA5540B4CE5831FB16B3290A2225EC8E03D774BB30311"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-011-progress-tracker.tsx",
+        "p03_intended":  false,
+        "sha256":  "03866C9CDDF865BCEB5A83356F2C7D17DE94F95CC2F21AD4990EC2B82585EAB6"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-012-calorie-adjuster.tsx",
+        "p03_intended":  false,
+        "sha256":  "0FAC4A5090A6AD445D1FA10FE1204A7B34CF0784EFB1716B85D7BF30CE187399"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-013-macro-optimizer.tsx",
+        "p03_intended":  false,
+        "sha256":  "17D6C740F83967BB96D55F24FF898E4AAC4FAFD7009B524343B5D7A3E69ECEFA"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-015-shbg-modulator.tsx",
+        "p03_intended":  false,
+        "sha256":  "743E104072997886458536A76B209F090457448E6125B99EA3157F62878A040C"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-018-hpta-recovery.tsx",
+        "p03_intended":  false,
+        "sha256":  "765925CD91A02A94290D11BC2035C4252A1F3ADB0F2E0F31914DDE282FB40B45"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-019-cardio-monitor.tsx",
+        "p03_intended":  false,
+        "sha256":  "8AEC71D1343AF44EF3C2C0B7A15CF111D4570C7D6B314350EE2EE05C9A25BE32"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-020-genetic-potential.tsx",
+        "p03_intended":  false,
+        "sha256":  "9E28C2BAFF295BAE5FB1DEAF90AA198C463B0B498A22FECC244805A0CA3C80AB"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-021-peptide-protocol.tsx",
+        "p03_intended":  false,
+        "sha256":  "F818C38B600A2DDC1B39C38C435E4DC3C9D6217E4F5FC6F9A85300734406BAEF"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-023-trt-optimization.tsx",
+        "p03_intended":  false,
+        "sha256":  "C046478AB171C3CA66B5B5718DE7E806AA17512423964AF0D564E21400ABEA4A"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-024-bloodwork-interpreter.tsx",
+        "p03_intended":  false,
+        "sha256":  "7B048D8371809C7E3EB9197B629255DBB0BC1FAC7E9594E81EBEEAAB639FA01B"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-028-stacking-synergy.tsx",
+        "p03_intended":  false,
+        "sha256":  "4781CA0CD5A0CDA3016358D94EB6B972BBF0616A6F9D6FD69896883EF0F1D627"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-030-cycle-cost-calculator.tsx",
+        "p03_intended":  false,
+        "sha256":  "F1D41097F659A8BA1F5E92FA4D668D58E50DD7D6AAA85F4F64D9BB35C9612186"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-032-advanced-pct-planner.tsx",
+        "p03_intended":  false,
+        "sha256":  "919F67CBAB60D193E94B938F9C07D9146BD34BDBEB1B5BD5810C21A642CEF9BF"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-033-bloodwork-trend-analyzer.tsx",
+        "p03_intended":  false,
+        "sha256":  "3A20AD890C130A744DF0922EE73DBD14CE86095804427201674BE6900556B850"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-035-hormone-conversion.tsx",
+        "p03_intended":  false,
+        "sha256":  "0AFAC292D50355E1E06D1A2854360DFDF8A0699B54815BC356E49D77EB282A41"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-036-injection-schedule.tsx",
+        "p03_intended":  false,
+        "sha256":  "004D4D774FEC50F54C7F595668C6E48F21D2BEA54AD653E3ACECF3FFEA52F9D4"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.tsx",
+        "p03_intended":  false,
+        "sha256":  "6997FED8D12541AA0025451F21C2F0D56DA2E82E42AAA71161E8E6F42411A965"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-043-prolactin-management.tsx",
+        "p03_intended":  false,
+        "sha256":  "AE6BE87FB3400BB9C803A51131825DBADD7F9D4D5196C8EAD9C8F588B7B240BC"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/tool-044-dht-side-effects.tsx",
+        "p03_intended":  false,
+        "sha256":  "4DD58EB8551912B29EC0DBC5C3E58871DA5DF348AA9B32C05618ACBF4DE00020"
+    },
+    {
+        "status":  " M",
+        "path":  "components/tools/water-intake-pilot.tsx",
+        "p03_intended":  false,
+        "sha256":  "F0E0C65182D8863258936C888759112F765149D861FD5DDF2316F426DBA13B56"
+    },
+    {
+        "status":  " M",
+        "path":  "i18n/tool-006-estrogen-prolactin.json",
+        "p03_intended":  false,
+        "sha256":  "60FD7E1AD6B9236A9DC24B571E3403B333DFAE598500A5238F8E6B674EB60746"
+    },
+    {
+        "status":  " M",
+        "path":  "i18n/tool-015-shbg-modulator.json",
+        "p03_intended":  false,
+        "sha256":  "8FCB7038D367792D121C8A790B225B16D767340486FC62F42DD228DFA6010444"
+    },
+    {
+        "status":  " M",
+        "path":  "i18n/tool-023-trt-optimization.json",
+        "p03_intended":  false,
+        "sha256":  "6A04BB1312AB571E09F55E9072ED0DA4229DEE394CEA04685FF9DE699018A30D"
+    },
+    {
+        "status":  " M",
+        "path":  "i18n/tool-040-lipid-profile-optimizer.json",
+        "p03_intended":  false,
+        "sha256":  "90C85C3FB605795789CC55D2EB6C17F639FCD9028F909FE874304FC0207EE115"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-008-side-effect-tracker-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "3194E696834B478E34C41BC7BAADF359459E33C3374F93BF7B09FAC2C6795E6B"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-014-water-retention-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "D2E238C9A0A975FD1B2C599674815CD076B925AEBF78301B191FCC7EB8073F91"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-016-half-life-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "584FC568A45215CAAF96615C1862D51A6C46735C84A49F5A406B7315EFB683AF"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-017-drug-interaction-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "D247EE617DCAB9143032F1AA3F231C2A224B2F27DBB5D08349ADCAA1647BF58F"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-022-half-life-stacker-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "BCC54D055D59AE7A78B0CCA6AF575B1D8136847C88E519DD12C46211F089E4B6"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-025-drug-interaction-pro-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "D6F7C9713FC5650092875EE5CF01BB1FCF8FE1D4181ED5C35A27B3C45BD3F7DF"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-026-injection-pain-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "AB1F3EE42020629047A4839C0AA8C85DD53D7D2B9474815D82C0E5DB554FE988"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-027-ester-conversion-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "D49DF03058E0B54DD8307A34054D5692E69AC9432D90859BD19775A4FC4D2A25"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-029-side-effect-early-warning-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "EEAD99BF1D082CA96F420FCA5E034916D1712A1AA181A53AC991D8B7A3D2C998"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-031-cycle-length-optimizer-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "F663B46265C0E76FEEA4839E2B4E6D3E4EABE60AF69F0A7D1A0BC0E5F07FEB9F"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-034-compound-clearance-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "2D8CCA0A6A7A5497F54E6525D15B5964F1868C35037B8FF12223F0DE81E03712"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-037-side-effect-probability-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "0E1B99F4A07347EF76533608FEABFFE519AFBD6CB40F58BAAAB9466067F416E9"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-038-stack-compatibility-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "CFD2BDD696D187ACF57D27259CF6950BCEFBB219F03FDBBF9A523331BFC5E77B"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-039-liver-enzyme-tracker-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "B5EC7073FC6585578051A4DC79ED87E63F986F90B68F33BB1B8E49A09C3E78BA"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-041-hematocrit-monitor-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "F7FC94B8ED1677B7038832D6E079B762E0B1ABE9222D6DD7B1862C3F8C6F413C"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-042-estrogen-management-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "7700D965FCE06876A6EF4084578770E052AE711E600145AB3234575D29D0D05E"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-045-cycle-break-planner-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "A5A3735414C01E73385BA682C5574C56376220ED17B342E0A1B380B91C26B7B9"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-046-trt-lifetime-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "6535C82004108F9E6EC486CB00DA8477CF0512D2F79BE0B571A0A3D941DFB1E0"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-047-fertility-preservation-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "26D2B2F3E3FC6E46574150C79411359C044F23A768F7091ADBB4EA7F483B3A2A"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-048-cardiovascular-risk-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "32F003ED7584E13C8A6721B64FABC4963D1424E69CD1CBBB1D1C320523E05ED7"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-049-bone-density-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "F5DA305A507917563507702C562E8F405AD08BF3847D8C496B9433BF5FE9DEF7"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-050-mental-health-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "64A9C86D8D6EE01A5A00B6653ADBF0E342CBC799F8FA2288CD505A48551FEAAA"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/r6/tool-051-peptide-dosage-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "2BCF032B0CCE4C68C990438873ACA08D225D37340D040A5EA9131FBC6307B1E7"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-011-progress-tracker.ts",
+        "p03_intended":  false,
+        "sha256":  "3C7D36F2835FE0EA96580DA4CA755C96CAD85C1ED28D56B38878B611C27CCC55"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-018-hpta-recovery.ts",
+        "p03_intended":  false,
+        "sha256":  "76AB97D28C5FBE01DEBE9056C4132A73A048934741021B61BA5F9CF2CC8C9173"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-019-cardio-monitor.ts",
+        "p03_intended":  false,
+        "sha256":  "CF51417B67E582D56F9864EA4B2762F175DDDBFFD5E6404B3B7A63ABB203F725"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-023-trt-optimization.ts",
+        "p03_intended":  false,
+        "sha256":  "BC761C42E395DED30E639D4E646F1187EF633CC9296361EA613C6613A2AD4F27"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-036-injection-schedule.ts",
+        "p03_intended":  false,
+        "sha256":  "3AA09179356B9412BF6F98CCAEEAD9365B7C70F1836BB055B7802CB4F50452D3"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-041-hematocrit-monitor.ts",
+        "p03_intended":  false,
+        "sha256":  "FEC7744CF57DCFF077DE7FB01825244EBEF4174C5BD93307C8E811441D71735C"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-042-estrogen-management.ts",
+        "p03_intended":  false,
+        "sha256":  "90287A749F388EF3DFB78B23B52B00B4834ADDD2F680667F6FB93354734DEFD0"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-043-prolactin-management.ts",
+        "p03_intended":  false,
+        "sha256":  "C281ABB3981DF82F210C133404181906CE440B5F1E29AD284F2CE1C4F768AD72"
+    },
+    {
+        "status":  " M",
+        "path":  "lib/tools/schemas/tool-044-dht-side-effects.ts",
+        "p03_intended":  false,
+        "sha256":  "228C56814432284E73AAE497BE2B0D0E2A6470DE2F133747416B5AF0B9428DFA"
+    },
+    {
+        "status":  " M",
+        "path":  "shared/ui/DynamicBrandLogo.tsx",
+        "p03_intended":  false,
+        "sha256":  "50821D63508AB46281E7B7E3489B3AB952160B03A5386F083653F81B3BCD9BFD"
+    },
+    {
+        "status":  " M",
+        "path":  "shared/ui/Footer.tsx",
+        "p03_intended":  false,
+        "sha256":  "23B650B43DF875B84AAB274A0E68D37E45C23EBA25ABFB4DE41C124F79D08BFB"
+    },
+    {
+        "status":  " M",
+        "path":  "shared/ui/GlobalHeader.tsx",
+        "p03_intended":  false,
+        "sha256":  "5E95B3393E26060E32FDB7985B0CFBDBC0EF867275D5AD9CAD3A2E266451A590"
+    },
+    {
+        "status":  "??",
+        "path":  "app/smarttools/[category]/[tool]/page.a11y.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "377200BE9166E5885BCDA3F31993C7AFBE866AB1EAE6157E1002D3C424B23392"
+    },
+    {
+        "status":  "??",
+        "path":  "build_log.txt",
+        "p03_intended":  false,
+        "sha256":  "8ABE480C82B92D446613655A6F3D2F0FC57F4487FE3FE00C092B8EA06AA63DA1"
+    },
+    {
+        "status":  "??",
+        "path":  "build_output.txt",
+        "p03_intended":  false,
+        "sha256":  "8ABE480C82B92D446613655A6F3D2F0FC57F4487FE3FE00C092B8EA06AA63DA1"
+    },
+    {
+        "status":  "??",
+        "path":  "components/genius-tool-template.v4.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "596E887C4281B723358F1F699225D9531B5EF0C9EA5DD9DB1D36F0414D2A6F04"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/bmi-pilot.insights.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "42BB9F94CC27205123B256AAC9311C91C39C15BD4B826FC4690422A233F34142"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/bmi-pilot.v4.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "7297C00B852A1BF10141937FC94AAE09644CB9959ECDD9938DC8819CC66CF24E"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/dynamic-slider-field.tsx",
+        "p03_intended":  false,
+        "sha256":  "5FDC7347D17D3F3FA5C27EC233BC2146C4AA1E92B7D7F5C6DE490F3EB914650F"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/dynamic-slider-field.v4.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "BC937C5D36BD21E503FDCA3F64CED3510BD19295705152E137868DA745DC8926"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/macro-pilot.progressive-disclosure.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "7579CB6E3201622045AEFD17F0B33BF08C159FBD0EA0498533E5602A32A0E336"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/macro-pilot.remediation.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "851F4597F0A387D425C84E9AF384158EBB51567DE37FE55D819BDA15B438E126"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/macro-pilot.v4.integration.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "2A3F37FEC3109AA2B58D846845B2D7B6A1C31A40041E33711ACAF242221E74CA"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/protein-needs-pilot.insights.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "29609AC1604E61CE44704F8A133AA1FC5402ED3B87788616ABFF3CFB89808B68"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/protein-needs-pilot.v4.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "155B573D7B88BBBB2C5B57A3F2A3B3BA146474804FD60491E6B932A317A57474"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/r5-a11y-css.test.ts",
+        "p03_intended":  false,
+        "sha256":  "164E42B2EB58C0360274A7D4AE5751A169C3EE6F75A6D7D6FC0193A35CD4FF4F"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/r5-boundaries.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "CA7B44D1FADEF10744F069DAEE558395D9D8A7AC65409651FC3029BBF5A0036D"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/r5-main-landmark.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "645345825C1FA2F37FD1CF054CE6795BE42C41931ACD19179B3B1D7716FA1D2A"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/r5-preferences-sync.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "4D2F18E77BDF2DC80F932DE33207612343382CDAD7C71F939CCD92EBC892D04F"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-006-estrogen-prolactin.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "1C17EA6DFF5DD5715FE3AA33A47A7BE59F1E4BF466B7E546165FC7B40383B625"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-006-estrogen-prolactin.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "FDBBDC3D0B052008EE3D50EF952470A936A667CE1CE4BA8BE2419AD66DB90498"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-006-estrogen-prolactin.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "01C62CB4FE107EE23398B7940EC2DC6AAB78F597CE1B77CC13E35D76CEAE3386"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-006-estrogen-prolactin.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "DE0D9696581E46D129B58EE77C3C9C5DB1DCFC3423647BDC231E488FE9F6A26B"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-006-estrogen-prolactin.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "1D2B525064F98B8234B7488A957195B90E670A9AC65A862A77D43D19BADAA2DE"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-015-shbg-modulator.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "1CF89EBC93D46F5D3C49660AD7357102D5E08067354B5C006984E75229DA06DE"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-015-shbg-modulator.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "121DA6131BA791C6E575A21612CD12A087F2D8C5F365A890CC2637B03D1F3E6E"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-015-shbg-modulator.parity.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "2F06E05DD46B595BBA7619FDCEB2A9AC3552780C43E2659A7172AF299B747228"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-015-shbg-modulator.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "3D4E51AB61A05D2798729D0DFDF255A9A248EDEC06884084971097B931B4EAAE"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-015-shbg-modulator.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "51539E63F113F1B0C0E982A8D8F1D6747700A2C56BF9819D7291DC3D10446001"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-023-trt-optimization.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "5B5FF11845078BB357930191F1F5C1158501C5BBA1A591215E7211BDF04EFD18"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-023-trt-optimization.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "E4EFE4EC7513A616465E15FE7317AD57F8FEB9AA840F6940BE5B5F9B0A785E64"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-023-trt-optimization.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "A7CF24BE7039C0DE56B18FFE72E679BFF345A9B584E7A822A1B529A00A7E0C24"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-023-trt-optimization.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "76D1E6979A7392585C373493E633CAD489BB5280E53563E9799DE1AC50468A33"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-023-trt-optimization.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "0F9C230F5F8E41897C7DBFF42B5CA372DB61EDDDA2B6333A8F6A62AFD01C99BE"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-035-hormone-conversion.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "91394DF66C24A7A72AD931F8FEC86FC83A68CF96F4E072F50DAD199D680E64DA"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-035-hormone-conversion.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "E35BDCF79E47EC802A86F38CC4AEBEAEAA3C48B602E6ED0DD604F0CFB6392186"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-035-hormone-conversion.parity.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "B7F1C35AAF8C869AB3AF45F4BCEC977A22D438235288A62FB7C941ECCD29AC09"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-035-hormone-conversion.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "C7033FBF357B3C12DB1CEB0FB4483CF5CC0ABC3DCCC59DDE8CB5E7047686BEB7"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-035-hormone-conversion.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "F06CA3FF4D50C1852E3522AA480FC0043041291EBAFB24B833F111CC4E9B6D5F"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "DD0AD6BE2DBCB32547F9B8E326B2213E26C99B7147B9D7090D1512B93963BC91"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "22441C3FB1A392A850981C1FFAADC893CA9E6ED240CDABA83AFF45885F3C34C1"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "76D6B3F239AD08545274135A2A3ED8FE85EC3BBAA6C69B8AC2B69132F96FC8CC"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "4BDCF7DDBC0AE114B455C6C2943C16CC993F12A1A9149852D5EDABE47C57F1C7"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-040-lipid-profile-optimizer.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "9A96C8B961AC7895D1FD41857E69302D43685B960FA13CB10269A2AFFFC5C090"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-043-prolactin-management.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "EE136F766DA4DB6CC3024D5650EE1A543ADC7803C188FDFB23610F7749C79444"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-043-prolactin-management.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "CF8E3CA9E692E8498A2C5B98537E22EBF0B329696578DD4A6C859772F490DD33"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-043-prolactin-management.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "85E36FFFBE7685D941A9A940919822071FB30F0468EAC212F84C5596B3B728A1"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-043-prolactin-management.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "8D6EE3280BD479DCE3B2442DC9F43A8DDAEB28B239C3BC107EA05BDE3E2376A8"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-043-prolactin-management.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "5BC8BC6FB2557AD62809FEB1CB21D041A9D6F93F8733DD64134D37344BBAD0EA"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-044-dht-side-effects.genius.tsx",
+        "p03_intended":  false,
+        "sha256":  "D79037D3775165A6944BA0932AADAC8E29A74BDB394A35711B3472E6F779BFC2"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-044-dht-side-effects.ocr.tsx",
+        "p03_intended":  false,
+        "sha256":  "5C84A4506331F8CA50E1D83BAE51FF4F45708120417170AF796227AADADAB5A9"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-044-dht-side-effects.pdf.tsx",
+        "p03_intended":  false,
+        "sha256":  "23492801DBB58082FAD651D38820EF33DA2395A85B4210EF050FB28DE75F8362"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-044-dht-side-effects.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "13711F18153EF2BD60E2593C8220835E22CD1BA9D288E76C05938C96AE09FF59"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-044-dht-side-effects.visual.tsx",
+        "p03_intended":  false,
+        "sha256":  "B05CD49B7C64B6B63FFF978BAD44FDDD539A7288925A2282A5FD5A49E74B5C46"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/tool-pilot-v4.module.css",
+        "p03_intended":  false,
+        "sha256":  "FD1A113C0C099C83124EDBE9FC7C3C3F9CB3456DD7C834C8450FC3AF52EBAA88"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/water-intake-pilot.insights.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "D45A21C1518781FDA0F6E17E5F6F48072330541C7D269F9226DD2513A0F1C8C1"
+    },
+    {
+        "status":  "??",
+        "path":  "components/tools/water-intake-pilot.v4.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "465543F6298742D752FBA96DBC3FA0D8621F0575BDD51F340127C5BCE4247664"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/BATCH-1-REPORT-2026-11-16.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/CHRONOLOGICAL-TASK-PIPELINE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/CONFLICT-GAP-REGISTER.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/CURRENT-IMPLEMENTATION-BASELINE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/HISTORY-CONTEXT-INTEGRATION-REPORT.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/NEXT-EXECUTION-PLAN.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-DECISION.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-MANIFEST.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-READINESS.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/R6.1-PREVIEW-INDEX.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/R6.1-SYSTEM-REQUIREMENT-REGISTER.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/REQUIREMENT-TRACEABILITY-MATRIX.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-039-ACCEPTANCE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-039-DEVELOPMENT-PROPOSALS.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-039-GENIUS12-CROSSWALK.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-039-W18-HISTORY-RATING-PROPOSAL.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-040-ACCEPTANCE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-040-DEVELOPMENT-PROPOSALS.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-040-GENIUS12-CROSSWALK.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-ACCEPTANCE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-DEVELOPMENT-PROPOSALS.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-EVIDENCE-FINGERPRINT-MATRIX.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-GENIUS12-CROSSWALK.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-LEDGER-VERSION-RECONCILIATION.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-NOT-APPLICABLE-PINNING.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-OWNER-DECISIONS.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-PHASE1-AUTHORIZATION-REQUEST.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-PHASE1-CORE5-GENIUS12-CONTENT-SPEC.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-REMEDIATION-MATRIX.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/TOOL-041-REMEDIATION-PLAN.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/W01-W24-CONFLICT-TRACKER.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/legibility-390.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/legibility-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/deploy-source-manifest.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-empty-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-empty-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-history-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-history-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/two-browsers.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/deploy-source-manifest.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/deployment-metadata.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/published-bundle-d08-proof.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/published-html-marker-comparison.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-empty-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-history-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-history-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/two-browsers.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/deployment-metadata.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-empty-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-ACCEPTANCE.v1-123-superseded.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-DEVELOPMENT-PROPOSALS.v1-123-superseded.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-GENIUS12-CROSSWALK.v1-123-superseded.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance-calc.v1-123-superseded.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance.template.v1-123-superseded.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-build.v1-123-superseded.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-change-log.v1-123-superseded.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-requirements.v1-123-superseded.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/preimplementation-summary.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/source-fingerprints-current.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/tool041-storage-network-scan-current.txt\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-arabic-rtl-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-browser-verification.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-desktop-1440.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-mobile-390.png\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/scope-reconciliation-286.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-acceptance-calc.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-acceptance.template.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-closure.diff\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-ledger-change-log.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-legibility-check.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-preview-proxy.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-r61-closure.diff\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-requirements.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-secure-storage-probe.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-039-two-browsers-check.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-acceptance-calc.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-acceptance.template.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-browser-verify.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-i18n-check.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-ledger-build.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-ledger-change-log.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-040-requirements.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance.template.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-browser-verify.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-deliverable-manifest.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-evidence-fingerprint-matrix.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-build.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-change-log.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.json\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.mjs\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-version-inventory.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-remediation-matrix.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MRX Genius Cloud Unified R6.1/tool-041-requirements.csv\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_GROUPED_CAPABILITY_CLOSURE_EXECUTION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "FB919408C599A12D15F9264F5B93B293693BDEBF1AE5424EC18D4B2DDC2148DD"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_REVISION_2_1_FINAL_COMPLIANCE_REVIEW.md",
+        "p03_intended":  false,
+        "sha256":  "5AD97D74F553046537448856EECF7ABB7E0B93D82F63823CFE2F7E8D31977F9F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_REVISION_2_2_FINAL_COMPLIANCE_REVIEW.md",
+        "p03_intended":  false,
+        "sha256":  "186DD0FA17F46A68C11E1091A66F9D2FE9852CD6CDC659850E5469C8E748627C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_DOCUMENTATION_INDEX.md",
+        "p03_intended":  false,
+        "sha256":  "53FE642052B248F355E15C4D006B7DDD67F52684CCBA60BCA46A4BA2814CF51A"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_FILE_PRESERVATION_MANIFEST.md",
+        "p03_intended":  false,
+        "sha256":  "16AD35B9833544F06CFFFFCBCCF1344D6E5922AB6739C2995067453D3FFE71C2"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_MACRO_DEVELOPMENT_HISTORY.md",
+        "p03_intended":  false,
+        "sha256":  "FC718670ED8198865102121BE07880092323A21AA2C85F1FC4D7C1AEAFB0E542"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_PHASE_EXECUTION_STATUS.md",
+        "p03_intended":  false,
+        "sha256":  "5F14C3631BC717EC57193FA407D45ABF7130ADFA815C8A3191CD3275E9FC366F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_AI_RESULT_CONTRACT.md",
+        "p03_intended":  false,
+        "sha256":  "F81758954ADE40398AB2EBFE9A2F0C1B1FCAF9B8D9B3BF41222536CDC85D3728"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_BATCH_ROLLOUT_PLAN.md",
+        "p03_intended":  false,
+        "sha256":  "6A1A2E066EF49547F28F9F58CDA68374B9917A6E1A9F7D1171CA377E94DF988C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_COMPREHENSIVE_REMEDIATION_MASTER_PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "B419863AAA6A2F13E71363952014E8FBF6D447B7C8A65BDCFC10C09EC7E49B47"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_010_COMPOUND_STACK_BUILDER.md",
+        "p03_intended":  false,
+        "sha256":  "C0A5741E6F40CF2ED27DC6D5AF6A6D48C1EB0F02F8FF5C5D84FD79EC26600FD6"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_020_GENETIC_POTENTIAL.md",
+        "p03_intended":  false,
+        "sha256":  "E883C250AF5C450E4ABDD06B449F8F94D4A88D78CDB120F7AB25E5D6D1BD981C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_030_CYCLE_COST.md",
+        "p03_intended":  false,
+        "sha256":  "B21725D0A6976987D3ABDFD4A26E2036D5DD3F04E06FFF3E66846E48733D8C47"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_100_COMPREHENSIVE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "3D43BADD75BDA18FBF78C0AFB3A913620FA5E1270E3617EE70EF744AA4D064D8"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_106_GLYCOGEN_WATER.md",
+        "p03_intended":  false,
+        "sha256":  "BABA44C8E77878763B4AB5C1777C80EF2449C6A2D5C39BEF67F0C93E616152B0"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DYNAMIC_INPUT_AND_SLIDER_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "F41E59EC8A8730F4A7F064F3E12EF56CC584807E5B709A9BFE8F1C7A74748BB4"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_FORMULA_AND_EVIDENCE_REGISTRY.md",
+        "p03_intended":  false,
+        "sha256":  "10B57827E296B0AC1999755B85FC9A72E04D78C43233335894D5E66F5CDD9B35"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_HEADER_LANGUAGE_MEASUREMENT_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "3E79D7028C1626CB6A8E084B2CCF9C049B89E9DA8FA9A7A99C842DD74CE31076"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_MASTER_TOOL_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "0A347A10BF25CAD11CBDA9C4BB6EA11993821673D0C22D3B943CFAC8F3DA69F2"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_OWNER_DECISION_PACKAGE.md",
+        "p03_intended":  false,
+        "sha256":  "89A02A37A534A69AA780CF5658A1C128751627FCE7AD28C78E36432E9D3CA18B"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_PERSONALIZATION_AND_HISTORY_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "07FA08D083957B7FF9874E4BD2E3B6E24A4033A357415304482AFCCE16CA7DA1"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_RECORD_ONLY_TOOL_CLASSIFICATION.md",
+        "p03_intended":  false,
+        "sha256":  "1F0A974E2600EE0CC47D6597AC8505CA5C8E5BB44A370E294BBA5B0FD359DEAE"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_REMEDIATION_AND_OWNER_DECISIONS.md",
+        "p03_intended":  false,
+        "sha256":  "726A3CA2D41EC33C2C264FECE5322101632C1D902F0796E2AB9782246A4980BB"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_RESULT_INTELLIGENCE_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "9903B5C7FD33C637B35D83A0AA36DA648D6D9E4F7F8FB456D6D7604520D1DF84"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_SAFETY_AND_PRIVACY_MATRIX.md",
+        "p03_intended":  false,
+        "sha256":  "E95AB9638FA6C0A2F94EDC06C711741C193D7A065F92B80D0E6D2916AE9BEC19"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TESTING_AND_REGRESSION_MATRIX.md",
+        "p03_intended":  false,
+        "sha256":  "58667140B645632023FA322A719E14544EB6B8A663A0CF2DF196A568C00E9FE8"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_010_SAFETY_AND_CONTAINMENT.md",
+        "p03_intended":  false,
+        "sha256":  "98BE8942EEE58C2762B66CE1055F679FDF786F2B9DB2A9B4F19DCA37E9377515"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_COUNT_RECONCILIATION.md",
+        "p03_intended":  false,
+        "sha256":  "C60601AB6DCA24163416EA7D4213FFA40F0FEE4BA2C908DD15C3F2D26E751E52"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_REQUIREMENTS_TRACEABILITY.md",
+        "p03_intended":  false,
+        "sha256":  "BA6A8A14CED5AD28DB8497D887510C1C5305AE5F177A475E40295C0F9E148686"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_SPECIFIC_AI_CAPABILITY_MATRIX.md",
+        "p03_intended":  false,
+        "sha256":  "A0DE2A0C2F70140B75738B7047A572B5F172043C204EB101E71478B4677DB91A"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_ZERO_LOSS_REQUIREMENTS_HARMONIZATION.md",
+        "p03_intended":  false,
+        "sha256":  "1FF0BFF144D15E82D1DABF115B5BE4AE8DD11C6FC8C5B47F4984DBDDD7919123"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_255_TOOLS_INTELLIGENCE_ACCURACY_AND_UX_EXECUTION_PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "4525F3B089A75BCAD5A6CFF2A4F2B07891C68104BA8C69E9A89407506B714D7B"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_DOCUMENT_CONSOLIDATION_AND_PRESERVATION_FINAL_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "300E7BD26EC5E3B920CE79BF4BA3DF7653F0EA7D546EE85BAFEDE9D8999795DB"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_EXECUTION_PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "37ADE0B200D8BDAEC72CAC46C76B2DB3CF22271D2B18E239F78ED48A64CD5540"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_PARITY_AUDIT_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "94D07D522750F82B3AFEA03ADEFD0687155B594C80A87F79B77DAC3916DB352F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_PROMPT_MERGE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "571743D3206A527CFA7D5AAF17CF047BCA3F754A8CF863AA68FFCDF67050BD93"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_MACRO_V4_CAPABILITY_CLOSURE_PLAN.md",
+        "p03_intended":  false,
+        "sha256":  "890E3D729A70584517E36FC08969A231C99303D575D84A3D92316AED9CD64605"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_MACRO_V4_FULL_CAPABILITY_COMPLIANCE_AUDIT_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "59F040D198C7C7AB8FCCA9712B196A8F1B5577611FABBDACBAF8E3B756DE3F6D"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_ARCHITECTURE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "43E3740C21ABF4D7695D2C5E9C913605BEF2B6B25D197520752A13B7AAF257DF"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_CHANGELOG.md",
+        "p03_intended":  false,
+        "sha256":  "403372712862D45454E252EC915870F6F53B6B16E146A1EC3EC0E5BA0008E4F3"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_CONTRACT_TRACEABILITY.md",
+        "p03_intended":  false,
+        "sha256":  "FF85490A90B6FAD01B84CA9095DD0A541E6210AAC776887C06314AB83BA69DF2"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_FINAL_OWNER_VERIFICATION.md",
+        "p03_intended":  false,
+        "sha256":  "B5630AF4D939D2799E858F7C18D5A9610E5CE678107D100D4027E182BD3D2E6C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_REGISTRY_RECONCILIATION.md",
+        "p03_intended":  false,
+        "sha256":  "3CFB5C78A3557D65B538ADD383F951BE8A8F9DBA0B64849536C1EE0FD6E2B1BC"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_RUNTIME_CLOSURE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "B15F19B2DCB7BE159CBE3DD8D1F4100B0BBDE5C08C0DC0D1F2F39B8531AE8597"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_SUPABASE_COMPATIBILITY_ANALYSIS.md",
+        "p03_intended":  false,
+        "sha256":  "06E9760EFAE297179C77085E715F555EB9695CF2785A107EBCFB643C5C0FC2B3"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_TEST_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "D7551BCB55B14908D17CC56F8E248A9D987B7669B39BF2B3B78A8B2302D92C0A"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_ACCESSIBILITY_I18N_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "06F661665720FAEA23255E82AF229E48E1CA05F52C3265ED619CE624372CFDAD"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_BACKWARD_COMPATIBILITY_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "499CCCFB8CD09B8D28C2E3DA8CF68D608BCD6A7E8F390E5FA243AD01260D9942"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_CHANGELOG.md",
+        "p03_intended":  false,
+        "sha256":  "D81530694F8BDEBF452DCFE19BDDB482CBF8BDC06594D10D060658EA54AE21F4"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_FINAL_GATE_REASSESSMENT_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "89BC11F484629176573286FA3445A3476AF922B6CDCE6A890961320E08E42DD4"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_FINAL_OWNER_ACCEPTANCE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "353C620722B47AB345163FB731A24141990C1D5731A79B1DC0D52EC73A9C3B28"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_GATE_CLOSURE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "23E6446970BD69E7819C9B185788406D12B6320FD1CA933EB631B842A68A4381"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_OWNER_VERIFICATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "4A3A52669FD5B38F55A602B0ABA314EED9B49B667C0AB233E96301239869446F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEMPLATE_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "AD14099B254FECEC5D944857B2536180DCC6E5ABC8D3BB2ABF58E49A077DB0CF"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEMPLATE_IMPLEMENTATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "20CDF1FA8A423C343D2E51D2E4ED702CC13DD470FEF41323B6B948C306C2A6BF"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEST_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "86AE98FEDAF9974B7CE9CF7F3D9486A28A24D32A8EFFFE7A78CFCEEDFEB70FDA"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_V4_INTEGRATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "965426F99D79EABA20151BAD3B34B1857EDFB09ED83D8D1E984F1F0EC0BF09CD"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_1_MACRO_PILOT_UI_REMEDIATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "819FFCF892B85A86A572790B1ED269AA948FB3A63BA03CF1272B6F66A803632A"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_MACRO_PILOT_IMPLEMENTATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "5C7C1707A9982EF525107EDFFFB5120EA230B517C8EFDF2331A5355B44019DEC"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL.md",
+        "p03_intended":  false,
+        "sha256":  "C9E2AB5AF45F6D7879EFBE65F3079433B4986133A69DD69D00FD48A7B61B02AE"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL_REVISION_1.md",
+        "p03_intended":  false,
+        "sha256":  "92AEDE22B3084C091178E3BA21D7DC9E2A676BF5B25E5E840DCA7877CD3F5280"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL_REVISION_2.md",
+        "p03_intended":  false,
+        "sha256":  "92511A3698FC0F9138CD660FB43BC9021B217E3F11BB35493EE628B8AF0D191C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R4_MACRO_PILOT_EVALUATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "B34A89FA6B69A40FE7BB5753DEE9CD0F5F88CA31015995FD0F192E9B0C4CA7CC"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_AUDIT_EVIDENCE.json",
+        "p03_intended":  false,
+        "sha256":  "BA19722954E99F732A9894052B6C1DA52F150F4F2827F94FD8599BC3A9B03881"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_COMPREHENSIVE_AUDIT_AND_ROLLOUT_MATRIX.md",
+        "p03_intended":  false,
+        "sha256":  "F314422DEC9DFF55E261CC395565B1DD472AE9D1A1F09B67875EEF37FD39D481"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_AI_BEHAVIOR.md",
+        "p03_intended":  false,
+        "sha256":  "77DB70712CCFE380C4E236B557E2DF62A10D1CF6EA9E75F5EFBD9FCD2AF491EF"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_AI_NUTRITION_VISION.md",
+        "p03_intended":  false,
+        "sha256":  "A492F9EAAAC0386693BD30C1918FEE8450EEB92D7798FF7BFB84A8D8E7269E2C"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_BODY_COMPOSITION.md",
+        "p03_intended":  false,
+        "sha256":  "25F583F574C6C71E175484B5567958C276687FE43E85C6EC9BFAB6DA786A2F94"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_CONTEST_PREP.md",
+        "p03_intended":  false,
+        "sha256":  "53F5D463D06B418127BA7267BA248CD4704AF955EB2B7A9F2779BE561F08DA1F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_CYCLE_MANAGEMENT.md",
+        "p03_intended":  false,
+        "sha256":  "D69603B0538E5CB629B0D365F53CA84D626A7399727AEC4A6FF27EDA9B5DA58E"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_HOMEBREW_CHEMISTRY.md",
+        "p03_intended":  false,
+        "sha256":  "D1585B12868387E6E0BF36F8AB935A8B8C6EA5224568C3383DC3CFB8E102E0EA"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_HORMONAL_HEALTH.md",
+        "p03_intended":  false,
+        "sha256":  "593583480106423A173F859B54870B9814ED41F30E36BAF44EAC716D3BE27FE0"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_INJECTION_FORMULATION.md",
+        "p03_intended":  false,
+        "sha256":  "DEE6A5A04DD071F4FDDEAFA3F3865141A1514290BC659CBFA1B51CF449D705F0"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_MEASUREMENT_CONVERSION.md",
+        "p03_intended":  false,
+        "sha256":  "DDB7FC29158846DA8980A85019D674A27B36526A61C27B54385AEB9AC240C18D"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_MEDICAL_MONITORING.md",
+        "p03_intended":  false,
+        "sha256":  "08C4F3F343DC8062ABCB42586236A0F939174EA4A1E4FC0C942D389265BE3417"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_NUTRITION.md",
+        "p03_intended":  false,
+        "sha256":  "BE33B991CC5C09F18E0780CF6D80BE47D6F00FEE0F4201B2481B4B12E3F4A2F6"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_PHARMACOKINETICS.md",
+        "p03_intended":  false,
+        "sha256":  "69C9E0F30704761EF60AB1AE0D659340F6C7DA85237F92255566A1870B034A8D"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_PLATFORM_AI.md",
+        "p03_intended":  false,
+        "sha256":  "49C210D72067818C03B9303E46399BF8448251BC216288229C1BDB46906F5EB7"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_REPRODUCTIVE_WELLBEING.md",
+        "p03_intended":  false,
+        "sha256":  "A3AB17643307315975E61FEF173D1C69FC9825CDC18AE3FBFD2A785C7922F052"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_TRAINING_RECOVERY.md",
+        "p03_intended":  false,
+        "sha256":  "59255AF02B54F6A61B8063A315A8CA8321431F5C4603B2BE114340283374E2C3"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_EXECUTION_PLAN.md",
+        "p03_intended":  false,
+        "sha256":  "1CDBAD27FB3CD85DFCE0BCA47250B8E53117EDC9B054E14887905B70FAC94C0D"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_HISTORY_AND_REQUIREMENTS_TRACEABILITY.md",
+        "p03_intended":  false,
+        "sha256":  "88CCD7E73F9F07CEF8F22AEA85514446085FA0C606AA1B9978EDE2E5DA989066"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_PER_TOOL_DOSSIERS.md",
+        "p03_intended":  false,
+        "sha256":  "29B24143668C9CF841C2E5BF0D2DFB335CDFB5DEA8E9780398E42D4777467A55"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_DYNAMIC_INPUT_SLIDER_CROSS_TOOL_TEST_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "B7ADAD49C9F7C5E96F5C7D7985F99D6D5DB6C4D7257C32E3544294D6AB4085BE"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_DYNAMIC_MEASUREMENT_INPUT_SPEC.md",
+        "p03_intended":  false,
+        "sha256":  "5EEC72CD9D0CAFAF034688F23E324875AA06E1B75FF9C9B9B642D61AEAF3114A"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH - OWNER PREVIEW AND CLOSURE REPORT.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH \\342\\200\\224 IMPLEMENTATION AND OWNER PREVIEW REPORT.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "\"docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH \\342\\200\\224 TOOL SELECTION AND IMPLEMENTATION SCOPE.md\"",
+        "p03_intended":  false,
+        "sha256":  "MISSING"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_ACCURACY_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "D73B429D85FAF541245B7E18F159C7A25F9C7998D17B73479CF0687A835EEA9E"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_CORRECTION_AND_REMEDIATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "BA7C3E7A5B98B4B0B16271449F11BE0568DD9BF1E90C742BCDD38E24BFF26018"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_EVIDENCE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "A2B177A0926D2597AF7006CE120408C8B015057ADF1BF3C15B16453895D52E24"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_FINAL_PREVIEW_AND_ACCEPTANCE_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "92C38356797E43CF1420B8E8681A7E0A099E192FAA9F5506C65A2A46627957AC"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_FINAL_PREVIEW_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "5F43F329C21C5FB8CFD4B82A0FE16B639804CCBC62A2DCE2828A2E7AEEF037D2"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_REMEDIATION_REPORT.md",
+        "p03_intended":  false,
+        "sha256":  "4A2D451169452466BCFDE8F9666A8E8A30C469EEE7E613660ECF7C5EE9496397"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FORMULA_INTELLIGENCE_AND_REFERENCE_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "A6858B4B0B181489B6A76A6BAE2E04451963B4FCFF9FC723D159CBE2A8F088D0"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_GLOBAL_HEADER_LANGUAGE_MEASUREMENT_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "6BE499DA252E26A519231C66AB0552FC5D2102D446214DD6499AB263E8047540"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_HISTORY_REQUIREMENTS_TRACEABILITY.md",
+        "p03_intended":  false,
+        "sha256":  "42533E12D9690BE68602A72F84B69B2DD9306C0103D7D0FE4BF3E632D9A1FDDF"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_RESULT_NARRATIVE_AND_PERSONALIZATION_AUDIT.md",
+        "p03_intended":  false,
+        "sha256":  "7C19E387C3AEE6DB119C89CAB16D5DF7F64538FFF0EB0ABE85A740069FC5DF63"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_A_R5_ACCURACY_REMEDIATION_AND_DYNAMIC_MEASUREMENT_SLIDERS_PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "74373675CDAA98A3DEB3D1EBCD4879E638A5C3D2769B57965829B52ADE3D1764"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_B_MRX_GI_255_TOOLS_INTELLIGENCE_ACCURACY_AND_UX_EXECUTION_PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "4525F3B089A75BCAD5A6CFF2A4F2B07891C68104BA8C69E9A89407506B714D7B"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_MANIFEST.md",
+        "p03_intended":  false,
+        "sha256":  "9A7D418C83E2D04B905284DEB5BBCD8065725969854D580E7A96F5B1EEE2A37B"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/master-parity-audit.ps1",
+        "p03_intended":  false,
+        "sha256":  "A8AF639F44A68493DC7392EB841B4A9FBA01B76DA11AD497857CFA2C8685F6F5"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/merge-completeness-check.ps1",
+        "p03_intended":  false,
+        "sha256":  "595DB10E22A8F5A53154B381B2B03528333383073A99BA6607E3BBA34D1915DE"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/source-a-parity-audit.ps1",
+        "p03_intended":  false,
+        "sha256":  "3037EB8D823F726BCFD47EB66F6D4E2151EB7EA393C21668877EA85AD5008D98"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/ACCEPTANCE_CRITERIA.md",
+        "p03_intended":  false,
+        "sha256":  "BDA16670868C217FCF7AB60D6CA9C7C92D6E7C028B6E5BE00AA164C4B6BFD760"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/PROMPT.md",
+        "p03_intended":  false,
+        "sha256":  "83E6073486D659FA25CA91D9FF2835A64F286750DCD79781665F473EFB7D3E5F"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/SPEC.md",
+        "p03_intended":  false,
+        "sha256":  "DD78850D64EDC9413ECC8AAC737781C4FE29DA03999E75642BA5D75F9F07D33B"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/superpowers/plans/2026-11-13-tool-041-hematocrit-r61-acceptance.md",
+        "p03_intended":  false,
+        "sha256":  "680035AA7FEF93E7FD655D26955E2545D77BB311C1AB5D1A808D78EA45D6A943"
+    },
+    {
+        "status":  "??",
+        "path":  "docs/superpowers/specs/2026-11-13-tool-041-hematocrit-r61-acceptance-design.md",
+        "p03_intended":  false,
+        "sha256":  "45ACD4012E912CC31998C4E2572F88EB3DC255597A424568D1EFAEF9855B81D8"
+    },
+    {
+        "status":  "??",
+        "path":  "errors.txt",
+        "p03_intended":  false,
+        "sha256":  "704F07A2A7BB1CD58542397C8E14FCDEC89A5B86A08F96854C543328743ABCC6"
+    },
+    {
+        "status":  "??",
+        "path":  "fix4.cjs",
+        "p03_intended":  false,
+        "sha256":  "B45A41FA5AC2CBE38D977A081E7A04B7CC140CBEBF6091E7EAF66E58CFD50CA7"
+    },
+    {
+        "status":  "??",
+        "path":  "fix7.cjs",
+        "p03_intended":  false,
+        "sha256":  "0914BCA5FE4033766E9EC5029FBA9CCFB86235302012A3FFB58690B0722AEA62"
+    },
+    {
+        "status":  "??",
+        "path":  "fix8.cjs",
+        "p03_intended":  false,
+        "sha256":  "EDC497A174019D62052F54EB2F46B28C13394CFEF73DB7F41CE937BD8E9B165C"
+    },
+    {
+        "status":  "??",
+        "path":  "fix9.cjs",
+        "p03_intended":  false,
+        "sha256":  "7AD7DF1E37023E0F947134538636BF2C2E1F64A6D3888473816E7A8CEE2A4308"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.bmi.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "A92C81C9145CCAB5EB52234674129579A07FB3A5F777DF653BD6A27846CCB03B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.bmi.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "1BDBB1259A2F570592F28395C87270EC058085D4E4DE332337F0C0187522BED8"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.macro.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "9F1CCB736BFDA4B3C42AF74238248F5BD604A108F73300F06B14A3F54CF7C6AB"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.macro.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "9DF49FE5EA339DD207C519150B1F4AF2430AF392028C25B4FCB82DD7D7A9E45F"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.protein-needs.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "896277796129BA976A1B6865920EFB15A7948A50FD3F6D13334D26DD6AA1FD7B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.protein-needs.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "0784A2C31A45AC420823D865C1CE0CB7F6BF99621590661F4EB339E86B52BEAF"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.water-intake.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "445B7D2CAD100E10DFFCBF1B7DDACCA6374CB396F90F621F3C191144A36CD31B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/adapter.water-intake.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "002999EBFA5063EA7C03DCEBEEFED459BC2769C7158871E4D06DBC4D367027EF"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/contracts.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "0ED7386784CF022CCD27734661EC50B502ED3851EA9A39FAD9FE537DB432DC30"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/contracts.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "D09F37E5780B4D4AFA42A941479CFF156C0D437AC4035C660621C7FF1062441B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/index.ts",
+        "p03_intended":  false,
+        "sha256":  "79E0354F38C08D553D72BD7E44C9ACE39C5642CDFC8D4AD2915FA9F032246BBA"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/bmi-evidence-record.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "CECDFCE7E7D4DCD4907C9EC01BAF1DA5FE53E2EFCC616F100E9BB0217A2E1A6D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/bmi-evidence-record.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "037DD6C7F83456BC8DD1654CF63FB8BDDEDA8DDB16B07DDD8C9E7B32BB9E7E1A"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/bmi-input-profile.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "4B7F5B80613432D1D6883F1217518D1800452A44BC859729DD1778E69316FBD9"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/bmi-input-profile.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "9F5DD765D3E9AD088C95660A298FE82D7866EB9FD80A31D3FCE65F0F25C62A69"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-evidence-registry.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "ED1F0B87D8D625E347B54939A1B192F8F6B5102B251E74369A17E6B2B9349EAC"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-evidence-registry.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "F52773C26E2E7604F4685EDEBA3F523ED3BD8CBEE94AE0376485DD28990C64FE"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-input-metadata.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "8DB60FD6931E72EB16FEA5FC6DD4CF075F7395EA67BF67FDDC09695D648F466F"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-input-metadata.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "BD4537ECBC651314A0F7C4A836B33378657536024260EB3D1006B2910E3156E7"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-input-profile.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C5F757EF5FCF7E6513733CBC190CA090A5AA58F989A10BE60D177C5F04AEA88A"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-input-profile.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "2EA76D6E369D5186E4B9E0253A44E097A46081BC5B80BA484F5A9DEC590DA5A1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-output-policy.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "0A9E8ECD58C46EA4A22106103502A02E9A275C759EC59E46B5C69A2C88B3275F"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-output-policy.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "CBFD0CB9381551D11BD927B0BBCBCA9A3DD20FF53C2007D40A3B9443C4841493"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-pilot-state.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "803620C6A367BDD415109464BCA39E0C6B9B87E51955EF6F10B29DAE29808DB1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/macro-pilot-state.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "42E2EA6FF23A7990A2C558E14D0C5AE67ED404EB20C3858D0D37DEF687366799"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/protein-needs-evidence-record.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "19C4F93D163299E421AFCA3723849DD19518035D47EC2175B452DC911A01C309"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/protein-needs-evidence-record.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "121C8553A5CB1DC545D0A5534C1DA9204BDD149621BDF3811116EB932B75CAAF"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/protein-needs-input-profile.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "6576F60AC77C0CC560FF97888D8B411AD71DAB049F88E4084CD12CD047198BD4"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/protein-needs-input-profile.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "0EF5A4CFC4E7B0A59BFFC7DD45FD26F35B114A281879BEFA80564312B19BDA95"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/tool-pilot-state.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "453310719540DF6A0C39CD6AC4522311E662797C65545948DA2C8D154EFD9F03"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/tool-pilot-state.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "7A06D57CED12F2DFBC565B05FD4549D15866CEA9E4E1C94CFCC0840555F9F330"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/water-intake-evidence-record.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "8F4C38B8A2E300894CDA6E7FD26B5634E23705C148F121579600C9403C6CE166"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/water-intake-evidence-record.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "74D47096496F1B73518D93B169E454750CE75260E4BAB96051B3AA415A055681"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/water-intake-input-profile.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "D72246FA375593B32B0CFDD3122846B916A7D42F21C0CBF5E9AB4C32316E976A"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/profiles/water-intake-input-profile.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "6FFFF931BE8C5F99BC4601B661CACB44033857674B87AA636658C1549CE72DC3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/runtime.v4.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C97B10B36CF08EB02D924A083933ED82931AB5B08A8DD6F1F50EC2FE844CACB1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/engines/core/v4/runtime.v4.ts",
+        "p03_intended":  false,
+        "sha256":  "2630FA37A2CB59B1835FE8977AD8320E94419B56388B2C7BE2BACDD84B906A92"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/audit-contract.test.ts",
+        "p03_intended":  false,
+        "sha256":  "D7179F5C75446B0E4EE35E4A3436AB7CF705E1231C40020A6162821296FA6919"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/audit-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "46C2D8CD0A8C06FB27DE0BBBA6887EE45DEE09867FBFFF4D1ED76C112E945110"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/iam-config.test.ts",
+        "p03_intended":  false,
+        "sha256":  "BC15C32F7EE27EF1B4909448052D6795437B6C19EA459D7C658BBC33521BD589"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/iam-config.ts",
+        "p03_intended":  false,
+        "sha256":  "47ED1A86E95841728AB9491B48BCFF3D24E545171CC05F1A48CE6AE5F3804347"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/tenant-context.test.ts",
+        "p03_intended":  false,
+        "sha256":  "CCC3B39C6E3260D15A67FB10612E593336A3D8E717AFE358CB71021566E6F779"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/tenant-context.ts",
+        "p03_intended":  false,
+        "sha256":  "627AB9F3AD7A205770CC5B7A473FB7F54FC6DAB99133A7E17935C86D0594D9B3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/shared/unit-system.test.ts",
+        "p03_intended":  false,
+        "sha256":  "FE2EB844A78CC0A4942959F1F613B4986F531B9DDBD12859920DA7FCC1629DD1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/templates/genius-tool-template.v4.tsx",
+        "p03_intended":  false,
+        "sha256":  "0251A2FD2BDA545AF05D80624B9454C3D8636E231F0C53C94D192A8D3482F5C8"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/debug_gensp.test.ts",
+        "p03_intended":  false,
+        "sha256":  "AE715FD30F03488B06EF5894E2050153E46A354E8AC0AE5F9D727AC9A1E9EAFB"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/loaders.r5.test.ts",
+        "p03_intended":  false,
+        "sha256":  "F374BB3A57857E00E31D73F95B7571E1B4F09EEECA62D3A02182CE3F8984C9DB"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/bmi-insights.test.ts",
+        "p03_intended":  false,
+        "sha256":  "4D20CEF4061F9507DC6A0D8780A6E5A5F2C364114A8115C703B9471E968DCF8A"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/bmi-insights.ts",
+        "p03_intended":  false,
+        "sha256":  "40D27507A61EE322161C0A67F641A74CFB3199841E5D84100BBE6018306858DC"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/protein-insights.test.ts",
+        "p03_intended":  false,
+        "sha256":  "6463E2CE1FAE0541D91E77E9E3B0E9882D595763D63E350C41FE871AF0FD129B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/protein-insights.ts",
+        "p03_intended":  false,
+        "sha256":  "35140928540B9E38D0570E67959D4AD3995AEE503D6B012BE7D0D3E4687D47F1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/water-insights.test.ts",
+        "p03_intended":  false,
+        "sha256":  "A14BC51A8B51F9CC18AF9EBD18482A2A8F030CBB50B67CD4EB65A3B2878F381E"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r5/water-insights.ts",
+        "p03_intended":  false,
+        "sha256":  "8F8B94374BF44B3A2DC776D2B9202D6FCA65D904A45D33A84446CC6F993715A1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/one-rep-max-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "302C1CF9C491C86B5DF533215B99D7FC29CC6C6F9DA1477A5E776CD6C88C80DA"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/one-rep-max-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "A4C95273C4727E07F852A496CA4EA4F1A9218B9D1CAFCCE92AADB4F0B31212A3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/p03-result-schema-validation.test.ts",
+        "p03_intended":  true,
+        "sha256":  "4A25901F8D498D568E7470F5C77DB9DBB2429F8842A4A691F19604EABE41A31F"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-006-estrogen-prolactin-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "2077DEFF663BEBF16F13908CB412D2E997D28AA8056E9895A01A35F441DAB3B3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-006-estrogen-prolactin-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C9EFE658525867DB9735BE17D0A4038F6247728F26ADEEB4A81B0250ECC02E2D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-006-estrogen-prolactin-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "F52ECDD46281690C22300BF25D3B2B16B4C600FC660BB5A5DF3871FA04C193C1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-007-bloodwork-analyzer-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "DBBCC1B49CFB8F985A1314CB4A591236974F24EB7875D83C9719D6FB75045CB8"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-007-bloodwork-analyzer-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "2F12C80D403AB279AAF817AE86F6C824C69BF9014F880A6C6588085C97DB57AD"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-009-injection-site-rotator-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "D1190C3E5B8DDD3E702556A97AA607848094489DBC8D77636CB2A2410FCBD2D3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-009-injection-site-rotator-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "C4073133E336FD0396D02330A948D35B9AC674D553816A1FE71C29F511E52B6D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-010-compound-stack-builder-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "18760E4359B770AE6098B569B7C9AE535A313C2E960EA0344B51BF1041B5DC72"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-010-compound-stack-builder-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "30519FF1B27175DE7ADB3FA100ACA01FA52CA6618F3CF908227C177E6EB7A765"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-011-progress-tracker-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "91E5A7E97E3DCEC87470B21B0ACC6DE0B583D96DBF4CB548D68C6D16EDE1715A"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-011-progress-tracker-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "23BEF51969EAA82DD2CD9A2C934177A4196478B04F7DC73BD08EFFCFACFBD4D2"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-012-calorie-adjuster-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "D15F173D50AF23E8DF1F1A72F1D1046A4DBAFF40CFA43629680253844B815381"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-012-calorie-adjuster-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "C4BB93865E06745BB0F185068FDE01C2BD8CED5C8F64E9FC6F4C1155DC784FDF"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-013-macro-optimizer-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C41BD4C6A0E6B5FAA8E76C65070BBB6103F611307905890054F3EA6BC12D6BF6"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-013-macro-optimizer-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "369227789CA43C365BE1DA16497B4F1C1D09463B17FE72ABD06B5C88517EA1E6"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-015-shbg-modulator-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "A4F84016B4E69DC22BFC0D81A0CF8A10DCF7FC858E4A1D5C9736731E028BB91C"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-015-shbg-modulator-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "FD5371C675CF24394490B2D0B69AB7221EA25B04021205A1B1B44D922BFA57B2"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-015-shbg-modulator-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "CCF0C36A0B9D2AFE715B1FE526689046BE217422112010851AEC6DD2E513A1B8"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-016-half-life-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "8EC78D501F09007D36F47BFA1750390F8EB6B3C12E92D5982F8E9BB2D1FFE97E"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-018-hpta-recovery-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "927FBA91AA8C6B588866AE62E6F82E45CD301C4595B004AB1F41823D20F9023C"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-018-hpta-recovery-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "93A1E6EDDC1291BD5A5FCB65A893ACF9280DAAB33EBCF8C762C1A8AF18C63C03"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-019-cardio-monitor-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "09A4E0D917CEF560146E79B0EB6D9AFC26F791378C0010DB1959D95B32C286DA"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-019-cardio-monitor-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "8C382FCDA023709AD7E090A204A054EF8052CB77A4BAE118DFCFDAEF19933DC0"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-020-genetic-potential-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "79F76FA6B6C3897F233D53EDE4DB5FD5A4E87F23F26F3CD3691D9ED463BF9A8D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-020-genetic-potential-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "5E16A8675E970F3BF6981C0C91AC223F94806BF20C5366E875711241F43C4457"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-021-peptide-protocol-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C2794B133729195277D982FCC87AEAC7AC9B3F165B1CAFFC9F394AADCE8E20FF"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-021-peptide-protocol-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "82DB129F0A617ECE561F163D89E9D5C856E1A772438F24E6F2E1BD538056E9AD"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-022-half-life-stacker-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "86337F9B1A3134B302553028ABF06C22D2BF1634CBD1F94B50A416910BCFC1FD"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-023-trt-optimization-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "814F5660C8A4D8F1549D960647C42CDA0A56EFC3CF1AC1716A6AAACCC5BE72A1"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-023-trt-optimization-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "66BD9A10453737F50B3D5F5715F590DC6BA10607FFCEAE49706847E2A0631E01"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-023-trt-optimization-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "01D8DFFCCF8F0D524E23EF873B8FFE380E529E6F7A5CB0CC6A771B4B2E8615FD"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-024-bloodwork-interpreter-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "9B704DD06133C26310BCCDA49DCFDD3A9F7174C39EF8259E80B46682049FB55C"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-024-bloodwork-interpreter-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "4CD3525C55D159527774D8AE78F90C8707D78196FC998B93724D422DA28E9169"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-027-ester-conversion-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "4B0D016BF710EB2B6778A338B30D136FF9CD08D6AE681A710591102613DE9D11"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-028-stacking-synergy-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "5C66C68CE8499D548F921A7DF71798B150569FF49879875C87A629C69AED0654"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-028-stacking-synergy-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "49B6E7221772A3FF3F2A9011CB04DAE33DF5A99E5CFC08E4A0D543BB86E85772"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-030-cycle-cost-calculator-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "93275DB2886D620F64895C517ABC7DFABF0C9FEB3A4E2BC23A412A8E3554467E"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-030-cycle-cost-calculator-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "8C3F791790EBD17C9EA0420FBE830B1A7A7F16E1CEDAFE8622142D24CAE21E17"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-032-advanced-pct-planner-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "5E9FE390AA233F3ACD0639717F72A31A314A7BA29675C426E9CB06BA81E5E214"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-032-advanced-pct-planner-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "D4F2BA87541F9619C6B769434F6DDF89FC2C82611DDBA5E4D67B6C9281A692F3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-033-bloodwork-trend-analyzer-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "7AAB84F1EB6CCBAA03877886D2C489DB569B257F105350C94F43C507B063E40D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-033-bloodwork-trend-analyzer-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "DAE166BFF17ABAC0E09F0B4F508B7FFA5B7A8A5BFE13DFF991A3DDA099D5CB46"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-034-compound-clearance-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C7A4802E416C88E4BE41547D9D29CD10381E940FA7C7454937CAE51E2A750001"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-035-hormone-conversion-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "DB7F482859BCDBFC8D628A8927E179F005C26F2DE1CF84EF4348F7DBF428A049"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-035-hormone-conversion-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "77E04351261E22DC5DC44B9E4321821725ABDEF90ADA6B94C79846B0899F738B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-035-hormone-conversion-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "8BAC14CFBA3B67F5E43E91552B21147C9C96E2D366DDD3D1D41C5C71B7445D3C"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-036-injection-schedule-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C76F68E2A1B8821AD2DEA3B772DEBD333C6B3AD3FB5F20387D94401FDBEEA6D9"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-036-injection-schedule-pipeline.ts",
+        "p03_intended":  false,
+        "sha256":  "F81218C2750A872D74CE70CEDDCDB337C968A16BDD6C147C818276064785E760"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-contract.test.ts",
+        "p03_intended":  false,
+        "sha256":  "A5049CBC901765A74E8E923FCCDAD52C4EEB27435AE99331FE7DA4D3A212CD4E"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "6967DBE58CDBFA7601BEA4D9AA90DBA9CB4025B85963A2F1C5247D760104BBB9"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "8BC75EAC03807696527CCCDD4CCF6C53D734754C2DB79E0E9A79F210712DD842"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "2D3AAFCDCBC445D41C42CCE6F421864F17EEF0D1CEC517A0529916EB89A5FD21"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-visual.test.ts",
+        "p03_intended":  false,
+        "sha256":  "FD51DF3A736E3FAC4C468F7B6C4CAE6C161183F14E605373BE642A0242CA7447"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-040-lipid-profile-optimizer-visual.ts",
+        "p03_intended":  false,
+        "sha256":  "E5A06F9EE57056A328FC760E578629C4E546F73C27901DFB228C5AA0646BE153"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-043-prolactin-management-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "870563F9BF6B42AC555C03360B1856682734616D5F1BE6C39F3EC7D6D32DBB0E"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-043-prolactin-management-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "D875A3E961605EE5CCDAFF66630AD1DFE5A68500F4B8A690FF44656A5F6EB0F4"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-043-prolactin-management-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "315BA73E12C200BADE3DAC6FA56CCFD124098D524EAAE0A37C3A41C0EDB7CC9D"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-044-dht-side-effects-contract.ts",
+        "p03_intended":  false,
+        "sha256":  "B863A377F296F17EBF768123A7D48E7EF24CED97EE771EF058DE2D0E468229A3"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-044-dht-side-effects-pipeline.test.ts",
+        "p03_intended":  false,
+        "sha256":  "A04AC91A4E14404C378B413B5D4AAF67CC36171BDEA39E26EC5804557E822D0B"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/tool-044-dht-side-effects-pipeline.ts",
+        "p03_intended":  true,
+        "sha256":  "8B24AD60B109FC5DB8DD4E7FF8BF4B0C6D2558DE16302A5E97F039B65BB66925"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/unit-migration-analysis.test.ts",
+        "p03_intended":  false,
+        "sha256":  "2BE0543F0E70490302FBCFAAF58D1FDEC3FDF524FF46751AFF6E55C7DE025952"
+    },
+    {
+        "status":  "??",
+        "path":  "lib/tools/r6/unit-migration-analysis.ts",
+        "p03_intended":  false,
+        "sha256":  "24A9434A5FF06C749ECEF0D80E87A3E602078D1962C05ADA2BF86FC241E40FCE"
+    },
+    {
+        "status":  "??",
+        "path":  "shared/ui/footer.a11y.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "BD729ECC4D3701F2EB86677E6ACEDF27519B95C6CF5F9257AC4BEB1BB9BF6FCD"
+    },
+    {
+        "status":  "??",
+        "path":  "shared/ui/globalHeader.a11y.test.tsx",
+        "p03_intended":  false,
+        "sha256":  "0E13607E217AF4DD90E53F847B76FF89E8CFC3C534020AB071DF752EE1B465F5"
+    },
+    {
+        "status":  "??",
+        "path":  "tests/unit/tool-040-acceptance-evidence.test.ts",
+        "p03_intended":  false,
+        "sha256":  "87AD82EA07E2A52514AD26AA9B85A77984966BA8ECCFB520044ECBDC91BD3DA4"
+    },
+    {
+        "status":  "??",
+        "path":  "tests/unit/tool-041-acceptance-evidence-ledger.test.ts",
+        "p03_intended":  false,
+        "sha256":  "C7E32EA586AA88CDFD12A03281AF28185ABF2CD89AC39F5A32CE39D93943AC24"
+    },
+    {
+        "status":  "??",
+        "path":  "tests/unit/tool-041-acceptance-evidence.test.ts",
+        "p03_intended":  false,
+        "sha256":  "7CD64D9CCD470E15A4DBCCA4912C8C7D07DA623177BD892478F9B32832BECBA0"
+    },
+    {
+        "status":  "??",
+        "path":  "verify_tools_check.ts",
+        "p03_intended":  false,
+        "sha256":  "60C19754608E9F677DF5876AE4BACCE8DCC59E2B7F0EA6512082552B5D6D3A37"
+    }
+]
