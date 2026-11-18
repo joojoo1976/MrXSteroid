@@ -22,6 +22,7 @@ import {
 } from '@/lib/tools/engines/tool-049-bone-density';
 import {
   BoneDensityInputSchema,
+  BoneDensityResultSchema,
   type BoneDensityInput,
 } from '@/lib/tools/schemas/tool-049-bone-density';
 
@@ -115,11 +116,12 @@ export function runBoneDensity(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildBoneDensityOutput(
-    parsed.data,
-    assessBoneDensity(parsed.data),
-    options,
-  );
+  const engineResult = assessBoneDensity(parsed.data);
+  const resultParsed = BoneDensityResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildBoneDensityOutput(parsed.data, resultParsed.data as BoneDensityResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

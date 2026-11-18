@@ -20,6 +20,7 @@ import { requireTool, buildSeoLinks } from '@/lib/tools/registry';
 import { calculateMolarMassRelationshipV7 } from '@/lib/tools/engines/tool-027-ester-conversion';
 import {
   MolarMassConversionInputSchema,
+  MolarMassConversionResultSchema,
   type MolarMassConversionInput,
   type MolarMassConversionResult,
 } from '@/lib/tools/schemas/tool-027-ester-conversion';
@@ -112,11 +113,12 @@ export function runEsterConversion(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildEsterConversionOutput(
-    parsed.data,
-    calculateMolarMassRelationshipV7(parsed.data),
-    options,
-  );
+  const engineResult = calculateMolarMassRelationshipV7(parsed.data);
+  const resultParsed = MolarMassConversionResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildEsterConversionOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

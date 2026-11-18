@@ -22,6 +22,7 @@ import {
 } from '@/lib/tools/engines/tool-050-mental-health';
 import {
   MentalHealthInputSchema,
+  MentalHealthResultSchema,
   type MentalHealthInput,
 } from '@/lib/tools/schemas/tool-050-mental-health';
 
@@ -105,11 +106,12 @@ export function runMentalHealth(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildMentalHealthOutput(
-    parsed.data,
-    assessMentalHealth(parsed.data),
-    options,
-  );
+  const engineResult = assessMentalHealth(parsed.data);
+  const resultParsed = MentalHealthResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildMentalHealthOutput(parsed.data, resultParsed.data as MentalHealthResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

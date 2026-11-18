@@ -112,7 +112,12 @@ export function runHematocritMonitor(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildHematocritMonitorOutput(parsed.data, monitorHematocrit(parsed.data), options);
+  const engineResult = monitorHematocrit(parsed.data);
+  const resultParsed = HematocritResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildHematocritMonitorOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

@@ -110,11 +110,12 @@ export function runInjectionPain(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildInjectionPainOutput(
-    parsed.data,
-    buildInjectionExperienceSessionV7(parsed.data.entries),
-    options,
-  );
+  const engineResult = buildInjectionExperienceSessionV7(parsed.data.entries);
+  const resultParsed = InjectionExperienceResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildInjectionPainOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

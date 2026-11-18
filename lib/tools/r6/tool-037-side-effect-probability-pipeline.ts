@@ -110,7 +110,12 @@ export function runSideEffectProbability(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildSideEffectProbabilityOutput(parsed.data, calculateSideEffectProbability(parsed.data), options);
+  const engineResult = calculateSideEffectProbability(parsed.data);
+  const resultParsed = SideEffectRiskResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildSideEffectProbabilityOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

@@ -22,6 +22,7 @@ import {
 } from '@/lib/tools/engines/tool-047-fertility-preservation';
 import {
   FertilityInputSchema,
+  FertilityResultSchema,
   type FertilityInput,
 } from '@/lib/tools/schemas/tool-047-fertility-preservation';
 
@@ -106,7 +107,12 @@ export function runFertilityPreservation(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildFertilityOutput(parsed.data, assessFertility(parsed.data), options);
+  const engineResult = assessFertility(parsed.data);
+  const resultParsed = FertilityResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildFertilityOutput(parsed.data, resultParsed.data as FertilityResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

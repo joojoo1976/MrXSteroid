@@ -110,11 +110,12 @@ export function runDrugInteractionPro(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildDrugInteractionProOutput(
-    parsed.data,
-    buildMedicationSessionV7(parsed.data.entries),
-    options,
-  );
+  const engineResult = buildMedicationSessionV7(parsed.data.entries);
+  const resultParsed = MedicationSessionResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildDrugInteractionProOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

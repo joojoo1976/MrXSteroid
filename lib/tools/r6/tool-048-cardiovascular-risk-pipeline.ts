@@ -22,6 +22,7 @@ import {
 } from '@/lib/tools/engines/tool-048-cardiovascular-risk';
 import {
   CardioRiskInputSchema,
+  CardioRiskResultSchema,
   type CardioRiskInput,
 } from '@/lib/tools/schemas/tool-048-cardiovascular-risk';
 
@@ -116,11 +117,12 @@ export function runCardioRisk(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildCardioRiskOutput(
-    parsed.data,
-    assessCardiovascularRisk(parsed.data),
-    options,
-  );
+  const engineResult = assessCardiovascularRisk(parsed.data);
+  const resultParsed = CardioRiskResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildCardioRiskOutput(parsed.data, resultParsed.data as CardioRiskResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

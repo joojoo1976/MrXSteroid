@@ -108,7 +108,12 @@ export function runDrugInteraction(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildDrugInteractionOutput(parsed.data, checkDrugInteractions(parsed.data), options);
+  const engineResult = checkDrugInteractions(parsed.data);
+  const resultParsed = DrugInteractionResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildDrugInteractionOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

@@ -112,7 +112,12 @@ export function runEstrogenManagement(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildEstrogenManagementOutput(parsed.data, manageEstrogen(parsed.data), options);
+  const engineResult = manageEstrogen(parsed.data);
+  const resultParsed = EstrogenResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildEstrogenManagementOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

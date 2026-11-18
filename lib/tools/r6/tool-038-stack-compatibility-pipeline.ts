@@ -110,7 +110,12 @@ export function runStackCompatibility(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildStackCompatibilityOutput(parsed.data, checkStackCompatibility(parsed.data), options);
+  const engineResult = checkStackCompatibility(parsed.data);
+  const resultParsed = StackCompatibilityResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildStackCompatibilityOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

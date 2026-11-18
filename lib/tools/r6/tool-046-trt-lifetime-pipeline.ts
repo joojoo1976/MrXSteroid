@@ -22,6 +22,7 @@ import {
 } from '@/lib/tools/engines/tool-046-trt-lifetime';
 import {
   TrtLifetimeInputSchema,
+  TrtLifetimeResultSchema,
   type TrtLifetimeInput,
 } from '@/lib/tools/schemas/tool-046-trt-lifetime';
 
@@ -106,7 +107,12 @@ export function runTrtLifetime(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildTrtLifetimeOutput(parsed.data, projectTrtLifetime(parsed.data), options);
+  const engineResult = projectTrtLifetime(parsed.data);
+  const resultParsed = TrtLifetimeResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildTrtLifetimeOutput(parsed.data, resultParsed.data as TrtLifetimeResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

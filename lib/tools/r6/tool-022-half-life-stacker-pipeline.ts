@@ -110,7 +110,12 @@ export function runHalfLifeStacker(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildHalfLifeStackerOutput(parsed.data, calculateStackTiming(parsed.data), options);
+  const engineResult = calculateStackTiming(parsed.data);
+  const resultParsed = StackTimingResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildHalfLifeStackerOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

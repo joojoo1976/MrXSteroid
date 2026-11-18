@@ -110,7 +110,12 @@ export function runCompoundClearance(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildCompoundClearanceOutput(parsed.data, calculateCompoundClearance(parsed.data), options);
+  const engineResult = calculateCompoundClearance(parsed.data);
+  const resultParsed = ClearanceResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildCompoundClearanceOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

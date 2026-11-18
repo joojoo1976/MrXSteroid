@@ -10,6 +10,7 @@ import {
 } from '@/lib/tools/engines/tool-051-peptide-dosage-calculator';
 import {
   PeptideDoseInputSchema,
+  PeptideDoseResultSchema,
   type PeptideDoseInput,
 } from '@/lib/tools/schemas/tool-051-peptide-dosage-calculator';
 
@@ -85,11 +86,12 @@ export function runPeptideDose(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildPeptideDoseOutput(
-    parsed.data,
-    computePeptideDose(parsed.data),
-    options,
-  );
+  const engineResult = computePeptideDose(parsed.data);
+  const resultParsed = PeptideDoseResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildPeptideDoseOutput(parsed.data, resultParsed.data as PeptideDoseResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

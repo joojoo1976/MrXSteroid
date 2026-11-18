@@ -110,11 +110,12 @@ export function runSideEffectEarlyWarning(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildSideEffectEarlyWarningOutput(
-    parsed.data,
-    summarizeMeasurementReadingsV7(parsed.data.readings),
-    options,
-  );
+  const engineResult = summarizeMeasurementReadingsV7(parsed.data.readings);
+  const resultParsed = MeasurementSummaryResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildSideEffectEarlyWarningOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

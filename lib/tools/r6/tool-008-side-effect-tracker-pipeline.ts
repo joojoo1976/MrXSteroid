@@ -105,7 +105,12 @@ export function runSideEffectTracker(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildSideEffectTrackerOutput(parsed.data, parsed.data, options);
+  const engineResult = parsed.data;
+  const resultParsed = SideEffectLogSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildSideEffectTrackerOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

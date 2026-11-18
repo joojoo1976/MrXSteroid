@@ -21,6 +21,7 @@ import { requireTool, buildSeoLinks } from '@/lib/tools/registry';
 import { calculateHalfLife } from '@/lib/tools/engines/tool-016-half-life-calculator';
 import {
   HalfLifeInputSchema,
+  HalfLifeResultSchema,
   type HalfLifeInput,
   type HalfLifeResult,
 } from '@/lib/tools/schemas/tool-016-half-life-calculator';
@@ -114,7 +115,12 @@ export function r6RunHalfLife(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = r6BuildHalfLifeOutput(parsed.data, calculateHalfLife(parsed.data), options);
+  const engineResult = calculateHalfLife(parsed.data);
+  const resultParsed = HalfLifeResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = r6BuildHalfLifeOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

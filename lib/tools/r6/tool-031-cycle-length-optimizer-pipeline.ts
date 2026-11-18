@@ -110,7 +110,12 @@ export function runCycleLengthOptimizer(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildCycleLengthOptimizerOutput(parsed.data, calculateCycleLength(parsed.data), options);
+  const engineResult = calculateCycleLength(parsed.data);
+  const resultParsed = CycleLengthResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildCycleLengthOptimizerOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

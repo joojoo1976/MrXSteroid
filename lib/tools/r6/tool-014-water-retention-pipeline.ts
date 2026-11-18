@@ -108,7 +108,12 @@ export function runWaterRetention(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildWaterRetentionOutput(parsed.data, calculateWaterRetention(parsed.data), options);
+  const engineResult = calculateWaterRetention(parsed.data);
+  const resultParsed = WaterRetentionResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildWaterRetentionOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

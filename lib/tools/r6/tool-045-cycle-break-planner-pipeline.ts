@@ -19,6 +19,7 @@ import { requireTool, buildSeoLinks } from '@/lib/tools/registry';
 import { planCycleBreak, type CycleBreakResult } from '@/lib/tools/engines/tool-045-cycle-break-planner';
 import {
   CycleBreakInputSchema,
+  CycleBreakResultSchema,
   type CycleBreakInput,
 } from '@/lib/tools/schemas/tool-045-cycle-break-planner';
 
@@ -109,7 +110,12 @@ export function runCycleBreakPlanner(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildCycleBreakOutput(parsed.data, planCycleBreak(parsed.data), options);
+  const engineResult = planCycleBreak(parsed.data);
+  const resultParsed = CycleBreakResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildCycleBreakOutput(parsed.data, resultParsed.data as CycleBreakResult, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }
