@@ -121,7 +121,7 @@ describe('single-source barrier', () => {
     const ALLOWLIST = new Set(['server/payments/pricing.ts']);
 
     // Charge amounts that must never be restated outside the canonical catalog.
-    const PRICE_LITERAL = /\b(49\.99|72\.00|82\.00|499|749|849|9,?999|349\.99|30\.00|199)\b/;
+    const PRICE_LITERAL = /\b(49\.99|72\.00|82\.00|69\.99|100\.80|114\.80|29\.00|79\.00|149\.00|199\.00|499|749|849|699|949|999|1149|9,?999|349\.99|30\.00|199|10848|10748|10498|11848|11748|11498)\b/;
 
     // A bare 9999 can be a z-index or a tool id; require a pricing word on the
     // same line so the barrier only catches price definitions.
