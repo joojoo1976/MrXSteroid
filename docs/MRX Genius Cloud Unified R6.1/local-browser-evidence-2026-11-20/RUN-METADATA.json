@@ -1,0 +1,19 @@
+{
+  "capturedAtLocal": "2026-11-20T16:47:35+02:00",
+  "capturedAtUTC": "2026-11-20T14:47:35Z",
+  "head": "37f047a4105d078b22edea2c857bf35aefdbdc7f",
+  "branch": "feat/r6.1-tools-041-042",
+  "workingTreeEntriesObserved": 411,
+  "trackedDirty": true,
+  "isolatedVerification": {
+    "sessionWindowUTC": "approximately 2026-11-20T12:50:00Z to 2026-11-20T14:36:00Z; individual screenshot capture times were not recorded",
+    "port": 3114,
+    "buildDirectory": ".local-browser-verify-20261120",
+    "distDir": ".next-local-browser-verify",
+    "buildResult": "Next.js production build completed; 506/506 static pages",
+    "browserEvidenceRows": 14,
+    "tools": ["045", "047", "051"],
+    "evidenceClass": "LOCAL_BROWSER_EVIDENCE_ONLY"
+  },
+  "notes": "EXECUTION-LOG.csv retains the original port-3112 hydration failures as historical rows and adds separate port-3114 local interactive verification rows. The isolated build copied the dirty working tree; this was not a clean clone. Tool components were unchanged during browser verification. Existing .next was not modified. No E3/E4 promotion, live deployment, deployed Source SHA, or owner acceptance is established. Shared secondary-navigation horizontal overflow and English /api/translate 503 are recorded in per-tool reports."
+}

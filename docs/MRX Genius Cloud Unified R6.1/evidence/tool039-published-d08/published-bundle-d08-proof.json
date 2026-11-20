@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-13T00:20:55.646Z",
+  "deployment": "dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc",
+  "method": "The published page and its client chunks were fetched through the owner's own authenticated Vercel CLI session (vercel curl --deployment). The chunks carrying the D-08 local-history code are listed.",
+  "chunksScanned": 40,
+  "chunksCarryingD08": {
+    "/_next/static/chunks/app/smarttools/%5Bcategory%5D/%5Btool%5D/page-f52f77e146012c11.js": {
+      "bytes": 2559445,
+      "markers": [
+        "mrx_tool039_history_v1",
+        "mrx_tool039_history_key_v1",
+        "Allow local storage on this device",
+        "Withdraw consent and delete the stored data"
+      ]
+    }
+  },
+  "allMarkersFound": true,
+  "markersSearched": [
+    "mrx_tool039_history_v1",
+    "mrx_tool039_history_key_v1",
+    "Allow local storage on this device",
+    "Withdraw consent and delete the stored data"
+  ]
+}

@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Seasonal by ID'
+method: GET
+url: '{{base_url}}/api/admin/seo/seasonal/{{id}}'
+order: 17000
+pathVariables:
+  - key: id
+    value: '{{seasonal_id}}'
+    description: Seasonal record ID

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-12T23:52:03.371Z",
+  "build": "WORKTREE (local production build)",
+  "baseUrl": "http://localhost:3100",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "method": "Two independent Chrome profiles (separate --user-data-dir) against the same origin.",
+  "results": [
+    {
+      "requirement": "Local history: two independent browser profiles never see each other's data",
+      "result": "PASS",
+      "evidence": "profile A: consented=true saved=true entries=1 deviceKeys=2; profile B: entries=0 deviceKeys=0"
+    }
+  ]
+}

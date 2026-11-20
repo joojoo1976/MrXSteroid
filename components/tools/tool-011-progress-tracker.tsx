@@ -1,19 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import i18nJson from '@/i18n/tool-011-progress-tracker.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { runProgressTracker, type ProgressTrackerBuildOptions } from '@/lib/tools/r6/tool-011-progress-tracker-pipeline';
+import { requireTool } from '@/lib/tools/registry';
 
 const KG_PER_LB = 2.20462;
 
 export default function Tool011ProgressTracker() {
   const i18nData = useToolI18n(i18nJson);
-  const { unitSystem, isRtl } = useToolDisplayPreferences();
+  const { unitSystem, isRtl, locale } = useToolDisplayPreferences();
   const { data: savedState } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1000);
+  const tool = requireTool('tool-011-progress-tracker');
 
   const [entries, setEntries] = useState<Array<{
     id: string;
@@ -38,6 +41,41 @@ export default function Tool011ProgressTracker() {
   const [newBodyFat, setNewBodyFat] = useState<number | null>(null);
   const [newNotes, setNewNotes] = useState<string>('');
   const massUnit = unitSystem === 'imperial' ? 'lb' : 'kg';
+
+  // R6 Pipeline integration
+  const [trends, setTrends] = useState<any[]>([]);
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<'idle' | 'calculating' | 'done' | 'error'>('idle');
+
+  const options: ProgressTrackerBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale,
+    unitSystem,
+    snapshotType: 'draft',
+  };
+
+  useEffect(() => {
+    if (entries.length < 2) {
+      setTrends([]);
+      setPipelineError(null);
+      setPipelineStatus('idle');
+      return;
+    }
+
+    setPipelineStatus('calculating');
+    const result = runProgressTracker(entries, options);
+    if (result.ok) {
+      setTrends(result.output.result);
+      setPipelineError(null);
+      setPipelineStatus('done');
+    } else {
+      setTrends([]);
+      setPipelineError(String(result.error));
+      setPipelineStatus('error');
+    }
+  }, [entries, options.locale, options.unitSystem, options.snapshotType]);
+
   const displayMass = (kg: number | undefined, lbs: number | undefined) => {
     const valueInKg = kg ?? (lbs === undefined ? undefined : lbs / KG_PER_LB);
     if (valueInKg === undefined) return undefined;
@@ -99,7 +137,9 @@ export default function Tool011ProgressTracker() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.weight.replace(/\s*\([^)]*\)$/, '')} ({massUnit}):</label>
+            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>
+              {i18nData.weight.replace(/\s*\([^)]*\)$/, '')} ({massUnit}):
+            </label>
             <input
               type="number"
               value={unitSystem === 'imperial' ? Number((newWeightKg * KG_PER_LB).toFixed(2)) : newWeightKg}
@@ -111,7 +151,9 @@ export default function Tool011ProgressTracker() {
         </div>
         <div className="grid grid-cols-2 gap-4" dir="ltr">
           <div>
-            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.strength.replace(/\s*\([^)]*\)$/, '')} ({massUnit}):</label>
+            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>
+              {i18nData.strength.replace(/\s*\([^)]*\)$/, '')} ({massUnit}):
+            </label>
             <input
               type="number"
               value={unitSystem === 'imperial' ? Number((newStrengthKg * KG_PER_LB).toFixed(2)) : newStrengthKg}
@@ -121,7 +163,9 @@ export default function Tool011ProgressTracker() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.body_fat}:</label>
+            <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>
+              {i18nData.body_fat}:
+            </label>
             <input
               type="number"
               value={newBodyFat ?? ''}
@@ -133,7 +177,9 @@ export default function Tool011ProgressTracker() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>{i18nData.notes}:</label>
+          <label className="block text-sm font-medium mb-2" dir={isRtl ? 'rtl' : 'ltr'}>
+            {i18nData.notes}:
+          </label>
           <textarea
             value={newNotes}
             onChange={(e) => setNewNotes(e.target.value as any)}
@@ -151,6 +197,34 @@ export default function Tool011ProgressTracker() {
           {isPending ? i18nData.saving : i18nData.add_entry}
         </button>
         {isPending && <p className="mt-2 text-sm text-zinc-500">{i18nData.saving_to_account}</p>}
+
+        {/* R6 Pipeline Trends */}
+        {pipelineStatus === 'calculating' && (
+          <div className="rounded-lg border border-blue-500/50 bg-blue-950/20 p-4">
+            <p className="font-semibold">جاري حساب الاتجاهات عبر R6 Pipeline…</p>
+          </div>
+        )}
+        {pipelineStatus === 'done' && trends.length > 0 && (
+          <div className="mt-6 p-4 rounded bg-zinc-50 border">
+            <h3 className="font-semibold mb-3">اتجاهات التقدم (R6 Pipeline)</h3>
+            <ul className="space-y-2 text-sm">
+              {trends.map((trend, i) => (
+                <li key={i} className="p-2 rounded border bg-white">
+                  <p className="font-medium">{trend.label}</p>
+                  <p className="text-sm text-zinc-600">
+                    الاتجاه: {trend.trendDirection} · متوسط التغيير: {trend.avgChangePerWeek}/أسبوع · نقاط البيانات: {trend.dataPoints.length}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {pipelineStatus === 'error' && pipelineError && (
+          <div className="mt-4 rounded-lg border border-red-500/50 bg-red-950/20 p-4 text-red-100">
+            <p className="font-semibold">خطأ في حساب الاتجاهات</p>
+            <p className="mt-1 text-sm">{pipelineError}</p>
+          </div>
+        )}
 
         <div className="mt-6 p-4 rounded bg-zinc-50" dir={isRtl ? 'rtl' : 'ltr'}>
           <h3 className="text-semibold mb-3">{i18nData.progress_entries} ({entries.length})</h3>

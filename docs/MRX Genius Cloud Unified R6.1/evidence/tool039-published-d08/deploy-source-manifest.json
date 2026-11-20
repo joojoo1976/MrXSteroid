@@ -1,0 +1,95 @@
+{
+  "capturedAt": "2026-11-12T23:53:50.095Z",
+  "tool": "Tool 039 — Liver Enzyme Tracker",
+  "purpose": "Identifies the exact source deployed to the Preview and the exact source the browser evidence was taken against.",
+  "head": "5a87f3e5271db497a63833bb3cd1bb3df2078497",
+  "branch": "docs/r6.1-r0-evidence",
+  "committed": false,
+  "note": "The Tool 039 changes live in the working tree and are NOT committed (no commit/push/merge/rebase was performed, by owner instruction). These SHA-256 hashes identify the deployed code.",
+  "appSource": {
+    "components/tools/tool-039-liver-enzyme-tracker.tsx": {
+      "sha256": "fc512231c1c430bfc180068882cb3e2efa160930f3327a08272cef75314591f1",
+      "bytes": 30170
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.genius.tsx": {
+      "sha256": "309b8bcc24c0382caecf3d2b31d21b798466f4d2247debf558107fd89c4e0496",
+      "bytes": 30917
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.history.tsx": {
+      "sha256": "cadb407b9a397c1fb21442fafbb099de2b61e5338a94da835728ed22c55fc827",
+      "bytes": 15575
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.visual.tsx": {
+      "sha256": "afb6366d3027c700a73577ef6775a2369f9c784a9ca467bc1563dabc0ae079c6",
+      "bytes": 33320
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-history.ts": {
+      "sha256": "6e1f4cc754f0da68b09dae4ecaa302ad42ff2b604871b0feec54e7a42cacb52e",
+      "bytes": 11360
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-history-store.ts": {
+      "sha256": "24c0d90137c229f745b773a7495a832e5bb8a7edb1e799fecc1eb9f1dc7cd79b",
+      "bytes": 11541
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-visual.ts": {
+      "sha256": "78b39fb0273131e789ee5e1e4a7411a2904b240c6a13cea40733a766907fb953",
+      "bytes": 10149
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-contract.ts": {
+      "sha256": "b814ffa99007507a336688c591a85f069d1414daf9373d40684440087ea6422a",
+      "bytes": 16298
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-pipeline.ts": {
+      "sha256": "6d60356568f19b88d4dc1b6e28c3f7319fe28c56ab26e3b1a4e67588837f2141",
+      "bytes": 4180
+    },
+    "i18n/tool-039-liver-enzyme-tracker.json": {
+      "sha256": "9e1d218213ed331e1a19a87b3776b385c36367f608befd3d5858da000a53fffd",
+      "bytes": 46633
+    }
+  },
+  "testSource": {
+    "components/tools/tool-039-liver-enzyme-tracker.test.tsx": {
+      "sha256": "a9883d0c95aef33e875573f5991d742fb7629417f9ac07e0145536c8cd9c01d9",
+      "bytes": 22841
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.visual.test.tsx": {
+      "sha256": "0a2af4e730ff93439739bccad0c73cf74ad1f0dc36f0ba083c052d9f54ff6f08",
+      "bytes": 19631
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.history.test.tsx": {
+      "sha256": "802d886138de44626cb8f5b8750490346fb75899692741b6b179cbe254c6b4e1",
+      "bytes": 14353
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-history.test.ts": {
+      "sha256": "7e447b10c9597a499fcacc8483b770d596c3298138b218bf971f4f0b997d3fec",
+      "bytes": 8252
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-history-store.test.ts": {
+      "sha256": "5a76c47ef4b6bcfbb102dd309d1c69c918f960e389e5145c25f536e2b1ca85f4",
+      "bytes": 8405
+    }
+  },
+  "verificationHarness": {
+    "docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs": {
+      "sha256": "b681203e0ee0df80785bfe7ebed7de81d28074cf014dd0267f3abe083c06e2c8",
+      "bytes": 45736
+    },
+    "docs/MRX Genius Cloud Unified R6.1/tool-039-two-browsers-check.mjs": {
+      "sha256": "80081c5bce03e5a976dc24cec89f15202a6a9cf503f14bbee2ad56b4c0490c43",
+      "bytes": 8663
+    },
+    "docs/MRX Genius Cloud Unified R6.1/tool-039-legibility-check.mjs": {
+      "sha256": "dbb3f33b6a8b47245b84af8473601d04e4d969cf75340a2d530d171feb25fec9",
+      "bytes": 8915
+    },
+    "docs/MRX Genius Cloud Unified R6.1/tool-039-preview-proxy.mjs": {
+      "sha256": "941a188928882dd52dc34acf805db852b9c7646ae0f864b23fd8229bae0e8a13",
+      "bytes": 6373
+    },
+    "docs/MRX Genius Cloud Unified R6.1/tool-039-secure-storage-probe.mjs": {
+      "sha256": "e1a141bb52f41bb896432694c1378cf0aaf351851239c1a5fa904a9c9341cfe9",
+      "bytes": 4764
+    }
+  }
+}

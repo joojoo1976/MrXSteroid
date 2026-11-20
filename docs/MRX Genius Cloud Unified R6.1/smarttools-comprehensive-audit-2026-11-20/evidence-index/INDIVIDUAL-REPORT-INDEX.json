@@ -1,0 +1,2144 @@
+{
+  "generatedAt": "2026-11-20T09:55:15.244Z",
+  "head": "37f047a4105d078b22edea2c857bf35aefdbdc7f",
+  "publishedCatalogCount": 268,
+  "individualReports": 267,
+  "reports": [
+    {
+      "num": "macro",
+      "toolId": "mrx.tool.macro",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "bodyfat",
+      "toolId": "mrx.tool.bodyfat",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "injection",
+      "toolId": "mrx.tool.injection",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "halflife",
+      "toolId": "mrx.tool.halflife",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "lab",
+      "toolId": "mrx.tool.lab",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "genetic",
+      "toolId": "mrx.tool.genetic",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "cycle",
+      "toolId": "mrx.tool.cycle",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "timeline",
+      "toolId": "mrx.tool.timeline",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "master-calculator",
+      "toolId": "mrx.tool.master-calculator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "multi-ester-pharmacokinetics",
+      "toolId": "mrx.tool.multi-ester-pharmacokinetics",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "hpta-recovery",
+      "toolId": "mrx.tool.hpta-recovery",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "aromatization-risk",
+      "toolId": "mrx.tool.aromatization-risk",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "pct-timing",
+      "toolId": "mrx.tool.pct-timing",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "hcg-serm-protocol",
+      "toolId": "mrx.tool.hcg-serm-protocol",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "006",
+      "toolId": "mrx.tool.006-estrogen-prolactin",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "007",
+      "toolId": "mrx.tool.007-bloodwork-analyzer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "008",
+      "toolId": "mrx.tool.008-side-effect-tracker",
+      "recordedPct": "16.67%",
+      "decision": "PRESERVE",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "009",
+      "toolId": "mrx.tool.009-injection-site-rotator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "010",
+      "toolId": "mrx.tool.010-compound-stack-builder",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 8,
+      "failed": 0
+    },
+    {
+      "num": "011",
+      "toolId": "mrx.tool.011-progress-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "012",
+      "toolId": "mrx.tool.012-calorie-adjuster",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "013",
+      "toolId": "mrx.tool.013-macro-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "014",
+      "toolId": "mrx.tool.014-water-retention",
+      "recordedPct": "16.67%",
+      "decision": "PRESERVE",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "015",
+      "toolId": "mrx.tool.015-shbg-modulator",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "016",
+      "toolId": "mrx.tool.016-half-life",
+      "recordedPct": "5.56%",
+      "decision": "REPAIR",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "017",
+      "toolId": "mrx.tool.017-drug-interaction",
+      "recordedPct": "16.67%",
+      "decision": "REPAIR",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "018",
+      "toolId": "mrx.tool.018-hpta-recovery-monitor",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "019",
+      "toolId": "mrx.tool.019-cardio-monitor",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "020",
+      "toolId": "mrx.tool.020-genetic-potential",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "021",
+      "toolId": "mrx.tool.021-peptide-protocol",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "022",
+      "toolId": "mrx.tool.022-half-life-stacker",
+      "recordedPct": "5.56%",
+      "decision": "REPAIR",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "023",
+      "toolId": "mrx.tool.023-trt-optimization",
+      "recordedPct": "0.00% operational; 9.52% expanded (separated)",
+      "decision": "REPAIR",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "024",
+      "toolId": "mrx.tool.024-bloodwork-interpreter",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "025",
+      "toolId": "mrx.tool.025-drug-interaction-pro",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "026",
+      "toolId": "mrx.tool.026-injection-pain",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "027",
+      "toolId": "mrx.tool.027-ester-conversion",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "028",
+      "toolId": "mrx.tool.028-stacking-synergy",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "029",
+      "toolId": "mrx.tool.029-side-effect-warning",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "030",
+      "toolId": "mrx.tool.030-cycle-cost",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "031",
+      "toolId": "mrx.tool.031-cycle-length-optimizer",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "032",
+      "toolId": "mrx.tool.032-advanced-pct-planner",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "033",
+      "toolId": "mrx.tool.033-bloodwork-trend-analyzer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "034",
+      "toolId": "mrx.tool.034-compound-clearance",
+      "recordedPct": "0.00%",
+      "decision": "NOT_VERIFIED",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "035",
+      "toolId": "mrx.tool.035-hormone-conversion",
+      "recordedPct": "0.00%",
+      "decision": "NOT_VERIFIED",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "036",
+      "toolId": "mrx.tool.036-injection-schedule",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "037",
+      "toolId": "mrx.tool.037-side-effect-probability",
+      "recordedPct": "0.00%",
+      "decision": "NOT_VERIFIED",
+      "tested": 7,
+      "failed": 0
+    },
+    {
+      "num": "038",
+      "toolId": "mrx.tool.038-stack-compatibility",
+      "recordedPct": "0.00%",
+      "decision": "NOT_VERIFIED",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "040",
+      "toolId": "mrx.tool.040-lipid-profile-optimizer",
+      "recordedPct": "83.70% recorded / 2.17% strict",
+      "decision": "REPAIR",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "041",
+      "toolId": "mrx.tool.041-hematocrit-monitor",
+      "recordedPct": "57.58% recorded (bounded 53.03-57.58%)",
+      "decision": "NOT_VERIFIED",
+      "tested": 10,
+      "failed": 0
+    },
+    {
+      "num": "042",
+      "toolId": "mrx.tool.042-estrogen-management",
+      "recordedPct": "83.02%",
+      "decision": "BLOCKED",
+      "tested": 8,
+      "failed": 0
+    },
+    {
+      "num": "043",
+      "toolId": "mrx.tool.043-prolactin-management",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "044",
+      "toolId": "mrx.tool.044-dht-side-effects",
+      "recordedPct": "0.00%",
+      "decision": "REPAIR",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "045",
+      "toolId": "mrx.tool.045-cycle-break-planner",
+      "recordedPct": "86.76%",
+      "decision": "CONTINUE / REPAIR (gates only)",
+      "tested": 9,
+      "failed": 0
+    },
+    {
+      "num": "046",
+      "toolId": "mrx.tool.046-trt-lifetime",
+      "recordedPct": "84.85%",
+      "decision": "CONTINUE / REPAIR (P-03 + gates)",
+      "tested": 8,
+      "failed": 0
+    },
+    {
+      "num": "047",
+      "toolId": "mrx.tool.047-fertility-preservation",
+      "recordedPct": "86.76%",
+      "decision": "CONTINUE / REPAIR (gates only)",
+      "tested": 9,
+      "failed": 0
+    },
+    {
+      "num": "048",
+      "toolId": "mrx.tool.048-cardiovascular-risk",
+      "recordedPct": "86.11%",
+      "decision": "CONTINUE / REPAIR (P-03 + gates)",
+      "tested": 8,
+      "failed": 0
+    },
+    {
+      "num": "049",
+      "toolId": "mrx.tool.049-bone-density",
+      "recordedPct": "85.92%",
+      "decision": "CONTINUE / REPAIR (P-03 + gates)",
+      "tested": 8,
+      "failed": 0
+    },
+    {
+      "num": "050",
+      "toolId": "mrx.tool.050-mental-health",
+      "recordedPct": "26.92%",
+      "decision": "CONTINUE / REPAIR (static-to-E3 + P-03 + gates)",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "051",
+      "toolId": "mrx.tool.051-peptide-dosage-calculator",
+      "recordedPct": "35.48%",
+      "decision": "CONTINUE / REPAIR (FAIL + static-to-E3 + P-03 + gates)",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "052",
+      "toolId": "mrx.tool.052-growth-hormone-protocol-planner",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "053",
+      "toolId": "mrx.tool.053-insulin-conversion-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "054",
+      "toolId": "mrx.tool.054-glucose-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "055",
+      "toolId": "mrx.tool.055-insulin-sensitivity-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "056",
+      "toolId": "mrx.tool.056-mini-pct-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "057",
+      "toolId": "mrx.tool.057-free-testosterone-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "058",
+      "toolId": "mrx.tool.058-androgenic-balance-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "059",
+      "toolId": "mrx.tool.059-androgen-receptor-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "060",
+      "toolId": "mrx.tool.060-5-alpha-conversion-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "061",
+      "toolId": "mrx.tool.061-hair-loss-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "062",
+      "toolId": "mrx.tool.062-prostate-health-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "063",
+      "toolId": "mrx.tool.063-testicular-suppression-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "064",
+      "toolId": "mrx.tool.064-sperm-production-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "065",
+      "toolId": "mrx.tool.065-aromatase-conversion-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "066",
+      "toolId": "mrx.tool.066-estrogen-sensitivity-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "067",
+      "toolId": "mrx.tool.067-estrogen-balance-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "068",
+      "toolId": "mrx.tool.068-gynecomastia-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "069",
+      "toolId": "mrx.tool.069-detoxification-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "070",
+      "toolId": "mrx.tool.070-oxidative-stress-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "071",
+      "toolId": "mrx.tool.071-antioxidant-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "072",
+      "toolId": "mrx.tool.072-systemic-inflammation-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "073",
+      "toolId": "mrx.tool.073-immune-system-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "074",
+      "toolId": "mrx.tool.074-blood-pressure-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "075",
+      "toolId": "mrx.tool.075-arterial-health-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "076",
+      "toolId": "mrx.tool.076-blood-viscosity-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "077",
+      "toolId": "mrx.tool.077-nitric-oxide-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "078",
+      "toolId": "mrx.tool.078-endothelial-health-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "079",
+      "toolId": "mrx.tool.079-fat-metabolism-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "080",
+      "toolId": "mrx.tool.080-mitochondrial-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "081",
+      "toolId": "mrx.tool.081-cellular-aging-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "082",
+      "toolId": "mrx.tool.082-telomere-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "083",
+      "toolId": "mrx.tool.083-anti-aging-inflammation-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "084",
+      "toolId": "mrx.tool.084-cognitive-enhancer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "085",
+      "toolId": "mrx.tool.085-sleep-quality-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "086",
+      "toolId": "mrx.tool.086-cortisol-stress-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "087",
+      "toolId": "mrx.tool.087-mood-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "088",
+      "toolId": "mrx.tool.088-dopamine-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "089",
+      "toolId": "mrx.tool.089-serotonin-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "090",
+      "toolId": "mrx.tool.090-female-hormone-balance-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "091",
+      "toolId": "mrx.tool.091-female-health-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "092",
+      "toolId": "mrx.tool.092-female-dosage-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "093",
+      "toolId": "mrx.tool.093-menstrual-cycle-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "094",
+      "toolId": "mrx.tool.094-pregnancy-risk-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "095",
+      "toolId": "mrx.tool.095-skin-health-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "096",
+      "toolId": "mrx.tool.096-hair-nail-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "097",
+      "toolId": "mrx.tool.097-hydration-balance-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "098",
+      "toolId": "mrx.tool.098-sodium-potassium-manager",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "099",
+      "toolId": "mrx.tool.099-digestive-health-optimizer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "100",
+      "toolId": "mrx.tool.100-comprehensive-report-generator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "101",
+      "toolId": "mrx.tool.101-sarm-to-aas-transition-bridge-predictor",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "102",
+      "toolId": "mrx.tool.102-subcutaneous-vs-intramuscular-pk-modeler",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 0
+    },
+    {
+      "num": "103",
+      "toolId": "mrx.tool.103-renal-function-hydration-index",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "104",
+      "toolId": "mrx.tool.104-thyroid-metabolic-rate-dynamics",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "105",
+      "toolId": "mrx.tool.105-ai-health-data-fusion-hub",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "106",
+      "toolId": "mrx.tool.106-glycogen-supercompensation-water-modeler",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "107",
+      "toolId": "mrx.tool.107-contest-prep-peak-week-manipulator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "108",
+      "toolId": "mrx.tool.108-ai-body-composition-vision-engine",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "109",
+      "toolId": "mrx.tool.109-competition-readiness-posing-os",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "110",
+      "toolId": "mrx.tool.110-ai-meal-vision-scanner",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 5,
+      "failed": 0
+    },
+    {
+      "num": "111",
+      "toolId": "mrx.tool.111-smart-food-macro-substitution",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 9,
+      "failed": 0
+    },
+    {
+      "num": "112",
+      "toolId": "mrx.tool.112-food-quality-micronutrient-diversity-score",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "113",
+      "toolId": "mrx.tool.113-ai-grocery-basket-meal-cost-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "114",
+      "toolId": "mrx.tool.114-restaurant-macro-navigator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "115",
+      "toolId": "mrx.tool.115-supplement-evidence-bio-stack-navigator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "116",
+      "toolId": "mrx.tool.116-nutrition-gap-fasting-window-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "117",
+      "toolId": "mrx.tool.117-intra-workout-nutrient-volumizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "118",
+      "toolId": "mrx.tool.118-cns-recovery-score",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "119",
+      "toolId": "mrx.tool.119-training-volume-hypertrophy-index",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "120",
+      "toolId": "mrx.tool.120-progressive-overload-predictor",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "121",
+      "toolId": "mrx.tool.121-muscle-group-recovery-modeler",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "122",
+      "toolId": "mrx.tool.122-rpe-rir-1rm-velocity-modeler",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "123",
+      "toolId": "mrx.tool.123-joint-stress-connective-tissue-index",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "124",
+      "toolId": "mrx.tool.124-deload-frequency-fatigue-modeler",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "125",
+      "toolId": "mrx.tool.125-fiber-type-mechanical-tension-score",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "126",
+      "toolId": "mrx.tool.126-neuromuscular-explosiveness-modeler",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "127",
+      "toolId": "mrx.tool.127-ai-daily-readiness-explainer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "128",
+      "toolId": "mrx.tool.128-training-load-acute-chronic-ratio",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "129",
+      "toolId": "mrx.tool.129-ai-adaptive-training-planner",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "130",
+      "toolId": "mrx.tool.130-ai-plateau-detective",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "131",
+      "toolId": "mrx.tool.131-transformation-forecast-trajectory-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 5,
+      "failed": 1
+    },
+    {
+      "num": "132",
+      "toolId": "mrx.tool.132-ai-pose-form-coach",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "133",
+      "toolId": "mrx.tool.133-rep-tempo-velocity-loss-analyzer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "134",
+      "toolId": "mrx.tool.134-mobility-movement-symmetry-screen",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "135",
+      "toolId": "mrx.tool.135-exercise-substitution-ai",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "136",
+      "toolId": "mrx.tool.136-physique-golden-ratio-score",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "137",
+      "toolId": "mrx.tool.137-peptide-hormone-reconstitution-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "138",
+      "toolId": "mrx.tool.138-raw-powder-density-oil-formulation-engine",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "139",
+      "toolId": "mrx.tool.139-solvent-emulsifier-ratio-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "140",
+      "toolId": "mrx.tool.140-dosage-unit-conversion-engine",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 1
+    },
+    {
+      "num": "141",
+      "toolId": "mrx.tool.141-carrier-oil-viscosity-syringe-pressure",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "142",
+      "toolId": "mrx.tool.142-compound-purity-active-yield-estimator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "143",
+      "toolId": "mrx.tool.143-storage-stability-thermal-degradation-estimator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 1
+    },
+    {
+      "num": "144",
+      "toolId": "mrx.tool.144-homebrew-chemistry-calculator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "151",
+      "toolId": "mrx.tool.151-accumulation-half-life-simulator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "152",
+      "toolId": "mrx.tool.152-side-effect-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "153",
+      "toolId": "mrx.tool.153-injection-site-rotator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "154",
+      "toolId": "mrx.tool.154-compound-stack-builder",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "155",
+      "toolId": "mrx.tool.155-progress-tracker",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "156",
+      "toolId": "mrx.tool.156-water-retention",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "157",
+      "toolId": "mrx.tool.157-multi-compound-half-life",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "158",
+      "toolId": "mrx.tool.158-volume-measurement",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "159",
+      "toolId": "mrx.tool.159-compound-half-life-stacker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "145",
+      "toolId": "mrx.tool.145-habit-intelligence-consistency-coach",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 3,
+      "failed": 1
+    },
+    {
+      "num": "160",
+      "toolId": "mrx.tool.160-genetic-potential",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "161",
+      "toolId": "mrx.tool.161-peptide-protocol-planner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "162",
+      "toolId": "mrx.tool.162-oral-cycle-planner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "163",
+      "toolId": "mrx.tool.163-trt-optimization-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "164",
+      "toolId": "mrx.tool.164-post-cycle-bloodwork-interpreter",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "165",
+      "toolId": "mrx.tool.165-drug-interaction-checker-pro",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "146",
+      "toolId": "mrx.tool.146-ai-safety-gate-emergency-protocol",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 6,
+      "failed": 1
+    },
+    {
+      "num": "166",
+      "toolId": "mrx.tool.166-injection-pain-minimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "167",
+      "toolId": "mrx.tool.167-ester-conversion",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "168",
+      "toolId": "mrx.tool.168-compound-stacking-synergy",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "169",
+      "toolId": "mrx.tool.169-side-effect-early-warning",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "170",
+      "toolId": "mrx.tool.170-cycle-cost",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "147",
+      "toolId": "mrx.tool.147-scientific-evidence-explorer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "171",
+      "toolId": "mrx.tool.171-cycle-length-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "172",
+      "toolId": "mrx.tool.172-bloodwork-trend-analyzer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "173",
+      "toolId": "mrx.tool.173-compound-clearance",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "174",
+      "toolId": "mrx.tool.174-hormone-conversion",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "175",
+      "toolId": "mrx.tool.175-injection-schedule-planner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "148",
+      "toolId": "mrx.tool.148-personal-fitness-memory-layer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 4,
+      "failed": 1
+    },
+    {
+      "num": "176",
+      "toolId": "mrx.tool.176-side-effect-probability",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "177",
+      "toolId": "mrx.tool.177-stack-compatibility-checker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "178",
+      "toolId": "mrx.tool.178-dht-side-effect-predictor",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "179",
+      "toolId": "mrx.tool.179-cycle-break-planner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "180",
+      "toolId": "mrx.tool.180-trt-lifetime",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "181",
+      "toolId": "mrx.tool.181-fertility-preservation-guide",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "182",
+      "toolId": "mrx.tool.182-cardiovascular-risk-assessor",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "183",
+      "toolId": "mrx.tool.183-bone-density-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "149",
+      "toolId": "mrx.tool.149-physique-trajectory-simulator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 11,
+      "failed": 1
+    },
+    {
+      "num": "184",
+      "toolId": "mrx.tool.184-mental-health-monitor",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "185",
+      "toolId": "mrx.tool.185-peptide-dosage",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "186",
+      "toolId": "mrx.tool.186-growth-hormone-protocol-planner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "187",
+      "toolId": "mrx.tool.187-insulin-conversion",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "188",
+      "toolId": "mrx.tool.188-glucose-tracker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "189",
+      "toolId": "mrx.tool.189-androgenic-balance",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "190",
+      "toolId": "mrx.tool.190-androgen-receptor-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "191",
+      "toolId": "mrx.tool.191-5-alpha-conversion",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "150",
+      "toolId": "mrx.tool.150-ai-performance-command-center",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 6,
+      "failed": 0
+    },
+    {
+      "num": "192",
+      "toolId": "mrx.tool.192-hair-loss-tracker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "193",
+      "toolId": "mrx.tool.193-prostate-health-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "194",
+      "toolId": "mrx.tool.194-testicular-suppression",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "195",
+      "toolId": "mrx.tool.195-sperm-production-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "196",
+      "toolId": "mrx.tool.196-estrogen-sensitivity-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "197",
+      "toolId": "mrx.tool.197-gynecomastia-tracker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "198",
+      "toolId": "mrx.tool.198-detoxification-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "199",
+      "toolId": "mrx.tool.199-oxidative-stress",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "200",
+      "toolId": "mrx.tool.200-antioxidant-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "bmr-tdee",
+      "toolId": "mrx.tool.bmr-tdee",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "201",
+      "toolId": "mrx.tool.201-systemic-inflammation",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "202",
+      "toolId": "mrx.tool.202-immune-system-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "203",
+      "toolId": "mrx.tool.203-arterial-health-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "204",
+      "toolId": "mrx.tool.204-blood-viscosity",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "205",
+      "toolId": "mrx.tool.205-nitric-oxide-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "206",
+      "toolId": "mrx.tool.206-endothelial-health-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "207",
+      "toolId": "mrx.tool.207-fat-metabolism",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "208",
+      "toolId": "mrx.tool.208-mitochondrial-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "209",
+      "toolId": "mrx.tool.209-cellular-aging",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "protein-needs",
+      "toolId": "mrx.tool.protein-needs",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "210",
+      "toolId": "mrx.tool.210-telomere-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "water-intake",
+      "toolId": "mrx.tool.water-intake",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "211",
+      "toolId": "mrx.tool.211-anti-aging-inflammation",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "212",
+      "toolId": "mrx.tool.212-cognitive-enhancer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "213",
+      "toolId": "mrx.tool.213-cortisol-stress",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "214",
+      "toolId": "mrx.tool.214-mood-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "215",
+      "toolId": "mrx.tool.215-dopamine-tracker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "216",
+      "toolId": "mrx.tool.216-serotonin-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "217",
+      "toolId": "mrx.tool.217-female-hormone-balance",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "218",
+      "toolId": "mrx.tool.218-female-health-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "219",
+      "toolId": "mrx.tool.219-female-dosage",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "bmi",
+      "toolId": "mrx.tool.bmi",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "220",
+      "toolId": "mrx.tool.220-menstrual-cycle-manager",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "221",
+      "toolId": "mrx.tool.221-pregnancy-risk",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "222",
+      "toolId": "mrx.tool.222-skin-health-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "223",
+      "toolId": "mrx.tool.223-hair-nail-tracker",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "224",
+      "toolId": "mrx.tool.224-digestive-health-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "225",
+      "toolId": "mrx.tool.225-comprehensive-report-generator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "one-rep-max",
+      "toolId": "mrx.tool.one-rep-max",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "226",
+      "toolId": "mrx.tool.226-sarm-to-aas-transition-predictor",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "227",
+      "toolId": "mrx.tool.227-subq-vs-im-pk-modeler",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "228",
+      "toolId": "mrx.tool.228-health-data-fusion-hub",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "229",
+      "toolId": "mrx.tool.229-glycogen-supercompensation-modeler",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "230",
+      "toolId": "mrx.tool.230-peak-week-manipulator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "strength-standards",
+      "toolId": "mrx.tool.strength-standards",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "231",
+      "toolId": "mrx.tool.231-body-composition-vision-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "232",
+      "toolId": "mrx.tool.232-meal-vision-scanner",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "233",
+      "toolId": "mrx.tool.233-food-substitution-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "234",
+      "toolId": "mrx.tool.234-food-quality-score",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "235",
+      "toolId": "mrx.tool.235-grocery-basket-optimizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "rest-timer",
+      "toolId": "mrx.tool.rest-timer",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "236",
+      "toolId": "mrx.tool.236-restaurant-macro-navigator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "237",
+      "toolId": "mrx.tool.237-intra-workout-volumizer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "238",
+      "toolId": "mrx.tool.238-fiber-type-adaptation-score",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "239",
+      "toolId": "mrx.tool.239-peptide-reconstitution",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "240",
+      "toolId": "mrx.tool.240-raw-powder-density-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "241",
+      "toolId": "mrx.tool.241-solvent-ratio",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "242",
+      "toolId": "mrx.tool.242-dosage-unit-conversion-engine",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "243",
+      "toolId": "mrx.tool.243-carrier-oil-viscosity-estimator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "244",
+      "toolId": "mrx.tool.244-purity-yield-estimator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "245",
+      "toolId": "mrx.tool.245-storage-stability-estimator",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "246",
+      "toolId": "mrx.tool.246-homebrew-chemistry",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "247",
+      "toolId": "mrx.tool.247-habit-intelligence-coach",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "248",
+      "toolId": "mrx.tool.248-safety-gate-emergency-protocol",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "249",
+      "toolId": "mrx.tool.249-scientific-evidence-explorer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 1,
+      "failed": 0
+    },
+    {
+      "num": "250",
+      "toolId": "mrx.tool.250-personal-fitness-memory-layer",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    },
+    {
+      "num": "251",
+      "toolId": "mrx.tool.251-physique-trajectory-simulator",
+      "recordedPct": "",
+      "decision": "PARTIAL",
+      "tested": 2,
+      "failed": 0
+    },
+    {
+      "num": "252",
+      "toolId": "mrx.tool.252-command-center",
+      "recordedPct": "",
+      "decision": "NOT_VERIFIABLE",
+      "tested": 3,
+      "failed": 0
+    }
+  ]
+}

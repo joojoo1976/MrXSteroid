@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Post Metrics'
+method: POST
+url: '{{base_url}}/api/dashboard/metrics'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "event": "tool_used",
+      "toolSlug": "bmi"
+    }

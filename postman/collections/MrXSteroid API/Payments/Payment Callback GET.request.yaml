@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Payment Callback GET'
+method: GET
+url: '{{base_url}}/api/payments/callback?orderId={{orderId}}&status=success'
+order: 3000
+queryParams:
+  - key: orderId
+    value: '{{orderId}}'
+    description: Order ID from payment gateway
+  - key: status
+    value: success
+    description: 'Payment status (success, failed, pending)'

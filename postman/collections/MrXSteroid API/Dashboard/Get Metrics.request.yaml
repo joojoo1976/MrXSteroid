@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Metrics'
+method: GET
+url: '{{base_url}}/api/dashboard/metrics'
+order: 3000

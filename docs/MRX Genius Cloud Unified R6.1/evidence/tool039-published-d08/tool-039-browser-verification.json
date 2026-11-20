@@ -1,0 +1,226 @@
+{
+  "date": "2026-11-13T01:18:15.274Z",
+  "baseUrl": "http://127.0.0.1:3202",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "deviceMetrics": {
+    "desktop": "1440x900",
+    "mobile": "390x844"
+  },
+  "results": [
+    {
+      "requirement": "EMPTY state shows the explanatory illustration",
+      "result": "PASS",
+      "evidence": "section=visible svg=visible title=\"Visual explanation and data visualizations\" state=State: EmptyTrack"
+    },
+    {
+      "requirement": "EMPTY state shows the text equivalent of the diagram",
+      "result": "PASS",
+      "evidence": "text list present=true visible=true"
+    },
+    {
+      "requirement": "EMPTY state invents no chart data",
+      "result": "PASS",
+      "evidence": "bars=0 tables=0"
+    },
+    {
+      "requirement": "EMPTY state screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-empty-1440.png"
+    },
+    {
+      "requirement": "Explanatory diagram renders",
+      "result": "PASS",
+      "evidence": "svg[data-r6-illustration] present"
+    },
+    {
+      "requirement": "Data chart renders",
+      "result": "PASS",
+      "evidence": "bar row ALT present; line chart: absent (one dated reading)"
+    },
+    {
+      "requirement": "Chart matches pipeline values",
+      "result": "PASS",
+      "evidence": "bar: ALT112 U/L · 2.00× ULN · Elevated"
+    },
+    {
+      "requirement": "Text alternative (data table)",
+      "result": "PASS",
+      "evidence": "table[data-r6-table] present"
+    },
+    {
+      "requirement": "No colour-only meaning (legend present)",
+      "result": "PASS",
+      "evidence": "legend element present"
+    },
+    {
+      "requirement": "English LTR",
+      "result": "PASS",
+      "evidence": "dir=ltr"
+    },
+    {
+      "requirement": "Mouse Hover opens the element tooltip",
+      "result": "PASS",
+      "evidence": "ALTMeaning: ALT (alanine aminotransferase) — an enzyme that tends to rise when liver cells are irritated.Current value: 112 U/LRelative to the reference limit: 2.00× ULNExplanation: ALT is compared with its reference lim"
+    },
+    {
+      "requirement": "Tooltip avoids viewport clipping",
+      "result": "PASS",
+      "evidence": "left=497 right=785 top=29 bottom=373 viewport=1424x805"
+    },
+    {
+      "requirement": "Desktop screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-desktop-1440.png"
+    },
+    {
+      "requirement": "Local history: consent is requested before anything is stored",
+      "result": "PASS",
+      "evidence": "the consent button is offered in the history box"
+    },
+    {
+      "requirement": "Local history: the result is saved by an explicit action",
+      "result": "PASS",
+      "evidence": "save action clicked after the consent"
+    },
+    {
+      "requirement": "Local history: the saved result is listed with its value and date",
+      "result": "PASS",
+      "evidence": "2026-02-01ALT112 U/L2.00× ULNElevatedAge (days): 285StaleDelete this result"
+    },
+    {
+      "requirement": "Local history: the rating is bound to the selected result",
+      "result": "PASS",
+      "evidence": "rating=4 entryId=da9a8a86-4e12-4229-aac8-7f0f31b6c076"
+    },
+    {
+      "requirement": "Local history: the stored blob is not readable plain text on the device",
+      "result": "PASS",
+      "evidence": "keys=mrx_tool039_history_v1,mrx_tool039_history_key_v1 plaintext=false"
+    },
+    {
+      "requirement": "Local history: the saved result and its rating survive a reload",
+      "result": "PASS",
+      "evidence": "2026-02-01ALT112 U/L2.00× ULNElevatedAge (days): 285Stale★ 4Delete this result"
+    },
+    {
+      "requirement": "Local history: no data is sent to any server",
+      "result": "PASS",
+      "evidence": "59 requests, all GET navigations/assets, none carrying a value"
+    },
+    {
+      "requirement": "Local history: no medical value or comment reaches the application log",
+      "result": "PASS",
+      "evidence": "1 console messages, none containing a value, a unit or a status"
+    },
+    {
+      "requirement": "Local history: staleness is computed at read time",
+      "result": "PASS",
+      "evidence": "data-r6-history-stale=true badge=true"
+    },
+    {
+      "requirement": "Local history: one saved result can be deleted",
+      "result": "PASS",
+      "evidence": "entries left = 0"
+    },
+    {
+      "requirement": "Local history: the history exports as CSV",
+      "result": "PASS",
+      "evidence": "the browser downloaded tool-039-liver-enzyme-tracker-history.csv (265 bytes): tool,tool-039-liver-enzyme-tracker | saved_at,2026-11-13T01:17:58.318Z |  | entry_id,draw_date,marker,value,unit,uln_multiple,status,overall_status,age_days,stale,rating,comment"
+    },
+    {
+      "requirement": "Local history: the rating control is operable with the keyboard",
+      "result": "PASS",
+      "evidence": "focus moved to INPUT, the arrow key moved the selection to 3"
+    },
+    {
+      "requirement": "Local history: the rating and delete controls are named for a screen reader",
+      "result": "PASS",
+      "evidence": "group=true radios=true comment=true maxlength=500 delete=true"
+    },
+    {
+      "requirement": "Local history: all saved results can be deleted at once",
+      "result": "PASS",
+      "evidence": "after save again = 1, after delete all = 0"
+    },
+    {
+      "requirement": "Local history screenshot (desktop)",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-history-1440.png"
+    },
+    {
+      "requirement": "Keyboard Focus opens the tooltip",
+      "result": "PASS",
+      "evidence": "focused=true tooltip=true"
+    },
+    {
+      "requirement": "Escape closes the tooltip",
+      "result": "PASS",
+      "evidence": "tooltip removed after Escape"
+    },
+    {
+      "requirement": "Keyboard activation (Enter) opens the tooltip",
+      "result": "PASS",
+      "evidence": "node step-1"
+    },
+    {
+      "requirement": "Tooltip close action works",
+      "result": "PASS",
+      "evidence": "aria-label=\"Close the explanation\""
+    },
+    {
+      "requirement": "Touch interaction opens the tooltip",
+      "result": "PASS",
+      "evidence": "touchStart/touchEnd on the ALT bar"
+    },
+    {
+      "requirement": "Mobile 390px renders without horizontal overflow",
+      "result": "PASS",
+      "evidence": "scrollWidth=390 clientWidth=390 overflow=0"
+    },
+    {
+      "requirement": "Mobile 390px keeps the visual elements",
+      "result": "PASS",
+      "evidence": "illustration + bar + table present at 390px"
+    },
+    {
+      "requirement": "Mobile 390px shows the five readable steps",
+      "result": "PASS",
+      "evidence": "5/5 steps visible, smallest visible text 12px, desktop SVG hidden at 390px=true, overflow=0"
+    },
+    {
+      "requirement": "Local history screenshot (390 px)",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-history-390.png"
+    },
+    {
+      "requirement": "Mobile screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-mobile-390.png"
+    },
+    {
+      "requirement": "Reduced motion respected",
+      "result": "PASS",
+      "evidence": "prefers-reduced-motion rule present and emulated"
+    },
+    {
+      "requirement": "Arabic RTL renders the visual layer",
+      "result": "PASS",
+      "evidence": "dir=rtl; legend=\"المفتاح: الشريط المملوء = القيمة المقاسة · الخط الكهرماني = الحد المرجعي · الحالة معروضة بجانب كل قيمة\""
+    },
+    {
+      "requirement": "Arabic RTL has no horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Arabic screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "requirement": "Local history: withdrawing the consent deletes the stored data",
+      "result": "PASS",
+      "evidence": "payload on the device before=true after=false, entries left=0"
+    }
+  ]
+}

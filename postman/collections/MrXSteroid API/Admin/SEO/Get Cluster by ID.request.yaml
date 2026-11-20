@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Cluster by ID'
+method: GET
+url: '{{base_url}}/api/admin/seo/clusters/{{id}}'
+order: 8000
+pathVariables:
+  - key: id
+    value: '{{cluster_id}}'
+    description: Cluster ID

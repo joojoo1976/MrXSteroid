@@ -1,0 +1,21 @@
+$kind: http-request
+name: 'Create Session'
+method: POST
+url: '{{base_url}}/api/payments/create-session'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "productId": "MRX-PROTOCOL",
+      "email": "user@example.com",
+      "fullName": "John Doe",
+      "country": "US",
+      "userId": "{{userId}}",
+      "locale": "en",
+      "quantity": 1,
+      "promoCode": null
+    }

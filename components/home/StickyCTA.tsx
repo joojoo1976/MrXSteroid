@@ -41,7 +41,7 @@ export default function StickyCTA() {
                             <p className="text-xs text-zinc-400">One-time price · lifetime access · 48h refund.</p>
                         </div>
                         <a
-                            href="#pricing"
+                            href="/checkout"
                             className="inline-flex flex-shrink-0 items-center rounded-xl bg-[rgb(var(--neon-primary))] px-6 py-3 text-xs font-black uppercase tracking-widest text-black transition-transform hover:scale-[1.03]"
                         >
                             Claim The Protocol

@@ -3,8 +3,13 @@
  * ║  🛒 PAYMOB PRODUCT CATALOG — MR. X STEROID                              ║
  * ║  Single source of truth for all 5 Paymob-linked products                ║
  * ║  Prices are in EGP. priceCents = price × 100 (required by Paymob API)  ║
+ * ║  Amounts are DERIVED from server/payments/pricing.ts.                   ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
+
+import { getAddonPrice, getShippingPrice, getTierPrice } from '../../server/payments/pricing';
+
+const egpCents = (amount: number): number => Math.round(amount * 100);
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                              TYPES
@@ -59,8 +64,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'البروتوكول الرقمي',
         nameEn: 'Digital Protocol',
         tierId: 'digital',
-        priceEGP: 499,
-        priceCents: 49900,
+        priceEGP: getTierPrice('digital', 'EGP'),
+        priceCents: egpCents(getTierPrice('digital', 'EGP')),
         directLink: 'https://paymob.link/ZQyqO',
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2KzlSNGRHdHVaZFRheDRKQVNvYzNVUT09X1dRVGs5dnZLWmZFYVpremh4ZndJOUE9PQ',
         requiresShipping: false,
@@ -81,8 +86,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'الباقة التكتيكية',
         nameEn: 'Tactical Bundle',
         tierId: 'bundle',
-        priceEGP: 749,
-        priceCents: 74900,
+        priceEGP: getTierPrice('bundle', 'EGP'),
+        priceCents: egpCents(getTierPrice('bundle', 'EGP')),
         directLink: 'https://paymob.link/iOuJf',
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2eFZxTkJoUWtMTXVzandmYUw4TmdZZz09X3g1YUVqR0xFMFUwMi9MVzNBV3gyVHc9PQ',
         requiresShipping: true,
@@ -105,8 +110,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'المحترف الذكي',
         nameEn: 'Smart Professional (VIP)',
         tierId: 'coaching',
-        priceEGP: 849,
-        priceCents: 84900,
+        priceEGP: getTierPrice('coaching', 'EGP'),
+        priceCents: egpCents(getTierPrice('coaching', 'EGP')),
         directLink: 'https://paymob.link/y11b8',
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2NG05emdjRkFKSFNsU3ZHL01vMVdKZz09X2JvM0hkeDFNS00vOUpJTXUxTDRCSWc9PQ',
         requiresShipping: true,
@@ -131,8 +136,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'تدريب شخصي أونلاين لمدة كورس واحد',
         nameEn: 'Personal Online Coaching (1 Course)',
         tierId: 'coaching_plus',
-        priceEGP: 9999,
-        priceCents: 999900,
+        priceEGP: getAddonPrice('coaching_plus', 'EGP'),
+        priceCents: egpCents(getAddonPrice('coaching_plus', 'EGP')),
         directLink: 'https://paymob.link/StYD4',
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2U0Q5cDI3WGFyRzR4MXFHcGNRWmhmUT09XzAvbjh0Zjc5Zlh5TGpBcjUxRzA0Zmc9PQ',
         requiresShipping: false,
@@ -155,8 +160,8 @@ export const PAYMOB_PRODUCTS: PaymobProduct[] = [
         nameAr: 'الشحن داخل مصر',
         nameEn: 'Egypt Shipping Add-on',
         tierId: 'shipping',
-        priceEGP: 199,
-        priceCents: 19900,
+        priceEGP: getShippingPrice('eg_standard', 'EGP') ?? 0,
+        priceCents: egpCents(getShippingPrice('eg_standard', 'EGP') ?? 0),
         standaloneUrl: 'https://accept.paymobsolutions.com/standalone?ref=p_LRR2QjhLZFVKbDhQeTJZU2FSSGExa211Zz09X1krNVc2MTltd2JKWmtOQzExaG1YYmc9PQ',
         requiresShipping: false,
         featuresAr: [

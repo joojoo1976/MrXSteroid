@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Delete Tool Logs'
+method: DELETE
+url: '{{base_url}}/api/tools/logs'
+order: 3000

@@ -1,0 +1,18 @@
+$kind: http-request
+name: 'Fourthwall Webhook'
+method: POST
+url: '{{base_url}}/api/webhooks/fourthwall'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "event": "order.created",
+      "data": {
+        "orderId": "{{orderId}}",
+        "amount": 99
+      }
+    }

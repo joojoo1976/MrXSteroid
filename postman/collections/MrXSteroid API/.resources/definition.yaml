@@ -1,0 +1,7 @@
+$kind: collection
+name: MrXSteroid API
+description: 'API collection for MrXSteroid — covers Auth, Calculate, Contact, Geo, Download, Translate, SmartTools, Payments, Checkout, Payouts, Affiliate, Referral, Guest Claims, Dashboard, Tools, SEO, Admin, and Webhooks endpoints.'
+variables:
+  - key: base_url
+    value: 'http://localhost:3000'
+    description: Base URL for the MrXSteroid Next.js app

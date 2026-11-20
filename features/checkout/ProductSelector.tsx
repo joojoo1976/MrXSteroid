@@ -6,15 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import { ProductVariant } from '@/shared/types/types';
 import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../shared/lib/logic';
+import { getTierPrice } from '../../server/payments/pricing';
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  Pricing Data — mirrors PricingSection EXACTLY (same names, features, IDs)
+//  Pricing Data — DERIVED from server/payments/pricing.ts (the canonical
+//  catalog). No literal charge price lives in this component.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const USD_PRICES: Record<string, number> = {
-    digital: 49.99,
-    bundle: 72.00,
-    coaching: 82.00,
+    digital: getTierPrice('digital', 'USD'),
+    bundle: getTierPrice('bundle', 'USD'),
+    coaching: getTierPrice('coaching', 'USD'),
 };
 
 interface VariantDef {

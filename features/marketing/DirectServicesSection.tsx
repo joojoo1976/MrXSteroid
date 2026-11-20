@@ -64,7 +64,7 @@ export const DirectServicesSection: React.FC = () => {
 
                         <div className="mb-6 p-4 bg-black/40 rounded-2xl border border-zinc-800">
                             <div className="text-3xl font-black text-white tracking-tight">
-                                $349.99 <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
+                                ${coachingLink.amount.toFixed(2)} <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
                             </div>
                             <div className="text-[10px] text-zinc-500 mt-1">
                                 {isRTL ? 'دفعة واحدة لكامل مدة الدورة + المتابعة' : 'Single payment for entire cycle duration'}
@@ -136,7 +136,7 @@ export const DirectServicesSection: React.FC = () => {
 
                         <div className="mb-6 p-4 bg-black/40 rounded-2xl border border-zinc-800">
                             <div className="text-3xl font-black text-white tracking-tight">
-                                $30.00 <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
+                                ${consultationLink.amount.toFixed(2)} <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
                             </div>
                             <div className="text-[10px] text-zinc-500 mt-1">
                                 {isRTL ? 'جلسة تقييم تفصيلية شاملة' : 'Single comprehensive assessment session'}

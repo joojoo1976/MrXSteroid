@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Payment Webhook'
+method: POST
+url: '{{base_url}}/api/payments/webhook'
+order: 10000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "event": "payment.success",
+      "orderId": "{{orderId}}"
+    }

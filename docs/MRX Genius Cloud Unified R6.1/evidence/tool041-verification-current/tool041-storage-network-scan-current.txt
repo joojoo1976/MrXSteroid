@@ -1,0 +1,6 @@
+﻿# Tool 041 current-local storage/network/session scan
+# generated 2026-11-14
+# files: 
+components/tools/tool-041-hematocrit-monitor.tsx, lib/tools/r6/tool-041-hematocrit-monitor-pipeline.ts, lib/tools/schemas/tool-041-hematocrit-monitor.ts, lib/tools/engines/tool-041-hematocrit-monitor.ts, i18n/tool-041-hematocrit-monitor.json
+
+lib\tools\r6\tool-041-hematocrit-monitor-pipeline.ts:13: * Supabase, no I/O. Reuses canonical contracts only.

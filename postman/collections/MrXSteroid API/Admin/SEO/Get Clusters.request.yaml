@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Clusters'
+method: GET
+url: '{{base_url}}/api/admin/seo/clusters'
+order: 6000

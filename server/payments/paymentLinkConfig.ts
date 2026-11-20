@@ -2,8 +2,11 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *  KASHIER LIVE PAYMENT PAGES CONFIGURATION
  *  Direct Payment Links for Mr. X-Steroid Core Packages
+ *  Amounts are DERIVED from server/payments/pricing.ts.
  * ═══════════════════════════════════════════════════════════════════════════
  */
+
+import { getAddonPrice, getServicePrice } from './pricing';
 
 export interface KashierPackagePaymentLink {
     planId: 'digital' | 'bundle' | 'coaching';
@@ -135,7 +138,7 @@ export function getKashierServicePaymentLink(serviceId: KashierServiceId): Kashi
             liveUrl: envUrl || null,
             currency: 'USD',
             region: 'GLOBAL',
-            amount: 349.99,
+            amount: getAddonPrice('coaching_plus', 'USD'),
             requiresShipping: false,
             status,
             verificationNotice,
@@ -167,7 +170,7 @@ export function getKashierServicePaymentLink(serviceId: KashierServiceId): Kashi
             liveUrl: envUrl || null,
             currency: 'USD',
             region: 'GLOBAL',
-            amount: 30.00,
+            amount: getServicePrice('consultation', 'USD'),
             requiresShipping: false,
             status,
             verificationNotice,

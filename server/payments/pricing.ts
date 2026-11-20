@@ -11,9 +11,16 @@
 //                              DEFAULTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { EGYPT_FIXED_SHIPPING_EGP } from '../../shared/lib/locationData';
-
 export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
+export type CurrencyKey = 'usd' | 'egp';
+export type ServiceId = 'consultation';
+
+/**
+ * Version of the canonical catalog. Quotes/invoices from Phase 3+ must carry
+ * this value so a saved amount can be traced to the catalog that produced it.
+ * Bump whenever a charge price changes — never for a display-only change.
+ */
+export const PRICING_VERSION = '2026-11-18.1';
 
 /** Base unit prices per tier (currency keyed). `_plus` tiers use base + addon. */
 export interface TierPrice {
@@ -25,11 +32,52 @@ export interface PricingConfig {
     tiers: Record<TierId, TierPrice>;
     /** Add-on prices keyed by the `_plus` tier id (added once per order, mirroring the client). */
     addons: Partial<Record<TierId, TierPrice>>;
+    /** Standalone services that are not a book tier (e.g. consultation). */
+    services?: Partial<Record<ServiceId, TierPrice>>;
     /** Shipping costs by provider id, currency keyed. */
     shipping: Record<string, { usd?: number; egp?: number }>;
     /** Allowed absolute deviation (in currency units) between client-reported and server-computed amount. */
     tolerance: number;
 }
+
+/**
+ * DISPLAY-ONLY “before discount” prices.
+ *
+ * These are NOT charge amounts: no gateway, invoice or quote reads them. They
+ * live here so every strike-through figure also has one traceable source.
+ * Two surfaces intentionally keep their historical presentation until Phase 9,
+ * where the original amount must be derived from invoice lines instead.
+ */
+export const DISPLAY_ORIGINAL_PRICES = {
+    storefront: {
+        egp: {
+            digital: 699,
+            bundle: 849,
+            coaching: 949,
+            coaching_plus: 11848,
+            bundle_plus: 11748,
+            digital_plus: 11498,
+        },
+        usd: {
+            digital: 69.99,
+            bundle: 100.80,
+            coaching: 114.80,
+        },
+    },
+    billing: {
+        egp: {
+            digital: 699,
+            bundle: 999,
+            coaching: 1149,
+        },
+        usd: {
+            digital: 49.99,
+            bundle: 100.80,
+            coaching: 199.00,
+        },
+    },
+} as const;
+export type OriginalPriceSurface = keyof typeof DISPLAY_ORIGINAL_PRICES;
 
 /** Canonical local-Egypt shipping provider id. */
 export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
@@ -37,8 +85,8 @@ export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
 /**
  * APPROVED BUSINESS PRICE — local (Egypt) flat shipping = 199 EGP.
  *
- * Imported from the shared single source of truth so the server can never drift
- * from the client display again. Authority:
+ * This is the single literal for the Egypt shipping rate. `shared/lib/
+ * locationData.ts` re-exports it so no consumer keeps a second copy. Authority:
  * docs/governance/phase1/PHASE1-DECISION-RECORD.md (D3). This supersedes the
  * 239 EGP figure that was hard-coded in FOUR independent places and is recorded
  * as CONFLICT in docs/governance/2026-09-24-read-only-reconciliation.md.
@@ -47,7 +95,7 @@ export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
  * tracking, no SLA. The id `eg_standard` is a price bucket, not a live courier.
  * Do not surface it in the UI as a connected carrier.
  */
-export const EGYPT_LOCAL_SHIPPING_EGP = EGYPT_FIXED_SHIPPING_EGP;
+export const EGYPT_LOCAL_SHIPPING_EGP = 199;
 
 export const DEFAULT_PRICING: PricingConfig = {
     tiers: {
@@ -73,6 +121,10 @@ export const DEFAULT_PRICING: PricingConfig = {
         coaching_plus: { usd: 349.99, egp: 9999 },
         bundle_plus:   { usd: 349.99, egp: 9999 },
         digital_plus:  { usd: 349.99, egp: 9999 },
+    },
+    services: {
+        // GLOBAL/USD-only direct service. Egypt does not sell it separately.
+        consultation: { usd: 30, egp: 0 },
     },
     shipping: {
         // Local Egypt flat rate = 199 EGP (approved business price, D3).
@@ -120,6 +172,14 @@ function applyEnvOverrides(cfg: PricingConfig): PricingConfig {
         const egp = num(`${key}_EGP`);
         if (usd !== undefined) cfg.addons[tier]!.usd = usd;
         if (egp !== undefined) cfg.addons[tier]!.egp = egp;
+    });
+
+    (Object.keys(cfg.services ?? {}) as ServiceId[]).forEach(service => {
+        const key = `PRICING_SERVICE_${service.toUpperCase()}`;
+        const usd = num(`${key}_USD`);
+        const egp = num(`${key}_EGP`);
+        if (usd !== undefined) cfg.services![service]!.usd = usd;
+        if (egp !== undefined) cfg.services![service]!.egp = egp;
     });
 
     Object.keys(cfg.shipping).forEach(provider => {
@@ -181,6 +241,14 @@ function applyAdminOverrides(cfg: PricingConfig, rows: Array<{ key: string; valu
         if (egp !== undefined) cfg.addons[tier]!.egp = round2(egp);
     });
 
+    (Object.keys(cfg.services ?? {}) as ServiceId[]).forEach(service => {
+        const base = `pricing_service_${service}`;
+        const usd = pick(base, 'usd');
+        const egp = pick(base, 'egp');
+        if (usd !== undefined) cfg.services![service]!.usd = round2(usd);
+        if (egp !== undefined) cfg.services![service]!.egp = round2(egp);
+    });
+
     Object.keys(cfg.shipping).forEach(provider => {
         const base = `pricing_shipping_${provider}`;
         const usd = pick(base, 'usd');
@@ -215,6 +283,45 @@ export async function loadPricing(
         console.warn('⚠️ [Pricing] Falling back to env/defaults (admin_settings read failed):', msg);
     }
     return cfg;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                     CANONICAL READ HELPERS (DISPLAY + ADAPTERS)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// These read DEFAULT_PRICING, the single literal catalog. They are safe to
+// import from client components (no node/secret APIs) and exist so no UI file
+// needs to restate a price. Server charge paths must still use loadPricing()
+// + computeAmount() so admin/env overrides remain authoritative at runtime.
+
+export function getTierPrice(tierId: TierId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.tiers[tierId as TierId]?.[cur] ?? 0;
+}
+
+export function getAddonPrice(plusTierId: TierId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.addons[plusTierId as TierId]?.[cur] ?? 0;
+}
+
+export function getServicePrice(serviceId: ServiceId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.services?.[serviceId as ServiceId]?.[cur] ?? 0;
+}
+
+export function getShippingPrice(providerId: string, currency: string): number | undefined {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.shipping[providerId]?.[cur];
+}
+
+export function getOriginalTierPrice(
+    surface: OriginalPriceSurface,
+    tierId: string,
+    currency: string
+): number | undefined {
+    const cur = toCurrencyKey(currency);
+    const table = DISPLAY_ORIGINAL_PRICES[surface][cur] as Record<string, number> | undefined;
+    return table?.[tierId];
 }
 
 export interface ComputeAmountInput {

@@ -1,0 +1,361 @@
+{
+  "tool_id": "mrx.tool.041-hematocrit-monitor",
+  "tool_status": "OWNER_REVIEW",
+  "as_of": "2026-11-14",
+  "ledger": {
+    "path": "E:\\MrXSteroid-main\\docs\\MRX Genius Cloud Unified R6.1\\tool-041-requirements.csv",
+    "sha256": "ed1e330faf571789872a8456e1caac723458912eecee8136263bc1076296450d",
+    "bytes": 78528,
+    "header": [
+      "req_id",
+      "requirement",
+      "applicability",
+      "A",
+      "B",
+      "C",
+      "E",
+      "files",
+      "test_result",
+      "verified_date",
+      "head",
+      "evidence_uri",
+      "gap_next_action",
+      "closure_evidence"
+    ]
+  },
+  "rules": {
+    "completion_formula": "(applicable rows with B=PASS and E>=E3) / applicable rows x 100",
+    "denominator_excludes_only": "NOT_APPLICABLE rows that carry a specific reason and their own proof",
+    "not_available": "stays in the denominator; never counted as PASS",
+    "non_completion_states": [
+      "PARTIAL",
+      "FAIL",
+      "BLOCKED",
+      "NOT_RUN",
+      "NOT_AVAILABLE",
+      "NOT_APPLICABLE"
+    ],
+    "owner_decision": "C is never filled by this calculator"
+  },
+  "totals": {
+    "rows": 138,
+    "applicable": 132,
+    "not_applicable": 6,
+    "unique_ids": 138
+  },
+  "by_b": {
+    "PASS": 76,
+    "PARTIAL": 32,
+    "FAIL": 9,
+    "NOT_AVAILABLE": 12,
+    "BLOCKED": 2,
+    "NOT_RUN": 1,
+    "NOT_APPLICABLE": 6
+  },
+  "by_c": {
+    "PENDING": 132,
+    "NOT_DECISIONED": 6
+  },
+  "by_e": {
+    "E3": 86,
+    "E4": 24,
+    "E2": 26,
+    "E1": 1,
+    "E0": 1
+  },
+  "by_e_applicable": {
+    "E3": 86,
+    "E4": 24,
+    "E2": 20,
+    "E1": 1,
+    "E0": 1
+  },
+  "completion": {
+    "numerator": 76,
+    "denominator": 132,
+    "percent": 57.58,
+    "display": "76 / 132 = 57.58%"
+  },
+  "cross_tab": [
+    {
+      "applicability": "APPLICABLE",
+      "B": "PASS",
+      "E": "E3",
+      "count": 53
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PASS",
+      "E": "E4",
+      "count": 23
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E1",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E2",
+      "count": 14
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E3",
+      "count": 16
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E4",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "FAIL",
+      "E": "E2",
+      "count": 3
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "FAIL",
+      "E": "E3",
+      "count": 6
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "E": "E2",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "E": "E3",
+      "count": 11
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "BLOCKED",
+      "E": "E2",
+      "count": 2
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_RUN",
+      "E": "E0",
+      "count": 1
+    },
+    {
+      "applicability": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "E": "E2",
+      "count": 6
+    }
+  ],
+  "families": [
+    {
+      "family": "A11Y",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 5,
+      "completion": 5
+    },
+    {
+      "family": "CORE",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "DEP",
+      "rows": 7,
+      "applicable": 7,
+      "not_applicable": 0,
+      "pass": 7,
+      "completion": 7
+    },
+    {
+      "family": "ENG",
+      "rows": 16,
+      "applicable": 16,
+      "not_applicable": 0,
+      "pass": 10,
+      "completion": 10
+    },
+    {
+      "family": "G12",
+      "rows": 13,
+      "applicable": 13,
+      "not_applicable": 0,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "I18N",
+      "rows": 5,
+      "applicable": 5,
+      "not_applicable": 0,
+      "pass": 1,
+      "completion": 1
+    },
+    {
+      "family": "ID",
+      "rows": 12,
+      "applicable": 12,
+      "not_applicable": 0,
+      "pass": 12,
+      "completion": 12
+    },
+    {
+      "family": "MED",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 3,
+      "completion": 3
+    },
+    {
+      "family": "NA",
+      "rows": 6,
+      "applicable": 0,
+      "not_applicable": 6,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "PIPE",
+      "rows": 12,
+      "applicable": 12,
+      "not_applicable": 0,
+      "pass": 9,
+      "completion": 9
+    },
+    {
+      "family": "PRIV",
+      "rows": 7,
+      "applicable": 7,
+      "not_applicable": 0,
+      "pass": 7,
+      "completion": 7
+    },
+    {
+      "family": "RESP",
+      "rows": 5,
+      "applicable": 5,
+      "not_applicable": 0,
+      "pass": 4,
+      "completion": 4
+    },
+    {
+      "family": "SCH",
+      "rows": 10,
+      "applicable": 10,
+      "not_applicable": 0,
+      "pass": 4,
+      "completion": 4
+    },
+    {
+      "family": "STATE",
+      "rows": 10,
+      "applicable": 10,
+      "not_applicable": 0,
+      "pass": 3,
+      "completion": 3
+    },
+    {
+      "family": "TEST",
+      "rows": 11,
+      "applicable": 11,
+      "not_applicable": 0,
+      "pass": 11,
+      "completion": 11
+    }
+  ],
+  "integrity": {
+    "ok": true,
+    "checks": [
+      {
+        "id": "rows",
+        "ok": true,
+        "detail": "rows=138"
+      },
+      {
+        "id": "unique_ids",
+        "ok": true,
+        "detail": "unique=138"
+      },
+      {
+        "id": "applicability_partition",
+        "ok": true,
+        "detail": "132+6=138"
+      },
+      {
+        "id": "b_partition",
+        "ok": true,
+        "detail": "{\"PASS\":76,\"PARTIAL\":32,\"FAIL\":9,\"NOT_AVAILABLE\":12,\"BLOCKED\":2,\"NOT_RUN\":1,\"NOT_APPLICABLE\":6}"
+      },
+      {
+        "id": "c_partition",
+        "ok": true,
+        "detail": "{\"PENDING\":132,\"NOT_DECISIONED\":6}"
+      },
+      {
+        "id": "e_partition",
+        "ok": true,
+        "detail": "{\"E3\":86,\"E4\":24,\"E2\":26,\"E1\":1,\"E0\":1}"
+      },
+      {
+        "id": "crosstab_partition",
+        "ok": true,
+        "detail": "crosstab=138"
+      },
+      {
+        "id": "na_has_reason_and_proof",
+        "ok": true,
+        "detail": "6/6"
+      },
+      {
+        "id": "no_owner_approval_fabricated",
+        "ok": true,
+        "detail": "APPROVED=0; REJECTED=0"
+      },
+      {
+        "id": "applicable_c_pending",
+        "ok": true,
+        "detail": "every applicable row keeps C=PENDING"
+      },
+      {
+        "id": "excluded_c_not_decisioned",
+        "ok": true,
+        "detail": "every excluded row keeps C=NOT_DECISIONED"
+      },
+      {
+        "id": "not_available_not_counted",
+        "ok": true,
+        "detail": "NOT_AVAILABLE is never completion"
+      },
+      {
+        "id": "non_completion_states_not_counted",
+        "ok": true,
+        "detail": "PARTIAL/FAIL/BLOCKED/NOT_RUN are never completion"
+      },
+      {
+        "id": "pass_requires_e3",
+        "ok": true,
+        "detail": "completion rows require E>=E3"
+      },
+      {
+        "id": "percent_matches",
+        "ok": true,
+        "detail": "76/132=57.58%"
+      }
+    ]
+  }
+}

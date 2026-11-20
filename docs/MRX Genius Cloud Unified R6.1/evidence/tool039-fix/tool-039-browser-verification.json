@@ -1,0 +1,141 @@
+{
+  "date": "2026-11-11T22:20:26.775Z",
+  "baseUrl": "http://localhost:3100",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "deviceMetrics": {
+    "desktop": "1440x900",
+    "mobile": "390x844"
+  },
+  "results": [
+    {
+      "requirement": "EMPTY state shows the explanatory illustration",
+      "result": "PASS",
+      "evidence": "section=visible svg=visible title=\"Visual explanation and data visualizations\" state=State: EmptyTrack"
+    },
+    {
+      "requirement": "EMPTY state shows the text equivalent of the diagram",
+      "result": "PASS",
+      "evidence": "text list present=true visible=true"
+    },
+    {
+      "requirement": "EMPTY state invents no chart data",
+      "result": "PASS",
+      "evidence": "bars=0 tables=0"
+    },
+    {
+      "requirement": "EMPTY state screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-fix\\tool-039-empty-1440.png"
+    },
+    {
+      "requirement": "Explanatory diagram renders",
+      "result": "PASS",
+      "evidence": "svg[data-r6-illustration] present"
+    },
+    {
+      "requirement": "Data chart renders",
+      "result": "PASS",
+      "evidence": "bar row ALT present; line chart: absent (one dated reading)"
+    },
+    {
+      "requirement": "Chart matches pipeline values",
+      "result": "PASS",
+      "evidence": "bar: ALT112 U/L · 2.00× ULN · Elevated"
+    },
+    {
+      "requirement": "Text alternative (data table)",
+      "result": "PASS",
+      "evidence": "table[data-r6-table] present"
+    },
+    {
+      "requirement": "No colour-only meaning (legend present)",
+      "result": "PASS",
+      "evidence": "legend element present"
+    },
+    {
+      "requirement": "English LTR",
+      "result": "PASS",
+      "evidence": "dir=ltr"
+    },
+    {
+      "requirement": "Mouse Hover opens the element tooltip",
+      "result": "PASS",
+      "evidence": "ALTMeaning: ALT (alanine aminotransferase) — an enzyme that tends to rise when liver cells are irritated.Current value: 112 U/LRelative to the reference limit: 2.00× ULNExplanation: ALT is compared with its reference lim"
+    },
+    {
+      "requirement": "Tooltip avoids viewport clipping",
+      "result": "PASS",
+      "evidence": "left=497 right=785 top=29 bottom=373 viewport=1424x805"
+    },
+    {
+      "requirement": "Desktop screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-fix\\tool-039-desktop-1440.png"
+    },
+    {
+      "requirement": "Keyboard Focus opens the tooltip",
+      "result": "PASS",
+      "evidence": "focused=true tooltip=true"
+    },
+    {
+      "requirement": "Escape closes the tooltip",
+      "result": "PASS",
+      "evidence": "tooltip removed after Escape"
+    },
+    {
+      "requirement": "Keyboard activation (Enter) opens the tooltip",
+      "result": "PASS",
+      "evidence": "node step-1"
+    },
+    {
+      "requirement": "Tooltip close action works",
+      "result": "PASS",
+      "evidence": "aria-label=\"Close the explanation\""
+    },
+    {
+      "requirement": "Touch interaction opens the tooltip",
+      "result": "PASS",
+      "evidence": "touchStart/touchEnd on the ALT bar"
+    },
+    {
+      "requirement": "Mobile 390px renders without horizontal overflow",
+      "result": "PASS",
+      "evidence": "scrollWidth=390 clientWidth=390 overflow=0"
+    },
+    {
+      "requirement": "Mobile 390px keeps the visual elements",
+      "result": "PASS",
+      "evidence": "illustration + bar + table present at 390px"
+    },
+    {
+      "requirement": "Mobile 390px shows the five readable steps",
+      "result": "PASS",
+      "evidence": "5/5 steps visible, smallest visible text 12px, desktop SVG hidden at 390px=true, overflow=0"
+    },
+    {
+      "requirement": "Mobile screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-fix\\tool-039-mobile-390.png"
+    },
+    {
+      "requirement": "Reduced motion respected",
+      "result": "PASS",
+      "evidence": "prefers-reduced-motion rule present and emulated"
+    },
+    {
+      "requirement": "Arabic RTL renders the visual layer",
+      "result": "PASS",
+      "evidence": "dir=rtl; legend=\"المفتاح: الشريط المملوء = القيمة المقاسة · الخط الكهرماني = الحد المرجعي · الحالة معروضة بجانب كل قيمة\""
+    },
+    {
+      "requirement": "Arabic RTL has no horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Arabic screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-fix\\tool-039-arabic-rtl-1440.png"
+    }
+  ]
+}

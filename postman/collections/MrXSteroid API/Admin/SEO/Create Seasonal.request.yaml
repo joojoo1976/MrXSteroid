@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Create Seasonal'
+method: POST
+url: '{{base_url}}/api/admin/seo/seasonal'
+order: 16000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "keyword": "summer bulk",
+      "month": 6
+    }

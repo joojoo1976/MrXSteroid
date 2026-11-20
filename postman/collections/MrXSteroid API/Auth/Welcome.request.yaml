@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Welcome'
+method: POST
+url: '{{base_url}}/api/auth/welcome'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{userId}}",
+      "email": "user@example.com"
+    }

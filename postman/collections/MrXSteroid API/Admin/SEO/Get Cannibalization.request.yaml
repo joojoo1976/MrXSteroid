@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Cannibalization'
+method: GET
+url: '{{base_url}}/api/admin/seo/cannibalization'
+order: 4000

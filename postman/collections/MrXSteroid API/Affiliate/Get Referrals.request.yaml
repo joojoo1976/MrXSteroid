@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Referrals'
+method: GET
+url: '{{base_url}}/api/affiliate/referrals'
+order: 3000

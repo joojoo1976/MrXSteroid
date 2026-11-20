@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Redeem Guest Claim'
+method: POST
+url: '{{base_url}}/api/guest-claims/redeem'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "token": "{{guest_token}}",
+      "userId": "{{userId}}"
+    }

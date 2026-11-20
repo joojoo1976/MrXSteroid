@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Evaluate Risk GET'
+method: GET
+url: '{{base_url}}/api/payments/evaluate-risk'
+order: 6000

@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-11T22:29:47.476Z",
+  "head": "5a87f3e5271db497a63833bb3cd1bb3df2078497",
+  "note": "Source files deployed to the Tool 039 Preview; the working tree is uncommitted, so these hashes identify the deployed code.",
+  "files": {
+    "components/tools/tool-039-liver-enzyme-tracker.tsx": {
+      "sha256": "ba1643e0662f3046a5b3cf6c8f6ee5e62818a4b4e10e8201951b39747005f992",
+      "bytes": 29415
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.visual.tsx": {
+      "sha256": "afb6366d3027c700a73577ef6775a2369f9c784a9ca467bc1563dabc0ae079c6",
+      "bytes": 33320
+    },
+    "components/tools/tool-039-liver-enzyme-tracker.genius.tsx": {
+      "sha256": "89c18b0e710ca01a11fd4683a2dec53a49197222741a9645d7dea9125ecf5406",
+      "bytes": 30870
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-visual.ts": {
+      "sha256": "78b39fb0273131e789ee5e1e4a7411a2904b240c6a13cea40733a766907fb953",
+      "bytes": 10149
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-contract.ts": {
+      "sha256": "b814ffa99007507a336688c591a85f069d1414daf9373d40684440087ea6422a",
+      "bytes": 16298
+    },
+    "lib/tools/r6/tool-039-liver-enzyme-tracker-pipeline.ts": {
+      "sha256": "6d60356568f19b88d4dc1b6e28c3f7319fe28c56ab26e3b1a4e67588837f2141",
+      "bytes": 4180
+    },
+    "i18n/tool-039-liver-enzyme-tracker.json": {
+      "sha256": "398938679749aaf2cd325664fa9d4165aed33a19a316eab6b402022b75babfc7",
+      "bytes": 42175
+    }
+  }
+}

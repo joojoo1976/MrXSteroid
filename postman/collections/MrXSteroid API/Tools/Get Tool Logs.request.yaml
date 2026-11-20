@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Tool Logs'
+method: GET
+url: '{{base_url}}/api/tools/logs'
+order: 1000

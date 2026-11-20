@@ -105,7 +105,7 @@ export default function Header() {
                             </div>
                         </div>
 
-                        <a href="#pricing" className="transition-colors hover:text-[rgb(var(--neon-primary))]">
+                        <a href="/checkout" className="transition-colors hover:text-[rgb(var(--neon-primary))]">
                             الأسعار والخطط
                         </a>
                     </div>

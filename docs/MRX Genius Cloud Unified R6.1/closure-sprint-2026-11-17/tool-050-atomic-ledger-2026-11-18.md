@@ -1,0 +1,50 @@
+# Tool 050 - tool-050-mental-health - Atomic Acceptance Ledger
+
+**Generated:** 2026-11-18 (Asia/Hebron)
+**Evidence environment:** clean export `E:\p03-clean-build-20261118` = baseline `2a647fda` + P-03 commit `37f047a4`, real `node_modules`
+**Formula:** B = PASS and E >= E3, divided by applicable rows. `PARTIAL`, `NOT_RUN`, `NOT_AVAILABLE`, `BLOCKED` are never PASS.
+
+- **Result: 7/26 = 26.92%**
+- Rows: 26 total; 16 PASS, 1 PARTIAL, 5 NOT_RUN, 3 NOT_AVAILABLE, 1 BLOCKED
+- Status: `IN PROGRESS` (engineering). **Not 100% VERIFIED.** No browser evidence, no source pack, no specialist approval.
+
+## Criteria
+
+| ID | Area | Criterion | B | E | Evidence | Gap / Next |
+|---|---|---|---|---|---|---|
+| 050-I18N-EVIDENCE-01 | I18N-EVIDENCE | keeps AR/EN parity, every required key and no contamination | PASS | E3 | tests/unit/tool-050-i18n-evidence.test.ts :: keeps AR/EN parity, every required key and no contamination | none |
+| 050-ENGINE-01 | ENGINE | detects an improving trend in watch band with sleep debt | PASS | E3 | lib/tools/engines/tool-050-mental-health.test.ts :: detects an improving trend in watch band with sleep debt | none |
+| 050-ENGINE-02 | ENGINE | any red flag triggers immediate escalation language | PASS | E3 | lib/tools/engines/tool-050-mental-health.test.ts :: any red flag triggers immediate escalation language | none |
+| 050-ENGINE-03 | ENGINE | declining mood on 19-nor flags the compound pattern | PASS | E3 | lib/tools/engines/tool-050-mental-health.test.ts :: declining mood on 19-nor flags the compound pattern | none |
+| 050-STATIC-CONTRACT-01 | STATIC | Input/output contract is defined for the tool | PASS | E2 | lib/tools/r6/tool-050-mental-health-contract.ts inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-PIPELINE-01 | STATIC | Component calculates through the R6 pipeline (not inline math) | PASS | E2 | components/tools/tool-050-mental-health.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-STATES-5-01 | STATIC | Five UI states EMPTY / PARTIAL / INVALID / FULL / DEGRADED are explicit | PASS | E2 | components/tools/tool-050-mental-health.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-GENIUS12-01 | STATIC | GENIUS-12 renderer present with data-r6-genius / data-r6-box markers | PASS | E2 | components/tools/tool-050-mental-health.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-CORE5-01 | STATIC | CORE-5 markers c1..c5 present in the renderer | PASS | E2 | components/tools/tool-050-mental-health.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-EXPORT-01 | STATIC | Client-side CSV export builder present | PASS | E2 | components/tools/tool-050-mental-health.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-RTL-01 | STATIC | RTL direction is derived, not hard-coded LTR | PASS | E2 | components/tools/tool-050-mental-health.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-A11Y-01 | STATIC | Labels, aria-live state announcement and aria-invalid wiring present | PASS | E2 | components/tools/tool-050-mental-health.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-STATIC-NO-PERSIST-01 | STATIC | No localStorage / sessionStorage persistence in the tool | PASS | E2 | components/tools/tool-050-mental-health.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 050-I18N-01 | I18N | AR/EN parity (en 158 / ar 158 keys) | PASS | E3 | node tool-050-i18n-check.mjs -> I18N_PARITY: OK; en=158 ar=158 | none |
+| 050-ROUTE-01 | ROUTE | Canonical route /smarttools/medical-monitoring/tool-050-mental-health registered and emitted by the clean build | PASS | E3 | lib/tools/categories.ts:132 -> 'medical-monitoring'; clean build EXITCODE=0 with 506/506 static pages | none |
+| 050-P03-01 | P-03 | ResultSchema gate exists before the envelope builder and the raw engine result is never forwarded | PASS | E3 | lib/tools/r6/p03-gate-structural.test.ts covers tool-050-mental-health-pipeline.ts (structural assertion) | none |
+| 050-P03-02 | P-03 | A mismatched engine result is rejected at runtime with no envelope produced | PARTIAL | E2 | Only structural coverage exists; no runtime negative-branch test targets this pipeline | Add a per-pipeline runtime negative test (mismatched engine result) |
+| 050-BROWSER-EN-AR-01 | BROWSER | Authorized EN and AR render on the deployed route | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 050-BROWSER-STATES-5-02 | BROWSER | EMPTY / PARTIAL / INVALID / FULL / DEGRADED exercised in a real browser | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 050-BROWSER-RTL-390-03 | BROWSER | 390 px RTL layout verified in a real browser | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 050-BROWSER-CONSOLE-04 | BROWSER | Console clean: no hydration errors or runtime exceptions | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 050-BROWSER-GENIUS-DOM-05 | BROWSER | GENIUS-12 DOM order verified: 12 boxes, no duplicate shell, no hidden box | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 050-C4-01 | D-C4 | Approved source pack with provenance is attached to clinical claims | NOT_AVAILABLE | E1 | No approved source/provenance pack exists for this tool; the UI renders NOT_AVAILABLE (D-C4 open) | Supply an approved source pack or an explicit owner N/A decision |
+| 050-C5-01 | D-C5 | Referral / escalation wording is specialist-approved | NOT_AVAILABLE | E1 | Referral wording remains pending specialist approval (D-C5) | Provide the approved wording pack |
+| 050-CLIN-01 | D-CLIN | Clinical / model review sign-off recorded | BLOCKED | E1 | No qualified specialist review exists; self-approval is not permitted (D-CLIN) | Route the unified specialist pack (AR/EN) for review |
+| 050-W18-01 | W18 | History capability per W18 | NOT_AVAILABLE | E1 | W18 history is NOT_AVAILABLE: no DB / storage / cloud sync by owner decision | Owner decision on W18 storage; the box must keep stating the real reason |
+
+## What is actually still blocking 100%
+
+- **STATIC:** 9 row(s) - 050-STATIC-CONTRACT-01, 050-STATIC-PIPELINE-01, 050-STATIC-STATES-5-01, 050-STATIC-GENIUS12-01, 050-STATIC-CORE5-01, 050-STATIC-EXPORT-01, 050-STATIC-RTL-01, 050-STATIC-A11Y-01, 050-STATIC-NO-PERSIST-01
+- **P-03:** 1 row(s) - 050-P03-02
+- **BROWSER:** 5 row(s) - 050-BROWSER-EN-AR-01, 050-BROWSER-STATES-5-02, 050-BROWSER-RTL-390-03, 050-BROWSER-CONSOLE-04, 050-BROWSER-GENIUS-DOM-05
+- **D-C4:** 1 row(s) - 050-C4-01
+- **D-C5:** 1 row(s) - 050-C5-01
+- **D-CLIN:** 1 row(s) - 050-CLIN-01
+- **W18:** 1 row(s) - 050-W18-01

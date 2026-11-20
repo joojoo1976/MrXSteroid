@@ -14,7 +14,10 @@ import { useRegion } from '../context/RegionContext';
 import { ProductSelector } from '../features/checkout/ProductSelector';
 import { OrderSummary } from '../features/checkout/OrderSummary';
 import { DirectServicesCheckoutSection } from '../features/checkout/DirectServicesCheckoutSection';
+import { KASHIER_PAYMENT_PAGES, buildKashierPaymentPageUrl } from '../server/payments/paymentLinkConfig';
+import { Zap } from 'lucide-react';
 import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../shared/lib/logic';
+import { getTierPrice } from '../server/payments/pricing';
 
 interface CheckoutPageProps {
     content: ContentStrings;
@@ -24,15 +27,16 @@ interface CheckoutPageProps {
     openLegal: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
 }
 
+/** Derived from the canonical catalog; `_plus` entries are base-only here. */
 const USD_PRICES: Record<string, number> = {
-    digital:       49.99,
-    bundle:        72.00,
-    coaching:      82.00,
-    coaching_plus: 82.00, // base only — COACHING_ADDON_USD added by totals useMemo
-    bundle_plus:   72.00, // base only — COACHING_ADDON_USD added by totals useMemo
-    digital_plus:  49.99, // base only — COACHING_ADDON_USD added by totals useMemo
-    paperback:     72.00,
-    hardcover:     82.00,
+    digital:       getTierPrice('digital', 'USD'),
+    bundle:        getTierPrice('bundle', 'USD'),
+    coaching:      getTierPrice('coaching', 'USD'),
+    coaching_plus: getTierPrice('coaching', 'USD'),
+    bundle_plus:   getTierPrice('bundle', 'USD'),
+    digital_plus:  getTierPrice('digital', 'USD'),
+    paperback:     getTierPrice('paperback', 'USD'),
+    hardcover:     getTierPrice('coaching', 'USD'),
 };
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navigateTo, onSuccess, openLegal }) => {
@@ -40,8 +44,24 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     const { isEgypt: isGeoEgypt } = useRegion();
     const isAr = language === 'ar';
 
+    /**
+     * Deep-link support: `/checkout?plan=bundle_plus&region=EG` lets the homepage
+     * CTAs hand off the chosen plan without any client-side cart state.
+     */
+    const query = React.useMemo(() => {
+        if (typeof window === 'undefined') return { plan: null as string | null, region: null as string | null };
+        const params = new URLSearchParams(window.location.search);
+        const plan = params.get('plan') || params.get('variant');
+        const region = params.get('region') || params.get('location');
+        return { plan, region };
+    }, []);
+    const deepLinkVariant = query.plan && USD_PRICES[query.plan] !== undefined
+        ? (query.plan as ProductVariant)
+        : null;
+
     // Initialize variant based on selectedTier or default to digital
     const [variant, setVariant] = useState<ProductVariant>(() => {
+        if (deepLinkVariant) return deepLinkVariant;
         if (!selectedTier) return 'digital';
         return selectedTier.id as ProductVariant;
     });
@@ -52,6 +72,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
 
     // ── Region state — driven from: selectedTier (initial) > geo > default ──
     const [isEg, setIsEg] = useState<boolean>(() => {
+        if (query.region) return query.region.toUpperCase() === 'EG';
         if (selectedTier?.selectedLocation) return selectedTier.selectedLocation === 'EG';
         return isAr || isGeoEgypt;
     });
@@ -171,6 +192,32 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             isEg={isEg}
                             onRegionChange={handleRegionChange}
                         />
+
+                        {/* 02-b. Direct quick pay (Kashier hosted pages) — migrated from the old homepage pricing section */}
+                        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-3">
+                            <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-amber-400">
+                                <Zap className="w-3.5 h-3.5 fill-current" />
+                                {isAr ? 'دفع سريع مباشر بدون نموذج' : 'Direct quick pay (no form)'}
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-2">
+                                {(['digital', 'bundle', 'coaching'] as const).map((planId) => (
+                                    <a
+                                        key={planId}
+                                        href={buildKashierPaymentPageUrl(planId)}
+                                        target="_self"
+                                        rel="noopener noreferrer"
+                                        className="py-3 px-3 rounded-xl text-[11px] font-black uppercase tracking-widest border border-amber-500/40 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/80 transition-all text-center"
+                                    >
+                                        {isAr ? KASHIER_PAYMENT_PAGES[planId].nameAr : KASHIER_PAYMENT_PAGES[planId].nameEn}
+                                    </a>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-zinc-500 font-bold leading-relaxed">
+                                {isAr
+                                    ? 'تُفتح صفحة Kashier المستضافة وتُعاد إليك بعد الدفع مباشرة.'
+                                    : 'Opens the hosted Kashier page; you are returned here after payment.'}
+                            </p>
+                        </div>
 
                         {/* 03-pre. Direct Professional Services — GLOBAL only, renders step 04 */}
                         {!isEg && <DirectServicesCheckoutSection isAr={isAr} />}

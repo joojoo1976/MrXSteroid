@@ -1,0 +1,55 @@
+# Tool 051 - tool-051-peptide-dosage-calculator - Atomic Acceptance Ledger
+
+**Generated:** 2026-11-18 (Asia/Hebron)
+**Evidence environment:** clean export `E:\p03-clean-build-20261118` = baseline `2a647fda` + P-03 commit `37f047a4`, real `node_modules`
+**Formula:** B = PASS and E >= E3, divided by applicable rows. `PARTIAL`, `NOT_RUN`, `NOT_AVAILABLE`, `BLOCKED` are never PASS.
+
+- **Result: 11/31 = 35.48%**
+- Rows: 31 total; 19 PASS, 1 PARTIAL, 5 NOT_RUN, 3 NOT_AVAILABLE, 1 BLOCKED
+- Status: `IN PROGRESS` (engineering). **Not 100% VERIFIED.** No browser evidence, no source pack, no specialist approval.
+
+## Criteria
+
+| ID | Area | Criterion | B | E | Evidence | Gap / Next |
+|---|---|---|---|---|---|---|
+| 051-I18N-EVIDENCE-01 | I18N-EVIDENCE | keeps AR/EN parity, every required key and no contamination | PASS | E3 | tests/unit/tool-051-i18n-evidence.test.ts :: keeps AR/EN parity, every required key and no contamination | none |
+| 051-BATCH-01 | BATCH | 051 wraps peptide dosing with registry identity | PASS | E3 | lib/tools/adapters/tool-051-055-batch.test.ts :: 051 wraps peptide dosing with registry identity | none |
+| 051-BATCH-02 | BATCH | 052 wraps GH planning with registry identity | PASS | E3 | lib/tools/adapters/tool-051-055-batch.test.ts :: 052 wraps GH planning with registry identity | none |
+| 051-BATCH-03 | BATCH | 053 wraps insulin conversion with registry identity | PASS | E3 | lib/tools/adapters/tool-051-055-batch.test.ts :: 053 wraps insulin conversion with registry identity | none |
+| 051-BATCH-04 | BATCH | 054 wraps glucose tracking with registry identity | PASS | E3 | lib/tools/adapters/tool-051-055-batch.test.ts :: 054 wraps glucose tracking with registry identity | none |
+| 051-BATCH-05 | BATCH | 055 wraps insulin sensitivity with registry identity | PASS | E3 | lib/tools/adapters/tool-051-055-batch.test.ts :: 055 wraps insulin sensitivity with registry identity | none |
+| 051-ENGINE-01 | ENGINE | reconstitutes a 5mg vial to 2.5mg/ml and yields 10 IU per 0.25mg dose | PASS | E3 | lib/tools/engines/tool-051-peptide-dosage-calculator.test.ts :: reconstitutes a 5mg vial to 2.5mg/ml and yields 10 IU per 0.25mg dose | none |
+| 051-ENGINE-02 | ENGINE | rounds tiny doses to a safe minimum draw of 2 units | PASS | E3 | lib/tools/engines/tool-051-peptide-dosage-calculator.test.ts :: rounds tiny doses to a safe minimum draw of 2 units | none |
+| 051-ENGINE-03 | ENGINE | computes partial-vial dose counts without over-claiming precision | PASS | E3 | lib/tools/engines/tool-051-peptide-dosage-calculator.test.ts :: computes partial-vial dose counts without over-claiming precision | none |
+| 051-STATIC-CONTRACT-01 | STATIC | Input/output contract is defined for the tool | FAIL | E0 | lib/tools/r6/tool-051-peptide-dosage-calculator-contract.ts not found | Implement the missing artifact |
+| 051-STATIC-PIPELINE-01 | STATIC | Component calculates through the R6 pipeline (not inline math) | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-STATES-5-01 | STATIC | Five UI states EMPTY / PARTIAL / INVALID / FULL / DEGRADED are explicit | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-GENIUS12-01 | STATIC | GENIUS-12 renderer present with data-r6-genius / data-r6-box markers | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-CORE5-01 | STATIC | CORE-5 markers c1..c5 present in the renderer | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-EXPORT-01 | STATIC | Client-side CSV export builder present | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.genius.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-RTL-01 | STATIC | RTL direction is derived, not hard-coded LTR | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-A11Y-01 | STATIC | Labels, aria-live state announcement and aria-invalid wiring present | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-STATIC-NO-PERSIST-01 | STATIC | No localStorage / sessionStorage persistence in the tool | PASS | E2 | components/tools/tool-051-peptide-dosage-calculator.tsx inspected (static source evidence, not execution) | Cover with an executable test to reach E3 |
+| 051-I18N-01 | I18N | AR/EN parity (en 122 / ar 122 keys) | PASS | E3 | node tool-051-i18n-check.mjs -> I18N_PARITY: OK; en=122 ar=122 | none |
+| 051-ROUTE-01 | ROUTE | Canonical route /smarttools/injection-formulation/tool-051-peptide-dosage-calculator registered and emitted by the clean build | PASS | E3 | lib/tools/categories.ts:134 -> 'injection-formulation'; clean build EXITCODE=0 with 506/506 static pages | none |
+| 051-P03-01 | P-03 | ResultSchema gate exists before the envelope builder and the raw engine result is never forwarded | FAIL | E0 | lib/tools/r6/p03-gate-structural.test.ts covers tool-051-peptide-dosage-calculator-pipeline.ts (structural assertion) | Add the pipeline to the structural gate proof |
+| 051-P03-02 | P-03 | A mismatched engine result is rejected at runtime with no envelope produced | PARTIAL | E2 | Only structural coverage exists; no runtime negative-branch test targets this pipeline | Add a per-pipeline runtime negative test (mismatched engine result) |
+| 051-BROWSER-EN-AR-01 | BROWSER | Authorized EN and AR render on the deployed route | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 051-BROWSER-STATES-5-02 | BROWSER | EMPTY / PARTIAL / INVALID / FULL / DEGRADED exercised in a real browser | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 051-BROWSER-RTL-390-03 | BROWSER | 390 px RTL layout verified in a real browser | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 051-BROWSER-CONSOLE-04 | BROWSER | Console clean: no hydration errors or runtime exceptions | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 051-BROWSER-GENIUS-DOM-05 | BROWSER | GENIUS-12 DOM order verified: 12 boxes, no duplicate shell, no hidden box | NOT_RUN | E0 | NOT_RUN - preview is SSO-protected; no authorized session was provided and SSO was not bypassed | Provide an authorized browser session; then run the prepared Playwright spec and attach trace/screenshots |
+| 051-C4-01 | D-C4 | Approved source pack with provenance is attached to clinical claims | NOT_AVAILABLE | E1 | No approved source/provenance pack exists for this tool; the UI renders NOT_AVAILABLE (D-C4 open) | Supply an approved source pack or an explicit owner N/A decision |
+| 051-C5-01 | D-C5 | Referral / escalation wording is specialist-approved | NOT_AVAILABLE | E1 | Referral wording remains pending specialist approval (D-C5) | Provide the approved wording pack |
+| 051-CLIN-01 | D-CLIN | Clinical / model review sign-off recorded | BLOCKED | E1 | No qualified specialist review exists; self-approval is not permitted (D-CLIN) | Route the unified specialist pack (AR/EN) for review |
+| 051-W18-01 | W18 | History capability per W18 | NOT_AVAILABLE | E1 | W18 history is NOT_AVAILABLE: no DB / storage / cloud sync by owner decision | Owner decision on W18 storage; the box must keep stating the real reason |
+
+## What is actually still blocking 100%
+
+- **STATIC:** 9 row(s) - 051-STATIC-CONTRACT-01, 051-STATIC-PIPELINE-01, 051-STATIC-STATES-5-01, 051-STATIC-GENIUS12-01, 051-STATIC-CORE5-01, 051-STATIC-EXPORT-01, 051-STATIC-RTL-01, 051-STATIC-A11Y-01, 051-STATIC-NO-PERSIST-01
+- **P-03:** 2 row(s) - 051-P03-01, 051-P03-02
+- **BROWSER:** 5 row(s) - 051-BROWSER-EN-AR-01, 051-BROWSER-STATES-5-02, 051-BROWSER-RTL-390-03, 051-BROWSER-CONSOLE-04, 051-BROWSER-GENIUS-DOM-05
+- **D-C4:** 1 row(s) - 051-C4-01
+- **D-C5:** 1 row(s) - 051-C5-01
+- **D-CLIN:** 1 row(s) - 051-CLIN-01
+- **W18:** 1 row(s) - 051-W18-01

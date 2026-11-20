@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Keywords'
+method: GET
+url: '{{base_url}}/api/seo/keywords?locale=en'
+order: 1000
+queryParams:
+  - key: locale
+    value: en
+    description: 'Language locale (en or ar)'

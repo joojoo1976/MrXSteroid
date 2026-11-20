@@ -9,7 +9,8 @@ import {
   type BloodworkComparisonRecord,
   type BloodworkComparisonResult,
 } from '@/lib/tools/schemas/tool-024-bloodwork-interpreter';
-import { compareBloodworkToEnteredIntervalsV7 } from '@/lib/tools/engines/tool-024-bloodwork-interpreter';
+import { runBloodworkInterpreter, type BloodworkInterpreterBuildOptions } from '@/lib/tools/r6/tool-024-bloodwork-interpreter-pipeline';
+import { requireTool } from '@/lib/tools/registry';
 
 interface Draft {
   markerName: string;
@@ -37,6 +38,20 @@ export default function Tool024PostCycleBloodworkInterpreter() {
   const [records, setRecords] = useState<BloodworkComparisonRecord[]>([]);
   const [result, setResult] = useState<BloodworkComparisonResult | null>(null);
   const [validationError, setValidationError] = useState(false);
+  const tool = requireTool('tool-024-bloodwork-interpreter');
+
+  // R6 Pipeline integration
+  const [pipelineResult, setPipelineResult] = useState<any>(null);
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<'idle' | 'calculating' | 'done' | 'error'>('idle');
+
+  const options: BloodworkInterpreterBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale: 'en',
+    unitSystem: 'metric',
+    snapshotType: 'draft',
+  };
 
   const updateDraft = (key: keyof Draft, value: string) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -71,14 +86,29 @@ export default function Tool024PostCycleBloodworkInterpreter() {
       setResult(null);
       return;
     }
-    setResult(compareBloodworkToEnteredIntervalsV7(parsed.data.records));
-    setValidationError(false);
+
+    setPipelineStatus('calculating');
+    const pipeline = runBloodworkInterpreter(parsed.data, options);
+    if (pipeline.ok) {
+      setPipelineResult(pipeline.output);
+      setPipelineError(null);
+      setPipelineStatus('done');
+      setResult(pipeline.output.result);
+      setValidationError(false);
+    } else {
+      setPipelineResult(null);
+      setPipelineError(String(pipeline.error));
+      setPipelineStatus('error');
+      setResult(null);
+    }
   };
 
   const removeRecord = (id: string) => {
     setRecords((current) => current.filter((record) => record.id !== id));
     setResult(null);
   };
+
+  const displayResult = pipelineStatus === 'done' && pipelineResult ? pipelineResult.result : result;
 
   return (
     <section className="pct-timing-tool p-6" dir={t.dir}>
@@ -87,6 +117,26 @@ export default function Tool024PostCycleBloodworkInterpreter() {
         {t.scope_note}
       </p>
       <p className="mb-6 rounded bg-zinc-100 p-3 text-sm">{t.provenance_note}</p>
+
+      {/* R6 Pipeline Status */}
+      {pipelineStatus === 'calculating' && (
+        <div className="rounded-lg border border-blue-500/50 bg-blue-950/20 p-4">
+          <p className="font-semibold">جاري المقارنة عبر R6 Pipeline…</p>
+        </div>
+      )}
+      {pipelineStatus === 'done' && pipelineResult && (
+        <div className="rounded-lg border border-green-500/50 bg-green-950/20 p-4">
+          <p className="font-semibold text-green-100">✓ تمت المقارنة عبر R6 Pipeline</p>
+          <p className="mt-1 text-sm text-green-200">عدد المقارنات: {pipelineResult.result.comparisons.length}</p>
+          <p className="mt-1 text-sm text-green-200">مصدر البيانات: {pipelineResult.provenance.source}</p>
+        </div>
+      )}
+      {pipelineStatus === 'error' && pipelineError && (
+        <div className="rounded-lg border border-red-500/50 bg-red-950/20 p-4 text-red-100">
+          <p className="font-semibold">خطأ في المقارنة</p>
+          <p className="mt-1 text-sm">{pipelineError}</p>
+        </div>
+      )}
 
       <div className="space-y-4">
         <label className="block text-sm font-medium">
@@ -159,12 +209,12 @@ export default function Tool024PostCycleBloodworkInterpreter() {
         </button>
       </section>
 
-      {result && (
+      {displayResult && (
         <section aria-labelledby="tool-024-comparison-heading" className="mt-6 rounded border p-4">
           <h3 id="tool-024-comparison-heading" className="font-semibold">{t.comparison_result}</h3>
           <p className="mt-1 text-sm text-zinc-600">{t.calculated_only}</p>
           <ul className="mt-3 space-y-3">
-            {result.comparisons.map(({ record, relation }) => (
+            {displayResult.comparisons.map(({ record, relation }: { record: any; relation: any }) => (
               <li key={record.id} className="rounded bg-zinc-50 p-3">
                 <div className="font-medium">{record.markerName}: {record.value} {record.unit}</div>
                 <div className="mt-1 text-sm">{t[relation]} ({record.referenceLow}–{record.referenceHigh} {record.unit})</div>

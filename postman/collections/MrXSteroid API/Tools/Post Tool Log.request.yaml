@@ -1,0 +1,16 @@
+$kind: http-request
+name: 'Post Tool Log'
+method: POST
+url: '{{base_url}}/api/tools/logs'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "toolSlug": "bmi",
+      "event": "calculated",
+      "data": {}
+    }

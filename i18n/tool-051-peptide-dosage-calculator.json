@@ -124,7 +124,7 @@
     "kpi_clamped": "Clamped"
   },
   "ar": {
-    "tool_name": "حاسبة جرعة الببتيد",
+    "tool_name": "حاسبة جرعة الببتيدات",
     "state_label": "الحالة",
     "state_empty": "فارغ",
     "state_partial": "جزئي",

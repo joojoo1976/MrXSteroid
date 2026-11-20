@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Geo Location'
+method: GET
+url: '{{base_url}}/api/geo'
+order: 1000

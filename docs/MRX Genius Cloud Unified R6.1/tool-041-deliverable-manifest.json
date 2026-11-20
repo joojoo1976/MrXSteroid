@@ -1,0 +1,200 @@
+{
+  "tool_id": "mrx.tool.041-hematocrit-monitor",
+  "tool_status": "OWNER_REVIEW",
+  "acceptance": "NOT_ACCEPTED",
+  "closure": "NOT_CLOSED",
+  "as_of": "2026-11-14",
+  "current_ledger": {
+    "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-requirements.csv",
+    "sha256": "ed1e330faf571789872a8456e1caac723458912eecee8136263bc1076296450d",
+    "rows": 138,
+    "applicable": 132,
+    "not_applicable": 6,
+    "pass": 76,
+    "completion_percent": 57.58
+  },
+  "superseded_ledger": {
+    "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-requirements.v1-123-superseded.csv",
+    "sha256": "a5f3c5a5eea7f7087edf4b5464fe8c9cfaa77bcbe46aefd592ec97aba923038f",
+    "rows": 123,
+    "applicable": 92,
+    "not_applicable": 31,
+    "pass": 92,
+    "completion_percent": 100
+  },
+  "files": [
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-requirements.csv",
+      "role": "current ledger",
+      "bytes": 78528,
+      "sha256": "ed1e330faf571789872a8456e1caac723458912eecee8136263bc1076296450d"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.mjs",
+      "role": "calculator",
+      "bytes": 17113,
+      "sha256": "fc3d933c00b4e4c1af5a46a36481308d5ae3a9052c559fa350d845225de05066"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.json",
+      "role": "calculator output",
+      "bytes": 7246,
+      "sha256": "bbb7fab993fe16699a39873f4f017949d7aed4da589924eef8e76e975807af6e"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.mjs",
+      "role": "cross-tab runner",
+      "bytes": 1266,
+      "sha256": "6f36307771fddd1e5d66f5e2157c97dcbd41bbc3530c3b4052305207defc607c"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.md",
+      "role": "cross-tab report",
+      "bytes": 21930,
+      "sha256": "6aa8846ccca6e6840ec25b402223fa95d2660de828f8d65b2dc8a1c416515971"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.csv",
+      "role": "cross-tab rows",
+      "bytes": 19285,
+      "sha256": "e5668e867ebfc1f609c4b83258eccaef6a047dd27b6943534b8432df93298a16"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.json",
+      "role": "cross-tab data",
+      "bytes": 52693,
+      "sha256": "7a8357ae4f869d56dae7d97c69f45f89fc428dcb1985ec22cbfd5d8d2284d74c"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-version-inventory.csv",
+      "role": "combined version inventory (261 rows)",
+      "bytes": 64481,
+      "sha256": "05a0fa198924a91e8c3a043830422b64a90a2aba651b06bc2a7070e4aee52236"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-LEDGER-VERSION-RECONCILIATION.md",
+      "role": "version reconciliation",
+      "bytes": 25852,
+      "sha256": "934b2cdd1c7650f9b70a81bb0dee804834c1b2db6624bd628a6e107f5378883b"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-REMEDIATION-PLAN.md",
+      "role": "remediation plan",
+      "bytes": 19249,
+      "sha256": "3d28ed32bc15dac2e5d637f45e7a34f2f7c4f55655eebe39c2593534e4e7bc7e"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-OWNER-DECISIONS.md",
+      "role": "owner decisions",
+      "bytes": 12626,
+      "sha256": "608cb24a1d8d13103d99fa961edca9984c9005789112570eaa1f039a48cedcdd"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-ACCEPTANCE.md",
+      "role": "acceptance report",
+      "bytes": 8961,
+      "sha256": "b1c8f485f6a8529d6b65c8ab0fa9f92beba2ef46b137e702122980320af9f4b4"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance.template.md",
+      "role": "acceptance template",
+      "bytes": 2126,
+      "sha256": "e2924d9fbee7020840e3d7aa225c847fd23ec07315110a87445d60eb42bd2068"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-GENIUS12-CROSSWALK.md",
+      "role": "CORE-5/GENIUS-12 crosswalk",
+      "bytes": 3795,
+      "sha256": "0d0950f0e9d71c7ce2b887e27ace84656dfc2a3efb78bb2c8886f7a7e0183bf9"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-DEVELOPMENT-PROPOSALS.md",
+      "role": "development proposals",
+      "bytes": 2698,
+      "sha256": "8d4a4028693f2fb7f2540aff80729c5d44e1629828e538d7a8b69214b46c3c06"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-change-log.md",
+      "role": "change log",
+      "bytes": 12595,
+      "sha256": "e2d39e3357340cb64e19ecf8559460eb4c3bb7f13d14401e6d79104b71a88c2b"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/R6.1-PREVIEW-INDEX.md",
+      "role": "preview index",
+      "bytes": 44836,
+      "sha256": "e3266e6fb64f418f76bab05a7eebec136c393a97d38d291467445d820a07d690"
+    },
+    {
+      "path": "tests/unit/tool-041-acceptance-evidence-ledger.test.ts",
+      "role": "ledger integrity test",
+      "bytes": 5394,
+      "sha256": "c7e32ea586aa88cdfd12a03281af28185abf2cd89ac39f5a32ce39d93943ac24"
+    }
+  ],
+  "superseded_files": [
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-requirements.v1-123-superseded.csv",
+      "role": "superseded ledger",
+      "bytes": 104899,
+      "sha256": "a5f3c5a5eea7f7087edf4b5464fe8c9cfaa77bcbe46aefd592ec97aba923038f"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-ACCEPTANCE.v1-123-superseded.md",
+      "role": "superseded report",
+      "bytes": 181310,
+      "sha256": "690a01ac95f37b2362b4e92db9d9efd2cab6d9f584728a4b122556a45da9e932"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-change-log.v1-123-superseded.md",
+      "role": "superseded change log",
+      "bytes": 13758,
+      "sha256": "9e0c277962f114b476dc8523715a9487863814cc5f9ef271ce2a17fe6eb1d9e5"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance-calc.v1-123-superseded.mjs",
+      "role": "superseded calculator",
+      "bytes": 10242,
+      "sha256": "d79c51ffe699140330a1c204f6e09d9a48d2fe2eb6d39241ff065a92b714b95a"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance.template.v1-123-superseded.md",
+      "role": "superseded template",
+      "bytes": 48850,
+      "sha256": "aa26bef1b7af4781385d27320e5c7bf749b4976989330fc9db84070718d1f8a3"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-build.v1-123-superseded.mjs",
+      "role": "superseded builder",
+      "bytes": 85843,
+      "sha256": "ebd99e21752b3c20bb0b572c688c3c9a2290bb5827e25a4c3cd37b5d19dff555"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-GENIUS12-CROSSWALK.v1-123-superseded.md",
+      "role": "superseded crosswalk",
+      "bytes": 16575,
+      "sha256": "db5f3489711fca4451e85c43e10be16f7692057f8283733b0ccaa6bbe98d8e6c"
+    },
+    {
+      "path": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-DEVELOPMENT-PROPOSALS.v1-123-superseded.md",
+      "role": "superseded proposals",
+      "bytes": 13941,
+      "sha256": "6811ecadd704e41eea9d64d2e773ad3166bed5292989a369e904f36fe60b87c3"
+    }
+  ],
+  "verification": {
+    "calculator": "node docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.mjs",
+    "calculator_integrity": "OK",
+    "cross_tab": "node docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.mjs",
+    "ledger_test": "npx vitest run tests/unit/tool-041-acceptance-evidence-ledger.test.ts",
+    "ledger_test_result": "4/4 PASS"
+  },
+  "boundaries": {
+    "code_changes": "none",
+    "engine_schema_registry_catalog": "none",
+    "database_supabase_rls_w18_session_cloud_sync": "none",
+    "commit_push_merge_rebase_deploy_redeploy": "none",
+    "tool_042": "STOPPED",
+    "owner_decision": "PENDING/NOT_DECISIONED - not filled by developer"
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "capturedAt": "2026-11-11T23:56:03.104Z",
+  "tool": "Tool 039 — Liver Enzyme Tracker (mrx.tool.039-liver-enzyme-tracker)",
+  "scope": "Preview deployment only. No production deployment, no commit, no push, no merge, no rebase, no promotion, no change to the protection settings.",
+  "ownerAuthorization": "Preview Deployment Only (2026-11-11) — a Preview deployment for Tool 039 was explicitly authorized; the same instruction required the browser tests to be re-run on the published preview URL itself.",
+  "deployment": {
+    "id": "dpl_JCfgB7Z9dTrVY3kboQCsEjUJL689",
+    "url": "https://mrxsteroid-657mcxs7k-georges-projects-78ef250b.vercel.app",
+    "toolUrl": "https://mrxsteroid-657mcxs7k-georges-projects-78ef250b.vercel.app/smarttools/medical-monitoring/tool-039-liver-enzyme-tracker",
+    "alias": "mrxsteroid-preview-tool039.vercel.app",
+    "aliasUrl": "https://mrxsteroid-preview-tool039.vercel.app/smarttools/medical-monitoring/tool-039-liver-enzyme-tracker",
+    "inspectorUrl": "https://vercel.com/georges-projects-78ef250b/mrxsteroid/JCfgB7Z9dTrVY3kboQCsEjUJL689",
+    "target": "preview",
+    "environment": "preview",
+    "state": "Ready",
+    "created": "2026-11-12T00:35:39+02:00 (Thu Nov 12 2026 00:35:39 GMT+0200)",
+    "createdUtc": "2026-11-11T22:35:39Z",
+    "buildDurationSeconds": 187,
+    "postBuildDurationSeconds": 40,
+    "deploymentProtection": [
+      "vercel_authentication"
+    ],
+    "productionUrl": null
+  },
+  "buildLog": {
+    "source": "vercel inspect dpl_JCfgB7Z9dTrVY3kboQCsEjUJL689 --logs",
+    "lines": [
+      "2026-11-11T22:37:01.709Z  ✓ Compiled successfully in 62s",
+      "2026-11-11T22:38:23.313Z  Generating static pages (0/506) ...",
+      "2026-11-11T22:38:32.815Z  ✓ Generating static pages (506/506)",
+      "2026-11-11T22:38:38.867Z  Route (app)  Size  First Load JS"
+    ],
+    "result": "SUCCESS — 506/506 static pages generated, no error in the build log."
+  },
+  "sourceCommit": {
+    "head": "5a87f3e5271db497a63833bb3cd1bb3df2078497",
+    "branch": "docs/r6.1-r0-evidence",
+    "committed": false,
+    "note": "The Tool 039 changes are in the WORKING TREE and are NOT committed (the owner forbade commit/push/merge/rebase). The deployment was made from the local files. The deployed code is therefore identified by the SHA-256 hashes below, not by a commit SHA. HEAD is the baseline the working tree is based on."
+  },
+  "deployedSourceManifest": {
+    "date": "2026-11-11T22:29:47.476Z",
+    "head": "5a87f3e5271db497a63833bb3cd1bb3df2078497",
+    "note": "Source files deployed to the Tool 039 Preview; the working tree is uncommitted, so these hashes identify the deployed code.",
+    "files": {
+      "components/tools/tool-039-liver-enzyme-tracker.tsx": {
+        "sha256": "ba1643e0662f3046a5b3cf6c8f6ee5e62818a4b4e10e8201951b39747005f992",
+        "bytes": 29415
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.visual.tsx": {
+        "sha256": "afb6366d3027c700a73577ef6775a2369f9c784a9ca467bc1563dabc0ae079c6",
+        "bytes": 33320
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.genius.tsx": {
+        "sha256": "89c18b0e710ca01a11fd4683a2dec53a49197222741a9645d7dea9125ecf5406",
+        "bytes": 30870
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-visual.ts": {
+        "sha256": "78b39fb0273131e789ee5e1e4a7411a2904b240c6a13cea40733a766907fb953",
+        "bytes": 10149
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-contract.ts": {
+        "sha256": "b814ffa99007507a336688c591a85f069d1414daf9373d40684440087ea6422a",
+        "bytes": 16298
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-pipeline.ts": {
+        "sha256": "6d60356568f19b88d4dc1b6e28c3f7319fe28c56ab26e3b1a4e67588837f2141",
+        "bytes": 4180
+      },
+      "i18n/tool-039-liver-enzyme-tracker.json": {
+        "sha256": "398938679749aaf2cd325664fa9d4165aed33a19a316eab6b402022b75babfc7",
+        "bytes": 42175
+      }
+    }
+  },
+  "previousDeployment": {
+    "id": "dpl_EKUNxn7zVDVYHVcxPkTQ85kCyD67",
+    "url": "https://mrxsteroid-1nwr5fbqw-georges-projects-78ef250b.vercel.app",
+    "created": "2026-11-11T17:18:15Z",
+    "status": "SUPERSEDED — it served the pre-fix build, in which the visual section did not render at all."
+  },
+  "beforeAfterComparison": {
+    "method": "The server-rendered HTML of both deployments was fetched through the owner's own authenticated Vercel CLI session and the markers were counted.",
+    "markers": [
+      {
+        "marker": "data-r6-visual",
+        "before": 0,
+        "after": 2
+      },
+      {
+        "marker": "data-r6-illustration=\"tool-039\"",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "marker": "data-r6-illustration-text",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "marker": "data-r6-illustration-mobile",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "marker": "data-r6-diagram-step",
+        "before": 0,
+        "after": 5
+      }
+    ],
+    "conclusion": "The published deployment serves the fixed code: the illustration, its text equivalent, its phone stack and its five steps are present in the server-rendered HTML of the page."
+  },
+  "protectionStatus": {
+    "anonymousRequestToDeploymentUrl": "302 -> vercel.com/login (Deployment Protection ACTIVE, unchanged)",
+    "anonymousRequestToAliasUrl": "302 -> vercel.com/login (Deployment Protection ACTIVE, unchanged)",
+    "note": "No protection setting was changed, no bypass secret was created for this deployment, and no secret was printed, stored or published. The browser run reached the published deployment through the owner's own already-authenticated Vercel CLI session (vercel curl), relayed locally by tool-039-preview-proxy.mjs."
+  },
+  "browserVerificationOnPublishedDeployment": {
+    "harness": "docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs (Chrome DevTools Protocol, real Chrome, no new dependency)",
+    "baseUrl": "http://127.0.0.1:3200",
+    "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "deviceMetrics": {
+      "desktop": "1440x900",
+      "mobile": "390x844"
+    },
+    "date": "2026-11-11T23:52:28.818Z",
+    "checksTotal": 26,
+    "checksPassed": 26,
+    "checksFailed": 0,
+    "results": [
+      {
+        "requirement": "EMPTY state shows the explanatory illustration",
+        "result": "PASS",
+        "evidence": "section=visible svg=visible title=\"Visual explanation and data visualizations\" state=State: EmptyTrack"
+      },
+      {
+        "requirement": "EMPTY state shows the text equivalent of the diagram",
+        "result": "PASS",
+        "evidence": "text list present=true visible=true"
+      },
+      {
+        "requirement": "EMPTY state invents no chart data",
+        "result": "PASS",
+        "evidence": "bars=0 tables=0"
+      },
+      {
+        "requirement": "EMPTY state screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-fix\\tool-039-empty-1440.png"
+      },
+      {
+        "requirement": "Explanatory diagram renders",
+        "result": "PASS",
+        "evidence": "svg[data-r6-illustration] present"
+      },
+      {
+        "requirement": "Data chart renders",
+        "result": "PASS",
+        "evidence": "bar row ALT present; line chart: absent (one dated reading)"
+      },
+      {
+        "requirement": "Chart matches pipeline values",
+        "result": "PASS",
+        "evidence": "bar: ALT112 U/L · 2.00× ULN · Elevated"
+      },
+      {
+        "requirement": "Text alternative (data table)",
+        "result": "PASS",
+        "evidence": "table[data-r6-table] present"
+      },
+      {
+        "requirement": "No colour-only meaning (legend present)",
+        "result": "PASS",
+        "evidence": "legend element present"
+      },
+      {
+        "requirement": "English LTR",
+        "result": "PASS",
+        "evidence": "dir=ltr"
+      },
+      {
+        "requirement": "Mouse Hover opens the element tooltip",
+        "result": "PASS",
+        "evidence": "ALTMeaning: ALT (alanine aminotransferase) — an enzyme that tends to rise when liver cells are irritated.Current value: 112 U/LRelative to the reference limit: 2.00× ULNExplanation: ALT is compared with its reference lim"
+      },
+      {
+        "requirement": "Tooltip avoids viewport clipping",
+        "result": "PASS",
+        "evidence": "left=497 right=785 top=29 bottom=373 viewport=1424x805"
+      },
+      {
+        "requirement": "Desktop screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-fix\\tool-039-desktop-1440.png"
+      },
+      {
+        "requirement": "Keyboard Focus opens the tooltip",
+        "result": "PASS",
+        "evidence": "focused=true tooltip=true"
+      },
+      {
+        "requirement": "Escape closes the tooltip",
+        "result": "PASS",
+        "evidence": "tooltip removed after Escape"
+      },
+      {
+        "requirement": "Keyboard activation (Enter) opens the tooltip",
+        "result": "PASS",
+        "evidence": "node step-1"
+      },
+      {
+        "requirement": "Tooltip close action works",
+        "result": "PASS",
+        "evidence": "aria-label=\"Close the explanation\""
+      },
+      {
+        "requirement": "Touch interaction opens the tooltip",
+        "result": "PASS",
+        "evidence": "touchStart/touchEnd on the ALT bar"
+      },
+      {
+        "requirement": "Mobile 390px renders without horizontal overflow",
+        "result": "PASS",
+        "evidence": "scrollWidth=390 clientWidth=390 overflow=0"
+      },
+      {
+        "requirement": "Mobile 390px keeps the visual elements",
+        "result": "PASS",
+        "evidence": "illustration + bar + table present at 390px"
+      },
+      {
+        "requirement": "Mobile 390px shows the five readable steps",
+        "result": "PASS",
+        "evidence": "5/5 steps visible, smallest visible text 12px, desktop SVG hidden at 390px=true, overflow=0"
+      },
+      {
+        "requirement": "Mobile screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-fix\\tool-039-mobile-390.png"
+      },
+      {
+        "requirement": "Reduced motion respected",
+        "result": "PASS",
+        "evidence": "prefers-reduced-motion rule present and emulated"
+      },
+      {
+        "requirement": "Arabic RTL renders the visual layer",
+        "result": "PASS",
+        "evidence": "dir=rtl; legend=\"المفتاح: الشريط المملوء = القيمة المقاسة · الخط الكهرماني = الحد المرجعي · الحالة معروضة بجانب كل قيمة\""
+      },
+      {
+        "requirement": "Arabic RTL has no horizontal overflow",
+        "result": "PASS",
+        "evidence": "overflow=0"
+      },
+      {
+        "requirement": "Arabic screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-fix\\tool-039-arabic-rtl-1440.png"
+      }
+    ],
+    "screenshots": [
+      "tool-039-empty-1440.png",
+      "tool-039-desktop-1440.png",
+      "tool-039-mobile-390.png",
+      "tool-039-arabic-rtl-1440.png"
+    ]
+  }
+}

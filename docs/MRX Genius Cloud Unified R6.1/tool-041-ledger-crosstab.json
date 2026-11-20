@@ -1,0 +1,1775 @@
+{
+  "tool_id": "mrx.tool.041-hematocrit-monitor",
+  "tool_status": "OWNER_REVIEW",
+  "as_of": "2026-11-14",
+  "generated_from": {
+    "ledger_path": "E:\\MrXSteroid-main\\docs\\MRX Genius Cloud Unified R6.1\\tool-041-requirements.csv",
+    "ledger_sha256": "ed1e330faf571789872a8456e1caac723458912eecee8136263bc1076296450d",
+    "ledger_bytes": 78528,
+    "ledger_rows": 138
+  },
+  "summary": {
+    "totals": {
+      "rows": 138,
+      "applicable": 132,
+      "not_applicable": 6,
+      "unique_ids": 138
+    },
+    "by_b": {
+      "PASS": 76,
+      "PARTIAL": 32,
+      "FAIL": 9,
+      "NOT_AVAILABLE": 12,
+      "BLOCKED": 2,
+      "NOT_RUN": 1,
+      "NOT_APPLICABLE": 6
+    },
+    "by_c": {
+      "PENDING": 132,
+      "NOT_DECISIONED": 6
+    },
+    "by_e": {
+      "E3": 86,
+      "E4": 24,
+      "E2": 26,
+      "E1": 1,
+      "E0": 1
+    },
+    "by_e_applicable": {
+      "E3": 86,
+      "E4": 24,
+      "E2": 20,
+      "E1": 1,
+      "E0": 1
+    },
+    "completion": {
+      "numerator": 76,
+      "denominator": 132,
+      "percent": 57.58,
+      "display": "76 / 132 = 57.58%"
+    },
+    "integrity_ok": true
+  },
+  "cross_tab": [
+    {
+      "applicability": "APPLICABLE",
+      "B": "PASS",
+      "E": "E3",
+      "count": 53
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PASS",
+      "E": "E4",
+      "count": 23
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E1",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E2",
+      "count": 14
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E3",
+      "count": 16
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "PARTIAL",
+      "E": "E4",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "FAIL",
+      "E": "E2",
+      "count": 3
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "FAIL",
+      "E": "E3",
+      "count": 6
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "E": "E2",
+      "count": 1
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "E": "E3",
+      "count": 11
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "BLOCKED",
+      "E": "E2",
+      "count": 2
+    },
+    {
+      "applicability": "APPLICABLE",
+      "B": "NOT_RUN",
+      "E": "E0",
+      "count": 1
+    },
+    {
+      "applicability": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "E": "E2",
+      "count": 6
+    }
+  ],
+  "families": [
+    {
+      "family": "A11Y",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 5,
+      "completion": 5
+    },
+    {
+      "family": "CORE",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "DEP",
+      "rows": 7,
+      "applicable": 7,
+      "not_applicable": 0,
+      "pass": 7,
+      "completion": 7
+    },
+    {
+      "family": "ENG",
+      "rows": 16,
+      "applicable": 16,
+      "not_applicable": 0,
+      "pass": 10,
+      "completion": 10
+    },
+    {
+      "family": "G12",
+      "rows": 13,
+      "applicable": 13,
+      "not_applicable": 0,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "I18N",
+      "rows": 5,
+      "applicable": 5,
+      "not_applicable": 0,
+      "pass": 1,
+      "completion": 1
+    },
+    {
+      "family": "ID",
+      "rows": 12,
+      "applicable": 12,
+      "not_applicable": 0,
+      "pass": 12,
+      "completion": 12
+    },
+    {
+      "family": "MED",
+      "rows": 8,
+      "applicable": 8,
+      "not_applicable": 0,
+      "pass": 3,
+      "completion": 3
+    },
+    {
+      "family": "NA",
+      "rows": 6,
+      "applicable": 0,
+      "not_applicable": 6,
+      "pass": 0,
+      "completion": 0
+    },
+    {
+      "family": "PIPE",
+      "rows": 12,
+      "applicable": 12,
+      "not_applicable": 0,
+      "pass": 9,
+      "completion": 9
+    },
+    {
+      "family": "PRIV",
+      "rows": 7,
+      "applicable": 7,
+      "not_applicable": 0,
+      "pass": 7,
+      "completion": 7
+    },
+    {
+      "family": "RESP",
+      "rows": 5,
+      "applicable": 5,
+      "not_applicable": 0,
+      "pass": 4,
+      "completion": 4
+    },
+    {
+      "family": "SCH",
+      "rows": 10,
+      "applicable": 10,
+      "not_applicable": 0,
+      "pass": 4,
+      "completion": 4
+    },
+    {
+      "family": "STATE",
+      "rows": 10,
+      "applicable": 10,
+      "not_applicable": 0,
+      "pass": 3,
+      "completion": 3
+    },
+    {
+      "family": "TEST",
+      "rows": 11,
+      "applicable": 11,
+      "not_applicable": 0,
+      "pass": 11,
+      "completion": 11
+    }
+  ],
+  "rows": [
+    {
+      "req_id": "ID-01",
+      "family": "ID",
+      "requirement": "Tool identity mrx.tool.041-hematocrit-monitor exists and requireTool resolves it",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-02",
+      "family": "ID",
+      "requirement": "Canonical slug tool-041-hematocrit-monitor is unique and used by the component",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-03",
+      "family": "ID",
+      "requirement": "Canonical route /smarttools/medical-monitoring/tool-041-hematocrit-monitor resolves",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-04",
+      "family": "ID",
+      "requirement": "Category segment medical-monitoring matches the registry category",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-05",
+      "family": "ID",
+      "requirement": "Published catalog entry carries the tool with status implemented, accessTier free and order 570",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-06",
+      "family": "ID",
+      "requirement": "Tool 041 is not in R6_EXEMPT_SLUGS, so the shared R6 shell is applied",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-07",
+      "family": "ID",
+      "requirement": "generateStaticParams includes tool 041 through the published catalog",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-08",
+      "family": "ID",
+      "requirement": "Page metadata sets title, description, canonical and AR alternate",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-09",
+      "family": "ID",
+      "requirement": "Page emits WebApplication and FAQ JSON-LD",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-10",
+      "family": "ID",
+      "requirement": "Breadcrumb, R6 progress line and SafetyNotice render above the tool",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-11",
+      "family": "ID",
+      "requirement": "Previous and next tool navigation resolves from getToolNeighbors",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ID-12",
+      "family": "ID",
+      "requirement": "Tool ID and version are displayed in the footer",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "SCH-01",
+      "family": "SCH",
+      "requirement": "HematocritInputSchema is the single input validation boundary wrapped by createToolSchema",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "SCH-02",
+      "family": "SCH",
+      "requirement": "Readings array is constrained to 2 through 24 entries",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a schema test that accepts 24 readings and rejects 25"
+    },
+    {
+      "req_id": "SCH-03",
+      "family": "SCH",
+      "requirement": "Each HCT reading is a finite number within 20..70 percent",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "SCH-04",
+      "family": "SCH",
+      "requirement": "Each reading date is a parseable ISO-8601 string",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a schema test for malformed and empty dates"
+    },
+    {
+      "req_id": "SCH-05",
+      "family": "SCH",
+      "requirement": "Sex is restricted to the enum male or female",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "SCH-06",
+      "family": "SCH",
+      "requirement": "on_cycle is a required boolean",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "SCH-07",
+      "family": "SCH",
+      "requirement": "weeks_remaining is an integer within 0..52",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add schema boundary tests for -1, 0, 52, 53 and 1.5"
+    },
+    {
+      "req_id": "SCH-08",
+      "family": "SCH",
+      "requirement": "The engine result is validated against HematocritResultSchema before it enters the envelope",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Smallest fix: call HematocritResultSchema.safeParse(engineResult) and return ok:false on failure; add a malformed-result test. Requires separate authorization because it edits pipeline code."
+    },
+    {
+      "req_id": "SCH-09",
+      "family": "SCH",
+      "requirement": "HematocritOutputSchema exists for the structured envelope",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Either enforce HematocritOutputSchema in the pipeline or document isToolOutput as the sole envelope guard and remove dead schema weight"
+    },
+    {
+      "req_id": "SCH-10",
+      "family": "SCH",
+      "requirement": "Schema errors are bilingual AR/EN",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E1",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an error-map or localized message layer, and a test that an Arabic locale receives Arabic text"
+    },
+    {
+      "req_id": "ENG-01",
+      "family": "ENG",
+      "requirement": "Engine has no React, DOM, Supabase or I/O dependency",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-02",
+      "family": "ENG",
+      "requirement": "Engine is free of the Date constructor and of ambient time",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Replace Date usage with an injected clock or pure ISO arithmetic, then re-run engine tests; requires authorization"
+    },
+    {
+      "req_id": "ENG-03",
+      "family": "ENG",
+      "requirement": "The same inputs always produce the same outputs",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-04",
+      "family": "ENG",
+      "requirement": "Readings are sorted by draw date regardless of input order",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an engine test with reversed and shuffled readings asserting the same result"
+    },
+    {
+      "req_id": "ENG-05",
+      "family": "ENG",
+      "requirement": "Baseline is the earliest reading and latest is the most recent reading",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-06",
+      "family": "ENG",
+      "requirement": "Slope is least squares in percentage points per 30 days",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-07",
+      "family": "ENG",
+      "requirement": "Male bands use upper 50 and intervention 54",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-08",
+      "family": "ENG",
+      "requirement": "Female bands use upper 44.5 and intervention 48",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-09",
+      "family": "ENG",
+      "requirement": "A positive trend below the intervention line projects a crossing date",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-10",
+      "family": "ENG",
+      "requirement": "Projection is suppressed beyond the 180-day horizon",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a shallow-slope test asserting projected_threshold_date is null beyond 180 days"
+    },
+    {
+      "req_id": "ENG-11",
+      "family": "ENG",
+      "requirement": "Projection is suppressed when the trend is flat or the latest value is already above the line",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Assert null explicitly in the already-above case"
+    },
+    {
+      "req_id": "ENG-12",
+      "family": "ENG",
+      "requirement": "Warning on_cycle_elevated_hct is emitted when on_cycle is true and the band is not normal",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-13",
+      "family": "ENG",
+      "requirement": "Warning above_intervention_line_seek_physician is emitted above the intervention line",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-14",
+      "family": "ENG",
+      "requirement": "Warning rising_trend_30d is emitted when slope exceeds 1.5",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an engine test asserting rising_trend_30d for a steep series"
+    },
+    {
+      "req_id": "ENG-15",
+      "family": "ENG",
+      "requirement": "donate_eligible is true exactly when latest is at least intervention minus 1",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "ENG-16",
+      "family": "ENG",
+      "requirement": "An empty or wholly unparseable reading set fails safely with no_valid_readings",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a direct engine test with an empty array and with invalid dates"
+    },
+    {
+      "req_id": "PIPE-01",
+      "family": "PIPE",
+      "requirement": "The UI calls the R6 pipeline only and never the engine or legacy adapter directly",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-02",
+      "family": "PIPE",
+      "requirement": "The pipeline validates input before the engine runs",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-03",
+      "family": "PIPE",
+      "requirement": "Every successful run returns a ToolOutput envelope",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-04",
+      "family": "PIPE",
+      "requirement": "The envelope passes the runtime isToolOutput guard",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-05",
+      "family": "PIPE",
+      "requirement": "Invalid input fails safely without throwing or returning a partial output",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-06",
+      "family": "PIPE",
+      "requirement": "Provenance records source, recordedAt, timezone, unit, confidence and dataQuality",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-07",
+      "family": "PIPE",
+      "requirement": "Provenance referenceRange carries the clinical hematocrit reference band",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Populate the sex-specific band and a citation, or label the field as display bounds; needs medical-source review and code authorization"
+    },
+    {
+      "req_id": "PIPE-08",
+      "family": "PIPE",
+      "requirement": "keyFindings exposes result status and latest HCT",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-09",
+      "family": "PIPE",
+      "requirement": "seoLinks are built from the registry entry",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an assertion on the seoLinks payload or remove it if unused"
+    },
+    {
+      "req_id": "PIPE-10",
+      "family": "PIPE",
+      "requirement": "All timestamps and timezone values are injected by the caller",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-11",
+      "family": "PIPE",
+      "requirement": "The pipeline performs no database, Supabase, network or filesystem I/O",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PIPE-12",
+      "family": "PIPE",
+      "requirement": "Engine output is parsed by HematocritResultSchema before the envelope is built",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Same smallest fix as SCH-08: safeParse the result and fail closed; separate code authorization required"
+    },
+    {
+      "req_id": "STATE-01",
+      "family": "STATE",
+      "requirement": "EMPTY is an explicit, reachable state",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Start with blank readings and no invented defaults; requires code authorization and new render tests"
+    },
+    {
+      "req_id": "STATE-02",
+      "family": "STATE",
+      "requirement": "PARTIAL is an explicit state when only some required fields are present",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Make fields genuinely optional or remove the claim; add a test that partial renders"
+    },
+    {
+      "req_id": "STATE-03",
+      "family": "STATE",
+      "requirement": "FULL renders the engine result panel from the submitted snapshot",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "STATE-04",
+      "family": "STATE",
+      "requirement": "INVALID rejects an out-of-range value and withdraws the result panel",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "STATE-05",
+      "family": "STATE",
+      "requirement": "DEGRADED is an explicit state",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a DEGRADED branch with a defined trigger and a test, or record an owner-approved exception"
+    },
+    {
+      "req_id": "STATE-06",
+      "family": "STATE",
+      "requirement": "Missing inputs are never invented",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Start blank and require explicit entry; code authorization required"
+    },
+    {
+      "req_id": "STATE-07",
+      "family": "STATE",
+      "requirement": "Validation errors are actionable and localized",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Map issues to field-specific AR/EN messages and add a test"
+    },
+    {
+      "req_id": "STATE-08",
+      "family": "STATE",
+      "requirement": "The result panel shows HCT, band, trend, donation eligibility, projection and warnings",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "STATE-09",
+      "family": "STATE",
+      "requirement": "The result panel shows the unit, the reference range and the confidence level",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Render the band range and an explicit confidence or not-assessed label"
+    },
+    {
+      "req_id": "STATE-10",
+      "family": "STATE",
+      "requirement": "Result and error regions are announced through aria-live",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add polite live region for results and assertive for errors, then test"
+    },
+    {
+      "req_id": "CORE-01",
+      "family": "CORE",
+      "requirement": "CORE-5 C1 Primary Result shows value, unit, range and confidence",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add range and confidence to the primary panel or to a dedicated CORE-5 box"
+    },
+    {
+      "req_id": "CORE-02",
+      "family": "CORE",
+      "requirement": "CORE-5 C2 How Calculated shows formula, actual inputs, assumptions and uncertainty",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Build a formula box fed from the engine constants and the provenance uncertainty"
+    },
+    {
+      "req_id": "CORE-03",
+      "family": "CORE",
+      "requirement": "CORE-5 C3 Safety and Warnings shows warnings, red flags, contraindications and referral",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add translated warnings, red flags and a referral sentence with a source"
+    },
+    {
+      "req_id": "CORE-04",
+      "family": "CORE",
+      "requirement": "CORE-5 C4 Evidence and Sources lists name, publisher, date, evidence level and link",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Obtain specialist-approved sources and encode them in a structured evidence list"
+    },
+    {
+      "req_id": "CORE-05",
+      "family": "CORE",
+      "requirement": "CORE-5 C5 Next Actions gives one next step, what not to do and when to see a doctor",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a C5 next-actions block with a medically reviewed escalation rule"
+    },
+    {
+      "req_id": "CORE-06",
+      "family": "CORE",
+      "requirement": "Compact mode shows exactly the closure-layer CORE-5 and full mode embeds the same CORE-5",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Replace the SPEC C1-C12 slot content with the closure CORE-5 plus seven enrichment boxes"
+    },
+    {
+      "req_id": "CORE-07",
+      "family": "CORE",
+      "requirement": "CORE-5 content is bilingual AR/EN",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Translate band and warning codes through the i18n file"
+    },
+    {
+      "req_id": "CORE-08",
+      "family": "CORE",
+      "requirement": "CORE-5 is keyboard reachable and screen-reader accessible",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add live regions and landmark/heading structure, then re-run the accessibility harness"
+    },
+    {
+      "req_id": "G12-01",
+      "family": "G12",
+      "requirement": "GENIUS-12 renders twelve boxes in the fixed closure-layer order",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": false,
+      "gap_next_action": "Decide which twelve boxes govern Tool 041 and rebuild the slot content; documentation alone cannot satisfy this"
+    },
+    {
+      "req_id": "G12-02",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 1 KPI Strip summarises the primary result",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement the KPI strip or record an owner-approved exception"
+    },
+    {
+      "req_id": "G12-03",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 2 Primary Result equals CORE-5 C1",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Fold the primary panel into box 2 and complete C1 content"
+    },
+    {
+      "req_id": "G12-04",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 3 Formula / How Calculated equals CORE-5 C2",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement the formula box from the engine constants"
+    },
+    {
+      "req_id": "G12-05",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 4 Inputs Summary lists what the user actually entered",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an inputs summary box and remove invented defaults"
+    },
+    {
+      "req_id": "G12-06",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 5 What-If supports alternative scenarios",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement scenario comparison or record a justified Not Applicable with reason"
+    },
+    {
+      "req_id": "G12-07",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 6 Sensitivity shows which input affects the result most",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement a sensitivity analysis or record a justified Not Applicable with reason"
+    },
+    {
+      "req_id": "G12-08",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 7 Warnings / Safety equals CORE-5 C3",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Complete C3 content and translate the codes"
+    },
+    {
+      "req_id": "G12-09",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 8 Cross-Tool Links carry freshness",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement the cross-tool contract or record Not Applicable with reason"
+    },
+    {
+      "req_id": "G12-10",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 9 Evidence / Sources equals CORE-5 C4",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add specialist-reviewed sources and render them"
+    },
+    {
+      "req_id": "G12-11",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 10 Export produces PDF, ICS or CSV without secrets",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement a client-side export or record Not Applicable with reason"
+    },
+    {
+      "req_id": "G12-12",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 11 History shows prior results with freshness",
+      "applicability_class": "APPLICABLE",
+      "B": "BLOCKED",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Owner decision on W18 and on a Tool 041 storage exception, then implement"
+    },
+    {
+      "req_id": "G12-13",
+      "family": "G12",
+      "requirement": "GENIUS-12 box 12 Feedback and Next Actions equals CORE-5 C5 plus a 1-5 rating",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_AVAILABLE",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Implement feedback plus C5 next actions"
+    },
+    {
+      "req_id": "A11Y-01",
+      "family": "A11Y",
+      "requirement": "Arabic locale renders RTL",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "A11Y-02",
+      "family": "A11Y",
+      "requirement": "English locale renders LTR",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "A11Y-03",
+      "family": "A11Y",
+      "requirement": "Keyboard focus opens the field tooltip",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "A11Y-04",
+      "family": "A11Y",
+      "requirement": "Escape closes the tooltip",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "A11Y-05",
+      "family": "A11Y",
+      "requirement": "The tooltip stays inside the viewport",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "A11Y-06",
+      "family": "A11Y",
+      "requirement": "Touch targets are large enough at 390 px",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Measure and, if needed, enlarge interactive targets to at least 44 px"
+    },
+    {
+      "req_id": "A11Y-07",
+      "family": "A11Y",
+      "requirement": "Every input has a programmatic label",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add indexed accessible names for repeated reading rows"
+    },
+    {
+      "req_id": "A11Y-08",
+      "family": "A11Y",
+      "requirement": "Focus indication is visible on all interactive elements",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Add focus-visible ring classes and verify with the harness"
+    },
+    {
+      "req_id": "I18N-01",
+      "family": "I18N",
+      "requirement": "The AR and EN dictionaries have identical key sets",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "I18N-02",
+      "family": "I18N",
+      "requirement": "Band values are translated in the result panel",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add AR/EN band labels and map the value before render"
+    },
+    {
+      "req_id": "I18N-03",
+      "family": "I18N",
+      "requirement": "Warning codes are translated in the result panel",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add AR/EN warning messages and map codes before render"
+    },
+    {
+      "req_id": "I18N-04",
+      "family": "I18N",
+      "requirement": "Validation and error text is available in Arabic",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Localize validation messages and add an Arabic render test"
+    },
+    {
+      "req_id": "I18N-05",
+      "family": "I18N",
+      "requirement": "No mixed-language labels appear in either locale",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Route every displayed string through the dictionary"
+    },
+    {
+      "req_id": "RESP-01",
+      "family": "RESP",
+      "requirement": "Desktop 1440 px renders the tool without horizontal overflow",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "RESP-02",
+      "family": "RESP",
+      "requirement": "Mobile 390 px renders without horizontal overflow",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "RESP-03",
+      "family": "RESP",
+      "requirement": "All twelve rendered boxes survive at 390 px",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "RESP-04",
+      "family": "RESP",
+      "requirement": "Arabic RTL at 1440 px renders without horizontal overflow",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "RESP-05",
+      "family": "RESP",
+      "requirement": "Arabic RTL at 390 px renders without horizontal overflow",
+      "applicability_class": "APPLICABLE",
+      "B": "NOT_RUN",
+      "C": "PENDING",
+      "E": "E0",
+      "counts_as_completion": false,
+      "gap_next_action": "Add an Arabic 390 px pass to the harness and capture a screenshot"
+    },
+    {
+      "req_id": "PRIV-01",
+      "family": "PRIV",
+      "requirement": "The tool performs no draft save, dashboard commit or clear",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-02",
+      "family": "PRIV",
+      "requirement": "The tool uses no localStorage, sessionStorage or indexedDB",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-03",
+      "family": "PRIV",
+      "requirement": "The tool imports no Supabase client",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-04",
+      "family": "PRIV",
+      "requirement": "The tool makes no fetch, axios or XHR call",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-05",
+      "family": "PRIV",
+      "requirement": "No entered value is sent to any server",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-06",
+      "family": "PRIV",
+      "requirement": "No medical value reaches the application console",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "PRIV-07",
+      "family": "PRIV",
+      "requirement": "No server-side persistence path exists for Tool 041",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "MED-01",
+      "family": "MED",
+      "requirement": "Elevated and rising results emit safety warnings",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "MED-02",
+      "family": "MED",
+      "requirement": "The tool provides an explicit medical escalation and referral path",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add a reviewed referral block with urgency and contact guidance"
+    },
+    {
+      "req_id": "MED-03",
+      "family": "MED",
+      "requirement": "The tool states its interpretation limits and that it is not a diagnosis",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Add tool-specific interpretation limits reviewed by a specialist"
+    },
+    {
+      "req_id": "MED-04",
+      "family": "MED",
+      "requirement": "Every reference band and the intervention line carries a named source",
+      "applicability_class": "APPLICABLE",
+      "B": "FAIL",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Obtain specialist-approved citations for 50/54 male and 44.5/48 female; do not change thresholds without separate authorization"
+    },
+    {
+      "req_id": "MED-05",
+      "family": "MED",
+      "requirement": "Units are percent and consistent across engine, schema, provenance and UI",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "MED-06",
+      "family": "MED",
+      "requirement": "The displayed or exported reference range matches the clinical band",
+      "applicability_class": "APPLICABLE",
+      "B": "PARTIAL",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": false,
+      "gap_next_action": "Display the sex-specific band with a source, or label it explicitly as display bounds"
+    },
+    {
+      "req_id": "MED-07",
+      "family": "MED",
+      "requirement": "donate_eligible is clinically valid and correctly labelled",
+      "applicability_class": "APPLICABLE",
+      "B": "BLOCKED",
+      "C": "PENDING",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Specialist medical review; do not change the rule or label without separate authorization"
+    },
+    {
+      "req_id": "MED-08",
+      "family": "MED",
+      "requirement": "No medical threshold or claim was changed during the acceptance work",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-01",
+      "family": "TEST",
+      "requirement": "Engine test suite passes",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-02",
+      "family": "TEST",
+      "requirement": "Pipeline test suite passes",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-03",
+      "family": "TEST",
+      "requirement": "Component and shared-header suite passes for Tool 041",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-04",
+      "family": "TEST",
+      "requirement": "Existing acceptance-evidence source-scan test passes",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-05",
+      "family": "TEST",
+      "requirement": "TypeScript strict check passes",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-06",
+      "family": "TEST",
+      "requirement": "ESLint passes with no errors",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "Resolve the set-state-in-effect warning and the unused import when code changes are authorized"
+    },
+    {
+      "req_id": "TEST-07",
+      "family": "TEST",
+      "requirement": "A production Next.js build succeeds for this source",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-08",
+      "family": "TEST",
+      "requirement": "Local browser harness passes all checks",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-09",
+      "family": "TEST",
+      "requirement": "Published Preview browser harness passes all checks",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-10",
+      "family": "TEST",
+      "requirement": "The deployed source hashes match the local working tree",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "TEST-11",
+      "family": "TEST",
+      "requirement": "Test evidence is not aggregated across environments without overlap analysis",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-01",
+      "family": "DEP",
+      "requirement": "Exactly one Preview deployment was created for Tool 041",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-02",
+      "family": "DEP",
+      "requirement": "The deployment target is preview and productionUrl is null",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-03",
+      "family": "DEP",
+      "requirement": "Deployment protection stayed enabled and unchanged",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-04",
+      "family": "DEP",
+      "requirement": "The deployment reached READY",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-05",
+      "family": "DEP",
+      "requirement": "The deployment was built from the uncommitted working tree, not from HEAD",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-06",
+      "family": "DEP",
+      "requirement": "No Production deployment or promotion occurred",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E4",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "DEP-07",
+      "family": "DEP",
+      "requirement": "E4 browser evidence was captured against this deployment through the authenticated proxy",
+      "applicability_class": "APPLICABLE",
+      "B": "PASS",
+      "C": "PENDING",
+      "E": "E3",
+      "counts_as_completion": true,
+      "gap_next_action": "none"
+    },
+    {
+      "req_id": "NA-01",
+      "family": "NA",
+      "requirement": "Draft autosave and restore",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Revisit only if the owner grants a storage exception"
+    },
+    {
+      "req_id": "NA-02",
+      "family": "NA",
+      "requirement": "Dashboard snapshot commit",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Revisit only after a W18 and dashboard-scope decision"
+    },
+    {
+      "req_id": "NA-03",
+      "family": "NA",
+      "requirement": "Session and cloud sync",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Revisit after an owner W18 decision"
+    },
+    {
+      "req_id": "NA-04",
+      "family": "NA",
+      "requirement": "Per-user memory with consent, TTL, view and delete",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Revisit at platform level after W18"
+    },
+    {
+      "req_id": "NA-05",
+      "family": "NA",
+      "requirement": "Row-level-security negative test for a Tool 041 write path",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Track at platform level when a storage path is approved"
+    },
+    {
+      "req_id": "NA-06",
+      "family": "NA",
+      "requirement": "Backup and disaster recovery for Tool 041 data",
+      "applicability_class": "NOT_APPLICABLE",
+      "B": "NOT_APPLICABLE",
+      "C": "NOT_DECISIONED",
+      "E": "E2",
+      "counts_as_completion": false,
+      "gap_next_action": "Revisit if persistence is approved"
+    }
+  ]
+}

@@ -16,6 +16,7 @@ export const EstrogenInputSchema = z.object({
 });
 
 export type EstrogenInput = z.infer<typeof EstrogenInputSchema>;
+export type EstrogenResult = z.infer<typeof EstrogenResultSchema>;
 
 const band = z.enum(['low', 'optimal', 'elevated', 'high']);
 

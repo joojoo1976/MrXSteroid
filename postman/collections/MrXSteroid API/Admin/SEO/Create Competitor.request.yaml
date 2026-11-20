@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Create Competitor'
+method: POST
+url: '{{base_url}}/api/admin/seo/competitors'
+order: 10000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "domain": "example.com"
+    }

@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Resolve Phone'
+method: POST
+url: '{{base_url}}/api/auth/resolve-phone'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "phone": "+1234567890"
+    }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Sources'
+method: GET
+url: '{{base_url}}/api/admin/seo/sources'
+order: 19000

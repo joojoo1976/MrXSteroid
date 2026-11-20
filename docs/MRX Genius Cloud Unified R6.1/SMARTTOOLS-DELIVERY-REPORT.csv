@@ -1,0 +1,8 @@
+Tool ID,Name,Status,Live URL,Deployment ID,Deployed Source SHA,E4 Evidence,Reason Not Released
+045,Cycle Break Planner,NOT RELEASED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN — no authorized SSO browser/session; no deployment pinned to tested source SHA,Focused tests pass locally (53/53) but no authorized E4, owner/source/W18 gates remain
+047,Fertility Preservation Guide,NOT RELEASED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN — no authorized SSO browser/session; no deployment pinned to tested source SHA,Focused tests pass locally (52/52) but no authorized E4, owner/source/W18 gates remain
+051,Peptide Dosage Calculator,NOT RELEASED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN — no authorized SSO browser/session; no deployment pinned to tested source SHA,New UI suite 11/11 plus existing engine/adapter/i18n 9/9 pass locally; historical FAIL/E0 and E2 rows retained; no authorized E4 or deployment SHA
+008,Side Effect Tracker,PRESERVE — NOT RELEASED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN,STRUCTURAL_VALIDATION_ONLY — RUNTIME_EFFECTIVENESS_PARTIAL remains in force
+014,Water Retention Assessor,PRESERVE — NOT RELEASED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN,NO_VALIDATED_MODEL / NOT_AVAILABLE posture preserved
+041,Hematocrit Monitor,OWNER REVIEW — NOT ACCEPTED — NOT CLOSED,,NOT_VERIFIED,NOT_VERIFIED,NOT_RUN,Owner review status preserved; no release or acceptance claim
+042,Estrogen Management,STOPPED — ORDER 580,,NOT_APPLICABLE,NOT_APPLICABLE,NOT_RUN,No activation, implementation, registry change, or release absent new owner order

@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-13T20:25:13.398Z",
+  "baseUrl": "http://localhost:3100",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "deviceMetrics": {
+    "desktop": "1440x900",
+    "mobile": "390x844"
+  },
+  "legibility390": null,
+  "results": [
+    {
+      "requirement": "Tool 041 page loads",
+      "result": "PASS",
+      "evidence": "h1 present"
+    },
+    {
+      "requirement": "The tool renders through the R6 shell",
+      "result": "PASS",
+      "evidence": "data-r6-shell present"
+    },
+    {
+      "requirement": "GENIUS-12: the twelve result boxes keep their fixed order",
+      "result": "PASS",
+      "evidence": "C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12"
+    },
+    {
+      "requirement": "FULL state: the engine result panel renders from the submitted snapshot",
+      "result": "PASS",
+      "evidence": "result panel present"
+    },
+    {
+      "requirement": "INVALID state: an out-of-range value is rejected and the result panel is withdrawn",
+      "result": "PASS",
+      "evidence": "errorShown=true panel=false"
+    },
+    {
+      "requirement": "Mouse hover opens the field tooltip",
+      "result": "PASS",
+      "evidence": "HCT %70HCT %70 — input for Hematocrit Monitor. Proce ed locally by the tool; nothing i   tored or  ent.Source: Static explanationClo e"
+    },
+    {
+      "requirement": "The tooltip stays inside the viewport",
+      "result": "PASS",
+      "evidence": "left=248 right=507"
+    },
+    {
+      "requirement": "Keyboard focus opens the tooltip",
+      "result": "PASS",
+      "evidence": "focused=true tooltip=true"
+    },
+    {
+      "requirement": "Escape closes the tooltip",
+      "result": "PASS",
+      "evidence": "the tooltip is removed"
+    },
+    {
+      "requirement": "Desktop screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool041\\tool-041-desktop-1440.png"
+    },
+    {
+      "requirement": "Mobile 390px renders without horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Mobile 390px keeps the GENIUS boxes rendered",
+      "result": "PASS",
+      "evidence": "boxes=12"
+    },
+    {
+      "requirement": "Mobile screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool041\\tool-041-mobile-390.png"
+    },
+    {
+      "requirement": "Arabic RTL renders the tool",
+      "result": "PASS",
+      "evidence": "dir=rtl"
+    },
+    {
+      "requirement": "Arabic RTL has no horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Arabic screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool041\\tool-041-arabic-rtl-1440.png"
+    },
+    {
+      "requirement": "No value is sent to any server",
+      "result": "PASS",
+      "evidence": "115 requests, all GET, none carrying a value"
+    },
+    {
+      "requirement": "No medical value reaches the application log",
+      "result": "PASS",
+      "evidence": "2 console messages, none containing a value"
+    }
+  ]
+}

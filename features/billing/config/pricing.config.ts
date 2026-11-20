@@ -1,10 +1,20 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  BILLING & PRICING CONFIGURATION (Single Source of Truth)
+ *  BILLING & PRICING CONFIGURATION
+ *  Charge prices are DERIVED from server/payments/pricing.ts. This file keeps
+ *  plan copy/features and the display-only strike-through figures.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import { BillingPlanDefinition, PaymentMethodOption } from '../types/billing.types';
+import {
+    DISPLAY_ORIGINAL_PRICES,
+    getAddonPrice,
+    getTierPrice,
+} from '../../../server/payments/pricing';
+
+const EGP_ORIGINAL = DISPLAY_ORIGINAL_PRICES.billing.egp;
+const USD_ORIGINAL = DISPLAY_ORIGINAL_PRICES.billing.usd;
 
 export const BILLING_PLANS: BillingPlanDefinition[] = [
     {
@@ -15,13 +25,13 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         descriptionAr: 'حاسبة بيولوجية متكاملة وتحليل كامل لتركيب الجسم والمغذيات الكبرى.',
         descriptionEn: 'The full BioCalc engine, body composition modeling, and personalized macro targets.',
         prices: {
-            EGP: { current: 499, original: 699 },
-            USD: { current: 29.00, original: 49.99 }
+            EGP: { current: getTierPrice('digital', 'EGP'), original: EGP_ORIGINAL.digital },
+            USD: { current: getTierPrice('digital', 'USD'), original: USD_ORIGINAL.digital }
         },
         coachingAddon: {
-            EGP: 9999,
+            EGP: getAddonPrice('coaching_plus', 'EGP'),
             // D4: Global coaching add-on is 349.99 USD; 200.00 is cancelled.
-            USD: 349.99
+            USD: getAddonPrice('coaching_plus', 'USD')
         },
         featuresAr: [
             'الوصول الكامل لمحرك BioCalc الدقيق',
@@ -55,12 +65,12 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         isPopular: true,
         isFeatured: true,
         prices: {
-            EGP: { current: 749, original: 999 },
-            USD: { current: 79.00, original: 100.80 }
+            EGP: { current: getTierPrice('bundle', 'EGP'), original: EGP_ORIGINAL.bundle },
+            USD: { current: getTierPrice('bundle', 'USD'), original: USD_ORIGINAL.bundle }
         },
         coachingAddon: {
-            EGP: 9999,
-            USD: 349.99
+            EGP: getAddonPrice('coaching_plus', 'EGP'),
+            USD: getAddonPrice('coaching_plus', 'USD')
         },
         featuresAr: [
             'جميع مزايا البروتوكول الرقمي بالكامل',
@@ -92,12 +102,12 @@ export const BILLING_PLANS: BillingPlanDefinition[] = [
         badgeAr: 'للنخبة',
         badgeEn: 'Elite Coached',
         prices: {
-            EGP: { current: 849, original: 1149 },
-            USD: { current: 149.00, original: 199.00 }
+            EGP: { current: getTierPrice('coaching', 'EGP'), original: EGP_ORIGINAL.coaching },
+            USD: { current: getTierPrice('coaching', 'USD'), original: USD_ORIGINAL.coaching }
         },
         coachingAddon: {
-            EGP: 9999,
-            USD: 349.99
+            EGP: getAddonPrice('coaching_plus', 'EGP'),
+            USD: getAddonPrice('coaching_plus', 'USD')
         },
         featuresAr: [
             'كل ما تحتويه الباقة التكتيكية والكتاب المطبوع',

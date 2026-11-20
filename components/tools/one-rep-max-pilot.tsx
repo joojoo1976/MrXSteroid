@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import GeniusToolTemplate from '@/lib/templates/genius-tool-template';
-import { calculateOneRepMax } from '@/lib/tools/engines/one-rep-max.v6';
-import type { OneRepMaxOutput } from '@/lib/tools/engines/one-rep-max.v6';
+import { runOrm, type OrmBuildOptions } from '@/lib/tools/r6/one-rep-max-pipeline';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
 
 const KG_PER_LB = 0.45359237;
@@ -14,7 +13,8 @@ export default function OneRepMaxPilotTool() {
   const [reps, setReps] = useState(5);
   const [status, setStatus] = useState<'idle' | 'partial' | 'ready' | 'error'>('idle');
   const [errors, setErrors] = useState<string[]>([]);
-  const [result, setResult] = useState<OneRepMaxOutput | null>(null);
+  const [result, setResult] = useState<{ oneRepMaxKg: number } | null>(null);
+  const [provenance, setProvenance] = useState<{ unit: string; confidence: number | null; dataQuality: string } | null>(null);
   const isAr = locale === 'ar';
   const labels = isAr
     ? { title: 'مقدر الوزن الأقصى لتكرار واحد', description: 'تقدير لمرة واحدة باستخدام معادلة إيپلي.', weight: 'الوزن', reps: 'التكرارات', calculate: 'احسب', result: 'الوزن الأقصى لتكرار واحد' }
@@ -22,15 +22,26 @@ export default function OneRepMaxPilotTool() {
   const unit = unitSystem === 'metric' ? 'kg' : 'lb';
   const shownWeight = Number((unitSystem === 'metric' ? weightKg : weightKg / KG_PER_LB).toFixed(1));
 
+  const options: OrmBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale,
+    unitSystem,
+    snapshotType: 'draft',
+  };
+
   const handleCalculate = () => {
     setStatus('partial');
     setErrors([]);
     setResult(null);
-    try {
-      setResult(calculateOneRepMax({ weightKg, reps }));
+    setProvenance(null);
+    const pipelineResult = runOrm({ weightKg, reps }, options);
+    if (pipelineResult.ok) {
+      setResult(pipelineResult.output.result);
+      setProvenance(pipelineResult.output.provenance);
       setStatus('ready');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Calculation failed';
+    } else {
+      const message = pipelineResult.error instanceof Error ? pipelineResult.error.message : 'Calculation failed';
       setErrors([isAr ? 'أدخل وزناً موجباً وعدداً صحيحاً موجباً من التكرارات.' : message]);
       setResult(null);
       setStatus('error');
@@ -56,7 +67,28 @@ export default function OneRepMaxPilotTool() {
           <button type="button" onClick={handleCalculate}>{labels.calculate}</button>
         </div>
       }
-      results={result ? <div data-testid="orm-result">{labels.result}: {Number((unitSystem === 'metric' ? result.oneRepMaxKg : result.oneRepMaxKg / KG_PER_LB).toFixed(1))} {unit}</div> : null}
+      results={
+        result ? (
+          <div data-testid="orm-result">
+            {labels.result}:{' '}
+            {Number(
+              unitSystem === 'metric'
+                ? result.oneRepMaxKg
+                : result.oneRepMaxKg / KG_PER_LB
+            ).toFixed(1)}
+            {unit}
+            {provenance && (
+              <span>
+                {isAr ? ' (المصدر: ' : ' (source: '}
+                {provenance.unit}
+                {isAr ? ', الثقة: ' : ', confidence: '}
+                {(provenance.confidence ?? 0).toFixed(2)}
+                {isAr ? ')' : ')'}
+              </span>
+            )}
+          </div>
+        ) : null
+      }
     />
   );
 }

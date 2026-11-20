@@ -77,10 +77,18 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
         }
     };
 
+    // Only the clickable form is an interactive control. When the logo is
+    // presentational (the usual case, including inside the header's brand
+    // <button>), a nested role="button" would create a second, actionless tab
+    // stop and obscure the real target.
+    const isInteractive = typeof onClick === 'function';
+
     // Base wrapper classes
     const wrapperClass = inline
         ? `inline-flex items-center align-middle ${className}`
-        : `flex items-center justify-center ${className} outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg cursor-pointer`;
+        : `flex items-center justify-center ${className}${isInteractive
+            ? ' outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-lg cursor-pointer'
+            : ''}`;
 
     const handleClick = (e: React.MouseEvent | React.KeyboardEvent) => {
         if (onClick) {
@@ -92,16 +100,20 @@ export const DynamicBrandLogo: React.FC<DynamicBrandLogoProps> = ({
 
     return (
         <span
-            onClick={handleClick}
-            className={wrapperClass}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    handleClick(e);
+            {...(isInteractive
+                ? {
+                    onClick: handleClick,
+                    role: 'button',
+                    tabIndex: 0,
+                    onKeyDown: (e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            handleClick(e);
+                        }
+                    },
+                    'aria-label': variant === 'full' ? 'Mr. X-Steroid Home' : 'Mr. X Home',
                 }
-            }}
-            aria-label={variant === 'full' ? "Mr. X-Steroid Home" : "Mr. X Home"}
+                : {})}
+            className={wrapperClass}
         >
             <motion.span
                 variants={containerVariants}

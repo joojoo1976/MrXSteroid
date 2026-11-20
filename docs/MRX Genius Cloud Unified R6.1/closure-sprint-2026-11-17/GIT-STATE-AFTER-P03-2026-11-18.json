@@ -1,0 +1,2059 @@
+{
+  "generatedAt": "2026-11-18T17:21:08.150Z",
+  "repo": "E:\\MrXSteroid-main",
+  "branch": "feat/r6.1-tools-041-042",
+  "head": "37f047a4105d078b22edea2c857bf35aefdbdc7f",
+  "headSubject": "feat(r6): P03-RESULT-SCHEMA-GATE across 30 execution pipelines",
+  "upstream": "origin/feat/r6.1-tools-041-042",
+  "p03": "37f047a4105d078b22edea2c857bf35aefdbdc7f",
+  "p03InHistory": true,
+  "remoteBranchesContainingP03": [],
+  "pushEvidence": "REVIEW_REQUIRED",
+  "counts": {
+    "total": 507,
+    "staged": 0,
+    "modified": 46,
+    "untracked": 461,
+    "deleted": 0
+  },
+  "p03FilePathCount": 33,
+  "postP03ChangeCount": 507,
+  "p03PathsTouchedAgain": [],
+  "recentLog": [
+    "37f047a4\t2026-11-18T15:44:42+02:00\tfeat(r6): P03-RESULT-SCHEMA-GATE across 30 execution pipelines",
+    "2a647fda\t2026-11-18T02:38:05+02:00\tdocs: history/context reconciliation and WT protection manifest (2026-11-18)",
+    "12ffb6aa\t2026-11-18T02:21:08+02:00\tdocs: execution status 2026-11-18 (WT protection, P-03 evidence, per-tool matrix)",
+    "a957b8c5\t2026-11-18T02:14:11+02:00\tdocs: add working-tree protection snapshot and P-03 regression evidence (34 files/177 tests)",
+    "45f0c575\t2026-11-18T01:46:32+02:00\tdocs: add partial P-03 verification evidence (tsc 0, 8/44 pipeline tests pass)"
+  ],
+  "changes": [
+    {
+      "code": " M",
+      "file": "components/tools/GeniusTooltip.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/bmi-pilot.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/macro-pilot.module.css"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/macro-pilot.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/one-rep-max-pilot.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/protein-needs-pilot.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-006-estrogen-prolactin.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-007-bloodwork-analyzer.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-009-injection-site-rotator.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-010-compound-stack-builder.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-011-progress-tracker.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-012-calorie-adjuster.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-013-macro-optimizer.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-015-shbg-modulator.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-018-hpta-recovery.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-019-cardio-monitor.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-020-genetic-potential.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-021-peptide-protocol.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-023-trt-optimization.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-024-bloodwork-interpreter.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-028-stacking-synergy.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-030-cycle-cost-calculator.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-032-advanced-pct-planner.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-033-bloodwork-trend-analyzer.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-035-hormone-conversion.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-036-injection-schedule.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-043-prolactin-management.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/tool-044-dht-side-effects.tsx"
+    },
+    {
+      "code": " M",
+      "file": "components/tools/water-intake-pilot.tsx"
+    },
+    {
+      "code": " M",
+      "file": "i18n/tool-006-estrogen-prolactin.json"
+    },
+    {
+      "code": " M",
+      "file": "i18n/tool-015-shbg-modulator.json"
+    },
+    {
+      "code": " M",
+      "file": "i18n/tool-023-trt-optimization.json"
+    },
+    {
+      "code": " M",
+      "file": "i18n/tool-040-lipid-profile-optimizer.json"
+    },
+    {
+      "code": " M",
+      "file": "i18n/tool-051-peptide-dosage-calculator.json"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-011-progress-tracker.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-018-hpta-recovery.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-019-cardio-monitor.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-036-injection-schedule.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-041-hematocrit-monitor.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-042-estrogen-management.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-043-prolactin-management.ts"
+    },
+    {
+      "code": " M",
+      "file": "lib/tools/schemas/tool-044-dht-side-effects.ts"
+    },
+    {
+      "code": " M",
+      "file": "shared/ui/DynamicBrandLogo.tsx"
+    },
+    {
+      "code": " M",
+      "file": "shared/ui/Footer.tsx"
+    },
+    {
+      "code": " M",
+      "file": "shared/ui/GlobalHeader.tsx"
+    },
+    {
+      "code": "??",
+      "file": "app/smarttools/[category]/[tool]/page.a11y.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "build_log.txt"
+    },
+    {
+      "code": "??",
+      "file": "build_output.txt"
+    },
+    {
+      "code": "??",
+      "file": "components/genius-tool-template.v4.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/bmi-pilot.insights.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/bmi-pilot.v4.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/dynamic-slider-field.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/dynamic-slider-field.v4.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/macro-pilot.progressive-disclosure.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/macro-pilot.remediation.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/macro-pilot.v4.integration.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/protein-needs-pilot.insights.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/protein-needs-pilot.v4.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/r5-a11y-css.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/r5-boundaries.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/r5-main-landmark.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/r5-preferences-sync.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-006-estrogen-prolactin.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-006-estrogen-prolactin.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-006-estrogen-prolactin.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-006-estrogen-prolactin.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-006-estrogen-prolactin.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-015-shbg-modulator.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-015-shbg-modulator.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-015-shbg-modulator.parity.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-015-shbg-modulator.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-015-shbg-modulator.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-023-trt-optimization.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-023-trt-optimization.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-023-trt-optimization.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-023-trt-optimization.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-023-trt-optimization.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-035-hormone-conversion.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-035-hormone-conversion.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-035-hormone-conversion.parity.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-035-hormone-conversion.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-035-hormone-conversion.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-040-lipid-profile-optimizer.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-043-prolactin-management.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-043-prolactin-management.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-043-prolactin-management.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-043-prolactin-management.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-043-prolactin-management.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-044-dht-side-effects.genius.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-044-dht-side-effects.ocr.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-044-dht-side-effects.pdf.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-044-dht-side-effects.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-044-dht-side-effects.visual.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/tool-pilot-v4.module.css"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/water-intake-pilot.insights.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "components/tools/water-intake-pilot.v4.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/BATCH-1-REPORT-2026-11-16.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/CHRONOLOGICAL-TASK-PIPELINE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/CONFLICT-GAP-REGISTER.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/CURRENT-IMPLEMENTATION-BASELINE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/HISTORY-CONTEXT-INTEGRATION-REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/NEXT-EXECUTION-PLAN.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-DECISION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-MANIFEST.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/R6.1-ACTIVATION-READINESS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/R6.1-PREVIEW-INDEX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/R6.1-SYSTEM-REQUIREMENT-REGISTER.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/REQUIREMENT-TRACEABILITY-MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-039-ACCEPTANCE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-039-DEVELOPMENT-PROPOSALS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-039-GENIUS12-CROSSWALK.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-039-W18-HISTORY-RATING-PROPOSAL.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-040-ACCEPTANCE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-040-DEVELOPMENT-PROPOSALS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-040-GENIUS12-CROSSWALK.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-ACCEPTANCE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-DEVELOPMENT-PROPOSALS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-EVIDENCE-FINGERPRINT-MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-GENIUS12-CROSSWALK.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-LEDGER-VERSION-RECONCILIATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-NOT-APPLICABLE-PINNING.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-OWNER-DECISIONS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-PHASE1-AUTHORIZATION-REQUEST.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-PHASE1-CORE5-GENIUS12-CONTENT-SPEC.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-REMEDIATION-MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/TOOL-041-REMEDIATION-PLAN.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/W01-W24-CONFLICT-TRACKER.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/ATOMIC-LEDGERS-045-051-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/EXECUTION-STATUS-2026-11-18-P03-COMMIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/P03-CLEAN-EXPORT-REAL-ENV-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/P03-CLEAN-EXPORT-RESULTS-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/P03-COMMIT-AND-ROLLBACK-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/P03-FINAL-FILE-LIST-AND-DIFFS-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/TOOL-040-ATOMIC-LEDGER-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/TOOL-040-REPRODUCIBILITY-AUDIT-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/TOOL-041-EVIDENCE-REFRESH-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/TOOL-042-ATOMIC-LEDGER-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/WT-PROTECTION-EXACT-BYTES-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/browser-evidence/README-BROWSER-EVIDENCE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/browser-evidence/r6-batch1-4-browser-verify.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/build-atomic-ledgers-045-051.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/next-build-2.exit"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/next-build-after-051-i18n-fix.exit.txt"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/next-build-after-051-i18n-fix.out"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/next-build.err"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/next-build.out"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/p03-clean-export-manifest.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/p03-gate-structural.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/regression-run.txt"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/rollback-next-build.exit.txt"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/rollback-proof-summary.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/evidence-clean-build-2026-11-18/tool-023-schema-engine-proof.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/p03-commit-manifest-precommit.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-040-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-042-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-045-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-045-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-046-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-046-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-047-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-047-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-048-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-048-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-049-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-049-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-050-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-050-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-051-atomic-ledger-2026-11-18.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/closure-sprint-2026-11-17/tool-051-atomic-ledger-2026-11-18.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039-published/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/legibility-390.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/legibility-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/deploy-source-manifest.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-empty-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-fix/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-empty-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-history-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-history-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-history/two-browsers.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/deploy-source-manifest.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/deployment-metadata.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/published-bundle-d08-proof.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/published-html-marker-comparison.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-empty-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-history-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-history-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-d08/two-browsers.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/deployment-metadata.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-empty-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool039-published-fix/tool-039-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040-published/tool-040-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool040/tool-040-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-ACCEPTANCE.v1-123-superseded.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-DEVELOPMENT-PROPOSALS.v1-123-superseded.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/TOOL-041-GENIUS12-CROSSWALK.v1-123-superseded.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance-calc.v1-123-superseded.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-acceptance.template.v1-123-superseded.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-build.v1-123-superseded.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-ledger-change-log.v1-123-superseded.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-ledger-versions/v1-123-superseded/tool-041-requirements.v1-123-superseded.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-published/tool-041-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/preimplementation-summary.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/source-fingerprints-current.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041-verification-current/tool041-storage-network-scan-current.txt"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-arabic-rtl-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-browser-verification.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-desktop-1440.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/evidence/tool041/tool-041-mobile-390.png"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/scope-reconciliation-286.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-acceptance-calc.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-acceptance.template.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-closure.diff"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-ledger-change-log.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-legibility-check.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-preview-proxy.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-r61-closure.diff"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-requirements.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-secure-storage-probe.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-039-two-browsers-check.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-acceptance-calc.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-acceptance.template.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-browser-verify.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-i18n-check.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-ledger-build.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-ledger-change-log.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-040-requirements.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance-calc.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-acceptance.template.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-browser-verify.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-deliverable-manifest.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-evidence-fingerprint-matrix.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-build.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-change-log.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-crosstab.mjs"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-ledger-version-inventory.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-remediation-matrix.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MRX Genius Cloud Unified R6.1/tool-041-requirements.csv"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_GROUPED_CAPABILITY_CLOSURE_EXECUTION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_REVISION_2_1_FINAL_COMPLIANCE_REVIEW.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MACRO_V4_REVISION_2_2_FINAL_COMPLIANCE_REVIEW.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_DOCUMENTATION_INDEX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_FILE_PRESERVATION_MANIFEST.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_MACRO_DEVELOPMENT_HISTORY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MASTER_PHASE_EXECUTION_STATUS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_AI_RESULT_CONTRACT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_BATCH_ROLLOUT_PLAN.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_COMPREHENSIVE_REMEDIATION_MASTER_PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_010_COMPOUND_STACK_BUILDER.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_020_GENETIC_POTENTIAL.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_030_CYCLE_COST.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_100_COMPREHENSIVE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DEFECT_PLAN_106_GLYCOGEN_WATER.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_DYNAMIC_INPUT_AND_SLIDER_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_FORMULA_AND_EVIDENCE_REGISTRY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_HEADER_LANGUAGE_MEASUREMENT_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_MASTER_TOOL_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_OWNER_DECISION_PACKAGE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_PERSONALIZATION_AND_HISTORY_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_RECORD_ONLY_TOOL_CLASSIFICATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_REMEDIATION_AND_OWNER_DECISIONS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_RESULT_INTELLIGENCE_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_SAFETY_AND_PRIVACY_MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TESTING_AND_REGRESSION_MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_010_SAFETY_AND_CONTAINMENT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_COUNT_RECONCILIATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_REQUIREMENTS_TRACEABILITY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_TOOL_SPECIFIC_AI_CAPABILITY_MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_255_ZERO_LOSS_REQUIREMENTS_HARMONIZATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_255_TOOLS_INTELLIGENCE_ACCURACY_AND_UX_EXECUTION_PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_DOCUMENT_CONSOLIDATION_AND_PRESERVATION_FINAL_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_EXECUTION_PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_PARITY_AUDIT_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/MRX_GI_MASTER_PROMPT_MERGE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_MACRO_V4_CAPABILITY_CLOSURE_PLAN.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_MACRO_V4_FULL_CAPABILITY_COMPLIANCE_AUDIT_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_ARCHITECTURE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_CHANGELOG.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_CONTRACT_TRACEABILITY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_FINAL_OWNER_VERIFICATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_REGISTRY_RECONCILIATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_RUNTIME_CLOSURE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_SUPABASE_COMPATIBILITY_ANALYSIS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R1_TEST_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_ACCESSIBILITY_I18N_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_BACKWARD_COMPATIBILITY_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_CHANGELOG.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_FINAL_GATE_REASSESSMENT_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_FINAL_OWNER_ACCEPTANCE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_GATE_CLOSURE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_OWNER_VERIFICATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEMPLATE_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEMPLATE_IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_TEST_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R2_V4_INTEGRATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_1_MACRO_PILOT_UI_REMEDIATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_MACRO_PILOT_IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL_REVISION_1.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R3_PILOT_PROPOSAL_REVISION_2.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/PHASE_R4_MACRO_PILOT_EVALUATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_AUDIT_EVIDENCE.json"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_COMPREHENSIVE_AUDIT_AND_ROLLOUT_MATRIX.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_AI_BEHAVIOR.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_AI_NUTRITION_VISION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_BODY_COMPOSITION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_CONTEST_PREP.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_CYCLE_MANAGEMENT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_HOMEBREW_CHEMISTRY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_HORMONAL_HEALTH.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_INJECTION_FORMULATION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_MEASUREMENT_CONVERSION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_MEDICAL_MONITORING.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_NUTRITION.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_PHARMACOKINETICS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_PLATFORM_AI.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_REPRODUCTIVE_WELLBEING.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_DOSSIERS/R5_255_TOOL_DOSSIERS_TRAINING_RECOVERY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_EXECUTION_PLAN.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_HISTORY_AND_REQUIREMENTS_TRACEABILITY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_255_TOOL_PER_TOOL_DOSSIERS.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_DYNAMIC_INPUT_SLIDER_CROSS_TOOL_TEST_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_DYNAMIC_MEASUREMENT_INPUT_SPEC.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH - OWNER PREVIEW AND CLOSURE REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH — IMPLEMENTATION AND OWNER PREVIEW REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH — TOOL SELECTION AND IMPLEMENTATION SCOPE.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_ACCURACY_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_CORRECTION_AND_REMEDIATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_EVIDENCE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_FINAL_PREVIEW_AND_ACCEPTANCE_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_FINAL_PREVIEW_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FIRST_BATCH_REMEDIATION_REPORT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_FORMULA_INTELLIGENCE_AND_REFERENCE_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_GLOBAL_HEADER_LANGUAGE_MEASUREMENT_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_HISTORY_REQUIREMENTS_TRACEABILITY.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/R5_RESULT_NARRATIVE_AND_PERSONALIZATION_AUDIT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_A_R5_ACCURACY_REMEDIATION_AND_DYNAMIC_MEASUREMENT_SLIDERS_PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_B_MRX_GI_255_TOOLS_INTELLIGENCE_ACCURACY_AND_UX_EXECUTION_PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/SOURCE_MANIFEST.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/master-parity-audit.ps1"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/merge-completeness-check.ps1"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-master-execution-merge-2026-11-07/source-a-parity-audit.ps1"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/ACCEPTANCE_CRITERIA.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/PROMPT.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/MrXSteroid_Genius_Intelligence_V4.0/archive/pre-unified-2026-11-06/SPEC.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/superpowers/plans/2026-11-13-tool-041-hematocrit-r61-acceptance.md"
+    },
+    {
+      "code": "??",
+      "file": "docs/superpowers/specs/2026-11-13-tool-041-hematocrit-r61-acceptance-design.md"
+    },
+    {
+      "code": "??",
+      "file": "errors.txt"
+    },
+    {
+      "code": "??",
+      "file": "fix4.cjs"
+    },
+    {
+      "code": "??",
+      "file": "fix7.cjs"
+    },
+    {
+      "code": "??",
+      "file": "fix8.cjs"
+    },
+    {
+      "code": "??",
+      "file": "fix9.cjs"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.bmi.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.bmi.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.macro.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.macro.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.protein-needs.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.protein-needs.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.water-intake.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/adapter.water-intake.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/contracts.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/contracts.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/index.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/bmi-evidence-record.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/bmi-evidence-record.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/bmi-input-profile.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/bmi-input-profile.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-evidence-registry.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-evidence-registry.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-input-metadata.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-input-metadata.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-input-profile.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-input-profile.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-output-policy.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-output-policy.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-pilot-state.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/macro-pilot-state.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/protein-needs-evidence-record.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/protein-needs-evidence-record.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/protein-needs-input-profile.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/protein-needs-input-profile.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/tool-pilot-state.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/tool-pilot-state.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/water-intake-evidence-record.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/water-intake-evidence-record.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/water-intake-input-profile.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/profiles/water-intake-input-profile.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/runtime.v4.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/engines/core/v4/runtime.v4.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/audit-contract.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/audit-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/iam-config.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/iam-config.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/tenant-context.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/tenant-context.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/shared/unit-system.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/templates/genius-tool-template.v4.tsx"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/debug_gensp.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/loaders.r5.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/bmi-insights.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/bmi-insights.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/protein-insights.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/protein-insights.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/water-insights.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r5/water-insights.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/one-rep-max-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/one-rep-max-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-006-estrogen-prolactin-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-006-estrogen-prolactin-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-007-bloodwork-analyzer-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-007-bloodwork-analyzer-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-009-injection-site-rotator-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-009-injection-site-rotator-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-010-compound-stack-builder-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-010-compound-stack-builder-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-011-progress-tracker-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-011-progress-tracker-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-012-calorie-adjuster-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-012-calorie-adjuster-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-013-macro-optimizer-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-013-macro-optimizer-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-015-shbg-modulator-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-015-shbg-modulator-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-016-half-life-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-018-hpta-recovery-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-018-hpta-recovery-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-019-cardio-monitor-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-019-cardio-monitor-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-020-genetic-potential-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-020-genetic-potential-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-021-peptide-protocol-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-021-peptide-protocol-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-022-half-life-stacker-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-023-trt-optimization-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-023-trt-optimization-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-024-bloodwork-interpreter-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-024-bloodwork-interpreter-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-027-ester-conversion-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-028-stacking-synergy-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-028-stacking-synergy-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-030-cycle-cost-calculator-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-030-cycle-cost-calculator-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-032-advanced-pct-planner-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-032-advanced-pct-planner-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-033-bloodwork-trend-analyzer-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-033-bloodwork-trend-analyzer-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-034-compound-clearance-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-035-hormone-conversion-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-035-hormone-conversion-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-036-injection-schedule-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-036-injection-schedule-pipeline.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-040-lipid-profile-optimizer-contract.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-040-lipid-profile-optimizer-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-040-lipid-profile-optimizer-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-040-lipid-profile-optimizer-visual.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-040-lipid-profile-optimizer-visual.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-043-prolactin-management-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-043-prolactin-management-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-044-dht-side-effects-contract.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/tool-044-dht-side-effects-pipeline.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/unit-migration-analysis.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "lib/tools/r6/unit-migration-analysis.ts"
+    },
+    {
+      "code": "??",
+      "file": "shared/ui/footer.a11y.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "shared/ui/globalHeader.a11y.test.tsx"
+    },
+    {
+      "code": "??",
+      "file": "tests/unit/tool-040-acceptance-evidence.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "tests/unit/tool-041-acceptance-evidence-ledger.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "tests/unit/tool-041-acceptance-evidence.test.ts"
+    },
+    {
+      "code": "??",
+      "file": "verify_tools_check.ts"
+    }
+  ]
+}

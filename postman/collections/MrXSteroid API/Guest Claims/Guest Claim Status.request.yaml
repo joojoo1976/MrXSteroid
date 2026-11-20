@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Guest Claim Status'
+method: POST
+url: '{{base_url}}/api/guest-claims/status'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "token": "{{guest_token}}"
+    }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Keywords (Admin)'
+method: GET
+url: '{{base_url}}/api/admin/seo/keywords'
+order: 11000

@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-13T00:16:48.066Z",
+  "method": "The server-rendered HTML of both deployments was fetched through the owner's own authenticated Vercel CLI session and the markers were counted. Before any consent the history box renders the D-08 CONSENT notice, so the consent strings are the server-side discriminator; the saved-result markers appear only after a user action and are proven by the 43 browser checks instead.",
+  "deployments": {
+    "PREVIOUS dpl_JCfgB7Z9dTrVY3kboQCsEjUJL689 (pre-D-08)": {
+      "bytes": 89754,
+      "counts": {
+        "Allow local storage on this device": 0,
+        "Withdraw consent and delete the stored data": 0,
+        "Save this result": 0,
+        "NOT_APPLICABLE &#8212; this tool stores nothing": 0,
+        "this tool stores nothing": 0,
+        "data-r6-visual": 2,
+        "data-r6-illustration=\"tool-039\"": 1
+      }
+    },
+    "NEW dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc (post-D-08)": {
+      "bytes": 89962,
+      "counts": {
+        "Allow local storage on this device": 0,
+        "Withdraw consent and delete the stored data": 0,
+        "Save this result": 0,
+        "NOT_APPLICABLE &#8212; this tool stores nothing": 0,
+        "this tool stores nothing": 0,
+        "data-r6-visual": 2,
+        "data-r6-illustration=\"tool-039\"": 1
+      }
+    }
+  }
+}

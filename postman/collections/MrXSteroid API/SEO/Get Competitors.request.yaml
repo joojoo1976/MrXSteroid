@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Competitors'
+method: GET
+url: '{{base_url}}/api/seo/competitors'
+order: 2000

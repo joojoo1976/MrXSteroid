@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Pin by ID'
+method: GET
+url: '{{base_url}}/api/admin/seo/pins/{{id}}'
+order: 13000
+pathVariables:
+  - key: id
+    value: '{{pin_id}}'
+    description: Pin ID

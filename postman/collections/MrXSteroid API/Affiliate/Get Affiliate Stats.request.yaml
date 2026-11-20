@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Affiliate Stats'
+method: GET
+url: '{{base_url}}/api/affiliate/stats'
+order: 4000

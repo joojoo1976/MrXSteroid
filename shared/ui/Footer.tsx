@@ -61,9 +61,9 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                <h2 className="text-sm font-black text-white uppercase tracking-wider">
                   {isAr ? "بوابات الدفع والمعاملات الآمنة المعتمدة" : "Verified Payment Gateways & Secure Processing"}
-                </h3>
+                </h2>
                 <p className="text-xs text-zinc-400 font-medium mt-0.5">
                   {isAr ? "دفع مشفر بنظام 256-Bit SSL ومتوافق مع معايير البنك المركزي و PCI-DSS" : "256-Bit SSL encrypted transactions compliant with CBE and PCI-DSS Level 1"}
                 </p>
@@ -150,15 +150,15 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
 
           {/* General Menu */}
           <nav className="lg:col-span-1" aria-label={content.generalLinks}>
-            <h4 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
+            <h3 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
               <span className="w-3.5 h-0.5 bg-gold-500"></span>
               {content.generalLinks}
-            </h4>
+            </h3>
             <ul className="space-y-3.5">
               {[
                 { label: content.homeLink, action: () => navigateTo(Page.HOME) },
                 { label: content.nav?.about || "About Us", action: () => navigateTo(Page.ABOUT) },
-                { label: content.pricingTitle || "Choose Your Plan", action: () => { navigateTo(Page.HOME); setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100); } },
+                { label: content.pricingTitle || "Choose Your Plan", action: () => navigateTo(Page.CHECKOUT) },
                 { label: content.blogTitle, action: () => navigateTo(Page.BLOG) },
                 { label: content.careersTitle, action: () => navigateTo(Page.CAREERS) },
                 { label: content.nav?.sitemap || "Sitemap", action: () => navigateTo(Page.SITEMAP) }
@@ -174,10 +174,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
 
           {/* Commercial */}
           <nav className="lg:col-span-1" aria-label={content.commercialLinks}>
-            <h4 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
+            <h3 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
               <span className="w-3.5 h-0.5 bg-gold-500"></span>
               {content.commercialLinks}
-            </h4>
+            </h3>
             <ul className="space-y-3.5">
               {[
                 { label: content.nav?.signup || "Cart / Checkout", action: () => navigateTo(Page.CHECKOUT) },
@@ -196,10 +196,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
 
           {/* International Legal */}
           <nav className="lg:col-span-1" aria-label={content.internationalLegalLinks}>
-            <h4 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
+            <h3 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
               <span className="w-3.5 h-0.5 bg-gold-500"></span>
               {content.internationalLegalLinks}
-            </h4>
+            </h3>
             <ul className="space-y-3.5">
               {[
                 { label: content.privacyTitle || content.privacyPolicy, action: () => navigateTo(Page.PRIVACY) },
@@ -219,10 +219,10 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
 
           {/* Support & Compliance */}
           <nav className="lg:col-span-1" aria-label={content.supportLinks}>
-            <h4 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
+            <h3 className="text-xs font-black mb-6 text-gold-500 uppercase tracking-[0.25em] flex items-center gap-2.5">
               <span className="w-3.5 h-0.5 bg-gold-500"></span>
               {content.supportLinks}
-            </h4>
+            </h3>
             <ul className="space-y-3.5 mb-6">
               {[
                 { label: content.contactPageTitle || content.contact, action: () => navigateTo(Page.CONTACT) },
@@ -237,7 +237,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
               ))}
             </ul>
 
-            <h4 className="text-[11px] font-black mb-3 text-zinc-500 uppercase tracking-widest">{content.complianceLinks}</h4>
+            <h3 className="text-[11px] font-black mb-3 text-zinc-500 uppercase tracking-widest">{content.complianceLinks}</h3>
             <ul className="space-y-2">
               {[
                 { label: content.accessibilityTitle, action: () => navigateTo(Page.ACCESSIBILITY) },

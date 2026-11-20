@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
 import {
   mgToOz,
@@ -11,6 +11,8 @@ import i18nJsonRaw from '@/i18n/tool-010-compound-stack-builder.json';
 const i18nJson = i18nJsonRaw as any;
 import { useToolI18n } from '@/lib/tools/i18nHelper';
 import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { runCompoundStackBuilder, type CompoundStackBuilderBuildOptions } from '@/lib/tools/r6/tool-010-compound-stack-builder-pipeline';
+import { requireTool } from '@/lib/tools/registry';
 
 /* ============================================================================
  * TYPE DEFINITIONS
@@ -220,13 +222,15 @@ function synergyOf(compounds: StackCompound[], t: ReturnType<typeof useToolI18n>
   if (tips.length === 0) tips.push(t.synergy_tips?.coherent_stack || 'Stack looks coherent — keep testosterone as the base and monitor bloodwork.');
   return { rating: score < 0 ? 'negative' : score > 10 ? 'positive' : 'neutral', score, tips };
 }
+
 export default function Tool010CompoundStackBuilder() {
   const i18nData = useToolI18n(i18nJson);
-  const { unitSystem } = useToolDisplayPreferences();
+  const { unitSystem, locale } = useToolDisplayPreferences();
   const { data: savedStateRaw } = useUserToolState('user-id');
   const savedState = (savedStateRaw as any) ?? {};
   const { mutate: updateToolState, isPending } = useUpdateToolState();
   const debouncedSave = useDebounce(updateToolState, 1500);
+  const tool = requireTool('tool-010-compound-stack-builder');
 
   const stackData = savedState?.stack_builder ?? { name: '', compounds: [] as StackCompound[] };
 
@@ -236,6 +240,49 @@ export default function Tool010CompoundStackBuilder() {
   const [weeklyDose, setWeeklyDose] = useState(300);
   const [weeks, setWeeks] = useState(12);
   const isMetric = unitSystem === 'metric';
+
+  // R6 Pipeline integration
+  const [pipelineResult, setPipelineResult] = useState<any>(null);
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<'idle' | 'validating' | 'done' | 'error'>('idle');
+
+  const options: CompoundStackBuilderBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale,
+    unitSystem,
+    snapshotType: 'draft',
+  };
+
+  useEffect(() => {
+    if (compounds.length === 0) {
+      setPipelineResult(null);
+      setPipelineError(null);
+      setPipelineStatus('idle');
+      return;
+    }
+
+    const stackInput = {
+      name,
+      compounds,
+      total_weekly_dose: compounds.reduce((s, c) => s + c.weekly_dose_mg, 0),
+      estimated_suppression: 0,
+      synergy_rating: 'neutral' as const,
+      recommendations: [],
+    };
+
+    setPipelineStatus('validating');
+    const result = runCompoundStackBuilder(stackInput, options);
+    if (result.ok) {
+      setPipelineResult(result.output);
+      setPipelineError(null);
+      setPipelineStatus('done');
+    } else {
+      setPipelineResult(null);
+      setPipelineError(String(result.error));
+      setPipelineStatus('error');
+    }
+  }, [name, compounds, options.locale, options.unitSystem, options.snapshotType]);
 
   const addCompound = () => {
     const comp: StackCompound = {
@@ -251,7 +298,8 @@ export default function Tool010CompoundStackBuilder() {
     };
     const next = [...compounds, comp];
     setCompounds(next);
-    debouncedSave({ ...savedState, stack_builder: { name, compounds: next } });
+    setName(name || family || 'Untitled Stack');
+    debouncedSave({ ...savedState, stack_builder: { name: name || family || 'Untitled Stack', compounds: next } });
   };
 
   const aromatizationResult = useMemo(
@@ -303,7 +351,30 @@ export default function Tool010CompoundStackBuilder() {
         </div>
         <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}>
           {i18nData.build_stack}
-        </button>        {/* Aromatization Risk Section */}
+        </button>
+
+        {/* R6 Pipeline Validation Result */}
+        {pipelineStatus === 'validating' && (
+          <div className="rounded-lg border border-blue-500/50 bg-blue-950/20 p-4">
+            <p className="font-semibold">جاري التحقق من صحة الحزمة…</p>
+          </div>
+        )}
+        {pipelineStatus === 'done' && pipelineResult && (
+          <div className="rounded-lg border border-green-500/50 bg-green-950/20 p-4">
+            <p className="font-semibold text-green-100">✓ تم التحقق من الحزمة عبر R6 Pipeline</p>
+            <p className="mt-1 text-sm text-green-200">معرف الأداة: {pipelineResult.toolId}</p>
+            <p className="mt-1 text-sm text-green-200">الوحدة: {pipelineResult.provenance.unit}</p>
+            <p className="mt-1 text-sm text-green-200">مصدر البيانات: {pipelineResult.provenance.source}</p>
+          </div>
+        )}
+        {pipelineStatus === 'error' && pipelineError && (
+          <div className="rounded-lg border border-red-500/50 bg-red-950/20 p-4 text-red-100">
+            <p className="font-semibold">خطأ في التحقق من الحزمة</p>
+            <p className="mt-1 text-sm">{pipelineError}</p>
+          </div>
+        )}
+
+        {/* Aromatization Risk Section */}
         <div className="mt-6 p-4 rounded bg-zinc-50 border">
           <h3 className="font-bold text-lg mb-3">{isArabic ? 'تقييم خطر الأرمتة' : 'Aromatization Risk Assessment'}</h3>
           <div className="space-y-2">

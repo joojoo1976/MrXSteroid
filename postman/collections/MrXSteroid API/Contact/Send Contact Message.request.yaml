@@ -1,0 +1,20 @@
+$kind: http-request
+name: 'Send Contact Message'
+method: POST
+url: '{{base_url}}/api/contact'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "topic": "general",
+      "subject": "Question about the platform",
+      "message": "Hello, I have a question about my subscription.",
+      "orderId": null,
+      "locale": "en"
+    }

@@ -4,8 +4,7 @@
  * registry prev/next, structured AI context (no external call). */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { analyzeBloodworkTrends, type LabReading } from '@/lib/tools/engines/tool-033-bloodwork-trend-analyzer';
-import { buildTrendAnalyzerOutput } from '@/lib/tools/adapters/tool-033-bloodwork-trend-analyzer';
+import { runBloodworkTrendAnalyzer, type BloodworkTrendAnalyzerBuildOptions } from '@/lib/tools/r6/tool-033-bloodwork-trend-analyzer-pipeline';
 import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
 import { TrendAnalyzerInputSchema } from '@/lib/tools/schemas/tool-033-bloodwork-trend-analyzer';
@@ -14,9 +13,9 @@ import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-033-bloodwork-trend-analyzer';
 const MARKERS = ['Total T', 'E2', 'LH', 'FSH', 'ALT', 'AST', 'HDL', 'LDL', 'HCT'];
-interface DraftInputs { readings: LabReading[] }
+interface DraftInputs { readings: any[] }
 
-function createBlankReading(): LabReading {
+function createBlankReading(): any {
   return { marker: '', value: Number.NaN, unit: '', date: '' };
 }
 
@@ -24,7 +23,7 @@ export default function Tool033BloodworkTrendAnalyzer() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
   const { locale, unitSystem } = useToolDisplayPreferences();
-  const [readings, setReadings] = useState<LabReading[]>([]);
+  const [readings, setReadings] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -32,6 +31,20 @@ export default function Tool033BloodworkTrendAnalyzer() {
   const isRtl = locale === 'ar';
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevDraftKey = useRef('');
+
+  // R6 Pipeline integration
+  const [pipelineResult, setPipelineResult] = useState<any>(null);
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<'idle' | 'calculating' | 'done' | 'error'>('idle');
+
+  const options: BloodworkTrendAnalyzerBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale: 'en',
+    unitSystem,
+    snapshotType: 'draft',
+  };
+
   useEffect(() => {
     const draft = loadDraft<DraftInputs>(TOOL_SLUG);
     if (!draft) return;
@@ -40,13 +53,34 @@ export default function Tool033BloodworkTrendAnalyzer() {
   }, []);
   const inputs = useMemo(() => ({ readings }), [readings]);
   const parsed = useMemo(() => TrendAnalyzerInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo(() => (parsed.success ? analyzeBloodworkTrends(parsed.data) : null), [parsed]);
+
+  useEffect(() => {
+    if (!parsed.success || !readings.length) {
+      setPipelineResult(null);
+      setPipelineError(null);
+      setPipelineStatus('idle');
+      return;
+    }
+    setPipelineStatus('calculating');
+    const pipeline = runBloodworkTrendAnalyzer(parsed.data, options);
+    if (pipeline.ok) {
+      setPipelineResult(pipeline.output);
+      setPipelineError(null);
+      setPipelineStatus('done');
+    } else {
+      setPipelineResult(null);
+      setPipelineError(String(pipeline.error));
+      setPipelineStatus('error');
+    }
+  }, [parsed, options.locale, options.unitSystem, options.snapshotType]);
+
+  const result = pipelineStatus === 'done' && pipelineResult ? pipelineResult.result : (parsed.success ? pipelineResult?.result : null);
   const aiContext = useMemo(() => {
     if (!result || !parsed.success) return null;
-    const latestDate = parsed.data.readings.reduce((latest, reading) => reading.date > latest ? reading.date : latest, parsed.data.readings[0]?.date ?? '1970-01-01');
-    const output = buildTrendAnalyzerOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: new Date().toISOString(), recordedAt: `${latestDate}T00:00:00.000Z`, timezone: 'UTC' });
+    const latestDate = parsed.data.readings.reduce((latest: string, reading: any) => reading.date > latest ? reading.date : latest, parsed.data.readings[0]?.date ?? '1970-01-01');
+    const output = { ...pipelineResult, result };
     return buildAiContext({ ...output, result });
-  }, [result, parsed, locale, unitSystem]);
+  }, [result, parsed, locale]);
   useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
   useEffect(() => {
     const key = JSON.stringify(inputs) + locale + unitSystem;
@@ -56,7 +90,7 @@ export default function Tool033BloodworkTrendAnalyzer() {
     draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
     return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
   }, [inputs, locale, unitSystem]);
-  const updateReading = (index: number, patch: Partial<LabReading>) => {
+  const updateReading = (index: number, patch: Partial<any>) => {
     setReadings((prev) => prev.map((reading, i) => i === index ? { ...reading, ...patch } : reading));
   };
   const handleSave = async () => {
@@ -65,8 +99,8 @@ export default function Tool033BloodworkTrendAnalyzer() {
     setSaveStatus(t.saving);
     try {
       const now = new Date().toISOString();
-      const latestDate = parsed.data.readings.reduce((latest, reading) => reading.date > latest ? reading.date : latest, parsed.data.readings[0]?.date ?? '1970-01-01');
-      const output = buildTrendAnalyzerOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: `${latestDate}T00:00:00.000Z`, timezone: 'UTC' });
+      const latestDate = parsed.data.readings.reduce((latest: string, reading: any) => reading.date > latest ? reading.date : latest, parsed.data.readings[0]?.date ?? '1970-01-01');
+      const output = { ...pipelineResult, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: `${latestDate}T00:00:00.000Z` };
       const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
       if (submitted.ok && projection.ok) { clearDraft(TOOL_SLUG); setSaveStatus(t.saved); }
       else setSaveStatus(t.save_failed);
@@ -76,10 +110,7 @@ export default function Tool033BloodworkTrendAnalyzer() {
     <main className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
-        </div>
+        <div className="flex gap-2"></div>
       </div>
       <p role="note" className="mb-3 rounded-xl border border-amber-700/50 bg-amber-950/30 p-3 text-xs leading-6 text-amber-100">{t.disclaimer}</p>
       <p className="mb-3 text-xs text-zinc-400">{t.unit_note}</p>
@@ -113,7 +144,7 @@ export default function Tool033BloodworkTrendAnalyzer() {
         <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
           <h3 className="text-xs font-black text-zinc-300 mb-2">{t.markers}</h3>
           <div className="space-y-2 mb-3">
-            {result.markers.map((m) => (
+            {result.markers.map((m: any) => (
               <div key={m.marker} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs">
                 <span className="font-bold text-zinc-200" dir="ltr">{m.marker}: {m.latest_value} {m.unit} · {m.latest_date}</span>
                 <span className="text-zinc-400">{t.points}: {m.points} · {t.distinct_dates}: {m.distinct_dates}</span>
