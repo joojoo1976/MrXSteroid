@@ -196,4 +196,31 @@ describe('Phase 5 — VIP Coaching as a standalone service', () => {
         expect(url).toContain('amount=349.99');
         expect(url).toContain('service_id=coaching_addon');
     });
+
+    it('serviceLinkAmount equals invoices.total_amount with zero margin', async () => {
+        const supabase = fakeSupabase();
+        const result = await createSessionFromInvoice(
+            { invoiceId: '11111111-1111-4111-8111-111111111111' },
+            { supabase, gatewayFactory: vi.fn() }
+        );
+
+        const invoiceMinor = Math.round(Number(supabase._db.invoices[0].amount) * 100);
+        const link = new URL(result.sessionUrl);
+        const linkMinor = Math.round(Number(link.searchParams.get('amount')) * 100);
+
+        expect(linkMinor).toBe(invoiceMinor);
+        expect(linkMinor).toBe(34999);
+    });
+
+    it('service link carries invoice_id as its reference for later webhook matching', async () => {
+        const supabase = fakeSupabase();
+        const result = await createSessionFromInvoice(
+            { invoiceId: '11111111-1111-4111-8111-111111111111' },
+            { supabase, gatewayFactory: vi.fn() }
+        );
+
+        const link = new URL(result.sessionUrl);
+        expect(link.searchParams.get('invoice_id')).toBe('11111111-1111-4111-8111-111111111111');
+        expect(link.searchParams.get('merchant_order_id')).toBe('11111111-1111-4111-8111-111111111111');
+    });
 });

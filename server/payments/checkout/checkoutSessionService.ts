@@ -640,9 +640,13 @@ export async function createSessionFromInvoice(
     try {
         if (serviceId) {
             const serviceLink = getKashierServicePaymentLink(serviceId);
-            if (Math.abs(serviceLink.amount - amount) > 0.005) {
+            // Zero-margin comparison in integer minor units. The link and the
+            // invoice must agree to the cent; no gateway/rounding tolerance.
+            const invoiceMinor = Math.round(amount * 100);
+            const serviceLinkMinor = Math.round(serviceLink.amount * 100);
+            if (invoiceMinor !== serviceLinkMinor) {
                 throw new CheckoutValidationError(
-                    `Invoice amount ${amount} does not match the configured ${serviceId} service price ${serviceLink.amount}.`
+                    `Invoice amount ${amount} does not exactly match the configured ${serviceId} service price ${serviceLink.amount}.`
                 );
             }
             session = {
