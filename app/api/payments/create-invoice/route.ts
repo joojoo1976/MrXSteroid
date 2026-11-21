@@ -12,6 +12,13 @@ import { resolveRegion } from '../../../../server/payments/merchantResolver';
 import { loadGatewayConfig, isOperationallyAllowed, isCustomerRenderable } from '../../../../server/payments/gatewayConfig';
 import { corsPreflightResponse, buildCorsHeaders } from '../../../../server/cors/corsConfig';
 import { resolveEffectiveUserId } from '../../../../server/auth/resolveUser';
+import { QuoteRequestSchema, QuoteTokenError, QuoteValidationError, findForbiddenPriceFields } from '../../../../server/payments/quote';
+import {
+    createInvoiceFromQuote,
+    IdempotencyConflictError,
+    InvoiceCreationError,
+    QuoteStaleError,
+} from '../../../../server/payments/invoice/invoiceCreationService';
 
 const getSupabaseAdmin = () => {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -96,6 +103,129 @@ function readShippingProviderIntent(
     return typeof nested === 'string' && nested.trim() ? nested.trim() : undefined;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PHASE 4 — invoice-first branch
+//
+//  A request carrying `quote_token` is handled exclusively by this branch:
+//  verify token → re-price from pricing.ts → atomic order/invoice/lines.
+//  It NEVER calls a payment gateway. Legacy bodies keep the old flow until the
+//  Phase 5 bypass-path migration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const InvoiceCustomerSchema = z.object({
+    email: z.string().email('Invalid email address'),
+    fullName: z.string().min(2, 'Full name is required').max(200),
+    phoneNumber: z.string().max(30).optional(),
+    userId: z.string().uuid('Invalid user ID format').optional().or(z.literal('')),
+    locale: z.enum(['ar', 'en']).optional(),
+}).strict();
+
+const InvoiceFirstSchema = z.object({
+    quote_token: z.string().min(1, 'quote_token is required'),
+    cart: QuoteRequestSchema,
+    customer: InvoiceCustomerSchema,
+    idempotencyKey: z.string().min(1).max(200).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
+    paymentMethod: z.string().max(50).optional(),
+}).strict();
+
+const isInvoiceFirstBody = (value: unknown): value is { quote_token: string } =>
+    typeof value === 'object'
+    && value !== null
+    && typeof (value as { quote_token?: unknown }).quote_token === 'string';
+
+async function handleInvoiceFirst(body: unknown, req: Request): Promise<Response> {
+    const forbidden = findForbiddenPriceFields(body);
+    if (forbidden.length > 0) {
+        return json({
+            success: false,
+            error: `Client-supplied price fields are not allowed: ${forbidden.join(', ')}. The server prices the invoice.`,
+            code: 'CLIENT_PRICE_FIELD_FORBIDDEN',
+            fields: forbidden,
+        }, 400, req);
+    }
+
+    const parsed = InvoiceFirstSchema.safeParse(body);
+    if (!parsed.success) {
+        return json({
+            success: false,
+            error: 'Validation failed',
+            code: 'VALIDATION_FAILED',
+            details: parsed.error.flatten().fieldErrors,
+        }, 400, req);
+    }
+
+    const input = parsed.data;
+    const userResolution = await resolveEffectiveUserId(req, input.customer.userId);
+    if (!userResolution.success) {
+        return json({ success: false, error: userResolution.error }, userResolution.status, req);
+    }
+
+    const idempotencyKey = req.headers.get('idempotency-key')?.trim()
+        || input.idempotencyKey?.trim();
+    if (!idempotencyKey) {
+        return json({
+            success: false,
+            error: 'An idempotency key is required (header Idempotency-Key or body idempotencyKey).',
+            code: 'IDEMPOTENCY_KEY_REQUIRED',
+        }, 400, req);
+    }
+
+    try {
+        const result = await createInvoiceFromQuote({
+            quoteToken: input.quote_token,
+            cart: input.cart,
+            customer: {
+                email: input.customer.email,
+                fullName: input.customer.fullName,
+                phoneNumber: input.customer.phoneNumber,
+                userId: userResolution.effectiveUserId,
+                locale: input.customer.locale,
+            },
+            idempotencyKey,
+            metadata: input.metadata,
+            gateway: input.paymentMethod === 'kashier' ? 'kashier' : undefined,
+        });
+
+        return json({
+            success: true,
+            invoiceId: result.invoiceId,
+            orderId: result.orderId,
+            amount: result.amount,
+            currency: result.currency,
+            region: result.region,
+            status: 'pending',
+            pricing_version: result.pricingVersion,
+            quote_hash: result.quoteHash,
+            idempotent: result.idempotent,
+        }, 200, req);
+    } catch (error) {
+        if (error instanceof QuoteStaleError) {
+            return json({ success: false, error: error.message, code: error.code }, 409, req);
+        }
+        if (error instanceof IdempotencyConflictError) {
+            return json({ success: false, error: error.message, code: error.code }, 409, req);
+        }
+        if (error instanceof QuoteTokenError) {
+            return json({ success: false, error: error.message, code: error.code }, 400, req);
+        }
+        if (error instanceof QuoteValidationError) {
+            return json({ success: false, error: error.message, code: error.code }, 400, req);
+        }
+        if (error instanceof InvoiceCreationError) {
+            if (error.code === 'IDEMPOTENCY_KEY_REQUIRED') {
+                return json({ success: false, error: error.message, code: error.code }, 400, req);
+            }
+            console.error('[CreateInvoice] invoice-first write failed:', error.message);
+            return json({ success: false, error: 'Failed to create invoice', code: error.code }, 500, req);
+        }
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('[CreateInvoice] invoice-first unhandled error:', message);
+        return json({ success: false, error: 'Internal server error' }, 500, req);
+    }
+}
+
 export async function POST(req: Request) {
     try {
         let body: unknown;
@@ -103,6 +233,10 @@ export async function POST(req: Request) {
             body = await req.json();
         } catch {
             return json({ error: 'Invalid JSON body' }, 400, req);
+        }
+
+        if (isInvoiceFirstBody(body)) {
+            return await handleInvoiceFirst(body, req);
         }
 
         const parsed = CreateInvoiceSchema.safeParse(body);
