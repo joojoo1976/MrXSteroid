@@ -143,48 +143,66 @@ describe('Payment Receipts Admin API', () => {
         expect(res.status).toBe(409);
     });
 
-    it('verifies a pending receipt, settles order to processing + payment_status=paid and writes the audit log', async () => {
-        let updated: Record<string, unknown> | null = null;
-        let orderUpdate: Record<string, unknown> | null = null;
+    it('approves a submitted receipt via the atomic RPC and reports the settled order', async () => {
+        let rpcArgs: Record<string, unknown> | null = null;
         configTable('payment_receipts', () => ({
             select: vi.fn(() => ({
                 eq: vi.fn(() => ({
                     maybeSingle: vi.fn(async () => ({
-                        data: { id: 'rc-1', order_id: 'o-1', status: 'pending_review', payment_method: 'instapay', amount: 1150, currency: 'EGP' },
+                        data: {
+                            id: 'rc-1',
+                            order_id: 'o-1',
+                            status: 'under_review',
+                            payment_method: 'instapay',
+                            amount: 1150,
+                            currency: 'EGP',
+                        },
                         error: null,
                     })),
                 })),
             })),
-            update: vi.fn((fields: Record<string, unknown>) => {
-                updated = fields;
-                return {
-                    eq: vi.fn(() => ({
-                        select: vi.fn(() => ({
-                            single: vi.fn(async () => ({
-                                data: { ...fields, id: 'rc-1' },
-                                error: null,
-                            })),
-                        })),
-                    })),
-                };
-            }),
-        }));
-        configTable('orders', () => ({
-            update: vi.fn((fields: Record<string, unknown>) => {
-                orderUpdate = fields;
-                return { eq: vi.fn(() => Promise.resolve({ error: null })) };
-            }),
         }));
 
-        const res = await PATCH(makePatchReq({ status: 'verified', reviewNotes: 'looks good' }), {
+        (createClient as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            from: vi.fn((table: string) => {
+                const b = tableBehaviors.get(table);
+                return b ? b() : {};
+            }),
+            rpc: vi.fn(async (fn: string, args: Record<string, unknown>) => {
+                expect(fn).toBe('approve_instapay_receipt');
+                rpcArgs = args;
+                return {
+                    data: {
+                        success: true,
+                        receipt: { id: 'rc-1', status: 'approved' },
+                        order_status: 'processing',
+                        settlement: { payment_status: 'paid' },
+                    },
+                    error: null,
+                };
+            }),
+            storage: { from: vi.fn() },
+        });
+
+        const res = await PATCH(makePatchReq({
+            status: 'approved',
+            reviewNotes: 'looks good',
+            instapayReference: 'IP-REF-1',
+            submittedAmount: 1150,
+        }), {
             params: Promise.resolve({ id: 'rc-1' }),
         });
+
         expect(res.status).toBe(200);
         const body = await res.json();
         expect(body.success).toBe(true);
         expect(body.orderStatus).toBe('processing');
-        expect(updated).toMatchObject({ status: 'verified', reviewed_by: 'admin-1', review_notes: 'looks good' });
-        expect(orderUpdate).toMatchObject({ status: 'processing', payment_status: 'paid' });
+        expect(rpcArgs).toMatchObject({
+            p_receipt_id: 'rc-1',
+            p_admin_id: 'admin-1',
+            p_instapay_reference: 'IP-REF-1',
+            p_review_notes: 'looks good',
+        });
     });
 
     it('rejects a receipt and settles order to cancelled + payment_status=failed', async () => {
@@ -193,7 +211,7 @@ describe('Payment Receipts Admin API', () => {
             select: () => ({
                 eq: () => ({
                     maybeSingle: vi.fn(async () => ({
-                        data: { id: 'rc-1', order_id: 'o-1', status: 'pending_review', payment_method: 'instapay', amount: 1150, currency: 'EGP' },
+                        data: { id: 'rc-1', order_id: 'o-1', status: 'submitted_for_review', payment_method: 'instapay', amount: 1150, currency: 'EGP' },
                         error: null,
                     })),
                 }),
@@ -241,31 +259,30 @@ describe('Payment Receipts Admin API', () => {
         expect(res.status).toBe(404);
     });
 
-    it('lists receipts and applies the status filter', async () => {
+    it('lists receipts from the admin review view and applies the status filter', async () => {
         let usedFilter: string | null = null;
-        const rows = [{ id: 'rc-1', status: 'pending_review' }];
-        configTable('payment_receipts', () => ({
-            select: vi.fn(() => {
-                const afterFilter = () => Promise.resolve({ data: rows, error: null });
-                const range = () => ({
-                    eq: (col: string, val: string) => {
-                        usedFilter = val;
-                        return afterFilter();
-                    },
-                });
-                const order = () => ({ range });
-                const eq = (col: string, val: string) => {
+        const rows = [{ id: 'rc-1', status: 'submitted_for_review' }];
+        configTable('admin_instapay_review_detail', () => {
+            const result = Promise.resolve({ data: rows, error: null, count: 1 });
+            const builder: any = {
+                select: vi.fn(() => builder),
+                order: vi.fn(() => builder),
+                range: vi.fn(() => builder),
+                eq: vi.fn((_col: string, val: string) => {
                     usedFilter = val;
-                    return { order };
-                };
-                return { order, eq };
-            }),
-        }));
-        const res = await getList(new NextRequest('http://localhost/api/admin/payment-receipts?status=pending_review'));
+                    return builder;
+                }),
+                then: (resolve: any, reject: any) => result.then(resolve, reject),
+            };
+            return builder;
+        });
+
+        const res = await getList(new NextRequest('http://localhost/api/admin/payment-receipts?status=submitted_for_review'));
         expect(res.status).toBe(200);
         const body = await res.json();
         expect(body.success).toBe(true);
         expect(body.receipts).toHaveLength(1);
-        expect(usedFilter).toBe('pending_review');
+        expect(body.pagination.total).toBe(1);
+        expect(usedFilter).toBe('submitted_for_review');
     });
 });

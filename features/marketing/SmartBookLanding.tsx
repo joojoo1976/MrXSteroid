@@ -13,6 +13,7 @@ import {
 } from '../../shared/lib/logic';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { env } from '../../config/env';
+import { getTierPrice } from '../../server/payments/pricing';
 
 /**
  * INTERFACES
@@ -61,7 +62,7 @@ interface SmartBookLandingProps {
 
 const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, externalIsRTL }) => {
     const { isRTL, language: globalLang } = usePreferences();
-    const BASE_PRICE_USD = 49.99;
+    const BASE_PRICE_USD = getTierPrice('digital', 'USD');
 
     // State
     const [loc, setLoc] = useState<LocalizationData>({
@@ -153,7 +154,7 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
         // Use direct redirection to avoid React reconciliation (insertBefore) crashes
         // which often happen with embedded iframes during navigation.
         const isEg = loc.countryCode === 'EG';
-        const amount = isEg ? 499 : (BASE_PRICE_USD * loc.rate);
+        const amount = isEg ? getTierPrice('digital', 'EGP') : (BASE_PRICE_USD * loc.rate);
         const currency = isEg ? 'EGP' : loc.currency;
 
         const checkoutParams = new URLSearchParams({

@@ -343,9 +343,11 @@ export function processLegVerdict(
         };
     }
 
-    // 3. Strict Amount Verification (0.01 tolerance)
+    // 3. Strict Amount Verification — zero margin in integer minor units.
     if (verdict.paidAmount !== undefined && verdict.paidAmount !== null && !Number.isNaN(verdict.paidAmount)) {
-        if (Math.abs(verdict.paidAmount - candidateLeg.amount) > 0.01) {
+        const expectedMinor = Math.round(candidateLeg.amount * 100);
+        const paidMinor = Math.round(verdict.paidAmount * 100);
+        if (expectedMinor !== paidMinor) {
             console.warn(
                 `[MultiLegPayment] Leg amount mismatch: expected ${candidateLeg.amount}, got ${verdict.paidAmount}`
             );
@@ -377,7 +379,8 @@ export function processLegVerdict(
         (acc, l) => acc + (l.status === 'succeeded' ? (l.actualPaidAmount ?? l.amount) : 0),
         0
     );
-    const canGrantEntitlement = consolidatedStatus === 'paid' && totalActual >= totalPlanned - 0.01;
+    const canGrantEntitlement = consolidatedStatus === 'paid'
+        && Math.round(totalActual * 100) >= Math.round(totalPlanned * 100);
 
     return {
         updatedLegs,

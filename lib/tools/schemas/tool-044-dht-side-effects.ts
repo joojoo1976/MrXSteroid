@@ -13,6 +13,7 @@ export const DhtInputSchema = z.object({
 });
 
 export type DhtInput = z.infer<typeof DhtInputSchema>;
+export type DhtResult = z.infer<typeof DhtResultSchema>;
 
 const band = z.enum(['low', 'moderate', 'high']);
 

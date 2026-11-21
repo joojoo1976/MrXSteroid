@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Receipt PDF'
+method: GET
+url: '{{base_url}}/api/admin/payment-receipts/{{id}}/receipt'
+order: 3000
+pathVariables:
+  - key: id
+    value: '{{receipt_id}}'
+    description: Payment receipt ID

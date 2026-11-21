@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Translate Text'
+method: POST
+url: '{{base_url}}/api/translate'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "text": "Hello",
+      "targetLang": "ar"
+    }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get SEO Audit Log'
+method: GET
+url: '{{base_url}}/api/admin/seo/audit-log'
+order: 1000

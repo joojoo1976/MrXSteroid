@@ -1,0 +1,16 @@
+$kind: http-request
+name: 'AI Explain'
+method: POST
+url: '{{base_url}}/api/smarttools/ai/explain'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "toolSlug": "bmi",
+      "result": {},
+      "locale": "en"
+    }

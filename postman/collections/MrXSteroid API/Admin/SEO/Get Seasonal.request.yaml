@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Seasonal'
+method: GET
+url: '{{base_url}}/api/admin/seo/seasonal'
+order: 15000

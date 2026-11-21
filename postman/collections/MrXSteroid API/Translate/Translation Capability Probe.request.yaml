@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Translation Capability Probe'
+method: GET
+url: '{{base_url}}/api/translate'
+order: 2000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Payout Webhook'
+method: POST
+url: '{{base_url}}/api/payouts/webhook'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "event": "payout.completed",
+      "payoutId": "{{payoutId}}"
+    }

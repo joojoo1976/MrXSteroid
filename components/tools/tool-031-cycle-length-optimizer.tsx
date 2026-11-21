@@ -1,153 +1,225 @@
 'use client';
-/** Tool #031 — Cycle Length Optimizer (dynamic UI, GPT2 spec). useMemo instant
- * recompute, Zod validation, auto-draft via shared adapter, standard
- * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { calculateCycleLength, type CycleLengthCompound } from '@/lib/tools/engines/tool-031-cycle-length-optimizer';
-import { buildCycleLengthOutput } from '@/lib/tools/adapters/tool-031-cycle-length-optimizer';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { CycleLengthInputSchema } from '@/lib/tools/schemas/tool-031-cycle-length-optimizer';
+import { runCycleLengthOptimizer, type CycleLengthOptimizerBuildOptions } from '@/lib/tools/r6/tool-031-cycle-length-optimizer-pipeline';
+import {
+  TOOL_031_LIMITS,
+  TOOL_031_GOALS,
+  TOOL_031_EXPERIENCES,
+  type Tool031Goal,
+  type Tool031Experience,
+  evaluateCycleLengthDraft,
+  formatWeeks,
+  type Tool031CompoundDraft,
+  type Tool031Draft,
+  type Tool031FieldId,
+  type Tool031IssueCode,
+  type Tool031UiState,
+} from '@/lib/tools/r6/tool-031-cycle-length-contract';
+import Tool031Genius from './tool-031-cycle-length-optimizer.genius';
 import i18nJson from '@/i18n/tool-031-cycle-length-optimizer.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-031-cycle-length-optimizer';
-type Goal = 'bulk' | 'cut' | 'recomp' | 'strength';
-type Experience = 'beginner' | 'intermediate' | 'advanced';
-interface DraftInputs { goal: Goal; experience: Experience; previousCycles: number; compounds: CycleLengthCompound[] }
-const GOALS: Array<{ value: Goal; en: string; ar: string }> = [
-  { value: 'bulk', en: 'Bulk', ar: 'تضخيم' }, { value: 'cut', en: 'Cut', ar: 'تنشيف' },
-  { value: 'recomp', en: 'Recomp', ar: 'إعادة تكوين' }, { value: 'strength', en: 'Strength', ar: 'قوة' },
-];
-const EXPS: Array<{ value: Experience; en: string; ar: string }> = [
-  { value: 'beginner', en: 'Beginner', ar: 'مبتدئ' }, { value: 'intermediate', en: 'Intermediate', ar: 'متوسط' },
-  { value: 'advanced', en: 'Advanced', ar: 'متقدم' },
-];
+
+const emptyCompound = (): Tool031CompoundDraft => ({ nameEn: '', suppressionFactor: '', halfLifeDays: '', weeklyDoseMg: '' });
+
+const EMPTY_DRAFT: Tool031Draft = {
+  goal: '',
+  experience: '',
+  previousCycles: '',
+  compounds: [emptyCompound()],
+};
+
+const STATE_KEY: Record<Tool031UiState, string> = {
+  EMPTY: 'state_empty', PARTIAL: 'state_partial', FULL: 'state_full',
+  INVALID: 'state_invalid', DEGRADED: 'state_degraded',
+};
+
+const HINT_KEY: Record<Tool031UiState, string> = {
+  EMPTY: 'state_hint_empty', PARTIAL: 'state_hint_partial', FULL: 'state_hint_full',
+  INVALID: 'state_hint_invalid', DEGRADED: 'state_hint_degraded',
+};
+
+const ERROR_KEY: Record<Tool031IssueCode, string> = {
+  invalid_number: 'error_invalid_number', out_of_range: 'error_out_of_range',
+  required: 'error_required', schema_mismatch: 'error_schema_mismatch',
+};
 
 export default function Tool031CycleLengthOptimizer() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const { locale } = useToolDisplayPreferences();
-  const [goal, setGoal] = useState<Goal>('bulk');
-  const [experience, setExperience] = useState<Experience>('intermediate');
-  const [previousCycles, setPreviousCycles] = useState(2);
-  const [compounds, setCompounds] = useState<CycleLengthCompound[]>([
-    { name_en: 'Testosterone Enanthate', suppression_factor: 1, half_life_days: 4.5, weekly_dose_mg: 500 },
-  ]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevDraftKey = useRef('');
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (!draft) return;
-    if (draft.inputs.goal) setGoal(draft.inputs.goal);
-    if (draft.inputs.experience) setExperience(draft.inputs.experience);
-    if (typeof draft.inputs.previousCycles === 'number') setPreviousCycles(draft.inputs.previousCycles);
-    if (Array.isArray(draft.inputs.compounds) && draft.inputs.compounds.length > 0) setCompounds(draft.inputs.compounds);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const inputs = useMemo(() => ({ goal, experience, previous_cycles: previousCycles, compounds }), [goal, experience, previousCycles, compounds]);
-  const parsed = useMemo(() => CycleLengthInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo(() => (parsed.success ? calculateCycleLength(parsed.data) : null), [parsed]);
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const output = buildCycleLengthOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: '1970-01-01T00:00:00.000Z', recordedAt: '1970-01-01T00:00:00.000Z', timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [inputs, locale]);
-  const updateCompound = (index: number, patch: Partial<CycleLengthCompound>) => {
-    setCompounds((prev) => prev.map((c, i) => (i === index ? { ...c, ...patch } : c)));
+  const uid = useId();
+
+  const [draft, setDraft] = useState<Tool031Draft>(EMPTY_DRAFT);
+
+  const options = useMemo<CycleLengthOptimizerBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale, unitSystem, snapshotType: 'submitted_snapshot', timezone: 'UTC', source: 'manual',
+    }),
+    [locale, unitSystem],
+  );
+
+  const evaluation = evaluateCycleLengthDraft(draft);
+  const run = evaluation.input ? runCycleLengthOptimizer(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+
+  const uiState: Tool031UiState =
+    evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
+
+  const issueFor = (field: Tool031FieldId) => evaluation.issues.find((issue) => issue.field === field);
+  const issueMessage = (code: Tool031IssueCode): string => t[ERROR_KEY[code]] ?? t.error_required;
+  const setField = (patch: Partial<Tool031Draft>) => setDraft((p) => ({ ...p, ...patch }));
+
+  const updateCompound = (index: number, key: keyof Tool031CompoundDraft, value: string) => {
+    setDraft((p) => ({ ...p, compounds: p.compounds.map((c, i) => (i === index ? { ...c, [key]: value } : c)) }));
   };
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    setSaveStatus(isRtl ? 'جاري الحفظ...' : 'Saving...');
-    try {
-      const now = new Date().toISOString();
-      const output = buildCycleLengthOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
+
+  const addCompound = () => {
+    if (draft.compounds.length < TOOL_031_LIMITS.compoundsMax) {
+      setDraft((p) => ({ ...p, compounds: [...p.compounds, { nameEn: '', suppressionFactor: '', halfLifeDays: '', weeklyDoseMg: '' }] }));
+    }
   };
+
+  const removeCompound = (index: number) => {
+    if (draft.compounds.length > 1) {
+      setDraft((p) => ({ ...p, compounds: p.compounds.filter((_, i) => i !== index) }));
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto max-w-5xl px-4 py-6" aria-labelledby={`${uid}-title`} data-r6-tool={TOOL_SLUG}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
+        <div data-r6-state={uiState} aria-live="polite" className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <label className="text-xs font-bold text-zinc-500">{t.goal}
-          <select value={goal} onChange={(e) => setGoal(e.target.value as Goal)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white">
-            {GOALS.map((g) => (<option key={g.value} value={g.value}>{isRtl ? g.ar : g.en}</option>))}
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_goal}
+          <select data-r6-field="goal" aria-required="true" value={draft.goal} onChange={(e) => setField({ goal: e.target.value as Tool031Goal })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white">
+            <option value="">{t.not_answered}</option>
+            <option value="bulk">{t.goal_bulk}</option>
+            <option value="cut">{t.goal_cut}</option>
+            <option value="recomp">{t.goal_recomp}</option>
+            <option value="strength">{t.goal_strength}</option>
           </select>
         </label>
-        <label className="text-xs font-bold text-zinc-500">{t.experience}
-          <select value={experience} onChange={(e) => setExperience(e.target.value as Experience)} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white">
-            {EXPS.map((e) => (<option key={e.value} value={e.value}>{isRtl ? e.ar : e.en}</option>))}
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_experience}
+          <select data-r6-field="experience" aria-required="true" value={draft.experience} onChange={(e) => setField({ experience: e.target.value as Tool031Experience })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white">
+            <option value="">{t.not_answered}</option>
+            <option value="beginner">{t.exp_beginner}</option>
+            <option value="intermediate">{t.exp_intermediate}</option>
+            <option value="advanced">{t.exp_advanced}</option>
           </select>
         </label>
-        <label className="text-xs font-bold text-zinc-500">{t.previous_cycles}
-          <input data-r6-slider="true" type="number" min={0} max={30} value={previousCycles} onChange={(e) => setPreviousCycles(Math.max(0, Math.min(30, Number(e.target.value) || 0)))} className="mt-1 w-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white font-mono" />
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_previous_cycles}
+          <input data-r6-field="previousCycles" data-r6-slider="true" type="number" min={0} max={30} step={1} value={draft.previousCycles}
+            aria-required="true" aria-invalid={issueFor('previousCycles') ? true : undefined}
+            onChange={(e) => setField({ previousCycles: e.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
         </label>
       </div>
-      <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.compounds}</h2>
-      <div className="space-y-2 mb-3">
-        {compounds.map((c, i) => (
-          <div key={i} className="grid grid-cols-2 md:grid-cols-5 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
-            <input value={c.name_en} onChange={(e) => updateCompound(i, { name_en: e.target.value })} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder="Name" />
-            <label className="text-[10px] text-zinc-500">SF 0-5
-              <input data-r6-slider="true" type="number" step={0.1} min={0} max={5} value={c.suppression_factor} onChange={(e) => updateCompound(i, { suppression_factor: Number(e.target.value) || 0 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+
+      <div className="mb-4 space-y-4">
+        {draft.compounds.map((compound, index) => (
+          <fieldset key={index} className="space-y-3 rounded border border-zinc-700 p-4" data-r6-field="compounds">
+            <legend className="px-2 font-semibold text-zinc-200">{t.compound} {index + 1}</legend>
+            <label className="block space-y-1 text-sm text-zinc-500">
+              {t.substance_name}
+              <input className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-white" value={compound.nameEn} maxLength={80}
+                onChange={(e) => updateCompound(index, 'nameEn', e.target.value)} />
             </label>
-            <label className="text-[10px] text-zinc-500">HL d
-              <input data-r6-slider="true" type="number" step={0.1} min={0.5} max={60} value={c.half_life_days} onChange={(e) => updateCompound(i, { half_life_days: Number(e.target.value) || 0.5 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+            <label className="block space-y-1 text-sm text-zinc-500">
+              {t.suppression_factor}
+              <input data-r6-slider="true" className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-white" type="number" min={0} max={5} step={0.1} value={compound.suppressionFactor}
+                onChange={(e) => updateCompound(index, 'suppressionFactor', e.target.value)} />
             </label>
-            <label className="text-[10px] text-zinc-500">mg/wk
-              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: Number(e.target.value) || 1 })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+            <label className="block space-y-1 text-sm text-zinc-500">
+              {t.half_life_days}
+              <input data-r6-slider="true" className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-white" type="number" min={0.5} max={60} step={0.1} value={compound.halfLifeDays}
+                onChange={(e) => updateCompound(index, 'halfLifeDays', e.target.value)} />
             </label>
-            <button type="button" onClick={() => setCompounds((p) => p.filter((_, j) => j !== i))} disabled={compounds.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
-          </div>
+            <label className="block space-y-1 text-sm text-zinc-500">
+              {t.weekly_dose_mg}
+              <input data-r6-slider="true" className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-white" type="number" min={1} max={5000} step={1} value={compound.weeklyDoseMg}
+                onChange={(e) => updateCompound(index, 'weeklyDoseMg', e.target.value)} />
+            </label>
+            {draft.compounds.length > 1 && (
+              <button type="button" className="rounded border border-zinc-600 px-3 py-1 text-sm text-zinc-200" onClick={() => removeCompound(index)}>{t.remove_compound}</button>
+            )}
+          </fieldset>
         ))}
       </div>
-      <button type="button" onClick={() => setCompounds((p) => (p.length >= 8 ? p : [...p, { name_en: 'New compound', suppression_factor: 1, half_life_days: 4.5, weekly_dose_mg: 250 }]))} disabled={compounds.length >= 8} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_compound}</button>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-3 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.min_weeks}</span><span className="text-xl font-bold text-cyan-400 font-mono">{result.min_weeks}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-lime-500/40"><span className="text-[10px] text-zinc-400 block">{t.optimal_weeks}</span><span className="text-xl font-bold text-lime-400 font-mono">{result.optimal_weeks}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.max_weeks}</span><span className="text-xl font-bold text-amber-400 font-mono">{result.max_weeks}</span></div>
+
+      <button type="button" className="rounded border border-zinc-600 px-4 py-2 text-zinc-200" onClick={addCompound} disabled={draft.compounds.length >= TOOL_031_LIMITS.compoundsMax}>{t.add_compound}</button>
+
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <ul className="list-disc space-y-0.5 ps-4 text-xs font-bold text-red-300">
+            {evaluation.issues.map((issue, index) => (
+              <li key={`${issue.field}-${issue.code}-${index}`}>{issueMessage(issue.code)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-center md:grid-cols-3">
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_min_weeks}</span>
+            <span className="font-mono text-xl font-bold text-zinc-100">{result.min_weeks}</span>
           </div>
-          <div className="text-xs text-zinc-400 font-mono mb-2" dir="ltr">{t.suppression_load}: {result.suppression_load} · {t.ester_bottleneck_days}: {result.ester_bottleneck_days}</div>
-          <ul className="space-y-1 text-xs text-zinc-300">{result.rationale.map((r, i) => (<li key={i}>• {r}</li>))}</ul>
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_optimal_weeks}</span>
+            <span className="font-mono text-xl font-bold text-lime-300">{result.optimal_weeks}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_max_weeks}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">{result.max_weeks}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_suppression_load}</span>
+            <span className="font-mono text-xl font-bold text-rose-300">{result.suppression_load}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_bottleneck}</span>
+            <span className="font-mono text-xl font-bold text-zinc-100">{result.ester_bottleneck_days}</span>
           </div>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">
+          {t.state_hint_degraded}
+        </div>
+      )}
+
+      <Tool031Genius
+        locale={locale}
+        state={uiState}
+        draft={draft}
+        input={evaluation.input}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
+    </section>
   );
 }

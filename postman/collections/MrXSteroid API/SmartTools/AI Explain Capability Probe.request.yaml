@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'AI Explain Capability Probe'
+method: GET
+url: '{{base_url}}/api/smarttools/ai/explain'
+order: 3000

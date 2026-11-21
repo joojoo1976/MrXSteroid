@@ -1,0 +1,16 @@
+$kind: http-request
+name: 'Evaluate Risk'
+method: POST
+url: '{{base_url}}/api/payments/evaluate-risk'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{userId}}",
+      "amount": 99,
+      "country": "US"
+    }

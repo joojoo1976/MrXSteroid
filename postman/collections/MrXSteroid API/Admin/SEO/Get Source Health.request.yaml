@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get Source Health'
+method: GET
+url: '{{base_url}}/api/admin/seo/source-health'
+order: 18000

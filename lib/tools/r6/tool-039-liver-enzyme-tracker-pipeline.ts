@@ -110,7 +110,12 @@ export function runLiverEnzymeTracker(
   if (!parsed.ok) {
     return { ok: false, error: parsed.error };
   }
-  const output = buildLiverEnzymeTrackerOutput(parsed.data, trackLiverEnzymes(parsed.data), options);
+  const engineResult = trackLiverEnzymes(parsed.data);
+  const resultParsed = LiverTrackerResultSchema.safeParse(engineResult);
+  if (!resultParsed.success) {
+    return { ok: false, error: resultParsed.error };
+  }
+  const output = buildLiverEnzymeTrackerOutput(parsed.data, resultParsed.data, options);
   if (!isToolOutput(output)) {
     return { ok: false, error: new Error('produced envelope failed contract guard') };
   }

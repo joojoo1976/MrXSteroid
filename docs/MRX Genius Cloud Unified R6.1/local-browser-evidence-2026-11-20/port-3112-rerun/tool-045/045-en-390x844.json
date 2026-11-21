@@ -1,0 +1,650 @@
+{
+  "id": "045-en-390x844",
+  "tool": "045",
+  "locale": "en",
+  "url": "http://localhost:3112/en/smarttools/cycle-management/tool-045-cycle-break-planner",
+  "requestedViewportCssPx": "390x844",
+  "capturedAtUTC": "2026-11-20T17:14:58.653Z",
+  "validResult": {},
+  "network": [
+    {
+      "url": "http://localhost:3112/_next/static/css/21673ff9723d579e.css",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.5",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/css/7882abc032328132.css",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.6",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/css/68c361b92160d37d.css",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.7",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/css/d7c0c12101be1c47.css",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.8",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/webpack-bd85f0efdb36fa07.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.9",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.10",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/1255-d3668eefd1b4a69b.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.11",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/main-app-a702eff63d9d823e.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.12",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/8303-0c4865e828fa3b95.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.14",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/44530001-ccebb3bde0666775.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.13",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/8720-1a27e2f69afa3d88.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.15",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/6650-04e92920a538a821.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.16",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/3962-ecaa602288fc22e4.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.18",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4364-5dfa70610091d737.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.17",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/3611-556c8c69355e2d88.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.19",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/9837-be159a63213a9758.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.20",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/2510-eeb400d9f4574dba.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.21",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/7742-8356f71ec1b7f767.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.22",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/app/smarttools/layout-b91b883b19c66ae2.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.23",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4909-5833c0da806d22ce.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.24",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/7273-d6554bfcef033730.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.25",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/2619-04bc32f026a0d946.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.26",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/3792-e36a4effbb814028.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.27",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/5379-850c2f527b52b4e6.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.28",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/9889-2abd10728c84a9ef.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.29",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/8528-0169f697d722f89f.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.30",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4848-0158715fa09d92ea.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.31",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/2923-d2416263ee1f4bfd.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.32",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/8609-9d3d4472577ae21e.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.33",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/8747-b0ac014b865c7454.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.34",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/5036-5f14d37df8672d53.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.35",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/696-341f22234a815399.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.36",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/9099-3525d5b94d2360c2.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.37",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/9068-ed7cc23f9545a4b8.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.38",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4188-e7ee49dc5556121f.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.39",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/3456-fdc7bf5c848aebc0.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.40",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/5588-0fe89c6065d934e0.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.42",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/4886-6bc93615a659b716.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.41",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/app/smarttools/%5Bcategory%5D/%5Btool%5D/page-354d4d2e9e35c170.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.43",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/7332-19f8aeafbbc7e2c1.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.44",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/6355-8a260996b14ed971.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.45",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3112/_next/static/chunks/app/layout-4d8c6cfe1d539360.js",
+      "status": 400,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "requestId": "26004.46",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "consoleErrors": [],
+  "exceptions": [],
+  "logs": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/css/21673ff9723d579e.css"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/css/7882abc032328132.css"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/css/68c361b92160d37d.css"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/css/d7c0c12101be1c47.css"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/webpack-bd85f0efdb36fa07.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/1255-d3668eefd1b4a69b.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/main-app-a702eff63d9d823e.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/8303-0c4865e828fa3b95.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/44530001-ccebb3bde0666775.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/8720-1a27e2f69afa3d88.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/6650-04e92920a538a821.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/3962-ecaa602288fc22e4.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4364-5dfa70610091d737.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/3611-556c8c69355e2d88.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/9837-be159a63213a9758.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/2510-eeb400d9f4574dba.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/7742-8356f71ec1b7f767.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/app/smarttools/layout-b91b883b19c66ae2.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4909-5833c0da806d22ce.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/7273-d6554bfcef033730.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/3792-e36a4effbb814028.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/5379-850c2f527b52b4e6.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/9889-2abd10728c84a9ef.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/8528-0169f697d722f89f.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4848-0158715fa09d92ea.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/2923-d2416263ee1f4bfd.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/8609-9d3d4472577ae21e.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/8747-b0ac014b865c7454.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/5036-5f14d37df8672d53.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/696-341f22234a815399.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/9099-3525d5b94d2360c2.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/9068-ed7cc23f9545a4b8.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4188-e7ee49dc5556121f.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/3456-fdc7bf5c848aebc0.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/5588-0fe89c6065d934e0.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/4886-6bc93615a659b716.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/app/smarttools/%5Bcategory%5D/%5Btool%5D/page-354d4d2e9e35c170.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/7332-19f8aeafbbc7e2c1.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/6355-8a260996b14ed971.js"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://localhost:3112/_next/static/chunks/app/layout-4d8c6cfe1d539360.js"
+    }
+  ],
+  "screenshots": [
+    "045-en-390x844-initial.png",
+    "045-en-390x844-valid.png",
+    "045-en-390x844-invalid.png"
+  ]
+}

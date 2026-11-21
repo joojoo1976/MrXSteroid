@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'List Payment Receipts'
+method: GET
+url: '{{base_url}}/api/admin/payment-receipts'
+order: 1000

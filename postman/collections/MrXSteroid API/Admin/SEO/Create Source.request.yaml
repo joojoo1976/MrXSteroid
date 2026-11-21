@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Create Source'
+method: POST
+url: '{{base_url}}/api/admin/seo/sources'
+order: 20000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "url": "https://example.com",
+      "name": "Source Name"
+    }

@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Keyword by ID'
+method: GET
+url: '{{base_url}}/api/admin/seo/keywords/{{id}}'
+order: 12000
+pathVariables:
+  - key: id
+    value: '{{keyword_id}}'
+    description: Keyword ID

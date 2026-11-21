@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Pause, Play, Volume2, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ContentStrings, PricingTier } from '@/shared/types/types';
+import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from './StyledBrandName';
 
 import { usePreferences } from '../../context/PreferencesContext';
@@ -25,7 +25,8 @@ const fmtTime = (s: number): string => {
 
 interface HeroProps {
   content: ContentStrings;
-  openCheckout: (tier: PricingTier) => void;
+  /** Billing lives on the standalone /checkout route — the hero only navigates. */
+  onBuyNow: () => void;
   playerState: IntroPlayerState;
 }
 
@@ -163,7 +164,7 @@ const AudioPlayer: React.FC<{ content: ContentStrings, playerState: IntroPlayerS
   );
 };
 
-const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
+const Hero: React.FC<HeroProps> = ({ content, onBuyNow, playerState }) => {
   const { isRTL } = usePreferences();
   return (
     <section className="pt-32 pb-20 px-4 relative overflow-hidden">
@@ -213,7 +214,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
             <motion.button
                 whileHover={{ scale: 1.05, rotate: -1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => openCheckout(content.pricingTiers[0])}
+                onClick={onBuyNow}
                 aria-label={content.heroCta}
                 /* D-10 L2 inline: an explicit opt-in marker. Only this subtree is a candidate for
                    machine translation, and only while the page is in the English experience. */
@@ -270,7 +271,7 @@ const Hero: React.FC<HeroProps> = ({ content, openCheckout, playerState }) => {
         {/* Book Cover — language-aware with 3D flip effect */}
         <div className="relative">
           <div className="absolute inset-0 bg-gold-500/20 blur-[100px] rounded-full -z-10 animate-float-slow"></div>
-          <BookCover content={content} onClick={() => openCheckout(content.pricingTiers[0])} />
+          <BookCover content={content} onClick={onBuyNow} />
         </div>
 
         <div className="max-w-md mx-auto mt-12 animate-float-slow">

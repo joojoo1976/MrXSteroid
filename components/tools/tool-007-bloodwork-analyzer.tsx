@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import i18nJson from '@/i18n/tool-007-bloodwork-analyzer.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
-import { BloodworkRecordSchema, type BloodworkRecord } from '@/lib/tools/schemas/tool-007-bloodwork-analyzer';
-import { buildBloodworkSessionV7 } from '@/lib/tools/engines/tool-007-bloodwork-analyzer';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { runBloodworkAnalyzer, type BloodworkAnalyzerBuildOptions } from '@/lib/tools/r6/tool-007-bloodwork-analyzer-pipeline';
+import type { BloodworkRecord } from '@/lib/tools/schemas/tool-007-bloodwork-analyzer';
+import type { BloodworkSessionV7 } from '@/lib/tools/engines/tool-007-bloodwork-analyzer';
+import { requireTool, getToolNeighbors } from '@/lib/tools/registry';
 
 interface Draft {
   markerName: string;
@@ -26,31 +29,51 @@ const EMPTY_DRAFT: Draft = {
 
 export default function Tool007BloodworkAnalyzer() {
   const t = useToolI18n(i18nJson);
+  const { isRtl } = useToolDisplayPreferences();
+  const tool = requireTool('tool-007-bloodwork-analyzer');
+  const neighbors = getToolNeighbors('tool-007-bloodwork-analyzer');
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [records, setRecords] = useState<BloodworkRecord[]>([]);
   const [validationError, setValidationError] = useState(false);
-  const session = buildBloodworkSessionV7(records);
+  const [session, setSession] = useState<BloodworkSessionV7 | null>(null);
+
+  const options: BloodworkAnalyzerBuildOptions = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale: 'en',
+    unitSystem: 'metric',
+    snapshotType: 'draft',
+  };
+
+  const updateDraft = (key: keyof Draft, value: string) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
 
   const saveRecord = () => {
-    const parsed = BloodworkRecordSchema.safeParse({
-      ...draft,
-      id: crypto.randomUUID(),
-      value: draft.value.trim() === '' ? Number.NaN : Number(draft.value),
-      referenceInterval: draft.referenceInterval.trim() || undefined,
-    });
-    if (!parsed.success) {
+    const pipelineResult = runBloodworkAnalyzer(
+      [
+        {
+          ...draft,
+          id: crypto.randomUUID(),
+          value: Number(draft.value),
+        },
+      ],
+      options,
+    );
+    if (!pipelineResult.ok) {
       setValidationError(true);
       return;
     }
-    setRecords((current) => [...current, parsed.data].slice(-200));
-    setDraft(EMPTY_DRAFT);
     setValidationError(false);
+    setRecords((current) => [...current, pipelineResult.output.result.records[0]].slice(-200));
+    setDraft(EMPTY_DRAFT);
+    setSession(pipelineResult.output.result);
   };
 
   const removeRecord = (id: string) => setRecords((current) => current.filter((record) => record.id !== id));
 
   return (
-    <section className="pct-timing-tool p-6" dir={t.dir}>
+    <section className="pct-timing-tool p-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <h2 className="mb-3 text-2xl font-bold">{t.tool_name}</h2>
       <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
         {t.scope_note}
@@ -102,12 +125,12 @@ export default function Tool007BloodworkAnalyzer() {
 
       <section aria-labelledby="tool-007-records-heading" className="mt-8 rounded bg-zinc-50 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 id="tool-007-records-heading" className="font-semibold">{t.records}: {session.records.length}</h3>
+          <h3 id="tool-007-records-heading" className="font-semibold">{t.records}: {session?.records.length ?? records.length}</h3>
           {records.length > 0 && <button type="button" onClick={() => setRecords([])} className="rounded border px-3 py-2 text-sm">{t.clear_all}</button>}
         </div>
-        {session.records.length === 0 ? <p className="mt-3 text-sm text-zinc-600">{t.empty}</p> : (
+        {session?.records.length === 0 ? <p className="mt-3 text-sm text-zinc-600">{t.empty}</p> : (
           <ul className="mt-3 space-y-3">
-            {session.records.map((record) => (
+            {session?.records.map((record) => (
               <li key={record.id} className="rounded border bg-white p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>

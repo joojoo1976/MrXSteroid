@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Download File'
+method: GET
+url: '{{base_url}}/api/download?token={{download_token}}'
+order: 1000
+queryParams:
+  - key: token
+    value: '{{download_token}}'
+    description: Signed download token

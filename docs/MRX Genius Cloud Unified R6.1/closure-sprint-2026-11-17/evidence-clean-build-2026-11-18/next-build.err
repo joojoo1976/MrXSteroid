@@ -1,0 +1,18 @@
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+❌ Invalid environment configuration: {
+  _errors: [],
+  SUPABASE_URL: { _errors: [ 'Invalid input: expected string, received undefined' ] },
+  SUPABASE_ANON_KEY: { _errors: [ 'Invalid input: expected string, received undefined' ] }
+}
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+❌ Invalid environment configuration: {
+  _errors: [],
+  SUPABASE_URL: { _errors: [ 'Invalid input: expected string, received undefined' ] },
+  SUPABASE_ANON_KEY: { _errors: [ 'Invalid input: expected string, received undefined' ] }
+}
+⚠️ [2026-11-18T11:47:26.718Z] [WARN] [Payment] SpaceRemit Public Key not configured 

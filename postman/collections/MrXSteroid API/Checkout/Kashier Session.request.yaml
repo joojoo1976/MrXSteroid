@@ -1,0 +1,18 @@
+$kind: http-request
+name: 'Kashier Session'
+method: POST
+url: '{{base_url}}/api/checkout/kashier/session'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "tierId": "digital",
+      "email": "user@example.com",
+      "fullName": "John Doe",
+      "country": "EG",
+      "userId": "{{userId}}"
+    }

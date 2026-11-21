@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import { ContentStrings, PricingTier, ProductVariant } from '@/shared/types/types';
 
-import { EGP_PRICES, EGP_ORIGINAL_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../../shared/lib/logic';
+import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../../shared/lib/logic';
+import { getOriginalAmount, getTierPrice } from '../../../server/payments/pricing';
 
 interface UsePricingOptions {
     content: ContentStrings;
@@ -14,15 +15,9 @@ interface UsePricingOptions {
 }
 
 export const BASE_PRICES: Record<string, number> = {
-    'digital': 49.99,
-    'bundle': 72.00,
-    'coaching': 82.00
-};
-
-const BASE_ORIGINAL_PRICES: Record<string, number> = {
-    'digital': 69.99,
-    'bundle': 100.80,
-    'coaching': 114.80
+    'digital': getTierPrice('digital', 'USD'),
+    'bundle': getTierPrice('bundle', 'USD'),
+    'coaching': getTierPrice('coaching', 'USD')
 };
 
 export const usePricing = ({ content, openCheckout, selectedLocation, bookLanguage }: UsePricingOptions) => {
@@ -57,7 +52,7 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
         let finalTierId = planId;
 
         if (selectedLocation === 'EG') {
-            finalPrice = EGP_PRICES[planId] || 849;
+            finalPrice = EGP_PRICES[planId] || EGP_PRICES['coaching'];
             if (coachingIsActive) finalPrice += coachingAddon;
         } else {
             finalPrice = BASE_PRICES[planId] || 0;
@@ -68,12 +63,16 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
             finalTierId = (planId + '_plus') as ProductVariant;
         }
 
-        const egpPrice = (EGP_PRICES[planId] || 849) + (coachingIsActive ? COACHING_ADDON_EGP : 0);
+        const egpPrice = (EGP_PRICES[planId] || EGP_PRICES['coaching']) + (coachingIsActive ? COACHING_ADDON_EGP : 0);
         const usdPrice = (BASE_PRICES[planId] || 0) + (coachingIsActive ? COACHING_ADDON_USD : 0);
 
-        const originalPriceStr = selectedLocation === 'EG'
-            ? String((EGP_ORIGINAL_PRICES[planId] || 949) + (coachingIsActive ? coachingAddon * 1.18 : 0))
-            : String((BASE_ORIGINAL_PRICES[planId] || finalPrice * 1.4) + (coachingIsActive ? coachingAddon * 1.5 : 0));
+        // Original amount = Σ original line items (base list price + add-on).
+        // No multiplier and no aggregate literal: `coaching_plus` is 949 + 9,999.
+        const originalPrice = getOriginalAmount(
+            finalTierId,
+            selectedLocation === 'EG' ? 'EGP' : 'USD'
+        ) ?? finalPrice;
+        const originalPriceStr = String(originalPrice);
 
         const tierData: PricingTier = {
             id: finalTierId,
@@ -102,19 +101,16 @@ export const usePricing = ({ content, openCheckout, selectedLocation, bookLangua
         const coachingIsActive = coachingActivePlan === planId;
         const coachingAddon = getCoachingAddon();
 
-        if (selectedLocation === 'EG') {
-            const basePrice = EGP_PRICES[planId] || 849;
-            const origPrice = EGP_ORIGINAL_PRICES[planId] || 949;
-            const grandTotal = basePrice + (coachingIsActive ? coachingAddon : 0);
-            const originalPrice = origPrice + (coachingIsActive ? Math.round(coachingAddon * 1.18) : 0);
-            return { grandTotal, originalPrice };
-        } else {
-            const basePrice = BASE_PRICES[planId] || 0;
-            const origPrice = BASE_ORIGINAL_PRICES[planId] || basePrice * 1.4;
-            const grandTotal = basePrice + (coachingIsActive ? coachingAddon : 0);
-            const originalPrice = origPrice + (coachingIsActive ? coachingAddon * 1.5 : 0);
-            return { grandTotal, originalPrice };
-        }
+        const basePrice = selectedLocation === 'EG'
+            ? (EGP_PRICES[planId] || EGP_PRICES['coaching'])
+            : (BASE_PRICES[planId] || 0);
+        const grandTotal = basePrice + (coachingIsActive ? coachingAddon : 0);
+        const originalTierId = coachingIsActive ? `${planId}_plus` : planId;
+        const originalPrice = getOriginalAmount(
+            originalTierId,
+            selectedLocation === 'EG' ? 'EGP' : 'USD'
+        ) ?? grandTotal;
+        return { grandTotal, originalPrice };
     }, [coachingActivePlan, selectedLocation, getCoachingAddon]);
 
     return {

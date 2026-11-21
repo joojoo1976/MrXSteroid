@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Update User'
+method: POST
+url: '{{base_url}}/api/dashboard/user'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "displayName": "John",
+      "locale": "en"
+    }

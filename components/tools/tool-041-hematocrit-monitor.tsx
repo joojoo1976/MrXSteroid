@@ -1,143 +1,354 @@
 'use client';
-/** Tool #041 — Hematocrit Monitor (dynamic UI, GPT2 spec). useMemo instant
- * recompute, Zod validation, auto-draft, Bio-Dashboard save, AR/EN, prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+/**
+ * components/tools/tool-041-hematocrit-monitor.tsx
+ *
+ * Tool #041 — Hematocrit Monitor (R6.1 tool).
+ *
+ * What this component does, and what it deliberately does NOT do:
+ *   - every calculation goes through the R6 pipeline
+ *     (`runHematocritMonitor`), which validates the input and calls the
+ *     authoritative V6 engine (`monitorHematocrit`) — the UI never calls the
+ *     engine or the legacy adapter directly;
+ *   - the tool starts EMPTY: no reading, date, sex, cycle status or week count
+ *     is pre-filled, because a fabricated default would be a fabricated result;
+ *   - the states EMPTY / PARTIAL / FULL / INVALID / DEGRADED are explicit and
+ *     follow the documented order EMPTY → INVALID → PARTIAL → FULL/DEGRADED;
+ *   - there is NO persistence of any kind: no draft, no dashboard snapshot, no
+ *     session, no cloud storage (W18). The rating in box 12 is session-only and
+ *     says so.
+ */
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { monitorHematocrit, type HematocritResult } from '@/lib/tools/engines/tool-041-hematocrit-monitor';
-import { buildHematocritOutput } from '@/lib/tools/adapters/tool-041-hematocrit-monitor';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { HematocritInputSchema } from '@/lib/tools/schemas/tool-041-hematocrit-monitor';
+import {
+  runHematocritMonitor,
+  type HematocritMonitorBuildOptions,
+} from '@/lib/tools/r6/tool-041-hematocrit-monitor-pipeline';
+import {
+  TOOL_041_LIMITS,
+  bandLabelKey,
+  evaluateHematocritDraft,
+  type Tool041Draft,
+  type Tool041IssueCode,
+  type Tool041ReadingDraft,
+  type Tool041UiState,
+} from '@/lib/tools/r6/tool-041-hematocrit-monitor-contract';
+import Tool041Genius from './tool-041-hematocrit-monitor.genius';
 import i18nJson from '@/i18n/tool-041-hematocrit-monitor.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-041-hematocrit-monitor';
-interface ReadingUI { hct_pct: number; date: string }
-interface DraftInputs { readings: ReadingUI[]; sex: 'male' | 'female'; on_cycle: boolean; weeks_remaining: number }
 
-const today = () => new Date().toISOString().slice(0, 10);
-const BAND_COLOR: Record<string, string> = { normal: 'text-lime-400', borderline: 'text-amber-400', high: 'text-orange-400', 'very-high': 'text-red-400' };
+const EMPTY_DRAFT: Tool041Draft = {
+  readings: [
+    { value: '', date: '' },
+    { value: '', date: '' },
+  ],
+  sex: '',
+  onCycle: '',
+  weeksRemaining: '',
+};
+
+const STATE_KEY: Record<Tool041UiState, string> = {
+  EMPTY: 'state_empty',
+  PARTIAL: 'state_partial',
+  FULL: 'state_full',
+  INVALID: 'state_invalid',
+  DEGRADED: 'state_degraded',
+};
+
+const HINT_KEY: Record<Tool041UiState, string> = {
+  EMPTY: 'state_hint_empty',
+  PARTIAL: 'state_hint_partial',
+  FULL: 'state_hint_full',
+  INVALID: 'state_hint_invalid',
+  DEGRADED: 'state_hint_degraded',
+};
+
+const ERROR_KEY: Record<Tool041IssueCode, string> = {
+  invalid_number: 'error_invalid_number',
+  out_of_range: 'error_out_of_range',
+  invalid_date: 'error_invalid_date',
+  required: 'error_required',
+};
+
+const BAND_TONE: Record<string, string> = {
+  normal: 'text-lime-400',
+  borderline: 'text-amber-400',
+  high: 'text-orange-400',
+  'very-high': 'text-red-400',
+};
 
 export default function Tool041HematocritMonitor() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
   const { locale, unitSystem } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>({ readings: [{ hct_pct: 45, date: today() }, { hct_pct: 48, date: today() }], sex: 'male', on_cycle: true, weeks_remaining: 8 });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const prevDraftKey = useRef('');
+  const uid = useId();
 
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+  const [draft, setDraft] = useState<Tool041Draft>(EMPTY_DRAFT);
 
-  const parsed = useMemo(() => HematocritInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo<HematocritResult | null>(() => (parsed.success ? monitorHematocrit(parsed.data) : null), [parsed]);
+  const options = useMemo<HematocritMonitorBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale,
+      unitSystem,
+      snapshotType: 'submitted_snapshot',
+      timezone: 'UTC',
+      source: 'manual',
+    }),
+    [locale, unitSystem],
+  );
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildHematocritOutput(parsed.data, { locale, unitSystem, snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale, unitSystem]);
+  const evaluation = evaluateHematocritDraft(draft);
+  const run = evaluation.input ? runHematocritMonitor(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+  const engineDegraded = Boolean(run && (!run.ok || run.output.result.warnings.includes('no_valid_readings')));
 
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
+  const uiState: Tool041UiState =
+    evaluation.state === 'READY' ? (engineDegraded ? 'DEGRADED' : 'FULL') : evaluation.state;
 
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale + unitSystem;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    const timer = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem, savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [inputs, locale, unitSystem]);
-
-  const addReading = () => setInputs((p) => (p.readings.length >= 24 ? p : { ...p, readings: [...p.readings, { hct_pct: 48, date: today() }] }));
-
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    try {
-      const now = new Date().toISOString();
-      const output = buildHematocritOutput(parsed.data, { locale, unitSystem, snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
+  const setReading = (index: number, patch: Partial<Tool041ReadingDraft>) => {
+    setDraft((previous) => ({
+      ...previous,
+      readings: previous.readings.map((reading, i) => (i === index ? { ...reading, ...patch } : reading)),
+    }));
   };
 
+  const addReading = () => {
+    setDraft((previous) =>
+      previous.readings.length >= TOOL_041_LIMITS.maxReadings
+        ? previous
+        : { ...previous, readings: [...previous.readings, { value: '', date: '' }] },
+    );
+  };
+
+  const removeReading = (index: number) => {
+    setDraft((previous) =>
+      previous.readings.length <= 1
+        ? previous
+        : { ...previous, readings: previous.readings.filter((_, i) => i !== index) },
+    );
+  };
+
+  const issueFor = (readingIndex: number | null, field: 'hct' | 'date') =>
+    evaluation.issues.find((issue) => issue.readingIndex === readingIndex && issue.field === field);
+
+  const issueMessage = (code: Tool041IssueCode): string => t[ERROR_KEY[code]] ?? t.error_required;
+
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-5xl px-4 py-6"
+      aria-labelledby={`${uid}-title`}
+      data-r6-tool={TOOL_SLUG}
+    >
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">
+          {t.tool_name}
+        </h1>
+        <div
+          data-r6-state={uiState}
+          aria-live="polite"
+          className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.readings}</h2>
-      <div className="space-y-2 mb-3">
-        {inputs.readings.map((r, i) => (
-          <div key={i} className="grid grid-cols-2 md:grid-cols-3 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
-            <label className="text-[10px] font-bold text-zinc-500">{t.hct}
-              <input data-r6-slider="true" type="number" min={20} max={70} value={r.hct_pct} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, hct_pct: e.target.value === '' ? 0 : Number(e.target.value) } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <label className="text-[10px] font-bold text-zinc-500">{t.date}
-              <input type="date" value={r.date.slice(0, 10)} onChange={(e) => setInputs((p) => ({ ...p, readings: p.readings.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <button type="button" onClick={() => setInputs((p) => (p.readings.length <= 2 ? p : { ...p, readings: p.readings.filter((_, j) => j !== i) }))} disabled={inputs.readings.length <= 2} className="text-xs text-red-400 disabled:opacity-30">✕</button>
-          </div>
-        ))}
-      </div>
-      <button type="button" onClick={addReading} disabled={inputs.readings.length >= 24} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_reading}</button>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <label className="text-[10px] font-bold text-zinc-500">{t.sex}
-          <select value={inputs.sex} onChange={(e) => setInputs((p) => ({ ...p, sex: e.target.value as 'male' | 'female' }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      <fieldset className="mb-3">
+        <legend className="mb-2 text-sm font-black text-zinc-700 dark:text-zinc-200">{t.readings}</legend>
+        <div className="space-y-2">
+          {draft.readings.map((reading, index) => {
+            const hctIssue = issueFor(index, 'hct');
+            const dateIssue = issueFor(index, 'date');
+            return (
+              <div
+                key={index}
+                className="grid grid-cols-2 gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 md:grid-cols-3"
+              >
+                <label className="text-[10px] font-bold text-zinc-500">
+                  {t.reading_label} {index + 1} — {t.hct}
+                  <input
+                    data-r6-field="hct"
+                    data-r6-slider="true"
+                    type="number"
+                    inputMode="decimal"
+                    min={TOOL_041_LIMITS.inputMin}
+                    max={TOOL_041_LIMITS.inputMax}
+                    step={0.1}
+                    value={reading.value}
+                    aria-required="true"
+                    aria-invalid={hctIssue ? true : undefined}
+                    aria-describedby={hctIssue ? `${uid}-hct-${index}-error` : undefined}
+                    onChange={(event) => setReading(index, { value: event.target.value })}
+                    className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+                  />
+                  {hctIssue && (
+                    <span id={`${uid}-hct-${index}-error`} className="mt-0.5 block text-[10px] font-bold text-red-400">
+                      {issueMessage(hctIssue.code)}
+                    </span>
+                  )}
+                </label>
+                <label className="text-[10px] font-bold text-zinc-500">
+                  {t.reading_label} {index + 1} — {t.date}
+                  <input
+                    data-r6-field="date"
+                    type="date"
+                    value={reading.date}
+                    aria-required="true"
+                    aria-invalid={dateIssue ? true : undefined}
+                    aria-describedby={dateIssue ? `${uid}-date-${index}-error` : undefined}
+                    onChange={(event) => setReading(index, { date: event.target.value })}
+                    className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+                  />
+                  {dateIssue && (
+                    <span id={`${uid}-date-${index}-error`} className="mt-0.5 block text-[10px] font-bold text-red-400">
+                      {issueMessage(dateIssue.code)}
+                    </span>
+                  )}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => removeReading(index)}
+                  disabled={draft.readings.length <= 1}
+                  aria-label={`${t.remove_reading} ${index + 1}`}
+                  className="self-end text-xs text-red-400 disabled:opacity-30"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={addReading}
+          disabled={draft.readings.length >= TOOL_041_LIMITS.maxReadings}
+          className="mt-3 rounded-lg bg-zinc-800 px-4 py-1.5 text-xs font-bold text-zinc-200 hover:bg-zinc-700 disabled:opacity-40"
+        >
+          + {t.add_reading}
+        </button>
+      </fieldset>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.sex}
+          <select
+            data-r6-field="sex"
+            aria-required="true"
+            value={draft.sex}
+            onChange={(event) =>
+              setDraft((previous) => ({ ...previous, sex: event.target.value as Tool041Draft['sex'] }))
+            }
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
             <option value="male">{t.male}</option>
             <option value="female">{t.female}</option>
           </select>
         </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.weeks_remaining}
-          <input data-r6-slider="true" type="number" min={0} max={52} value={inputs.weeks_remaining} onChange={(e) => setInputs((p) => ({ ...p, weeks_remaining: Math.round(Number(e.target.value) || 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.weeks_remaining}
+          <input
+            data-r6-field="weeks"
+            data-r6-slider="true"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={52}
+            step={1}
+            aria-required="true"
+            value={draft.weeksRemaining}
+            onChange={(event) =>
+              setDraft((previous) => ({ ...previous, weeksRemaining: event.target.value }))
+            }
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+          />
         </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.on_cycle} onChange={(e) => setInputs((p) => ({ ...p, on_cycle: e.target.checked }))} className="accent-lime-500" />{t.on_cycle}
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.on_cycle}
+          <select
+            data-r6-field="on-cycle"
+            aria-required="true"
+            value={draft.onCycle}
+            onChange={(event) =>
+              setDraft((previous) => ({ ...previous, onCycle: event.target.value as Tool041Draft['onCycle'] }))
+            }
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
+            <option value="yes">{t.yes}</option>
+            <option value="no">{t.no}</option>
+          </select>
         </label>
       </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && result.latest_hct_pct > 0 && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-4">
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.hct}</span><span className="text-2xl font-black text-white font-mono">{result.latest_hct_pct}%</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.band}</span><span className={`text-xl font-bold font-mono ${BAND_COLOR[result.band] ?? 'text-zinc-300'}`}>{result.band}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.trend}</span><span className={`text-xl font-bold font-mono ${result.slope_per_30d > 1.5 ? 'text-red-400' : 'text-lime-400'}`}>{result.slope_per_30d >= 0 ? '+' : ''}{result.slope_per_30d}</span></div>
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800"><span className="text-[10px] text-zinc-400 block">{t.donate}</span><span className={`text-xl font-bold font-mono ${result.donate_eligible ? 'text-amber-400' : 'text-zinc-500'}`}>{result.donate_eligible ? (isRtl ? 'نعم' : 'YES') : (isRtl ? 'لا' : 'No')}</span></div>
+
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <ul className="list-disc space-y-0.5 ps-4 text-xs font-bold text-red-300">
+            {evaluation.issues.map((issue, index) => (
+              <li key={`${issue.field}-${issue.readingIndex ?? 'context'}-${index}`}>{issueMessage(issue.code)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {uiState === 'FULL' && result && (
+        <div
+          data-r6-summary="full"
+          className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-center md:grid-cols-4"
+        >
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.hct}</span>
+            <span className="font-mono text-2xl font-black text-white">
+              {result.latest_hct_pct.toFixed(1)}
+              {t.unit_pct}
+            </span>
           </div>
-          {result.projected_threshold_date && (
-            <div className="text-xs text-zinc-400 mb-3">{t.projected}: <span className="font-mono text-amber-400 font-bold">{result.projected_threshold_date}</span></div>
-          )}
-          {result.warnings.length > 0 && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 mb-3">
-              <span className="text-[10px] font-bold text-red-400 block mb-1">{t.warnings}</span>
-              <ul className="space-y-0.5 text-xs text-red-300">{result.warnings.map((w, i) => (<li key={i}>• {w}</li>))}</ul>
-            </div>
-          )}
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.band}</span>
+            <span className={`font-mono text-xl font-bold ${BAND_TONE[result.band] ?? 'text-zinc-300'}`}>
+              {t[bandLabelKey(result.band)]}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.trend}</span>
+            <span className="font-mono text-xl font-bold text-zinc-100">
+              {result.slope_per_30d >= 0 ? '+' : ''}
+              {result.slope_per_30d.toFixed(2)}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.warnings}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">{result.warnings.length}</span>
           </div>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">
+          {t.state_hint_degraded}
+        </div>
+      )}
+
+      <Tool041Genius
+        locale={locale}
+        state={uiState}
+        draft={draft}
+        input={evaluation.input}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">
+        {tool.toolId} · v{tool.version}
+      </p>
+    </section>
   );
 }
-

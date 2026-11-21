@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Log Search'
+method: POST
+url: '{{base_url}}/api/seo/search-log'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "query": "testosterone calculator",
+      "locale": "en"
+    }

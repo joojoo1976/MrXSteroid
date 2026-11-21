@@ -1,0 +1,17 @@
+$kind: http-request
+name: 'Create Invoice'
+method: POST
+url: '{{base_url}}/api/payments/create-invoice'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "tierId": "digital",
+      "userId": "{{userId}}",
+      "email": "user@example.com",
+      "amount": 99
+    }

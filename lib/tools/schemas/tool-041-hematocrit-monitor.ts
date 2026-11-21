@@ -19,6 +19,7 @@ export const HematocritInputSchema = z.object({
 });
 
 export type HematocritInput = z.infer<typeof HematocritInputSchema>;
+export type HematocritResult = z.infer<typeof HematocritResultSchema>;
 
 const band = z.enum(['normal', 'borderline', 'high', 'very-high']);
 

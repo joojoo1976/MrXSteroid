@@ -6,15 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import { ProductVariant } from '@/shared/types/types';
 import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../shared/lib/logic';
+import { getTierPrice } from '../../server/payments/pricing';
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  Pricing Data — mirrors PricingSection EXACTLY (same names, features, IDs)
+//  Pricing Data — DERIVED from server/payments/pricing.ts (the canonical
+//  catalog). No literal charge price lives in this component.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const USD_PRICES: Record<string, number> = {
-    digital: 49.99,
-    bundle: 72.00,
-    coaching: 82.00,
+    digital: getTierPrice('digital', 'USD'),
+    bundle: getTierPrice('bundle', 'USD'),
+    coaching: getTierPrice('coaching', 'USD'),
 };
 
 interface VariantDef {
@@ -101,6 +103,9 @@ interface ProductSelectorProps {
     isAr: boolean;
     isEg: boolean;                          // ← new: drives EGP vs USD display
     onRegionChange?: (isEg: boolean) => void; // ← new: propagate region changes
+    /** Language of the physical/digital book the customer will receive. */
+    bookLanguage?: 'ar' | 'en';
+    onBookLanguageChange?: (language: 'ar' | 'en') => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -115,6 +120,8 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
     isAr,
     isEg,
     onRegionChange,
+    bookLanguage = isAr ? 'ar' : 'en',
+    onBookLanguageChange,
 }) => {
     const coachingAddon = selectedVariant.endsWith('_plus');
 
@@ -297,6 +304,40 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                     })}
                 </div>
             </div>
+
+            {/* ── Book Language ────────────────────────────────────────────── */}
+            {onBookLanguageChange && (
+                <div>
+                    <h3 className="text-xl font-black text-white flex items-center gap-2 mb-3">
+                        <span className="text-gold-500">02b.</span>
+                        {isAr ? 'لغة الكتاب' : 'Book Language'}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 p-1.5 bg-black/50 rounded-2xl border border-zinc-800/60">
+                        {(['ar', 'en'] as const).map((language) => (
+                            <button
+                                key={language}
+                                type="button"
+                                onClick={() => onBookLanguageChange(language)}
+                                aria-pressed={bookLanguage === language}
+                                className={cn(
+                                    'py-3 px-3 rounded-xl text-xs font-black transition-all duration-300 flex items-center justify-center gap-2',
+                                    bookLanguage === language
+                                        ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/30 scale-[1.02]'
+                                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                                )}
+                            >
+                                <span>{language === 'ar' ? '🇪🇬' : '🇬🇧'}</span>
+                                <span>{language === 'ar' ? 'العربية' : 'English'}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-[10px] text-zinc-500 font-bold mt-2">
+                        {isAr
+                            ? 'يُسلَّم الكتاب باللغة المختارة. لا يمكن إنشاء فاتورة كتاب بلا لغة.'
+                            : 'The book is delivered in the selected language. A book invoice cannot be created without one.'}
+                    </p>
+                </div>
+            )}
 
             {/* ── Coaching Add-on ───────────────────────────────────────────── */}
             <AnimatePresence>

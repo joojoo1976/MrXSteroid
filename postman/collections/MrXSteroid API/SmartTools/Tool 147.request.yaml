@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Tool 147'
+method: POST
+url: '{{base_url}}/api/smarttools/tool-147'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "input": {}
+    }

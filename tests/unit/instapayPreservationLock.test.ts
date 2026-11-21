@@ -81,13 +81,26 @@ describe('InstaPay preservation lock (static)', () => {
         expect(exists(LEGACY_INSTAPAY_ROUTE), 'no duplicate/legacy InstaPay route').toBe(false);
     });
 
-    it('rejected receipt settles the ORDER (not the payment method) to cancelled + failed', () => {
+    it('rejected receipt settles the ORDER (not the payment method) via the current state machine', () => {
         const src = read(RECEIPT_ROUTE);
-        // The rejected mapping applies only to the individual order attempt's state:
-        expect(src).toContain('orderStatus = status === \'verified\' ? \'processing\' : status === \'rejected\' ? \'cancelled\' : null');
-        expect(src).toContain('paymentStatus = status === \'verified\' ? \'paid\' : status === \'rejected\' ? \'failed\' : null');
-        expect(src).toContain("action: `payment_receipt.${status}`"); // admin review action untouched
-        // Knothing here disables, deprecates or replaces InstaPay:
+
+        // Current approved vocabulary: submitted_for_review -> rejected (or under_review).
+        expect(src).toContain("submitted_for_review: ['under_review', 'rejected', 'expired']");
+        expect(src).toContain("under_review: ['approved', 'rejected', 'expired']");
+        expect(src).toContain("const TERMINAL_STATUSES = new Set(['approved', 'rejected', 'expired'])");
+
+        // Rejection still settles the individual ORDER, never the payment method.
+        expect(src).toContain("status: 'cancelled'");
+        expect(src).toContain("payment_status: 'failed'");
+        expect(src).toContain(".from('orders')");
+        expect(src).toContain("action: `payment_receipt.${status}`");
+
+        // Approval is atomic through the server-side RPC, not a direct status PATCH.
+        expect(src).toContain(".rpc('approve_instapay_receipt'");
+        expect(src).toContain("p_receipt_id: id");
+        expect(src).toContain("p_admin_id: adminId");
+
+        // Nothing here disables, deprecates or replaces InstaPay:
         expect(src).not.toMatch(/disableInstaPay|deprecateInstaPay|removeInstaPay|instapayDisabled/i);
     });
 

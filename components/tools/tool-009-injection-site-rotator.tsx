@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { useUserToolState, useUpdateToolState } from '@/lib/hooks/useToolState';
 import i18nJson from '@/i18n/tool-009-injection-site-rotator.json';
 import { useToolI18n } from '@/lib/tools/i18nHelper';
-import { InjectionSiteHistorySchema, InjectionSiteLogEntrySchema, type InjectionSiteLogEntry } from '@/lib/tools/schemas/tool-009-injection-site-rotator';
+import { useToolDisplayPreferences } from '@/components/tools/useToolDisplayPreferences';
+import { runInjectionSiteRotator, type InjectionSiteRotatorBuildOptions } from '@/lib/tools/r6/tool-009-injection-site-rotator-pipeline';
+import { InjectionSiteLogEntrySchema, type InjectionSiteLogEntry } from '@/lib/tools/schemas/tool-009-injection-site-rotator';
 
 type Location = 'deltoid' | 'glute' | 'quad' | 'pectoral' | 'bicep' | 'other';
 type SiteLogEntry = InjectionSiteLogEntry;
@@ -33,6 +35,7 @@ export default function Tool009InjectionSiteRotator() {
   const t = useToolI18n(i18nJson);
   const { data: savedState, isLoading } = useUserToolState('user-id');
   const { mutate: updateToolState, isPending } = useUpdateToolState();
+  const { unitSystem, isRtl, locale } = useToolDisplayPreferences();
   const [siteName, setSiteName] = useState('');
   const [location, setLocation] = useState<Location>('deltoid');
   const [oilBased, setOilBased] = useState(false);
@@ -42,33 +45,36 @@ export default function Tool009InjectionSiteRotator() {
   const entries = [...readStoredEntries(stored), ...sessionEntries].slice(-500);
   const [validationError, setValidationError] = useState(false);
 
+  const options = {
+    calculatedAt: new Date().toISOString(),
+    recordedAt: new Date().toISOString(),
+    locale,
+    unitSystem,
+    snapshotType: 'draft' as const,
+  };
+
   const saveEntry = () => {
     const site = siteName.trim();
     if (!site || !date || isLoading) return;
-    const parsedEntry = InjectionSiteLogEntrySchema.safeParse({
+    const pipelineResult = runInjectionSiteRotator({
       id: crypto.randomUUID(),
       date: new Date(`${date}T12:00:00.000Z`).toISOString(),
       site,
       location,
       oil_based: oilBased,
-    });
-    if (!parsedEntry.success) {
+    }, options);
+    if (!pipelineResult.ok) {
       setValidationError(true);
       return;
     }
-    const entry = parsedEntry.data;
+    setValidationError(false);
+    const entry = pipelineResult.output.result;
     const nextEntries = [...entries, entry].slice(-500);
     setSessionEntries((current) => [...current, entry].slice(-500));
-    setValidationError(false);
-    const validatedHistory = InjectionSiteHistorySchema.safeParse({ entries: nextEntries });
-    if (!validatedHistory.success) {
-      setValidationError(true);
-      return;
-    }
     updateToolState({
       injection_sites: {
-        total_sites_rotated: validatedHistory.data.entries.length,
-        logEntries: validatedHistory.data.entries,
+        total_sites_rotated: nextEntries.length,
+        logEntries: nextEntries,
       },
     });
     setSiteName('');
@@ -79,7 +85,7 @@ export default function Tool009InjectionSiteRotator() {
   return (
     <section className="pct-timing-tool p-6" dir={t.dir}>
       <h2 className="mb-3 text-2xl font-bold">{t.tool_name}</h2>
-      <p role="note" className="mb-6 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
         {t.scope_note}
       </p>
       <div className="space-y-4">
@@ -120,7 +126,7 @@ export default function Tool009InjectionSiteRotator() {
           {isPending ? t.saving : t.save_entry}
         </button>
         <section aria-labelledby="tool-009-history-heading" className="mt-6 rounded bg-zinc-50 p-4">
-          <h3 id="tool-009-history-heading" className="mb-3 font-semibold">{t.history}</h3>
+          <h3 id="tool-009-history-heading" className="font-semibold">{t.history}</h3>
           <p className="text-sm text-zinc-600">{t.entries_count}: {entries.length}</p>
           {entries.length === 0 ? <p className="mt-2 text-sm text-zinc-500">{t.empty}</p> : (
             <ul className="mt-3 space-y-3">

@@ -1,6 +1,13 @@
 import { toast } from 'sonner';
 import { Currency } from '@/shared/types/types';
-import { EGYPT_FIXED_SHIPPING_EGP } from '@/shared/lib/locationData';
+import {
+    DEFAULT_PRICING,
+    DISPLAY_ORIGINAL_PRICES,
+    computeAmount,
+    getAddonPrice,
+    getShippingPrice,
+    getTierPrice,
+} from '../../server/payments/pricing';
 /**
  * SHARED & COOKIE UTILITIES
  */
@@ -251,14 +258,14 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
             // Price comes from the shared single source of truth, not a local
             // literal. The server re-prices this independently; the value here
             // is display only.
-            { id: 'eg_standard', name: 'الشحن القياسي - جمهورية مصر العربية', price: EGYPT_FIXED_SHIPPING_EGP, estimatedDays: '2-4' },
+            { id: 'eg_standard', name: 'الشحن القياسي - جمهورية مصر العربية', price: getShippingPrice('eg_standard', 'EGP') ?? 0, estimatedDays: '2-4' },
         ];
     }
     return [
-        { id: 'dhl_global', name: 'DHL Express International', price: 45.00, estimatedDays: '3-7' },
-        { id: 'fedex_priority', name: 'FedEx Priority', price: 38.00, estimatedDays: '5-8' },
-        { id: 'ups_worldwide', name: 'UPS Worldwide', price: 42.00, estimatedDays: '4-7' },
-        { id: 'aramex_international', name: 'Aramex International', price: 25.00, estimatedDays: '7-12' },
+        { id: 'dhl_global', name: 'DHL Express International', price: getShippingPrice('dhl_global', 'USD') ?? 0, estimatedDays: '3-7' },
+        { id: 'fedex_priority', name: 'FedEx Priority', price: getShippingPrice('fedex_priority', 'USD') ?? 0, estimatedDays: '5-8' },
+        { id: 'ups_worldwide', name: 'UPS Worldwide', price: getShippingPrice('ups_worldwide', 'USD') ?? 0, estimatedDays: '4-7' },
+        { id: 'aramex_international', name: 'Aramex International', price: getShippingPrice('aramex_international', 'USD') ?? 0, estimatedDays: '7-12' },
     ];
 };
 
@@ -266,27 +273,28 @@ export const getShippingProviders = async (country: string): Promise<ShippingPro
 //                              PRICING CONFIG
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * Storefront price tables — DERIVED from the canonical catalog in
+ * `server/payments/pricing.ts`. No literal charge price may live here; the
+ * single-source barrier test enforces that.
+ */
 export const EGP_PRICES: Record<string, number> = {
-    'digital': 499,
-    'bundle': 749,
-    'coaching': 849,
-    'coaching_plus': 10848, // 849 + 9999
-    'bundle_plus':  10748, // 749 + 9999
-    'digital_plus': 10498, // 499 + 9999
-    'pdf': 499,
-    'paperback': 749
+    'digital': getTierPrice('digital', 'EGP'),
+    'bundle': getTierPrice('bundle', 'EGP'),
+    'coaching': getTierPrice('coaching', 'EGP'),
+    'coaching_plus': computeAmount(DEFAULT_PRICING, { tierId: 'coaching_plus', currency: 'EGP', quantity: 1 }),
+    'bundle_plus': computeAmount(DEFAULT_PRICING, { tierId: 'bundle_plus', currency: 'EGP', quantity: 1 }),
+    'digital_plus': computeAmount(DEFAULT_PRICING, { tierId: 'digital_plus', currency: 'EGP', quantity: 1 }),
+    'pdf': getTierPrice('pdf', 'EGP'),
+    'paperback': getTierPrice('paperback', 'EGP')
 };
 
+/** Display-only strike-through figures; not charge amounts (see Phase 9). */
 export const EGP_ORIGINAL_PRICES: Record<string, number> = {
-    'digital': 699,
-    'bundle': 849,
-    'coaching': 949,
-    'coaching_plus': 11848,
-    'bundle_plus':  11748,
-    'digital_plus': 11498,
+    ...DISPLAY_ORIGINAL_PRICES.storefront.egp,
 };
 
-export const COACHING_ADDON_EGP = 9999;
+export const COACHING_ADDON_EGP = getAddonPrice('coaching_plus', 'EGP');
 
 /**
  * APPROVED BUSINESS PRICE — Global (USD) 1-on-1 coaching add-on = 349.99 USD.
@@ -295,7 +303,7 @@ export const COACHING_ADDON_EGP = 9999;
  * cancels the previous 200.00 USD figure. The Egypt add-on above (9,999 EGP)
  * is explicitly NOT changed by D4.
  */
-export const COACHING_ADDON_USD = 349.99;
+export const COACHING_ADDON_USD = getAddonPrice('coaching_plus', 'USD');
 
 export function resolveTierAmount(
     tier: { price: number; egpPrice?: number; usdPrice?: number },
@@ -318,7 +326,7 @@ export function calculateBaseAmount(
     
     if (isEg) {
         return {
-            amount: EGP_PRICES[productVariant] || EGP_PRICES['bundle'] || 750,
+            amount: EGP_PRICES[productVariant] || EGP_PRICES['bundle'],
             currency: 'EGP',
             isEg: true
         };

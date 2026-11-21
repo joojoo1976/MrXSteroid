@@ -3,11 +3,12 @@
  * ║  🇪🇬 PAYMOB PRODUCT MODAL — MR. X STEROID                                ║
  * ║  Unified payment modal for the Paymob product catalog.                   ║
  * ║  Supports: Card (5573815) / Wallet (5792309) / Kiosk (5792311)           ║
- * ║  Redirects to Paymob Standalone hosted pages — no API round-trip.        ║
+ * ║  Phase 5: redirects to the first-party invoice-first /checkout flow.    ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, CreditCard, Smartphone, Store, Lock, ShieldCheck,
@@ -20,8 +21,8 @@ import {
     PAYMOB_INTEGRATION_IDS,
     type PaymobProduct,
     type PaymobPaymentMethod,
-    buildPaymobRedirectUrl,
 } from '../../shared/lib/paymobProducts';
+import { buildCheckoutPlanUrl } from '../../shared/lib/checkoutPlan';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TYPES
@@ -140,6 +141,7 @@ export const PaymobProductModal: React.FC<PaymobProductModalProps> = ({
 }) => {
     const isAr = lang === 'ar';
     const dir = isAr ? 'rtl' : 'ltr';
+    const router = useRouter();
 
     // Step management
     const [step, setStep] = useState<ModalStep>('select-product');
@@ -209,26 +211,26 @@ export const PaymobProductModal: React.FC<PaymobProductModalProps> = ({
         setIsRedirecting(true);
         setStep('redirecting');
 
-        // For standalone URLs, Paymob handles wallet phone entry on their hosted page
-        // The phone override is embedded as a query param hint if the URL supports it
-        const redirectUrl = buildPaymobRedirectUrl(selectedProduct, selectedMethod);
+        // Paymob stays disabled. The modal now hands the customer to the
+        // invoice-first checkout instead of an external standalone page.
+        const plan = selectedProduct.tierId === 'shipping' ? 'bundle' : selectedProduct.tierId;
+        const redirectUrl = buildCheckoutPlanUrl(plan, { region: 'EG' });
 
-        console.log('🚀 [PaymobProductModal] Redirect:', {
+        console.log('🚀 [PaymobProductModal] Redirect to checkout:', {
             product: selectedProduct.nameAr,
             productId: selectedProduct.productId,
             method: selectedMethod,
             integrationId: PAYMOB_INTEGRATION_IDS[selectedMethod],
-            priceCents: selectedProduct.priceCents,
             priceEGP: selectedProduct.priceEGP,
             phone: phoneOverride ? '***' + phoneOverride.slice(-4) : 'N/A (not wallet)',
             redirectUrl,
         });
 
-        // Small delay for smooth UX animation, then redirect
+        // Small delay for smooth UX animation, then redirect internally.
         setTimeout(() => {
-            window.location.assign(redirectUrl);
+            router.push(redirectUrl);
         }, 1200);
-    }, [selectedProduct, selectedMethod]);
+    }, [selectedProduct, selectedMethod, router]);
 
     const handleClose = useCallback(() => {
         if (isRedirecting) return;
@@ -599,20 +601,6 @@ export const PaymobProductModal: React.FC<PaymobProductModalProps> = ({
                                             }
                                         </motion.button>
 
-                                        {/* Direct link shortcut */}
-                                        {selectedProduct.directLink && (
-                                            <p className="text-center text-[11px] text-zinc-600">
-                                                {isAr ? 'رابط مختصر: ' : 'Short link: '}
-                                                <a
-                                                    href={selectedProduct.directLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-amber-500/70 hover:text-amber-400 underline transition-colors font-mono text-[10px]"
-                                                >
-                                                    {selectedProduct.directLink}
-                                                </a>
-                                            </p>
-                                        )}
                                     </motion.div>
                                 )}
 

@@ -1,11 +1,20 @@
 import React from 'react';
+/**
+ * @deprecated NOT MOUNTED ANYWHERE.
+ * Billing/pricing moved to the standalone `/checkout` route
+ * (`app/checkout/page.tsx` → `legacy-pages/CheckoutPage.tsx`), which owns plan
+ * selection (`ProductSelector`), the order summary and every payment gateway.
+ * This file is kept only as the historical source of the plan copy/prices and
+ * the Kashier direct-pay links (now surfaced on `/checkout`). Do not re-mount it
+ * on the homepage — it opens the legacy `CheckoutModal`.
+ */
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, Zap, AlertTriangle, ArrowRight, Monitor, Package, Crown } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useRegion } from '../../context/RegionContext';
 import { ContentStrings, PricingTier } from '@/shared/types/types';
 import { usePricing } from '../calculator/hooks/usePricing';
-import { COACHING_ADDON_USD } from '@/shared/lib/logic';
+import { COACHING_ADDON_EGP, COACHING_ADDON_USD } from '@/shared/lib/logic';
 
 import { KASHIER_PAYMENT_PAGES, buildKashierPaymentPageUrl } from '../../server/payments/paymentLinkConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -75,7 +84,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
     };
 
     const coachingAddonLabel = selectedLocation === 'EG'
-        ? (isRTL ? `+ 9,999 ج.م / دورة` : `+ 9,999 EGP / Cycle`)
+        ? (isRTL
+            ? `+ ${COACHING_ADDON_EGP.toLocaleString('ar-EG')} ج.م / دورة`
+            : `+ ${COACHING_ADDON_EGP.toLocaleString('en-US')} EGP / Cycle`)
         : `+ $${COACHING_ADDON_USD.toFixed(2)} / Cycle`;
 
     return (
@@ -379,9 +390,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                         href={buildKashierPaymentPageUrl(plan.id as 'digital' | 'bundle' | 'coaching', {
                                             userId: user?.id,
                                             userEmail: user?.email,
+                                            region: selectedLocation === 'EG' ? 'EG' : 'GLOBAL',
                                         })}
-                                        target="_self"
-                                        rel="noopener noreferrer"
                                         whileHover={{ scale: 1.015 }}
                                         whileTap={{ scale: 0.975 }}
                                         onClick={(e) => e.stopPropagation()}
@@ -389,7 +399,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     >
                                         <Zap className="w-3.5 h-3.5 fill-current text-amber-400" />
                                         <span>
-                                            {isRTL ? '⚡ الدفع السريع المباشر (Kashier)' : '⚡ Direct Quick Pay (Kashier)'}
+                                            {isRTL ? '⚡ متابعة إلى الدفع الآمن' : '⚡ Continue to secure checkout'}
                                         </span>
                                     </motion.a>
                                 )}

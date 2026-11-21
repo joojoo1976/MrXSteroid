@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { BillingPlanDefinition, RegionalMarket, SupportedLocale, PlanTierId } from '../types/billing.types';
 import { BILLING_PLANS, REGIONAL_CONFIG } from '../config/pricing.config';
 import { PricingTier, ProductVariant } from '@/shared/types/types';
+import { getOriginalAmount } from '../../../server/payments/pricing';
 
 interface UseBillingPlansOptions {
     initialMarket?: RegionalMarket;
@@ -39,10 +40,12 @@ export function useBillingPlans({
         const originalBase = plan.prices[currency].original;
         const hasCoaching = Boolean(coachingMap[plan.id]);
         const addon = hasCoaching ? plan.coachingAddon[currency] : 0;
+        const originalTierId = hasCoaching ? `${plan.id}_plus` : plan.id;
 
         return {
             current: base + addon,
-            original: originalBase + (hasCoaching ? addon * 1.2 : 0),
+            // Original = base list price + add-on; never a multiplier.
+            original: getOriginalAmount(originalTierId, currency, 'billing') ?? originalBase,
             hasCoaching,
             currency,
             currencySymbol

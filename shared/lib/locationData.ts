@@ -1,3 +1,5 @@
+import { EGYPT_LOCAL_SHIPPING_EGP } from '../../server/payments/pricing';
+
 export interface Governorate {
     id: string;
     nameAr: string;
@@ -196,5 +198,9 @@ export const WORLD_COUNTRIES: CountryOption[] = [
  * NOTE: this price is a flat rate only. No carrier integration is active — see
  * `server/payments/pricing.ts` (EGYPT_LOCAL_SHIPPING_PROVIDER). Do not present
  * any provider name here as a connected courier.
+ *
+ * Phase 2: the literal moved to `server/payments/pricing.ts` (the canonical
+ * catalog). This module re-exports it so existing imports keep working and no
+ * second copy can drift.
  */
-export const EGYPT_FIXED_SHIPPING_EGP = 199;
+export const EGYPT_FIXED_SHIPPING_EGP = EGYPT_LOCAL_SHIPPING_EGP;

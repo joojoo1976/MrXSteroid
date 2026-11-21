@@ -223,7 +223,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                     {/* Brand / Logo */}
                     <button
                         onClick={goHome}
-                        className="flex items-center gap-2 shrink-0 group"
+                        className="flex min-h-11 min-w-11 items-center gap-2 shrink-0 group"
                         aria-label={isRTL ? 'الصفحة الرئيسية' : 'Home'}
                     >
                         <DynamicBrandLogo
@@ -301,8 +301,8 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                         </DesktopDropdown>
 
                         <NavLink
-                            active={false}
-                            onClick={() => handleScrollToId('pricing')}
+                            active={currentPage === Page.CHECKOUT}
+                            onClick={() => navigateTo(Page.CHECKOUT)}
                             label={content.pricingTitle || (isRTL ? 'الأسعار' : 'Pricing')}
                         />
                         <NavLink
@@ -329,7 +329,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             onClick={toggleLanguage}
                             className="hidden sm:flex items-center justify-center gap-1 px-2.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-[11px] font-black uppercase text-gold-500"
                             title={isRTL ? 'Switch to English' : 'التبديل إلى العربية'}
-                            aria-label={isRTL ? 'تغيير اللغة' : 'Switch Language'}
+                            aria-label={`${isRTL ? 'تغيير اللغة' : 'Switch language'} — ${lang === Language.AR ? 'EN' : 'عربي'}`}
                         >
                             <Globe className="w-3.5 h-3.5" />
                             <span>{lang === Language.AR ? 'EN' : 'عربي'}</span>
@@ -345,6 +345,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
                             className="hidden sm:flex items-center justify-center gap-1 px-2.5 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-200"
                             title={isRTL ? 'نظام القياس' : 'Unit system'}
+                            aria-label={`${isRTL ? 'تغيير نظام القياس' : 'Switch measurement system'} — ${unitSystem === 'metric' ? (isRTL ? 'متري' : 'MET') : (isRTL ? 'إمبر' : 'IMP')}`}
                         >
                             <Scale className="w-3.5 h-3.5 text-gold-500" />
                             <span>{unitSystem === 'metric' ? (isRTL ? 'متري' : 'MET') : (isRTL ? 'إمبر' : 'IMP')}</span>
@@ -449,7 +450,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                     className={`whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${
                                         currentPage === tool.page
                                             ? 'bg-gold-500 text-black border-gold-500 shadow-sm'
-                                            : 'border-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-gold-500'
+                                            : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-gold-500'
                                     }`}
                                 >
                                     {tool.icon}
@@ -542,7 +543,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
 
                             <MobileSectionLabel label="" />
                             <MobileNavButton
-                                onClick={() => { handleScrollToId('pricing'); setIsMobileMenuOpen(false); }}
+                                onClick={() => { navigateTo(Page.CHECKOUT); setIsMobileMenuOpen(false); }}
                                 label={content.pricingTitle || (isRTL ? 'الأسعار' : 'Pricing')}
                             />
                             <MobileNavButton
@@ -605,6 +606,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                 <button
                                     onClick={toggleLanguage}
                                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-bold"
+                                    aria-label={`${isRTL ? 'تغيير اللغة' : 'Switch language'} — ${lang === Language.AR ? 'English' : 'العربية'}`}
                                 >
                                     <Globe className="w-4 h-4 text-gold-500" />
                                     {lang === Language.AR ? 'English' : 'العربية'}
@@ -612,7 +614,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                                 <button
                                     onClick={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
                                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-bold"
-                                    aria-label={isRTL ? 'تغيير نظام القياس' : 'Switch measurement system'}
+                                    aria-label={`${isRTL ? 'تغيير نظام القياس' : 'Switch measurement system'} — ${unitSystem === 'metric' ? (isRTL ? 'متري' : 'Metric') : (isRTL ? 'إمبر' : 'Imperial')}`}
                                 >
                                     <Scale className="w-4 h-4 text-gold-500" />
                                     <span>{unitSystem === 'metric' ? (isRTL ? 'متري' : 'Metric') : (isRTL ? 'إمبر' : 'Imperial')}</span>

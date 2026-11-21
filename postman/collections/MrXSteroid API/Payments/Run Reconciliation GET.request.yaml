@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Run Reconciliation GET'
+method: GET
+url: '{{base_url}}/api/payments/reconciliation/run'
+order: 8000

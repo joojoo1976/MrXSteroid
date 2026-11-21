@@ -1,0 +1,32 @@
+﻿[
+    {
+        "path":  "components/tools/tool-041-hematocrit-monitor.tsx",
+        "local_sha1":  "4a304d7926b869ae77e19edcfff312eaf99d9649",
+        "head_blob":  "5a8c7a0a93892cc924e6a8eba176677f89c7c64f",
+        "bytes":  9559
+    },
+    {
+        "path":  "lib/tools/r6/tool-041-hematocrit-monitor-pipeline.ts",
+        "local_sha1":  "4f94589e42fd8653340972d5c2b68e14373a5f1b",
+        "head_blob":  "HEAD:lib/tools/r6/tool-041-hematocrit-monitor-pipeline.ts",
+        "bytes":  4074
+    },
+    {
+        "path":  "lib/tools/schemas/tool-041-hematocrit-monitor.ts",
+        "local_sha1":  "7f65c599de97c5f683f4df7edf4881908730d7b8",
+        "head_blob":  "f1a07b95ba80f39e4b6868fe3976b1734c76ad8d",
+        "bytes":  1487
+    },
+    {
+        "path":  "lib/tools/engines/tool-041-hematocrit-monitor.ts",
+        "local_sha1":  "db55a023f747ba79d0509f88523ba4e538942abb",
+        "head_blob":  "db55a023f747ba79d0509f88523ba4e538942abb",
+        "bytes":  3569
+    },
+    {
+        "path":  "i18n/tool-041-hematocrit-monitor.json",
+        "local_sha1":  "c937cb02df4ead2bfadd93ceb25c2347673713d3",
+        "head_blob":  "c937cb02df4ead2bfadd93ceb25c2347673713d3",
+        "bytes":  1164
+    }
+]

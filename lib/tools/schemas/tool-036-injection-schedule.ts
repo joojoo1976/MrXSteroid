@@ -18,6 +18,7 @@ export const InjectionScheduleInputSchema = z.object({
 });
 
 export type InjectionScheduleInput = z.infer<typeof InjectionScheduleInputSchema>;
+export type InjectionScheduleResult = z.infer<typeof InjectionScheduleResultSchema>;
 
 export const ScheduledShotSchema = z.object({
   day: z.number().int().min(0).max(6),

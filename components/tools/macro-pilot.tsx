@@ -2,8 +2,25 @@
 
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { usePreferences } from '@/context/PreferencesContext';
-import GeniusToolTemplate from '@/lib/templates/genius-tool-template';
+import GeniusToolTemplateV4 from '@/lib/templates/genius-tool-template.v4';
 import { calculateMacrosV6 } from '@/lib/tools/engines/macro.v6';
+import {
+  adaptMacroV6ToV4,
+  adaptMacroV6UnavailableToV4,
+  adaptMacroV6InvalidToV4,
+} from '@/lib/engines/core/v4/adapter.macro.v4';
+import type { ToolResultEnvelopeV4 } from '@/lib/engines/core/v4/contracts.v4';
+import {
+  CM_PER_IN,
+  KG_PER_LB,
+  macroToCanonicalValue,
+  macroToDisplayValue,
+  type MacroInputFieldIdV4,
+} from '@/lib/engines/core/v4/profiles/macro-input-metadata.v4';
+import {
+  getMacroRequiredFieldProgress,
+  resolveMacroPilotPresentationStateV4,
+} from '@/lib/engines/core/v4/profiles/macro-pilot-state.v4';
 import { Language, Theme } from '@/shared/types/types';
 import styles from './macro-pilot.module.css';
 import type {
@@ -13,24 +30,8 @@ import type {
   WhatIfScenarioV6,
 } from '@/lib/tools/engines/macro.v6';
 
-type DisplayUnitSystem = 'metric' | 'imperial';
-type Field = 'age' | 'sex' | 'heightCm' | 'weightKg' | 'activityLevel' | 'phase';
+type Field = MacroInputFieldIdV4;
 type WhatIfKey = 'weightKg' | 'activityLevel' | 'tdee';
-const KG_PER_LB = 0.45359237;
-const CM_PER_IN = 2.54;
-
-function toDisplayValue(field: Field, canonicalValue: number | undefined, units: DisplayUnitSystem): number | '' {
-  if (canonicalValue === undefined) return '';
-  if (field === 'weightKg') return Math.round(((units === 'imperial' ? canonicalValue / KG_PER_LB : canonicalValue) * 10)) / 10;
-  if (field === 'heightCm') return Math.round(((units === 'imperial' ? canonicalValue / CM_PER_IN : canonicalValue) * 10)) / 10;
-  return canonicalValue;
-}
-
-function toCanonicalValue(field: Field, displayedValue: number, units: DisplayUnitSystem): number {
-  if (units === 'imperial' && field === 'weightKg') return displayedValue * KG_PER_LB;
-  if (units === 'imperial' && field === 'heightCm') return displayedValue * CM_PER_IN;
-  return displayedValue;
-}
 
 const translations = {
   en: {
@@ -67,6 +68,17 @@ const translations = {
     factorNames: { weightKg: 'Weight', heightCm: 'Height', age: 'Age', activityLevel: 'Activity factor' },
     belowBmrWarning: 'The arithmetic target is below estimated BMR; this comparison does not determine nutritional safety or individual needs.',
     ageRangeWarning: 'The Mifflin-St Jeor source study included healthy adults aged 19–78; applying it outside that range is extrapolation not validated by that study.',
+    requiredProgress: '{provided} of {required} required inputs provided.',
+    resultMeaning: 'What this result means',
+    resultMeaningBody: 'It is an arithmetic estimate based on the values you entered. It is not a measurement, diagnosis, treatment plan, or guarantee of any health or physique outcome.',
+    resultDoesNotMean: 'What this result does not mean',
+    resultDoesNotMeanBody: 'It does not diagnose, treat, prescribe, manage an eating disorder, or replace a qualified professional. It does not save or share your inputs.',
+    formulaSummary: 'Formula, evidence and assumptions',
+    scenariosSummary: 'Comparison scenarios and sensitivity',
+    whatIfSummary: 'What-if scenario',
+    unavailable: 'No result is available for the current inputs.',
+    degraded: 'The calculation is degraded; interpret the result with additional caution.',
+    errorGuidance: 'Correct the entered value and recalculate.',
   },
   ar: {
     title: 'حاسبة الماكروز V6', description: 'حساب حتمي للماكروز وفق معادلات SPEC V3 الموثقة.',
@@ -102,6 +114,17 @@ const translations = {
     factorNames: { weightKg: 'الوزن', heightCm: 'الطول', age: 'العمر', activityLevel: 'معامل النشاط' },
     belowBmrWarning: 'السعرات الناتجة حسابياً أقل من تقدير الأيض الأساسي؛ ولا تحدد هذه المقارنة السلامة الغذائية أو الاحتياجات الفردية.',
     ageRangeWarning: 'اشتملت دراسة معادلة ميفلين-سانت جيور على بالغين أصحاء أعمارهم 19–78 سنة؛ تطبيقها خارج هذا النطاق استقراء لم تتحقق منه تلك الدراسة.',
+    requiredProgress: 'تم إدخال {provided} من أصل {required} حقول مطلوبة.',
+    resultMeaning: 'ماذا تعني هذه النتيجة',
+    resultMeaningBody: 'هي تقدير حسابي بناءً على القيم التي أدخلتها. وهي ليست قياساً أو تشخيصاً أو خطة علاج أو ضماناً لأي نتيجة صحية أو جسدية.',
+    resultDoesNotMean: 'ما لا تعنيه هذه النتيجة',
+    resultDoesNotMeanBody: 'لا تشخّص أو تعالج أو تصف دواءً أو تدير اضطراب الأكل أو تستبدل مختصاً مؤهلاً. ولا تحفظ مدخلاتك أو تشاركها.',
+    formulaSummary: 'المعادلة والأدلة والافتراضات',
+    scenariosSummary: 'سيناريوهات المقارنة والحساسية',
+    whatIfSummary: 'السيناريو الافتراضي',
+    unavailable: 'لا تتوفر نتيجة للمدخلات الحالية.',
+    degraded: 'الحساب في حالة متدهورة؛ فسّر النتيجة بحذر إضافي.',
+    errorGuidance: 'صحّح القيمة المدخلة ثم أعد الحساب.',
   },
 } as const;
 
@@ -150,8 +173,20 @@ export default function MacroPilotTool() {
   const [whatIfResult, setWhatIfResult] = useState<WhatIfScenarioV6 | null>(null);
   const [whatIfKey, setWhatIfKey] = useState<WhatIfKey>('weightKg');
   const [error, setError] = useState('');
+  const [resultEnvelope, setResultEnvelope] = useState<ToolResultEnvelopeV4<unknown, unknown> | null>(null);
   const text = translations[language];
   const direction = isRTL ? 'rtl' : 'ltr';
+  const requiredProgress = getMacroRequiredFieldProgress(input);
+  const requiredProgressText = text.requiredProgress
+    .replace('{provided}', String(requiredProgress.provided))
+    .replace('{required}', String(requiredProgress.required));
+  const presentationState = resolveMacroPilotPresentationStateV4({
+    hasError: status === 'error',
+    hasEnvelope: resultEnvelope !== null,
+    status: resultEnvelope?.status ?? null,
+    completeness: resultEnvelope?.inputSnapshot.completeness ?? null,
+    hasResult: result !== null,
+  });
   const convertWeightToDisplay = (kg: number) => unitSystem === 'imperial' ? kg / KG_PER_LB : kg;
   const convertWeightToCanonical = (displayWeight: number) => unitSystem === 'imperial' ? displayWeight * KG_PER_LB : displayWeight;
   const displayWeightUnit = unitSystem === 'imperial' ? 'lb' : 'kg';
@@ -184,24 +219,42 @@ export default function MacroPilotTool() {
 
   useEffect(() => {
     let active = true;
+    const createdAt = new Date().toISOString();
     void calculateMacrosV6(input).then((response) => {
       if (!active) return;
       setError('');
       setWhatIfResult(null);
       setMissing(response.dynamic.missingRequiredFields);
       if (!('result' in response)) {
+        const completeness = response.dynamic.completeness === 'full'
+          ? 'partial'
+          : response.dynamic.completeness;
+        setResultEnvelope(adaptMacroV6UnavailableToV4(
+          input,
+          completeness,
+          response.dynamic.missingRequiredFields,
+          createdAt,
+        ));
         setResult(null);
         setIntelligence(null);
         setStatus('partial');
         return;
       }
+      setResultEnvelope(adaptMacroV6ToV4(
+        input as MacroInputV6,
+        response.result,
+        createdAt,
+        response.intelligence.warnings,
+      ));
       setResult(response.result);
       setIntelligence(response.intelligence);
       setMissing([]);
       setStatus('ready');
     }).catch((caughtError: unknown) => {
       if (!active) return;
-      setError(getLocalizedCalculationError(caughtError, text));
+      const localizedError = getLocalizedCalculationError(caughtError, text);
+      setError(localizedError);
+      setResultEnvelope(adaptMacroV6InvalidToV4(input, localizedError, createdAt));
       setStatus('error');
     });
 
@@ -213,6 +266,7 @@ export default function MacroPilotTool() {
     setResult(null);
     setIntelligence(null);
     setWhatIfResult(null);
+    setResultEnvelope(null);
     setStatus('partial');
     setInput((previous) => {
       const next = { ...previous };
@@ -221,7 +275,7 @@ export default function MacroPilotTool() {
       } else if (field === 'sex' || field === 'phase') {
         Object.assign(next, { [field]: rawValue });
       } else {
-        Object.assign(next, { [field]: toCanonicalValue(field, Number(rawValue), units) });
+        Object.assign(next, { [field]: macroToCanonicalValue(field, Number(rawValue), units) });
       }
       return next;
     });
@@ -233,7 +287,7 @@ export default function MacroPilotTool() {
     min,
     max,
     step,
-    value: typeof input[field] === 'number' ? toDisplayValue(field, input[field] as number, unitSystem) : '',
+    value: typeof input[field] === 'number' ? macroToDisplayValue(field, input[field] as number, unitSystem) : '',
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => updateField(field, event.target.value, unitSystem),
   });
 
@@ -263,16 +317,23 @@ export default function MacroPilotTool() {
 
   const results = (
     <div dir={direction}>
-      <p data-testid="macro-status" role="status">{text.status[status]}</p>
-      {status === 'error' ? <p role="alert">{error}</p> : null}
+      <p data-testid="macro-status" role="status" aria-live="polite">{text.status[status]}</p>
+      <p data-testid="macro-required-progress">{requiredProgressText}</p>
+      {status === 'error' ? <p>{text.errorGuidance}</p> : null}
       {!result && status !== 'error' ? <div>
         <p>{missing.length === requiredFields.length ? text.empty : text.partial}</p>
+        {presentationState === 'UNAVAILABLE' ? <p>{text.unavailable}</p> : null}
         {missing.length > 0 ? <ul aria-label={text.required}>{missing.map((field) => <li key={field}>{text.fieldNames[field]}</li>)}</ul> : null}
       </div> : null}
-      {result ? <section aria-label={text.full}>
+      {presentationState === 'DEGRADED' ? <p>{text.degraded}</p> : null}
+      {result ? <div aria-label={text.full}>
         <p data-testid="macro-result-type">{text.calculatedType}</p>
         <p data-testid="macro-result">{formatOutput(result, text)}</p>
         <p>{text.noPrediction}</p>
+        <h2>{text.resultMeaning}</h2>
+        <p>{text.resultMeaningBody}</p>
+        <h2>{text.resultDoesNotMean}</h2>
+        <p>{text.resultDoesNotMeanBody}</p>
         <h2>{text.distribution}</h2>
         <ul data-testid="macro-distribution" aria-label={text.distribution}>
           <li>{text.protein}: {result.macros.protein.grams} g · {result.macros.protein.calories} kcal · {result.macros.protein.pct}%</li>
@@ -286,62 +347,71 @@ export default function MacroPilotTool() {
             .replace('{difference}', String(result.macros.protein.calories + result.macros.carbs.calories + result.macros.fat.calories - result.targetCalories))}
         </p>
         <p>{text.percentageRounding}</p>
-        <h2>{text.assumptions}</h2>
-        <ul>{text.assumptionLines.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul>
-        <p>
-          <a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank" rel="noreferrer" className="underline">{text.equationSource}</a>
-          {' — '}{text.equationSourceLimits}
-        </p>
+        <details data-testid="macro-details-formula">
+          <summary>{text.formulaSummary}</summary>
+          <h2>{text.assumptions}</h2>
+          <ul>{text.assumptionLines.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul>
+          <p>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank" rel="noreferrer" className="underline">{text.equationSource}</a>
+            {' — '}{text.equationSourceLimits}
+          </p>
+        </details>
         {intelligence ? <>
-          <h2>{text.scenarios}</h2>
-          <ul>{intelligence.scenarios.map((scenario) => {
-            const delta = unitSystem === 'imperial' ? `${(10 / KG_PER_LB).toFixed(1)} lb` : '10 kg';
-            const scenarioName = scenario.id === 'weight-minus-10kg'
-              ? text.scenarioWeightLower.replace('{delta}', delta)
-              : scenario.id === 'weight-plus-10kg'
-                ? text.scenarioWeightHigher.replace('{delta}', delta)
-                : text.scenarioNames[scenario.id as keyof typeof text.scenarioNames] ?? scenario.label;
-            const scenarioDetails = scenario.resultType === 'CALCULATED'
-              ? formatOutput(scenario.calculatedOutput, text)
-              : text.scenarioUnavailable;
-            return <li key={scenario.id}>{scenarioName}: {scenarioDetails} ({scenario.resultType})</li>;
-          })}</ul>
-          <h2>{text.sensitivity}</h2>
-          <p>{text.sensitivityLine}</p>
-          <ul>{intelligence.top3Reasoning.map((factor) => <li key={`${factor.rank}-${factor.factor}`}>{text.sensitivityFactor
-            .replace('{factor}', text.factorNames[factor.factor as keyof typeof text.factorNames] ?? factor.factor)
-            .replace('{change}', factor.localElasticity.toFixed(2))}</li>)}</ul>
-          <label className="grid gap-1">{text.whatIfMode}
-            <select aria-label={text.whatIfMode} value={whatIfKey} onChange={(event) => {
-              setWhatIfKey(event.target.value as WhatIfKey);
-              setWhatIfResult(null);
-            }}>
-              <option value="weightKg">{whatIfLabels.weightKg}</option>
-              <option value="activityLevel">{whatIfLabels.activityLevel}</option>
-              <option value="tdee">{whatIfLabels.tdee}</option>
-            </select>
-          </label>
-          {slider ? <label className="grid gap-1">{whatIfLabels[whatIfKey]}: {whatIfDisplayValue(whatIfCurrentValue).toFixed(whatIfKey === 'activityLevel' ? 2 : 1)} {whatIfDisplayUnit}
-            <input aria-label={whatIfLabels[whatIfKey]} type="range"
-              min={whatIfDisplayValue(slider.min)} max={whatIfDisplayValue(slider.max)}
-              step={whatIfDisplayStep}
-              value={whatIfDisplayValue(whatIfCurrentValue)}
-              onChange={(event) => {
-                const displayedValue = Number(event.target.value);
-                const canonicalValue = whatIfKey === 'weightKg' ? convertWeightToCanonical(displayedValue) : displayedValue;
-                setWhatIfResult(intelligence.whatIf.adjustInput(whatIfKey, canonicalValue));
-              }} />
-          </label> : null}
-          {whatIfResult ? <p data-testid="macro-what-if">{text.whatIfResult}: {whatIfResult.resultType === 'CALCULATED' ? formatOutput(whatIfResult.calculatedOutput, text) : text.scenarioUnavailable} ({whatIfResult.resultType})</p> : null}
+          <details data-testid="macro-details-scenarios">
+            <summary>{text.scenariosSummary}</summary>
+            <h2>{text.scenarios}</h2>
+            <ul>{intelligence.scenarios.map((scenario) => {
+              const delta = unitSystem === 'imperial' ? `${(10 / KG_PER_LB).toFixed(1)} lb` : '10 kg';
+              const scenarioName = scenario.id === 'weight-minus-10kg'
+                ? text.scenarioWeightLower.replace('{delta}', delta)
+                : scenario.id === 'weight-plus-10kg'
+                  ? text.scenarioWeightHigher.replace('{delta}', delta)
+                  : text.scenarioNames[scenario.id as keyof typeof text.scenarioNames] ?? scenario.label;
+              const scenarioDetails = scenario.resultType === 'CALCULATED'
+                ? formatOutput(scenario.calculatedOutput, text)
+                : text.scenarioUnavailable;
+              return <li key={scenario.id}>{scenarioName}: {scenarioDetails} ({scenario.resultType})</li>;
+            })}</ul>
+            <h2>{text.sensitivity}</h2>
+            <p>{text.sensitivityLine}</p>
+            <ul>{intelligence.top3Reasoning.map((factor) => <li key={`${factor.rank}-${factor.factor}`}>{text.sensitivityFactor
+              .replace('{factor}', text.factorNames[factor.factor as keyof typeof text.factorNames] ?? factor.factor)
+              .replace('{change}', factor.localElasticity.toFixed(2))}</li>)}</ul>
+          </details>
+          <details data-testid="macro-details-what-if">
+            <summary>{text.whatIfSummary}</summary>
+            <label className="grid gap-1">{text.whatIfMode}
+              <select aria-label={text.whatIfMode} value={whatIfKey} onChange={(event) => {
+                setWhatIfKey(event.target.value as WhatIfKey);
+                setWhatIfResult(null);
+              }}>
+                <option value="weightKg">{whatIfLabels.weightKg}</option>
+                <option value="activityLevel">{whatIfLabels.activityLevel}</option>
+                <option value="tdee">{whatIfLabels.tdee}</option>
+              </select>
+            </label>
+            {slider ? <label className="grid gap-1">{whatIfLabels[whatIfKey]}: {whatIfDisplayValue(whatIfCurrentValue).toFixed(whatIfKey === 'activityLevel' ? 2 : 1)} {whatIfDisplayUnit}
+              <input aria-label={whatIfLabels[whatIfKey]} type="range"
+                min={whatIfDisplayValue(slider.min)} max={whatIfDisplayValue(slider.max)}
+                step={whatIfDisplayStep}
+                value={whatIfDisplayValue(whatIfCurrentValue)}
+                onChange={(event) => {
+                  const displayedValue = Number(event.target.value);
+                  const canonicalValue = whatIfKey === 'weightKg' ? convertWeightToCanonical(displayedValue) : displayedValue;
+                  setWhatIfResult(intelligence.whatIf.adjustInput(whatIfKey, canonicalValue));
+                }} />
+            </label> : null}
+            {whatIfResult ? <p data-testid="macro-what-if">{text.whatIfResult}: {whatIfResult.resultType === 'CALCULATED' ? formatOutput(whatIfResult.calculatedOutput, text) : text.scenarioUnavailable} ({whatIfResult.resultType})</p> : null}
+          </details>
           <ul>{intelligence.warnings.map((warning, index) => <li key={`${warning.level}-${index}`}>{warning.code === 'TARGET_BELOW_ESTIMATED_BMR' ? text.belowBmrWarning : warning.code === 'AGE_OUTSIDE_ORIGINAL_EQUATION_SAMPLE' ? text.ageRangeWarning : warning.message}</li>)}</ul>
         </> : null}
-      </section> : null}
+      </div> : null}
     </div>
   );
 
   return (
     <div className={styles.shell}>
-    <GeniusToolTemplate
+    <GeniusToolTemplateV4
       toolId="mrx.tool.macro"
       title={text.title}
       description={text.description}
@@ -350,8 +420,13 @@ export default function MacroPilotTool() {
       unitSystem={unitSystem}
       theme={resolvedTheme}
       status={status}
+      inputCompleteness={resultEnvelope?.inputSnapshot.completeness}
+      resultEnvelope={resultEnvelope}
       inputs={renderedInputs}
       results={results}
+      errors={error ? [error] : []}
+      riskTier="MEDIUM"
+      aiStatus="NOT_CONFIGURED"
     />
     </div>
   );

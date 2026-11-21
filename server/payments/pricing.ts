@@ -11,9 +11,16 @@
 //                              DEFAULTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { EGYPT_FIXED_SHIPPING_EGP } from '../../shared/lib/locationData';
-
 export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
+export type CurrencyKey = 'usd' | 'egp';
+export type ServiceId = 'consultation' | 'vip_coaching';
+
+/**
+ * Version of the canonical catalog. Quotes/invoices from Phase 3+ must carry
+ * this value so a saved amount can be traced to the catalog that produced it.
+ * Bump whenever a charge price changes — never for a display-only change.
+ */
+export const PRICING_VERSION = '2026-11-18.1';
 
 /** Base unit prices per tier (currency keyed). `_plus` tiers use base + addon. */
 export interface TierPrice {
@@ -25,6 +32,8 @@ export interface PricingConfig {
     tiers: Record<TierId, TierPrice>;
     /** Add-on prices keyed by the `_plus` tier id (added once per order, mirroring the client). */
     addons: Partial<Record<TierId, TierPrice>>;
+    /** Standalone services that are not a book tier (e.g. consultation). */
+    services?: Partial<Record<ServiceId, TierPrice>>;
     /** Shipping costs by provider id, currency keyed. */
     shipping: Record<string, { usd?: number; egp?: number }>;
     /** Allowed absolute deviation (in currency units) between client-reported and server-computed amount. */
@@ -37,8 +46,8 @@ export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
 /**
  * APPROVED BUSINESS PRICE — local (Egypt) flat shipping = 199 EGP.
  *
- * Imported from the shared single source of truth so the server can never drift
- * from the client display again. Authority:
+ * This is the single literal for the Egypt shipping rate. `shared/lib/
+ * locationData.ts` re-exports it so no consumer keeps a second copy. Authority:
  * docs/governance/phase1/PHASE1-DECISION-RECORD.md (D3). This supersedes the
  * 239 EGP figure that was hard-coded in FOUR independent places and is recorded
  * as CONFLICT in docs/governance/2026-09-24-read-only-reconciliation.md.
@@ -47,7 +56,7 @@ export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
  * tracking, no SLA. The id `eg_standard` is a price bucket, not a live courier.
  * Do not surface it in the UI as a connected carrier.
  */
-export const EGYPT_LOCAL_SHIPPING_EGP = EGYPT_FIXED_SHIPPING_EGP;
+export const EGYPT_LOCAL_SHIPPING_EGP = 199;
 
 export const DEFAULT_PRICING: PricingConfig = {
     tiers: {
@@ -74,6 +83,14 @@ export const DEFAULT_PRICING: PricingConfig = {
         bundle_plus:   { usd: 349.99, egp: 9999 },
         digital_plus:  { usd: 349.99, egp: 9999 },
     },
+    services: {
+        // GLOBAL/USD-only direct services. Egypt does not sell them separately.
+        consultation: { usd: 30, egp: 0 },
+        // Phase 5: VIP Coaching is a standalone service, not an add-on. The
+        // amount matches the historical Kashier coaching link so no price
+        // changes for customers during the invoice-first conversion.
+        vip_coaching: { usd: 349.99, egp: 0 },
+    },
     shipping: {
         // Local Egypt flat rate = 199 EGP (approved business price, D3).
         // The `239` that lived here was recorded as CONFLICT and is not approved.
@@ -87,6 +104,100 @@ export const DEFAULT_PRICING: PricingConfig = {
     },
     tolerance: 0.5,
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                    DISPLAY-ONLY “BEFORE DISCOUNT” PRICES
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// These are NOT charge amounts: no gateway, invoice or quote reads them.
+// They are list prices used only for a strike-through display. A `*_plus`
+// amount is NEVER written as an aggregate literal; it is the sum of its
+// original line items (base list price + coaching add-on). Phase 9 requires
+// `original_amount == Σ(unit_price × qty before discount)` for every package.
+
+const STOREFRONT_ORIGINAL_BASE_UNIT = {
+    egp: { digital: 699, bundle: 849, coaching: 949 },
+    usd: { digital: 69.99, bundle: 100.80, coaching: 114.80 },
+} as const;
+
+const BILLING_ORIGINAL_BASE_UNIT = {
+    egp: { digital: 699, bundle: 999, coaching: 1149 },
+    usd: { digital: 49.99, bundle: 100.80, coaching: 199.00 },
+} as const;
+
+const PLUS_TIER_IDS = ['digital_plus', 'bundle_plus', 'coaching_plus'] as const;
+
+function buildOriginalPriceTable(
+    baseUnit: Record<string, number>,
+    currency: CurrencyKey
+): Record<string, number> {
+    const table: Record<string, number> = { ...baseUnit };
+    for (const plusTier of PLUS_TIER_IDS) {
+        const baseTier = plusTier.replace('_plus', '') as TierId;
+        const baseOriginal = baseUnit[baseTier];
+        const addon = DEFAULT_PRICING.addons[plusTier]?.[currency];
+        if (typeof baseOriginal === 'number' && typeof addon === 'number') {
+            table[plusTier] = Math.round((baseOriginal + addon) * 100) / 100;
+        }
+    }
+    return table;
+}
+
+export const DISPLAY_ORIGINAL_PRICES = {
+    storefront: {
+        egp: buildOriginalPriceTable(STOREFRONT_ORIGINAL_BASE_UNIT.egp, 'egp'),
+        usd: buildOriginalPriceTable(STOREFRONT_ORIGINAL_BASE_UNIT.usd, 'usd'),
+    },
+    billing: {
+        egp: buildOriginalPriceTable(BILLING_ORIGINAL_BASE_UNIT.egp, 'egp'),
+        usd: buildOriginalPriceTable(BILLING_ORIGINAL_BASE_UNIT.usd, 'usd'),
+    },
+};
+export type OriginalPriceSurface = keyof typeof DISPLAY_ORIGINAL_PRICES;
+
+export interface OriginalPriceLine {
+    source: 'product' | 'addon';
+    unitPrice: number;
+    quantity: number;
+}
+
+/** Original (pre-discount) line items for a package. */
+export function getOriginalPriceLines(
+    tierId: string,
+    currency: string,
+    surface: OriginalPriceSurface = 'storefront'
+): OriginalPriceLine[] {
+    const cur = toCurrencyKey(currency);
+    const table = DISPLAY_ORIGINAL_PRICES[surface][cur] as Record<string, number>;
+    const baseTier = tierId.endsWith('_plus') ? tierId.replace('_plus', '') : tierId;
+    const basePrice = table[baseTier];
+    if (typeof basePrice !== 'number') return [];
+
+    const lines: OriginalPriceLine[] = [
+        { source: 'product', unitPrice: basePrice, quantity: 1 },
+    ];
+    if (tierId.endsWith('_plus')) {
+        const addon = DEFAULT_PRICING.addons[tierId as TierId]?.[cur];
+        if (typeof addon === 'number' && addon > 0) {
+            lines.push({ source: 'addon', unitPrice: addon, quantity: 1 });
+        }
+    }
+    return lines;
+}
+
+/** Σ(unit_price × quantity) — the only definition of a pre-discount amount. */
+export function sumOriginalLineItems(lines: OriginalPriceLine[]): number {
+    return round2(lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0));
+}
+
+export function getOriginalAmount(
+    tierId: string,
+    currency: string,
+    surface: OriginalPriceSurface = 'storefront'
+): number | undefined {
+    const lines = getOriginalPriceLines(tierId, currency, surface);
+    return lines.length > 0 ? sumOriginalLineItems(lines) : undefined;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                           ENV OVERRIDES
@@ -120,6 +231,14 @@ function applyEnvOverrides(cfg: PricingConfig): PricingConfig {
         const egp = num(`${key}_EGP`);
         if (usd !== undefined) cfg.addons[tier]!.usd = usd;
         if (egp !== undefined) cfg.addons[tier]!.egp = egp;
+    });
+
+    (Object.keys(cfg.services ?? {}) as ServiceId[]).forEach(service => {
+        const key = `PRICING_SERVICE_${service.toUpperCase()}`;
+        const usd = num(`${key}_USD`);
+        const egp = num(`${key}_EGP`);
+        if (usd !== undefined) cfg.services![service]!.usd = usd;
+        if (egp !== undefined) cfg.services![service]!.egp = egp;
     });
 
     Object.keys(cfg.shipping).forEach(provider => {
@@ -181,6 +300,14 @@ function applyAdminOverrides(cfg: PricingConfig, rows: Array<{ key: string; valu
         if (egp !== undefined) cfg.addons[tier]!.egp = round2(egp);
     });
 
+    (Object.keys(cfg.services ?? {}) as ServiceId[]).forEach(service => {
+        const base = `pricing_service_${service}`;
+        const usd = pick(base, 'usd');
+        const egp = pick(base, 'egp');
+        if (usd !== undefined) cfg.services![service]!.usd = round2(usd);
+        if (egp !== undefined) cfg.services![service]!.egp = round2(egp);
+    });
+
     Object.keys(cfg.shipping).forEach(provider => {
         const base = `pricing_shipping_${provider}`;
         const usd = pick(base, 'usd');
@@ -215,6 +342,45 @@ export async function loadPricing(
         console.warn('⚠️ [Pricing] Falling back to env/defaults (admin_settings read failed):', msg);
     }
     return cfg;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                     CANONICAL READ HELPERS (DISPLAY + ADAPTERS)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// These read DEFAULT_PRICING, the single literal catalog. They are safe to
+// import from client components (no node/secret APIs) and exist so no UI file
+// needs to restate a price. Server charge paths must still use loadPricing()
+// + computeAmount() so admin/env overrides remain authoritative at runtime.
+
+export function getTierPrice(tierId: TierId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.tiers[tierId as TierId]?.[cur] ?? 0;
+}
+
+export function getAddonPrice(plusTierId: TierId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.addons[plusTierId as TierId]?.[cur] ?? 0;
+}
+
+export function getServicePrice(serviceId: ServiceId | string, currency: string): number {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.services?.[serviceId as ServiceId]?.[cur] ?? 0;
+}
+
+export function getShippingPrice(providerId: string, currency: string): number | undefined {
+    const cur = toCurrencyKey(currency);
+    return DEFAULT_PRICING.shipping[providerId]?.[cur];
+}
+
+export function getOriginalTierPrice(
+    surface: OriginalPriceSurface,
+    tierId: string,
+    currency: string
+): number | undefined {
+    const cur = toCurrencyKey(currency);
+    const table = DISPLAY_ORIGINAL_PRICES[surface][cur] as Record<string, number> | undefined;
+    return table?.[tierId];
 }
 
 export interface ComputeAmountInput {

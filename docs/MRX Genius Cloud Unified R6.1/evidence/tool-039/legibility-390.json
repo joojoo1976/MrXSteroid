@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-11T20:19:33.703Z",
+  "build": "WORKTREE (local production build of the authorized legibility fix)",
+  "baseUrl": "http://localhost:3100",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "screenshot": "docs/MRX Genius Cloud Unified R6.1/evidence/tool-039/legibility-390.png",
+  "check": "ACC-5.5.7-LEGIBILITY - legibility of the explanatory diagram at a 390 px viewport",
+  "measurement": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "svgRenderedWidthPx": 0,
+    "svgVisible": false,
+    "viewBoxWidth": 720,
+    "svgScaleFactor": 0,
+    "totalStepNodes": 10,
+    "visibleStepCount": 5,
+    "smallestVisibleFontPx": 12,
+    "largestVisibleFontPx": 13,
+    "steps": [
+      {
+        "id": "step-1",
+        "variant": "html-stack",
+        "minRenderedFontPx": 12,
+        "maxRenderedFontPx": 13,
+        "sample": [
+          {
+            "tag": "p",
+            "content": "1. You enter the lab readings",
+            "declaredFontPx": 13,
+            "renderedFontPx": 13
+          },
+          {
+            "tag": "p",
+            "content": "Marker, value with its unit, and the draw date —",
+            "declaredFontPx": 12,
+            "renderedFontPx": 12
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "variant": "html-stack",
+        "minRenderedFontPx": 12,
+        "maxRenderedFontPx": 13,
+        "sample": [
+          {
+            "tag": "p",
+            "content": "2. The tool validates the input",
+            "declaredFontPx": 13,
+            "renderedFontPx": 13
+          },
+          {
+            "tag": "p",
+            "content": "Unit fixed per marker, value range checked, real",
+            "declaredFontPx": 12,
+            "renderedFontPx": 12
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "variant": "html-stack",
+        "minRenderedFontPx": 12,
+        "maxRenderedFontPx": 13,
+        "sample": [
+          {
+            "tag": "p",
+            "content": "3. The engine compares with the reference limit",
+            "declaredFontPx": 13,
+            "renderedFontPx": 13
+          },
+          {
+            "tag": "p",
+            "content": "value ÷ reference limit = multiple. Thresholds: ",
+            "declaredFontPx": 12,
+            "renderedFontPx": 12
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "variant": "html-stack",
+        "minRenderedFontPx": 12,
+        "maxRenderedFontPx": 13,
+        "sample": [
+          {
+            "tag": "p",
+            "content": "4. Status and safety flags are derived",
+            "declaredFontPx": 13,
+            "renderedFontPx": 13
+          },
+          {
+            "tag": "p",
+            "content": "Overall status, red flags, contraindications and",
+            "declaredFontPx": 12,
+            "renderedFontPx": 12
+          }
+        ]
+      },
+      {
+        "id": "step-5",
+        "variant": "html-stack",
+        "minRenderedFontPx": 12,
+        "maxRenderedFontPx": 13,
+        "sample": [
+          {
+            "tag": "p",
+            "content": "5. Next steps are shown",
+            "declaredFontPx": 13,
+            "renderedFontPx": 13
+          },
+          {
+            "tag": "p",
+            "content": "One next step, what not to do, and when to see a",
+            "declaredFontPx": 12,
+            "renderedFontPx": 12
+          }
+        ]
+      }
+    ],
+    "horizontalOverflow": 0
+  },
+  "verdict": {
+    "result": "PASS - at 390px all 5 diagram steps are visible and their text renders at or above 12px (smallest visible 12px)",
+    "thresholdPx": 12,
+    "thresholdProvenance": "Internal engineering criterion of this check (not an R6.1 rule: no R6.1 paragraph specifies a minimum font size). The measurement is the rendered size of the VISIBLE diagram text.",
+    "measuredSmallestVisibleFontPx": 12,
+    "visibleStepCount": 5
+  }
+}

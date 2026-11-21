@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Create Cluster'
+method: POST
+url: '{{base_url}}/api/admin/seo/clusters'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Testosterone Cluster",
+      "keywords": ["testosterone", "test levels", "low T"]
+    }

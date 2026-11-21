@@ -1,152 +1,615 @@
 'use client';
-/** Tool #040 — Lipid Profile Optimizer (dynamic UI, GPT2 spec). useMemo instant
- * recompute, Zod validation, auto-draft via shared adapter, standard
- * Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+/**
+ * Tool #040 — Lipid Profile Optimizer (R6.1 tool).
+ *
+ * What this component does, and what it deliberately does NOT do:
+ *   - every calculation goes through the R6 pipeline
+ *     (`runLipidProfileOptimizer`), which validates the input and calls the
+ *     authoritative V6 engine (`optimizeLipidProfile`) — the UI never calls
+ *     the engine or the legacy adapter directly;
+ *   - the result is DEBOUNCED (120 ms): a burst of edits triggers ONE
+ *     calculation, and the result of an older input is never shown as if it
+ *     were the current one;
+ *   - the states EMPTY / PARTIAL / FULL / INVALID / DEGRADED are explicit, and
+ *     NOTHING is invented: an empty field stays empty (a typed 0 is a real 0);
+ *   - there is NO persistence of any kind: no draft, no dashboard snapshot, no
+ *     session, no cloud storage. The owner's D-08 exception was limited to
+ *     Tool 039, so this tool stays compute-and-display only (W18).
+ *
+ * Units are fixed to mg/dL — the unit the engine's bands assume. No
+ * conversion is applied.
+ */
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { optimizeLipidProfile, type LipidOptimizerResult } from '@/lib/tools/engines/tool-040-lipid-profile-optimizer';
-import { buildLipidOptimizerOutput } from '@/lib/tools/adapters/tool-040-lipid-profile-optimizer';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { LipidOptimizerInputSchema } from '@/lib/tools/schemas/tool-040-lipid-profile-optimizer';
+import type { ToolOutput } from '@/lib/tools/contracts';
+import type { LipidOptimizerInput, LipidOptimizerResult } from '@/lib/tools/schemas/tool-040-lipid-profile-optimizer';
+import {
+  runLipidProfileOptimizer,
+  type LipidProfileOptimizerBuildOptions,
+} from '@/lib/tools/r6/tool-040-lipid-profile-optimizer-pipeline';
+import {
+  TOOL_040_DEBOUNCE_MS,
+  TOOL_040_FIELD_CONTRACT,
+  TOOL_040_LIPID_UNIT,
+  TOOL_040_SOURCES,
+  isRealCalendarDate,
+  labFreshness,
+  type Tool040FieldId,
+} from '@/lib/tools/r6/tool-040-lipid-profile-optimizer-contract';
+import Tool040Genius from './tool-040-lipid-profile-optimizer.genius';
+import Tool040Visual from './tool-040-lipid-profile-optimizer.visual';
+import Tool040OcrModal from './tool-040-lipid-profile-optimizer.ocr';
+import LipidSummaryPdfButton from './tool-040-lipid-profile-optimizer.pdf';
 import i18nJson from '@/i18n/tool-040-lipid-profile-optimizer.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-040-lipid-profile-optimizer';
-interface DraftInputs { ldl_mg_dl: number; hdl_mg_dl: number; triglycerides_mg_dl: number; age: number; smoker: boolean; systolic_bp: number; on_cycle: boolean; weeks_remaining: number }
 
-const DEFAULTS: DraftInputs = { ldl_mg_dl: 130, hdl_mg_dl: 38, triglycerides_mg_dl: 180, age: 32, smoker: false, systolic_bp: 125, on_cycle: true, weeks_remaining: 8 };
-const BAND_COLOR: Record<string, string> = { optimal: 'text-lime-400', borderline: 'text-amber-400', high: 'text-orange-400', 'very-high': 'text-red-400' };
-const BAND_LABEL_AR: Record<string, string> = { optimal: 'مثالي', borderline: 'حدّي', high: 'مرتفع', 'very-high': 'مرتفع جدًا' };
+type Answer = 'yes' | 'no' | 'unanswered';
+
+interface Draft {
+  ldl: string;
+  hdl: string;
+  tg: string;
+  total: string;
+  date: string;
+  age: string;
+  smoker: Answer;
+  sbp: string;
+  onCycle: Answer;
+  weeks: string;
+}
+
+/** Nothing is pre-filled: every field starts empty, so no value is invented. */
+const EMPTY_DRAFT: Draft = {
+  ldl: '',
+  hdl: '',
+  tg: '',
+  total: '',
+  date: '',
+  age: '',
+  smoker: 'unanswered',
+  sbp: '',
+  onCycle: 'unanswered',
+  weeks: '',
+};
+
+/** Deterministic synthetic demo panel fulfilling P-05 criteria */
+const DEMO_DRAFT: Draft = {
+  ldl: '148',
+  hdl: '32',
+  tg: '180',
+  total: '216',
+  date: '2026-03-10',
+  age: '34',
+  smoker: 'no',
+  sbp: '128',
+  onCycle: 'yes',
+  weeks: '8',
+};
+
+type UiState = 'EMPTY' | 'PARTIAL' | 'FULL' | 'INVALID' | 'DEGRADED';
+type IssueCode = 'invalid_number' | 'invalid_date' | 'out_of_range';
+
+interface Issue {
+  field: Tool040FieldId;
+  code: IssueCode;
+}
+
+const CONTRACT_FIELD = (id: Tool040FieldId) =>
+  TOOL_040_FIELD_CONTRACT.find((field) => field.fieldId === id);
+
+// The real-calendar-date check lives in the R6.1 contract, so the field
+// validation and the freshness rule can never disagree about a date.
 
 export default function Tool040LipidProfileOptimizer() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
   const { locale } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>(DEFAULTS);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevDraftKey = useRef('');
+  const inputGroupId = useId();
 
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [isOcrOpen, setIsOcrOpen] = useState(false);
+  const [isDemoActive, setIsDemoActive] = useState(false);
+  const [pipeline, setPipeline] = useState<{ signature: string; state: 'idle' | 'ok' | 'error' }>({
+    signature: '',
+    state: 'idle',
+  });
+
+  const options = useMemo<LipidProfileOptimizerBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale,
+      unitSystem: 'metric',
+      snapshotType: 'submitted_snapshot',
+      timezone: 'UTC',
+      source: 'manual',
+    }),
+    [locale],
+  );
+
+  /* ── Validation: every field against the R6.1 contract ────────────────── */
+  const validation = useMemo(() => {
+    const issues: Issue[] = [];
+    const numeric: Partial<Record<Tool040FieldId, number>> = {};
+
+    const checkNumber = (fieldId: Tool040FieldId, raw: string, required: boolean) => {
+      const contract = CONTRACT_FIELD(fieldId);
+      const trimmed = raw.trim();
+      if (trimmed === '') {
+        // An empty field is "not answered yet" (PARTIAL), never "invalid".
+        void required;
+        return;
+      }
+      const value = Number(trimmed);
+      if (!Number.isFinite(value)) {
+        issues.push({ field: fieldId, code: 'invalid_number' });
+        return;
+      }
+      if (contract?.min !== null && contract?.max !== null && contract?.min !== undefined && contract?.max !== undefined) {
+        if (value < contract.min || value > contract.max) {
+          issues.push({ field: fieldId, code: 'out_of_range' });
+          return;
+        }
+      }
+      numeric[fieldId] = value;
+    };
+
+    checkNumber('ldl_mg_dl', draft.ldl, true);
+    checkNumber('hdl_mg_dl', draft.hdl, true);
+    checkNumber('triglycerides_mg_dl', draft.tg, true);
+    checkNumber('total_cholesterol_mg_dl', draft.total, false);
+    checkNumber('age', draft.age, true);
+    checkNumber('systolic_bp', draft.sbp, true);
+    checkNumber('weeks_remaining', draft.weeks, true);
+
+    // The date: empty means "not answered yet" (PARTIAL); a wrong value is INVALID.
+    if (draft.date.trim() !== '' && !isRealCalendarDate(draft.date.trim())) {
+      issues.push({ field: 'panel_date', code: 'invalid_date' });
+    }
+
+    // The two yes/no answers: unanswered means "not answered yet" (PARTIAL).
+
+    const filled =
+      draft.ldl.trim() !== '' ||
+      draft.hdl.trim() !== '' ||
+      draft.tg.trim() !== '' ||
+      draft.total.trim() !== '' ||
+      draft.date.trim() !== '' ||
+      draft.age.trim() !== '' ||
+      draft.sbp.trim() !== '' ||
+      draft.weeks.trim() !== '' ||
+      draft.smoker !== 'unanswered' ||
+      draft.onCycle !== 'unanswered';
+
+    const complete =
+      draft.ldl.trim() !== '' &&
+      draft.hdl.trim() !== '' &&
+      draft.tg.trim() !== '' &&
+      draft.date.trim() !== '' &&
+      draft.age.trim() !== '' &&
+      draft.sbp.trim() !== '' &&
+      draft.weeks.trim() !== '' &&
+      draft.smoker !== 'unanswered' &&
+      draft.onCycle !== 'unanswered';
+
+    return { issues, numeric, filled, complete };
+  }, [draft]);
+
+  const hasIssues = validation.issues.length > 0;
+
+  /** The engine input is built ONLY when every required field is valid. */
+  const engineInput = useMemo<LipidOptimizerInput | null>(() => {
+    if (!validation.complete || hasIssues) return null;
+    const panel: LipidOptimizerInput['panel'] = {
+      ldl_mg_dl: validation.numeric.ldl_mg_dl as number,
+      hdl_mg_dl: validation.numeric.hdl_mg_dl as number,
+      triglycerides_mg_dl: validation.numeric.triglycerides_mg_dl as number,
+      ...(validation.numeric.total_cholesterol_mg_dl === undefined
+        ? {}
+        : { total_cholesterol_mg_dl: validation.numeric.total_cholesterol_mg_dl }),
+    };
+    return {
+      panel,
+      age: validation.numeric.age as number,
+      smoker: draft.smoker === 'yes',
+      systolic_bp: validation.numeric.systolic_bp as number,
+      on_cycle: draft.onCycle === 'yes',
+      weeks_remaining: validation.numeric.weeks_remaining as number,
+    };
+  }, [validation, hasIssues, draft.smoker, draft.onCycle]);
+
+  const inputSignature = useMemo(() => (engineInput ? JSON.stringify(engineInput) : ''), [engineInput]);
+
+  /* ── The debounced pipeline ────────────────────────────────────────────── */
   useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+    if (!engineInput || inputSignature === '') return;
+    const timer = setTimeout(() => {
+      const outcome = runLipidProfileOptimizer(engineInput, options);
+      setPipeline({
+        signature: inputSignature,
+        state: outcome.ok ? 'ok' : 'error',
+      });
+    }, TOOL_040_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [engineInput, inputSignature, options]);
 
-  const zodInput = useMemo(() => ({
-    panel: { ldl_mg_dl: inputs.ldl_mg_dl, hdl_mg_dl: inputs.hdl_mg_dl, triglycerides_mg_dl: inputs.triglycerides_mg_dl },
-    age: inputs.age,
-    smoker: inputs.smoker,
-    systolic_bp: inputs.systolic_bp,
-    on_cycle: inputs.on_cycle,
-    weeks_remaining: inputs.weeks_remaining,
-  }), [inputs]);
+  /** The pipeline state that belongs to the CURRENT input (never a stale one). */
+  const currentState = useMemo(() => {
+    if (inputSignature === '' || pipeline.signature !== inputSignature) return 'idle' as const;
+    return pipeline.state;
+  }, [pipeline, inputSignature]);
 
-  const parsed = useMemo(() => LipidOptimizerInputSchema.safeParse(zodInput), [zodInput]);
-  const result = useMemo<LipidOptimizerResult | null>(() => (parsed.success ? optimizeLipidProfile(parsed.data) : null), [parsed]);
+  const output = useMemo<ToolOutput<LipidOptimizerResult> | null>(() => {
+    if (currentState !== 'ok' || !engineInput) return null;
+    const outcome = runLipidProfileOptimizer(engineInput, options);
+    return outcome.ok ? outcome.output : null;
+  }, [currentState, engineInput, options]);
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildLipidOptimizerOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
+  const resultStatus = useMemo<UiState>(() => {
+    if (!validation.filled) return 'EMPTY';
+    // A value that is already wrong is reported straight away (Tool 039 order).
+    if (hasIssues) return 'INVALID';
+    if (!validation.complete) return 'PARTIAL';
+    if (currentState === 'error') return 'DEGRADED';
+    return 'FULL';
+  }, [validation.filled, validation.complete, hasIssues, currentState]);
 
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
+  const input = engineInput;
+  const result = output?.result ?? null;
 
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [inputs, locale]);
-
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    setSaveStatus(isRtl ? 'جاري الحفظ...' : 'Saving...');
-    try {
-      const now = new Date().toISOString();
-      const output = buildLipidOptimizerOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
+  const stateLabel: Record<UiState, string> = {
+    EMPTY: t.state_empty,
+    PARTIAL: t.state_partial,
+    FULL: t.state_full,
+    INVALID: t.state_invalid,
+    DEGRADED: t.state_degraded,
   };
 
-  const num = (v: string, fallback: number) => (v === '' ? fallback : Number(v));
+  const issueFor = (field: Tool040FieldId): Issue | undefined =>
+    validation.issues.find((issue) => issue.field === field);
+
+  const issueMessage = (issue: Issue): string => {
+    if (issue.code === 'invalid_number') return t.invalid_number;
+    if (issue.code === 'invalid_date') return t.invalid_date;
+    return t.out_of_range;
+  };
+
+  const freshness = useMemo(() => {
+    const date = draft.date.trim();
+    if (!date || !isRealCalendarDate(date)) return { ageDays: null, stale: false };
+    return labFreshness(date, options.calculatedAt.slice(0, 10));
+  }, [draft.date, options.calculatedAt]);
+
+  const updateDraft = (updater: (prev: Draft) => Draft) => {
+    setDraft(updater);
+    setIsDemoActive(false);
+  };
+
+  const handleLoadDemo = () => {
+    if (validation.filled && !isDemoActive) {
+      if (typeof window !== 'undefined' && !window.confirm(t.demo_confirm_overwrite || 'Replace current inputs with synthetic demo data?')) {
+        return;
+      }
+    }
+    setDraft(DEMO_DRAFT);
+    setIsDemoActive(true);
+  };
+
+  const handleClearDemo = () => {
+    setDraft(EMPTY_DRAFT);
+    setIsDemoActive(false);
+  };
+
+  const handleOcrConfirm = (extracted: { ldl?: number; hdl?: number; tg?: number; total?: number; date?: string }) => {
+    setDraft((prev) => ({
+      ...prev,
+      ...(extracted.ldl !== undefined ? { ldl: String(extracted.ldl) } : {}),
+      ...(extracted.hdl !== undefined ? { hdl: String(extracted.hdl) } : {}),
+      ...(extracted.tg !== undefined ? { tg: String(extracted.tg) } : {}),
+      ...(extracted.total !== undefined ? { total: String(extracted.total) } : {}),
+      ...(extracted.date ? { date: extracted.date } : {}),
+    }));
+    setIsDemoActive(false);
+    setIsOcrOpen(false);
+  };
+
+  const numberField = (
+    fieldId: Tool040FieldId,
+    value: string,
+    onChange: (next: string) => void,
+    type: 'text' | 'number' = 'text',
+  ) => {
+    const contract = CONTRACT_FIELD(fieldId);
+    const issue = issueFor(fieldId);
+    const label = contract ? t[contract.labelKey] : fieldId;
+    const help = contract ? t[contract.helpKey] : '';
+    return (
+      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+        <label htmlFor={`${inputGroupId}-${fieldId}`} className="mb-1 block text-xs font-bold text-zinc-500">
+          {label}
+          {contract?.unit ? ` (${contract.unit})` : ''}
+        </label>
+        <input
+          id={`${inputGroupId}-${fieldId}`}
+          data-r6-slider="true"
+          data-r6-field={fieldId}
+          type={type}
+          inputMode="decimal"
+          dir="ltr"
+          min={contract?.min ?? undefined}
+          max={contract?.max ?? undefined}
+          step={contract?.type === 'integer' ? 1 : 'any'}
+          aria-label={label}
+          aria-invalid={Boolean(issue)}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={contract?.example ?? ''}
+          className={`w-full rounded-lg border bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white ${issue ? 'border-red-500' : 'border-zinc-700'}`}
+        />
+        <span className="mt-1 block text-[10px] text-zinc-600">{help}</span>
+        {issue && (
+          <span className="mt-1 block text-[10px] font-bold text-red-400" data-r6-field-error={fieldId}>
+            {issueMessage(issue)}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const answerGroup = (
+    fieldId: Tool040FieldId,
+    value: Answer,
+    onChange: (next: Answer) => void,
+  ) => {
+    const contract = CONTRACT_FIELD(fieldId);
+    const label = contract ? t[contract.labelKey] : fieldId;
+    const help = contract ? t[contract.helpKey] : '';
+    const options: Array<{ key: Answer; label: string }> = [
+      { key: 'yes', label: t.yes },
+      { key: 'no', label: t.no },
+      { key: 'unanswered', label: t.unanswered },
+    ];
+    return (
+      <div role="group" aria-label={label} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+        <span className="mb-1 block text-xs font-bold text-zinc-500">{label}</span>
+        <div className="flex flex-wrap gap-2">
+          {options.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              data-r6-field={fieldId}
+              aria-pressed={value === option.key}
+              onClick={() => onChange(option.key)}
+              className={`rounded border px-3 py-1 text-xs font-bold transition ${
+                value === option.key
+                  ? option.key === 'yes'
+                    ? 'border-lime-500 bg-lime-500/20 text-lime-300'
+                    : option.key === 'no'
+                      ? 'border-red-500 bg-red-500/20 text-red-300'
+                      : 'border-zinc-500 bg-zinc-700 text-zinc-200'
+                  : 'border-zinc-700 bg-zinc-950 text-zinc-500'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <span className="mt-2 block text-[10px] text-zinc-600">{help}</span>
+      </div>
+    );
+  };
+
+  const statusMessage = (): string => {
+    if (resultStatus === 'EMPTY') return t.empty_state;
+    if (resultStatus === 'PARTIAL') return t.partial_state;
+    if (resultStatus === 'INVALID') return `${t.invalid_state} — ${t.invalid_input}`;
+    if (resultStatus === 'DEGRADED') return t.degraded_state;
+    return '';
+  };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
+    <main className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
-        </div>
+        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-bold text-zinc-400">
+          {t.state_label}: {stateLabel[resultStatus]}
+        </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <label className="text-[10px] font-bold text-zinc-500">{t.ldl} (mg/dL)
-          <input data-r6-slider="true" type="number" min={0} max={600} value={inputs.ldl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, ldl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.hdl} (mg/dL)
-          <input data-r6-slider="true" type="number" min={0} max={200} value={inputs.hdl_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, hdl_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.tg} (mg/dL)
-          <input data-r6-slider="true" type="number" min={0} max={2000} value={inputs.triglycerides_mg_dl} onChange={(e) => setInputs((p) => ({ ...p, triglycerides_mg_dl: num(e.target.value, 0) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.sbp} (mmHg)
-          <input data-r6-slider="true" type="number" min={80} max={260} value={inputs.systolic_bp} onChange={(e) => setInputs((p) => ({ ...p, systolic_bp: Math.round(num(e.target.value, 80)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.weeks_remaining}
-          <input data-r6-slider="true" type="number" min={0} max={52} value={inputs.weeks_remaining} onChange={(e) => setInputs((p) => ({ ...p, weeks_remaining: Math.round(num(e.target.value, 0)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-        </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.smoker} onChange={(e) => setInputs((p) => ({ ...p, smoker: e.target.checked }))} className="accent-lime-500" />{t.smoker}
-        </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.on_cycle} onChange={(e) => setInputs((p) => ({ ...p, on_cycle: e.target.checked }))} className="accent-lime-500" />{t.on_cycle}
-        </label>
-      </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-4">
-            {([['LDL', result.ldl_status], ['HDL', result.hdl_status], ['TG', result.tg_status], [isRtl ? 'الكلي' : 'Overall', result.overall_band]] as const).map(([label, band]) => (
-              <div key={label} className="bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                <span className="text-[10px] text-zinc-400 block">{label}</span>
-                <span className={`text-lg font-bold font-mono ${BAND_COLOR[band] ?? 'text-zinc-300'}`}>{isRtl ? (BAND_LABEL_AR[band] ?? band) : band}</span>
-              </div>
-            ))}
-          </div>
-          <div className="text-xs text-zinc-400 mb-3">{t.non_hdl}: <span className="font-mono text-cyan-400 font-bold">{result.non_hdl.toFixed(0)} mg/dL</span></div>
-          {result.interventions.length > 0 && (
-            <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-3 mb-3">
-              <span className="text-[10px] font-bold text-cyan-400 block mb-1">{t.interventions}</span>
-              <ul className="space-y-0.5 text-xs text-cyan-300">{result.interventions.map((iv, i) => (<li key={i}>• {iv}</li>))}</ul>
-            </div>
+
+      <p className="mb-4 rounded-xl border border-amber-700/50 bg-amber-950/30 p-3 text-xs leading-6 text-amber-100">
+        {t.disclaimer}
+      </p>
+
+      {/* Action Toolbar: P-03 OCR Scan + P-05 One-Click Demo Data */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsOcrOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-800/60 bg-cyan-950/30 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-900/50 hover:text-cyan-200"
+          >
+            <span>📷</span>
+            <span>{t.scan_report_btn || 'Scan Lab Report'}</span>
+          </button>
+
+          {!isDemoActive ? (
+            <button
+              type="button"
+              onClick={handleLoadDemo}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-purple-800/60 bg-purple-950/30 px-3 py-1.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-900/50 hover:text-purple-200"
+            >
+              <span>⚡</span>
+              <span>{t.demo_load_btn || 'Load Demo Data'}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleClearDemo}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-800/60 bg-red-950/30 px-3 py-1.5 text-xs font-semibold text-red-300 transition hover:bg-red-900/50 hover:text-red-200"
+            >
+              <span>✕</span>
+              <span>{t.demo_clear_btn || 'Clear Demo'}</span>
+            </button>
           )}
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
+        </div>
+
+        {isDemoActive && (
+          <span
+            data-testid="synthetic-demo-badge"
+            className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300"
+          >
+            ⚡ {t.demo_synthetic_badge || 'Synthetic Demo Data'}
+          </span>
+        )}
+      </div>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold text-zinc-300">{t.panel_section}</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {numberField('ldl_mg_dl', draft.ldl, (next) => updateDraft((prev) => ({ ...prev, ldl: next })))}
+          {numberField('hdl_mg_dl', draft.hdl, (next) => updateDraft((prev) => ({ ...prev, hdl: next })))}
+          {numberField('triglycerides_mg_dl', draft.tg, (next) => updateDraft((prev) => ({ ...prev, tg: next })))}
+          {numberField('total_cholesterol_mg_dl', draft.total, (next) => updateDraft((prev) => ({ ...prev, total: next })))}
+          {numberField('age', draft.age, (next) => updateDraft((prev) => ({ ...prev, age: next })))}
+          {numberField('systolic_bp', draft.sbp, (next) => updateDraft((prev) => ({ ...prev, sbp: next })))}
+          {numberField('weeks_remaining', draft.weeks, (next) => updateDraft((prev) => ({ ...prev, weeks: next })))}
+          <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+            <label htmlFor={`${inputGroupId}-panel_date`} className="mb-1 block text-xs font-bold text-zinc-500">
+              {t.field_panel_date}
+            </label>
+            <input
+              id={`${inputGroupId}-panel_date`}
+              data-r6-field="panel_date"
+              type="text"
+              inputMode="numeric"
+              dir="ltr"
+              aria-label={t.field_panel_date}
+              aria-invalid={Boolean(issueFor('panel_date'))}
+              value={draft.date}
+              onChange={(event) => updateDraft((prev) => ({ ...prev, date: event.target.value }))}
+              placeholder="2026-02-01"
+              className={`w-full rounded-lg border bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white ${issueFor('panel_date') ? 'border-red-500' : 'border-zinc-700'}`}
+            />
+            <span className="mt-1 block text-[10px] text-zinc-600">{t.help_panel_date}</span>
+            {issueFor('panel_date') && (
+              <span className="mt-1 block text-[10px] font-bold text-red-400" data-r6-field-error="panel_date">
+                {issueMessage(issueFor('panel_date') as Issue)}
+              </span>
+            )}
           </div>
         </div>
-      )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
+
+        <h2 className="text-sm font-bold text-zinc-300">{t.context_section}</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {answerGroup('smoker', draft.smoker, (next) => updateDraft((prev) => ({ ...prev, smoker: next })))}
+          {answerGroup('on_cycle', draft.onCycle, (next) => updateDraft((prev) => ({ ...prev, onCycle: next })))}
+        </div>
+
+        <div
+          role={resultStatus === 'INVALID' ? 'alert' : 'status'}
+          aria-live="polite"
+          className={`rounded-xl border p-4 ${
+            resultStatus === 'INVALID'
+              ? 'border-red-700 bg-red-950/40'
+              : resultStatus === 'FULL'
+                ? 'border-emerald-800 bg-emerald-950/30'
+                : 'border-zinc-800 bg-zinc-900/70'
+          }`}
+          data-r6-state={resultStatus}
+        >
+          <p className="font-semibold">{stateLabel[resultStatus]}</p>
+          {statusMessage() && <p className="mt-1 text-xs">{statusMessage()}</p>}
+          {freshness.ageDays !== null && (
+            <p className="mt-1 text-[11px] text-zinc-400">
+              {t.freshness_label}:{' '}
+              <span className={freshness.stale ? 'font-bold text-amber-300' : 'font-bold text-lime-300'}>
+                {freshness.stale ? t.freshness_stale : t.freshness_current}
+              </span>{' '}
+              ({freshness.ageDays} {t.days_old})
+            </p>
+          )}
+        </div>
+
+        {resultStatus === 'FULL' && !output && (
+          <p role="status" className="text-xs font-bold text-zinc-400">
+            {t.state_partial}
+          </p>
+        )}
+
+        {output && result && (
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-[10px] text-zinc-500">
+                <span className="rounded-full border border-lime-700/50 bg-lime-950/40 px-2 py-0.5 font-bold text-lime-300">
+                  ✓ {t.state_full}
+                </span>
+                <span>{t.field_ldl}: {input?.panel.ldl_mg_dl} {TOOL_040_LIPID_UNIT}</span>
+                <span>{t.field_hdl}: {input?.panel.hdl_mg_dl} {TOOL_040_LIPID_UNIT}</span>
+                <span>{t.field_tg}: {input?.panel.triglycerides_mg_dl} {TOOL_040_LIPID_UNIT}</span>
+              </div>
+              <LipidSummaryPdfButton
+                locale={locale}
+                input={input!}
+                result={result}
+                labels={{ exportButton: t.export_pdf_btn }}
+              />
+            </div>
+
+            <h3 className="mb-2 text-xs font-bold text-zinc-300">{t.interventions}</h3>
+            <ul className="space-y-0.5 text-xs text-cyan-200" dir="ltr">
+              {result.interventions.map((intervention) => (
+                <li key={intervention}>• {intervention}</li>
+              ))}
+            </ul>
+
+            <p className="mt-3 text-[11px] leading-5 text-zinc-500">{t.interpretation}</p>
+          </section>
+        )}
+
+        {/* The visual layer renders in EVERY state: it explains HOW a band is
+            produced and does not depend on a calculation. Only the data-driven
+            rows appear once a result exists. */}
+        <Tool040Visual locale={locale} panel={input?.panel ?? null} output={output} />
+
+        {resultStatus === 'FULL' && output && input && (
+          <Tool040Genius
+            locale={locale}
+            input={input}
+            output={output}
+            options={options}
+            panelDate={draft.date.trim() || null}
+          />
+        )}
+
+        <p className="text-[11px] leading-5 text-zinc-600">
+          {t.sources_intro} · {TOOL_040_SOURCES.length} {t.source_level.toLowerCase()} sources · {t.box10_note}
+        </p>
+      </section>
+
+      <Tool040OcrModal
+        locale={locale}
+        isOpen={isOcrOpen}
+        onClose={() => setIsOcrOpen(false)}
+        onConfirm={handleOcrConfirm}
+      />
+
+      <nav className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-zinc-800 pt-4 text-xs md:flex-row" aria-label={t.box12_next}>
+        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 transition hover:text-lime-400">
+          <span>←</span>
+          <span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span>
+        </a>
+        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 transition hover:text-lime-400">
+          <span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span>
+          <span>→</span>
+        </a>
+      </nav>
+
       <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+    </main>
   );
 }

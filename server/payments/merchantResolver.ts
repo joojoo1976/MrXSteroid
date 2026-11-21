@@ -6,8 +6,17 @@
  *  amount are NEVER authoritative (v5.1 §19 Region Detection / §20 Price Security).
  *  Supports KASHIER_TEST_* / KASHIER_LIVE_* prefixes with legacy
  *  KASHIER_EGYPT_* / KASHIER_GLOBAL_* fallbacks and PRIMARY/SECONDARY rotation.
+ *  Amounts are DERIVED from server/payments/pricing.ts (single catalog).
  * ═══════════════════════════════════════════════════════════════════════════
  */
+
+import {
+    DEFAULT_PRICING,
+    computeAmount,
+    getAddonPrice,
+    getServicePrice,
+    getTierPrice,
+} from './pricing';
 
 export type MerchantRegion = 'EGYPT' | 'GLOBAL';
 export type CurrencyCode = 'EGP' | 'USD';
@@ -110,9 +119,9 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         slug: 'protocol',
         nameAr: 'البروتوكول الرقمي',
         nameEn: 'Digital Protocol',
-        egyptAmount: 499,
-        egyptBaseAmount: 499,
-        globalAmount: 49.99,
+        egyptAmount: getTierPrice('digital', 'EGP'),
+        egyptBaseAmount: getTierPrice('digital', 'EGP'),
+        globalAmount: getTierPrice('digital', 'USD'),
         globalPlaceholder: 'USD_PRICE_1',
     },
     'MRX-TACTICAL': {
@@ -120,9 +129,9 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         slug: 'tactical',
         nameAr: 'الباقة التكتيكية',
         nameEn: 'Tactical Bundle',
-        egyptAmount: 749,
-        egyptBaseAmount: 749,
-        globalAmount: 72.00,
+        egyptAmount: getTierPrice('bundle', 'EGP'),
+        egyptBaseAmount: getTierPrice('bundle', 'EGP'),
+        globalAmount: getTierPrice('bundle', 'USD'),
         globalPlaceholder: 'USD_PRICE_2',
     },
     'MRX-SMART-PRO': {
@@ -130,9 +139,9 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         slug: 'smart-pro',
         nameAr: 'المحترف الذكي',
         nameEn: 'Smart Professional',
-        egyptAmount: 10_848,
-        egyptBaseAmount: 849, // Base product price without Coaching Addon
-        globalAmount: 82.00,   // Base product USD price without Coaching Addon
+        egyptAmount: computeAmount(DEFAULT_PRICING, { tierId: 'coaching_plus', currency: 'EGP', quantity: 1 }),
+        egyptBaseAmount: getTierPrice('coaching', 'EGP'), // Base product price without Coaching Addon
+        globalAmount: getTierPrice('coaching', 'USD'),   // Base product USD price without Coaching Addon
         globalPlaceholder: 'USD_PRICE_3',
     },
     'MRX-COACHING-ADDON': {
@@ -142,7 +151,7 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         nameEn: 'VIP 1-on-1 Anabolic Cycle Coaching (1 Full Cycle)',
         egyptAmount: 0, // Not sold separately in Egypt
         egyptBaseAmount: 0,
-        globalAmount: 349.99,
+        globalAmount: getAddonPrice('coaching_plus', 'USD'),
         globalPlaceholder: 'USD_PRICE_COACHING',
     },
     'MRX-CONSULTATION': {
@@ -152,7 +161,7 @@ export const CANONICAL_PRODUCTS: Record<CanonicalProductId, CanonicalProductDef>
         nameEn: 'Custom Consultation & Assessment Session — Mr. X-Steroid',
         egyptAmount: 0, // Not sold separately in Egypt
         egyptBaseAmount: 0,
-        globalAmount: 30.00,
+        globalAmount: getServicePrice('consultation', 'USD'),
         globalPlaceholder: 'USD_PRICE_CONSULTATION',
     },
 };

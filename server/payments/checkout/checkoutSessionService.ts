@@ -22,6 +22,7 @@ import { KashierGateway, KashierSessionError } from '../gateways/KashierGateway'
 import { FourthwallGateway } from '../gateways/FourthwallGateway';
 import {
     assertRegionCredentials,
+    getMerchantConfig,
     resolveRegion,
     type MerchantRegion,
     type PaymentMethodId,
@@ -35,6 +36,12 @@ import {
     type TierId,
 } from '../pricing';
 import { createPaymentIntentAttempt } from '../paymentIntentService';
+import { loadInvoiceForSession, type InvoiceRow } from '../invoice/invoiceCreationService';
+import {
+    buildKashierServicePaymentUrl,
+    getKashierServicePaymentLink,
+    type KashierServiceId,
+} from '../paymentLinkConfig';
 
 /** Digital-only tiers are never charged shipping (Phase 4 requirement #4). */
 export const DIGITAL_TIERS: TierId[] = ['digital', 'digital_plus', 'pdf'];
@@ -471,6 +478,269 @@ export async function createCheckoutSession(
         sessionUrl: session.sessionUrl,
         amount,
         currency,
+        region,
+        merchantId: merchant.merchantId,
+        paymentMethods: merchant.paymentMethods,
+        environment,
+        idempotent: false,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PHASE 4 — create a gateway session from an EXISTING pending invoice.
+//
+//  This is the invoice-first path: create-invoice has already written
+//  order + invoice + lines atomically. Here the invoice row is the ONLY source
+//  of amount/currency; no request-body amount is read, no product lines are
+//  sent to the gateway.
+// ═══════════════════════════════════════════════════════════════════════════
+
+
+export interface CreateSessionFromInvoiceInput {
+    invoiceId: string;
+    locale?: 'ar' | 'en';
+    /**
+     * Contact fallbacks only. The invoice row wins when it has a value.
+     * Never a price input.
+     */
+    email?: string;
+    fullName?: string;
+    country?: string;
+}
+
+function invoiceRegion(invoice: InvoiceRow): MerchantRegion {
+    const raw = (invoice.region || '').trim().toLowerCase();
+    if (raw === 'egypt' || raw === 'eg') return 'EGYPT';
+    if (raw === 'global') return 'GLOBAL';
+    throw new CheckoutValidationError('Invoice has no valid billing region.');
+}
+
+function serviceIdForInvoice(invoice: InvoiceRow): KashierServiceId | null {
+    if (invoice.tier_id === 'vip_coaching') return 'coaching_addon';
+    if (invoice.tier_id === 'consultation') return 'consultation';
+    return null;
+}
+
+function invoiceReplay(
+    invoice: InvoiceRow,
+    merchant: ReturnType<typeof assertRegionCredentials>,
+    region: MerchantRegion,
+    environment: 'test' | 'live',
+): CreateCheckoutSessionResult {
+    return {
+        invoiceId: invoice.id,
+        orderRef: invoice.kashier_order_id || invoice.id,
+        sessionId: invoice.kashier_session_id ?? null,
+        sessionUrl: invoice.kashier_session_url!,
+        amount: Number(invoice.amount),
+        currency: invoice.currency,
+        region,
+        merchantId: merchant.merchantId,
+        paymentMethods: merchant.paymentMethods,
+        environment,
+        idempotent: true,
+    };
+}
+
+/**
+ * Start a payment session for a pending invoice.
+ *
+ * Guarantees:
+ *  - the invoice is loaded from the database before the gateway is called,
+ *  - `amount` / `currency` come only from that row,
+ *  - a non-pending invoice cannot mint a payable session,
+ *  - a stored session URL is replayed instead of minting a second session,
+ *  - no invoice line items are sent to the gateway.
+ */
+export async function createSessionFromInvoice(
+    input: CreateSessionFromInvoiceInput,
+    deps: CheckoutSessionDeps = {},
+): Promise<CreateCheckoutSessionResult> {
+    const supabase = deps.supabase || getSupabaseAdmin();
+    const invoice = await loadInvoiceForSession(supabase, input.invoiceId);
+    if (!invoice) {
+        throw new CheckoutValidationError('Invoice not found.');
+    }
+
+    const region = invoiceRegion(invoice);
+    const serviceId = serviceIdForInvoice(invoice);
+    // GLOBAL service invoices intentionally use the existing server-built
+    // Kashier service link. They must not require the GLOBAL Kashier merchant
+    // to be enabled, and they must never be routed to Fourthwall (AUP §13).
+    const merchant = serviceId ? getMerchantConfig('GLOBAL') : assertRegionCredentials(region);
+    const environment = merchant.mode;
+
+    if (String(invoice.currency).toUpperCase() !== merchant.currency) {
+        throw new CheckoutValidationError(
+            `Invoice currency ${invoice.currency} does not match the ${region} merchant currency ${merchant.currency}.`
+        );
+    }
+
+    const amount = Number(invoice.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+        throw new CheckoutValidationError('Invoice amount must be greater than zero.');
+    }
+
+    // A non-pending invoice must never receive a payable session, even if a
+    // stale session URL is still stored on the row.
+    if (invoice.status !== 'pending' || invoice.payment_status !== 'pending') {
+        throw new CheckoutConflictError(
+            'This invoice is no longer pending. A new payable session cannot be created for it.'
+        );
+    }
+
+    // Replay the already-minted session for this pending invoice. Never mint a second one.
+    if (invoice.kashier_session_url) {
+        return invoiceReplay(invoice, merchant, region, environment);
+    }
+
+    const email = invoice.customer_email || input.email;
+    const fullName = invoice.customer_name || input.fullName;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        throw new CheckoutValidationError('A valid customer email is required.');
+    }
+    if (!fullName || fullName.trim().length < 2) {
+        throw new CheckoutValidationError('Customer full name is required.');
+    }
+
+    const orderRef = invoice.kashier_order_id || invoice.id;
+    const idempotencyKey = invoice.idempotency_key || invoice.id;
+    const amountMinor = Math.round(amount * 100);
+
+    const intent = await createPaymentIntentAttempt(
+        {
+            invoiceId: invoice.id,
+            provider: serviceId || region === 'EGYPT' ? 'kashier' : 'fourthwall',
+            merchantReference: orderRef,
+            amountMinor,
+            currency: invoice.currency,
+            environment,
+            metadata: {
+                region,
+                tier: invoice.tier_id,
+                source: 'invoice_first',
+                invoice_id: invoice.id,
+                quote_hash: invoice.quote_hash,
+                pricing_version: invoice.pricing_version,
+                idempotencyKey,
+            },
+        },
+        supabase,
+    );
+
+    const gateway = serviceId
+        ? null
+        : deps.gatewayFactory
+            ? deps.gatewayFactory(region)
+            : region === 'EGYPT'
+                ? new KashierGateway('egypt')
+                : new FourthwallGateway();
+
+    let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
+    try {
+        if (serviceId) {
+            const serviceLink = getKashierServicePaymentLink(serviceId);
+            // Zero-margin comparison in integer minor units. The link and the
+            // invoice must agree to the cent; no gateway/rounding tolerance.
+            const invoiceMinor = Math.round(amount * 100);
+            const serviceLinkMinor = Math.round(serviceLink.amount * 100);
+            if (invoiceMinor !== serviceLinkMinor) {
+                throw new CheckoutValidationError(
+                    `Invoice amount ${amount} does not exactly match the configured ${serviceId} service price ${serviceLink.amount}.`
+                );
+            }
+            session = {
+                sessionId: serviceId,
+                sessionUrl: buildKashierServicePaymentUrl(serviceId, {
+                    invoiceId: invoice.id,
+                    userEmail: email,
+                    fullName,
+                    allowUnverified: true,
+                }),
+                amount,
+                currency: invoice.currency,
+                status: 'ACTIVE',
+            };
+        } else if (region === 'EGYPT') {
+            const kashierGateway = gateway as KashierGateway;
+            session = await kashierGateway.createPaymentSession({
+                orderRef,
+                amount,
+                currency: invoice.currency,
+                customerEmail: email,
+                customerName: fullName,
+                locale: input.locale || 'en',
+                paymentMethods: merchant.paymentMethods,
+                defaultMethod: merchant.defaultMethod,
+                serverWebhook: merchant.webhookUrl,
+            });
+        } else {
+            const fourthwallGateway = gateway as FourthwallGateway;
+            const productMapping = fourthwallGateway['resolveProductMapping'](invoice.tier_id);
+            if (!productMapping) {
+                throw new Error(`[CreateSession] No Fourthwall product mapping for tier: ${invoice.tier_id}`);
+            }
+            session = await fourthwallGateway.createPaymentSession({
+                productId: productMapping.fourthwallProductId,
+                variantId: productMapping.fourthwallVariantId,
+                customerEmail: email,
+                customerName: fullName,
+                locale: input.locale || 'en',
+                metadata: {
+                    invoiceId: invoice.id,
+                    tierId: invoice.tier_id,
+                    region: 'GLOBAL',
+                },
+            });
+        }
+    } catch (error) {
+        await markSessionCreationFailed(supabase, {
+            invoiceId: invoice.id,
+            intentId: intent.id,
+            intentMetadata: (intent.metadata || {}) as Record<string, unknown>,
+            error,
+        });
+        throw error;
+    }
+
+    const providerSessionId = session.sessionId ?? null;
+    const { error: linkError } = await supabase
+        .from('invoices')
+        .update({
+            gateway: serviceId || region === 'EGYPT' ? 'kashier' : 'fourthwall',
+            payment_provider_merchant: serviceId
+                ? 'kashier_service_link'
+                : region === 'EGYPT'
+                    ? 'kashier_egypt'
+                    : 'fourthwall_global',
+            kashier_session_id: providerSessionId,
+            kashier_session_url: session.sessionUrl,
+            kashier_order_id: orderRef,
+            gateway_reference_id: providerSessionId,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', invoice.id);
+    if (linkError) {
+        throw new Error(`[CreateSession] Failed to persist session linkage: ${linkError.message}`);
+    }
+
+    await supabase
+        .from('payment_intents')
+        .update({
+            provider_order_id: providerSessionId,
+            status: 'pending',
+            metadata: { ...(intent.metadata || {}), session_url: session.sessionUrl },
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', intent.id);
+
+    return {
+        invoiceId: invoice.id,
+        orderRef,
+        sessionId: session.sessionId,
+        sessionUrl: session.sessionUrl,
+        amount,
+        currency: invoice.currency,
         region,
         merchantId: merchant.merchantId,
         paymentMethods: merchant.paymentMethods,

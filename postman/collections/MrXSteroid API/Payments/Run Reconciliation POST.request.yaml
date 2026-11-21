@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Run Reconciliation POST'
+method: POST
+url: '{{base_url}}/api/payments/reconciliation/run'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "from": "2024-01-01",
+      "to": "2024-12-31"
+    }

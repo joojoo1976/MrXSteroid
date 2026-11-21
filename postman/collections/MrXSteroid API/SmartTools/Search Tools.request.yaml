@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Search Tools'
+method: GET
+url: '{{base_url}}/api/smarttools/search?q={{search_query}}&limit=20'
+order: 1000
+queryParams:
+  - key: q
+    value: '{{search_query}}'
+    description: 'Search query (Arabic or English text)'
+  - key: limit
+    value: '20'
+    description: 'Max results (1-50, default 20)'

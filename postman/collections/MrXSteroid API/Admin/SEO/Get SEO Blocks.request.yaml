@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get SEO Blocks'
+method: GET
+url: '{{base_url}}/api/admin/seo/blocks'
+order: 2000

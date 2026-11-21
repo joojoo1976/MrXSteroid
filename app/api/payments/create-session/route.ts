@@ -11,6 +11,7 @@ import {
     CheckoutValidationError,
     CheckoutConflictError,
 } from '../../../../server/payments/checkout/checkoutSessionService';
+import { createSessionFromInvoice } from '../../../../server/payments/checkout/checkoutSessionService';
 import { BlockedGateError } from '../../../../server/payments/merchantResolver';
 import { KashierSessionError } from '../../../../server/payments/gateways/KashierGateway';
 import { enforceRateLimit, clientIp } from '../../../../lib/ratelimit';
@@ -53,6 +54,64 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json().catch(() => ({}));
+
+        // ── PHASE 4: invoice-first session ────────────────────────────────
+        // When invoiceId is present the amount/currency come ONLY from the
+        // pending invoice row. Any body `amount` is deliberately ignored.
+        const invoiceId = typeof body.invoiceId === 'string' ? body.invoiceId.trim() : '';
+        if (invoiceId) {
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(invoiceId)) {
+                return NextResponse.json({ error: 'Invalid invoiceId format.' }, { status: 400 });
+            }
+            try {
+                const session = await createSessionFromInvoice({
+                    invoiceId,
+                    locale: body.locale === 'ar' || body.locale === 'en' ? body.locale : undefined,
+                    email: typeof body.email === 'string' ? body.email : undefined,
+                    fullName: typeof body.fullName === 'string' ? body.fullName : undefined,
+                    country: typeof body.country === 'string' ? body.country : undefined,
+                });
+                return NextResponse.json({
+                    success: true,
+                    invoiceId: session.invoiceId,
+                    orderRef: session.orderRef,
+                    sessionId: session.sessionId,
+                    sessionUrl: session.sessionUrl,
+                    redirectUrl: session.sessionUrl,
+                    amount: session.amount,
+                    currency: session.currency,
+                    region: session.region,
+                    gateway: session.region === 'EGYPT' ? 'kashier' : 'fourthwall',
+                    paymentMethods: session.paymentMethods,
+                    environment: session.environment,
+                    idempotent: session.idempotent,
+                }, { status: 200 });
+            } catch (err: unknown) {
+                if (err instanceof CheckoutValidationError) {
+                    return NextResponse.json({ error: err.message }, { status: 400 });
+                }
+                if (err instanceof CheckoutConflictError) {
+                    return NextResponse.json({ error: err.message }, { status: 409 });
+                }
+                if (err instanceof KashierSessionError) {
+                    console.error(`[CreateSession] invoice payment_start_failed: ${err.message}`);
+                    return NextResponse.json(
+                        { error: 'Payment could not be started. Please try again.' },
+                        { status: err.status && err.status >= 400 && err.status < 500 ? err.status : 502 },
+                    );
+                }
+                if (err instanceof BlockedGateError) {
+                    return NextResponse.json(
+                        { error: err.message, gate: err.blockedItem },
+                        { status: 503 },
+                    );
+                }
+                const message = err instanceof Error ? err.message : String(err);
+                console.error('[CreateSession] invoice session failed:', message);
+                return NextResponse.json({ error: 'Failed to create payment session' }, { status: 500 });
+            }
+        }
+
         let tierId: TierId = body.tierId;
 
         // Support canonical product ID resolution (§60.1)

@@ -1,0 +1,139 @@
+req_id,family,requirement,applicability_class,B,C,E,counts_as_completion,gap_next_action
+ID-01,ID,Tool identity mrx.tool.041-hematocrit-monitor exists and requireTool resolves it,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-02,ID,Canonical slug tool-041-hematocrit-monitor is unique and used by the component,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-03,ID,Canonical route /smarttools/medical-monitoring/tool-041-hematocrit-monitor resolves,APPLICABLE,PASS,PENDING,E4,YES,none
+ID-04,ID,Category segment medical-monitoring matches the registry category,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-05,ID,"Published catalog entry carries the tool with status implemented, accessTier free and order 570",APPLICABLE,PASS,PENDING,E3,YES,none
+ID-06,ID,"Tool 041 is not in R6_EXEMPT_SLUGS, so the shared R6 shell is applied",APPLICABLE,PASS,PENDING,E4,YES,none
+ID-07,ID,generateStaticParams includes tool 041 through the published catalog,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-08,ID,"Page metadata sets title, description, canonical and AR alternate",APPLICABLE,PASS,PENDING,E3,YES,none
+ID-09,ID,Page emits WebApplication and FAQ JSON-LD,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-10,ID,"Breadcrumb, R6 progress line and SafetyNotice render above the tool",APPLICABLE,PASS,PENDING,E3,YES,none
+ID-11,ID,Previous and next tool navigation resolves from getToolNeighbors,APPLICABLE,PASS,PENDING,E3,YES,none
+ID-12,ID,Tool ID and version are displayed in the footer,APPLICABLE,PASS,PENDING,E3,YES,none
+SCH-01,SCH,HematocritInputSchema is the single input validation boundary wrapped by createToolSchema,APPLICABLE,PASS,PENDING,E3,YES,none
+SCH-02,SCH,Readings array is constrained to 2 through 24 entries,APPLICABLE,PARTIAL,PENDING,E2,NO,Add a schema test that accepts 24 readings and rejects 25
+SCH-03,SCH,Each HCT reading is a finite number within 20..70 percent,APPLICABLE,PASS,PENDING,E4,YES,none
+SCH-04,SCH,Each reading date is a parseable ISO-8601 string,APPLICABLE,PARTIAL,PENDING,E2,NO,Add a schema test for malformed and empty dates
+SCH-05,SCH,Sex is restricted to the enum male or female,APPLICABLE,PASS,PENDING,E3,YES,none
+SCH-06,SCH,on_cycle is a required boolean,APPLICABLE,PASS,PENDING,E3,YES,none
+SCH-07,SCH,weeks_remaining is an integer within 0..52,APPLICABLE,PARTIAL,PENDING,E2,NO,"Add schema boundary tests for -1, 0, 52, 53 and 1.5"
+SCH-08,SCH,The engine result is validated against HematocritResultSchema before it enters the envelope,APPLICABLE,FAIL,PENDING,E3,NO,Smallest fix: call HematocritResultSchema.safeParse(engineResult) and return ok:false on failure; add a malformed-result test. Requires separate authorization because it edits pipeline code.
+SCH-09,SCH,HematocritOutputSchema exists for the structured envelope,APPLICABLE,PARTIAL,PENDING,E2,NO,Either enforce HematocritOutputSchema in the pipeline or document isToolOutput as the sole envelope guard and remove dead schema weight
+SCH-10,SCH,Schema errors are bilingual AR/EN,APPLICABLE,PARTIAL,PENDING,E1,NO,"Add an error-map or localized message layer, and a test that an Arabic locale receives Arabic text"
+ENG-01,ENG,"Engine has no React, DOM, Supabase or I/O dependency",APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-02,ENG,Engine is free of the Date constructor and of ambient time,APPLICABLE,PARTIAL,PENDING,E3,NO,"Replace Date usage with an injected clock or pure ISO arithmetic, then re-run engine tests; requires authorization"
+ENG-03,ENG,The same inputs always produce the same outputs,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-04,ENG,Readings are sorted by draw date regardless of input order,APPLICABLE,PARTIAL,PENDING,E2,NO,Add an engine test with reversed and shuffled readings asserting the same result
+ENG-05,ENG,Baseline is the earliest reading and latest is the most recent reading,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-06,ENG,Slope is least squares in percentage points per 30 days,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-07,ENG,Male bands use upper 50 and intervention 54,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-08,ENG,Female bands use upper 44.5 and intervention 48,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-09,ENG,A positive trend below the intervention line projects a crossing date,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-10,ENG,Projection is suppressed beyond the 180-day horizon,APPLICABLE,PARTIAL,PENDING,E2,NO,Add a shallow-slope test asserting projected_threshold_date is null beyond 180 days
+ENG-11,ENG,Projection is suppressed when the trend is flat or the latest value is already above the line,APPLICABLE,PARTIAL,PENDING,E3,NO,Assert null explicitly in the already-above case
+ENG-12,ENG,Warning on_cycle_elevated_hct is emitted when on_cycle is true and the band is not normal,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-13,ENG,Warning above_intervention_line_seek_physician is emitted above the intervention line,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-14,ENG,Warning rising_trend_30d is emitted when slope exceeds 1.5,APPLICABLE,PARTIAL,PENDING,E2,NO,Add an engine test asserting rising_trend_30d for a steep series
+ENG-15,ENG,donate_eligible is true exactly when latest is at least intervention minus 1,APPLICABLE,PASS,PENDING,E3,YES,none
+ENG-16,ENG,An empty or wholly unparseable reading set fails safely with no_valid_readings,APPLICABLE,PARTIAL,PENDING,E2,NO,Add a direct engine test with an empty array and with invalid dates
+PIPE-01,PIPE,The UI calls the R6 pipeline only and never the engine or legacy adapter directly,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-02,PIPE,The pipeline validates input before the engine runs,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-03,PIPE,Every successful run returns a ToolOutput envelope,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-04,PIPE,The envelope passes the runtime isToolOutput guard,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-05,PIPE,Invalid input fails safely without throwing or returning a partial output,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-06,PIPE,"Provenance records source, recordedAt, timezone, unit, confidence and dataQuality",APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-07,PIPE,Provenance referenceRange carries the clinical hematocrit reference band,APPLICABLE,PARTIAL,PENDING,E3,NO,"Populate the sex-specific band and a citation, or label the field as display bounds; needs medical-source review and code authorization"
+PIPE-08,PIPE,keyFindings exposes result status and latest HCT,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-09,PIPE,seoLinks are built from the registry entry,APPLICABLE,PARTIAL,PENDING,E2,NO,Add an assertion on the seoLinks payload or remove it if unused
+PIPE-10,PIPE,All timestamps and timezone values are injected by the caller,APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-11,PIPE,"The pipeline performs no database, Supabase, network or filesystem I/O",APPLICABLE,PASS,PENDING,E3,YES,none
+PIPE-12,PIPE,Engine output is parsed by HematocritResultSchema before the envelope is built,APPLICABLE,FAIL,PENDING,E3,NO,Same smallest fix as SCH-08: safeParse the result and fail closed; separate code authorization required
+STATE-01,STATE,"EMPTY is an explicit, reachable state",APPLICABLE,FAIL,PENDING,E3,NO,Start with blank readings and no invented defaults; requires code authorization and new render tests
+STATE-02,STATE,PARTIAL is an explicit state when only some required fields are present,APPLICABLE,PARTIAL,PENDING,E3,NO,Make fields genuinely optional or remove the claim; add a test that partial renders
+STATE-03,STATE,FULL renders the engine result panel from the submitted snapshot,APPLICABLE,PASS,PENDING,E4,YES,none
+STATE-04,STATE,INVALID rejects an out-of-range value and withdraws the result panel,APPLICABLE,PASS,PENDING,E4,YES,none
+STATE-05,STATE,DEGRADED is an explicit state,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,"Add a DEGRADED branch with a defined trigger and a test, or record an owner-approved exception"
+STATE-06,STATE,Missing inputs are never invented,APPLICABLE,PARTIAL,PENDING,E3,NO,Start blank and require explicit entry; code authorization required
+STATE-07,STATE,Validation errors are actionable and localized,APPLICABLE,PARTIAL,PENDING,E2,NO,Map issues to field-specific AR/EN messages and add a test
+STATE-08,STATE,"The result panel shows HCT, band, trend, donation eligibility, projection and warnings",APPLICABLE,PASS,PENDING,E4,YES,none
+STATE-09,STATE,"The result panel shows the unit, the reference range and the confidence level",APPLICABLE,PARTIAL,PENDING,E2,NO,Render the band range and an explicit confidence or not-assessed label
+STATE-10,STATE,Result and error regions are announced through aria-live,APPLICABLE,FAIL,PENDING,E2,NO,"Add polite live region for results and assertive for errors, then test"
+CORE-01,CORE,"CORE-5 C1 Primary Result shows value, unit, range and confidence",APPLICABLE,PARTIAL,PENDING,E3,NO,Add range and confidence to the primary panel or to a dedicated CORE-5 box
+CORE-02,CORE,"CORE-5 C2 How Calculated shows formula, actual inputs, assumptions and uncertainty",APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Build a formula box fed from the engine constants and the provenance uncertainty
+CORE-03,CORE,"CORE-5 C3 Safety and Warnings shows warnings, red flags, contraindications and referral",APPLICABLE,PARTIAL,PENDING,E3,NO,"Add translated warnings, red flags and a referral sentence with a source"
+CORE-04,CORE,"CORE-5 C4 Evidence and Sources lists name, publisher, date, evidence level and link",APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Obtain specialist-approved sources and encode them in a structured evidence list
+CORE-05,CORE,"CORE-5 C5 Next Actions gives one next step, what not to do and when to see a doctor",APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Add a C5 next-actions block with a medically reviewed escalation rule
+CORE-06,CORE,Compact mode shows exactly the closure-layer CORE-5 and full mode embeds the same CORE-5,APPLICABLE,FAIL,PENDING,E3,NO,Replace the SPEC C1-C12 slot content with the closure CORE-5 plus seven enrichment boxes
+CORE-07,CORE,CORE-5 content is bilingual AR/EN,APPLICABLE,PARTIAL,PENDING,E3,NO,Translate band and warning codes through the i18n file
+CORE-08,CORE,CORE-5 is keyboard reachable and screen-reader accessible,APPLICABLE,PARTIAL,PENDING,E3,NO,"Add live regions and landmark/heading structure, then re-run the accessibility harness"
+G12-01,G12,GENIUS-12 renders twelve boxes in the fixed closure-layer order,APPLICABLE,PARTIAL,PENDING,E4,NO,Decide which twelve boxes govern Tool 041 and rebuild the slot content; documentation alone cannot satisfy this
+G12-02,G12,GENIUS-12 box 1 KPI Strip summarises the primary result,APPLICABLE,NOT_AVAILABLE,PENDING,E2,NO,Implement the KPI strip or record an owner-approved exception
+G12-03,G12,GENIUS-12 box 2 Primary Result equals CORE-5 C1,APPLICABLE,PARTIAL,PENDING,E3,NO,Fold the primary panel into box 2 and complete C1 content
+G12-04,G12,GENIUS-12 box 3 Formula / How Calculated equals CORE-5 C2,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement the formula box from the engine constants
+G12-05,G12,GENIUS-12 box 4 Inputs Summary lists what the user actually entered,APPLICABLE,PARTIAL,PENDING,E3,NO,Add an inputs summary box and remove invented defaults
+G12-06,G12,GENIUS-12 box 5 What-If supports alternative scenarios,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement scenario comparison or record a justified Not Applicable with reason
+G12-07,G12,GENIUS-12 box 6 Sensitivity shows which input affects the result most,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement a sensitivity analysis or record a justified Not Applicable with reason
+G12-08,G12,GENIUS-12 box 7 Warnings / Safety equals CORE-5 C3,APPLICABLE,PARTIAL,PENDING,E3,NO,Complete C3 content and translate the codes
+G12-09,G12,GENIUS-12 box 8 Cross-Tool Links carry freshness,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement the cross-tool contract or record Not Applicable with reason
+G12-10,G12,GENIUS-12 box 9 Evidence / Sources equals CORE-5 C4,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Add specialist-reviewed sources and render them
+G12-11,G12,"GENIUS-12 box 10 Export produces PDF, ICS or CSV without secrets",APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement a client-side export or record Not Applicable with reason
+G12-12,G12,GENIUS-12 box 11 History shows prior results with freshness,APPLICABLE,BLOCKED,PENDING,E2,NO,"Owner decision on W18 and on a Tool 041 storage exception, then implement"
+G12-13,G12,GENIUS-12 box 12 Feedback and Next Actions equals CORE-5 C5 plus a 1-5 rating,APPLICABLE,NOT_AVAILABLE,PENDING,E3,NO,Implement feedback plus C5 next actions
+A11Y-01,A11Y,Arabic locale renders RTL,APPLICABLE,PASS,PENDING,E4,YES,none
+A11Y-02,A11Y,English locale renders LTR,APPLICABLE,PASS,PENDING,E3,YES,none
+A11Y-03,A11Y,Keyboard focus opens the field tooltip,APPLICABLE,PASS,PENDING,E4,YES,none
+A11Y-04,A11Y,Escape closes the tooltip,APPLICABLE,PASS,PENDING,E4,YES,none
+A11Y-05,A11Y,The tooltip stays inside the viewport,APPLICABLE,PASS,PENDING,E4,YES,none
+A11Y-06,A11Y,Touch targets are large enough at 390 px,APPLICABLE,PARTIAL,PENDING,E2,NO,"Measure and, if needed, enlarge interactive targets to at least 44 px"
+A11Y-07,A11Y,Every input has a programmatic label,APPLICABLE,PARTIAL,PENDING,E2,NO,Add indexed accessible names for repeated reading rows
+A11Y-08,A11Y,Focus indication is visible on all interactive elements,APPLICABLE,PARTIAL,PENDING,E2,NO,Add focus-visible ring classes and verify with the harness
+I18N-01,I18N,The AR and EN dictionaries have identical key sets,APPLICABLE,PASS,PENDING,E3,YES,none
+I18N-02,I18N,Band values are translated in the result panel,APPLICABLE,FAIL,PENDING,E3,NO,Add AR/EN band labels and map the value before render
+I18N-03,I18N,Warning codes are translated in the result panel,APPLICABLE,FAIL,PENDING,E3,NO,Add AR/EN warning messages and map codes before render
+I18N-04,I18N,Validation and error text is available in Arabic,APPLICABLE,FAIL,PENDING,E2,NO,Localize validation messages and add an Arabic render test
+I18N-05,I18N,No mixed-language labels appear in either locale,APPLICABLE,PARTIAL,PENDING,E3,NO,Route every displayed string through the dictionary
+RESP-01,RESP,Desktop 1440 px renders the tool without horizontal overflow,APPLICABLE,PASS,PENDING,E4,YES,none
+RESP-02,RESP,Mobile 390 px renders without horizontal overflow,APPLICABLE,PASS,PENDING,E4,YES,none
+RESP-03,RESP,All twelve rendered boxes survive at 390 px,APPLICABLE,PASS,PENDING,E4,YES,none
+RESP-04,RESP,Arabic RTL at 1440 px renders without horizontal overflow,APPLICABLE,PASS,PENDING,E4,YES,none
+RESP-05,RESP,Arabic RTL at 390 px renders without horizontal overflow,APPLICABLE,NOT_RUN,PENDING,E0,NO,Add an Arabic 390 px pass to the harness and capture a screenshot
+PRIV-01,PRIV,"The tool performs no draft save, dashboard commit or clear",APPLICABLE,PASS,PENDING,E3,YES,none
+PRIV-02,PRIV,"The tool uses no localStorage, sessionStorage or indexedDB",APPLICABLE,PASS,PENDING,E3,YES,none
+PRIV-03,PRIV,The tool imports no Supabase client,APPLICABLE,PASS,PENDING,E3,YES,none
+PRIV-04,PRIV,"The tool makes no fetch, axios or XHR call",APPLICABLE,PASS,PENDING,E3,YES,none
+PRIV-05,PRIV,No entered value is sent to any server,APPLICABLE,PASS,PENDING,E4,YES,none
+PRIV-06,PRIV,No medical value reaches the application console,APPLICABLE,PASS,PENDING,E4,YES,none
+PRIV-07,PRIV,No server-side persistence path exists for Tool 041,APPLICABLE,PASS,PENDING,E3,YES,none
+MED-01,MED,Elevated and rising results emit safety warnings,APPLICABLE,PASS,PENDING,E3,YES,none
+MED-02,MED,The tool provides an explicit medical escalation and referral path,APPLICABLE,PARTIAL,PENDING,E3,NO,Add a reviewed referral block with urgency and contact guidance
+MED-03,MED,The tool states its interpretation limits and that it is not a diagnosis,APPLICABLE,PARTIAL,PENDING,E3,NO,Add tool-specific interpretation limits reviewed by a specialist
+MED-04,MED,Every reference band and the intervention line carries a named source,APPLICABLE,FAIL,PENDING,E2,NO,Obtain specialist-approved citations for 50/54 male and 44.5/48 female; do not change thresholds without separate authorization
+MED-05,MED,"Units are percent and consistent across engine, schema, provenance and UI",APPLICABLE,PASS,PENDING,E3,YES,none
+MED-06,MED,The displayed or exported reference range matches the clinical band,APPLICABLE,PARTIAL,PENDING,E3,NO,"Display the sex-specific band with a source, or label it explicitly as display bounds"
+MED-07,MED,donate_eligible is clinically valid and correctly labelled,APPLICABLE,BLOCKED,PENDING,E2,NO,Specialist medical review; do not change the rule or label without separate authorization
+MED-08,MED,No medical threshold or claim was changed during the acceptance work,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-01,TEST,Engine test suite passes,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-02,TEST,Pipeline test suite passes,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-03,TEST,Component and shared-header suite passes for Tool 041,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-04,TEST,Existing acceptance-evidence source-scan test passes,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-05,TEST,TypeScript strict check passes,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-06,TEST,ESLint passes with no errors,APPLICABLE,PASS,PENDING,E3,YES,Resolve the set-state-in-effect warning and the unused import when code changes are authorized
+TEST-07,TEST,A production Next.js build succeeds for this source,APPLICABLE,PASS,PENDING,E4,YES,none
+TEST-08,TEST,Local browser harness passes all checks,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-09,TEST,Published Preview browser harness passes all checks,APPLICABLE,PASS,PENDING,E4,YES,none
+TEST-10,TEST,The deployed source hashes match the local working tree,APPLICABLE,PASS,PENDING,E3,YES,none
+TEST-11,TEST,Test evidence is not aggregated across environments without overlap analysis,APPLICABLE,PASS,PENDING,E3,YES,none
+DEP-01,DEP,Exactly one Preview deployment was created for Tool 041,APPLICABLE,PASS,PENDING,E4,YES,none
+DEP-02,DEP,The deployment target is preview and productionUrl is null,APPLICABLE,PASS,PENDING,E4,YES,none
+DEP-03,DEP,Deployment protection stayed enabled and unchanged,APPLICABLE,PASS,PENDING,E4,YES,none
+DEP-04,DEP,The deployment reached READY,APPLICABLE,PASS,PENDING,E4,YES,none
+DEP-05,DEP,"The deployment was built from the uncommitted working tree, not from HEAD",APPLICABLE,PASS,PENDING,E3,YES,none
+DEP-06,DEP,No Production deployment or promotion occurred,APPLICABLE,PASS,PENDING,E4,YES,none
+DEP-07,DEP,E4 browser evidence was captured against this deployment through the authenticated proxy,APPLICABLE,PASS,PENDING,E3,YES,none
+NA-01,NA,Draft autosave and restore,NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Revisit only if the owner grants a storage exception
+NA-02,NA,Dashboard snapshot commit,NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Revisit only after a W18 and dashboard-scope decision
+NA-03,NA,Session and cloud sync,NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Revisit after an owner W18 decision
+NA-04,NA,"Per-user memory with consent, TTL, view and delete",NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Revisit at platform level after W18
+NA-05,NA,Row-level-security negative test for a Tool 041 write path,NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Track at platform level when a storage path is approved
+NA-06,NA,Backup and disaster recovery for Tool 041 data,NOT_APPLICABLE,NOT_APPLICABLE,NOT_DECISIONED,E2,NO,Revisit if persistence is approved

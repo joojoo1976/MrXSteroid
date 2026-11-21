@@ -77,6 +77,11 @@ function createFakeGateway() {
         getGatewayName: () => 'KASHIER_EGYPT',
         createInvoice: async () => { throw new Error('createInvoice not used in Phase 4'); },
         verifyWebhook: async () => ({ valid: true }),
+        // GLOBAL now uses the Fourthwall cart flow; the service resolves this
+        // mapping before calling createPaymentSession.
+        resolveProductMapping: (tierId: string) => ({
+            fourthwallProductId: `fw-product-${tierId}`,
+        }),
         createPaymentSession: async (params: any) => {
             calls.push(params);
             return {
@@ -233,7 +238,9 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(res.amount).toBe(49.99);
         expect(res.paymentMethods).toEqual(['card']);
         expect(res.merchantId).toBe('MID-TEST-GLOBAL');
-        expect(gateway.calls[0].paymentMethods).toEqual(['card']);
+        // Fourthwall receives a product mapping, not Kashier card methods.
+        expect(gateway.calls[0]).toMatchObject({ productId: 'fw-product-digital' });
+        expect(gateway.calls[0].paymentMethods).toBeUndefined();
     });
 
     it('Egypt methods are card,wallet and the region webhook is used as serverWebhook', async () => {

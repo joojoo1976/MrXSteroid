@@ -1,0 +1,301 @@
+   ▲ Next.js 15.5.23
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 39.4s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/506) ...
+✅ Supabase configured: https://alghvtpkpspnqupbvodu.supabase.co
+✅ Supabase configured: https://alghvtpkpspnqupbvodu.supabase.co
+✅ Supabase configured: https://alghvtpkpspnqupbvodu.supabase.co
+   Generating static pages (126/506) 
+   Generating static pages (252/506) 
+   Generating static pages (379/506) 
+ ✓ Generating static pages (506/506)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                      Size  First Load JS
+┌ ƒ /                                                                         30.6 kB         457 kB
+├ ƒ /_not-found                                                                  1 kB         103 kB
+├ ƒ /about                                                                    2.94 kB         259 kB
+├ ƒ /accessibility                                                            2.91 kB         259 kB
+├ ƒ /admin                                                                    33.8 kB         402 kB
+├ ƒ /admin-analytics                                                          9.16 kB         272 kB
+├ ƒ /all-links                                                                   4 kB         154 kB
+├ ƒ /api/admin/payment-receipts                                                 633 B         103 kB
+├ ƒ /api/admin/payment-receipts/[id]                                            633 B         103 kB
+├ ƒ /api/admin/payment-receipts/[id]/receipt                                    633 B         103 kB
+├ ƒ /api/admin/payouts                                                          633 B         103 kB
+├ ƒ /api/admin/payouts/approve                                                  633 B         103 kB
+├ ƒ /api/admin/payouts/gates                                                    633 B         103 kB
+├ ƒ /api/admin/seo/audit-log                                                    633 B         103 kB
+├ ƒ /api/admin/seo/blocks                                                       633 B         103 kB
+├ ƒ /api/admin/seo/cannibalization                                              633 B         103 kB
+├ ƒ /api/admin/seo/cannibalization/[id]                                         633 B         103 kB
+├ ƒ /api/admin/seo/clusters                                                     633 B         103 kB
+├ ƒ /api/admin/seo/clusters/[id]                                                633 B         103 kB
+├ ƒ /api/admin/seo/competitors                                                  633 B         103 kB
+├ ƒ /api/admin/seo/keywords                                                     633 B         103 kB
+├ ƒ /api/admin/seo/keywords/[id]                                                633 B         103 kB
+├ ƒ /api/admin/seo/pins/[id]                                                    633 B         103 kB
+├ ƒ /api/admin/seo/reports/[report]                                             633 B         103 kB
+├ ƒ /api/admin/seo/seasonal                                                     633 B         103 kB
+├ ƒ /api/admin/seo/seasonal/[id]                                                633 B         103 kB
+├ ƒ /api/admin/seo/source-health                                                633 B         103 kB
+├ ƒ /api/admin/seo/sources                                                      633 B         103 kB
+├ ƒ /api/affiliate/create                                                       633 B         103 kB
+├ ƒ /api/affiliate/me                                                           633 B         103 kB
+├ ƒ /api/affiliate/referrals                                                    633 B         103 kB
+├ ƒ /api/affiliate/stats                                                        633 B         103 kB
+├ ƒ /api/auth/check-password                                                    633 B         103 kB
+├ ƒ /api/auth/resolve-phone                                                     633 B         103 kB
+├ ƒ /api/auth/welcome                                                           633 B         103 kB
+├ ƒ /api/calculate                                                              633 B         103 kB
+├ ƒ /api/checkout/instapay                                                      633 B         103 kB
+├ ƒ /api/checkout/kashier/session                                               633 B         103 kB
+├ ƒ /api/contact                                                                633 B         103 kB
+├ ƒ /api/dashboard/metrics                                                      633 B         103 kB
+├ ƒ /api/dashboard/user                                                         633 B         103 kB
+├ ƒ /api/download                                                               633 B         103 kB
+├ ƒ /api/geo                                                                    633 B         103 kB
+├ ƒ /api/guest-claims/redeem                                                    633 B         103 kB
+├ ƒ /api/guest-claims/status                                                    633 B         103 kB
+├ ƒ /api/payments/callback                                                      633 B         103 kB
+├ ƒ /api/payments/create-invoice                                                633 B         103 kB
+├ ƒ /api/payments/create-session                                                633 B         103 kB
+├ ƒ /api/payments/evaluate-risk                                                 633 B         103 kB
+├ ƒ /api/payments/reconciliation                                                633 B         103 kB
+├ ƒ /api/payments/reconciliation/run                                            633 B         103 kB
+├ ƒ /api/payments/webhook                                                       633 B         103 kB
+├ ƒ /api/payouts/webhook                                                        633 B         103 kB
+├ ƒ /api/referral/track                                                         633 B         103 kB
+├ ƒ /api/seo/competitors                                                        633 B         103 kB
+├ ƒ /api/seo/keywords                                                           633 B         103 kB
+├ ƒ /api/seo/refresh                                                            633 B         103 kB
+├ ƒ /api/seo/report                                                             633 B         103 kB
+├ ƒ /api/seo/search-log                                                         633 B         103 kB
+├ ƒ /api/smarttools/ai/explain                                                  633 B         103 kB
+├ ƒ /api/smarttools/search                                                      633 B         103 kB
+├ ƒ /api/smarttools/tool-147                                                    633 B         103 kB
+├ ƒ /api/smarttools/tool-249                                                    633 B         103 kB
+├ ƒ /api/tools/logs                                                             633 B         103 kB
+├ ƒ /api/translate                                                              633 B         103 kB
+├ ƒ /api/webhooks/fourthwall                                                    633 B         103 kB
+├ ƒ /api/webhooks/kashier                                                       633 B         103 kB
+├ ○ /apple-icon.png                                                               0 B            0 B
+├ ƒ /auth/callback                                                            4.37 kB         180 kB
+├ ƒ /blog                                                                     3.76 kB         260 kB
+├ ƒ /bodyfat                                                                    257 B         121 kB
+├ ƒ /cancel                                                                   4.86 kB         268 kB
+├ ƒ /careers                                                                  3.91 kB         260 kB
+├ ƒ /ccpa                                                                     2.85 kB         259 kB
+├ ƒ /checkout                                                                 10.9 kB         390 kB
+├ ƒ /claim-order                                                              9.12 kB         272 kB
+├ ƒ /contact                                                                  3.06 kB         353 kB
+├ ƒ /cookies                                                                  3.25 kB         260 kB
+├ ƒ /cycle                                                                    8.15 kB         272 kB
+├ ƒ /dashboard                                                                19.9 kB         284 kB
+├ ƒ /diagnostic                                                               6.04 kB         221 kB
+├ ƒ /disclaimer                                                                3.4 kB         260 kB
+├ ƒ /evaluate-risk                                                            1.62 kB         107 kB
+├ ƒ /faq                                                                      3.31 kB         260 kB
+├ ƒ /gdpr                                                                     2.88 kB         259 kB
+├ ƒ /genetic                                                                  5.51 kB         277 kB
+├ ƒ /halflife                                                                 5.75 kB         389 kB
+├ ○ /icon.png                                                                     0 B            0 B
+├ ƒ /injection                                                                4.63 kB         278 kB
+├ ƒ /lab                                                                      2.65 kB         302 kB
+├ ƒ /login                                                                    6.46 kB         317 kB
+├ ƒ /macro                                                                      265 B         151 kB
+├ ƒ /master-calculator                                                        3.17 kB         265 kB
+├ ƒ /medical-disclaimer                                                       2.52 kB         266 kB
+├ ƒ /payment-diagnostic                                                       7.17 kB         187 kB
+├ ƒ /payment-pending                                                          5.79 kB         306 kB
+├ ƒ /premium-resources                                                        3.61 kB         153 kB
+├ ƒ /privacy                                                                  2.07 kB         259 kB
+├ ƒ /profile                                                                  8.21 kB         265 kB
+├ ƒ /profile/affiliate                                                        5.87 kB         262 kB
+├ ƒ /refund                                                                   3.23 kB         260 kB
+├ ƒ /representative                                                           7.08 kB         270 kB
+├ ƒ /reset-password                                                           3.41 kB         314 kB
+├ ƒ /returns                                                                  3.08 kB         260 kB
+├ ƒ /shipping                                                                 3.18 kB         260 kB
+├ ƒ /signup                                                                   9.31 kB         320 kB
+├ ƒ /sitemap                                                                  3.44 kB         260 kB
+├ ƒ /smart-landing                                                            8.97 kB         327 kB
+├ ƒ /smarttools                                                                  3 kB         115 kB
+├ ● /smarttools/[category]                                                    1.09 kB         113 kB
+├   ├ /smarttools/nutrition
+├   ├ /smarttools/ai-nutrition-vision
+├   ├ /smarttools/body-composition
+├   └ [+12 more paths]
+├ ● /smarttools/[category]/[tool]                                              868 kB        1.46 MB
+├   ├ /smarttools/nutrition/macro
+├   ├ /smarttools/body-composition/bodyfat
+├   ├ /smarttools/injection-formulation/injection
+├   └ [+265 more paths]
+├ ƒ /smarttools/aromatization-risk                                              633 B         103 kB
+├ ƒ /smarttools/bmi                                                             633 B         103 kB
+├ ƒ /smarttools/bmr-tdee                                                        633 B         103 kB
+├ ƒ /smarttools/body-composition/body-fat                                     1.76 kB         104 kB
+├ ƒ /smarttools/body-composition/vision                                         633 B         103 kB
+├ ƒ /smarttools/genetic-potential                                              2.1 kB         105 kB
+├ ƒ /smarttools/hcg-serm-protocol                                               633 B         103 kB
+├ ƒ /smarttools/hpta-recovery                                                   633 B         103 kB
+├ ƒ /smarttools/injection-formulation/tool-144-homebrew-chemistry-calculator    633 B         103 kB
+├ ƒ /smarttools/multi-ester-pharmacokinetics                                    633 B         103 kB
+├ ƒ /smarttools/one-rep-max                                                     633 B         103 kB
+├ ƒ /smarttools/pct-timing                                                      633 B         103 kB
+├ ƒ /smarttools/protein-needs                                                   633 B         103 kB
+├ ƒ /smarttools/rest-timer                                                      633 B         103 kB
+├ ○ /smarttools/sitemap.xml                                                     633 B         103 kB
+├ ƒ /smarttools/strength-standards                                              633 B         103 kB
+├ ƒ /smarttools/timeline                                                        633 B         103 kB
+├ ƒ /smarttools/tool-006-estrogen-prolactin                                     633 B         103 kB
+├ ƒ /smarttools/tool-007-bloodwork-analyzer                                     633 B         103 kB
+├ ƒ /smarttools/tool-008-side-effect-tracker                                    633 B         103 kB
+├ ƒ /smarttools/tool-009-injection-site-rotator                                 633 B         103 kB
+├ ƒ /smarttools/tool-010-compound-stack-builder                                 633 B         103 kB
+├ ƒ /smarttools/tool-011-progress-tracker                                       633 B         103 kB
+├ ƒ /smarttools/tool-012-calorie-adjuster                                       633 B         103 kB
+├ ƒ /smarttools/tool-013-macro-optimizer                                        633 B         103 kB
+├ ƒ /smarttools/tool-014-water-retention                                        633 B         103 kB
+├ ƒ /smarttools/tool-015-shbg-modulator                                         633 B         103 kB
+├ ƒ /smarttools/tool-016-half-life-calculator                                   633 B         103 kB
+├ ƒ /smarttools/tool-016-libido-calculator                                      633 B         103 kB
+├ ƒ /smarttools/tool-017-drug-interaction                                       633 B         103 kB
+├ ƒ /smarttools/tool-017-injection-volume                                       633 B         103 kB
+├ ƒ /smarttools/tool-018-hpta-recovery                                          633 B         103 kB
+├ ƒ /smarttools/tool-019-cardio-monitor                                         633 B         103 kB
+├ ƒ /smarttools/tool-020-genetic-potential                                      633 B         103 kB
+├ ƒ /smarttools/tool-021-peptide-protocol                                       633 B         103 kB
+├ ƒ /smarttools/tool-022-half-life-stacker                                      633 B         103 kB
+├ ƒ /smarttools/tool-023-trt-optimization                                       633 B         103 kB
+├ ƒ /smarttools/tool-024-bloodwork-interpreter                                  633 B         103 kB
+├ ƒ /smarttools/tool-025-drug-interaction-pro                                   633 B         103 kB
+├ ƒ /smarttools/tool-026-injection-pain                                         633 B         103 kB
+├ ƒ /smarttools/tool-027-ester-conversion                                       633 B         103 kB
+├ ƒ /smarttools/tool-028-stacking-synergy                                       633 B         103 kB
+├ ƒ /smarttools/tool-029-side-effect-early-warning                              633 B         103 kB
+├ ƒ /smarttools/tool-030-cycle-cost-calculator                                  633 B         103 kB
+├ ƒ /smarttools/tool-031-cycle-length-optimizer                                 633 B         103 kB
+├ ƒ /smarttools/tool-032-advanced-pct-planner                                   633 B         103 kB
+├ ƒ /smarttools/tool-033-bloodwork-trend-analyzer                               633 B         103 kB
+├ ƒ /smarttools/tool-034-compound-clearance                                     633 B         103 kB
+├ ƒ /smarttools/tool-035-hormone-conversion                                     633 B         103 kB
+├ ƒ /smarttools/tool-036-injection-schedule                                     633 B         103 kB
+├ ƒ /smarttools/tool-037-side-effect-probability                                633 B         103 kB
+├ ƒ /smarttools/tool-038-stack-compatibility                                    633 B         103 kB
+├ ƒ /smarttools/tool-039-liver-enzyme-tracker                                   633 B         103 kB
+├ ƒ /smarttools/tool-040-lipid-profile-optimizer                                633 B         103 kB
+├ ƒ /smarttools/tool-041-hematocrit-monitor                                     633 B         103 kB
+├ ƒ /smarttools/tool-042-estrogen-management                                    633 B         103 kB
+├ ƒ /smarttools/tool-043-prolactin-management                                   633 B         103 kB
+├ ƒ /smarttools/tool-044-dht-side-effects                                       633 B         103 kB
+├ ƒ /smarttools/tool-045-cycle-break-planner                                    633 B         103 kB
+├ ƒ /smarttools/tool-046-trt-lifetime                                           633 B         103 kB
+├ ƒ /smarttools/tool-047-fertility-preservation                                 633 B         103 kB
+├ ƒ /smarttools/tool-048-cardiovascular-risk                                    633 B         103 kB
+├ ƒ /smarttools/tool-049-bone-density                                           633 B         103 kB
+├ ƒ /smarttools/tool-050-mental-health                                          633 B         103 kB
+├ ƒ /smarttools/tool-051-peptide-dosage-calculator                              633 B         103 kB
+├ ƒ /smarttools/tool-052-growth-hormone-protocol-planner                        633 B         103 kB
+├ ƒ /smarttools/tool-053-insulin-conversion-calculator                          633 B         103 kB
+├ ƒ /smarttools/tool-054-glucose-tracker                                        633 B         103 kB
+├ ƒ /smarttools/tool-055-insulin-sensitivity-optimizer                          633 B         103 kB
+├ ƒ /smarttools/tool-056-mini-pct-calculator                                    633 B         103 kB
+├ ƒ /smarttools/tool-057-free-testosterone-manager                              633 B         103 kB
+├ ƒ /smarttools/tool-058-androgenic-balance-calculator                          633 B         103 kB
+├ ƒ /smarttools/tool-059-androgen-receptor-optimizer                            633 B         103 kB
+├ ƒ /smarttools/tool-060-5-alpha-conversion-calculator                          633 B         103 kB
+├ ƒ /smarttools/tool-061-hair-loss-tracker                                      633 B         103 kB
+├ ƒ /smarttools/tool-062-prostate-health-manager                                633 B         103 kB
+├ ƒ /smarttools/tool-063-testicular-suppression-calculator                      633 B         103 kB
+├ ƒ /smarttools/tool-064-sperm-production-optimizer                             633 B         103 kB
+├ ƒ /smarttools/tool-065-aromatase-conversion-calculator                        633 B         103 kB
+├ ƒ /smarttools/tool-066-estrogen-sensitivity-manager                           633 B         103 kB
+├ ƒ /smarttools/tool-067-estrogen-balance-calculator                            633 B         103 kB
+├ ƒ /smarttools/tool-068-gynecomastia-tracker                                   633 B         103 kB
+├ ƒ /smarttools/tool-069-detoxification-optimizer                               633 B         103 kB
+├ ƒ /smarttools/tool-070-oxidative-stress-calculator                            633 B         103 kB
+├ ƒ /smarttools/tool-071-antioxidant-manager                                    633 B         103 kB
+├ ƒ /smarttools/tool-072-systemic-inflammation-calculator                       633 B         103 kB
+├ ƒ /smarttools/tool-073-immune-system-optimizer                                633 B         103 kB
+├ ƒ /smarttools/tool-074-blood-pressure-tracker                                 633 B         103 kB
+├ ƒ /smarttools/tool-075-arterial-health-manager                                633 B         103 kB
+├ ƒ /smarttools/tool-076-blood-viscosity-calculator                             633 B         103 kB
+├ ƒ /smarttools/tool-077-nitric-oxide-optimizer                                 633 B         103 kB
+├ ƒ /smarttools/tool-078-endothelial-health-manager                             633 B         103 kB
+├ ƒ /smarttools/tool-079-fat-metabolism-calculator                              633 B         103 kB
+├ ƒ /smarttools/tool-080-mitochondrial-optimizer                                633 B         103 kB
+├ ƒ /smarttools/tool-081-cellular-aging-calculator                              633 B         103 kB
+├ ƒ /smarttools/tool-082-telomere-manager                                       633 B         103 kB
+├ ƒ /smarttools/tool-083-anti-aging-inflammation-calculator                     633 B         103 kB
+├ ƒ /smarttools/tool-084-cognitive-enhancer                                     633 B         103 kB
+├ ƒ /smarttools/tool-085-sleep-quality-manager                                  633 B         103 kB
+├ ƒ /smarttools/tool-086-cortisol-stress-calculator                             633 B         103 kB
+├ ƒ /smarttools/tool-087-mood-optimizer                                         633 B         103 kB
+├ ƒ /smarttools/tool-088-dopamine-tracker                                       633 B         103 kB
+├ ƒ /smarttools/tool-089-serotonin-manager                                      633 B         103 kB
+├ ƒ /smarttools/tool-090-female-hormone-balance-calculator                      633 B         103 kB
+├ ƒ /smarttools/tool-091-female-health-optimizer                                633 B         103 kB
+├ ƒ /smarttools/tool-092-female-dosage-calculator                               633 B         103 kB
+├ ƒ /smarttools/tool-093-menstrual-cycle-manager                                633 B         103 kB
+├ ƒ /smarttools/tool-094-pregnancy-risk-calculator                              633 B         103 kB
+├ ƒ /smarttools/tool-095-skin-health-optimizer                                  633 B         103 kB
+├ ƒ /smarttools/tool-096-hair-nail-tracker                                      633 B         103 kB
+├ ƒ /smarttools/tool-097-hydration-balance-calculator                           633 B         103 kB
+├ ƒ /smarttools/tool-098-sodium-potassium-manager                               633 B         103 kB
+├ ƒ /smarttools/tool-099-digestive-health-optimizer                             633 B         103 kB
+├ ƒ /smarttools/tool-100-comprehensive-report-generator                         633 B         103 kB
+├ ƒ /smarttools/tool-101-sarm-to-aas-transition-bridge-predictor                633 B         103 kB
+├ ƒ /smarttools/tool-102-subcutaneous-vs-intramuscular-pk-modeler               633 B         103 kB
+├ ƒ /smarttools/tool-103-renal-function-hydration-index                         633 B         103 kB
+├ ƒ /smarttools/tool-104-thyroid-metabolic-rate-dynamics                        633 B         103 kB
+├ ƒ /smarttools/tool-105-ai-health-data-fusion-hub                              633 B         103 kB
+├ ƒ /smarttools/tool-106-glycogen-supercompensation-water-modeler               633 B         103 kB
+├ ƒ /smarttools/tool-107-contest-prep-peak-week-manipulator                     633 B         103 kB
+├ ƒ /smarttools/tool-108-ai-body-composition-vision-engine                      633 B         103 kB
+├ ƒ /smarttools/tool-109-competition-readiness-posing-os                        633 B         103 kB
+├ ƒ /smarttools/tool-110-ai-meal-vision-scanner                                 633 B         103 kB
+├ ƒ /smarttools/tool-111-smart-food-macro-substitution                          633 B         103 kB
+├ ƒ /smarttools/tool-126-neuromuscular-explosiveness-modeler                    633 B         103 kB
+├ ƒ /smarttools/tool-127-ai-daily-readiness-explainer                           633 B         103 kB
+├ ƒ /smarttools/tool-128-training-load-acute-chronic-ratio                      633 B         103 kB
+├ ƒ /smarttools/tool-129-ai-adaptive-training-planner                           633 B         103 kB
+├ ƒ /smarttools/tool-130-ai-plateau-detective                                   633 B         103 kB
+├ ƒ /smarttools/tool-131-transformation-forecast-trajectory-engine              633 B         103 kB
+├ ƒ /smarttools/tool-133-rep-tempo-velocity-loss-analyzer                       633 B         103 kB
+├ ƒ /smarttools/tool-134-mobility-movement-symmetry-screen                      633 B         103 kB
+├ ƒ /smarttools/tool-135-exercise-substitution-ai                               633 B         103 kB
+├ ƒ /smarttools/tool-136-physique-golden-ratio-score                            633 B         103 kB
+├ ƒ /smarttools/tool-140-dosage-unit-conversion-engine                          633 B         103 kB
+├ ƒ /smarttools/tool-141-carrier-oil-viscosity-syringe-pressure                 633 B         103 kB
+├ ƒ /smarttools/tool-142-compound-purity-active-yield-estimator                 633 B         103 kB
+├ ƒ /smarttools/tool-143-storage-stability-thermal-degradation-estimator        633 B         103 kB
+├ ƒ /smarttools/tool-144-homebrew-chemistry-calculator                          633 B         103 kB
+├ ƒ /smarttools/tool-145-habit-intelligence-consistency-coach                   633 B         103 kB
+├ ƒ /smarttools/tool-146-ai-safety-gate-emergency-protocol                      633 B         103 kB
+├ ƒ /smarttools/tool-148-personal-fitness-memory-layer                          633 B         103 kB
+├ ƒ /smarttools/tool-149-physique-trajectory-simulator                          633 B         103 kB
+├ ƒ /smarttools/tool-150-ai-performance-command-center                          633 B         103 kB
+├ ƒ /smarttools/water-intake                                                    633 B         103 kB
+├ ƒ /success                                                                  7.34 kB         271 kB
+├ ƒ /support                                                                    866 B         103 kB
+├ ƒ /terms                                                                    2.13 kB         259 kB
+├ ƒ /timeline                                                                   343 B         426 kB
+└ ƒ /TransformationTimeline                                                     343 B         426 kB
++ First Load JS shared by all                                                  102 kB
+  ├ chunks/1255-d3668eefd1b4a69b.js                                           46.1 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                                       54.2 kB
+  └ other shared chunks (total)                                               2.14 kB
+
+
+ƒ Middleware                                                                  34.8 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

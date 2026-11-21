@@ -1,88 +1,235 @@
 'use client';
-
-import React, { useState } from 'react';
-import { useUserToolState, useUpdateToolState, useDebounce } from '@/lib/hooks/useToolState';
-import { calculateStackTiming, type EsterCompound, type StackTimingInput, type StackTimingResult } from '@/lib/tools/engines/tool-022-half-life-stacker';
-import { StackTimingInputSchema, StackTimingResultSchema } from '@/lib/tools/schemas/tool-022-half-life-stacker';
+import React, { useId, useMemo, useState } from 'react';
+import { useToolDisplayPreferences } from './useToolDisplayPreferences';
+import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
+import { runHalfLifeStacker, type HalfLifeStackerBuildOptions } from '@/lib/tools/r6/tool-022-half-life-stacker-pipeline';
+import {
+  TOOL_022_LIMITS,
+  evaluateStackerDraft,
+  type Tool022Draft,
+  type Tool022FieldId,
+  type Tool022IssueCode,
+  type Tool022UiState,
+} from '@/lib/tools/r6/tool-022-half-life-stacker-contract';
+import Tool022Genius from './tool-022-half-life-stacker.genius';
 import i18nJson from '@/i18n/tool-022-half-life-stacker.json';
-import { useToolI18n } from '@/lib/tools/i18nHelper';
+import { pickToolI18n } from '@/lib/tools/i18nHelper';
+
+const TOOL_SLUG = 'tool-022-half-life-stacker';
+
+const EMPTY_DRAFT: Tool022Draft = {
+  selectedCompounds: [],
+  cycleLengthWeeks: '',
+  injectionFrequency: '',
+};
+
+const STATE_KEY: Record<Tool022UiState, string> = {
+  EMPTY: 'state_empty',
+  PARTIAL: 'state_partial',
+  FULL: 'state_full',
+  INVALID: 'state_invalid',
+  DEGRADED: 'state_degraded',
+};
+
+const HINT_KEY: Record<Tool022UiState, string> = {
+  EMPTY: 'state_hint_empty',
+  PARTIAL: 'state_hint_partial',
+  FULL: 'state_hint_full',
+  INVALID: 'state_hint_invalid',
+  DEGRADED: 'state_hint_degraded',
+};
+
+const ERROR_KEY: Record<Tool022IssueCode, string> = {
+  invalid_number: 'error_invalid_number',
+  out_of_range: 'error_out_of_range',
+  required: 'error_required',
+  schema_mismatch: 'error_schema_mismatch',
+};
+
+// Preset compound catalog (from the engine's domain).
+const COMPOUND_CATALOG: Array<{
+  id: number; name_en: string; name_ar: string; family: string;
+  ester_type: string; half_life_days: number; release_rate: string;
+  anabolic_score: number; androgenic_score: number; description_text: string;
+}> = [
+  { id: 1, name_en: 'Testosterone Enanthate', name_ar: 'تستوستيرون إينانثات', family: 'testosterone', ester_type: 'enanthate', half_life_days: 7, release_rate: 'slow', anabolic_score: 100, androgenic_score: 100, description_text: 'Testosterone base ester' },
+  { id: 2, name_en: 'Testosterone Cypionate', name_ar: 'تستوستيرون سيبيونات', family: 'testosterone', ester_type: 'cypionate', half_life_days: 8, release_rate: 'slow', anabolic_score: 100, androgenic_score: 100, description_text: 'Testosterone base ester' },
+  { id: 3, name_en: 'Nandrolone Decanoate', name_ar: 'ناندرولون ديكانيات', family: 'nandrolone', ester_type: 'decanoate', half_life_days: 15, release_rate: 'slow', anabolic_score: 125, androgenic_score: 37, description_text: 'Nandrolone long ester' },
+  { id: 4, name_en: 'Trenbolone Acetate', name_ar: 'ترينبوولون أسيتات', family: 'trenbolone', ester_type: 'acetate', half_life_days: 3, release_rate: 'fast', anabolic_score: 500, androgenic_score: 500, description_text: 'Trenbolone short ester' },
+  { id: 5, name_en: 'Boldenone Undecylenate', name_ar: 'بولدينون أندوسيلينات', family: 'boldenone', ester_type: 'undecanoate', half_life_days: 14, release_rate: 'slow', anabolic_score: 100, androgenic_score: 50, description_text: 'Boldenone long ester' },
+];
 
 export default function Tool022HalfLifeStacker() {
-  const i18nData = useToolI18n(i18nJson);
-  const { data: savedState } = useUserToolState('user-id');
-  const { mutate: updateToolState, isPending } = useUpdateToolState();
-  const debouncedSave = useDebounce(updateToolState, 1000);
+  const tool = requireTool(TOOL_SLUG);
+  const neighbors = getToolNeighbors(TOOL_SLUG);
+  const { locale, unitSystem } = useToolDisplayPreferences();
+  const t = pickToolI18n(i18nJson, locale);
+  const isRtl = locale === 'ar';
+  const uid = useId();
 
-  const [cycleLength, setCycleLength] = useState(8);
-  const [injectionFrequency, setInjectionFrequency] = useState<StackTimingInput['injection_frequency']>('every-other-day');
-  const [selectedCompounds, setSelectedCompounds] = useState<EsterCompound[]>([]);
-  const [calculatedResult, setCalculatedResult] = useState<StackTimingResult | null>(null);
-  const [validationError, setValidationError] = useState(false);
-  const savedResult = StackTimingResultSchema.safeParse(savedState?.half_life_stack_result);
-  const result = calculatedResult ?? (savedResult.success ? savedResult.data : null);
+  const [draft, setDraft] = useState<Tool022Draft>(EMPTY_DRAFT);
 
-  const addCompound = () => {
-    const newCompound: EsterCompound = {
-      id: Date.now(),
-      name_en: 'Testosterone Enanthate',
-      name_ar: 'اختبارون إينانات',
-      family: 'testosterone',
-      ester_type: 'enanthate',
-      half_life_days: 7,
-      release_rate: 'slow',
-      anabolic_score: 100,
-      androgenic_score: 100,
-      description_text: 'Testosterone base ester',
-    };
-    setSelectedCompounds(prev => [...prev, newCompound]);
-  };
+  const options = useMemo<HalfLifeStackerBuildOptions>(
+    () => ({
+      calculatedAt: new Date().toISOString(),
+      recordedAt: new Date().toISOString(),
+      locale,
+      unitSystem,
+      snapshotType: 'submitted_snapshot',
+      timezone: 'UTC',
+      source: 'manual',
+    }),
+    [locale, unitSystem],
+  );
 
-  const calculate = () => {
-    const input: StackTimingInput = {
-      compounds: selectedCompounds,
-      cycle_length_weeks: cycleLength,
-      injection_frequency: injectionFrequency,
-    };
-    const validation = StackTimingInputSchema.safeParse(input);
-    if (!validation.success) {
-      setValidationError(true);
-      return;
-    }
-    setValidationError(false);
-    const r = calculateStackTiming(validation.data);
-    setCalculatedResult(r);
-    debouncedSave({ ...savedState, half_life_stack_result: r });
+  const evaluation = evaluateStackerDraft(draft);
+  const run = evaluation.input ? runHalfLifeStacker(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+
+  const uiState: Tool022UiState =
+    evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
+
+  const issueFor = (field: Tool022FieldId) => evaluation.issues.find((issue) => issue.field === field);
+
+  const issueMessage = (code: Tool022IssueCode): string => t[ERROR_KEY[code]] ?? t.error_required;
+
+  const setField = (patch: Partial<Tool022Draft>) => setDraft((previous) => ({ ...previous, ...patch }));
+
+  const toggleCompound = (compound: typeof COMPOUND_CATALOG[0]) => {
+    setDraft((previous) => {
+      const exists = previous.selectedCompounds.some((c) => c.id === compound.id);
+      if (exists) {
+        return { ...previous, selectedCompounds: previous.selectedCompounds.filter((c) => c.id !== compound.id) };
+      }
+      if (previous.selectedCompounds.length >= TOOL_022_LIMITS.compoundsMax) return previous;
+      return { ...previous, selectedCompounds: [...previous.selectedCompounds, compound as any] };
+    });
   };
 
   return (
-    <div className="pct-timing-tool p-6" dir={i18nData.dir}>
-      <h2 className="text-2xl font-bold mb-6">{i18nData.tool_name}</h2>
-      <div className="space-y-4">
-        <div><label htmlFor="tool-022-cycle-length" className="block text-sm font-medium mb-2" dir={i18nData.dir}>{i18nData.cycle_length_weeks}:</label> <input id="tool-022-cycle-length" type="number" value={cycleLength} onChange={(e) => setCycleLength(parseInt(e.target.value, 10))} min="1" max="52" className="w-full rounded border p-2" dir="ltr" /></div>
-        <div><label htmlFor="tool-022-injection-frequency" className="block text-sm font-medium mb-2" dir={i18nData.dir}>{i18nData.injection_frequency}:</label> <select id="tool-022-injection-frequency" value={injectionFrequency} onChange={(e) => setInjectionFrequency(e.target.value as StackTimingInput['injection_frequency'])} className="w-full rounded border p-2" dir="ltr"><option value="daily">{i18nData.daily}</option><option value="every-other-day">{i18nData.every_other_day}</option><option value="2x-week">{i18nData.twice_weekly}</option><option value="1x-week">{i18nData.weekly}</option></select></div>
-        <button onClick={addCompound} className="mt-2 w-full py-2 rounded bg-green-600 text-white font-medium hover:bg-green-700 transition-colors" disabled={isPending}>{i18nData.add_compound}</button>
-        {validationError && <p role="alert" className="text-sm text-red-700">{i18nData.invalid_input}</p>}
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        <button onClick={calculate} className="mt-6 w-full py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" disabled={isPending || selectedCompounds.length === 0}> {isPending ? i18nData.calculating : i18nData.calculate} </button>
-        {isPending && <p className="mt-2 text-sm text-zinc-500">Saving to database...</p>}
-
-        {result && <div className="mt-6 p-4 rounded bg-zinc-50" dir="ltr">
-          <p className="mb-3 text-xs text-amber-800">{i18nData.disclaimer}</p>
-          <p className="text-zinc-600 font-bold">{i18nData.peak_platform_days}: {result.peak_platform_days} days</p>
-          <p className="text-zinc-500">{i18nData.total_cycle_half_lives}: {result.total_cycle_half_lives}</p>
-          <p className="text-zinc-500">{i18nData.recommended_pct_start_days}: {result.recommended_pct_start_days} days</p>
-          <p className="text-zinc-500">{i18nData.washout_complete_days}: {result.washout_complete_days} days</p>
-          <p className="text-zinc-500">{i18nData.ester_bottleneck}: {result.ester_bottleneck.name_en} ({result.ester_bottleneck.ester_type})</p>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.compound_peak_times && Object.entries(result.compound_peak_times as Record<string, number>).map(([name, peakDays]) => <li key={name}>{name}: {peakDays} days peak</li>)}
-          </ul>
-          <ul className="mt-3 space-y-1 text-sm text-zinc-600">
-            {result.optimal_injection_schedule.map((scheduleEntry, index) => <li key={index}>{scheduleEntry}</li>)}
-          </ul>
-        </div>}
+    <section
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-5xl px-4 py-6"
+      aria-labelledby={`${uid}-title`}
+      data-r6-tool={TOOL_SLUG}
+    >
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">
+          {t.tool_name}
+        </h1>
+        <div
+          data-r6-state={uiState}
+          aria-live="polite"
+          className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          {t.state_label}: {t[STATE_KEY[uiState]]}
+        </div>
       </div>
-    </div>
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+
+      <div className="mb-4 space-y-3">
+        <p className="text-[10px] font-bold text-zinc-500">{t.select_compounds}</p>
+        <div className="flex flex-wrap gap-2">
+          {COMPOUND_CATALOG.map((compound) => {
+            const selected = draft.selectedCompounds.some((c) => c.id === compound.id);
+            return (
+              <button
+                key={compound.id}
+                type="button"
+                onClick={() => toggleCompound(compound)}
+                className={`rounded border px-3 py-1.5 text-xs font-bold ${selected ? 'border-lime-400 bg-lime-400 text-slate-950' : 'border-zinc-700 bg-zinc-800 text-zinc-200'}`}
+              >
+                {isRtl ? compound.name_ar : compound.name_en}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_cycle_length}
+          <input
+            data-r6-field="cycleLengthWeeks"
+            data-r6-slider="true"
+            type="number"
+            min={TOOL_022_LIMITS.cycleLengthWeeksMin}
+            max={TOOL_022_LIMITS.cycleLengthWeeksMax}
+            step={1}
+            value={draft.cycleLengthWeeks}
+            aria-required="true"
+            aria-invalid={issueFor('cycleLengthWeeks') ? true : undefined}
+            onChange={(e) => setField({ cycleLengthWeeks: e.target.value })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white"
+          />
+        </label>
+        <label className="text-[10px] font-bold text-zinc-500">
+          {t.field_injection_frequency}
+          <select
+            data-r6-field="injectionFrequency"
+            aria-required="true"
+            value={draft.injectionFrequency}
+            onChange={(e) => setField({ injectionFrequency: e.target.value as Tool022Draft['injectionFrequency'] })}
+            className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-white"
+          >
+            <option value="">{t.not_answered}</option>
+            <option value="daily">{t.daily}</option>
+            <option value="every-other-day">{t.every_other_day}</option>
+            <option value="2x-week">{t.twice_weekly}</option>
+            <option value="1x-week">{t.weekly}</option>
+          </select>
+        </label>
+      </div>
+
+      {uiState === 'INVALID' && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+          <ul className="list-disc space-y-0.5 ps-4 text-xs font-bold text-red-300">
+            {evaluation.issues.map((issue, index) => (
+              <li key={`${issue.field}-${issue.code}-${index}`}>{issueMessage(issue.code)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-center md:grid-cols-4">
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_peak_platform}</span>
+            <span className="font-mono text-xl font-bold text-lime-300">{result.peak_platform_days}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_washout}</span>
+            <span className="font-mono text-xl font-bold text-zinc-100">{result.washout_complete_days}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_pct_start}</span>
+            <span className="font-mono text-xl font-bold text-amber-300">{result.recommended_pct_start_days}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-zinc-400">{t.kpi_bottleneck}</span>
+            <span className="text-sm font-bold text-zinc-100">{isRtl ? result.ester_bottleneck.name_ar : result.ester_bottleneck.name_en}</span>
+          </div>
+        </div>
+      )}
+
+      {uiState === 'DEGRADED' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">
+          {t.state_hint_degraded}
+        </div>
+      )}
+
+      <Tool022Genius
+        locale={locale}
+        state={uiState}
+        draft={draft}
+        input={evaluation.input}
+        output={run?.ok ? run.output : null}
+        options={options}
+        prevTool={{ slug: neighbors.prevTool.slug, titleEn: neighbors.prevTool.titleEn, titleAr: neighbors.prevTool.titleAr }}
+        nextTool={{ slug: neighbors.nextTool.slug, titleEn: neighbors.nextTool.titleEn, titleAr: neighbors.nextTool.titleAr }}
+      />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
+    </section>
   );
 }
-

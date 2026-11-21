@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Create Affiliate'
+method: POST
+url: '{{base_url}}/api/affiliate/create'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{userId}}",
+      "code": "MYCODE"
+    }

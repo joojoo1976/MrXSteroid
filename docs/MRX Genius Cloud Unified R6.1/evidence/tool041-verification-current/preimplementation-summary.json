@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-11-14T04:24:57.205Z",
+  "ledgerRows": 138,
+  "applicableNonCompletion": 56,
+  "evidenceClasses": {
+    "WT_VERIFICATION_LOG": 50,
+    "PREVIEW_PUBLISHED": 21,
+    "WT_LOCAL_HARNESS": 57,
+    "DOC_OR_REGISTER": 10
+  },
+  "bindingStatus": {
+    "DRIFT_LOCAL_UNTRACKED": 17,
+    "DRIFT": 83,
+    "HEAD_ONLY_UNTRACKED": 9,
+    "HEAD_TRACKED_MATCH": 23,
+    "NOT_APPLICABLE": 6
+  },
+  "currentLocalEvidence": {
+    "TEST_FILE_EXECUTED_CURRENT_LOCAL": 91,
+    "NO_CURRENT_LOCAL_TEST_FILE": 41,
+    "NOT_APPLICABLE": 6
+  },
+  "groups": [
+    {
+      "g": "A",
+      "theme": "CORE-5 / GENIUS-12 content and information architecture",
+      "n": 22,
+      "partial": 9,
+      "fail": 1,
+      "na": 11,
+      "blocked": 1,
+      "notrun": 0
+    },
+    {
+      "g": "B",
+      "theme": "Output contract / Zod schema enforcement",
+      "n": 7,
+      "partial": 5,
+      "fail": 2,
+      "na": 0,
+      "blocked": 0,
+      "notrun": 0
+    },
+    {
+      "g": "C",
+      "theme": "Medical sources and clinical semantics",
+      "n": 6,
+      "partial": 4,
+      "fail": 1,
+      "na": 0,
+      "blocked": 1,
+      "notrun": 0
+    },
+    {
+      "g": "D",
+      "theme": "Arabic / English localization",
+      "n": 6,
+      "partial": 3,
+      "fail": 3,
+      "na": 0,
+      "blocked": 0,
+      "notrun": 0
+    },
+    {
+      "g": "E",
+      "theme": "EMPTY / DEGRADED states and accessibility",
+      "n": 9,
+      "partial": 5,
+      "fail": 2,
+      "na": 1,
+      "blocked": 0,
+      "notrun": 1
+    },
+    {
+      "g": "F",
+      "theme": "Engine / schema boundary and regression tests",
+      "n": 6,
+      "partial": 6,
+      "fail": 0,
+      "na": 0,
+      "blocked": 0,
+      "notrun": 0
+    }
+  ],
+  "uniqueRemediationIds": 56,
+  "duplicates": [],
+  "validationProblems": [],
+  "currentFingerprints": {
+    "component": {
+      "local": "4a304d7926b869ae77e19edcfff312eaf99d9649",
+      "head": "5a8c7a0a93892cc924e6a8eba176677f89c7c64f"
+    },
+    "pipeline": {
+      "local": "4f94589e42fd8653340972d5c2b68e14373a5f1b",
+      "head": null
+    },
+    "schema": {
+      "local": "7f65c599de97c5f683f4df7edf4881908730d7b8",
+      "head": "f1a07b95ba80f39e4b6868fe3976b1734c76ad8d"
+    },
+    "engine": {
+      "local": "db55a023f747ba79d0509f88523ba4e538942abb",
+      "head": "db55a023f747ba79d0509f88523ba4e538942abb"
+    },
+    "i18n": {
+      "local": "c937cb02df4ead2bfadd93ceb25c2347673713d3",
+      "head": "c937cb02df4ead2bfadd93ceb25c2347673713d3"
+    }
+  },
+  "citedSnapshots": {
+    "component": "2eb85043c8764fec0137e9de6ae45585ddb1a455",
+    "pipeline": "47253c5d7be22b7af10bc8582fbe84583a06cb6d",
+    "schema": "cbda2e027393af356651d27b17c2e6ea0d9471f6"
+  }
+}

@@ -12,6 +12,7 @@ export const ProlactinInputSchema = z.object({
 });
 
 export type ProlactinInput = z.infer<typeof ProlactinInputSchema>;
+export type ProlactinResult = z.infer<typeof ProlactinResultSchema>;
 
 const band = z.enum(['normal', 'borderline', 'high', 'very-high']);
 

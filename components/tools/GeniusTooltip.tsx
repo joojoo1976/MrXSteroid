@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 
 export type TooltipSource = 'engine' | 'static' | 'not_available';
 
@@ -13,86 +13,104 @@ export interface GeniusTooltipProps {
 }
 
 const SOURCE_LABELS: Record<TooltipSource, { en: string; ar: string }> = {
-  engine: { en: 'From engine', ar: 'من المحرك' },
-  static: { en: 'Static', ar: 'ثابت' },
-  not_available: { en: 'NOT_AVAILABLE', ar: 'غير متاح' },
+  engine: { en: 'From deterministic engine', ar: 'من المحرك الحتمي' },
+  static: { en: 'Static explanation', ar: 'شرح ثابت' },
+  not_available: { en: 'Unavailable in this tool', ar: 'غير متاح في هذه الأداة' },
 };
 
+/** Accessible explanation affordance that never steals behavior from its child control. */
 export function GeniusTooltip({ label, description, source, locale = 'en', children }: GeniusTooltipProps) {
   const isAr = locale === 'ar';
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const ref = useRef<HTMLDivElement>(null);
+  const [pinned, setPinned] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
   const sourceLabel = SOURCE_LABELS[source][isAr ? 'ar' : 'en'];
 
-  useEffect(() => {
-    const readTheme = () => {
-      const stored = localStorage.getItem('theme') || 'system';
-      if (stored === 'system') {
-        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      } else {
-        setTheme(stored === 'dark' ? 'dark' : 'light');
-      }
-    };
-    readTheme();
-    const handler = () => readTheme();
-    window.addEventListener('storage', handler);
-    const observer = new MutationObserver(handler);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => {
-      window.removeEventListener('storage', handler);
-      observer.disconnect();
-    };
-  }, []);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setOpen((prev) => !prev);
-    } else if (e.key === 'Escape') {
-      setOpen(false);
-    }
-  }, []);
+  const closeTooltip = () => {
+    setPinned(false);
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setPinned(false);
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setPinned(false);
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [open]);
 
   return (
     <div
-      ref={ref}
-      className="relative inline-block"
+      ref={wrapperRef}
+      className="relative inline-flex max-w-full items-start gap-1"
       onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="button"
-      aria-label={label}
-      aria-expanded={open}
+      onMouseLeave={() => {
+        if (!pinned) setOpen(false);
+      }}
+      onFocusCapture={() => setOpen(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null) && !pinned) {
+          setOpen(false);
+        }
+      }}
     >
       {children}
+      <button
+        type="button"
+        className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-amber-400 bg-white text-xs font-bold leading-none text-amber-700 shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
+        aria-label={isAr ? `مساعدة: ${label}` : `Help: ${label}`}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => {
+          // Focus arrives before click, so pinning must derive from pinned—not open.
+          const nextPinned = !pinned;
+          setPinned(nextPinned);
+          setOpen(nextPinned);
+        }}
+      >
+        ?
+      </button>
+
       {open && (
         <div
-          className={`absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 rounded-lg shadow-xl text-sm border ${
-            theme === 'dark'
-              ? 'bg-zinc-900 border-zinc-700 text-zinc-300'
-              : 'bg-white border-zinc-200 text-zinc-700'
-          }`}
+          id={panelId}
           role="tooltip"
+          className={`absolute top-full z-[100] mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-amber-400 bg-white p-3 text-sm text-zinc-800 shadow-xl ${isAr ? 'left-0 text-right' : 'right-0 text-left'}`}
         >
-          <div className="font-bold text-gold-500 mb-1">{label}</div>
-          <div className={theme === 'dark' ? 'text-zinc-300 mb-2' : 'text-zinc-600 mb-2'}>{description}</div>
-          <div className={`text-xs border-t pt-1 ${theme === 'dark' ? 'text-zinc-500 border-zinc-700' : 'text-zinc-400 border-zinc-200'}`}>
-            {isAr ? 'المصدر:' : 'Source:'} {sourceLabel}
+          <span
+            aria-hidden="true"
+            className={`absolute -top-2 h-4 w-4 rotate-45 border-l border-t border-amber-400 bg-white ${isAr ? 'left-3' : 'right-3'}`}
+          />
+          <div className="relative">
+            <div className="mb-1 font-bold text-amber-700">{label}</div>
+            <div className="mb-2 text-zinc-700">{description}</div>
+            <div className="border-t border-amber-200 pt-1 text-xs text-zinc-500">
+              {isAr ? 'المصدر:' : 'Source:'} {sourceLabel}
+            </div>
+            <button
+              type="button"
+              className="mt-2 rounded border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              onClick={closeTooltip}
+            >
+              {isAr ? 'إغلاق' : 'Close'}
+            </button>
           </div>
         </div>
       )}

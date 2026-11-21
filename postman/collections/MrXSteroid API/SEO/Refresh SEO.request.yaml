@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Refresh SEO'
+method: POST
+url: '{{base_url}}/api/seo/refresh'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "force": true
+    }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get SEO Report'
+method: GET
+url: '{{base_url}}/api/seo/report'
+order: 3000

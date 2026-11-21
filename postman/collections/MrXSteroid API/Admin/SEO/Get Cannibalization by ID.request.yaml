@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get Cannibalization by ID'
+method: GET
+url: '{{base_url}}/api/admin/seo/cannibalization/{{id}}'
+order: 5000
+pathVariables:
+  - key: id
+    value: '{{cannibalization_id}}'
+    description: Cannibalization record ID

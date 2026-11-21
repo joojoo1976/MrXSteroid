@@ -1,0 +1,5 @@
+$kind: http-request
+name: 'Get User'
+method: GET
+url: '{{base_url}}/api/dashboard/user'
+order: 1000

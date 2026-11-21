@@ -1,0 +1,2377 @@
+{
+  "publishedCount": 268,
+  "allCount": 268,
+  "plannedCount": 0,
+  "duplicateToolIds": [],
+  "duplicateSlugs": [],
+  "duplicateHrefs": [],
+  "published": [
+    {
+      "toolId": "mrx.tool.macro",
+      "slug": "macro",
+      "href": "/smarttools/nutrition/macro",
+      "order": 10,
+      "titleEn": "Adaptive Macro Calculator",
+      "titleAr": "حاسبة الماكروز التكيفية"
+    },
+    {
+      "toolId": "mrx.tool.bodyfat",
+      "slug": "bodyfat",
+      "href": "/smarttools/body-composition/bodyfat",
+      "order": 20,
+      "titleEn": "FFMI & Body Fat Analyzer",
+      "titleAr": "محلل الكتلة الخالية من الدهون ونسبة الدهون"
+    },
+    {
+      "toolId": "mrx.tool.injection",
+      "slug": "injection",
+      "href": "/smarttools/injection-formulation/injection",
+      "order": 30,
+      "titleEn": "Interactive Injection Map",
+      "titleAr": "خريطة الحقن التفاعلية"
+    },
+    {
+      "toolId": "mrx.tool.halflife",
+      "slug": "halflife",
+      "href": "/smarttools/pharmacokinetics/halflife",
+      "order": 40,
+      "titleEn": "Half-Life Simulator",
+      "titleAr": "محاكي نصف العمر"
+    },
+    {
+      "toolId": "mrx.tool.lab",
+      "slug": "lab",
+      "href": "/smarttools/medical-monitoring/lab",
+      "order": 50,
+      "titleEn": "Smart Lab Reference",
+      "titleAr": "المرجع الذكي للتحاليل"
+    },
+    {
+      "toolId": "mrx.tool.genetic",
+      "slug": "genetic",
+      "href": "/smarttools/training-recovery/genetic",
+      "order": 60,
+      "titleEn": "Genetic Potential Calculator",
+      "titleAr": "حاسبة الإمكانات الوراثية"
+    },
+    {
+      "toolId": "mrx.tool.cycle",
+      "slug": "cycle",
+      "href": "/smarttools/cycle-management/cycle",
+      "order": 70,
+      "titleEn": "Cycle Architect",
+      "titleAr": "مهندس الدورة"
+    },
+    {
+      "toolId": "mrx.tool.timeline",
+      "slug": "timeline",
+      "href": "/smarttools/training-recovery/timeline",
+      "order": 80,
+      "titleEn": "Transformation Timeline",
+      "titleAr": "الجدول الزمني للتحول"
+    },
+    {
+      "toolId": "mrx.tool.master-calculator",
+      "slug": "master-calculator",
+      "href": "/smarttools/nutrition/master-calculator",
+      "order": 90,
+      "titleEn": "Master Calculator",
+      "titleAr": "الحاسبة الشاملة"
+    },
+    {
+      "toolId": "mrx.tool.multi-ester-pharmacokinetics",
+      "slug": "multi-ester-pharmacokinetics",
+      "href": "/smarttools/pharmacokinetics/multi-ester-pharmacokinetics",
+      "order": 100,
+      "titleEn": "Multi-Ester PK Simulator",
+      "titleAr": "محاكي تراكم الإسترات"
+    },
+    {
+      "toolId": "mrx.tool.hpta-recovery",
+      "slug": "hpta-recovery",
+      "href": "/smarttools/hormonal-health/hpta-recovery",
+      "order": 110,
+      "titleEn": "HPTA Recovery Modeler",
+      "titleAr": "محاكي استعادة HPTA"
+    },
+    {
+      "toolId": "mrx.tool.aromatization-risk",
+      "slug": "aromatization-risk",
+      "href": "/smarttools/hormonal-health/aromatization-risk",
+      "order": 120,
+      "titleEn": "Unvalidated Aromatization Scenario",
+      "titleAr": "سيناريو افتراضي غير متحقق للأروماتزة"
+    },
+    {
+      "toolId": "mrx.tool.pct-timing",
+      "slug": "pct-timing",
+      "href": "/smarttools/cycle-management/pct-timing",
+      "order": 130,
+      "titleEn": "PCT Timing Engine",
+      "titleAr": "محرك توقيت PCT"
+    },
+    {
+      "toolId": "mrx.tool.hcg-serm-protocol",
+      "slug": "hcg-serm-protocol",
+      "href": "/smarttools/reproductive-wellbeing/hcg-serm-protocol",
+      "order": 140,
+      "titleEn": "HCG & SERM Protocol",
+      "titleAr": "بروتوكول HCG وSERM"
+    },
+    {
+      "toolId": "mrx.tool.006-estrogen-prolactin",
+      "slug": "tool-006-estrogen-prolactin",
+      "href": "/smarttools/hormonal-health/tool-006-estrogen-prolactin",
+      "order": 200,
+      "titleEn": "Estradiol & Prolactin Record",
+      "titleAr": "سجل قيم الإستروجين والبرولاكتين"
+    },
+    {
+      "toolId": "mrx.tool.007-bloodwork-analyzer",
+      "slug": "tool-007-bloodwork-analyzer",
+      "href": "/smarttools/medical-monitoring/tool-007-bloodwork-analyzer",
+      "order": 210,
+      "titleEn": "Bloodwork Record Log",
+      "titleAr": "سجل نتائج التحاليل"
+    },
+    {
+      "toolId": "mrx.tool.008-side-effect-tracker",
+      "slug": "tool-008-side-effect-tracker",
+      "href": "/smarttools/medical-monitoring/tool-008-side-effect-tracker",
+      "order": 220,
+      "titleEn": "Side Effect Tracker",
+      "titleAr": "متتبع الآثار الجانبية"
+    },
+    {
+      "toolId": "mrx.tool.009-injection-site-rotator",
+      "slug": "tool-009-injection-site-rotator",
+      "href": "/smarttools/injection-formulation/tool-009-injection-site-rotator",
+      "order": 230,
+      "titleEn": "Injection Site History Log",
+      "titleAr": "سجل مواقع الحقن"
+    },
+    {
+      "toolId": "mrx.tool.010-compound-stack-builder",
+      "slug": "tool-010-compound-stack-builder",
+      "href": "/smarttools/cycle-management/tool-010-compound-stack-builder",
+      "order": 240,
+      "titleEn": "Compound Stack Builder",
+      "titleAr": "بناء حزمة المركبات"
+    },
+    {
+      "toolId": "mrx.tool.011-progress-tracker",
+      "slug": "tool-011-progress-tracker",
+      "href": "/smarttools/body-composition/tool-011-progress-tracker",
+      "order": 250,
+      "titleEn": "Progress Tracker",
+      "titleAr": "متتبع التقدم"
+    },
+    {
+      "toolId": "mrx.tool.012-calorie-adjuster",
+      "slug": "tool-012-calorie-adjuster",
+      "href": "/smarttools/nutrition/tool-012-calorie-adjuster",
+      "order": 260,
+      "titleEn": "Calorie Adjuster",
+      "titleAr": "معدل السعرات"
+    },
+    {
+      "toolId": "mrx.tool.013-macro-optimizer",
+      "slug": "tool-013-macro-optimizer",
+      "href": "/smarttools/nutrition/tool-013-macro-optimizer",
+      "order": 270,
+      "titleEn": "Macro Optimizer",
+      "titleAr": "محسن الماكروز"
+    },
+    {
+      "toolId": "mrx.tool.014-water-retention",
+      "slug": "tool-014-water-retention",
+      "href": "/smarttools/body-composition/tool-014-water-retention",
+      "order": 280,
+      "titleEn": "Water Retention Assessor",
+      "titleAr": "مقيم احتباس الماء"
+    },
+    {
+      "toolId": "mrx.tool.015-shbg-modulator",
+      "slug": "tool-015-shbg-modulator",
+      "href": "/smarttools/hormonal-health/tool-015-shbg-modulator",
+      "order": 290,
+      "titleEn": "SHBG Modulator",
+      "titleAr": "منظم SHBG"
+    },
+    {
+      "toolId": "mrx.tool.016-half-life",
+      "slug": "tool-016-half-life-calculator",
+      "href": "/smarttools/pharmacokinetics/tool-016-half-life-calculator",
+      "order": 300,
+      "titleEn": "Half-Life Calculator",
+      "titleAr": "حاسبة نصف العمر"
+    },
+    {
+      "toolId": "mrx.tool.017-drug-interaction",
+      "slug": "tool-017-drug-interaction",
+      "href": "/smarttools/medical-monitoring/tool-017-drug-interaction",
+      "order": 320,
+      "titleEn": "Drug Interaction Checker",
+      "titleAr": "فاحص تفاعلات المركبات"
+    },
+    {
+      "toolId": "mrx.tool.018-hpta-recovery-monitor",
+      "slug": "tool-018-hpta-recovery",
+      "href": "/smarttools/hormonal-health/tool-018-hpta-recovery",
+      "order": 340,
+      "titleEn": "HPTA Recovery Monitor",
+      "titleAr": "مراقب استعادة HPTA"
+    },
+    {
+      "toolId": "mrx.tool.019-cardio-monitor",
+      "slug": "tool-019-cardio-monitor",
+      "href": "/smarttools/medical-monitoring/tool-019-cardio-monitor",
+      "order": 350,
+      "titleEn": "Cardio Monitor",
+      "titleAr": "مراقب القلب والدهون"
+    },
+    {
+      "toolId": "mrx.tool.020-genetic-potential",
+      "slug": "tool-020-genetic-potential",
+      "href": "/smarttools/training-recovery/tool-020-genetic-potential",
+      "order": 360,
+      "titleEn": "Genetic Potential Calculator",
+      "titleAr": "حاسبة القدرة الوراثية"
+    },
+    {
+      "toolId": "mrx.tool.021-peptide-protocol",
+      "slug": "tool-021-peptide-protocol",
+      "href": "/smarttools/cycle-management/tool-021-peptide-protocol",
+      "order": 370,
+      "titleEn": "Peptide Protocol Planner",
+      "titleAr": "مخطط بروتوكول الببتيد"
+    },
+    {
+      "toolId": "mrx.tool.022-half-life-stacker",
+      "slug": "tool-022-half-life-stacker",
+      "href": "/smarttools/pharmacokinetics/tool-022-half-life-stacker",
+      "order": 380,
+      "titleEn": "Half-Life Stacker",
+      "titleAr": "مركب نصف العمر"
+    },
+    {
+      "toolId": "mrx.tool.023-trt-optimization",
+      "slug": "tool-023-trt-optimization",
+      "href": "/smarttools/hormonal-health/tool-023-trt-optimization",
+      "order": 390,
+      "titleEn": "TRT Optimization",
+      "titleAr": "تحسين TRT"
+    },
+    {
+      "toolId": "mrx.tool.024-bloodwork-interpreter",
+      "slug": "tool-024-bloodwork-interpreter",
+      "href": "/smarttools/medical-monitoring/tool-024-bloodwork-interpreter",
+      "order": 400,
+      "titleEn": "Lab Reference Interval Comparison",
+      "titleAr": "مقارنة نطاقات التحاليل المُدخلة"
+    },
+    {
+      "toolId": "mrx.tool.025-drug-interaction-pro",
+      "slug": "tool-025-drug-interaction-pro",
+      "href": "/smarttools/medical-monitoring/tool-025-drug-interaction-pro",
+      "order": 410,
+      "titleEn": "Medication & Compound Session List",
+      "titleAr": "قائمة مؤقتة للأدوية والمركّبات"
+    },
+    {
+      "toolId": "mrx.tool.026-injection-pain",
+      "slug": "tool-026-injection-pain",
+      "href": "/smarttools/injection-formulation/tool-026-injection-pain",
+      "order": 420,
+      "titleEn": "Injection Experience Log",
+      "titleAr": "سجل تجربة الحقن"
+    },
+    {
+      "toolId": "mrx.tool.027-ester-conversion",
+      "slug": "tool-027-ester-conversion",
+      "href": "/smarttools/pharmacokinetics/tool-027-ester-conversion",
+      "order": 430,
+      "titleEn": "User-Provided Molar Mass Calculator",
+      "titleAr": "حاسبة الكتلة المولية التي يدخلها المستخدم"
+    },
+    {
+      "toolId": "mrx.tool.028-stacking-synergy",
+      "slug": "tool-028-stacking-synergy",
+      "href": "/smarttools/cycle-management/tool-028-stacking-synergy",
+      "order": 440,
+      "titleEn": "Compound Scenario Comparison Worksheet",
+      "titleAr": "ورقة مقارنة السيناريوهات والمركّبات"
+    },
+    {
+      "toolId": "mrx.tool.029-side-effect-warning",
+      "slug": "tool-029-side-effect-early-warning",
+      "href": "/smarttools/medical-monitoring/tool-029-side-effect-early-warning",
+      "order": 450,
+      "titleEn": "Personal Measurement Summary",
+      "titleAr": "ملخص القياسات الشخصية"
+    },
+    {
+      "toolId": "mrx.tool.030-cycle-cost",
+      "slug": "tool-030-cycle-cost-calculator",
+      "href": "/smarttools/cycle-management/tool-030-cycle-cost-calculator",
+      "order": 460,
+      "titleEn": "Cycle Cost Calculator",
+      "titleAr": "حاسبة تكلفة الدورة"
+    },
+    {
+      "toolId": "mrx.tool.031-cycle-length-optimizer",
+      "slug": "tool-031-cycle-length-optimizer",
+      "href": "/smarttools/cycle-management/tool-031-cycle-length-optimizer",
+      "order": 470,
+      "status": "implemented",
+      "titleEn": "Cycle Length Optimizer",
+      "titleAr": "محسّن مدة الدورة"
+    },
+    {
+      "toolId": "mrx.tool.032-advanced-pct-planner",
+      "slug": "tool-032-advanced-pct-planner",
+      "href": "/smarttools/hormonal-health/tool-032-advanced-pct-planner",
+      "order": 480,
+      "status": "implemented",
+      "titleEn": "Advanced PCT Planner",
+      "titleAr": "مخطط PCT المتقدم"
+    },
+    {
+      "toolId": "mrx.tool.033-bloodwork-trend-analyzer",
+      "slug": "tool-033-bloodwork-trend-analyzer",
+      "href": "/smarttools/medical-monitoring/tool-033-bloodwork-trend-analyzer",
+      "order": 490,
+      "status": "implemented",
+      "titleEn": "Lab Reading Trend Summary",
+      "titleAr": "ملخص اتجاه قراءات التحاليل"
+    },
+    {
+      "toolId": "mrx.tool.034-compound-clearance",
+      "slug": "tool-034-compound-clearance",
+      "href": "/smarttools/pharmacokinetics/tool-034-compound-clearance",
+      "order": 500,
+      "status": "implemented",
+      "titleEn": "Single-dose Fractional Decay Scenario",
+      "titleAr": "محاكاة اضمحلال نسبة جرعة مفردة"
+    },
+    {
+      "toolId": "mrx.tool.035-hormone-conversion",
+      "slug": "tool-035-hormone-conversion",
+      "href": "/smarttools/pharmacokinetics/tool-035-hormone-conversion",
+      "order": 510,
+      "status": "implemented",
+      "titleEn": "Testosterone and Estradiol Unit Converter",
+      "titleAr": "محول وحدات التستوستيرون والإستراديول"
+    },
+    {
+      "toolId": "mrx.tool.036-injection-schedule",
+      "slug": "tool-036-injection-schedule",
+      "href": "/smarttools/injection-formulation/tool-036-injection-schedule",
+      "order": 520,
+      "status": "implemented",
+      "titleEn": "Injection Schedule Planner",
+      "titleAr": "مخطط جدول الحقن"
+    },
+    {
+      "toolId": "mrx.tool.037-side-effect-probability",
+      "slug": "tool-037-side-effect-probability",
+      "href": "/smarttools/medical-monitoring/tool-037-side-effect-probability",
+      "order": 530,
+      "status": "implemented",
+      "titleEn": "Side Effect Probability Calculator",
+      "titleAr": "حاسبة احتمالية الأعراض"
+    },
+    {
+      "toolId": "mrx.tool.038-stack-compatibility",
+      "slug": "tool-038-stack-compatibility",
+      "href": "/smarttools/cycle-management/tool-038-stack-compatibility",
+      "order": 540,
+      "status": "implemented",
+      "titleEn": "Stack Compatibility Checker",
+      "titleAr": "مدقق توافق الستاك"
+    },
+    {
+      "toolId": "mrx.tool.039-liver-enzyme-tracker",
+      "slug": "tool-039-liver-enzyme-tracker",
+      "href": "/smarttools/medical-monitoring/tool-039-liver-enzyme-tracker",
+      "order": 550,
+      "status": "implemented",
+      "titleEn": "Liver Enzyme Tracker",
+      "titleAr": "متتبع إنزيمات الكبد"
+    },
+    {
+      "toolId": "mrx.tool.040-lipid-profile-optimizer",
+      "slug": "tool-040-lipid-profile-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-040-lipid-profile-optimizer",
+      "order": 560,
+      "status": "implemented",
+      "titleEn": "Lipid Profile Optimizer",
+      "titleAr": "محسّن ملف الدهون"
+    },
+    {
+      "toolId": "mrx.tool.041-hematocrit-monitor",
+      "slug": "tool-041-hematocrit-monitor",
+      "href": "/smarttools/medical-monitoring/tool-041-hematocrit-monitor",
+      "order": 570,
+      "status": "implemented",
+      "titleEn": "Hematocrit Monitor",
+      "titleAr": "مراقب الهيماتوكريت"
+    },
+    {
+      "toolId": "mrx.tool.042-estrogen-management",
+      "slug": "tool-042-estrogen-management",
+      "href": "/smarttools/hormonal-health/tool-042-estrogen-management",
+      "order": 580,
+      "status": "implemented",
+      "titleEn": "Estrogen Management Pro",
+      "titleAr": "إدارة الإستروجين المتقدم"
+    },
+    {
+      "toolId": "mrx.tool.043-prolactin-management",
+      "slug": "tool-043-prolactin-management",
+      "href": "/smarttools/hormonal-health/tool-043-prolactin-management",
+      "order": 590,
+      "status": "implemented",
+      "titleEn": "Prolactin Management Pro",
+      "titleAr": "إدارة البرولاكتين المتقدم"
+    },
+    {
+      "toolId": "mrx.tool.044-dht-side-effects",
+      "slug": "tool-044-dht-side-effects",
+      "href": "/smarttools/medical-monitoring/tool-044-dht-side-effects",
+      "order": 600,
+      "status": "implemented",
+      "titleEn": "DHT Side Effect Predictor",
+      "titleAr": "متنبئ أعراض DHT"
+    },
+    {
+      "toolId": "mrx.tool.045-cycle-break-planner",
+      "slug": "tool-045-cycle-break-planner",
+      "href": "/smarttools/cycle-management/tool-045-cycle-break-planner",
+      "order": 610,
+      "status": "implemented",
+      "titleEn": "Cycle Break Planner",
+      "titleAr": "مخطط راحة الدورة"
+    },
+    {
+      "toolId": "mrx.tool.046-trt-lifetime",
+      "slug": "tool-046-trt-lifetime",
+      "href": "/smarttools/hormonal-health/tool-046-trt-lifetime",
+      "order": 620,
+      "status": "implemented",
+      "titleEn": "TRT Lifetime Calculator",
+      "titleAr": "حاسبة عمر TRT"
+    },
+    {
+      "toolId": "mrx.tool.047-fertility-preservation",
+      "slug": "tool-047-fertility-preservation",
+      "href": "/smarttools/hormonal-health/tool-047-fertility-preservation",
+      "order": 630,
+      "status": "implemented",
+      "titleEn": "Fertility Preservation Guide",
+      "titleAr": "دليل الحفاظ على الخصوبة"
+    },
+    {
+      "toolId": "mrx.tool.048-cardiovascular-risk",
+      "slug": "tool-048-cardiovascular-risk",
+      "href": "/smarttools/medical-monitoring/tool-048-cardiovascular-risk",
+      "order": 640,
+      "status": "implemented",
+      "titleEn": "Cardiovascular Risk Assessor",
+      "titleAr": "مقيّم خطر القلب"
+    },
+    {
+      "toolId": "mrx.tool.049-bone-density",
+      "slug": "tool-049-bone-density",
+      "href": "/smarttools/medical-monitoring/tool-049-bone-density",
+      "order": 650,
+      "status": "implemented",
+      "titleEn": "Bone Density Optimizer",
+      "titleAr": "محسّن كثافة العظام"
+    },
+    {
+      "toolId": "mrx.tool.050-mental-health",
+      "slug": "tool-050-mental-health",
+      "href": "/smarttools/medical-monitoring/tool-050-mental-health",
+      "order": 660,
+      "status": "implemented",
+      "titleEn": "Mental Health Monitor",
+      "titleAr": "مراقب الصحة النفسية"
+    },
+    {
+      "toolId": "mrx.tool.051-peptide-dosage-calculator",
+      "slug": "tool-051-peptide-dosage-calculator",
+      "href": "/smarttools/injection-formulation/tool-051-peptide-dosage-calculator",
+      "order": 670,
+      "status": "implemented",
+      "titleEn": "Peptide Dosage Calculator",
+      "titleAr": "حاسبة جرعة الببتيدات"
+    },
+    {
+      "toolId": "mrx.tool.052-growth-hormone-protocol-planner",
+      "slug": "tool-052-growth-hormone-protocol-planner",
+      "href": "/smarttools/hormonal-health/tool-052-growth-hormone-protocol-planner",
+      "order": 680,
+      "status": "implemented",
+      "titleEn": "Growth Hormone Protocol Planner",
+      "titleAr": "مخطط بروتوكول GH"
+    },
+    {
+      "toolId": "mrx.tool.053-insulin-conversion-calculator",
+      "slug": "tool-053-insulin-conversion-calculator",
+      "href": "/smarttools/hormonal-health/tool-053-insulin-conversion-calculator",
+      "order": 690,
+      "status": "implemented",
+      "titleEn": "Insulin Conversion Calculator",
+      "titleAr": "حاسبة تحويل الأنسولين"
+    },
+    {
+      "toolId": "mrx.tool.054-glucose-tracker",
+      "slug": "tool-054-glucose-tracker",
+      "href": "/smarttools/medical-monitoring/tool-054-glucose-tracker",
+      "order": 700,
+      "status": "implemented",
+      "titleEn": "Glucose Tracker",
+      "titleAr": "متتبع الجلوكوز"
+    },
+    {
+      "toolId": "mrx.tool.055-insulin-sensitivity-optimizer",
+      "slug": "tool-055-insulin-sensitivity-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-055-insulin-sensitivity-optimizer",
+      "order": 710,
+      "status": "implemented",
+      "titleEn": "Insulin Sensitivity Optimizer",
+      "titleAr": "محسّن حساسية الأنسولين"
+    },
+    {
+      "toolId": "mrx.tool.056-mini-pct-calculator",
+      "slug": "tool-056-mini-pct-calculator",
+      "href": "/smarttools/cycle-management/tool-056-mini-pct-calculator",
+      "order": 720,
+      "status": "implemented",
+      "titleEn": "Mini PCT Calculator",
+      "titleAr": "حاسبة الـ PCT المصغّرة"
+    },
+    {
+      "toolId": "mrx.tool.057-free-testosterone-manager",
+      "slug": "tool-057-free-testosterone-manager",
+      "href": "/smarttools/hormonal-health/tool-057-free-testosterone-manager",
+      "order": 730,
+      "status": "implemented",
+      "titleEn": "Free Testosterone Manager",
+      "titleAr": "مدير التستوستيرون الحر"
+    },
+    {
+      "toolId": "mrx.tool.058-androgenic-balance-calculator",
+      "slug": "tool-058-androgenic-balance-calculator",
+      "href": "/smarttools/hormonal-health/tool-058-androgenic-balance-calculator",
+      "order": 740,
+      "status": "implemented",
+      "titleEn": "Androgenic Balance Calculator",
+      "titleAr": "حاسبة التوازن الأندروجيني"
+    },
+    {
+      "toolId": "mrx.tool.059-androgen-receptor-optimizer",
+      "slug": "tool-059-androgen-receptor-optimizer",
+      "href": "/smarttools/hormonal-health/tool-059-androgen-receptor-optimizer",
+      "order": 750,
+      "status": "implemented",
+      "titleEn": "Androgen Receptor Optimizer",
+      "titleAr": "محسّن مستقبلات الأندروجين"
+    },
+    {
+      "toolId": "mrx.tool.060-5-alpha-conversion-calculator",
+      "slug": "tool-060-5-alpha-conversion-calculator",
+      "href": "/smarttools/pharmacokinetics/tool-060-5-alpha-conversion-calculator",
+      "order": 760,
+      "status": "implemented",
+      "titleEn": "5-Alpha Conversion Calculator",
+      "titleAr": "حاسبة التحويل 5-ألفا"
+    },
+    {
+      "toolId": "mrx.tool.061-hair-loss-tracker",
+      "slug": "tool-061-hair-loss-tracker",
+      "href": "/smarttools/medical-monitoring/tool-061-hair-loss-tracker",
+      "order": 770,
+      "status": "implemented",
+      "titleEn": "Hair Loss Tracker",
+      "titleAr": "متتبع تساقط الشعر"
+    },
+    {
+      "toolId": "mrx.tool.062-prostate-health-manager",
+      "slug": "tool-062-prostate-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-062-prostate-health-manager",
+      "order": 780,
+      "status": "implemented",
+      "titleEn": "Prostate Health Manager",
+      "titleAr": "مدير صحة البروستاتا"
+    },
+    {
+      "toolId": "mrx.tool.063-testicular-suppression-calculator",
+      "slug": "tool-063-testicular-suppression-calculator",
+      "href": "/smarttools/hormonal-health/tool-063-testicular-suppression-calculator",
+      "order": 790,
+      "status": "implemented",
+      "titleEn": "Testicular Suppression Calculator",
+      "titleAr": "حاسبة قمع الخصية"
+    },
+    {
+      "toolId": "mrx.tool.064-sperm-production-optimizer",
+      "slug": "tool-064-sperm-production-optimizer",
+      "href": "/smarttools/reproductive-wellbeing/tool-064-sperm-production-optimizer",
+      "order": 800,
+      "status": "implemented",
+      "titleEn": "Sperm Production Optimizer",
+      "titleAr": "محسّن إنتاج الحيوانات المنوية"
+    },
+    {
+      "toolId": "mrx.tool.065-aromatase-conversion-calculator",
+      "slug": "tool-065-aromatase-conversion-calculator",
+      "href": "/smarttools/pharmacokinetics/tool-065-aromatase-conversion-calculator",
+      "order": 810,
+      "status": "implemented",
+      "titleEn": "Aromatase Conversion Calculator",
+      "titleAr": "حاسبة التحويل الأروماتي"
+    },
+    {
+      "toolId": "mrx.tool.066-estrogen-sensitivity-manager",
+      "slug": "tool-066-estrogen-sensitivity-manager",
+      "href": "/smarttools/hormonal-health/tool-066-estrogen-sensitivity-manager",
+      "order": 820,
+      "status": "implemented",
+      "titleEn": "Estrogen Sensitivity Manager",
+      "titleAr": "مدير حساسية الإستروجين"
+    },
+    {
+      "toolId": "mrx.tool.067-estrogen-balance-calculator",
+      "slug": "tool-067-estrogen-balance-calculator",
+      "href": "/smarttools/hormonal-health/tool-067-estrogen-balance-calculator",
+      "order": 830,
+      "status": "implemented",
+      "titleEn": "Estrogen Balance Calculator",
+      "titleAr": "حاسبة التوازن الإستروجيني"
+    },
+    {
+      "toolId": "mrx.tool.068-gynecomastia-tracker",
+      "slug": "tool-068-gynecomastia-tracker",
+      "href": "/smarttools/medical-monitoring/tool-068-gynecomastia-tracker",
+      "order": 840,
+      "status": "implemented",
+      "titleEn": "Gynecomastia Tracker",
+      "titleAr": "متتبع التثدي"
+    },
+    {
+      "toolId": "mrx.tool.069-detoxification-optimizer",
+      "slug": "tool-069-detoxification-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-069-detoxification-optimizer",
+      "order": 850,
+      "status": "implemented",
+      "titleEn": "Detoxification Optimizer",
+      "titleAr": "محسّن إزالة السموم"
+    },
+    {
+      "toolId": "mrx.tool.070-oxidative-stress-calculator",
+      "slug": "tool-070-oxidative-stress-calculator",
+      "href": "/smarttools/medical-monitoring/tool-070-oxidative-stress-calculator",
+      "order": 860,
+      "status": "implemented",
+      "titleEn": "Oxidative Stress Calculator",
+      "titleAr": "حاسبة الإجهاد التأكسدي"
+    },
+    {
+      "toolId": "mrx.tool.071-antioxidant-manager",
+      "slug": "tool-071-antioxidant-manager",
+      "href": "/smarttools/medical-monitoring/tool-071-antioxidant-manager",
+      "order": 870,
+      "status": "implemented",
+      "titleEn": "Antioxidant Manager",
+      "titleAr": "مدير مضادات الأكسدة"
+    },
+    {
+      "toolId": "mrx.tool.072-systemic-inflammation-calculator",
+      "slug": "tool-072-systemic-inflammation-calculator",
+      "href": "/smarttools/medical-monitoring/tool-072-systemic-inflammation-calculator",
+      "order": 880,
+      "status": "implemented",
+      "titleEn": "Systemic Inflammation Calculator",
+      "titleAr": "حاسبة الالتهاب الجهازي"
+    },
+    {
+      "toolId": "mrx.tool.073-immune-system-optimizer",
+      "slug": "tool-073-immune-system-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-073-immune-system-optimizer",
+      "order": 890,
+      "status": "implemented",
+      "titleEn": "Immune System Optimizer",
+      "titleAr": "محسّن المناعة"
+    },
+    {
+      "toolId": "mrx.tool.074-blood-pressure-tracker",
+      "slug": "tool-074-blood-pressure-tracker",
+      "href": "/smarttools/medical-monitoring/tool-074-blood-pressure-tracker",
+      "order": 900,
+      "status": "implemented",
+      "titleEn": "Blood Pressure Tracker",
+      "titleAr": "متتبع ضغط الدم"
+    },
+    {
+      "toolId": "mrx.tool.075-arterial-health-manager",
+      "slug": "tool-075-arterial-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-075-arterial-health-manager",
+      "order": 910,
+      "status": "implemented",
+      "titleEn": "Arterial Health Manager",
+      "titleAr": "مدير صحة الشرايين"
+    },
+    {
+      "toolId": "mrx.tool.076-blood-viscosity-calculator",
+      "slug": "tool-076-blood-viscosity-calculator",
+      "href": "/smarttools/medical-monitoring/tool-076-blood-viscosity-calculator",
+      "order": 920,
+      "status": "implemented",
+      "titleEn": "Blood Viscosity Calculator",
+      "titleAr": "حاسبة لزوجة الدم"
+    },
+    {
+      "toolId": "mrx.tool.077-nitric-oxide-optimizer",
+      "slug": "tool-077-nitric-oxide-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-077-nitric-oxide-optimizer",
+      "order": 930,
+      "status": "implemented",
+      "titleEn": "Nitric Oxide Optimizer",
+      "titleAr": "محسّن أكسيد النيتريك"
+    },
+    {
+      "toolId": "mrx.tool.078-endothelial-health-manager",
+      "slug": "tool-078-endothelial-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-078-endothelial-health-manager",
+      "order": 940,
+      "status": "implemented",
+      "titleEn": "Endothelial Health Manager",
+      "titleAr": "مدير صحة البطانة الغشائية"
+    },
+    {
+      "toolId": "mrx.tool.079-fat-metabolism-calculator",
+      "slug": "tool-079-fat-metabolism-calculator",
+      "href": "/smarttools/body-composition/tool-079-fat-metabolism-calculator",
+      "order": 950,
+      "status": "implemented",
+      "titleEn": "Fat Metabolism Calculator",
+      "titleAr": "حاسبة التمثيل الغذائي للدهون"
+    },
+    {
+      "toolId": "mrx.tool.080-mitochondrial-optimizer",
+      "slug": "tool-080-mitochondrial-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-080-mitochondrial-optimizer",
+      "order": 960,
+      "status": "implemented",
+      "titleEn": "Mitochondrial Optimizer",
+      "titleAr": "محسّن الميتوكوندريا"
+    },
+    {
+      "toolId": "mrx.tool.081-cellular-aging-calculator",
+      "slug": "tool-081-cellular-aging-calculator",
+      "href": "/smarttools/medical-monitoring/tool-081-cellular-aging-calculator",
+      "order": 970,
+      "status": "implemented",
+      "titleEn": "Cellular Aging Calculator",
+      "titleAr": "حاسبة شيخوخة الخلايا"
+    },
+    {
+      "toolId": "mrx.tool.082-telomere-manager",
+      "slug": "tool-082-telomere-manager",
+      "href": "/smarttools/medical-monitoring/tool-082-telomere-manager",
+      "order": 980,
+      "status": "implemented",
+      "titleEn": "Telomere Manager",
+      "titleAr": "مدير التيلوميرات"
+    },
+    {
+      "toolId": "mrx.tool.083-anti-aging-inflammation-calculator",
+      "slug": "tool-083-anti-aging-inflammation-calculator",
+      "href": "/smarttools/medical-monitoring/tool-083-anti-aging-inflammation-calculator",
+      "order": 990,
+      "status": "implemented",
+      "titleEn": "Anti-Aging Inflammation Calculator",
+      "titleAr": "حاسبة الالتهاب المضاد للشيخوخة"
+    },
+    {
+      "toolId": "mrx.tool.084-cognitive-enhancer",
+      "slug": "tool-084-cognitive-enhancer",
+      "href": "/smarttools/medical-monitoring/tool-084-cognitive-enhancer",
+      "order": 1000,
+      "status": "implemented",
+      "titleEn": "Cognitive Enhancer",
+      "titleAr": "محسّن الإدراك"
+    },
+    {
+      "toolId": "mrx.tool.085-sleep-quality-manager",
+      "slug": "tool-085-sleep-quality-manager",
+      "href": "/smarttools/medical-monitoring/tool-085-sleep-quality-manager",
+      "order": 1010,
+      "status": "implemented",
+      "titleEn": "Sleep Quality Manager",
+      "titleAr": "مدير النوم"
+    },
+    {
+      "toolId": "mrx.tool.086-cortisol-stress-calculator",
+      "slug": "tool-086-cortisol-stress-calculator",
+      "href": "/smarttools/hormonal-health/tool-086-cortisol-stress-calculator",
+      "order": 1020,
+      "status": "implemented",
+      "titleEn": "Cortisol Stress Calculator",
+      "titleAr": "حاسبة التوتر والكورتيزول"
+    },
+    {
+      "toolId": "mrx.tool.087-mood-optimizer",
+      "slug": "tool-087-mood-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-087-mood-optimizer",
+      "order": 1030,
+      "status": "implemented",
+      "titleEn": "Mood Optimizer",
+      "titleAr": "محسّن المزاج"
+    },
+    {
+      "toolId": "mrx.tool.088-dopamine-tracker",
+      "slug": "tool-088-dopamine-tracker",
+      "href": "/smarttools/medical-monitoring/tool-088-dopamine-tracker",
+      "order": 1040,
+      "status": "implemented",
+      "titleEn": "Dopamine Tracker",
+      "titleAr": "متتبع الدوبامين"
+    },
+    {
+      "toolId": "mrx.tool.089-serotonin-manager",
+      "slug": "tool-089-serotonin-manager",
+      "href": "/smarttools/medical-monitoring/tool-089-serotonin-manager",
+      "order": 1050,
+      "status": "implemented",
+      "titleEn": "Serotonin Manager",
+      "titleAr": "مدير السيروتونين"
+    },
+    {
+      "toolId": "mrx.tool.090-female-hormone-balance-calculator",
+      "slug": "tool-090-female-hormone-balance-calculator",
+      "href": "/smarttools/hormonal-health/tool-090-female-hormone-balance-calculator",
+      "order": 1060,
+      "status": "implemented",
+      "titleEn": "Female Hormone Balance Calculator",
+      "titleAr": "حاسبة التوازن الهرموني الأنثوي"
+    },
+    {
+      "toolId": "mrx.tool.091-female-health-optimizer",
+      "slug": "tool-091-female-health-optimizer",
+      "href": "/smarttools/hormonal-health/tool-091-female-health-optimizer",
+      "order": 1070,
+      "status": "implemented",
+      "titleEn": "Female Health Observation Log",
+      "titleAr": "سجل ملاحظات الصحة الأنثوية"
+    },
+    {
+      "toolId": "mrx.tool.092-female-dosage-calculator",
+      "slug": "tool-092-female-dosage-calculator",
+      "href": "/smarttools/hormonal-health/tool-092-female-dosage-calculator",
+      "order": 1080,
+      "status": "implemented",
+      "titleEn": "Female Androgen Dose Evidence Check",
+      "titleAr": "مراجعة أدلة جرعات الأندروجينات للنساء"
+    },
+    {
+      "toolId": "mrx.tool.093-menstrual-cycle-manager",
+      "slug": "tool-093-menstrual-cycle-manager",
+      "href": "/smarttools/reproductive-wellbeing/tool-093-menstrual-cycle-manager",
+      "order": 1090,
+      "status": "implemented",
+      "titleEn": "Menstrual Cycle Calendar Log",
+      "titleAr": "سجل تقويم الدورة الشهرية"
+    },
+    {
+      "toolId": "mrx.tool.094-pregnancy-risk-calculator",
+      "slug": "tool-094-pregnancy-risk-calculator",
+      "href": "/smarttools/reproductive-wellbeing/tool-094-pregnancy-risk-calculator",
+      "order": 1100,
+      "status": "implemented",
+      "titleEn": "Pregnancy Exposure Information",
+      "titleAr": "معلومات التعرض والدواء مع الحمل"
+    },
+    {
+      "toolId": "mrx.tool.095-skin-health-optimizer",
+      "slug": "tool-095-skin-health-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-095-skin-health-optimizer",
+      "order": 1110,
+      "status": "implemented",
+      "titleEn": "Skin Observation Log",
+      "titleAr": "سجل ملاحظات الجلد"
+    },
+    {
+      "toolId": "mrx.tool.096-hair-nail-tracker",
+      "slug": "tool-096-hair-nail-tracker",
+      "href": "/smarttools/medical-monitoring/tool-096-hair-nail-tracker",
+      "order": 1120,
+      "status": "implemented",
+      "titleEn": "Hair & Nail Observation Log",
+      "titleAr": "سجل ملاحظات الشعر والأظافر"
+    },
+    {
+      "toolId": "mrx.tool.097-hydration-balance-calculator",
+      "slug": "tool-097-hydration-balance-calculator",
+      "href": "/smarttools/nutrition/tool-097-hydration-balance-calculator",
+      "order": 1130,
+      "status": "implemented",
+      "titleEn": "Exercise Sweat-Rate Measurement",
+      "titleAr": "قياس معدل التعرق أثناء التمرين"
+    },
+    {
+      "toolId": "mrx.tool.098-sodium-potassium-manager",
+      "slug": "tool-098-sodium-potassium-manager",
+      "href": "/smarttools/nutrition/tool-098-sodium-potassium-manager",
+      "order": 1140,
+      "status": "implemented",
+      "titleEn": "Sodium-to-Potassium Ratio Calculator",
+      "titleAr": "حاسبة نسبة الصوديوم إلى البوتاسيوم"
+    },
+    {
+      "toolId": "mrx.tool.099-digestive-health-optimizer",
+      "slug": "tool-099-digestive-health-optimizer",
+      "href": "/smarttools/nutrition/tool-099-digestive-health-optimizer",
+      "order": 1150,
+      "status": "implemented",
+      "titleEn": "Digestive Observation Log",
+      "titleAr": "سجل الملاحظات الهضمية"
+    },
+    {
+      "toolId": "mrx.tool.100-comprehensive-report-generator",
+      "slug": "tool-100-comprehensive-report-generator",
+      "href": "/smarttools/platform-ai/tool-100-comprehensive-report-generator",
+      "order": 1160,
+      "status": "implemented",
+      "titleEn": "Comprehensive Report Generator",
+      "titleAr": "التقرير الشامل"
+    },
+    {
+      "toolId": "mrx.tool.101-sarm-to-aas-transition-bridge-predictor",
+      "slug": "tool-101-sarm-to-aas-transition-bridge-predictor",
+      "href": "/smarttools/cycle-management/tool-101-sarm-to-aas-transition-bridge-predictor",
+      "order": 1170,
+      "titleEn": "SARM-to-AAS Transition & Bridge Predictor",
+      "titleAr": "حاسبة الانتقال الذكي بين SARMs والستيرويدات"
+    },
+    {
+      "toolId": "mrx.tool.102-subcutaneous-vs-intramuscular-pk-modeler",
+      "slug": "tool-102-subcutaneous-vs-intramuscular-pk-modeler",
+      "href": "/smarttools/pharmacokinetics/tool-102-subcutaneous-vs-intramuscular-pk-modeler",
+      "order": 1180,
+      "titleEn": "Subcutaneous vs. Intramuscular PK Modeler",
+      "titleAr": "حاسبة مقارنة الحقن العضلي وتحت الجلد"
+    },
+    {
+      "toolId": "mrx.tool.103-renal-function-hydration-index",
+      "slug": "tool-103-renal-function-hydration-index",
+      "href": "/smarttools/medical-monitoring/tool-103-renal-function-hydration-index",
+      "order": 1190,
+      "titleEn": "Renal Function & Hydration Index",
+      "titleAr": "مؤشر وظائف الكلى والترطيب المتقدم"
+    },
+    {
+      "toolId": "mrx.tool.104-thyroid-metabolic-rate-dynamics",
+      "slug": "tool-104-thyroid-metabolic-rate-dynamics",
+      "href": "/smarttools/hormonal-health/tool-104-thyroid-metabolic-rate-dynamics",
+      "order": 1200,
+      "titleEn": "Thyroid Function & Metabolic Rate Dynamics",
+      "titleAr": "حاسبة ديناميكيات الغدة الدرقية ومعدل الأيض"
+    },
+    {
+      "toolId": "mrx.tool.105-ai-health-data-fusion-hub",
+      "slug": "tool-105-ai-health-data-fusion-hub",
+      "href": "/smarttools/platform-ai/tool-105-ai-health-data-fusion-hub",
+      "order": 1210,
+      "titleEn": "AI Health Data Fusion Hub & Timeline",
+      "titleAr": "مركز دمج بيانات الصحة الذكي (FHIR)"
+    },
+    {
+      "toolId": "mrx.tool.106-glycogen-supercompensation-water-modeler",
+      "slug": "tool-106-glycogen-supercompensation-water-modeler",
+      "href": "/smarttools/nutrition/tool-106-glycogen-supercompensation-water-modeler",
+      "order": 1220,
+      "status": "implemented",
+      "titleEn": "Glycogen Supercompensation & Water Retention Modeler",
+      "titleAr": "حاسبة التحميل النشوي الفائق"
+    },
+    {
+      "toolId": "mrx.tool.107-contest-prep-peak-week-manipulator",
+      "slug": "tool-107-contest-prep-peak-week-manipulator",
+      "href": "/smarttools/cycle-management/tool-107-contest-prep-peak-week-manipulator",
+      "order": 1230,
+      "status": "implemented",
+      "titleEn": "Contest Prep Peak-Week Manipulator",
+      "titleAr": "حاسبة أسبوع الذروة قبل البطولة"
+    },
+    {
+      "toolId": "mrx.tool.108-ai-body-composition-vision-engine",
+      "slug": "tool-108-ai-body-composition-vision-engine",
+      "href": "/smarttools/body-composition/tool-108-ai-body-composition-vision-engine",
+      "order": 1240,
+      "status": "implemented",
+      "titleEn": "AI Body Composition Vision Engine",
+      "titleAr": "محرك التحليل البصري الذكي لتكوين الجسد"
+    },
+    {
+      "toolId": "mrx.tool.109-competition-readiness-posing-os",
+      "slug": "tool-109-competition-readiness-posing-os",
+      "href": "/smarttools/cycle-management/tool-109-competition-readiness-posing-os",
+      "order": 1250,
+      "status": "implemented",
+      "titleEn": "Competition Readiness & Stage Posing OS",
+      "titleAr": "نظام الاستعداد للبطولات والاستعراض"
+    },
+    {
+      "toolId": "mrx.tool.110-ai-meal-vision-scanner",
+      "slug": "tool-110-ai-meal-vision-scanner",
+      "href": "/smarttools/nutrition/tool-110-ai-meal-vision-scanner",
+      "order": 1260,
+      "status": "implemented",
+      "titleEn": "AI Meal Vision Scanner & Portion Estimator",
+      "titleAr": "ماسح الوجبات الذكي بالرؤية الحاسوبية"
+    },
+    {
+      "toolId": "mrx.tool.111-smart-food-macro-substitution",
+      "slug": "tool-111-smart-food-macro-substitution",
+      "href": "/smarttools/nutrition/tool-111-smart-food-macro-substitution",
+      "order": 1270,
+      "titleEn": "Smart Food & Macro Substitution Engine",
+      "titleAr": "محرك استبدال الأطعمة الذكي بالمكرويات"
+    },
+    {
+      "toolId": "mrx.tool.112-food-quality-micronutrient-diversity-score",
+      "slug": "tool-112-food-quality-micronutrient-diversity-score",
+      "href": "/smarttools/nutrition/tool-112-food-quality-micronutrient-diversity-score",
+      "order": 1280,
+      "status": "implemented",
+      "titleEn": "Food Quality & Micronutrient Diversity Score",
+      "titleAr": "مؤشر جودة الغذاء وتنوع المغذيات الدقيقة"
+    },
+    {
+      "toolId": "mrx.tool.113-ai-grocery-basket-meal-cost-optimizer",
+      "slug": "tool-113-ai-grocery-basket-meal-cost-optimizer",
+      "href": "/smarttools/nutrition/tool-113-ai-grocery-basket-meal-cost-optimizer",
+      "order": 1290,
+      "status": "implemented",
+      "titleEn": "AI Grocery Basket & Meal Cost Optimizer",
+      "titleAr": "مجمّع سلة التسوق الذكية"
+    },
+    {
+      "toolId": "mrx.tool.114-restaurant-macro-navigator",
+      "slug": "tool-114-restaurant-macro-navigator",
+      "href": "/smarttools/nutrition/tool-114-restaurant-macro-navigator",
+      "order": 1300,
+      "status": "implemented",
+      "titleEn": "Restaurant Macro Navigator & Fast-Food Estimator",
+      "titleAr": "دليل الماكروز للمطاعم والوجبات السريعة"
+    },
+    {
+      "toolId": "mrx.tool.115-supplement-evidence-bio-stack-navigator",
+      "slug": "tool-115-supplement-evidence-bio-stack-navigator",
+      "href": "/smarttools/nutrition/tool-115-supplement-evidence-bio-stack-navigator",
+      "order": 1310,
+      "status": "implemented",
+      "titleEn": "Supplement Evidence & Bio-Stack Navigator",
+      "titleAr": "المرجع العلمي للمكملات وتفاعلاتها"
+    },
+    {
+      "toolId": "mrx.tool.116-nutrition-gap-fasting-window-optimizer",
+      "slug": "tool-116-nutrition-gap-fasting-window-optimizer",
+      "href": "/smarttools/nutrition/tool-116-nutrition-gap-fasting-window-optimizer",
+      "order": 1320,
+      "status": "implemented",
+      "titleEn": "Nutrition Gap & Fasting Window Optimizer",
+      "titleAr": "كاشف الفجوات الغذائية ومنظم الصيام المتقطع"
+    },
+    {
+      "toolId": "mrx.tool.117-intra-workout-nutrient-volumizer",
+      "slug": "tool-117-intra-workout-nutrient-volumizer",
+      "href": "/smarttools/nutrition/tool-117-intra-workout-nutrient-volumizer",
+      "order": 1330,
+      "status": "implemented",
+      "titleEn": "Intra-Workout Nutrient Volumizer & Transport Engine",
+      "titleAr": "محرك المغذيات أثناء التدريب"
+    },
+    {
+      "toolId": "mrx.tool.118-cns-recovery-score",
+      "slug": "tool-118-cns-recovery-score",
+      "href": "/smarttools/training-recovery/tool-118-cns-recovery-score",
+      "order": 1340,
+      "status": "implemented",
+      "titleEn": "CNS Recovery Score",
+      "titleAr": "مؤشر استشفاء الجهاز العصبي المركزي"
+    },
+    {
+      "toolId": "mrx.tool.119-training-volume-hypertrophy-index",
+      "slug": "tool-119-training-volume-hypertrophy-index",
+      "href": "/smarttools/training-recovery/tool-119-training-volume-hypertrophy-index",
+      "order": 1350,
+      "status": "implemented",
+      "titleEn": "Training Volume Load & Hypertrophy Index",
+      "titleAr": "مؤشر حجم التدريب والتضخم العضلي"
+    },
+    {
+      "toolId": "mrx.tool.120-progressive-overload-predictor",
+      "slug": "tool-120-progressive-overload-predictor",
+      "href": "/smarttools/training-recovery/tool-120-progressive-overload-predictor",
+      "order": 1360,
+      "status": "implemented",
+      "titleEn": "Progressive Overload & Adaptive Reserve Capacity Predictor",
+      "titleAr": "حاسبة التحميل التدريجي والاحتياطي التكيفي"
+    },
+    {
+      "toolId": "mrx.tool.121-muscle-group-recovery-modeler",
+      "slug": "tool-121-muscle-group-recovery-modeler",
+      "href": "/smarttools/training-recovery/tool-121-muscle-group-recovery-modeler",
+      "order": 1370,
+      "status": "implemented",
+      "titleEn": "Muscle Group Recovery Time-Course Modeler",
+      "titleAr": "محاكي زمن استشفاء المجموعات العضلية"
+    },
+    {
+      "toolId": "mrx.tool.122-rpe-rir-1rm-velocity-modeler",
+      "slug": "tool-122-rpe-rir-1rm-velocity-modeler",
+      "href": "/smarttools/training-recovery/tool-122-rpe-rir-1rm-velocity-modeler",
+      "order": 1380,
+      "status": "implemented",
+      "titleEn": "RPE / RIR to 1RM Dynamic Velocity Modeler",
+      "titleAr": "حاسبة الوزن الأقصى الديناميكية"
+    },
+    {
+      "toolId": "mrx.tool.123-joint-stress-connective-tissue-index",
+      "slug": "tool-123-joint-stress-connective-tissue-index",
+      "href": "/smarttools/training-recovery/tool-123-joint-stress-connective-tissue-index",
+      "order": 1390,
+      "status": "implemented",
+      "titleEn": "Joint Stress & Connective Tissue Load Risk Index",
+      "titleAr": "مؤشر إجهاد المفاصل والأنسجة الرابطة"
+    },
+    {
+      "toolId": "mrx.tool.124-deload-frequency-fatigue-modeler",
+      "slug": "tool-124-deload-frequency-fatigue-modeler",
+      "href": "/smarttools/training-recovery/tool-124-deload-frequency-fatigue-modeler",
+      "order": 1400,
+      "status": "implemented",
+      "titleEn": "Deload Frequency & Fatigue Accumulation Modeler",
+      "titleAr": "حاسبة توقيت أسبوع التفريغ"
+    },
+    {
+      "toolId": "mrx.tool.125-fiber-type-mechanical-tension-score",
+      "slug": "tool-125-fiber-type-mechanical-tension-score",
+      "href": "/smarttools/training-recovery/tool-125-fiber-type-mechanical-tension-score",
+      "order": 1410,
+      "status": "implemented",
+      "titleEn": "Fiber Type Adaptation & Mechanical Tension Score",
+      "titleAr": "حاسبة استهداف أنواع الألياف العضلية"
+    },
+    {
+      "toolId": "mrx.tool.126-neuromuscular-explosiveness-modeler",
+      "slug": "tool-126-neuromuscular-explosiveness-modeler",
+      "href": "/smarttools/training-recovery/tool-126-neuromuscular-explosiveness-modeler",
+      "order": 1420,
+      "status": "implemented",
+      "titleEn": "Neuromuscular Performance & Explosiveness Modeler",
+      "titleAr": "حاسبة الأداء العصبي العضلي والانفجارية"
+    },
+    {
+      "toolId": "mrx.tool.127-ai-daily-readiness-explainer",
+      "slug": "tool-127-ai-daily-readiness-explainer",
+      "href": "/smarttools/training-recovery/tool-127-ai-daily-readiness-explainer",
+      "order": 1430,
+      "status": "implemented",
+      "titleEn": "AI Daily Readiness & Cause Explainer Engine",
+      "titleAr": "محرك الجاهزية اليومية وتفسير الأسباب"
+    },
+    {
+      "toolId": "mrx.tool.128-training-load-acute-chronic-ratio",
+      "slug": "tool-128-training-load-acute-chronic-ratio",
+      "href": "/smarttools/training-recovery/tool-128-training-load-acute-chronic-ratio",
+      "order": 1440,
+      "status": "implemented",
+      "titleEn": "Training Load Balance & Acute-to-Chronic Ratio",
+      "titleAr": "حاسبة التوازن بين الحمل الحاد والتراكمي"
+    },
+    {
+      "toolId": "mrx.tool.129-ai-adaptive-training-planner",
+      "slug": "tool-129-ai-adaptive-training-planner",
+      "href": "/smarttools/training-recovery/tool-129-ai-adaptive-training-planner",
+      "order": 1450,
+      "status": "implemented",
+      "titleEn": "AI Adaptive Training Program Planner",
+      "titleAr": "مصمم البرامج التدريبية الذكي المتكيف"
+    },
+    {
+      "toolId": "mrx.tool.130-ai-plateau-detective",
+      "slug": "tool-130-ai-plateau-detective",
+      "href": "/smarttools/training-recovery/tool-130-ai-plateau-detective",
+      "order": 1460,
+      "status": "implemented",
+      "titleEn": "AI Plateau Detective & Stagnation Analyzer",
+      "titleAr": "المحقق الذكي لكشف أسباب الثبات والركود"
+    },
+    {
+      "toolId": "mrx.tool.131-transformation-forecast-trajectory-engine",
+      "slug": "tool-131-transformation-forecast-trajectory-engine",
+      "href": "/smarttools/body-composition/tool-131-transformation-forecast-trajectory-engine",
+      "order": 1470,
+      "status": "implemented",
+      "titleEn": "Body Transformation Scenario Calculator",
+      "titleAr": "حاسبة سيناريو التحول الجسدي"
+    },
+    {
+      "toolId": "mrx.tool.132-ai-pose-form-coach",
+      "slug": "tool-132-ai-pose-form-coach",
+      "href": "/smarttools/training-recovery/tool-132-ai-pose-form-coach",
+      "order": 1480,
+      "status": "implemented",
+      "titleEn": "AI Pose & Exercise Form Coach",
+      "titleAr": "مدرب التقنية الذكي بالرؤية الحاسوبية"
+    },
+    {
+      "toolId": "mrx.tool.133-rep-tempo-velocity-loss-analyzer",
+      "slug": "tool-133-rep-tempo-velocity-loss-analyzer",
+      "href": "/smarttools/training-recovery/tool-133-rep-tempo-velocity-loss-analyzer",
+      "order": 1490,
+      "status": "implemented",
+      "titleEn": "Rep Tempo & Velocity Loss Analyzer",
+      "titleAr": "محلل إيقاع التكرارات وفقدان السرعة"
+    },
+    {
+      "toolId": "mrx.tool.134-mobility-movement-symmetry-screen",
+      "slug": "tool-134-mobility-movement-symmetry-screen",
+      "href": "/smarttools/training-recovery/tool-134-mobility-movement-symmetry-screen",
+      "order": 1500,
+      "status": "implemented",
+      "titleEn": "Side-to-side Movement Screening Comparison",
+      "titleAr": "مقارنة فحص الحركة بين الجانبين"
+    },
+    {
+      "toolId": "mrx.tool.135-exercise-substitution-ai",
+      "slug": "tool-135-exercise-substitution-ai",
+      "href": "/smarttools/training-recovery/tool-135-exercise-substitution-ai",
+      "order": 1510,
+      "status": "implemented",
+      "titleEn": "Rule-based Exercise Substitution Options",
+      "titleAr": "خيارات بديلة للتمارين بقواعد ثابتة"
+    },
+    {
+      "toolId": "mrx.tool.136-physique-golden-ratio-score",
+      "slug": "tool-136-physique-golden-ratio-score",
+      "href": "/smarttools/body-composition/tool-136-physique-golden-ratio-score",
+      "order": 1520,
+      "status": "implemented",
+      "titleEn": "Physique Circumference Ratio Comparison",
+      "titleAr": "مقارنة نسب محيطات القوام"
+    },
+    {
+      "toolId": "mrx.tool.137-peptide-hormone-reconstitution-calculator",
+      "slug": "tool-137-peptide-hormone-reconstitution-calculator",
+      "href": "/smarttools/injection-formulation/tool-137-peptide-hormone-reconstitution-calculator",
+      "order": 1530,
+      "status": "implemented",
+      "titleEn": "Peptide & Hormone Reconstitution Calculator",
+      "titleAr": "حاسبة إعادة تشكيل الببتيدات والهرمونات"
+    },
+    {
+      "toolId": "mrx.tool.138-raw-powder-density-oil-formulation-engine",
+      "slug": "tool-138-raw-powder-density-oil-formulation-engine",
+      "href": "/smarttools/injection-formulation/tool-138-raw-powder-density-oil-formulation-engine",
+      "order": 1540,
+      "status": "implemented",
+      "titleEn": "Raw Powder Density & Oil Formulation Engine",
+      "titleAr": "محرك كثافة البودرة الخام وتكوين الزيوت"
+    },
+    {
+      "toolId": "mrx.tool.139-solvent-emulsifier-ratio-calculator",
+      "slug": "tool-139-solvent-emulsifier-ratio-calculator",
+      "href": "/smarttools/injection-formulation/tool-139-solvent-emulsifier-ratio-calculator",
+      "order": 1550,
+      "status": "implemented",
+      "titleEn": "Solvent & Emulsifier Ratio Calculator (BA/BB)",
+      "titleAr": "حاسبة نسب المذيبات BA/BB"
+    },
+    {
+      "toolId": "mrx.tool.140-dosage-unit-conversion-engine",
+      "slug": "tool-140-dosage-unit-conversion-engine",
+      "href": "/smarttools/pharmacokinetics/tool-140-dosage-unit-conversion-engine",
+      "order": 1560,
+      "status": "implemented",
+      "titleEn": "Lab Result Unit Converter",
+      "titleAr": "محول وحدات نتائج المختبر"
+    },
+    {
+      "toolId": "mrx.tool.141-carrier-oil-viscosity-syringe-pressure",
+      "slug": "tool-141-carrier-oil-viscosity-syringe-pressure",
+      "href": "/smarttools/injection-formulation/tool-141-carrier-oil-viscosity-syringe-pressure",
+      "order": 1570,
+      "status": "implemented",
+      "titleEn": "Ideal Circular-Tube Pressure Drop Calculator",
+      "titleAr": "حاسبة هبوط الضغط النظري في أنبوب دائري"
+    },
+    {
+      "toolId": "mrx.tool.142-compound-purity-active-yield-estimator",
+      "slug": "tool-142-compound-purity-active-yield-estimator",
+      "href": "/smarttools/injection-formulation/tool-142-compound-purity-active-yield-estimator",
+      "order": 1580,
+      "status": "implemented",
+      "titleEn": "Mass Arithmetic from a User-Provided Assay",
+      "titleAr": "حساب الكتلة من نتيجة اختبار مدخلة"
+    },
+    {
+      "toolId": "mrx.tool.143-storage-stability-thermal-degradation-estimator",
+      "slug": "tool-143-storage-stability-thermal-degradation-estimator",
+      "href": "/smarttools/injection-formulation/tool-143-storage-stability-thermal-degradation-estimator",
+      "order": 1590,
+      "status": "implemented",
+      "titleEn": "Product Storage Label & Temperature Record Checker",
+      "titleAr": "فاحص نطاق الملصق وسجل حرارة المنتج"
+    },
+    {
+      "toolId": "mrx.tool.144-homebrew-chemistry-calculator",
+      "slug": "tool-144-homebrew-chemistry-calculator",
+      "href": "/smarttools/measurement-conversion/tool-144-homebrew-chemistry-calculator",
+      "order": 1600,
+      "status": "implemented",
+      "titleEn": "General Mass, Volume & Density Calculator",
+      "titleAr": "حاسبة عامة للكتلة والحجم والكثافة"
+    },
+    {
+      "toolId": "mrx.tool.151-accumulation-half-life-simulator",
+      "slug": "tool-151-accumulation-half-life-simulator",
+      "href": "/smarttools/pharmacokinetics/tool-151-accumulation-half-life-simulator",
+      "order": 1601,
+      "status": "implemented",
+      "titleEn": "Accumulation Half-Life Simulator",
+      "titleAr": "محاكي تراكم نصف العمر"
+    },
+    {
+      "toolId": "mrx.tool.152-side-effect-tracker",
+      "slug": "tool-152-side-effect-tracker",
+      "href": "/smarttools/reproductive-wellbeing/tool-152-side-effect-tracker",
+      "order": 1602,
+      "status": "implemented",
+      "titleEn": "Side-Effect Observation Log",
+      "titleAr": "سجل الملاحظات الجسدية"
+    },
+    {
+      "toolId": "mrx.tool.153-injection-site-rotator",
+      "slug": "tool-153-injection-site-rotator",
+      "href": "/smarttools/pharmacokinetics/tool-153-injection-site-rotator",
+      "order": 1603,
+      "status": "implemented",
+      "titleEn": "Injection Site Observation Log",
+      "titleAr": "سجل مواقع الحقن"
+    },
+    {
+      "toolId": "mrx.tool.154-compound-stack-builder",
+      "slug": "tool-154-compound-stack-builder",
+      "href": "/smarttools/pharmacokinetics/tool-154-compound-stack-builder",
+      "order": 1604,
+      "status": "implemented",
+      "titleEn": "Compound Observation Record",
+      "titleAr": "سجل المركبات"
+    },
+    {
+      "toolId": "mrx.tool.155-progress-tracker",
+      "slug": "tool-155-progress-tracker",
+      "href": "/smarttools/reproductive-wellbeing/tool-155-progress-tracker",
+      "order": 1605,
+      "status": "implemented",
+      "titleEn": "Progress Observation Log",
+      "titleAr": "سجل التقدم"
+    },
+    {
+      "toolId": "mrx.tool.156-water-retention",
+      "slug": "tool-156-water-retention",
+      "href": "/smarttools/pharmacokinetics/tool-156-water-retention",
+      "order": 1606,
+      "status": "implemented",
+      "titleEn": "Water Weight Observation",
+      "titleAr": "ملاحظة وزن الماء"
+    },
+    {
+      "toolId": "mrx.tool.157-multi-compound-half-life",
+      "slug": "tool-157-multi-compound-half-life",
+      "href": "/smarttools/pharmacokinetics/tool-157-multi-compound-half-life",
+      "order": 1607,
+      "status": "implemented",
+      "titleEn": "Multi-Compound Half-Life Calculator",
+      "titleAr": "حاسبة أعمار النصف المتعددة"
+    },
+    {
+      "toolId": "mrx.tool.158-volume-measurement",
+      "slug": "tool-158-volume-measurement",
+      "href": "/smarttools/pharmacokinetics/tool-158-volume-measurement",
+      "order": 1608,
+      "status": "implemented",
+      "titleEn": "Volume Measurement Ratio",
+      "titleAr": "قياس نسبة الحجم"
+    },
+    {
+      "toolId": "mrx.tool.159-compound-half-life-stacker",
+      "slug": "tool-159-compound-half-life-stacker",
+      "href": "/smarttools/pharmacokinetics/tool-159-compound-half-life-stacker",
+      "order": 1609,
+      "status": "implemented",
+      "titleEn": "Half-Life Decay Scenario",
+      "titleAr": "سيناريو تلاشي أعمار النصف"
+    },
+    {
+      "toolId": "mrx.tool.145-habit-intelligence-consistency-coach",
+      "slug": "tool-145-habit-intelligence-consistency-coach",
+      "href": "/smarttools/platform-ai/tool-145-habit-intelligence-consistency-coach",
+      "order": 1610,
+      "status": "implemented",
+      "titleEn": "Weekly Habit Consistency Tracker",
+      "titleAr": "متابعة الالتزام بالعادات الأسبوعية"
+    },
+    {
+      "toolId": "mrx.tool.160-genetic-potential",
+      "slug": "tool-160-genetic-potential",
+      "href": "/smarttools/body-composition/tool-160-genetic-potential",
+      "order": 1611,
+      "status": "implemented",
+      "titleEn": "Illustrative Measurement Index",
+      "titleAr": "مؤشر قياسات توضيحي"
+    },
+    {
+      "toolId": "mrx.tool.161-peptide-protocol-planner",
+      "slug": "tool-161-peptide-protocol-planner",
+      "href": "/smarttools/pharmacokinetics/tool-161-peptide-protocol-planner",
+      "order": 1612,
+      "status": "implemented",
+      "titleEn": "Peptide Note Record",
+      "titleAr": "سجل ملاحظات الببتيدات"
+    },
+    {
+      "toolId": "mrx.tool.162-oral-cycle-planner",
+      "slug": "tool-162-oral-cycle-planner",
+      "href": "/smarttools/pharmacokinetics/tool-162-oral-cycle-planner",
+      "order": 1613,
+      "status": "implemented",
+      "titleEn": "Oral Cycle Note Record",
+      "titleAr": "سجل ملاحظات الدورة الفموية"
+    },
+    {
+      "toolId": "mrx.tool.163-trt-optimization-engine",
+      "slug": "tool-163-trt-optimization-engine",
+      "href": "/smarttools/pharmacokinetics/tool-163-trt-optimization-engine",
+      "order": 1614,
+      "status": "implemented",
+      "titleEn": "Value Comparison",
+      "titleAr": "مقارنة قيم هرمونية"
+    },
+    {
+      "toolId": "mrx.tool.164-post-cycle-bloodwork-interpreter",
+      "slug": "tool-164-post-cycle-bloodwork-interpreter",
+      "href": "/smarttools/pharmacokinetics/tool-164-post-cycle-bloodwork-interpreter",
+      "order": 1615,
+      "status": "implemented",
+      "titleEn": "Lab Observation Record",
+      "titleAr": "سجل التحاليل"
+    },
+    {
+      "toolId": "mrx.tool.165-drug-interaction-checker-pro",
+      "slug": "tool-165-drug-interaction-checker-pro",
+      "href": "/smarttools/pharmacokinetics/tool-165-drug-interaction-checker-pro",
+      "order": 1616,
+      "status": "implemented",
+      "titleEn": "Interaction Item Record",
+      "titleAr": "سجل المواد المدخلة"
+    },
+    {
+      "toolId": "mrx.tool.146-ai-safety-gate-emergency-protocol",
+      "slug": "tool-146-ai-safety-gate-emergency-protocol",
+      "href": "/smarttools/platform-ai/tool-146-ai-safety-gate-emergency-protocol",
+      "order": 1620,
+      "status": "implemented",
+      "titleEn": "Emergency Warning Signs Checklist",
+      "titleAr": "قائمة إشارات الطوارئ"
+    },
+    {
+      "toolId": "mrx.tool.166-injection-pain-minimizer",
+      "slug": "tool-166-injection-pain-minimizer",
+      "href": "/smarttools/pharmacokinetics/tool-166-injection-pain-minimizer",
+      "order": 1622,
+      "status": "implemented",
+      "titleEn": "Pain Note Record",
+      "titleAr": "سجل ملاحظة الألم"
+    },
+    {
+      "toolId": "mrx.tool.167-ester-conversion",
+      "slug": "tool-167-ester-conversion",
+      "href": "/smarttools/pharmacokinetics/tool-167-ester-conversion",
+      "order": 1623,
+      "status": "implemented",
+      "titleEn": "Generic Unit Conversion",
+      "titleAr": "تحويل وحدات عام"
+    },
+    {
+      "toolId": "mrx.tool.168-compound-stacking-synergy",
+      "slug": "tool-168-compound-stacking-synergy",
+      "href": "/smarttools/pharmacokinetics/tool-168-compound-stacking-synergy",
+      "order": 1624,
+      "status": "implemented",
+      "titleEn": "Item List Record",
+      "titleAr": "سجل العناصر"
+    },
+    {
+      "toolId": "mrx.tool.169-side-effect-early-warning",
+      "slug": "tool-169-side-effect-early-warning",
+      "href": "/smarttools/pharmacokinetics/tool-169-side-effect-early-warning",
+      "order": 1625,
+      "status": "implemented",
+      "titleEn": "User-Selected Signal Checklist",
+      "titleAr": "قائمة إشارات يختارها المستخدم"
+    },
+    {
+      "toolId": "mrx.tool.170-cycle-cost",
+      "slug": "tool-170-cycle-cost",
+      "href": "/smarttools/pharmacokinetics/tool-170-cycle-cost",
+      "order": 1626,
+      "status": "implemented",
+      "titleEn": "Cost Sum Calculator",
+      "titleAr": "جمع التكلفة"
+    },
+    {
+      "toolId": "mrx.tool.147-scientific-evidence-explorer",
+      "slug": "tool-147-scientific-evidence-explorer",
+      "href": "/smarttools/platform-ai/tool-147-scientific-evidence-explorer",
+      "order": 1630,
+      "status": "implemented",
+      "titleEn": "Scientific Evidence Explorer & Citation Search",
+      "titleAr": "مستكشف الأدلة العلمية والبحث عن المراجع"
+    },
+    {
+      "toolId": "mrx.tool.171-cycle-length-optimizer",
+      "slug": "tool-171-cycle-length-optimizer",
+      "href": "/smarttools/pharmacokinetics/tool-171-cycle-length-optimizer",
+      "order": 1632,
+      "status": "implemented",
+      "titleEn": "Interval Record",
+      "titleAr": "سجل الفترة"
+    },
+    {
+      "toolId": "mrx.tool.172-bloodwork-trend-analyzer",
+      "slug": "tool-172-bloodwork-trend-analyzer",
+      "href": "/smarttools/pharmacokinetics/tool-172-bloodwork-trend-analyzer",
+      "order": 1633,
+      "status": "implemented",
+      "titleEn": "Value Delta",
+      "titleAr": "فرق القيم"
+    },
+    {
+      "toolId": "mrx.tool.173-compound-clearance",
+      "slug": "tool-173-compound-clearance",
+      "href": "/smarttools/pharmacokinetics/tool-173-compound-clearance",
+      "order": 1634,
+      "status": "implemented",
+      "titleEn": "Decay Scenario",
+      "titleAr": "سيناريو الاضمحلال"
+    },
+    {
+      "toolId": "mrx.tool.174-hormone-conversion",
+      "slug": "tool-174-hormone-conversion",
+      "href": "/smarttools/pharmacokinetics/tool-174-hormone-conversion",
+      "order": 1635,
+      "status": "implemented",
+      "titleEn": "Unit Conversion",
+      "titleAr": "تحويل وحدات"
+    },
+    {
+      "toolId": "mrx.tool.175-injection-schedule-planner",
+      "slug": "tool-175-injection-schedule-planner",
+      "href": "/smarttools/pharmacokinetics/tool-175-injection-schedule-planner",
+      "order": 1636,
+      "status": "implemented",
+      "titleEn": "Date Record",
+      "titleAr": "سجل التواريخ"
+    },
+    {
+      "toolId": "mrx.tool.148-personal-fitness-memory-layer",
+      "slug": "tool-148-personal-fitness-memory-layer",
+      "href": "/smarttools/platform-ai/tool-148-personal-fitness-memory-layer",
+      "order": 1640,
+      "status": "implemented",
+      "titleEn": "Session-only Personal Fitness Context",
+      "titleAr": "سياق اللياقة المؤقت للجلسة"
+    },
+    {
+      "toolId": "mrx.tool.176-side-effect-probability",
+      "slug": "tool-176-side-effect-probability",
+      "href": "/smarttools/pharmacokinetics/tool-176-side-effect-probability",
+      "order": 1642,
+      "status": "implemented",
+      "titleEn": "Symptom Note Record",
+      "titleAr": "سجل ملاحظة الأعراض"
+    },
+    {
+      "toolId": "mrx.tool.177-stack-compatibility-checker",
+      "slug": "tool-177-stack-compatibility-checker",
+      "href": "/smarttools/pharmacokinetics/tool-177-stack-compatibility-checker",
+      "order": 1643,
+      "status": "implemented",
+      "titleEn": "Compatibility Item Record",
+      "titleAr": "سجل قائمة العناصر"
+    },
+    {
+      "toolId": "mrx.tool.178-dht-side-effect-predictor",
+      "slug": "tool-178-dht-side-effect-predictor",
+      "href": "/smarttools/reproductive-wellbeing/tool-178-dht-side-effect-predictor",
+      "order": 1644,
+      "status": "implemented",
+      "titleEn": "DHT Observation Record",
+      "titleAr": "سجل ملاحظة DHT"
+    },
+    {
+      "toolId": "mrx.tool.179-cycle-break-planner",
+      "slug": "tool-179-cycle-break-planner",
+      "href": "/smarttools/reproductive-wellbeing/tool-179-cycle-break-planner",
+      "order": 1645,
+      "status": "implemented",
+      "titleEn": "Break Date Record",
+      "titleAr": "سجل تواريخ الراحة"
+    },
+    {
+      "toolId": "mrx.tool.180-trt-lifetime",
+      "slug": "tool-180-trt-lifetime",
+      "href": "/smarttools/reproductive-wellbeing/tool-180-trt-lifetime",
+      "order": 1646,
+      "status": "implemented",
+      "titleEn": "TRT Note Record",
+      "titleAr": "سجل ملاحظة TRT"
+    },
+    {
+      "toolId": "mrx.tool.181-fertility-preservation-guide",
+      "slug": "tool-181-fertility-preservation-guide",
+      "href": "/smarttools/reproductive-wellbeing/tool-181-fertility-preservation-guide",
+      "order": 1647,
+      "status": "implemented",
+      "titleEn": "Fertility Note Record",
+      "titleAr": "سجل ملاحظة الخصوبة"
+    },
+    {
+      "toolId": "mrx.tool.182-cardiovascular-risk-assessor",
+      "slug": "tool-182-cardiovascular-risk-assessor",
+      "href": "/smarttools/medical-monitoring/tool-182-cardiovascular-risk-assessor",
+      "order": 1648,
+      "status": "implemented",
+      "titleEn": "Cardiovascular Note Record",
+      "titleAr": "سجل ملاحظة قلبية"
+    },
+    {
+      "toolId": "mrx.tool.183-bone-density-optimizer",
+      "slug": "tool-183-bone-density-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-183-bone-density-optimizer",
+      "order": 1649,
+      "status": "implemented",
+      "titleEn": "Bone Note Record",
+      "titleAr": "سجل ملاحظة العظام"
+    },
+    {
+      "toolId": "mrx.tool.149-physique-trajectory-simulator",
+      "slug": "tool-149-physique-trajectory-simulator",
+      "href": "/smarttools/body-composition/tool-149-physique-trajectory-simulator",
+      "order": 1650,
+      "status": "implemented",
+      "titleEn": "Physique Trajectory Scenario Simulator",
+      "titleAr": "محاكي سيناريوهات المسار الجسدي"
+    },
+    {
+      "toolId": "mrx.tool.184-mental-health-monitor",
+      "slug": "tool-184-mental-health-monitor",
+      "href": "/smarttools/medical-monitoring/tool-184-mental-health-monitor",
+      "order": 1652,
+      "status": "implemented",
+      "titleEn": "Mood Note Record",
+      "titleAr": "سجل المزاج"
+    },
+    {
+      "toolId": "mrx.tool.185-peptide-dosage",
+      "slug": "tool-185-peptide-dosage",
+      "href": "/smarttools/pharmacokinetics/tool-185-peptide-dosage",
+      "order": 1653,
+      "status": "implemented",
+      "titleEn": "Generic Amount Arithmetic",
+      "titleAr": "حساب كمية عام"
+    },
+    {
+      "toolId": "mrx.tool.186-growth-hormone-protocol-planner",
+      "slug": "tool-186-growth-hormone-protocol-planner",
+      "href": "/smarttools/medical-monitoring/tool-186-growth-hormone-protocol-planner",
+      "order": 1654,
+      "status": "implemented",
+      "titleEn": "GH Note Record",
+      "titleAr": "سجل ملاحظة GH"
+    },
+    {
+      "toolId": "mrx.tool.187-insulin-conversion",
+      "slug": "tool-187-insulin-conversion",
+      "href": "/smarttools/medical-monitoring/tool-187-insulin-conversion",
+      "order": 1655,
+      "status": "implemented",
+      "titleEn": "Generic Unit Arithmetic",
+      "titleAr": "حساب وحدات عام"
+    },
+    {
+      "toolId": "mrx.tool.188-glucose-tracker",
+      "slug": "tool-188-glucose-tracker",
+      "href": "/smarttools/medical-monitoring/tool-188-glucose-tracker",
+      "order": 1656,
+      "status": "implemented",
+      "titleEn": "Glucose Observation Log",
+      "titleAr": "سجل ملاحظات الجلوكوز"
+    },
+    {
+      "toolId": "mrx.tool.189-androgenic-balance",
+      "slug": "tool-189-androgenic-balance",
+      "href": "/smarttools/pharmacokinetics/tool-189-androgenic-balance",
+      "order": 1657,
+      "status": "implemented",
+      "titleEn": "Androgen Item Record",
+      "titleAr": "سجل العناصر الأندروجينية"
+    },
+    {
+      "toolId": "mrx.tool.190-androgen-receptor-optimizer",
+      "slug": "tool-190-androgen-receptor-optimizer",
+      "href": "/smarttools/pharmacokinetics/tool-190-androgen-receptor-optimizer",
+      "order": 1658,
+      "status": "implemented",
+      "titleEn": "Receptor Note Record",
+      "titleAr": "سجل ملاحظة المستقبلات"
+    },
+    {
+      "toolId": "mrx.tool.191-5-alpha-conversion",
+      "slug": "tool-191-5-alpha-conversion",
+      "href": "/smarttools/pharmacokinetics/tool-191-5-alpha-conversion",
+      "order": 1659,
+      "status": "implemented",
+      "titleEn": "Generic Unit Arithmetic",
+      "titleAr": "تحويل وحدات عام"
+    },
+    {
+      "toolId": "mrx.tool.150-ai-performance-command-center",
+      "slug": "tool-150-ai-performance-command-center",
+      "href": "/smarttools/platform-ai/tool-150-ai-performance-command-center",
+      "order": 1660,
+      "status": "implemented",
+      "titleEn": "Manual Performance Results Organizer",
+      "titleAr": "منظّم نتائج الأداء اليدوي"
+    },
+    {
+      "toolId": "mrx.tool.192-hair-loss-tracker",
+      "slug": "tool-192-hair-loss-tracker",
+      "href": "/smarttools/reproductive-wellbeing/tool-192-hair-loss-tracker",
+      "order": 1661,
+      "status": "implemented",
+      "titleEn": "Hair Observation Log",
+      "titleAr": "سجل ملاحظة الشعر"
+    },
+    {
+      "toolId": "mrx.tool.193-prostate-health-manager",
+      "slug": "tool-193-prostate-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-193-prostate-health-manager",
+      "order": 1662,
+      "status": "implemented",
+      "titleEn": "Prostate Data Record",
+      "titleAr": "سجل بيانات البروستاتا"
+    },
+    {
+      "toolId": "mrx.tool.194-testicular-suppression",
+      "slug": "tool-194-testicular-suppression",
+      "href": "/smarttools/reproductive-wellbeing/tool-194-testicular-suppression",
+      "order": 1663,
+      "status": "implemented",
+      "titleEn": "Suppression Note Record",
+      "titleAr": "سجل ملاحظة القمع"
+    },
+    {
+      "toolId": "mrx.tool.195-sperm-production-optimizer",
+      "slug": "tool-195-sperm-production-optimizer",
+      "href": "/smarttools/reproductive-wellbeing/tool-195-sperm-production-optimizer",
+      "order": 1664,
+      "status": "implemented",
+      "titleEn": "Fertility Note Record",
+      "titleAr": "سجل ملاحظة الخصوبة"
+    },
+    {
+      "toolId": "mrx.tool.196-estrogen-sensitivity-manager",
+      "slug": "tool-196-estrogen-sensitivity-manager",
+      "href": "/smarttools/reproductive-wellbeing/tool-196-estrogen-sensitivity-manager",
+      "order": 1665,
+      "status": "implemented",
+      "titleEn": "Estrogen Note Record",
+      "titleAr": "سجل ملاحظة الإستروجين"
+    },
+    {
+      "toolId": "mrx.tool.197-gynecomastia-tracker",
+      "slug": "tool-197-gynecomastia-tracker",
+      "href": "/smarttools/reproductive-wellbeing/tool-197-gynecomastia-tracker",
+      "order": 1666,
+      "status": "implemented",
+      "titleEn": "Observation Log",
+      "titleAr": "سجل ملاحظة التثدي"
+    },
+    {
+      "toolId": "mrx.tool.198-detoxification-optimizer",
+      "slug": "tool-198-detoxification-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-198-detoxification-optimizer",
+      "order": 1667,
+      "status": "implemented",
+      "titleEn": "Note Record",
+      "titleAr": "سجل ملاحظة"
+    },
+    {
+      "toolId": "mrx.tool.199-oxidative-stress",
+      "slug": "tool-199-oxidative-stress",
+      "href": "/smarttools/medical-monitoring/tool-199-oxidative-stress",
+      "order": 1668,
+      "status": "implemented",
+      "titleEn": "Value Record",
+      "titleAr": "سجل قيمة"
+    },
+    {
+      "toolId": "mrx.tool.200-antioxidant-manager",
+      "slug": "tool-200-antioxidant-manager",
+      "href": "/smarttools/medical-monitoring/tool-200-antioxidant-manager",
+      "order": 1669,
+      "status": "implemented",
+      "titleEn": "Item Record",
+      "titleAr": "سجل العناصر"
+    },
+    {
+      "toolId": "mrx.tool.bmr-tdee",
+      "slug": "bmr-tdee",
+      "href": "/smarttools/nutrition/bmr-tdee",
+      "order": 1670,
+      "status": "implemented",
+      "titleEn": "BMR / TDEE Calculator",
+      "titleAr": "حاسبة معدل الأيض والاحتياج اليومي"
+    },
+    {
+      "toolId": "mrx.tool.201-systemic-inflammation",
+      "slug": "tool-201-systemic-inflammation",
+      "href": "/smarttools/medical-monitoring/tool-201-systemic-inflammation",
+      "order": 1671,
+      "status": "implemented",
+      "titleEn": "Inflammation Note Record",
+      "titleAr": "سجل ملاحظة الالتهاب"
+    },
+    {
+      "toolId": "mrx.tool.202-immune-system-optimizer",
+      "slug": "tool-202-immune-system-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-202-immune-system-optimizer",
+      "order": 1672,
+      "status": "implemented",
+      "titleEn": "Immune Note Record",
+      "titleAr": "سجل ملاحظة المناعة"
+    },
+    {
+      "toolId": "mrx.tool.203-arterial-health-manager",
+      "slug": "tool-203-arterial-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-203-arterial-health-manager",
+      "order": 1673,
+      "status": "implemented",
+      "titleEn": "Arterial Note Record",
+      "titleAr": "سجل ملاحظة الشرايين"
+    },
+    {
+      "toolId": "mrx.tool.204-blood-viscosity",
+      "slug": "tool-204-blood-viscosity",
+      "href": "/smarttools/medical-monitoring/tool-204-blood-viscosity",
+      "order": 1674,
+      "status": "implemented",
+      "titleEn": "Viscosity Value Record",
+      "titleAr": "سجل قيمة اللزوجة"
+    },
+    {
+      "toolId": "mrx.tool.205-nitric-oxide-optimizer",
+      "slug": "tool-205-nitric-oxide-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-205-nitric-oxide-optimizer",
+      "order": 1675,
+      "status": "implemented",
+      "titleEn": "Nitric Oxide Note Record",
+      "titleAr": "سجل ملاحظة أكسيد النيتريك"
+    },
+    {
+      "toolId": "mrx.tool.206-endothelial-health-manager",
+      "slug": "tool-206-endothelial-health-manager",
+      "href": "/smarttools/medical-monitoring/tool-206-endothelial-health-manager",
+      "order": 1676,
+      "status": "implemented",
+      "titleEn": "Endothelial Note Record",
+      "titleAr": "Endothelial Note Record"
+    },
+    {
+      "toolId": "mrx.tool.207-fat-metabolism",
+      "slug": "tool-207-fat-metabolism",
+      "href": "/smarttools/medical-monitoring/tool-207-fat-metabolism",
+      "order": 1677,
+      "status": "implemented",
+      "titleEn": "Metabolism Value Record",
+      "titleAr": "Metabolism Value Record"
+    },
+    {
+      "toolId": "mrx.tool.208-mitochondrial-optimizer",
+      "slug": "tool-208-mitochondrial-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-208-mitochondrial-optimizer",
+      "order": 1678,
+      "status": "implemented",
+      "titleEn": "Mitochondrial Note Record",
+      "titleAr": "Mitochondrial Note Record"
+    },
+    {
+      "toolId": "mrx.tool.209-cellular-aging",
+      "slug": "tool-209-cellular-aging",
+      "href": "/smarttools/medical-monitoring/tool-209-cellular-aging",
+      "order": 1679,
+      "status": "implemented",
+      "titleEn": "Cellular Value Record",
+      "titleAr": "Cellular Value Record"
+    },
+    {
+      "toolId": "mrx.tool.protein-needs",
+      "slug": "protein-needs",
+      "href": "/smarttools/nutrition/protein-needs",
+      "order": 1680,
+      "status": "implemented",
+      "titleEn": "Protein Needs Estimate",
+      "titleAr": "تقدير احتياج البروتين"
+    },
+    {
+      "toolId": "mrx.tool.210-telomere-manager",
+      "slug": "tool-210-telomere-manager",
+      "href": "/smarttools/medical-monitoring/tool-210-telomere-manager",
+      "order": 1681,
+      "status": "implemented",
+      "titleEn": "Telomere Note Record",
+      "titleAr": "Telomere Note Record"
+    },
+    {
+      "toolId": "mrx.tool.water-intake",
+      "slug": "water-intake",
+      "href": "/smarttools/nutrition/water-intake",
+      "order": 1690,
+      "status": "implemented",
+      "titleEn": "Daily Water Intake Estimate",
+      "titleAr": "تقدير احتياج الماء اليومي"
+    },
+    {
+      "toolId": "mrx.tool.211-anti-aging-inflammation",
+      "slug": "tool-211-anti-aging-inflammation",
+      "href": "/smarttools/medical-monitoring/tool-211-anti-aging-inflammation",
+      "order": 1691,
+      "status": "implemented",
+      "titleEn": "Anti-Aging Note Record",
+      "titleAr": "Anti-Aging Note Record"
+    },
+    {
+      "toolId": "mrx.tool.212-cognitive-enhancer",
+      "slug": "tool-212-cognitive-enhancer",
+      "href": "/smarttools/medical-monitoring/tool-212-cognitive-enhancer",
+      "order": 1692,
+      "status": "implemented",
+      "titleEn": "Cognitive Note Record",
+      "titleAr": "Cognitive Note Record"
+    },
+    {
+      "toolId": "mrx.tool.213-cortisol-stress",
+      "slug": "tool-213-cortisol-stress",
+      "href": "/smarttools/medical-monitoring/tool-213-cortisol-stress",
+      "order": 1693,
+      "status": "implemented",
+      "titleEn": "Stress Note Record",
+      "titleAr": "Stress Note Record"
+    },
+    {
+      "toolId": "mrx.tool.214-mood-optimizer",
+      "slug": "tool-214-mood-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-214-mood-optimizer",
+      "order": 1694,
+      "status": "implemented",
+      "titleEn": "Mood Record",
+      "titleAr": "Mood Record"
+    },
+    {
+      "toolId": "mrx.tool.215-dopamine-tracker",
+      "slug": "tool-215-dopamine-tracker",
+      "href": "/smarttools/medical-monitoring/tool-215-dopamine-tracker",
+      "order": 1695,
+      "status": "implemented",
+      "titleEn": "Dopamine Note Record",
+      "titleAr": "Dopamine Note Record"
+    },
+    {
+      "toolId": "mrx.tool.216-serotonin-manager",
+      "slug": "tool-216-serotonin-manager",
+      "href": "/smarttools/medical-monitoring/tool-216-serotonin-manager",
+      "order": 1696,
+      "status": "implemented",
+      "titleEn": "Serotonin Note Record",
+      "titleAr": "Serotonin Note Record"
+    },
+    {
+      "toolId": "mrx.tool.217-female-hormone-balance",
+      "slug": "tool-217-female-hormone-balance",
+      "href": "/smarttools/reproductive-wellbeing/tool-217-female-hormone-balance",
+      "order": 1697,
+      "status": "implemented",
+      "titleEn": "Hormone Note Record",
+      "titleAr": "Hormone Note Record"
+    },
+    {
+      "toolId": "mrx.tool.218-female-health-optimizer",
+      "slug": "tool-218-female-health-optimizer",
+      "href": "/smarttools/reproductive-wellbeing/tool-218-female-health-optimizer",
+      "order": 1698,
+      "status": "implemented",
+      "titleEn": "Health Note Record",
+      "titleAr": "Health Note Record"
+    },
+    {
+      "toolId": "mrx.tool.219-female-dosage",
+      "slug": "tool-219-female-dosage",
+      "href": "/smarttools/measurement-conversion/tool-219-female-dosage",
+      "order": 1699,
+      "status": "implemented",
+      "titleEn": "Generic Arithmetic",
+      "titleAr": "Generic Arithmetic"
+    },
+    {
+      "toolId": "mrx.tool.bmi",
+      "slug": "bmi",
+      "href": "/smarttools/body-composition/bmi",
+      "order": 1700,
+      "status": "implemented",
+      "titleEn": "Body Mass Index Calculator",
+      "titleAr": "حاسبة مؤشر كتلة الجسم"
+    },
+    {
+      "toolId": "mrx.tool.220-menstrual-cycle-manager",
+      "slug": "tool-220-menstrual-cycle-manager",
+      "href": "/smarttools/reproductive-wellbeing/tool-220-menstrual-cycle-manager",
+      "order": 1701,
+      "status": "implemented",
+      "titleEn": "Date Record",
+      "titleAr": "Date Record"
+    },
+    {
+      "toolId": "mrx.tool.221-pregnancy-risk",
+      "slug": "tool-221-pregnancy-risk",
+      "href": "/smarttools/reproductive-wellbeing/tool-221-pregnancy-risk",
+      "order": 1702,
+      "status": "implemented",
+      "titleEn": "Pregnancy Note Record",
+      "titleAr": "Pregnancy Note Record"
+    },
+    {
+      "toolId": "mrx.tool.222-skin-health-optimizer",
+      "slug": "tool-222-skin-health-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-222-skin-health-optimizer",
+      "order": 1703,
+      "status": "implemented",
+      "titleEn": "Skin Note Record",
+      "titleAr": "Skin Note Record"
+    },
+    {
+      "toolId": "mrx.tool.223-hair-nail-tracker",
+      "slug": "tool-223-hair-nail-tracker",
+      "href": "/smarttools/medical-monitoring/tool-223-hair-nail-tracker",
+      "order": 1704,
+      "status": "implemented",
+      "titleEn": "Hair and Nail Log",
+      "titleAr": "Hair and Nail Log"
+    },
+    {
+      "toolId": "mrx.tool.224-digestive-health-optimizer",
+      "slug": "tool-224-digestive-health-optimizer",
+      "href": "/smarttools/medical-monitoring/tool-224-digestive-health-optimizer",
+      "order": 1705,
+      "status": "implemented",
+      "titleEn": "Digestive Note Record",
+      "titleAr": "Digestive Note Record"
+    },
+    {
+      "toolId": "mrx.tool.225-comprehensive-report-generator",
+      "slug": "tool-225-comprehensive-report-generator",
+      "href": "/smarttools/ai-nutrition-vision/tool-225-comprehensive-report-generator",
+      "order": 1706,
+      "status": "implemented",
+      "titleEn": "User Entry Aggregator",
+      "titleAr": "User Entry Aggregator"
+    },
+    {
+      "toolId": "mrx.tool.one-rep-max",
+      "slug": "one-rep-max",
+      "href": "/smarttools/training-recovery/one-rep-max",
+      "order": 1710,
+      "status": "implemented",
+      "titleEn": "One-Rep Max Estimator",
+      "titleAr": "مقدر الوزن الأقصى لتكرار واحد"
+    },
+    {
+      "toolId": "mrx.tool.226-sarm-to-aas-transition-predictor",
+      "slug": "tool-226-sarm-to-aas-transition-predictor",
+      "href": "/smarttools/pharmacokinetics/tool-226-sarm-to-aas-transition-predictor",
+      "order": 1712,
+      "status": "implemented",
+      "titleEn": "Transition Note Record",
+      "titleAr": "Transition Note Record"
+    },
+    {
+      "toolId": "mrx.tool.227-subq-vs-im-pk-modeler",
+      "slug": "tool-227-subq-vs-im-pk-modeler",
+      "href": "/smarttools/pharmacokinetics/tool-227-subq-vs-im-pk-modeler",
+      "order": 1713,
+      "status": "implemented",
+      "titleEn": "Route Note Record",
+      "titleAr": "Route Note Record"
+    },
+    {
+      "toolId": "mrx.tool.228-health-data-fusion-hub",
+      "slug": "tool-228-health-data-fusion-hub",
+      "href": "/smarttools/ai-nutrition-vision/tool-228-health-data-fusion-hub",
+      "order": 1714,
+      "status": "implemented",
+      "titleEn": "Data Record",
+      "titleAr": "Data Record"
+    },
+    {
+      "toolId": "mrx.tool.229-glycogen-supercompensation-modeler",
+      "slug": "tool-229-glycogen-supercompensation-modeler",
+      "href": "/smarttools/contest-prep/tool-229-glycogen-supercompensation-modeler",
+      "order": 1715,
+      "status": "implemented",
+      "titleEn": "Carbohydrate Note Record",
+      "titleAr": "Carbohydrate Note Record"
+    },
+    {
+      "toolId": "mrx.tool.230-peak-week-manipulator",
+      "slug": "tool-230-peak-week-manipulator",
+      "href": "/smarttools/contest-prep/tool-230-peak-week-manipulator",
+      "order": 1716,
+      "status": "implemented",
+      "titleEn": "Peak Week Note Record",
+      "titleAr": "Peak Week Note Record"
+    },
+    {
+      "toolId": "mrx.tool.strength-standards",
+      "slug": "strength-standards",
+      "href": "/smarttools/training-recovery/strength-standards",
+      "order": 1720,
+      "status": "implemented",
+      "titleEn": "Strength Standards",
+      "titleAr": "معايير القوة"
+    },
+    {
+      "toolId": "mrx.tool.231-body-composition-vision-engine",
+      "slug": "tool-231-body-composition-vision-engine",
+      "href": "/smarttools/ai-nutrition-vision/tool-231-body-composition-vision-engine",
+      "order": 1722,
+      "status": "implemented",
+      "titleEn": "Body Reference Record",
+      "titleAr": "Body Reference Record"
+    },
+    {
+      "toolId": "mrx.tool.232-meal-vision-scanner",
+      "slug": "tool-232-meal-vision-scanner",
+      "href": "/smarttools/ai-nutrition-vision/tool-232-meal-vision-scanner",
+      "order": 1723,
+      "status": "implemented",
+      "titleEn": "Meal Description Record",
+      "titleAr": "Meal Description Record"
+    },
+    {
+      "toolId": "mrx.tool.233-food-substitution-engine",
+      "slug": "tool-233-food-substitution-engine",
+      "href": "/smarttools/ai-nutrition-vision/tool-233-food-substitution-engine",
+      "order": 1724,
+      "status": "implemented",
+      "titleEn": "Food List Record",
+      "titleAr": "Food List Record"
+    },
+    {
+      "toolId": "mrx.tool.234-food-quality-score",
+      "slug": "tool-234-food-quality-score",
+      "href": "/smarttools/ai-nutrition-vision/tool-234-food-quality-score",
+      "order": 1725,
+      "status": "implemented",
+      "titleEn": "Food Note Record",
+      "titleAr": "Food Note Record"
+    },
+    {
+      "toolId": "mrx.tool.235-grocery-basket-optimizer",
+      "slug": "tool-235-grocery-basket-optimizer",
+      "href": "/smarttools/ai-nutrition-vision/tool-235-grocery-basket-optimizer",
+      "order": 1726,
+      "status": "implemented",
+      "titleEn": "Basket Record",
+      "titleAr": "Basket Record"
+    },
+    {
+      "toolId": "mrx.tool.rest-timer",
+      "slug": "rest-timer",
+      "href": "/smarttools/training-recovery/rest-timer",
+      "order": 1730,
+      "status": "implemented",
+      "titleEn": "Training Rest Timer",
+      "titleAr": "مؤقت الراحة بين المجموعات"
+    },
+    {
+      "toolId": "mrx.tool.236-restaurant-macro-navigator",
+      "slug": "tool-236-restaurant-macro-navigator",
+      "href": "/smarttools/ai-nutrition-vision/tool-236-restaurant-macro-navigator",
+      "order": 2360,
+      "status": "implemented",
+      "titleEn": "Restaurant Menu Label Calculator",
+      "titleAr": "حاسبة بيانات ملصق وجبات المطاعم"
+    },
+    {
+      "toolId": "mrx.tool.237-intra-workout-volumizer",
+      "slug": "tool-237-intra-workout-volumizer",
+      "href": "/smarttools/ai-nutrition-vision/tool-237-intra-workout-volumizer",
+      "order": 2370,
+      "status": "implemented",
+      "titleEn": "Intra-Workout Product Label Calculator",
+      "titleAr": "حاسبة ملصق منتج أثناء التدريب"
+    },
+    {
+      "toolId": "mrx.tool.238-fiber-type-adaptation-score",
+      "slug": "tool-238-fiber-type-adaptation-score",
+      "href": "/smarttools/contest-prep/tool-238-fiber-type-adaptation-score",
+      "order": 2380,
+      "status": "implemented",
+      "titleEn": "Fiber-Related Performance Observation Log",
+      "titleAr": "سجل ملاحظات الأداء المرتبطة بالألياف"
+    },
+    {
+      "toolId": "mrx.tool.239-peptide-reconstitution",
+      "slug": "tool-239-peptide-reconstitution",
+      "href": "/smarttools/homebrew-chemistry/tool-239-peptide-reconstitution",
+      "order": 2390,
+      "status": "implemented",
+      "titleEn": "Peptide Product Label Reference Record",
+      "titleAr": "سجل مرجع ملصق منتج الببتيد"
+    },
+    {
+      "toolId": "mrx.tool.240-raw-powder-density-engine",
+      "slug": "tool-240-raw-powder-density-engine",
+      "href": "/smarttools/homebrew-chemistry/tool-240-raw-powder-density-engine",
+      "order": 2400,
+      "status": "implemented",
+      "titleEn": "Measured Sample Density Calculator",
+      "titleAr": "حاسبة كثافة عينة مقاسة"
+    },
+    {
+      "toolId": "mrx.tool.241-solvent-ratio",
+      "slug": "tool-241-solvent-ratio",
+      "href": "/smarttools/homebrew-chemistry/tool-241-solvent-ratio",
+      "order": 2410,
+      "status": "implemented",
+      "titleEn": "Generic Mathematical Ratio Calculator",
+      "titleAr": "حاسبة نسبة رياضية عامة"
+    },
+    {
+      "toolId": "mrx.tool.242-dosage-unit-conversion-engine",
+      "slug": "tool-242-dosage-unit-conversion-engine",
+      "href": "/smarttools/homebrew-chemistry/tool-242-dosage-unit-conversion-engine",
+      "order": 2420,
+      "status": "implemented",
+      "titleEn": "General Measurement Unit Converter",
+      "titleAr": "محول وحدات القياس العامة"
+    },
+    {
+      "toolId": "mrx.tool.243-carrier-oil-viscosity-estimator",
+      "slug": "tool-243-carrier-oil-viscosity-estimator",
+      "href": "/smarttools/homebrew-chemistry/tool-243-carrier-oil-viscosity-estimator",
+      "order": 2430,
+      "status": "implemented",
+      "titleEn": "Carrier Oil Observation Log",
+      "titleAr": "سجل ملاحظات الزيت الناقل"
+    },
+    {
+      "toolId": "mrx.tool.244-purity-yield-estimator",
+      "slug": "tool-244-purity-yield-estimator",
+      "href": "/smarttools/homebrew-chemistry/tool-244-purity-yield-estimator",
+      "order": 2440,
+      "status": "implemented",
+      "titleEn": "Generic Input/Output Ratio Calculator",
+      "titleAr": "حاسبة نسبة المدخل إلى الناتج"
+    },
+    {
+      "toolId": "mrx.tool.245-storage-stability-estimator",
+      "slug": "tool-245-storage-stability-estimator",
+      "href": "/smarttools/homebrew-chemistry/tool-245-storage-stability-estimator",
+      "order": 2450,
+      "status": "implemented",
+      "titleEn": "Storage Observation Log",
+      "titleAr": "سجل ملاحظات التخزين"
+    },
+    {
+      "toolId": "mrx.tool.246-homebrew-chemistry",
+      "slug": "tool-246-homebrew-chemistry",
+      "href": "/smarttools/homebrew-chemistry/tool-246-homebrew-chemistry",
+      "order": 2460,
+      "status": "implemented",
+      "titleEn": "Chemistry Observation Log",
+      "titleAr": "سجل ملاحظات الكيمياء"
+    },
+    {
+      "toolId": "mrx.tool.247-habit-intelligence-coach",
+      "slug": "tool-247-habit-intelligence-coach",
+      "href": "/smarttools/ai-behavior/tool-247-habit-intelligence-coach",
+      "order": 2470,
+      "status": "implemented",
+      "titleEn": "Habit Check-in Log",
+      "titleAr": "سجل متابعة العادات"
+    },
+    {
+      "toolId": "mrx.tool.248-safety-gate-emergency-protocol",
+      "slug": "tool-248-safety-gate-emergency-protocol",
+      "href": "/smarttools/ai-behavior/tool-248-safety-gate-emergency-protocol",
+      "order": 2480,
+      "status": "implemented",
+      "titleEn": "Emergency Warning Checklist",
+      "titleAr": "قائمة إشارات الطوارئ"
+    },
+    {
+      "toolId": "mrx.tool.249-scientific-evidence-explorer",
+      "slug": "tool-249-scientific-evidence-explorer",
+      "href": "/smarttools/ai-behavior/tool-249-scientific-evidence-explorer",
+      "order": 2490,
+      "status": "implemented",
+      "titleEn": "Scientific Evidence Explorer",
+      "titleAr": "مستكشف الأدلة العلمية"
+    },
+    {
+      "toolId": "mrx.tool.250-personal-fitness-memory-layer",
+      "slug": "tool-250-personal-fitness-memory-layer",
+      "href": "/smarttools/ai-behavior/tool-250-personal-fitness-memory-layer",
+      "order": 2500,
+      "status": "implemented",
+      "titleEn": "Session-Only Fitness Notes",
+      "titleAr": "ملاحظات لياقة مؤقتة للجلسة"
+    },
+    {
+      "toolId": "mrx.tool.251-physique-trajectory-simulator",
+      "slug": "tool-251-physique-trajectory-simulator",
+      "href": "/smarttools/ai-behavior/tool-251-physique-trajectory-simulator",
+      "order": 2510,
+      "status": "implemented",
+      "titleEn": "Physique Scenario Simulator",
+      "titleAr": "محاكي سيناريوهات المسار الجسدي"
+    },
+    {
+      "toolId": "mrx.tool.252-command-center",
+      "slug": "tool-252-command-center",
+      "href": "/smarttools/ai-behavior/tool-252-command-center",
+      "order": 2520,
+      "status": "implemented",
+      "titleEn": "Manual Context Board",
+      "titleAr": "لوحة السياق اليدوية"
+    }
+  ]
+}

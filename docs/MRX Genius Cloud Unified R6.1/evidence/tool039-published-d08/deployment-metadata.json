@@ -1,0 +1,443 @@
+{
+  "capturedAt": "2026-11-13T01:19:44.669Z",
+  "tool": "Tool 039 — Liver Enzyme Tracker (mrx.tool.039-liver-enzyme-tracker)",
+  "ownerAuthorization": "EXPLICIT OWNER AUTHORIZATION — TOOL 039: APPROVED, ONE NEW PREVIEW DEPLOYMENT ONLY (2026-11-12). One Preview deployment for the final E4 verification of History and Rating/Comment after D-08. Not a final acceptance of Tool 039.",
+  "deployment": {
+    "id": "dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc",
+    "url": "https://mrxsteroid-fuvgd9qsp-georges-projects-78ef250b.vercel.app",
+    "toolUrl": "https://mrxsteroid-fuvgd9qsp-georges-projects-78ef250b.vercel.app/smarttools/medical-monitoring/tool-039-liver-enzyme-tracker",
+    "alias": "mrxsteroid-preview-tool039.vercel.app",
+    "aliasUrl": "https://mrxsteroid-preview-tool039.vercel.app/smarttools/medical-monitoring/tool-039-liver-enzyme-tracker",
+    "inspectorUrl": "https://vercel.com/georges-projects-78ef250b/mrxsteroid/AimJXowNb5TCQQZNJR8MCcvE2dHc",
+    "target": "preview",
+    "environment": "preview",
+    "readyState": "READY",
+    "productionUrl": null,
+    "createdUtc": "2026-11-12T23:55Z (build log first line 2026-11-12T23:57:18.777Z)",
+    "deploymentProtection": [
+      "vercel_authentication"
+    ],
+    "deployedFrom": "the local working tree, unchanged since the 43/43 browser run (no commit, no push, no merge, no rebase)"
+  },
+  "buildLog": {
+    "source": "vercel inspect dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc --logs",
+    "lines": [],
+    "result": "SUCCESS — compiled successfully and 506/506 static pages generated, no error in the build log."
+  },
+  "protectionStatus": {
+    "anonymousRequestToDeploymentUrl": "302 -> vercel.com/login (Deployment Protection ACTIVE, unchanged)",
+    "anonymousRequestToAliasUrl": "302 -> vercel.com/login (Deployment Protection ACTIVE, unchanged)",
+    "projectSsoProtection": "all_except_custom_domains (unchanged)",
+    "projectProtectionBypassEntries": 0,
+    "note": "No protection setting was changed, no authentication was bypassed and no shared secret was created, printed or stored. The browser verification reached the protected deployment through the owner's own already-authenticated Vercel CLI session, relayed locally by tool-039-preview-proxy.mjs."
+  },
+  "sourceManifest": {
+    "capturedAt": "2026-11-12T23:53:50.095Z",
+    "tool": "Tool 039 — Liver Enzyme Tracker",
+    "purpose": "Identifies the exact source deployed to the Preview and the exact source the browser evidence was taken against.",
+    "head": "5a87f3e5271db497a63833bb3cd1bb3df2078497",
+    "branch": "docs/r6.1-r0-evidence",
+    "committed": false,
+    "note": "The Tool 039 changes live in the working tree and are NOT committed (no commit/push/merge/rebase was performed, by owner instruction). These SHA-256 hashes identify the deployed code.",
+    "appSource": {
+      "components/tools/tool-039-liver-enzyme-tracker.tsx": {
+        "sha256": "fc512231c1c430bfc180068882cb3e2efa160930f3327a08272cef75314591f1",
+        "bytes": 30170
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.genius.tsx": {
+        "sha256": "309b8bcc24c0382caecf3d2b31d21b798466f4d2247debf558107fd89c4e0496",
+        "bytes": 30917
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.history.tsx": {
+        "sha256": "cadb407b9a397c1fb21442fafbb099de2b61e5338a94da835728ed22c55fc827",
+        "bytes": 15575
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.visual.tsx": {
+        "sha256": "afb6366d3027c700a73577ef6775a2369f9c784a9ca467bc1563dabc0ae079c6",
+        "bytes": 33320
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-history.ts": {
+        "sha256": "6e1f4cc754f0da68b09dae4ecaa302ad42ff2b604871b0feec54e7a42cacb52e",
+        "bytes": 11360
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-history-store.ts": {
+        "sha256": "24c0d90137c229f745b773a7495a832e5bb8a7edb1e799fecc1eb9f1dc7cd79b",
+        "bytes": 11541
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-visual.ts": {
+        "sha256": "78b39fb0273131e789ee5e1e4a7411a2904b240c6a13cea40733a766907fb953",
+        "bytes": 10149
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-contract.ts": {
+        "sha256": "b814ffa99007507a336688c591a85f069d1414daf9373d40684440087ea6422a",
+        "bytes": 16298
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-pipeline.ts": {
+        "sha256": "6d60356568f19b88d4dc1b6e28c3f7319fe28c56ab26e3b1a4e67588837f2141",
+        "bytes": 4180
+      },
+      "i18n/tool-039-liver-enzyme-tracker.json": {
+        "sha256": "9e1d218213ed331e1a19a87b3776b385c36367f608befd3d5858da000a53fffd",
+        "bytes": 46633
+      }
+    },
+    "testSource": {
+      "components/tools/tool-039-liver-enzyme-tracker.test.tsx": {
+        "sha256": "a9883d0c95aef33e875573f5991d742fb7629417f9ac07e0145536c8cd9c01d9",
+        "bytes": 22841
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.visual.test.tsx": {
+        "sha256": "0a2af4e730ff93439739bccad0c73cf74ad1f0dc36f0ba083c052d9f54ff6f08",
+        "bytes": 19631
+      },
+      "components/tools/tool-039-liver-enzyme-tracker.history.test.tsx": {
+        "sha256": "802d886138de44626cb8f5b8750490346fb75899692741b6b179cbe254c6b4e1",
+        "bytes": 14353
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-history.test.ts": {
+        "sha256": "7e447b10c9597a499fcacc8483b770d596c3298138b218bf971f4f0b997d3fec",
+        "bytes": 8252
+      },
+      "lib/tools/r6/tool-039-liver-enzyme-tracker-history-store.test.ts": {
+        "sha256": "5a76c47ef4b6bcfbb102dd309d1c69c918f960e389e5145c25f536e2b1ca85f4",
+        "bytes": 8405
+      }
+    },
+    "verificationHarness": {
+      "docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs": {
+        "sha256": "b681203e0ee0df80785bfe7ebed7de81d28074cf014dd0267f3abe083c06e2c8",
+        "bytes": 45736
+      },
+      "docs/MRX Genius Cloud Unified R6.1/tool-039-two-browsers-check.mjs": {
+        "sha256": "80081c5bce03e5a976dc24cec89f15202a6a9cf503f14bbee2ad56b4c0490c43",
+        "bytes": 8663
+      },
+      "docs/MRX Genius Cloud Unified R6.1/tool-039-legibility-check.mjs": {
+        "sha256": "dbb3f33b6a8b47245b84af8473601d04e4d969cf75340a2d530d171feb25fec9",
+        "bytes": 8915
+      },
+      "docs/MRX Genius Cloud Unified R6.1/tool-039-preview-proxy.mjs": {
+        "sha256": "941a188928882dd52dc34acf805db852b9c7646ae0f864b23fd8229bae0e8a13",
+        "bytes": 6373
+      },
+      "docs/MRX Genius Cloud Unified R6.1/tool-039-secure-storage-probe.mjs": {
+        "sha256": "e1a141bb52f41bb896432694c1378cf0aaf351851239c1a5fa904a9c9341cfe9",
+        "bytes": 4764
+      }
+    }
+  },
+  "publishedBundleProof": {
+    "date": "2026-11-13T00:20:55.646Z",
+    "deployment": "dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc",
+    "method": "The published page and its client chunks were fetched through the owner's own authenticated Vercel CLI session (vercel curl --deployment). The chunks carrying the D-08 local-history code are listed.",
+    "chunksScanned": 40,
+    "chunksCarryingD08": {
+      "/_next/static/chunks/app/smarttools/%5Bcategory%5D/%5Btool%5D/page-f52f77e146012c11.js": {
+        "bytes": 2559445,
+        "markers": [
+          "mrx_tool039_history_v1",
+          "mrx_tool039_history_key_v1",
+          "Allow local storage on this device",
+          "Withdraw consent and delete the stored data"
+        ]
+      }
+    },
+    "allMarkersFound": true,
+    "markersSearched": [
+      "mrx_tool039_history_v1",
+      "mrx_tool039_history_key_v1",
+      "Allow local storage on this device",
+      "Withdraw consent and delete the stored data"
+    ]
+  },
+  "publishedHtmlMarkerComparison": {
+    "date": "2026-11-13T00:16:48.066Z",
+    "method": "The server-rendered HTML of both deployments was fetched through the owner's own authenticated Vercel CLI session and the markers were counted. Before any consent the history box renders the D-08 CONSENT notice, so the consent strings are the server-side discriminator; the saved-result markers appear only after a user action and are proven by the 43 browser checks instead.",
+    "deployments": {
+      "PREVIOUS dpl_JCfgB7Z9dTrVY3kboQCsEjUJL689 (pre-D-08)": {
+        "bytes": 89754,
+        "counts": {
+          "Allow local storage on this device": 0,
+          "Withdraw consent and delete the stored data": 0,
+          "Save this result": 0,
+          "NOT_APPLICABLE &#8212; this tool stores nothing": 0,
+          "this tool stores nothing": 0,
+          "data-r6-visual": 2,
+          "data-r6-illustration=\"tool-039\"": 1
+        }
+      },
+      "NEW dpl_AimJXowNb5TCQQZNJR8MCcvE2dHc (post-D-08)": {
+        "bytes": 89962,
+        "counts": {
+          "Allow local storage on this device": 0,
+          "Withdraw consent and delete the stored data": 0,
+          "Save this result": 0,
+          "NOT_APPLICABLE &#8212; this tool stores nothing": 0,
+          "this tool stores nothing": 0,
+          "data-r6-visual": 2,
+          "data-r6-illustration=\"tool-039\"": 1
+        }
+      }
+    }
+  },
+  "browserVerificationOnPublishedDeployment": {
+    "harness": "docs/MRX Genius Cloud Unified R6.1/tool-039-browser-verify.mjs (Chrome DevTools Protocol, real Chrome, no new dependency)",
+    "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "deviceMetrics": {
+      "desktop": "1440x900",
+      "mobile": "390x844"
+    },
+    "date": "2026-11-13T01:18:15.274Z",
+    "checksTotal": 43,
+    "checksPassed": 43,
+    "checksFailed": 0,
+    "results": [
+      {
+        "requirement": "EMPTY state shows the explanatory illustration",
+        "result": "PASS",
+        "evidence": "section=visible svg=visible title=\"Visual explanation and data visualizations\" state=State: EmptyTrack"
+      },
+      {
+        "requirement": "EMPTY state shows the text equivalent of the diagram",
+        "result": "PASS",
+        "evidence": "text list present=true visible=true"
+      },
+      {
+        "requirement": "EMPTY state invents no chart data",
+        "result": "PASS",
+        "evidence": "bars=0 tables=0"
+      },
+      {
+        "requirement": "EMPTY state screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-empty-1440.png"
+      },
+      {
+        "requirement": "Explanatory diagram renders",
+        "result": "PASS",
+        "evidence": "svg[data-r6-illustration] present"
+      },
+      {
+        "requirement": "Data chart renders",
+        "result": "PASS",
+        "evidence": "bar row ALT present; line chart: absent (one dated reading)"
+      },
+      {
+        "requirement": "Chart matches pipeline values",
+        "result": "PASS",
+        "evidence": "bar: ALT112 U/L · 2.00× ULN · Elevated"
+      },
+      {
+        "requirement": "Text alternative (data table)",
+        "result": "PASS",
+        "evidence": "table[data-r6-table] present"
+      },
+      {
+        "requirement": "No colour-only meaning (legend present)",
+        "result": "PASS",
+        "evidence": "legend element present"
+      },
+      {
+        "requirement": "English LTR",
+        "result": "PASS",
+        "evidence": "dir=ltr"
+      },
+      {
+        "requirement": "Mouse Hover opens the element tooltip",
+        "result": "PASS",
+        "evidence": "ALTMeaning: ALT (alanine aminotransferase) — an enzyme that tends to rise when liver cells are irritated.Current value: 112 U/LRelative to the reference limit: 2.00× ULNExplanation: ALT is compared with its reference lim"
+      },
+      {
+        "requirement": "Tooltip avoids viewport clipping",
+        "result": "PASS",
+        "evidence": "left=497 right=785 top=29 bottom=373 viewport=1424x805"
+      },
+      {
+        "requirement": "Desktop screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-desktop-1440.png"
+      },
+      {
+        "requirement": "Local history: consent is requested before anything is stored",
+        "result": "PASS",
+        "evidence": "the consent button is offered in the history box"
+      },
+      {
+        "requirement": "Local history: the result is saved by an explicit action",
+        "result": "PASS",
+        "evidence": "save action clicked after the consent"
+      },
+      {
+        "requirement": "Local history: the saved result is listed with its value and date",
+        "result": "PASS",
+        "evidence": "2026-02-01ALT112 U/L2.00× ULNElevatedAge (days): 285StaleDelete this result"
+      },
+      {
+        "requirement": "Local history: the rating is bound to the selected result",
+        "result": "PASS",
+        "evidence": "rating=4 entryId=da9a8a86-4e12-4229-aac8-7f0f31b6c076"
+      },
+      {
+        "requirement": "Local history: the stored blob is not readable plain text on the device",
+        "result": "PASS",
+        "evidence": "keys=mrx_tool039_history_v1,mrx_tool039_history_key_v1 plaintext=false"
+      },
+      {
+        "requirement": "Local history: the saved result and its rating survive a reload",
+        "result": "PASS",
+        "evidence": "2026-02-01ALT112 U/L2.00× ULNElevatedAge (days): 285Stale★ 4Delete this result"
+      },
+      {
+        "requirement": "Local history: no data is sent to any server",
+        "result": "PASS",
+        "evidence": "59 requests, all GET navigations/assets, none carrying a value"
+      },
+      {
+        "requirement": "Local history: no medical value or comment reaches the application log",
+        "result": "PASS",
+        "evidence": "1 console messages, none containing a value, a unit or a status"
+      },
+      {
+        "requirement": "Local history: staleness is computed at read time",
+        "result": "PASS",
+        "evidence": "data-r6-history-stale=true badge=true"
+      },
+      {
+        "requirement": "Local history: one saved result can be deleted",
+        "result": "PASS",
+        "evidence": "entries left = 0"
+      },
+      {
+        "requirement": "Local history: the history exports as CSV",
+        "result": "PASS",
+        "evidence": "the browser downloaded tool-039-liver-enzyme-tracker-history.csv (265 bytes): tool,tool-039-liver-enzyme-tracker | saved_at,2026-11-13T01:17:58.318Z |  | entry_id,draw_date,marker,value,unit,uln_multiple,status,overall_status,age_days,stale,rating,comment"
+      },
+      {
+        "requirement": "Local history: the rating control is operable with the keyboard",
+        "result": "PASS",
+        "evidence": "focus moved to INPUT, the arrow key moved the selection to 3"
+      },
+      {
+        "requirement": "Local history: the rating and delete controls are named for a screen reader",
+        "result": "PASS",
+        "evidence": "group=true radios=true comment=true maxlength=500 delete=true"
+      },
+      {
+        "requirement": "Local history: all saved results can be deleted at once",
+        "result": "PASS",
+        "evidence": "after save again = 1, after delete all = 0"
+      },
+      {
+        "requirement": "Local history screenshot (desktop)",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-history-1440.png"
+      },
+      {
+        "requirement": "Keyboard Focus opens the tooltip",
+        "result": "PASS",
+        "evidence": "focused=true tooltip=true"
+      },
+      {
+        "requirement": "Escape closes the tooltip",
+        "result": "PASS",
+        "evidence": "tooltip removed after Escape"
+      },
+      {
+        "requirement": "Keyboard activation (Enter) opens the tooltip",
+        "result": "PASS",
+        "evidence": "node step-1"
+      },
+      {
+        "requirement": "Tooltip close action works",
+        "result": "PASS",
+        "evidence": "aria-label=\"Close the explanation\""
+      },
+      {
+        "requirement": "Touch interaction opens the tooltip",
+        "result": "PASS",
+        "evidence": "touchStart/touchEnd on the ALT bar"
+      },
+      {
+        "requirement": "Mobile 390px renders without horizontal overflow",
+        "result": "PASS",
+        "evidence": "scrollWidth=390 clientWidth=390 overflow=0"
+      },
+      {
+        "requirement": "Mobile 390px keeps the visual elements",
+        "result": "PASS",
+        "evidence": "illustration + bar + table present at 390px"
+      },
+      {
+        "requirement": "Mobile 390px shows the five readable steps",
+        "result": "PASS",
+        "evidence": "5/5 steps visible, smallest visible text 12px, desktop SVG hidden at 390px=true, overflow=0"
+      },
+      {
+        "requirement": "Local history screenshot (390 px)",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-history-390.png"
+      },
+      {
+        "requirement": "Mobile screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-mobile-390.png"
+      },
+      {
+        "requirement": "Reduced motion respected",
+        "result": "PASS",
+        "evidence": "prefers-reduced-motion rule present and emulated"
+      },
+      {
+        "requirement": "Arabic RTL renders the visual layer",
+        "result": "PASS",
+        "evidence": "dir=rtl; legend=\"المفتاح: الشريط المملوء = القيمة المقاسة · الخط الكهرماني = الحد المرجعي · الحالة معروضة بجانب كل قيمة\""
+      },
+      {
+        "requirement": "Arabic RTL has no horizontal overflow",
+        "result": "PASS",
+        "evidence": "overflow=0"
+      },
+      {
+        "requirement": "Arabic screenshot",
+        "result": "PASS",
+        "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool039-published-d08\\tool-039-arabic-rtl-1440.png"
+      },
+      {
+        "requirement": "Local history: withdrawing the consent deletes the stored data",
+        "result": "PASS",
+        "evidence": "payload on the device before=true after=false, entries left=0"
+      }
+    ],
+    "screenshots": [
+      "tool-039-empty-1440.png",
+      "tool-039-desktop-1440.png",
+      "tool-039-history-1440.png",
+      "tool-039-history-390.png",
+      "tool-039-mobile-390.png",
+      "tool-039-arabic-rtl-1440.png"
+    ]
+  },
+  "twoBrowserProfileProof": {
+    "date": "2026-11-13T01:18:29.918Z",
+    "build": "WORKTREE (local production build)",
+    "baseUrl": "http://127.0.0.1:3202",
+    "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "method": "Two independent Chrome profiles (separate --user-data-dir) against the same origin.",
+    "results": [
+      {
+        "requirement": "Local history: two independent browser profiles never see each other's data",
+        "result": "PASS",
+        "evidence": "profile A: consented=true saved=true entries=1 deviceKeys=2; profile B: entries=0 deviceKeys=0"
+      }
+    ]
+  },
+  "prohibitionsHonoured": [
+    "no code change between the 43/43 local browser run and this deployment (every application source file is older than the tested build, and the SHA-256 manifest identifies the deployed code)",
+    "no commit, push, merge or rebase — HEAD is still 5a87f3e5271db497a63833bb3cd1bb3df2078497",
+    "no production deployment and no promotion (productionUrl is empty, target is preview)",
+    "no change to the Vercel protection or the authentication",
+    "no migration, no Supabase / database / RLS write",
+    "the local storage was not extended to any other tool and no cloud sync was enabled",
+    "no second deployment was created"
+  ]
+}

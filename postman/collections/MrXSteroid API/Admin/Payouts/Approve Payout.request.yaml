@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Approve Payout'
+method: POST
+url: '{{base_url}}/api/admin/payouts/approve'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "payoutId": "{{payoutId}}"
+    }

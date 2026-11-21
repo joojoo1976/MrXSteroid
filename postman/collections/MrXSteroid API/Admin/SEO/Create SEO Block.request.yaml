@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Create SEO Block'
+method: POST
+url: '{{base_url}}/api/admin/seo/blocks'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "keyword": "blocked-term",
+      "reason": "Spam keyword"
+    }

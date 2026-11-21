@@ -1,170 +1,102 @@
 'use client';
-/** Tool #037 — Side Effect Probability Calculator (dynamic UI, GPT2 spec).
- * useMemo instant recompute, Zod validation, auto-draft via shared adapter,
- * standard Save-to-Bio-Dashboard, AR/EN RTL/LTR, registry prev/next. */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
-import { calculateSideEffectProbability, type SideEffectRiskResult } from '@/lib/tools/engines/tool-037-side-effect-probability';
-import { buildSideEffectProbabilityOutput } from '@/lib/tools/adapters/tool-037-side-effect-probability';
-import { AUTO_DRAFT_DEBOUNCE_MS, buildAiContext, clearDraft, commitDashboardSnapshot, loadDraft, saveDraft } from '@/lib/tools/adapters/toolLogAdapter';
 import { getToolNeighbors, requireTool } from '@/lib/tools/registry';
-import { SideEffectRiskInputSchema } from '@/lib/tools/schemas/tool-037-side-effect-probability';
+import { runSideEffectProbability, type SideEffectProbabilityBuildOptions } from '@/lib/tools/r6/tool-037-side-effect-probability-pipeline';
+import {
+  TOOL_037_FAMILIES,
+  evaluateSideEffectProbabilityDraft,
+  type Tool037Draft,
+  type Tool037UiState,
+  type Tool037CompoundDraft,
+} from '@/lib/tools/r6/tool-037-side-effect-probability-contract';
+import Tool037Genius from './tool-037-side-effect-probability.genius';
 import i18nJson from '@/i18n/tool-037-side-effect-probability.json';
 import { pickToolI18n } from '@/lib/tools/i18nHelper';
 
 const TOOL_SLUG = 'tool-037-side-effect-probability';
-type Family = 'testosterone' | 'nandrolone' | 'trenbolone' | 'dht' | 'oral' | 'other';
-const FAMILIES: Family[] = ['testosterone', 'nandrolone', 'trenbolone', 'dht', 'oral', 'other'];
-interface CompoundUI { name_en: string; family: Family; weekly_dose_mg: number; reference_dose_mg: number }
-interface DraftInputs { compounds: CompoundUI[]; age: number; body_fat_pct: number; cycle_weeks: number; uses_ai: boolean; uses_liver_support: boolean }
-
-const DEFAULT_COMPOUND: CompoundUI = { name_en: 'Testosterone Enanthate', family: 'testosterone', weekly_dose_mg: 500, reference_dose_mg: 500 };
-const DEFAULTS: DraftInputs = { compounds: [DEFAULT_COMPOUND], age: 30, body_fat_pct: 18, cycle_weeks: 12, uses_ai: false, uses_liver_support: true };
-
-const LEVEL_COLOR: Record<string, string> = { low: 'text-lime-400', moderate: 'text-amber-400', high: 'text-red-400' };
+const emptyCompound = (): Tool037CompoundDraft => ({ nameEn: '', family: '', weeklyDoseMg: '', referenceDoseMg: '' });
+const EMPTY_DRAFT: Tool037Draft = { age: '', bodyFatPct: '', cycleWeeks: '', usesAi: false, usesLiverSupport: false, compounds: [emptyCompound()] };
+const STATE_KEY: Record<Tool037UiState, string> = { EMPTY:'state_empty', PARTIAL:'state_partial', FULL:'state_full', INVALID:'state_invalid', DEGRADED:'state_degraded' };
+const HINT_KEY: Record<Tool037UiState, string> = { EMPTY:'state_hint_empty', PARTIAL:'state_hint_partial', FULL:'state_hint_full', INVALID:'state_hint_invalid', DEGRADED:'state_hint_degraded' };
 
 export default function Tool037SideEffectProbability() {
   const tool = requireTool(TOOL_SLUG);
   const neighbors = getToolNeighbors(TOOL_SLUG);
-  const { locale } = useToolDisplayPreferences();
-  const [inputs, setInputs] = useState<DraftInputs>(DEFAULTS);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const { locale, unitSystem } = useToolDisplayPreferences();
   const t = pickToolI18n(i18nJson, locale);
   const isRtl = locale === 'ar';
-  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevDraftKey = useRef('');
+  const uid = useId();
+  const [draft, setDraft] = useState<Tool037Draft>(EMPTY_DRAFT);
 
-  useEffect(() => {
-    const draft = loadDraft<DraftInputs>(TOOL_SLUG);
-    if (draft?.inputs) setInputs((prev) => ({ ...prev, ...draft.inputs }));
-  }, []);
+  const options = useMemo<SideEffectProbabilityBuildOptions>(
+    () => ({ calculatedAt: new Date().toISOString(), recordedAt: new Date().toISOString(), locale, unitSystem, snapshotType: 'submitted_snapshot', timezone: 'UTC', source: 'manual' }),
+    [locale, unitSystem],
+  );
 
-  const parsed = useMemo(() => SideEffectRiskInputSchema.safeParse(inputs), [inputs]);
-  const result = useMemo<SideEffectRiskResult | null>(() => (parsed.success ? calculateSideEffectProbability(parsed.data) : null), [parsed]);
+  const evaluation = evaluateSideEffectProbabilityDraft(draft);
+  const run = evaluation.input ? runSideEffectProbability(evaluation.input, options) : null;
+  const result = run?.ok ? run.output.result : null;
+  const uiState: Tool037UiState = evaluation.state === 'READY' ? (run && run.ok ? 'FULL' : 'DEGRADED') : evaluation.state;
 
-  const aiContext = useMemo(() => {
-    if (!result || !parsed.success) return null;
-    const now = '1970-01-01T00:00:00.000Z';
-    const output = buildSideEffectProbabilityOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'draft', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-    return buildAiContext({ ...output, result });
-  }, [result, parsed, locale]);
-
-  useEffect(() => { setValidationError(parsed.success ? null : parsed.error.issues[0]?.message ?? 'Invalid input'); }, [parsed]);
-
-  useEffect(() => {
-    const key = JSON.stringify(inputs) + locale;
-    if (prevDraftKey.current === key) return;
-    prevDraftKey.current = key;
-    if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { saveDraft(TOOL_SLUG, inputs, { locale, unitSystem: 'metric', savedAt: new Date().toISOString() }); }, AUTO_DRAFT_DEBOUNCE_MS);
-    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [inputs, locale]);
-
-  const updateCompound = (index: number, patch: Partial<CompoundUI>) => {
-    setInputs((prev) => ({ ...prev, compounds: prev.compounds.map((c, i) => (i === index ? { ...c, ...patch } : c)) }));
-  };
-  const addCompound = () => setInputs((p) => (p.compounds.length >= 8 ? p : { ...p, compounds: [...p.compounds, { ...DEFAULT_COMPOUND }] }));
-  const removeCompound = (i: number) => setInputs((p) => (p.compounds.length <= 1 ? p : { ...p, compounds: p.compounds.filter((_, j) => j !== i) }));
-
-  const handleSave = async () => {
-    if (!parsed.success || !result) { setSaveStatus(isRtl ? 'أصلح أخطاء الإدخال أولاً' : 'Fix input errors first'); return; }
-    setIsSaving(true);
-    setSaveStatus(isRtl ? 'جاري الحفظ...' : 'Saving...');
-    try {
-      const now = new Date().toISOString();
-      const output = buildSideEffectProbabilityOutput(parsed.data, { locale, unitSystem: 'metric', snapshotType: 'dashboard_projection', calculatedAt: now, recordedAt: now, timezone: 'UTC' });
-      const { submitted, projection } = await commitDashboardSnapshot(output, parsed.data);
-      if (submitted.ok && projection.ok) { await clearDraft(TOOL_SLUG); setSaveStatus(isRtl ? 'تم الحفظ في لوحة القيادة الحيوية' : 'Saved to Bio-Dashboard'); }
-      else setSaveStatus(isRtl ? 'فشل الحفظ — سجل الدخول أولاً' : 'Save failed — sign in first');
-    } finally { setIsSaving(false); }
-  };
-
-  const num = (v: string, fallback: number) => (v === '' ? fallback : Number(v));
+  const setField = (patch: Partial<Tool037Draft>) => setDraft((p) => ({ ...p, ...patch }));
+  const updateCompound = (i: number, key: keyof Tool037CompoundDraft, value: string) => setDraft(p => ({ ...p, compounds: p.compounds.map((c, idx) => idx === i ? { ...c, [key]: value } : c) }));
+  const addCompound = () => { if (draft.compounds.length < 8) setDraft(p => ({ ...p, compounds: [...p.compounds, emptyCompound()] })); };
+  const removeCompound = (i: number) => { if (draft.compounds.length > 1) setDraft(p => ({ ...p, compounds: p.compounds.filter((_, idx) => idx !== i) })); };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
-        <div className="flex gap-2">
-
-
+    <section dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto max-w-5xl px-4 py-6" aria-labelledby={`${uid}-title`} data-r6-tool={TOOL_SLUG}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 id={`${uid}-title`} className="text-2xl font-black text-zinc-900 dark:text-white">{t.tool_name}</h1>
+        <div data-r6-state={uiState} aria-live="polite" className="rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+          {t.state_label}: {t[STATE_KEY[uiState]]}
         </div>
       </div>
-      <h2 className="text-sm font-black text-zinc-700 dark:text-zinc-200 mb-2">{t.compounds}</h2>
-      <div className="space-y-2 mb-3">
-        {inputs.compounds.map((c, i) => (
-          <div key={i} className="grid grid-cols-2 md:grid-cols-5 gap-2 rounded-xl bg-zinc-900/60 border border-zinc-800 p-3">
-            <input value={c.name_en} onChange={(e) => updateCompound(i, { name_en: e.target.value })} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white" placeholder="Name" />
-            <select value={c.family} onChange={(e) => updateCompound(i, { family: e.target.value as Family })} className="rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white">
-              {FAMILIES.map((f) => (<option key={f} value={f}>{f}</option>))}
-            </select>
-            <label className="text-[10px] text-zinc-500">mg/wk
-              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.weekly_dose_mg} onChange={(e) => updateCompound(i, { weekly_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <label className="text-[10px] text-zinc-500">ref mg/wk
-              <input data-r6-slider="true" type="number" min={1} max={5000} value={c.reference_dose_mg} onChange={(e) => updateCompound(i, { reference_dose_mg: num(e.target.value, 1) })} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
-            </label>
-            <button type="button" onClick={() => removeCompound(i)} disabled={inputs.compounds.length <= 1} className="text-xs text-red-400 disabled:opacity-30">✕</button>
-          </div>
-        ))}
-      </div>
-      <button type="button" onClick={addCompound} disabled={inputs.compounds.length >= 8} className="mb-4 px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 disabled:opacity-40">+ {t.add_compound}</button>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+      <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">{t[HINT_KEY[uiState]]}</p>
+      <p role="note" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100">{t.scope_note}</p>
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
         <label className="text-[10px] font-bold text-zinc-500">{t.age}
-          <input data-r6-slider="true" type="number" min={18} max={90} value={inputs.age} onChange={(e) => setInputs((p) => ({ ...p, age: Math.round(num(e.target.value, 18)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-field="age" type="number" min={18} max={90} step={1} value={draft.age} onChange={(e)=>setField({age:e.target.value})} className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
         </label>
-        <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct} %
-          <input data-r6-slider="true" type="number" min={5} max={60} value={inputs.body_fat_pct} onChange={(e) => setInputs((p) => ({ ...p, body_fat_pct: num(e.target.value, 5) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+        <label className="text-[10px] font-bold text-zinc-500">{t.body_fat_pct}
+          <input data-r6-field="bodyFatPct" type="number" min={5} max={60} step={0.1} value={draft.bodyFatPct} onChange={(e)=>setField({bodyFatPct:e.target.value})} className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
         </label>
         <label className="text-[10px] font-bold text-zinc-500">{t.cycle_weeks}
-          <input data-r6-slider="true" type="number" min={1} max={52} value={inputs.cycle_weeks} onChange={(e) => setInputs((p) => ({ ...p, cycle_weeks: Math.round(num(e.target.value, 1)) }))} className="mt-0.5 w-full rounded-lg bg-zinc-950 border border-zinc-700 px-2 py-1.5 text-xs text-white font-mono" />
+          <input data-r6-field="cycleWeeks" type="number" min={1} max={52} step={1} value={draft.cycleWeeks} onChange={(e)=>setField({cycleWeeks:e.target.value})} className="mt-0.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-1.5 font-mono text-xs text-white" />
         </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.uses_ai} onChange={(e) => setInputs((p) => ({ ...p, uses_ai: e.target.checked }))} className="accent-lime-500" />{t.uses_ai}
-        </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 rounded-lg bg-zinc-900/60 border border-zinc-800 px-3 py-2">
-          <input type="checkbox" checked={inputs.uses_liver_support} onChange={(e) => setInputs((p) => ({ ...p, uses_liver_support: e.target.checked }))} className="accent-lime-500" />{t.uses_liver_support}
-        </label>
+        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400"><input type="checkbox" checked={draft.usesAi} onChange={(e)=>setField({usesAi:e.target.checked})} /> {t.uses_ai}</label>
+        <label className="flex items-center gap-2 text-xs font-bold text-zinc-400"><input type="checkbox" checked={draft.usesLiverSupport} onChange={(e)=>setField({usesLiverSupport:e.target.checked})} /> {t.uses_liver_support}</label>
       </div>
-      {validationError && (<p className="mb-3 text-xs font-bold text-red-400">⚠ {validationError}</p>)}
-      {result && (
-        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-5 mb-4">
-          <div className="mb-4">
-            <span className="text-[10px] text-zinc-400 block">{t.overall_burden}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl font-black text-amber-400 font-mono">{result.overall_burden_pct.toFixed(0)}%</span>
-              <div className="flex-1 h-2 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full bg-amber-500" style={{ width: `${Math.min(100, result.overall_burden_pct)}%` }} /></div>
+
+      <div className="mb-4 space-y-3">
+        {draft.compounds.map((c, i) => (
+          <fieldset key={i} className="space-y-2 rounded border border-zinc-700 p-3" data-r6-field="compounds">
+            <legend className="px-2 text-xs font-semibold text-zinc-200">{t.compound} {i+1}</legend>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <label className="text-[10px] font-bold text-zinc-500">{t.compound_name}<input className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={c.nameEn} maxLength={80} onChange={(e)=>updateCompound(i,'nameEn',e.target.value)} /></label>
+              <label className="text-[10px] font-bold text-zinc-500">{t.family}<select className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={c.family} onChange={(e)=>updateCompound(i,'family',e.target.value)}><option value="">{t.not_answered}</option>{TOOL_037_FAMILIES.map(f=><option key={f} value={f}>{t[`family_${f}`]??f}</option>)}</select></label>
+              <label className="text-[10px] font-bold text-zinc-500">{t.weekly_dose_mg}<input type="number" min={1} max={5000} step={1} className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={c.weeklyDoseMg} onChange={(e)=>updateCompound(i,'weeklyDoseMg',e.target.value)} /></label>
+              <label className="text-[10px] font-bold text-zinc-500">{t.reference_dose_mg}<input type="number" min={1} max={5000} step={1} className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-2 text-xs text-white" value={c.referenceDoseMg} onChange={(e)=>updateCompound(i,'referenceDoseMg',e.target.value)} /></label>
             </div>
-          </div>
-          <h3 className="text-xs font-black text-zinc-300 mb-2">{t.risks}</h3>
-          <ul className="space-y-1 text-xs text-zinc-300 mb-3">
-            {result.risks.map((r, i) => (
-              <li key={i} className="flex items-center justify-between gap-2 rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-1.5">
-                <span className="font-bold text-zinc-300">{r.effect}</span>
-                <span className={`font-mono font-bold ${LEVEL_COLOR[r.level] ?? 'text-zinc-400'}`}>{r.probability_pct.toFixed(1)}% · {r.level}</span>
-              </li>
-            ))}
-          </ul>
-          {result.mitigations.length > 0 && (
-            <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-3 mb-3">
-              <span className="text-[10px] font-bold text-cyan-400 block mb-1">{t.mitigations}</span>
-              <ul className="space-y-0.5 text-xs text-cyan-300">{result.mitigations.map((m, i) => (<li key={i}>• {m}</li>))}</ul>
-            </div>
-          )}
-          {aiContext && (<details className="mt-3 text-[11px] text-zinc-500"><summary className="cursor-pointer font-bold">AI context (structured values — no external model call)</summary><pre className="mt-2 overflow-auto rounded-lg bg-zinc-950 p-3 font-mono" dir="ltr">{JSON.stringify({ provenanceLine: aiContext.provenanceLine, findings: aiContext.findings }, null, 2)}</pre></details>)}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-zinc-800 gap-3">
-            <span className="text-xs text-zinc-500 font-mono">{saveStatus}</span>
-            <button type="button" onClick={handleSave} disabled={isSaving} className="w-full md:w-auto px-5 py-2 text-xs font-bold bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition disabled:opacity-50">{isSaving ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ في لوحة القيادة الحيوية (Save Snapshot)' : 'Save to Bio-Dashboard')}</button>
-          </div>
+            {draft.compounds.length > 1 && <button type="button" className="rounded border border-zinc-600 px-3 py-1 text-xs text-zinc-200" onClick={()=>removeCompound(i)}>{t.remove_compound}</button>}
+          </fieldset>
+        ))}
+      </div>
+      <button type="button" className="mb-4 rounded border border-zinc-600 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40" onClick={addCompound} disabled={draft.compounds.length >= 8}>{t.add_compound}</button>
+
+      {uiState === 'INVALID' && <div role="alert" className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3"><p className="text-xs font-bold text-red-300">{t.validation_error}</p></div>}
+      {uiState === 'FULL' && result && (
+        <div data-r6-summary="full" className="mb-4 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+          <p className="text-sm font-bold text-zinc-100">{t.overall_burden}: {result.overall_burden_pct}%</p>
+          <ul className="mt-2 space-y-1 text-xs">{result.risks.map(r=>(<li key={r.effect} className="text-zinc-300">{r.effect}: {r.probability_pct}% ({r.level})</li>))}</ul>
         </div>
       )}
-      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <a href={requireTool(neighbors.prevTool.slug).href} rel="prev" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>←</span><span>{isRtl ? `الأداة السابقة: ${neighbors.prevTool.titleAr}` : `Prev Tool: ${neighbors.prevTool.titleEn}`}</span></a>
-        <a href={requireTool(neighbors.nextTool.slug).href} rel="next" className="flex items-center gap-2 text-zinc-400 hover:text-lime-400 transition"><span>{isRtl ? `الأداة التالية: ${neighbors.nextTool.titleAr}` : `Next Tool: ${neighbors.nextTool.titleEn}`}</span><span>→</span></a>
-      </div>
-      <p className="mt-2 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
-    </div>
+      {uiState === 'DEGRADED' && <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200">{t.state_hint_degraded}</div>}
+
+      <Tool037Genius locale={locale} state={uiState} draft={draft} input={evaluation.input} output={run?.ok?run.output:null} options={options} result={result} prevTool={{slug:neighbors.prevTool.slug,titleEn:neighbors.prevTool.titleEn,titleAr:neighbors.prevTool.titleAr}} nextTool={{slug:neighbors.nextTool.slug,titleEn:neighbors.nextTool.titleEn,titleAr:neighbors.nextTool.titleAr}} t={t} />
+
+      <p className="mt-4 text-[10px] text-zinc-600">{tool.toolId} · v{tool.version}</p>
+    </section>
   );
 }

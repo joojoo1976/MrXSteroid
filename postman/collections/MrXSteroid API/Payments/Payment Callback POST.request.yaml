@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Payment Callback POST'
+method: POST
+url: '{{base_url}}/api/payments/callback'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "orderId": "{{orderId}}",
+      "status": "success"
+    }

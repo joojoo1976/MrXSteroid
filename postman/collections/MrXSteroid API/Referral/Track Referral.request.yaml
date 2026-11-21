@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Track Referral'
+method: GET
+url: '{{base_url}}/api/referral/track?ref={{referral_code}}&redirect={{redirect_url}}'
+order: 1000
+queryParams:
+  - key: ref
+    value: '{{referral_code}}'
+    description: Referral code
+  - key: redirect
+    value: '{{redirect_url}}'
+    description: URL to redirect to after tracking

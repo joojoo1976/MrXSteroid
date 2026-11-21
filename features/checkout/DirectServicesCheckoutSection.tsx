@@ -10,25 +10,21 @@
  *  DESIGN CONTRACT:
  *  ─────────────────────────────────────────────────────────────────────────
  *  • These services are GLOBAL-USD-only. Egypt EGP flow is always hidden.
- *  • Each button is DISABLED with the message
- *    "الدفع غير متاح مؤقتًا — سيتم التفعيل قريبًا" unless
- *    KASHIER_SERVICE_LINKS_VERIFIED === 'true' AND a URL is configured.
- *  • No redirect is performed if the link is UNVERIFIED or NOT_CONFIGURED —
- *    fail-closed behaviour is enforced server-side and mirrored here.
- *  • The section is only rendered when the customer selects the GLOBAL
- *    region (isEg === false), preventing Egyptian customers from seeing
- *    USD-only service links.
+ *  • The section is rendered only when the server resolves
+ *    KASHIER_SERVICE_LINKS_VERIFIED === 'true'. The flag controls visibility
+ *    only; it is not a payment decision.
+ *  • Each button runs the invoice-first flow: quote → create-invoice →
+ *    create-session. No direct `liveUrl` is opened.
  *  • These cards are a separate checkout path — they do NOT integrate with
- *    the main CheckoutForm (name, email, payment method). The customer is
- *    redirected to Kashier's hosted payment page.
+ *    the main CheckoutForm and collect only the minimum customer fields.
  *  • No shipping, no cart line merging with Fourthwall products.
  *  • Settlement currency notice is displayed to avoid ambiguity.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Stethoscope, Check, AlertCircle, ShieldAlert, ExternalLink } from 'lucide-react';
+import { Crown, Stethoscope, Check, ShieldAlert, Loader2 } from 'lucide-react';
 import { getKashierServicePaymentLink } from '../../server/payments/paymentLinkConfig';
 
 interface DirectServicesCheckoutSectionProps {
@@ -42,12 +38,80 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
     // variables prefixed NEXT_PUBLIC_ are available at build time. The
     // `getKashierServicePaymentLink` function reads process.env so it resolves
     // server-side during SSR; on the client the result is the serialised output.
-    // The status check is the guard — no link is ever opened if UNVERIFIED.
+    // The server-resolved visibility flag is the only guard; payment itself is
+    // decided by invoice/session state, never by the link configuration.
     const coachingLink = getKashierServicePaymentLink('coaching_addon');
     const consultationLink = getKashierServicePaymentLink('consultation');
 
-    const isCoachingActive = coachingLink.status === 'CONFIGURED';
-    const isConsultationActive = consultationLink.status === 'CONFIGURED';
+    const [email, setEmail] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+    const serviceSku = (serviceId: 'coaching_addon' | 'consultation') =>
+        serviceId === 'coaching_addon' ? 'vip_coaching' : 'consultation';
+
+    const startServiceCheckout = async (serviceId: 'coaching_addon' | 'consultation') => {
+        if (isSubmitting) return;
+        setCheckoutError(null);
+        setIsSubmitting(true);
+
+        try {
+            const cart = {
+                region: 'GLOBAL' as const,
+                lines: [{ sku: serviceSku(serviceId), quantity: 1 }],
+            };
+
+            const quoteRes = await fetch('/api/checkout/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cart),
+            });
+            const quote = await quoteRes.json().catch(() => null);
+            if (!quoteRes.ok || !quote?.quote_token) {
+                throw new Error(quote?.error || 'Could not build the service quote.');
+            }
+
+            const idempotencyKey = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                ? crypto.randomUUID()
+                : `svc-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+            const invoiceRes = await fetch('/api/payments/create-invoice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Idempotency-Key': idempotencyKey,
+                },
+                body: JSON.stringify({
+                    quote_token: quote.quote_token,
+                    cart,
+                    customer: { email: email.trim(), fullName: fullName.trim() },
+                    paymentMethod: 'kashier',
+                }),
+            });
+            const invoice = await invoiceRes.json().catch(() => null);
+            if (!invoiceRes.ok || !invoice?.invoiceId) {
+                throw new Error(invoice?.error || 'Could not create the service invoice.');
+            }
+
+            const sessionRes = await fetch('/api/payments/create-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invoiceId: invoice.invoiceId }),
+            });
+            const session = await sessionRes.json().catch(() => null);
+            if (!sessionRes.ok || !session?.sessionUrl) {
+                throw new Error(session?.error || 'Could not start the payment session.');
+            }
+
+            window.location.assign(session.sessionUrl);
+        } catch (error) {
+            setCheckoutError(error instanceof Error ? error.message : 'Checkout failed.');
+            setIsSubmitting(false);
+        }
+    };
+
+    const canSubmit = email.trim().length > 3 && fullName.trim().length > 1 && !isSubmitting;
 
     return (
         <motion.div
@@ -66,8 +130,8 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
                 </div>
                 <p className="text-xs text-zinc-400 font-medium leading-relaxed">
                     {isAr
-                        ? 'هذه خدمات مستقلة تحتاج إلى جلسة دفع منفصلة عبر كاشير. لا يمكن دمجها مع الكتب في سلة واحدة.'
-                        : 'These are standalone services requiring a separate Kashier checkout. They cannot be combined with book orders in a single cart.'
+                        ? 'هذه خدمات مستقلة تُفوتر داخليًا أولًا، ثم يُفتح الدفع الآمن. لا يمكن دمجها مع الكتب في سلة واحدة.'
+                        : 'Standalone services are invoiced internally first, then secure payment opens. They cannot be combined with book orders in a single cart.'
                     }
                 </p>
                 <div className="mt-2 flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -80,6 +144,32 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
                     </p>
                 </div>
             </div>
+
+            <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="text-[11px] font-bold text-zinc-400">
+                    {isAr ? 'الاسم الكامل' : 'Full name'}
+                    <input
+                        type="text"
+                        value={fullName}
+                        onChange={(event) => setFullName(event.target.value)}
+                        autoComplete="name"
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60"
+                    />
+                </label>
+                <label className="text-[11px] font-bold text-zinc-400">
+                    {isAr ? 'البريد الإلكتروني' : 'Email'}
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60"
+                    />
+                </label>
+            </div>
+            {checkoutError && (
+                <p className="mb-4 text-xs font-bold text-red-400">{checkoutError}</p>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* ── VIP Coaching Card ────────────────────────────────────── */}
@@ -105,7 +195,7 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
 
                         <div className="mb-4 p-3 bg-black/40 rounded-xl border border-zinc-800">
                             <div className="text-2xl font-black text-white tracking-tight">
-                                $349.99 <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
+                                ${coachingLink.amount.toFixed(2)} <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
                             </div>
                             <div className="text-[10px] text-zinc-500 mt-0.5">
                                 {isAr ? 'دفعة واحدة لكامل مدة الدورة + المتابعة' : 'Single payment for entire cycle duration'}
@@ -129,28 +219,17 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
                     </div>
 
                     <div>
-                        {isCoachingActive ? (
-                            <a
-                                href={coachingLink.liveUrl || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                <span>{isAr ? 'حجز التدريب الشخصي الآن' : 'Enroll in VIP Coaching'}</span>
-                            </a>
-                        ) : (
-                            <button
-                                type="button"
-                                disabled
-                                className="w-full py-3 px-4 rounded-xl bg-zinc-800/80 border border-zinc-700/60 text-zinc-400 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
-                            >
-                                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-                                <span>{isAr ? 'الدفع غير متاح مؤقتًا — سيتم التفعيل قريبًا' : 'Payment temporarily unavailable — Activating soon'}</span>
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => startServiceCheckout('coaching_addon')}
+                            disabled={!canSubmit}
+                            className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-400 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 disabled:cursor-not-allowed"
+                        >
+                            {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crown className="w-3.5 h-3.5" />}
+                            <span>{isAr ? 'المتابعة إلى الدفع الآمن' : 'Continue to secure checkout'}</span>
+                        </button>
                         <p className="text-[9px] text-zinc-500 text-center mt-1.5">
-                            {coachingLink.verificationNotice}
+                            {isAr ? 'فاتورة داخلية ثم صفحة دفع آمنة.' : 'Internal invoice, then a secure payment page.'}
                         </p>
                     </div>
                 </div>
@@ -178,7 +257,7 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
 
                         <div className="mb-4 p-3 bg-black/40 rounded-xl border border-zinc-800">
                             <div className="text-2xl font-black text-white tracking-tight">
-                                $30.00 <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
+                                ${consultationLink.amount.toFixed(2)} <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">USD</span>
                             </div>
                             <div className="text-[10px] text-zinc-500 mt-0.5">
                                 {isAr ? 'جلسة تقييم تفصيلية شاملة' : 'Single comprehensive assessment session'}
@@ -202,28 +281,17 @@ export const DirectServicesCheckoutSection: React.FC<DirectServicesCheckoutSecti
                     </div>
 
                     <div>
-                        {isConsultationActive ? (
-                            <a
-                                href={consultationLink.liveUrl || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                <span>{isAr ? 'حجز جلسة الاستشارة الآن' : 'Book Consultation Session'}</span>
-                            </a>
-                        ) : (
-                            <button
-                                type="button"
-                                disabled
-                                className="w-full py-3 px-4 rounded-xl bg-zinc-800/80 border border-zinc-700/60 text-zinc-400 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
-                            >
-                                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-                                <span>{isAr ? 'الدفع غير متاح مؤقتًا — سيتم التفعيل قريبًا' : 'Payment temporarily unavailable — Activating soon'}</span>
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => startServiceCheckout('consultation')}
+                            disabled={!canSubmit}
+                            className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:bg-zinc-800 disabled:text-zinc-400 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20 disabled:cursor-not-allowed"
+                        >
+                            {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Stethoscope className="w-3.5 h-3.5" />}
+                            <span>{isAr ? 'المتابعة إلى الدفع الآمن' : 'Continue to secure checkout'}</span>
+                        </button>
                         <p className="text-[9px] text-zinc-500 text-center mt-1.5">
-                            {consultationLink.verificationNotice}
+                            {isAr ? 'فاتورة داخلية ثم صفحة دفع آمنة.' : 'Internal invoice, then a secure payment page.'}
                         </p>
                     </div>
                 </div>

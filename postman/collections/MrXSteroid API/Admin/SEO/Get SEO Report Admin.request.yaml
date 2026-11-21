@@ -1,0 +1,9 @@
+$kind: http-request
+name: 'Get SEO Report (Admin)'
+method: GET
+url: '{{base_url}}/api/admin/seo/reports/{{report}}'
+order: 14000
+pathVariables:
+  - key: report
+    value: overview
+    description: 'Report type (e.g. overview, keywords, competitors)'

@@ -247,6 +247,18 @@ async function processWebhook(
                         });
 
                     if (!resumable) {
+                        // Keep exactly one audit row per provider event. The
+                        // status stays `processed` (the financial outcome); the
+                        // processing stage records that this delivery was a
+                        // duplicate, not a second settlement.
+                        await supabase
+                            .from('webhook_events')
+                            .update({
+                                processing_status: 'duplicate',
+                                updated_at: new Date().toISOString(),
+                            })
+                            .eq('provider', gatewayName.toLowerCase())
+                            .eq('provider_event_id', providerEventId);
                         console.log(`[Webhook] Duplicate event — provider_event_id=${providerEventId} already ${priorStatus}`);
                         return respond(200, { status: 'ok', message: 'Duplicate event' });
                     }

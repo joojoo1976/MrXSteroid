@@ -2,8 +2,12 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *  KASHIER LIVE PAYMENT PAGES CONFIGURATION
  *  Direct Payment Links for Mr. X-Steroid Core Packages
+ *  Amounts are DERIVED from server/payments/pricing.ts.
  * ═══════════════════════════════════════════════════════════════════════════
  */
+
+import { buildCheckoutPlanUrl, type CheckoutPlanId } from '../../shared/lib/checkoutPlan';
+import { getAddonPrice, getServicePrice } from './pricing';
 
 export interface KashierPackagePaymentLink {
     planId: 'digital' | 'bundle' | 'coaching';
@@ -42,36 +46,26 @@ export const KASHIER_PAYMENT_PAGES: Record<string, KashierPackagePaymentLink> = 
 };
 
 /**
- * Builds the tracked Kashier checkout URL with package identifiers, source tagging,
- * and user attribution.
+ * Phase 5: legacy quick-pay callers are redirected to the first-party
+ * invoice-first checkout. The historical `liveUrl` values remain in
+ * `KASHIER_PAYMENT_PAGES` for audit/rollback, but are no longer used to send a
+ * customer directly to a payment page.
  */
 export function buildKashierPaymentPageUrl(
-    planId: 'digital' | 'bundle' | 'coaching',
+    planId: CheckoutPlanId,
     options?: {
         userId?: string;
         userEmail?: string;
         referralCode?: string;
+        region?: 'EG' | 'GLOBAL';
+        search?: string;
     }
 ): string {
-    const pkg = KASHIER_PAYMENT_PAGES[planId];
-    if (!pkg) return 'https://checkouts.kashier.io';
-
-    const url = new URL(pkg.liveUrl);
-    url.searchParams.set('source', 'kashier_payment_page');
-    url.searchParams.set('plan_id', pkg.planId);
-    url.searchParams.set('plan_name', encodeURIComponent(pkg.nameAr));
-
-    if (options?.userId) {
-        url.searchParams.set('user_id', options.userId);
-    }
-    if (options?.userEmail) {
-        url.searchParams.set('email', options.userEmail);
-    }
-    if (options?.referralCode) {
-        url.searchParams.set('ref', options.referralCode);
-    }
-
-    return url.toString();
+    return buildCheckoutPlanUrl(planId, {
+        region: options?.region,
+        search: options?.search,
+        referralCode: options?.referralCode,
+    });
 }
 
 /**
@@ -135,7 +129,7 @@ export function getKashierServicePaymentLink(serviceId: KashierServiceId): Kashi
             liveUrl: envUrl || null,
             currency: 'USD',
             region: 'GLOBAL',
-            amount: 349.99,
+            amount: getAddonPrice('coaching_plus', 'USD'),
             requiresShipping: false,
             status,
             verificationNotice,
@@ -167,7 +161,7 @@ export function getKashierServicePaymentLink(serviceId: KashierServiceId): Kashi
             liveUrl: envUrl || null,
             currency: 'USD',
             region: 'GLOBAL',
-            amount: 30.00,
+            amount: getServicePrice('consultation', 'USD'),
             requiresShipping: false,
             status,
             verificationNotice,

@@ -1,0 +1,14 @@
+import { readFileSync } from 'node:fs';
+const b = 'E:/MrXSteroid-main/docs/MRX Genius Cloud Unified R6.1/smarttools-comprehensive-audit-2026-11-20/';
+const scan = JSON.parse(readFileSync(b + 'evidence-index/TOOL-SOURCE-SCAN.json', 'utf8'));
+const avg = (a) => a.length ? +(a.reduce((x, y) => x + y, 0) / a.length).toFixed(2) : null;
+const proxies = scan.rows.map((r) => r.proxy);
+console.log('source presence proxy: avg=' + avg(proxies) + ' min=' + Math.min(...proxies) + ' max=' + Math.max(...proxies));
+const cmp = readFileSync('E:/MrXSteroid-main/docs/MRX Genius Cloud Unified R6.1/parallel-execution-2026-11-19/phase-next/R6.1-29-TOOLS-VS-039-COMPARISON.csv', 'utf8').split(/\r?\n/).filter(Boolean);
+const h = cmp[0].split(',');
+const rows = cmp.slice(1).map((x) => Object.fromEntries(h.map((k, i) => [k, (x.split(',')[i] || '').replace(/^"|"$/g, '')])));
+const pcts = rows.filter((r) => r.decision !== 'REFERENCE_ONLY').map((r) => parseFloat(r.completion_pct)).filter((x) => !Number.isNaN(x));
+console.log('phase-next recorded completion (29 tools only): avg=' + avg(pcts) + ' n=' + pcts.length + ' zero=' + pcts.filter((x) => x === 0).length + ' max=' + Math.max(...pcts));
+console.log('rows total=' + rows.length + ' reference_only=' + rows.filter((r) => r.decision === 'REFERENCE_ONLY').map((r) => r.tool_id + ':' + r.completion_pct).join(','));
+const byDecision = rows.reduce((a, r) => (a[r.decision] = (a[r.decision] || 0) + 1, a), {});
+console.log('phase-next decisions=' + JSON.stringify(byDecision));

@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-13T12:30:28.660Z",
+  "baseUrl": "http://localhost:3100",
+  "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "deviceMetrics": {
+    "desktop": "1440x900",
+    "mobile": "390x844"
+  },
+  "legibility390": {
+    "desktopSvgHidden": true,
+    "visibleTextCount": 10,
+    "smallest": 12,
+    "largest": 13,
+    "steps": 10
+  },
+  "results": [
+    {
+      "requirement": "Tool 040 page loads",
+      "result": "PASS",
+      "evidence": "main h1 present"
+    },
+    {
+      "requirement": "EMPTY state: nothing is pre-filled and nothing is invented",
+      "result": "PASS",
+      "evidence": "state=EMPTY pre-filled values=0"
+    },
+    {
+      "requirement": "EMPTY state: no chart is drawn without a result",
+      "result": "PASS",
+      "evidence": "bars=0"
+    },
+    {
+      "requirement": "EMPTY state: the explanatory illustration is visible before anything is entered",
+      "result": "PASS",
+      "evidence": "section=true svgVisible=true textSteps=5"
+    },
+    {
+      "requirement": "EMPTY state: the illustration is labelled as illustrative, not as a measurement",
+      "result": "PASS",
+      "evidence": "How a lipid band is producedIllustrative diagram — it is not a scan, a measurement, a lab report or a diagnosis."
+    },
+    {
+      "requirement": "PARTIAL state: an incomplete panel is not calculated",
+      "result": "PASS",
+      "evidence": "state=PARTIAL"
+    },
+    {
+      "requirement": "INVALID state: an out-of-range value is rejected",
+      "result": "PASS",
+      "evidence": "state=INVALID"
+    },
+    {
+      "requirement": "FULL state: the engine result is shown",
+      "result": "PASS",
+      "evidence": "state=FULL bars=3"
+    },
+    {
+      "requirement": "FULL state: the gauge shows the entered value and its band",
+      "result": "PASS",
+      "evidence": "LDL160 mg/dL · Very high"
+    },
+    {
+      "requirement": "FULL state: the accessible table equals the chart",
+      "result": "PASS",
+      "evidence": "the table contains 160"
+    },
+    {
+      "requirement": "FULL state: the twelve GENIUS boxes keep their fixed order",
+      "result": "PASS",
+      "evidence": "1,2,3,4,5,6,7,8,9,10,11,12"
+    },
+    {
+      "requirement": "FULL state: the explanatory illustration renders",
+      "result": "PASS",
+      "evidence": "svg[data-r6-illustration=\"tool-040\"]"
+    },
+    {
+      "requirement": "The history box stays visible with a real reason",
+      "result": "PASS",
+      "evidence": "source=not_applicable"
+    },
+    {
+      "requirement": "Mouse hover opens the element tooltip",
+      "result": "PASS",
+      "evidence": "LDLMeaning: LDL — the cholesterol carried in low-density particles; higher values raise cardiovascular risk.Value: 160 mg/dLBand: very-highExplanation: Method: Band = the reference category the value "
+    },
+    {
+      "requirement": "The tooltip stays inside the viewport",
+      "result": "PASS",
+      "evidence": "left=497 right=785"
+    },
+    {
+      "requirement": "Keyboard focus opens the tooltip",
+      "result": "PASS",
+      "evidence": "focused=true tooltip=true"
+    },
+    {
+      "requirement": "Escape closes the tooltip",
+      "result": "PASS",
+      "evidence": "the tooltip is removed"
+    },
+    {
+      "requirement": "Touch opens the tooltip",
+      "result": "PASS",
+      "evidence": "touchStart/touchEnd on the LDL gauge"
+    },
+    {
+      "requirement": "Desktop screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool040\\tool-040-desktop-1440.png"
+    },
+    {
+      "requirement": "Mobile 390px renders without horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Mobile 390px keeps the visual elements",
+      "result": "PASS",
+      "evidence": "bars=3 visible steps=5"
+    },
+    {
+      "requirement": "Mobile 390px: the diagram text is rendered as real, readable text",
+      "result": "PASS",
+      "evidence": "desktopSvgHidden=true visibleTextCount=10 smallest=12px largest=13px"
+    },
+    {
+      "requirement": "Mobile screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool040\\tool-040-mobile-390.png"
+    },
+    {
+      "requirement": "Arabic RTL renders the visual layer",
+      "result": "PASS",
+      "evidence": "dir=rtl"
+    },
+    {
+      "requirement": "Arabic RTL has no horizontal overflow",
+      "result": "PASS",
+      "evidence": "overflow=0"
+    },
+    {
+      "requirement": "Arabic screenshot",
+      "result": "PASS",
+      "evidence": "docs\\MRX Genius Cloud Unified R6.1\\evidence\\tool040\\tool-040-arabic-rtl-1440.png"
+    },
+    {
+      "requirement": "No value is sent to any server",
+      "result": "PASS",
+      "evidence": "113 requests, all GET, none carrying a value"
+    },
+    {
+      "requirement": "No medical value reaches the application log",
+      "result": "PASS",
+      "evidence": "2 console messages, none containing a value"
+    }
+  ]
+}

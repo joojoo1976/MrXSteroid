@@ -112,6 +112,8 @@ const FETCH = vi.hoisted(() => ({
                     sessionId: 'sess-country-routing',
                     sessionUrl: 'https://checkout.kashier.io/payment/sess-country-routing',
                     status: 'ACTIVE',
+                    // Fourthwall Storefront cart (used for GLOBAL)
+                    id: 'cart-country-routing',
                     // gateway-invoice shapes (paymob / instapay)
                     id: `pi_${Math.random().toString(36).slice(2, 10)}`,
                     transaction_url: 'https://pay.test/pay',
@@ -145,6 +147,11 @@ const ENV = {
     KASHIER_GLOBAL_MERCHANT_ID: 'MID_GLOBAL_ROUTE',
     KASHIER_GLOBAL_PAYMENT_API_KEY: 'KEY_GLOBAL_ROUTE',
     KASHIER_GLOBAL_SECRET_KEY: 'SEC_GLOBAL_ROUTE',
+    // GLOBAL checkout is Fourthwall now; the route resolves this real (non-placeholder)
+    // product mapping and posts a Storefront cart. The fixture must model that.
+    FOURTHWALL_PRODUCT_DIGITAL_BOOK_ID: '3f1a5c62-7d8e-4b9a-9c1d-2e3f4a5b6c7d',
+    FOURTHWALL_SHOP_DOMAIN: 'mrxsteroid.fourthwall.com',
+    FOURTHWALL_STOREFRONT_TOKEN: 'storefront-token-route-test',
 };
 
 describe('create-invoice country → region routing', () => {
