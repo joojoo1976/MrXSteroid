@@ -114,6 +114,9 @@ const KASHIER_ENV = {
     KASHIER_GLOBAL_MERCHANT_ID: "MID_GLOBAL_ROUTE",
     KASHIER_GLOBAL_PAYMENT_API_KEY: "KEY_GLOBAL_ROUTE",
     KASHIER_GLOBAL_SECRET_KEY: "SEC_GLOBAL_ROUTE",
+    FOURTHWALL_PRODUCT_DIGITAL_BOOK_ID: "3f1a5c62-7d8e-4b9a-9c1d-2e3f4a5b6c7d",
+    FOURTHWALL_SHOP_DOMAIN: "mrxsteroid.fourthwall.com",
+    FOURTHWALL_STOREFRONT_TOKEN: "storefront-token-route-test",
 };
 
 const FH = vi.hoisted(() => {
@@ -128,6 +131,8 @@ const FH = vi.hoisted(() => {
                     sessionId: "sess-route-deleg",
                     sessionUrl: "https://checkout.kashier.io/payment/sess-route-deleg",
                     status: "ACTIVE",
+                    // Fourthwall Storefront cart id (GLOBAL checkout)
+                    id: "cart-route-deleg",
                 }),
             };
         }),
@@ -248,7 +253,10 @@ describe("create-invoice Kashier delegation (Phase 4)", () => {
         expect(invoice.metadata.address).toBe("10 Nile St");
     });
 
-    it("GLOBAL Kashier uses legacy KASHIER_GLOBAL_* merchant and USD pricing", async () => {
+    it("GLOBAL Kashier no longer uses the legacy merchant; it delegates to Fourthwall in USD", async () => {
+        // Approved post-Phase-5 behavior: GLOBAL digital is Fourthwall, not Kashier.
+        // The old expectation (legacy KASHIER_GLOBAL_* session) was intentionally
+        // changed; this test now pins the current provider and USD price.
         const { POST } = await importRoute();
         const res = await POST(req({
             tierId: "digital",
@@ -261,11 +269,26 @@ describe("create-invoice Kashier delegation (Phase 4)", () => {
         const json = (await res.json()) as any;
         expect(json.success).toBe(true);
         expect(json.region).toBe("GLOBAL");
+        expect(json.currency).toBe("USD");
+        expect(json.amount).toBe(49.99);
+        expect(json.redirectUrl).toContain("mrxsteroid.fourthwall.com/cart/checkout");
+        expect(json.redirectUrl).toContain("cart-route-deleg");
+
         const invoice = h.tables.invoices[0];
         expect(invoice.region).toBe("global");
         expect(invoice.currency).toBe("USD");
         expect(invoice.amount).toBe(49.99);
-        expect(invoice.payment_provider_merchant).toBe("kashier_global");
+        expect(invoice.kashier_session_id).toBe("cart-route-deleg");
+        expect(invoice.kashier_session_url).toContain("mrxsteroid.fourthwall.com/cart/checkout");
+
+        expect(FH.calls.length).toBe(1);
+        expect(FH.calls[0].url).toContain("storefront-api.fourthwall.com/v1/carts");
+        expect(FH.calls[0].url).toContain("storefront_token=storefront-token-route-test");
+        const body = JSON.parse(String(FH.calls[0].init?.body || "{}"));
+        expect(body.items).toEqual([
+            { variantId: "3f1a5c62-7d8e-4b9a-9c1d-2e3f4a5b6c7d", quantity: 1 },
+        ]);
+        expect(body.metadata).toMatchObject({ region: "GLOBAL", tierId: "digital" });
     });
 
     it("GLOBAL physical Kashier with no shipping provider is REJECTED, not free shipping", async () => {
