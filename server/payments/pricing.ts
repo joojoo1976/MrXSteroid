@@ -40,45 +40,6 @@ export interface PricingConfig {
     tolerance: number;
 }
 
-/**
- * DISPLAY-ONLY “before discount” prices.
- *
- * These are NOT charge amounts: no gateway, invoice or quote reads them. They
- * live here so every strike-through figure also has one traceable source.
- * Two surfaces intentionally keep their historical presentation until Phase 9,
- * where the original amount must be derived from invoice lines instead.
- */
-export const DISPLAY_ORIGINAL_PRICES = {
-    storefront: {
-        egp: {
-            digital: 699,
-            bundle: 849,
-            coaching: 949,
-            coaching_plus: 11848,
-            bundle_plus: 11748,
-            digital_plus: 11498,
-        },
-        usd: {
-            digital: 69.99,
-            bundle: 100.80,
-            coaching: 114.80,
-        },
-    },
-    billing: {
-        egp: {
-            digital: 699,
-            bundle: 999,
-            coaching: 1149,
-        },
-        usd: {
-            digital: 49.99,
-            bundle: 100.80,
-            coaching: 199.00,
-        },
-    },
-} as const;
-export type OriginalPriceSurface = keyof typeof DISPLAY_ORIGINAL_PRICES;
-
 /** Canonical local-Egypt shipping provider id. */
 export const DEFAULT_EGYPT_SHIPPING_PROVIDER = 'eg_standard';
 
@@ -143,6 +104,100 @@ export const DEFAULT_PRICING: PricingConfig = {
     },
     tolerance: 0.5,
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                    DISPLAY-ONLY “BEFORE DISCOUNT” PRICES
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// These are NOT charge amounts: no gateway, invoice or quote reads them.
+// They are list prices used only for a strike-through display. A `*_plus`
+// amount is NEVER written as an aggregate literal; it is the sum of its
+// original line items (base list price + coaching add-on). Phase 9 requires
+// `original_amount == Σ(unit_price × qty before discount)` for every package.
+
+const STOREFRONT_ORIGINAL_BASE_UNIT = {
+    egp: { digital: 699, bundle: 849, coaching: 949 },
+    usd: { digital: 69.99, bundle: 100.80, coaching: 114.80 },
+} as const;
+
+const BILLING_ORIGINAL_BASE_UNIT = {
+    egp: { digital: 699, bundle: 999, coaching: 1149 },
+    usd: { digital: 49.99, bundle: 100.80, coaching: 199.00 },
+} as const;
+
+const PLUS_TIER_IDS = ['digital_plus', 'bundle_plus', 'coaching_plus'] as const;
+
+function buildOriginalPriceTable(
+    baseUnit: Record<string, number>,
+    currency: CurrencyKey
+): Record<string, number> {
+    const table: Record<string, number> = { ...baseUnit };
+    for (const plusTier of PLUS_TIER_IDS) {
+        const baseTier = plusTier.replace('_plus', '') as TierId;
+        const baseOriginal = baseUnit[baseTier];
+        const addon = DEFAULT_PRICING.addons[plusTier]?.[currency];
+        if (typeof baseOriginal === 'number' && typeof addon === 'number') {
+            table[plusTier] = Math.round((baseOriginal + addon) * 100) / 100;
+        }
+    }
+    return table;
+}
+
+export const DISPLAY_ORIGINAL_PRICES = {
+    storefront: {
+        egp: buildOriginalPriceTable(STOREFRONT_ORIGINAL_BASE_UNIT.egp, 'egp'),
+        usd: buildOriginalPriceTable(STOREFRONT_ORIGINAL_BASE_UNIT.usd, 'usd'),
+    },
+    billing: {
+        egp: buildOriginalPriceTable(BILLING_ORIGINAL_BASE_UNIT.egp, 'egp'),
+        usd: buildOriginalPriceTable(BILLING_ORIGINAL_BASE_UNIT.usd, 'usd'),
+    },
+};
+export type OriginalPriceSurface = keyof typeof DISPLAY_ORIGINAL_PRICES;
+
+export interface OriginalPriceLine {
+    source: 'product' | 'addon';
+    unitPrice: number;
+    quantity: number;
+}
+
+/** Original (pre-discount) line items for a package. */
+export function getOriginalPriceLines(
+    tierId: string,
+    currency: string,
+    surface: OriginalPriceSurface = 'storefront'
+): OriginalPriceLine[] {
+    const cur = toCurrencyKey(currency);
+    const table = DISPLAY_ORIGINAL_PRICES[surface][cur] as Record<string, number>;
+    const baseTier = tierId.endsWith('_plus') ? tierId.replace('_plus', '') : tierId;
+    const basePrice = table[baseTier];
+    if (typeof basePrice !== 'number') return [];
+
+    const lines: OriginalPriceLine[] = [
+        { source: 'product', unitPrice: basePrice, quantity: 1 },
+    ];
+    if (tierId.endsWith('_plus')) {
+        const addon = DEFAULT_PRICING.addons[tierId as TierId]?.[cur];
+        if (typeof addon === 'number' && addon > 0) {
+            lines.push({ source: 'addon', unitPrice: addon, quantity: 1 });
+        }
+    }
+    return lines;
+}
+
+/** Σ(unit_price × quantity) — the only definition of a pre-discount amount. */
+export function sumOriginalLineItems(lines: OriginalPriceLine[]): number {
+    return round2(lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0));
+}
+
+export function getOriginalAmount(
+    tierId: string,
+    currency: string,
+    surface: OriginalPriceSurface = 'storefront'
+): number | undefined {
+    const lines = getOriginalPriceLines(tierId, currency, surface);
+    return lines.length > 0 ? sumOriginalLineItems(lines) : undefined;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                           ENV OVERRIDES

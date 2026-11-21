@@ -13,7 +13,9 @@
     "test:unit": "vitest run",
     "test:watch": "vitest --watch",
     "test:perf": "vitest run tests/perf",
-    "validate-tools": "vitest run tests/unit/validateTools.test.ts"
+    "validate-tools": "vitest run tests/unit/validateTools.test.ts",
+    "check:artifacts": "node scripts/check-backup-files.mjs",
+    "prebuild": "npm run check:artifacts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
