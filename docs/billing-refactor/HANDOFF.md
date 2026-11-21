@@ -106,6 +106,16 @@
 
 ---
 
+## 5.3) حالة المرحلة 7
+
+المرحلة 7 منفّذة على فرع `feat/r6.1-tools-041-042` ولم تُدفع إلى origin.
+التفاصيل في `docs/billing-refactor/PHASE7_SHIPPING_LANGUAGE.md`.
+لا migration جديدة ولا تغيير في إعدادات/مفاتيح أي بوابة أو env.
+بند الشحن يحمل `provider_id/service_code/quote_id/amount`، و`FlatRateProvider` يثبّت 199 ج.م،
+واللغة تُحفظ على بند الفاتورة وتصل إلى `DigitalBookDelivery`، والاستحقاقات تُبنى من `invoice_lines`.
+
+---
+
 ## 6) نقاط الرجوع الثلاث
 
 اطلب من المطوّر أن يعود إليك في هذه النقاط فقط، لتبقى المتابعة فعّالة:

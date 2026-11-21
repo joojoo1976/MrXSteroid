@@ -69,6 +69,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     });
 
     const [quantity, setQuantity] = useState(1);
+    const [bookLanguage, setBookLanguage] = useState<'ar' | 'en'>(
+        () => selectedTier?.selectedLanguage ?? (isAr ? 'ar' : 'en')
+    );
     const [shippingCost, setShippingCost] = useState(0);
     const [discountAmount, setDiscountAmount] = useState(0);
 
@@ -193,6 +196,8 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             isAr={isAr}
                             isEg={isEg}
                             onRegionChange={handleRegionChange}
+                            bookLanguage={bookLanguage}
+                            onBookLanguageChange={setBookLanguage}
                         />
 
                         {/* 02-b. Quick plan selection — stays in the invoice-first checkout. */}
@@ -242,7 +247,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                                     buttonText: '',
                                     requiresShipping: variant !== 'digital' && variant !== 'digital_plus',
                                     requiresBodyStats: variant === 'coaching_plus' || variant === 'bundle_plus',
-                                    selectedLanguage: isAr ? 'ar' : 'en',
+                                    selectedLanguage: bookLanguage,
                                     selectedLocation: isEg ? 'EG' : 'GLOBAL',
                                     includesEbook: true,
                                     includesAudiobook: variant === 'bundle' || variant === 'bundle_plus' || variant === 'coaching' || variant === 'coaching_plus',

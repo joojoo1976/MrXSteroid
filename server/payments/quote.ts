@@ -27,6 +27,7 @@ import {
     isShippableTier,
     resolveShippingForCheckout,
 } from './pricing';
+import { FlatRateProvider, FLAT_RATE_SERVICE_CODE } from '../shipping/FlatRateProvider';
 
 export const QUOTE_TTL_SECONDS = 10 * 60;
 export const QUOTE_TOKEN_VERSION = 1;
@@ -470,6 +471,7 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
 
     let shipping = 0;
     let shippingProviderId: string | null = null;
+    let shippingServiceCode: string | null = null;
     if (shippableProduct) {
         try {
             const resolved = resolveShippingForCheckout(cfg, {
@@ -479,8 +481,18 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
                 requestedProviderId: input.shippingProviderId ?? null,
                 legacyClientShippingCost: 0,
             });
-            shipping = resolved.amount;
-            shippingProviderId = resolved.providerId;
+            const provider = new FlatRateProvider({
+                providerId: resolved.providerId ?? DEFAULT_EGYPT_SHIPPING_PROVIDER,
+                amount: resolved.amount,
+            });
+            const flatQuote = provider.quote({
+                region,
+                currency,
+                requestedProviderId: input.shippingProviderId ?? null,
+            });
+            shipping = flatQuote.amount;
+            shippingProviderId = flatQuote.providerId;
+            shippingServiceCode = flatQuote.serviceCode;
         } catch (error) {
             if (error instanceof ShippingConfigurationError) {
                 throw new QuoteValidationError('SHIPPING_UNAVAILABLE', error.message);
@@ -505,7 +517,9 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
             metadata: {
                 quote: true,
                 provider_id: shippingProviderId,
-                service_code: shippingProviderId === DEFAULT_EGYPT_SHIPPING_PROVIDER ? 'flat_rate' : null,
+                service_code: shippingServiceCode
+                    ?? (shippingProviderId === DEFAULT_EGYPT_SHIPPING_PROVIDER ? FLAT_RATE_SERVICE_CODE : null),
+                amount: shipping,
             },
         });
     }

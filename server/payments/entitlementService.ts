@@ -173,3 +173,114 @@ export async function checkUserEntitlement(
 
     return true;
 }
+
+export type InvoiceLineEntitlementSource = 'invoice_lines' | 'legacy_fallback';
+
+export interface GrantEntitlementsFromInvoiceParams {
+    userId: string;
+    invoiceId: string;
+    paymentIntentId?: string | null;
+    /** Used only when the invoice predates `invoice_lines` (or has no lines). */
+    fallbackProductId?: string | null;
+}
+
+export interface GrantEntitlementsFromInvoiceResult {
+    success: boolean;
+    entitlementIds: string[];
+    source: InvoiceLineEntitlementSource;
+}
+
+interface InvoiceLineRow {
+    line_type?: string | null;
+    sku?: string | null;
+    product_id?: string | null;
+    language?: string | null;
+    qty?: number | null;
+    metadata?: Record<string, unknown> | null;
+}
+
+const TIER_TO_CANONICAL_PRODUCT: Record<string, string> = {
+    digital: 'MRX-PROTOCOL',
+    digital_plus: 'MRX-PROTOCOL',
+    pdf: 'MRX-PROTOCOL',
+    bundle: 'MRX-TACTICAL',
+    bundle_plus: 'MRX-TACTICAL',
+    paperback: 'MRX-TACTICAL',
+    coaching: 'MRX-SMART-PRO',
+    coaching_plus: 'MRX-SMART-PRO',
+};
+
+/** Map an invoice line to the entitlement product id, or null for non-products. */
+export function canonicalProductIdForInvoiceLine(line: InvoiceLineRow): string | null {
+    const lineType = String(line.line_type || '').toLowerCase();
+    const sku = String(line.sku || line.product_id || '').trim().toLowerCase();
+    if (!sku || lineType === 'shipping' || lineType === 'discount' || lineType === 'tax') {
+        return null;
+    }
+
+    if (lineType === 'addon') return 'MRX-COACHING-ADDON';
+    if (lineType === 'service') {
+        if (sku === 'consultation') return 'MRX-CONSULTATION';
+        if (sku === 'vip_coaching' || sku === 'coaching_service') return 'MRX-COACHING-ADDON';
+        return null;
+    }
+
+    if (sku.startsWith('mrx-')) return sku.toUpperCase();
+    return TIER_TO_CANONICAL_PRODUCT[sku] || null;
+}
+
+/**
+ * Builds entitlements from the frozen invoice lines (Phase 7), not from the
+ * order/tier shortcut. Legacy invoices without lines fall back to the supplied
+ * product id so existing paid rows remain deliverable.
+ */
+export async function grantEntitlementsFromInvoice(
+    params: GrantEntitlementsFromInvoiceParams,
+    supabaseClient?: SupabaseClient
+): Promise<GrantEntitlementsFromInvoiceResult> {
+    const supabase = supabaseClient || getSupabaseAdmin();
+
+    let lines: InvoiceLineRow[] = [];
+    try {
+        const { data, error } = await supabase
+            .from('invoice_lines')
+            .select('line_type, sku, product_id, language, qty, metadata')
+            .eq('invoice_id', params.invoiceId);
+        if (!error && Array.isArray(data)) lines = data as InvoiceLineRow[];
+    } catch {
+        // Pre-Phase-1 rows / fakes without the table use the legacy fallback.
+    }
+
+    const source: InvoiceLineEntitlementSource = lines.length > 0 ? 'invoice_lines' : 'legacy_fallback';
+    if (lines.length === 0 && params.fallbackProductId) {
+        lines = [{ line_type: 'product', sku: params.fallbackProductId }];
+    }
+
+    const byProduct = new Map<string, InvoiceLineRow>();
+    for (const line of lines) {
+        const productId = canonicalProductIdForInvoiceLine(line);
+        if (productId && !byProduct.has(productId)) byProduct.set(productId, line);
+    }
+
+    const entitlementIds: string[] = [];
+    for (const [productId, line] of byProduct.entries()) {
+        const granted = await grantEntitlement(
+            {
+                userId: params.userId,
+                productId,
+                invoiceId: params.invoiceId,
+                paymentIntentId: params.paymentIntentId,
+                metadata: {
+                    ...(line.metadata || {}),
+                    source,
+                    invoice_line_sku: line.sku || null,
+                    language: line.language || null,
+                },
+            },
+            supabase
+        );
+        entitlementIds.push(granted.entitlementId);
+    }
+
+    return { success: entitlementIds.length > 0, entitlementIds, source };
+}

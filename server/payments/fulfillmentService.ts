@@ -929,8 +929,13 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             //     granted on a financially unsettled capture.
             if (invoice.tier_id) {
                 try {
-                    const { grantEntitlement } = await import('./entitlementService');
-                    await grantEntitlement({ userId: invoice.user_id, productId: invoice.tier_id, invoiceId, paymentIntentId: currentIntentId }, supabase);
+                    const { grantEntitlementsFromInvoice } = await import('./entitlementService');
+                    await grantEntitlementsFromInvoice({
+                        userId: invoice.user_id,
+                        invoiceId,
+                        paymentIntentId: currentIntentId,
+                        fallbackProductId: invoice.tier_id,
+                    }, supabase);
                 } catch (entitleErr) {
                     console.warn(`[Fulfillment] Entitlement grant notice for ${invoiceId}:`, entitleErr);
                 }

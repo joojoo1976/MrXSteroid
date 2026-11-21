@@ -52,6 +52,29 @@ const DIGITAL_BOOK_CONFIG: DigitalBookConfig = {
     urlExpiryHours: 24,
 };
 
+export type DigitalBookLanguage = 'ar' | 'en';
+
+/**
+ * Resolve the asset for the language stored on the invoice line.
+ * Arabic is a distinct file — never silently fall back to the English book.
+ */
+export function resolveDigitalBookAsset(
+    language: DigitalBookLanguage,
+    config: Partial<DigitalBookConfig> = {}
+): Pick<DigitalBookConfig, 'fileName' | 'storagePath'> {
+    const base = { ...DIGITAL_BOOK_CONFIG, ...config };
+    if (language === 'ar') {
+        return {
+            fileName: process.env.DIGITAL_BOOK_FILE_NAME_AR || "MrXSteroid_Digital_Protocol_ar.pdf",
+            storagePath: process.env.DIGITAL_BOOK_STORAGE_PATH_AR || "books/MrXSteroid_Digital_Protocol_ar.pdf",
+        };
+    }
+    return {
+        fileName: base.fileName,
+        storagePath: base.storagePath,
+    };
+}
+
 export interface EligibleProductCheck {
     productId: string;
     isEligible: boolean;
@@ -117,6 +140,7 @@ export class DigitalBookDelivery {
         invoiceId: string;
         customerEmail: string;
         productId: string;
+        language?: DigitalBookLanguage;
         fourthwallOrderId?: string;
         fourthwallCheckoutSessionId?: string;
     }): Promise<DigitalDeliveryResult> {
@@ -141,7 +165,11 @@ export class DigitalBookDelivery {
         }
 
         // Method 2: Generate Secure Signed URL
-        const signedUrlResult = await this.generateSignedDownloadUrl(input.invoiceId, input.customerEmail);
+        const signedUrlResult = await this.generateSignedDownloadUrl(
+            input.invoiceId,
+            input.customerEmail,
+            input.language || 'en'
+        );
         if (signedUrlResult.success) {
             // In production, send email with the signed URL
             await this.sendDownloadEmail(input.customerEmail, signedUrlResult.downloadUrl!);
@@ -174,7 +202,11 @@ export class DigitalBookDelivery {
      * Generates a secure, time-limited, single-use signed download URL.
      * The URL is stored in the database with expiry and download count.
      */
-    private async generateSignedDownloadUrl(invoiceId: string, customerEmail: string): Promise<{
+    private async generateSignedDownloadUrl(
+        invoiceId: string,
+        customerEmail: string,
+        language: DigitalBookLanguage = 'en'
+    ): Promise<{
         success: boolean;
         downloadUrl?: string;
         expiresAt?: string;
@@ -184,6 +216,7 @@ export class DigitalBookDelivery {
             const token = crypto.randomBytes(32).toString("hex");
             const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
             const expiresAt = new Date(Date.now() + this.config.urlExpiryHours * 60 * 60 * 1000).toISOString();
+            const asset = resolveDigitalBookAsset(language, this.config);
 
             const { error } = await this.supabase
                 .from("digital_book_deliveries")
@@ -191,7 +224,7 @@ export class DigitalBookDelivery {
                     invoice_id: invoiceId,
                     token_hash: tokenHash,
                     customer_email: customerEmail,
-                    file_name: this.config.fileName,
+                    file_name: asset.fileName,
                     max_downloads: this.config.maxDownloads,
                     download_count: 0,
                     expires_at: expiresAt,
@@ -255,9 +288,14 @@ export class DigitalBookDelivery {
             })
             .eq("id", delivery.id);
 
+        const language: DigitalBookLanguage = String(delivery.file_name || '').includes('_ar')
+            ? 'ar'
+            : 'en';
+        const asset = resolveDigitalBookAsset(language, this.config);
+
         return {
             valid: true,
-            filePath: `${this.config.storagePath}`,
+            filePath: asset.storagePath,
             fileName: delivery.file_name,
             mimeType: this.config.mimeType,
         };
