@@ -7,9 +7,10 @@
  *   Subscription activation happens exclusively via the POST webhook.
  * - Requires SUPABASE_SERVICE_ROLE_KEY — never falls back to anon key.
  */
+import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
-import { verifyPaidAmount } from '../../../../server/payments/verifyPaidAmount';
+import { applyProviderVerdict } from '../../../../server/payments/fulfillmentService';
 import { corsPreflightResponse } from '../../../../server/cors/corsConfig';
 
 
@@ -34,81 +35,25 @@ const json = (body: unknown, status = 200): Response =>
 const redirect = (url: string): Response =>
     new Response(null, { status: 302, headers: { Location: url } });
 
+/** GET is advisory-only: read the webhook-written invoice status. */
 async function isAlreadyProcessed(invoiceId: string): Promise<boolean> {
     if (!invoiceId) return false;
     try {
         const supabase = getSupabaseAdmin();
         const { data, error } = await supabase
             .from('invoices')
-            .select('status')
+            .select('status, payment_status, metadata')
             .eq('id', invoiceId)
             .single();
         if (error || !data) return false;
-        if (data.status === 'success') {
+        const state = data.metadata?.payment_state;
+        if (data.status === 'success' || data.payment_status === 'paid' || state === 'fulfilled') {
             console.log(`⚡ [Idempotency] Invoice ${invoiceId} already processed — skipping.`);
             return true;
         }
         return false;
     } catch {
         return false;
-    }
-}
-
-async function activateSubscription(invoiceId: string, externalRefId?: string): Promise<boolean> {
-    const supabase = getSupabaseAdmin();
-    try {
-        const { data: invoice, error: fetchError } = await supabase
-            .from('invoices')
-            .select('user_id, tier_id')
-            .eq('id', invoiceId)
-            .single();
-        if (fetchError || !invoice) {
-            console.error('❌ [Activate] Invoice not found:', invoiceId, fetchError);
-            return false;
-        }
-
-        await supabase
-            .from('invoices')
-            .update({
-                status: 'success',
-                gateway_reference_id: externalRefId || undefined,
-                updated_at: new Date().toISOString(),
-            })
-            .eq('id', invoiceId);
-
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-                subscription_tier: invoice.tier_id,
-                subscription_status: 'active',
-                has_paid: true,
-                plan_tier: invoice.tier_id,
-            })
-            .eq('id', invoice.user_id);
-
-        if (profileError) {
-            console.error('❌ [Activate] Failed to update profile:', profileError);
-            return false;
-        }
-
-        console.log(`✅ [Activate] Subscription activated — User: ${invoice.user_id}, Tier: ${invoice.tier_id}`);
-        return true;
-    } catch (error) {
-        console.error('❌ [Activate] Unexpected error:', error);
-        return false;
-    }
-}
-
-async function markInvoiceFailed(invoiceId: string, errorMessage?: string): Promise<void> {
-    const supabase = getSupabaseAdmin();
-    try {
-        await supabase
-            .from('invoices')
-            .update({ status: 'failed', updated_at: new Date().toISOString() })
-            .eq('id', invoiceId);
-        console.log(`❌ [Callback] Invoice marked as failed: ${invoiceId}, reason: ${errorMessage || 'unknown'}`);
-    } catch (error) {
-        console.error('❌ [Callback] Failed to mark invoice as failed:', error);
     }
 }
 
@@ -199,43 +144,112 @@ export async function POST(req: Request) {
             rawBody,
         );
 
+        // Signature failure is rejected BEFORE any Supabase client/write.
         if (!verification.valid) {
             console.error(`❌ [Callback] ${gatewayName} webhook verification failed:`, verification.errorMessage);
             return json({ error: 'Invalid webhook signature' }, 401);
         }
 
         const invoiceId = verification.invoiceId;
-
         if (!verification.status || !invoiceId) {
             return json({ success: true, message: 'Event acknowledged' });
         }
 
-        if (await isAlreadyProcessed(invoiceId)) {
-            return json({ success: true, message: 'Already processed (idempotent)' });
+        const supabase = getSupabaseAdmin();
+        const provider = gatewayName.toLowerCase();
+        const providerEventId = verification.externalReferenceId || invoiceId;
+        let parsedRawPayload: Record<string, unknown> = {};
+        try {
+            parsedRawPayload = rawBody.length > 0 ? JSON.parse(rawBody) : {};
+        } catch { /* ignore */ }
+
+        const providerStatus = verification.providerStatus
+            || String(parsedRawPayload.orderStatus ?? parsedRawPayload.status ?? parsedRawPayload.lastStatus ?? '')
+            || verification.detailedStatus
+            || null;
+
+        // Same DB-level idempotency key as /api/payments/webhook. A callback and
+        // a webhook for the same provider transaction can never both settle.
+        const { error: dedupError } = await supabase
+            .from('webhook_events')
+            .insert({
+                provider,
+                merchant_account: verification.merchantId || null,
+                provider_event_id: providerEventId,
+                transaction_id: verification.externalReferenceId || null,
+                provider_transaction_id: verification.externalReferenceId || null,
+                provider_status: providerStatus,
+                provider_operation: verification.providerOperation || 'pay',
+                invoice_id: invoiceId,
+                event_type: verification.detailedStatus || verification.status || 'unknown',
+                payload_hash: rawBody.length > 0
+                    ? crypto.createHash('sha256').update(rawBody).digest('hex')
+                    : null,
+                status: 'pending',
+                processing_status: 'pending',
+                raw_payload: parsedRawPayload,
+            });
+
+        if (dedupError) {
+            if (dedupError.code === '23505') {
+                console.log(`[Callback] Duplicate provider event ${providerEventId} — no mutation`);
+                return json({ success: true, message: 'Already processed (idempotent)', invoiceId });
+            }
+            console.error('[Callback] Could not record webhook event:', dedupError.message);
+            return json({ error: 'Could not record webhook event' }, 500);
         }
 
-        if (verification.status === 'success') {
-            const amountCheck = await verifyPaidAmount(invoiceId, verification.paidAmount);
-            if (!amountCheck.ok) {
-                console.error(`❌ [Callback] Amount verification failed for ${invoiceId} — not activating.`);
-                await markInvoiceFailed(invoiceId, `Amount mismatch — paid ${amountCheck.paid} vs expected ${amountCheck.expected}`);
-                return json({ success: true, message: 'Amount mismatch — payment not activated', invoiceId });
-            }
+        const fulfillment = await applyProviderVerdict({
+            supabase,
+            invoiceId,
+            gatewayName,
+            verdict: {
+                status: verification.status as 'success' | 'failed',
+                externalReferenceId: verification.externalReferenceId,
+                paidAmount: verification.paidAmount,
+                currency: verification.currency,
+                providerStatus: providerStatus || undefined,
+                providerOperation: verification.providerOperation,
+            },
+            providerEventId,
+            providerStatus,
+            source: 'webhook',
+            rawBody,
+        });
 
-            const activated = await activateSubscription(invoiceId, verification.externalReferenceId);
+        if (fulfillment.code === 'amount_mismatch') {
             return json({
                 success: true,
-                message: activated ? 'Payment processed successfully' : 'Payment recorded but activation failed',
+                message: 'Amount mismatch — payment not activated',
                 invoiceId,
             });
         }
-
-        if (verification.status === 'failed') {
-            await markInvoiceFailed(invoiceId, verification.errorMessage);
+        if (fulfillment.code === 'already_processed' || fulfillment.code === 'quarantined') {
+            return json({ success: true, message: 'Already processed (idempotent)', invoiceId });
+        }
+        if (fulfillment.code === 'financial_failure') {
+            return json({
+                success: true,
+                message: 'Payment recorded; settlement pending reconciliation',
+                invoiceId,
+                code: fulfillment.stage,
+            });
+        }
+        if (fulfillment.code === 'applied' && fulfillment.outcome === 'failed') {
             return json({ success: true, message: 'Payment failure recorded', invoiceId });
         }
-
-        return json({ success: true, message: 'Event acknowledged' });
+        if (fulfillment.code === 'applied' && fulfillment.outcome === 'pending_claim') {
+            return json({
+                success: true,
+                message: 'Payment settled; delivery pending claim',
+                invoiceId,
+                delivery: 'deferred',
+            });
+        }
+        if (fulfillment.code === 'applied') {
+            return json({ success: true, message: 'Payment processed successfully', invoiceId });
+        }
+        return json({ success: true, message: 'Event acknowledged', invoiceId });
     } catch (error) {
         console.error('❌ [Callback] Unhandled error:', error);
         return json({ error: 'Internal server error', message: (error as Error).message }, 500);

@@ -21,6 +21,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { verifyPaidAmount } from './verifyPaidAmount';
 import { canApplyWebhookToIntent } from './paymentIntentService';
 import { resolveGatewayFee } from './gatewayFee';
+import {
+    deriveInvoicePaymentState,
+    invoicePaymentStateMetadata,
+    type InvoicePaymentState,
+} from './invoicePaymentState';
 
 export interface ProviderVerdictInput {
     supabase: SupabaseClient;
@@ -240,6 +245,42 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
         return { code: 'unresolved' };
     }
 
+    const currentPaymentState = deriveInvoicePaymentState(existing);
+    const incomingTargetState: InvoicePaymentState | null =
+        verdict.status === 'success' ? 'paid' : verdict.status === 'failed' ? 'failed' : null;
+
+    // ── TERMINAL STATE GUARD ──────────────────────────────────────────────────
+    // `amount_mismatch` and `failed` are final for provider events. A later
+    // success must not resurrect them, and `fulfilled` must never go backwards.
+    // `paid` is handled by the existing invoice-level idempotency block below so
+    // a replay is still recorded as `duplicate` (the Phase 5 contract).
+    if (
+        incomingTargetState
+        && (currentPaymentState === 'amount_mismatch'
+            || currentPaymentState === 'failed'
+            || currentPaymentState === 'fulfilled')
+    ) {
+        console.warn(
+            `⚠️ [Fulfillment] Out-of-order ${incomingTargetState} event for ${invoiceId}: state is terminal ${currentPaymentState} — no mutation`
+        );
+        if (source === 'webhook' && providerEventId) {
+            await supabase
+                .from('webhook_events')
+                .update({
+                    status: currentPaymentState === 'amount_mismatch' ? 'failed' : 'skipped',
+                    processing_status: currentPaymentState === 'amount_mismatch'
+                        ? 'amount_mismatch'
+                        : `out_of_order:${currentPaymentState}->${incomingTargetState}`,
+                    error_message: `Provider event ${incomingTargetState} arrived after terminal state ${currentPaymentState}`,
+                    processed_at: nowIso(),
+                    updated_at: nowIso(),
+                })
+                .eq('provider', providerKey)
+                .eq('provider_event_id', providerEventId);
+        }
+        return { code: 'already_processed' };
+    }
+
     // ── N-1 LATE-ARRIVAL GUARD (spec §10) ─────────────────────────────────────
     // Never let a non-current attempt downgrade a paid invoice, and never mutate
     // through a stale/intentionally-void attempt. QUARANTINE instead of
@@ -351,6 +392,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
         // against the matching leg first. If other legs remain pending/unpaid,
         // update the invoice to 'partially_paid' and EXIT WITHOUT fulfilling.
         const metadata = (existing.metadata || {}) as Record<string, unknown>;
+        let persistedMetadata: Record<string, unknown> = metadata;
         const paymentLegs = (metadata.payment_legs || []) as Array<{
             id: string;
             legIndex: number;
@@ -413,13 +455,14 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
             }
 
             // Persist the updated legs in invoice metadata and database
+            persistedMetadata = {
+                ...metadata,
+                payment_legs: legVerdictRes.updatedLegs,
+            };
             await supabase
                 .from('invoices')
                 .update({
-                    metadata: {
-                        ...metadata,
-                        payment_legs: legVerdictRes.updatedLegs,
-                    },
+                    metadata: persistedMetadata,
                     payment_status: legVerdictRes.consolidatedStatus,
                     updated_at: nowIso(),
                 })
@@ -468,7 +511,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
         // For multi-leg orders, individual legs are verified per-leg above.
         const amountCheck = isMultiLeg
             ? { ok: true }
-            : await verifyPaidAmount(invoiceId, verdict.paidAmount, supabase);
+            : await verifyPaidAmount(invoiceId, verdict.paidAmount, supabase, verdict.currency);
         if (!amountCheck.ok) {
             console.error(`❌ [Fulfillment] Amount verification failed for ${invoiceId} — not activating.`);
             await supabase
@@ -476,6 +519,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                 .update({
                     status: 'failed',
                     payment_status: 'failed',
+                    metadata: invoicePaymentStateMetadata(persistedMetadata, 'amount_mismatch'),
                     gateway_reference_id: verdict.externalReferenceId || undefined,
                     kashier_transaction_id: gatewayIsKashier ? (verdict.externalReferenceId || undefined) : undefined,
                     updated_at: nowIso(),
@@ -486,6 +530,19 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                     .from('payment_intents')
                     .update({ status: 'failed', provider_status: providerStatus, provider_transaction_id: verdict.externalReferenceId || null, updated_at: nowIso() })
                     .eq('id', currentIntentId);
+            }
+            if (source === 'webhook' && providerEventId) {
+                await supabase
+                    .from('webhook_events')
+                    .update({
+                        status: 'failed',
+                        processing_status: 'amount_mismatch',
+                        error_message: `Paid ${amountCheck.paid ?? 'unknown'} ${amountCheck.paidCurrency || verdict.currency || ''} does not match invoice ${amountCheck.expected ?? 'unknown'} ${amountCheck.expectedCurrency || ''}`,
+                        processed_at: nowIso(),
+                        updated_at: nowIso(),
+                    })
+                    .eq('provider', providerKey)
+                    .eq('provider_event_id', providerEventId);
             }
             return { code: 'amount_mismatch' };
         }
@@ -794,12 +851,14 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
         // leave the capture acknowledged while the invoice stayed `pending`
         // and the entitlement was still granted below — an entitlement with no
         // matching paid invoice. Fail closed instead.
+        persistedMetadata = invoicePaymentStateMetadata(persistedMetadata, 'paid');
         const { error: invoiceWriteError } = await supabase
             .from('invoices')
             .update({
                 status: 'success',
                 payment_status: 'paid',
                 paid_at: nowIso(),
+                metadata: persistedMetadata,
                 gateway_reference_id: verdict.externalReferenceId || undefined,
                 ...kashierFields,
                 updated_at: nowIso(),
@@ -876,6 +935,16 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
                     console.warn(`[Fulfillment] Entitlement grant notice for ${invoiceId}:`, entitleErr);
                 }
             }
+
+            // Delivery succeeded for an authenticated buyer: the explicit
+            // lifecycle can now move paid -> fulfilled.
+            await supabase
+                .from('invoices')
+                .update({
+                    metadata: invoicePaymentStateMetadata(persistedMetadata, 'fulfilled'),
+                    updated_at: nowIso(),
+                })
+                .eq('id', invoiceId);
 
             await markWebhookProcessed(input);
             return { code: 'applied', outcome: 'success' };
@@ -962,6 +1031,7 @@ export async function applyProviderVerdict(input: ProviderVerdictInput): Promise
         .update({
             status: 'failed',
             payment_status: 'failed',
+            metadata: invoicePaymentStateMetadata(existing.metadata, 'failed'),
             ...kashierFields,
             updated_at: nowIso(),
         })
