@@ -22,6 +22,7 @@ import { KashierGateway, KashierSessionError } from '../gateways/KashierGateway'
 import { FourthwallGateway } from '../gateways/FourthwallGateway';
 import {
     assertRegionCredentials,
+    getMerchantConfig,
     resolveRegion,
     type MerchantRegion,
     type PaymentMethodId,
@@ -36,6 +37,11 @@ import {
 } from '../pricing';
 import { createPaymentIntentAttempt } from '../paymentIntentService';
 import { loadInvoiceForSession, type InvoiceRow } from '../invoice/invoiceCreationService';
+import {
+    buildKashierServicePaymentUrl,
+    getKashierServicePaymentLink,
+    type KashierServiceId,
+} from '../paymentLinkConfig';
 
 /** Digital-only tiers are never charged shipping (Phase 4 requirement #4). */
 export const DIGITAL_TIERS: TierId[] = ['digital', 'digital_plus', 'pdf'];
@@ -509,6 +515,12 @@ function invoiceRegion(invoice: InvoiceRow): MerchantRegion {
     throw new CheckoutValidationError('Invoice has no valid billing region.');
 }
 
+function serviceIdForInvoice(invoice: InvoiceRow): KashierServiceId | null {
+    if (invoice.tier_id === 'vip_coaching') return 'coaching_addon';
+    if (invoice.tier_id === 'consultation') return 'consultation';
+    return null;
+}
+
 function invoiceReplay(
     invoice: InvoiceRow,
     merchant: ReturnType<typeof assertRegionCredentials>,
@@ -551,7 +563,11 @@ export async function createSessionFromInvoice(
     }
 
     const region = invoiceRegion(invoice);
-    const merchant = assertRegionCredentials(region);
+    const serviceId = serviceIdForInvoice(invoice);
+    // GLOBAL service invoices intentionally use the existing server-built
+    // Kashier service link. They must not require the GLOBAL Kashier merchant
+    // to be enabled, and they must never be routed to Fourthwall (AUP §13).
+    const merchant = serviceId ? getMerchantConfig('GLOBAL') : assertRegionCredentials(region);
     const environment = merchant.mode;
 
     if (String(invoice.currency).toUpperCase() !== merchant.currency) {
@@ -594,7 +610,7 @@ export async function createSessionFromInvoice(
     const intent = await createPaymentIntentAttempt(
         {
             invoiceId: invoice.id,
-            provider: region === 'EGYPT' ? 'kashier' : 'fourthwall',
+            provider: serviceId || region === 'EGYPT' ? 'kashier' : 'fourthwall',
             merchantReference: orderRef,
             amountMinor,
             currency: invoice.currency,
@@ -612,15 +628,36 @@ export async function createSessionFromInvoice(
         supabase,
     );
 
-    const gateway = deps.gatewayFactory
-        ? deps.gatewayFactory(region)
-        : region === 'EGYPT'
-            ? new KashierGateway('egypt')
-            : new FourthwallGateway();
+    const gateway = serviceId
+        ? null
+        : deps.gatewayFactory
+            ? deps.gatewayFactory(region)
+            : region === 'EGYPT'
+                ? new KashierGateway('egypt')
+                : new FourthwallGateway();
 
     let session: Awaited<ReturnType<CheckoutSessionGateway['createPaymentSession']>>;
     try {
-        if (region === 'EGYPT') {
+        if (serviceId) {
+            const serviceLink = getKashierServicePaymentLink(serviceId);
+            if (Math.abs(serviceLink.amount - amount) > 0.005) {
+                throw new CheckoutValidationError(
+                    `Invoice amount ${amount} does not match the configured ${serviceId} service price ${serviceLink.amount}.`
+                );
+            }
+            session = {
+                sessionId: serviceId,
+                sessionUrl: buildKashierServicePaymentUrl(serviceId, {
+                    invoiceId: invoice.id,
+                    userEmail: email,
+                    fullName,
+                    allowUnverified: true,
+                }),
+                amount,
+                currency: invoice.currency,
+                status: 'ACTIVE',
+            };
+        } else if (region === 'EGYPT') {
             const kashierGateway = gateway as KashierGateway;
             session = await kashierGateway.createPaymentSession({
                 orderRef,
@@ -666,8 +703,12 @@ export async function createSessionFromInvoice(
     const { error: linkError } = await supabase
         .from('invoices')
         .update({
-            gateway: region === 'EGYPT' ? 'kashier' : 'fourthwall',
-            payment_provider_merchant: region === 'EGYPT' ? 'kashier_egypt' : 'fourthwall_global',
+            gateway: serviceId || region === 'EGYPT' ? 'kashier' : 'fourthwall',
+            payment_provider_merchant: serviceId
+                ? 'kashier_service_link'
+                : region === 'EGYPT'
+                    ? 'kashier_egypt'
+                    : 'fourthwall_global',
             kashier_session_id: providerSessionId,
             kashier_session_url: session.sessionUrl,
             kashier_order_id: orderRef,

@@ -390,9 +390,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                         href={buildKashierPaymentPageUrl(plan.id as 'digital' | 'bundle' | 'coaching', {
                                             userId: user?.id,
                                             userEmail: user?.email,
+                                            region: selectedLocation === 'EG' ? 'EG' : 'GLOBAL',
                                         })}
-                                        target="_self"
-                                        rel="noopener noreferrer"
                                         whileHover={{ scale: 1.015 }}
                                         whileTap={{ scale: 0.975 }}
                                         onClick={(e) => e.stopPropagation()}
@@ -400,7 +399,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ content, openCheckout }
                                     >
                                         <Zap className="w-3.5 h-3.5 fill-current text-amber-400" />
                                         <span>
-                                            {isRTL ? '⚡ الدفع السريع المباشر (Kashier)' : '⚡ Direct Quick Pay (Kashier)'}
+                                            {isRTL ? '⚡ متابعة إلى الدفع الآمن' : '⚡ Continue to secure checkout'}
                                         </span>
                                     </motion.a>
                                 )}

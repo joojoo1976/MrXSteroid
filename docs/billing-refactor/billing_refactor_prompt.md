@@ -170,13 +170,15 @@
 
 | المسار | الحالة الحالية | الحالة المستهدفة | المرحلة |
 |---|---|---|---|
-| `/checkout` → create-invoice → create-session | يعمل | `invoice-first` | 4 |
+| `/checkout` → quote → create-invoice → create-session | يعمل | `invoice-first` | 4 |
 | Kashier quick links (3 روابط) | **يتجاوز الفاتورة** | `invoice-first` | 5 |
-| Kashier service links (`DirectServicesCheckoutSection`) | **يتجاوز الفاتورة** | `invoice-first` كبنود نوع `service` | 5 |
-| Paymob direct / standalone | **يتجاوز الفاتورة** (والبوابة disabled) | `invoice-first` + redirect من المسار القديم | 5 |
-| InstaPay (رفع إيصال) | يمرّ بفاتورة | `invoice-first` — تحقّق من مطابقة المبلغ | 6 |
-| Stripe | يعمل افتراضيًا بلا صف إعداد | `invoice-first` — لا تغيير إعداد | 6 |
-| Fourthwall / SpaceRemit | غير مصنّف | يُصنَّف بعد التحقق | 5 |
+| Kashier service links | يتجاوز/جزئي | `invoice-first` كخدمة | 5 |
+| Paymob direct/standalone | **يتجاوز الفاتورة** | redirect/invoice-first | 5 |
+| Fourthwall | جزئي invoice-first | `invoice-first (partial)` — يكتمل في 7 | 5 تصنيف، 7 إكمال |
+| SpaceRemit /smart-landing | legacy-bypass | يُحوَّل لاحقًا | 5 تصنيف، تحويل لاحق |
+| SpaceRemit gateway fallback | مدعوم بفاتورة | `invoice-backed` | 6/8 |
+| InstaPay receipt | يمرّ بفاتورة | `invoice-backed` — تحقّق من المبلغ | 6 |
+| Stripe | يعمل افتراضيًا بلا صف إعداد | `invoice-backed` | 6 |
 
 ---
 

@@ -13,7 +13,7 @@
 
 export type TierId = 'digital' | 'bundle' | 'coaching' | 'coaching_plus' | 'bundle_plus' | 'digital_plus' | 'pdf' | 'paperback';
 export type CurrencyKey = 'usd' | 'egp';
-export type ServiceId = 'consultation';
+export type ServiceId = 'consultation' | 'vip_coaching';
 
 /**
  * Version of the canonical catalog. Quotes/invoices from Phase 3+ must carry
@@ -123,8 +123,12 @@ export const DEFAULT_PRICING: PricingConfig = {
         digital_plus:  { usd: 349.99, egp: 9999 },
     },
     services: {
-        // GLOBAL/USD-only direct service. Egypt does not sell it separately.
+        // GLOBAL/USD-only direct services. Egypt does not sell them separately.
         consultation: { usd: 30, egp: 0 },
+        // Phase 5: VIP Coaching is a standalone service, not an add-on. The
+        // amount matches the historical Kashier coaching link so no price
+        // changes for customers during the invoice-first conversion.
+        vip_coaching: { usd: 349.99, egp: 0 },
     },
     shipping: {
         // Local Egypt flat rate = 199 EGP (approved business price, D3).

@@ -145,7 +145,7 @@ export class QuoteTokenError extends Error {
 type ResolvedSku =
     | { kind: 'tier'; tierId: string; baseTierId: string; includesAddon: boolean }
     | { kind: 'addon' }
-    | { kind: 'service'; serviceId: 'consultation' };
+    | { kind: 'service'; serviceId: 'consultation' | 'vip_coaching' };
 
 const CANONICAL_TO_TIER: Record<string, string> = {
     'mrx-protocol': 'digital',
@@ -168,6 +168,7 @@ const PRODUCT_NAMES: Record<string, string> = {
     pdf: 'Digital Protocol (PDF)',
     paperback: 'Paperback Edition',
     consultation: 'Custom Consultation & Assessment Session',
+    vip_coaching: 'VIP 1-on-1 Anabolic Cycle Coaching (1 Full Cycle)',
 };
 
 const COACHING_ADDON_NAME = '1-on-1 Online Coaching';
@@ -178,6 +179,9 @@ function resolveSku(raw: string): ResolvedSku {
     if (sku === 'mrx-coaching-addon') return { kind: 'addon' };
     if (sku === 'mrx-consultation' || sku === 'consultation') {
         return { kind: 'service', serviceId: 'consultation' };
+    }
+    if (sku === 'mrx-vip-coaching' || sku === 'coaching_service' || sku === 'vip_coaching') {
+        return { kind: 'service', serviceId: 'vip_coaching' };
     }
 
     const canonicalTier = CANONICAL_TO_TIER[sku];
@@ -332,7 +336,7 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
     const servicePrice = (serviceId: string): number => priceFrom(cfg.services ?? {}, serviceId);
 
     const products: ProductPlan[] = [];
-    const services: Array<{ serviceId: 'consultation'; name: string }> = [];
+    const services: Array<{ serviceId: 'consultation' | 'vip_coaching'; name: string }> = [];
     let addonRequested = input.addons?.includes('coaching') ?? false;
 
     for (const line of input.lines) {
@@ -347,10 +351,13 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
             if (region === 'EGYPT') {
                 throw new QuoteValidationError(
                     'SERVICE_NOT_AVAILABLE_IN_EGYPT',
-                    'Consultation is only available in the GLOBAL/USD checkout.'
+                    'Services are only available in the GLOBAL/USD checkout.'
                 );
             }
-            services.push({ serviceId: resolved.serviceId, name: PRODUCT_NAMES.consultation });
+            services.push({
+                serviceId: resolved.serviceId,
+                name: PRODUCT_NAMES[resolved.serviceId],
+            });
             continue;
         }
 
