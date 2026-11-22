@@ -18,6 +18,7 @@ import {
     type QuoteRequest,
     type QuoteResult,
 } from '../quote';
+import { loadPricing, type PricingConfig } from '../pricing';
 
 export class InvoiceCreationError extends Error {
     readonly code: string;
@@ -73,6 +74,8 @@ export interface CreatedInvoice {
 
 export interface InvoiceCreationDeps {
     supabase?: SupabaseClient;
+    /** Injectable admin-settings loader for deterministic quote/invoice parity tests. */
+    pricingRows?: () => Promise<Array<{ key: string; value: string }>>;
 }
 
 function getSupabaseAdmin(): SupabaseClient {
@@ -115,13 +118,15 @@ export interface InvoiceRow {
  */
 export function verifyAndRepriceQuote(
     quoteToken: string,
-    cart: QuoteRequest
+    cart: QuoteRequest,
+    pricing?: PricingConfig
 ): { quote: QuoteResult; tokenTotal: number; tokenCurrency: string } {
     // 1. Signature + TTL first (no pricing work on an invalid token).
     const token = verifyQuoteToken(quoteToken);
 
-    // 2. Full re-price from pricing.ts. No number from the token is reused.
-    const quote = buildQuote(cart);
+    // 2. Full re-price from the SAME catalog the quote route used. No number
+    //    from the token is reused.
+    const quote = buildQuote(cart, { pricing });
 
     // 3. The token must describe THIS cart.
     if (quote.cart_hash !== token.cart_hash) {
@@ -173,16 +178,25 @@ export async function createInvoiceFromQuote(
         throw new InvoiceCreationError('IDEMPOTENCY_KEY_REQUIRED', 'An idempotency key is required.');
     }
 
+    // Signature/expiry are checked before any database call. The pricing
+    // catalog is then loaded once and reused for re-pricing, so the invoice
+    // cannot disagree with a quote that included `admin_settings` overrides.
+    verifyQuoteToken(input.quoteToken);
+    const supabase = deps.supabase ?? getSupabaseAdmin();
+    const pricing = await loadPricing(
+        deps.pricingRows ?? (async () => {
+            const { data } = await supabase.from('admin_settings').select('key, value');
+            return (data || []) as Array<{ key: string; value: string }>;
+        })
+    );
+
     let quote: QuoteResult;
     try {
-        ({ quote } = verifyAndRepriceQuote(input.quoteToken, input.cart));
+        ({ quote } = verifyAndRepriceQuote(input.quoteToken, input.cart, pricing));
     } catch (error) {
         if (error instanceof QuoteValidationError || error instanceof QuoteTokenError) throw error;
         throw error;
     }
-
-    // No database client is constructed until the token and cart are valid.
-    const supabase = deps.supabase ?? getSupabaseAdmin();
 
     const tierId = quote.lines.find((line) => line.line_type === 'product')?.sku
         ?? quote.lines[0]?.sku

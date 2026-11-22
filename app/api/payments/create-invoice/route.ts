@@ -7,7 +7,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
-import { loadPricing, computeAmount, computePromoDiscount, resolveShippingForCheckout, ShippingConfigurationError, isAmountValid } from '../../../../server/payments/pricing';
+import { loadPricing, computeAmount, computePromoDiscount, resolveShippingForCheckout, ShippingConfigurationError, isAmountValid, PRICING_VERSION } from '../../../../server/payments/pricing';
 import { resolveRegion } from '../../../../server/payments/merchantResolver';
 import { loadGatewayConfig, isOperationallyAllowed, isCustomerRenderable } from '../../../../server/payments/gatewayConfig';
 import { corsPreflightResponse, buildCorsHeaders } from '../../../../server/cors/corsConfig';
@@ -19,6 +19,10 @@ import {
     InvoiceCreationError,
     QuoteStaleError,
 } from '../../../../server/payments/invoice/invoiceCreationService';
+import {
+    buildLegacyInvoiceLinePayload,
+    writeInvoiceLinesForExistingInvoice,
+} from '../../../../server/payments/invoice/invoiceLinePayload';
 
 const getSupabaseAdmin = () => {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -288,12 +292,21 @@ export async function POST(req: Request) {
             const isPaymobMethod = ['card', 'wallet', 'kiosk', 'paypal'].includes(input.paymentMethod || '');
             const isStripeEmbedded = input.paymentMethod === 'stripe';
             const isKashier = input.paymentMethod === 'kashier';
+            const isSpaceRemit = input.paymentMethod === 'spaceremit';
 
             let gateway: import('../../../../server/payments/gateways/IPaymentGateway').IPaymentGateway | null = null;
             let gatewayName: string;
             if (isKashier) {
                 // Delegated to the Phase 4 checkout session service further down.
                 gatewayName = 'KASHIER';
+            } else if (isSpaceRemit) {
+                // The legacy /smart-landing direct SpaceRemit URL was a bypass.
+                // This explicit branch keeps SpaceRemit as the provider but
+                // creates the invoice + lines first, then builds the redirect
+                // from that invoice id (no client amount).
+                const { SpaceRemitGateway } = await import('../../../../server/payments/gateways/SpaceRemitGateway');
+                gateway = new SpaceRemitGateway();
+                gatewayName = 'SPACEREMIT';
             } else if (isStripeEmbedded) {
                 const { StripeGateway } = await import('../../../../server/payments/gateways/StripeGateway');
                 gateway = new StripeGateway();
@@ -578,6 +591,35 @@ export async function POST(req: Request) {
 
             const invoiceId = invoice.id;
             console.log(`📄 [CreateInvoice] Invoice created: ${invoiceId}${referralCode ? ` (ref: ${referralCode})` : ''}`);
+
+            // Legacy (non-quote) bodies still exist for older clients. They must
+            // not create a payable invoice without line-level accounting.
+            try {
+                const lines = buildLegacyInvoiceLinePayload({
+                    pricing,
+                    tierId: input.tierId,
+                    currency,
+                    quantity,
+                    shippingCost,
+                    discount,
+                    promoCode: String(input.metadata?.promoCode || ''),
+                    shippingProviderId: readShippingProviderIntent(input, input.metadata) ?? null,
+                    language: input.locale ?? null,
+                    source: `pricing:${PRICING_VERSION}:legacy_route`,
+                });
+                await writeInvoiceLinesForExistingInvoice(supabase, {
+                    invoiceId,
+                    amount,
+                    lines,
+                });
+            } catch (lineError) {
+                // Roll back the just-created, still-unpayable invoice so a retry
+                // does not become permanently idempotent on a broken row.
+                await supabase.from('invoices').delete().eq('id', invoiceId);
+                const lineMessage = lineError instanceof Error ? lineError.message : String(lineError);
+                console.error('❌ [CreateInvoice] Failed to write invoice lines:', lineMessage);
+                return json({ error: 'Failed to create invoice lines' }, 500, req);
+            }
 
             const gatewayParams = {
                 userId: effectiveUserId,

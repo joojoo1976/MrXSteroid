@@ -26,6 +26,7 @@ import {
     computePromoDiscount,
     isShippableTier,
     resolveShippingForCheckout,
+    type PricingConfig,
 } from './pricing';
 import { FlatRateProvider, FLAT_RATE_SERVICE_CODE } from '../shipping/FlatRateProvider';
 
@@ -159,7 +160,7 @@ const TIER_IDS = new Set([
     'pdf', 'paperback',
 ]);
 
-const PRODUCT_NAMES: Record<string, string> = {
+export const PRODUCT_NAMES: Record<string, string> = {
     digital: 'Digital Protocol',
     bundle: 'Tactical Bundle',
     coaching: 'Smart Professional',
@@ -314,13 +315,20 @@ interface ProductPlan {
 export interface BuildQuoteOptions {
     now?: number;
     ttlSeconds?: number;
+    /**
+     * Authoritative price catalog. Quote and invoice paths pass the SAME
+     * `loadPricing()` result so an `admin_settings` override cannot make the
+     * displayed quote differ from the charged amount. Omitted only by pure
+     * callers/tests, which intentionally use env/defaults.
+     */
+    pricing?: PricingConfig;
 }
 
 export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {}): QuoteResult {
     const region: 'EGYPT' | 'GLOBAL' = input.region === 'EG' ? 'EGYPT' : 'GLOBAL';
     const currency: 'EGP' | 'USD' = region === 'EGYPT' ? 'EGP' : 'USD';
     const currencyKey = currency === 'EGP' ? 'egp' : 'usd';
-    const cfg = basePricing();
+    const cfg = options.pricing ?? basePricing();
 
     const priceFrom = (table: Record<string, { egp: number; usd: number } | undefined>, id: string): number => {
         const amount = table[id]?.[currencyKey];

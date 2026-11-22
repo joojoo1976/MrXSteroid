@@ -41,6 +41,7 @@
 import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { grantEntitlement } from './entitlementService';
+import { uniqueEntitlementLines, type InvoiceLineProductRow } from './entitlement/invoiceLineProducts';
 
 /** Default lifetime of a guest claim token. */
 export const GUEST_CLAIM_TTL_HOURS = 72;
@@ -345,20 +346,69 @@ export async function redeemGuestOrderClaim(
 
     const won = claimed[0];
     const invoiceId = String(won.invoice_id);
-    const productId = String(won.product_id);
+    const claimProductId = String(won.product_id);
+    const paymentIntentId = won.payment_intent_id ? String(won.payment_intent_id) : null;
+
+    // Prefer the frozen invoice lines, exactly like authenticated fulfillment.
+    // The claim row's product_id is used only as the pre-Phase-1 fallback for
+    // invoices that have no line rows at all.
+    let lineRows: InvoiceLineProductRow[] = [];
+    try {
+        const { data: lines, error: linesError } = await supabase
+            .from('invoice_lines')
+            .select('line_type, sku, product_id, language, qty, metadata')
+            .eq('invoice_id', invoiceId);
+        if (!linesError && Array.isArray(lines)) lineRows = lines as InvoiceLineProductRow[];
+    } catch {
+        // Legacy fakes/rows without invoice_lines use the documented fallback.
+    }
+    const entitlements = uniqueEntitlementLines(lineRows);
 
     try {
+        if (entitlements.length > 0) {
+            let firstEntitlementId = '';
+            let firstProductId = '';
+            for (const [productId, line] of entitlements) {
+                const granted = await grantEntitlement(
+                    {
+                        userId,
+                        productId,
+                        invoiceId,
+                        paymentIntentId,
+                        metadata: {
+                            ...(line.metadata || {}),
+                            source: 'guest_order_claim',
+                            entitlement_source: 'invoice_lines',
+                            invoice_line_sku: line.sku || null,
+                            language: line.language || null,
+                            claimId: String(won.id),
+                        },
+                    },
+                    supabase
+                );
+                if (!firstEntitlementId) {
+                    firstEntitlementId = granted.entitlementId;
+                    firstProductId = productId;
+                }
+            }
+            return { ok: true, invoiceId, productId: firstProductId, entitlementId: firstEntitlementId };
+        }
+
         const granted = await grantEntitlement(
             {
                 userId,
-                productId,
+                productId: claimProductId,
                 invoiceId,
-                paymentIntentId: won.payment_intent_id ? String(won.payment_intent_id) : null,
-                metadata: { source: 'guest_order_claim', claimId: String(won.id) },
+                paymentIntentId,
+                metadata: {
+                    source: 'guest_order_claim',
+                    entitlement_source: 'legacy_fallback',
+                    claimId: String(won.id),
+                },
             },
             supabase
         );
-        return { ok: true, invoiceId, productId, entitlementId: granted.entitlementId };
+        return { ok: true, invoiceId, productId: claimProductId, entitlementId: granted.entitlementId };
     } catch {
         // Compensate: hand the token back so a transient grant failure does not
         // strand a guest who has already paid. Safe because the entitlement is

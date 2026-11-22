@@ -4,8 +4,9 @@
  * Phase 3: read-only quote. Builds proposed invoice lines from the canonical
  * pricing catalog, signs a short-lived quote_token, and returns the breakdown.
  *
- * This route intentionally has NO database client. It must never create an
- * order, invoice, payment intent or gateway session.
+ * The route is still READ-ONLY: it resolves the same `admin_settings` pricing
+ * catalog the invoice path uses through the dedicated loader, but it never
+ * creates an order, invoice, payment intent or gateway session.
  */
 import { buildCorsHeaders, corsPreflightResponse } from '../../../../server/cors/corsConfig';
 import { enforceRateLimit, clientIp } from '../../../../lib/ratelimit';
@@ -16,6 +17,7 @@ import {
     buildQuote,
     findForbiddenPriceFields,
 } from '../../../../server/payments/quote';
+import { loadQuotePricing } from '../../../../server/payments/quotePricing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -67,7 +69,8 @@ export async function POST(req: Request) {
     }
 
     try {
-        const quote = buildQuote(parsed.data);
+        const pricing = await loadQuotePricing();
+        const quote = buildQuote(parsed.data, { pricing });
         return json({ success: true, ...quote }, 200, req);
     } catch (error) {
         if (error instanceof QuoteValidationError) {

@@ -417,7 +417,10 @@ export class FourthwallGateway implements IPaymentGateway {
         // Fourthwall checkout links require the product/variant UUID. Only real
         // (non-placeholder) configured IDs are returned.
         const productId = this.resolveFourthwallProductId(canonical);
-        if (!productId || this.isPlaceholder(productId)) {
+        // A live Fourthwall checkout requires a real product UUID. A short
+        // slug/placeholder would only fail later at the Storefront cart call,
+        // after an invoice has already been created.
+        if (!productId || this.isPlaceholder(productId) || !this.isUuid(productId)) {
             return null;
         }
         return { fourthwallProductId: productId };
@@ -466,6 +469,10 @@ export class FourthwallGateway implements IPaymentGateway {
         // Production logic must never be driven by placeholder IDs (e.g. test
         // fixtures like `fw_...` or `placeholder...`). Real IDs are UUIDs.
         return /^(fw_|placeholder|TODO|XXX)/i.test(id);
+    }
+
+    private isUuid(id: string): boolean {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
     }
 
     private assertCredentials(): void {

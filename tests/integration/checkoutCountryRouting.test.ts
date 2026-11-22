@@ -640,3 +640,55 @@ describe('customer visibility is enforced server-side, not only in the UI', () =
         expect(res.status).toBe(200);
     });
 });
+
+describe('legacy non-quote create-invoice writes invoice_lines (P1.6)', () => {
+    beforeEach(() => {
+        Object.assign(process.env, ENV);
+        process.env.SPACEREMIT_PUBLIC_KEY = 'pk_spaceremit_route_test';
+        h.tables.invoices = [];
+        h.tables.payment_intents = [];
+        h.tables.invoice_lines = [];
+        h.tables.admin_settings = [];
+        FETCH.calls.length = 0;
+        globalThis.fetch = FETCH.mock as unknown as typeof fetch;
+    });
+
+    afterEach(() => {
+        Object.keys(ENV).forEach((key) => delete process.env[key]);
+        delete process.env.SPACEREMIT_PUBLIC_KEY;
+        vi.resetModules();
+        vi.restoreAllMocks();
+    });
+
+    it('creates the invoice first, persists lines, then redirects to SpaceRemit with that invoice id', async () => {
+        const { POST } = await import('../../app/api/payments/create-invoice/route');
+        const res = await POST(req({
+            ...base,
+            tierId: 'digital',
+            country: 'US',
+            paymentMethod: 'spaceremit',
+        }));
+
+        expect(res.status).toBe(200);
+        const body = await res.json();
+        expect(body.gateway).toBe('spaceremit');
+        expect(body.redirectUrl).toContain('spaceremit.com/apipay-v2/');
+
+        expect(h.tables.invoices).toHaveLength(1);
+        const invoice = h.tables.invoices[0];
+        expect(invoice.gateway).toBe('spaceremit');
+        expect(invoice.amount).toBe(49.99);
+        expect(invoice.currency).toBe('USD');
+
+        const lines = h.tables.invoice_lines;
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatchObject({
+            invoice_id: invoice.id,
+            line_type: 'product',
+            sku: 'digital',
+            line_total: 49.99,
+            currency: 'USD',
+        });
+        expect(String(body.redirectUrl)).toContain(encodeURIComponent(invoice.id));
+    });
+});

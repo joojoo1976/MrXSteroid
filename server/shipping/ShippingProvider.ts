@@ -51,8 +51,20 @@ export interface TrackingResult {
     reason?: string;
 }
 
+export interface ShippingProviderCapabilities {
+    /** A price can be quoted from server configuration. */
+    quote: boolean;
+    /** A carrier shipment can be created through an API. */
+    createShipment: boolean;
+    /** A carrier tracking event stream is available. */
+    track: boolean;
+}
+
 export interface ShippingProvider {
     readonly providerId: string;
+    /** False for a price bucket that is not backed by a carrier integration. */
+    readonly isLiveCarrier: boolean;
+    readonly capabilities: ShippingProviderCapabilities;
     quote(input: ShippingQuoteInput): ShippingQuote;
     createShipment(input: CreateShipmentInput): Promise<ShipmentResult>;
     track(trackingNumber: string): Promise<TrackingResult>;

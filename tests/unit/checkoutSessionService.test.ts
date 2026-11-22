@@ -483,4 +483,35 @@ describe('createCheckoutSession — Phase 4 primary checkout', () => {
         expect(supabase._db.invoices).toHaveLength(1);
         expect(supabase._db.payment_intents).toHaveLength(1);
     });
+
+    it('GLOBAL labels the invoice/payment intent as Fourthwall and writes invoice_lines', async () => {
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = 'MID-TEST-GLOBAL';
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = 'global-test-api-key';
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'global-test-secret';
+
+        const { supabase, options } = deps();
+        await createCheckoutSession({
+            ...baseInput(),
+            tierId: 'digital',
+            country: 'US',
+            idempotencyKey: 'k-global-label',
+        }, options);
+
+        const invoice = supabase._db.invoices[0];
+        expect(invoice.gateway).toBe('fourthwall');
+        expect(invoice.payment_provider_merchant).toBe('fourthwall_global');
+        expect(supabase._db.payment_intents[0].provider).toBe('fourthwall');
+
+        const lines = supabase._db.invoice_lines;
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatchObject({
+            invoice_id: invoice.id,
+            line_type: 'product',
+            sku: 'digital',
+            qty: 1,
+            unit_price: 49.99,
+            line_total: 49.99,
+            currency: 'USD',
+        });
+    });
 });

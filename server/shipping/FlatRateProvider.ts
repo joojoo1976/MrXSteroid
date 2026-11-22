@@ -29,6 +29,13 @@ export interface FlatRateProviderOptions {
  */
 export class FlatRateProvider implements ShippingProvider {
     readonly providerId: string;
+    /** This provider is a price bucket, never a live courier. */
+    readonly isLiveCarrier = false;
+    readonly capabilities = {
+        quote: true,
+        createShipment: false,
+        track: false,
+    } as const;
     private readonly amount: number;
     private readonly currency: ShippingCurrency;
 

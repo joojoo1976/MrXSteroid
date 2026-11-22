@@ -33,10 +33,15 @@ import {
     computePromoDiscount,
     resolveShippingForCheckout,
     DEFAULT_EGYPT_SHIPPING_PROVIDER,
+    PRICING_VERSION,
     type TierId,
 } from '../pricing';
 import { createPaymentIntentAttempt } from '../paymentIntentService';
 import { loadInvoiceForSession, type InvoiceRow } from '../invoice/invoiceCreationService';
+import {
+    buildLegacyInvoiceLinePayload,
+    writeInvoiceLinesForExistingInvoice,
+} from '../invoice/invoiceLinePayload';
 import {
     buildKashierServicePaymentUrl,
     getKashierServicePaymentLink,
@@ -219,6 +224,7 @@ export async function createCheckoutSession(
         return (data || []) as Array<{ key: string; value: string }>;
     });
     const pricing = await loadPricing(rowLoader);
+    const pricingVersion = PRICING_VERSION;
     const quantity = Math.max(1, Math.floor(input.quantity || 1));
 
     // Single canonical shipping resolver. Digital → 0 with no provider work;
@@ -294,19 +300,21 @@ export async function createCheckoutSession(
 
     // ── 4. Atomically claim the idempotency key by inserting the invoice ─────
     let invoiceId: string | undefined;
+    const providerName = region === 'EGYPT' ? 'kashier' : 'fourthwall';
+    const providerMerchant = region === 'EGYPT' ? 'kashier_egypt' : 'fourthwall_global';
 
     {
         const { data: invoice, error: insertError } = await supabase
             .from('invoices')
             .insert({
                 user_id: input.userId || null,
-                gateway: 'kashier',
+                gateway: providerName,
                 status: 'pending',
                 payment_status: 'pending',
                 tier_id: input.tierId,
                 amount,
                 currency,
-                payment_provider_merchant: `kashier_${region.toLowerCase()}`,
+                payment_provider_merchant: providerMerchant,
                 region: region.toLowerCase(),
                 shipping_cost: shippingCost,
                 discount_amount: discount,
@@ -364,6 +372,34 @@ export async function createCheckoutSession(
         throw new Error('[CheckoutSession] Failed to resolve an invoice id for the checkout session.');
     }
 
+    // Persist the same line-level accounting the quote path writes, so legacy
+    // clients that still call this service cannot produce an invoice without
+    // `invoice_lines`. The catalog object is the one already used to price.
+    try {
+        const lines = buildLegacyInvoiceLinePayload({
+            pricing,
+            tierId: input.tierId,
+            currency,
+            quantity,
+            shippingCost,
+            discount,
+            promoCode: input.promoCode,
+            shippingProviderId: shipping.providerId,
+            language: input.locale ?? null,
+            source: `pricing:${pricingVersion}:legacy_session`,
+        });
+        await writeInvoiceLinesForExistingInvoice(supabase, {
+            invoiceId,
+            amount,
+            lines,
+        });
+    } catch (lineError) {
+        // Keep an un-lineable invoice from becoming payable. The row was created
+        // by this request and has no order/session yet.
+        await supabase.from('invoices').delete().eq('id', invoiceId);
+        throw lineError;
+    }
+
     const orderRef = invoiceId;
     const amountMinor = Math.round(amount * 100);
 
@@ -371,7 +407,7 @@ export async function createCheckoutSession(
     const intent = await createPaymentIntentAttempt(
         {
             invoiceId,
-            provider: 'kashier',
+            provider: providerName,
             merchantReference: orderRef,
             amountMinor,
             currency,

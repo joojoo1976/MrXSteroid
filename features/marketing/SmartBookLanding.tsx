@@ -12,7 +12,7 @@ import {
     calculateBaseAmount
 } from '../../shared/lib/logic';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
-import { env } from '../../config/env';
+import { buildCheckoutPlanUrl } from '../../shared/lib/checkoutPlan';
 import { getTierPrice } from '../../server/payments/pricing';
 
 /**
@@ -151,27 +151,15 @@ const SmartBookLanding: React.FC<SmartBookLandingProps> = ({ externalLang, exter
     }).format(finalPrice);
 
     const handlePayment = () => {
-        // Use direct redirection to avoid React reconciliation (insertBefore) crashes
-        // which often happen with embedded iframes during navigation.
-        const isEg = loc.countryCode === 'EG';
-        const amount = isEg ? getTierPrice('digital', 'EGP') : (BASE_PRICE_USD * loc.rate);
-        const currency = isEg ? 'EGP' : loc.currency;
-
-        const checkoutParams = new URLSearchParams({
-            k: env.SPACEREMIT_PUBLIC_KEY || '',
-            amount: amount.toFixed(2),
-            currency: currency,
-            way: 'card', 
-            notes: 'Mr. X-Steroid Complete Guide (Landing)',
-            reference_id: `LND-${Date.now()}`,
-            product_name: 'Mr. X-Steroid Complete Guide',
-            success_url: env.PAYMENT_SUCCESS_URL || '',
-            cancel_url: env.PAYMENT_CANCEL_URL || '',
+        // The landing page no longer builds a direct SpaceRemit URL with a
+        // client-supplied amount. It enters the same invoice-first checkout as
+        // every other storefront surface: quote → invoice + lines → session.
+        // Region is taken from the detected destination; tracking + referral
+        // parameters are carried through by the shared helper.
+        const checkoutUrl = buildCheckoutPlanUrl('digital', {
+            region: loc.countryCode === 'EG' ? 'EG' : 'GLOBAL',
         });
-
-        const checkoutUrl = `https://spaceremit.com/apipay-v2/?${checkoutParams.toString()}`;
-        
-        console.log('🚀 Redirecting to secure payment page:', checkoutUrl);
+        console.log('🚀 Redirecting to invoice-first checkout:', checkoutUrl);
         window.location.assign(checkoutUrl);
     };
 
