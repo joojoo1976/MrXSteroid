@@ -3,16 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { toast } from 'sonner';
 import { paymentService } from '../../../shared/lib/payment.service';
 import { 
     ShippingProvider, 
-    validatePromoCode, 
     calculateShippingRates,
 } from '../../../shared/lib/logic';
 import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { usePreferences } from '../../../context/PreferencesContext';
+import { buildCheckoutSchema } from '../lib/checkoutSchema';
+import { calculateCheckoutTotals } from '../lib/checkoutTotals';
+import { usePromoCode } from './usePromoCode';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -77,17 +78,6 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const regionOption: RegionOption = isEgProp ? 'EG' : 'GLOBAL';
     const [paymobMethod, setPaymobMethod] = useState<PaymobMethod>(regionOption === 'EG' ? 'kashier' : 'stripe');
 
-    // Promo Code State
-    const [promoCode, setPromoCode] = useState('');
-    const [promoStatus, setPromoStatus] = useState<{
-        valid: boolean;
-        message: string;
-        discount: number;       // fixed flat amount
-        discountPct?: number;   // percentage (0.5 or 1)
-        codeType?: 'fixed' | 'pct';
-    } | null>(null);
-    const [isPromoLoading, setIsPromoLoading] = useState(false);
-
     // Embedded Payment Flow State
     const [isCardElementReady, setIsCardElementReady] = useState(false);
     const [spaceremitCode, setSpaceremitCode] = useState<string | null>(null);
@@ -99,55 +89,12 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isStripeReady, setIsStripeReady] = useState(false);
 
     const isAr = lang === 'ar';
+    const { promoCode, setPromoCode, promoStatus, isPromoLoading, handleApplyPromo } = usePromoCode(isAr);
     const DIGITAL_VARIANTS: ProductVariant[] = ['digital', 'digital_plus'];
     const isPhysical = !DIGITAL_VARIANTS.includes(productVariant);
 
     // Validation Schema
-    const schema = z.object({
-        fullName: z.string().min(3, { message: content.checkout.validation.nameRequired }),
-        email: z.string().email({ message: content.checkout.validation.emailInvalid }),
-        country: z.string().min(1, { message: content.checkout.validation.countryRequired }),
-        phoneNumber: z.string().optional(),
-        secondaryPhoneNumber: z.string().optional(),
-        countryCode: z.string().optional(),
-        secondaryCountryCode: z.string().optional(),
-        address: z.string().optional(),
-        city: z.string().optional(),
-        zipCode: z.string().optional(),
-        shippingProvider: z.string().optional(),
-        weight: z.string().optional(),
-        height: z.string().optional(),
-        age: z.string().optional(),
-        goal: z.string().optional(),
-        createAccount: z.boolean(),
-        agreeToTerms: z.boolean().refine(val => val === true, {
-            message: content.checkout.validation.termsRequired
-        }),
-    }).superRefine((data, ctx) => {
-        if (selectedTier.requiresShipping) {
-            if (!data.address || data.address.length < 5) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.addressRequired, path: ["address"] });
-            }
-            if (!data.city) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.cityRequired, path: ["city"] });
-            }
-            // Postal code condition: REQUIRED for International (outside EG), OPTIONAL for Egypt
-            if (data.country !== 'EG' && (!data.zipCode || data.zipCode.length < 3)) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: isAr ? "الرمز البريدي مطلوب للدول الخارجية" : "Postal Code is required for international orders", path: ["zipCode"] });
-            }
-            if (!data.shippingProvider) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.shippingRequired, path: ["shippingProvider"] });
-            }
-        }
-        if (selectedTier.requiresBodyStats) {
-            if (!data.weight) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.weightRequired, path: ["weight"] });
-            }
-            if (!data.height) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: content.checkout.validation.heightRequired, path: ["height"] });
-            }
-        }
-    });
+    const schema = buildCheckoutSchema({ content, isAr, selectedTier });
 
     const form = useForm<CheckoutFormData>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,17 +167,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const baseAmount = totalAmount;
 
     const selectedShipping = shippingProviders.find(p => p.id === selectedShippingId);
-    const subTotalWithShipping = baseAmount + (selectedShipping?.price || 0);
-    // Compute discount: percentage takes priority over fixed amount
-    const discountAmount = (() => {
-        if (!promoStatus?.valid) return 0;
-        if (promoStatus.codeType === 'pct' && promoStatus.discountPct) {
-            return Math.round(subTotalWithShipping * (promoStatus.discountPct / 100) * 100) / 100;
-        }
-        return promoStatus.discount || 0;
-    })();
-    const discountPct = promoStatus?.codeType === 'pct' ? (promoStatus.discountPct ?? 0) : 0;
-    const finalTotal = Math.max(0, subTotalWithShipping - discountAmount);
+    const { discountAmount, discountPct, finalTotal } = calculateCheckoutTotals({
+        baseAmount,
+        shippingPrice: selectedShipping?.price || 0,
+        promoStatus,
+    });
 
     // Keep the parent's discountAmount in sync whenever the recomputed value
     // changes. Without this, a percentage promo applied before a shipping
@@ -261,33 +202,6 @@ export const useCheckout = (options: useCheckoutOptions) => {
     };
 
     const formattedTotal = formatAmount(finalTotal);
-
-    const handleApplyPromo = async () => {
-        if (!promoCode) return;
-        setIsPromoLoading(true);
-        try {
-            const result = await validatePromoCode(promoCode);
-            if (result.valid) {
-                const newStatus = {
-                    valid: true,
-                    message: result.message,
-                    discount: result.discount || 0,
-                    discountPct: result.discountPct,
-                    codeType: result.codeType,
-                };
-                setPromoStatus(newStatus);
-                toast.success(result.message);
-                // Parent discountAmount is synced by the discountAmount effect above.
-            } else {
-                setPromoStatus({ valid: false, message: result.message, discount: 0 });
-                toast.error(result.message);
-            }
-        } catch {
-            toast.error(isAr ? "خطأ في التحقق من الكود" : "Error validating code");
-        } finally {
-            setIsPromoLoading(false);
-        }
-    };
 
     const onSubmit = async (data: CheckoutFormData) => {
         if (submissionCount >= 5) {

@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Smartphone, Plus, Minus, Check, LucideIcon, Package, Crown, Globe, AlertTriangle } from 'lucide-react';
+import { Plus, Minus, Check, Globe, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import { ProductVariant } from '@/shared/types/types';
 import { EGP_PRICES, COACHING_ADDON_EGP, COACHING_ADDON_USD } from '../../shared/lib/logic';
 import { getTierPrice } from '../../server/payments/pricing';
+import { VARIANTS } from './productVariants';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Pricing Data — DERIVED from server/payments/pricing.ts (the canonical
@@ -18,78 +19,6 @@ const USD_PRICES: Record<string, number> = {
     bundle: getTierPrice('bundle', 'USD'),
     coaching: getTierPrice('coaching', 'USD'),
 };
-
-interface VariantDef {
-    id: ProductVariant;
-    labelAr: string;
-    labelEn: string;
-    icon: LucideIcon;
-    featuresAr: string[];
-    featuresEn: string[];
-}
-
-const VARIANTS: VariantDef[] = [
-    {
-        id: 'digital',
-        labelAr: 'البروتوكول الرقمي',
-        labelEn: 'Digital Protocol (PDF)',
-        icon: Smartphone,
-        featuresAr: [
-            '📖 الكتاب الإلكتروني بصيغتي PDF / EPUB',
-            '⚡ تسليم فوري وتلقائي',
-            '📋 القوالب الأساسية لدورة العمل (Basic Cycle Templates)',
-        ],
-        featuresEn: [
-            '📖 eBook PDF / EPUB',
-            '⚡ Instant digital delivery',
-            '📋 Basic Cycle Templates',
-        ],
-    },
-    {
-        id: 'bundle',
-        labelAr: 'الباقة التكتيكية',
-        labelEn: 'Tactical Bundle',
-        icon: Package,
-        featuresAr: [
-            '📚 النسخة الورقية الفاخرة (Glossy Paperback)',
-            '🚚 شحن وتوصيل سريع داخل مصر',
-            '🎁 هدية مجانية: النسخة الرقمية (تسليم فوري)',
-            '🎧 مكافأة إضافية: النسخة الصوتية الكاملة (Audiobook)',
-            '💪 مكافأة إضافية: دليل التمارين المنزلية PDF',
-        ],
-        featuresEn: [
-            '📚 Glossy Paperback copy',
-            '🚚 Fast shipping (Egypt) / Int\'l shipping available',
-            '🎁 Free digital edition included',
-            '🎧 Audiobook bonus',
-            '💪 Home Workout Guide PDF',
-        ],
-    },
-    {
-        id: 'coaching',
-        labelAr: 'المحترف الذكي',
-        labelEn: 'Smart Professional (VIP)',
-        icon: Crown,
-        featuresAr: [
-            '📗 النسخة الورقية ذات الغلاف المقوى الفاخر (Hardcover Premium)',
-            '🚀 شحن ذو أولوية فائقة داخل مصر',
-            '🎁 هدية مجانية: النسخة الرقمية (تسليم فوري)',
-            '👑 انضمام حصري لمجتمع كبار الأعضاء (VIP Access)',
-            '🛡️ بروتوكول الخروج الآمن المتكامل (Safe Exit Protocol)',
-            '🎧 مكافأة إضافية: النسخة الصوتية الكاملة',
-            '💪 مكافأة إضافية: دليل التمارين المنزلية PDF',
-        ],
-        featuresEn: [
-            '📗 Hardcover Premium edition',
-            '🚀 Priority shipping inside Egypt',
-            '🎁 Free digital edition included',
-            '👑 Exclusive VIP Community Access',
-            '🛡️ Safe Exit Protocol (Full PCT)',
-            '🎧 Audiobook bonus',
-            '💪 Home Workout Guide PDF',
-        ],
-    },
-];
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Component Props

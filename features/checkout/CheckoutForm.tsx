@@ -1,49 +1,27 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Lock, ShieldCheck, CreditCard, User, Mail, Loader2, AlertCircle,
-    MapPin, Target, Truck, CheckCircle2, Smartphone, Store, Globe, Phone, Zap,
-QrCode, Copy, Check, ExternalLink, Upload
-} from 'lucide-react';
-import { Button } from '../../shared/ui/button';
-import { Input } from '../../shared/ui/input';
-import { Label } from '../../shared/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../shared/ui/card';
-import { Checkbox } from '../../shared/ui/checkbox';
-import { ContentStrings, Language, PricingTier, ProductVariant } from '@/shared/types/types';
+import { motion } from 'framer-motion';
+import { CheckCircle2, CreditCard, Lock } from 'lucide-react';
+import { Card, CardContent } from '../../shared/ui/card';
 import { cn } from '../../shared/lib/utils';
-import { EGYPT_FIXED_SHIPPING_EGP } from '@/shared/lib/locationData';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCheckout } from '../../features/checkout/hooks/useCheckout';
-import { WORLD_COUNTRIES, EGYPT_GOVERNORATES } from '../../shared/lib/locationData';
-import { PhoneInput } from '../../shared/ui/PhoneInput';
+import { useInstapayReceipt } from '../../features/checkout/hooks/useInstapayReceipt';
 import { env } from '../../config/env';
 import { StripePaymentElement, type StripePaymentElementHandle } from './StripePaymentElement';
+import { CheckoutRegionCard } from './components/CheckoutRegionCard';
+import { CheckoutBillingCard } from './components/CheckoutBillingCard';
+import { CheckoutPromoCard } from './components/CheckoutPromoCard';
+import { CheckoutPaymobHiddenMethods } from './components/CheckoutPaymobHiddenMethods';
+import { CheckoutInstapayMethod } from './components/CheckoutInstapayMethod';
+import { CheckoutHiddenPaypalMethod } from './components/CheckoutHiddenPaypalMethod';
+import { CheckoutGlobalMethods } from './components/CheckoutGlobalMethods';
+import { CheckoutPaymentFooter } from './components/CheckoutPaymentFooter';
+import type { CheckoutFormProps } from './checkoutFormTypes';
 
-export interface NewPricingTier extends PricingTier {
-    id: ProductVariant;
-    requiresShipping: boolean;
-    requiresBodyStats: boolean;
-    selectedLanguage: 'en' | 'ar';
-}
-
-export interface CheckoutFormProps {
-    content: ContentStrings;
-    lang: Language;
-    selectedTier: NewPricingTier;
-    onSuccess: () => void;
-    productVariant: ProductVariant;
-    quantity: number;
-    isEg: boolean;
-    onLocationChange: (isEgypt: boolean) => void;
-    onShippingChange?: (cost: number) => void;
-    onDiscountChange?: (discountAmount: number) => void;
-    totalAmount: number;
-    openLegal?: (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => void;
-}
+export type { NewPricingTier, CheckoutFormProps } from './checkoutFormTypes';
 
 export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     content,
@@ -64,63 +42,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const isImperial = unitSystem === 'imperial';
 
     const { user, profileData, isAuthenticated } = useAuth();
+    const instapayReceipt = useInstapayReceipt(isAr);
 
-    const [instapayRef, setInstapayRef] = React.useState('');
-    const [instapayFile, setInstapayFile] = React.useState<File | null>(null);
-    const [instapayFileError, setInstapayFileError] = React.useState('');
-
-    const handleInstapayFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInstapayFileError('');
-        const file = e.target.files?.[0] || null;
-        if (!file) {
-            setInstapayFile(null);
-            return;
-        }
-        const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
-        if (!ALLOWED.includes(file.type)) {
-            setInstapayFileError(isAr ? 'صيغة غير مدعومة. المسموح: PNG, JPG, WEBP, PDF' : 'Unsupported file type. Allowed: PNG, JPG, WEBP, PDF');
-            setInstapayFile(null);
-            e.target.value = '';
-            return;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-            setInstapayFileError(isAr ? 'حجم الملف أكبر من 10 ميجابايت' : 'File is larger than 10MB');
-            setInstapayFile(null);
-            e.target.value = '';
-            return;
-        }
-        setInstapayFile(file);
-    };
-
-    const {
-        form: { register, watch, setValue, formState: { errors } },
-        isProcessing,
-        setIsProcessing,
-        isRedirecting,
-        paymentError,
-        setPaymentError,
-        shippingProviders,
-        isLoadingShipping,
-        promoCode,
-        setPromoCode,
-        promoStatus,
-        isPromoLoading,
-        discountAmount,
-        discountPct,
-        formattedTotal,
-        selectedShipping,
-        handleApplyPromo,
-        onSubmit,
-        regionOption,
-        setRegionOption,
-        paymobMethod,
-        setPaymobMethod,
-        isEg,
-        stripeClientSecret,
-        stripeInvoiceId,
-        isStripeReady,
-        setIsStripeReady,
-} = useCheckout({
+    const checkout = useCheckout({
         content,
         lang,
         selectedTier,
@@ -133,26 +57,18 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({
         userId: user?.id,
         userEmail: user?.email,
         userName: profileData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name,
-        instapayRef,
-        instapayFile,
+        instapayRef: instapayReceipt.ref,
+        instapayFile: instapayReceipt.file,
         onInstaPaySuccess: (orderRef) => {
             window.location.assign(`/payment-pending?gateway=instapay&txn=${encodeURIComponent(orderRef)}`);
         },
     });
 
-const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
+    const { form, paymobMethod, setPaymobMethod, selectedShipping, stripeClientSecret, stripeInvoiceId, isStripeReady, setIsStripeReady, setPaymentError } = checkout;
+    const { watch, setValue } = form;
+    const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
     const stripePublishableKey = env.STRIPE_PUBLISHABLE_KEY || '';
     const isStripeSelected = paymobMethod === 'stripe';
-    const [copiedInstapay, setCopiedInstapay] = React.useState(false);
-
-    const handleCopyInstapay = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText('jan.ghattas@instapay');
-            setCopiedInstapay(true);
-            setTimeout(() => setCopiedInstapay(false), 2500);
-        }
-    };
 
     // Auto-fill authenticated user data
     useEffect(() => {
@@ -182,487 +98,31 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
         }
     }, [selectedShipping, onShippingChange]);
 
-    const renderAgreeText = (text: string) => {
-        if (!text) return null;
-        const parts = text.split(/(\[.*?\])/);
-        return parts.map((part, i) => {
-            if (part && part.startsWith('[') && part.endsWith(']')) {
-                const label = part.slice(1, -1);
-                return (
-                    <button
-                        key={i}
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const l = label.toLowerCase();
-                            if (l.includes('terms') || l.includes('شروط')) openLegal?.('terms');
-                            else if (l.includes('privacy') || l.includes('خصوصية')) openLegal?.('privacy');
-                            else if (l.includes('refund') || l.includes('استرجاع')) openLegal?.('refund');
-                            else if (l.includes('disclaimer') || l.includes('إخلاء')) openLegal?.('disclaimer');
-                        }}
-                        className="text-gold-500 hover:text-gold-400 font-bold underline px-1 transition-colors inline-block"
-                    >
-                        {label}
-                    </button>
-                );
-            }
-            return <span key={i}>{part}</span>;
-        });
-    };
-
     return (
-        <form onSubmit={onSubmit} className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
-            
+        <form onSubmit={checkout.onSubmit} className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
+
             {/* ════════════════════════════════════════════════════════════
                 1. REGION / LOCATION TOGGLE (داخل مصر 🇪🇬 / خارج مصر 🌍)
             ════════════════════════════════════════════════════════════ */}
-            <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl">
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-gold-500 text-lg">
-                        <Globe className="w-5 h-5 text-gold-500" />
-                        {isAr ? "01. حدد موقعك الإقليمي" : "01. Select Your Region"}
-                    </CardTitle>
-                    <CardDescription className="text-zinc-400 text-xs">
-                        {isAr
-                            ? "تحديد النطاق الجغرافي يضمن عرض وسائل الدفع المتاحة لدولتك مباشرة"
-                            : "Select your region to view tailored local or international payment methods"}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-2">
-                    <div className="grid grid-cols-2 gap-3">
-                        <motion.button
-                            type="button"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setRegionOption('EG')}
-                            className={cn(
-                                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden",
-                                regionOption === 'EG'
-                                    ? "bg-gold-500/10 border-gold-500 text-white shadow-[0_0_25px_rgba(234,179,8,0.15)] ring-2 ring-gold-500/20"
-                                    : "bg-black/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                            )}
-                        >
-                            {regionOption === 'EG' && (
-                                <CheckCircle2 className="w-4 h-4 text-gold-500 absolute top-2.5 end-2.5" />
-                            )}
-                            <span className="text-3xl mb-1">🇪🇬</span>
-                            <span className="font-black text-sm">{isAr ? "داخل مصر" : "Inside Egypt"}</span>
-                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
-                                EGP (بالجنيه المصري)
-                            </span>
-                        </motion.button>
-
-                        <motion.button
-                            type="button"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setRegionOption('GLOBAL')}
-                            className={cn(
-                                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative overflow-hidden",
-                                regionOption === 'GLOBAL'
-                                    ? "bg-gold-500/10 border-gold-500 text-white shadow-[0_0_25px_rgba(234,179,8,0.15)] ring-2 ring-gold-500/20"
-                                    : "bg-black/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                            )}
-                        >
-                            {regionOption === 'GLOBAL' && (
-                                <CheckCircle2 className="w-4 h-4 text-gold-500 absolute top-2.5 end-2.5" />
-                            )}
-                            <span className="text-3xl mb-1">🌍</span>
-                            <span className="font-black text-sm">{isAr ? "خارج مصر" : "Outside Egypt"}</span>
-                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
-                                USD ($ الدولي)
-                            </span>
-                        </motion.button>
-                    </div>
-                </CardContent>
-            </Card>
+            <CheckoutRegionCard isAr={isAr} checkout={checkout} />
 
             {/* ════════════════════════════════════════════════════════════
                 2. BILLING & CUSTOMER DETAILS
             ════════════════════════════════════════════════════════════ */}
-            <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gold-500">
-                        <User className="w-5 h-5 text-gold-500" />
-                        02. {content.billingDetails || (isAr ? "تفاصيل الفاتورة" : "Billing Details")}
-                    </CardTitle>
-                    <CardDescription className="text-zinc-400">
-                        {isAr ? "أدخل تفاصيلك لإتمام طلبك بآمان" : "Enter your contact info to complete the order"}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {/* Full Name */}
-                    <div className="space-y-2">
-                        <Label className="text-zinc-300">{content.fullName || (isAr ? "الاسم الكامل" : "Full Name")}</Label>
-                        <div className="relative">
-                            <User className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
-                            <Input
-                                {...register("fullName")}
-                                className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.fullName && "border-red-500")}
-                                placeholder={content.checkout.placeholders.fullName}
-                            />
-                        </div>
-                        {errors.fullName && <p className="text-xs text-red-500 font-bold">{errors.fullName.message}</p>}
-                    </div>
-
-                    {/* Email Address */}
-                    <div className="space-y-2">
-                        <Label className="text-zinc-300">{content.emailAddress || (isAr ? "البريد الإلكتروني" : "Email Address")}</Label>
-                        <div className="relative">
-                            <Mail className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
-                            <Input
-                                {...register("email")}
-                                type="email"
-                                className={cn("ps-10 bg-black/40 border-zinc-800 focus:border-gold-500 transition-all text-sm", errors.email && "border-red-500")}
-                                placeholder={content.checkout.placeholders.email}
-                            />
-                        </div>
-                        {errors.email && <p className="text-xs text-red-500 font-bold">{errors.email.message}</p>}
-                    </div>
-
-                    {/* ── Dual Phone Contact Inputs ────────────────────────────── */}
-                    <div className="grid md:grid-cols-2 gap-4 pt-2 border-t border-zinc-800/60">
-                        {/* Primary Phone */}
-                        <div className="space-y-2">
-                            <Label className="text-zinc-300 flex items-center justify-between text-xs font-bold">
-                                <span>{isAr ? "رقم الموبايل الأساسي للتواصل" : "Primary Phone Number"}</span>
-                                <span className="text-[10px] text-gold-500 font-black">{isAr ? "(إجباري)" : "(Required)"}</span>
-                            </Label>
-                            <PhoneInput
-                                value={watch('phoneNumber')}
-                                onChange={(v) => setValue('phoneNumber', v, { shouldValidate: true })}
-                                countryCode={watch('countryCode')}
-                                onCountryChange={(code) => setValue('countryCode', code, { shouldValidate: true })}
-                                locale={isAr ? 'ar' : 'en'}
-                                error={!!errors.phoneNumber}
-                                placeholder="01012345678"
-                            />
-                            {errors.phoneNumber && <p className="text-xs text-red-500 font-bold">{errors.phoneNumber.message}</p>}
-                        </div>
-
-                        {/* Secondary / Alternative Phone */}
-                        <div className="space-y-2">
-                            <Label className="text-zinc-300 flex items-center justify-between text-xs font-bold">
-                                <span>{isAr ? "رقم موبايل إضافي (ضروري)" : "Secondary Phone (Required)"}</span>
-                                <span className="text-[10px] text-amber-400 font-black">{isAr ? "(للضرورة)" : "(Backup)"}</span>
-                            </Label>
-                            <PhoneInput
-                                value={watch('secondaryPhoneNumber')}
-                                onChange={(v) => setValue('secondaryPhoneNumber', v, { shouldValidate: true })}
-                                countryCode={watch('secondaryCountryCode')}
-                                onCountryChange={(code) => setValue('secondaryCountryCode', code, { shouldValidate: true })}
-                                locale={isAr ? 'ar' : 'en'}
-                                error={!!errors.secondaryPhoneNumber}
-                                placeholder="01187654321"
-                            />
-                            {errors.secondaryPhoneNumber && <p className="text-xs text-red-500 font-bold">{errors.secondaryPhoneNumber.message}</p>}
-                        </div>
-                    </div>
-
-                    {/* Shipping Details if physical product */}
-                    <AnimatePresence>
-                        {selectedTier.requiresShipping && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="space-y-6 pt-6 border-t border-zinc-800"
-                            >
-                                <h4 className="text-sm font-black uppercase tracking-widest text-gold-500 flex items-center gap-2">
-                                    <Truck className="w-4 h-4" />
-                                    {isAr ? 'تفاصيل الشحن والتوصيل' : 'Shipping & Delivery Details'}
-                                </h4>
-
-                                {/* 1. COUNTRY SELECTOR (First Component) */}
-                                <div className="space-y-2">
-                                    <Label className="text-zinc-300 flex items-center justify-between">
-                                        <span>{isAr ? "الدولة (موقع التسليم)" : "Country (Delivery Location)"}</span>
-                                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-black">
-                                            {isEg ? "🇪🇬 مصر" : "🌍 شحن دولي"}
-                                        </span>
-                                    </Label>
-                                    <div className="relative">
-                                        <Globe className="absolute start-3 top-3 w-4 h-4 text-gold-500 z-10" />
-                                        <select
-                                            {...register("country")}
-                                            className="w-full ps-10 h-11 rounded-xl bg-black/60 border border-zinc-800 text-white focus:border-gold-500 text-sm appearance-none font-bold cursor-pointer"
-                                        >
-                                            {WORLD_COUNTRIES.map(country => (
-                                                <option key={country.code} value={country.code} className="bg-zinc-900 text-white">
-                                                    {isAr ? country.nameAr : country.nameEn}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {errors.country && <p className="text-xs text-red-500 font-bold">{errors.country.message}</p>}
-                                </div>
-
-                                {/* Full Street Address */}
-                                <div className="space-y-2">
-                                    <Label className="text-zinc-300">{isAr ? "العنوان بالتفصيل (اسم الشارع، رقم المبنى، الشقة)" : "Full Street Address"}</Label>
-                                    <Input
-                                        {...register("address")}
-                                        className={cn("bg-black/40 border-zinc-800 focus:border-gold-500 text-sm", errors.address && "border-red-500")}
-                                        placeholder={content.checkout.placeholders.address}
-                                    />
-                                    {errors.address && <p className="text-xs text-red-500 font-bold">{errors.address.message}</p>}
-                                </div>
-
-                                {/* City / Governorate & Postal Code */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* City / Governorate Selection */}
-                                    <div className="space-y-2">
-                                        <Label className="text-zinc-300 flex items-baseline gap-1.5">
-                                            <span>{isAr ? "المدينة" : "City"}</span>
-                                            {isEg && (
-                                                <span className="text-xs text-zinc-500 font-normal">
-                                                    (المحافظة)
-                                                </span>
-                                            )}
-                                        </Label>
-
-                                        {isEg ? (
-                                            /* Egyptian Governorates Dropdown */
-                                            <div className="relative">
-                                                <MapPin className="absolute start-3 top-3 w-4 h-4 text-gold-500 z-10" />
-                                                <select
-                                                    {...register("city")}
-                                                    className={cn(
-                                                        "w-full ps-10 h-10 rounded-md bg-black/60 border border-zinc-800 text-white focus:border-gold-500 text-sm appearance-none font-bold cursor-pointer",
-                                                        errors.city && "border-red-500"
-                                                    )}
-                                                >
-                                                    <option value="" disabled className="bg-zinc-900 text-zinc-500">
-                                                        {isAr ? "-- اختر المحافظة --" : "-- Select Governorate --"}
-                                                    </option>
-                                                    {EGYPT_GOVERNORATES.map(gov => (
-                                                        <option key={gov.id} value={gov.nameAr} className="bg-zinc-900 text-white">
-                                                            {isAr ? gov.nameAr : gov.nameEn}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        ) : (
-                                            /* International City Input */
-                                            <Input
-                                                {...register("city")}
-                                                className={cn("bg-black/40 border-zinc-800 focus:border-gold-500", errors.city && "border-red-500")}
-                                                placeholder={isAr ? "أدخل اسم المدينة أو الولاية" : "City / State / Region"}
-                                            />
-                                        )}
-                                        {errors.city && <p className="text-xs text-red-500 font-bold">{errors.city.message}</p>}
-                                    </div>
-
-                                    {/* Postal Code (Conditional: Optional for EG, Required for Int'l) */}
-                                    <div className="space-y-2">
-                                        <Label className="text-zinc-300 flex items-center justify-between">
-                                            <span>{isAr ? "الرمز البريدي" : "ZIP / Postal Code"}</span>
-                                            {isEg ? (
-                                                <span className="text-[10px] text-zinc-500 font-bold">
-                                                    (اختياري)
-                                                </span>
-                                            ) : (
-                                                <span className="text-[10px] text-gold-500 font-black">
-                                                    (إجباري)
-                                                </span>
-                                            )}
-                                        </Label>
-                                        <Input
-                                            {...register("zipCode")}
-                                            className={cn("bg-black/40 border-zinc-800 focus:border-gold-500", errors.zipCode && "border-red-500")}
-                                            placeholder={isEg ? (isAr ? "غير إجباري داخل مصر" : "Optional in Egypt") : "10001"}
-                                        />
-                                        {errors.zipCode && <p className="text-xs text-red-500 font-bold">{errors.zipCode.message}</p>}
-                                    </div>
-                                </div>
-
-                                {/* Dynamic Shipping Options */}
-                                <div className="space-y-3">
-                                    <Label className="text-zinc-300 flex items-center justify-between">
-                                        <span>{isAr ? 'رسوم وشركة الشحن' : 'Shipping Provider & Rates'}</span>
-                                        <span className="text-[10px] text-gold-500 font-black uppercase">
-                                            {isEg ? "توصيل ثابت داخل مصر" : "International Shipping Calculator"}
-                                        </span>
-                                    </Label>
-
-                                    {isLoadingShipping ? (
-                                        <div className="h-20 flex items-center justify-center bg-white/5 rounded-xl border border-zinc-800 animate-pulse">
-                                            <Loader2 className="w-5 h-5 text-gold-500 animate-spin" />
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {shippingProviders.map((provider) => (
-                                                <label
-                                                    key={provider.id}
-                                                    className={cn(
-                                                        "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all",
-                                                        watch('shippingProvider') === provider.id
-                                                            ? "border-gold-500 bg-gold-500/10"
-                                                            : "border-zinc-800 bg-black/20 hover:border-zinc-700"
-                                                    )}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <input
-                                                            type="radio"
-                                                            value={provider.id}
-                                                            {...register('shippingProvider')}
-                                                            className="w-4 h-4 accent-gold-500"
-                                                        />
-                                                        <div>
-                                                            <p className="text-xs font-black text-white">{provider.name}</p>
-                                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                                                                {provider.estimatedDays} {isAr ? 'أيام للتوصيل' : 'days delivery'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-sm font-black text-gold-500">
-                                                        +{isEg ? `${EGYPT_FIXED_SHIPPING_EGP} ج.م.` : formatPrice(provider.price)}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {errors.shippingProvider && <p className="text-xs text-red-500 font-bold">{errors.shippingProvider.message}</p>}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Body Stats if required */}
-                    {selectedTier.requiresBodyStats && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="space-y-4 pt-4 border-t border-zinc-800"
-                        >
-                            <h4 className="text-sm font-black uppercase tracking-widest text-gold-500">
-                                {isAr ? 'بيانات التجهيز والمتابعة' : 'Coaching Stats Data'}
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {isAr ? `الوزن (${isImperial ? 'رطل' : 'كجم'})` : `Weight (${isImperial ? 'lbs' : 'kg'})`}
-                                    </label>
-                                    <input
-                                        {...register('weight')}
-                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
-                                        placeholder={isImperial ? "180" : "85"}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {isAr ? `الطول (${isImperial ? 'بوصة' : 'سم'})` : `Height (${isImperial ? 'in' : 'cm'})`}
-                                    </label>
-                                    <input
-                                        {...register('height')}
-                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
-                                        placeholder={isImperial ? "70" : "180"}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {isAr ? 'العمر' : 'Age'}
-                                    </label>
-                                    <input
-                                        {...register('age')}
-                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold mb-1.5 text-zinc-500">
-                                        {isAr ? 'الهدف الأساسي' : 'Primary Goal'}
-                                    </label>
-                                    <select
-                                        {...register('goal')}
-                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg py-2.5 px-4 text-sm"
-                                    >
-                                        <option value="bulking">Bulking / ضخامة</option>
-                                        <option value="cutting">Cutting / تنشيف</option>
-                                        <option value="strength">Strength / قوة</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    <div className="flex items-center space-x-2 mt-4 rtl:space-x-reverse">
-                        <Checkbox id="createAccount" checked={watch("createAccount")} onCheckedChange={(checked) => setValue('createAccount', checked as boolean)} />
-                        <label htmlFor="createAccount" className="text-sm font-medium text-zinc-400 cursor-pointer">
-                            {isAr ? "إنشاء حساب تلقائي لمتابعة الطلبات" : "Create an account automatically to track orders"}
-                        </label>
-                    </div>
-                </CardContent>
-            </Card>
+            <CheckoutBillingCard
+                content={content}
+                isAr={isAr}
+                isImperial={isImperial}
+                isEg={isEgProp}
+                selectedTier={selectedTier}
+                formatPrice={formatPrice}
+                checkout={checkout}
+            />
 
             {/* ════════════════════════════════════════════════════════════
                 PROMO CODE CARD
             ════════════════════════════════════════════════════════════ */}
-            <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl border-2">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gold-500">
-                        <Target className="w-5 h-5" />
-                        {isAr ? "كود الخصم (Steroid IQ)" : "Steroid IQ Promo Code"}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex gap-2">
-                        <Input
-                            value={promoCode}
-                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                            placeholder={isAr ? "أدخل الكود هنا" : "Enter Code (e.g. IQ1P-XXXX)"}
-                            className="bg-black/40 border-zinc-700 font-mono tracking-widest uppercase"
-                            disabled={promoStatus?.valid}
-                        />
-                        <Button
-                            type="button"
-                            onClick={handleApplyPromo}
-                            disabled={isPromoLoading || promoStatus?.valid || !promoCode}
-                            className={cn(
-                                "font-bold w-32",
-                                promoStatus?.valid ? "bg-green-500 hover:bg-green-600 text-white" : "bg-zinc-800 hover:bg-zinc-700 text-white"
-                            )}
-                        >
-                            {isPromoLoading
-                                ? <Loader2 className="w-4 h-4 animate-spin" />
-                                : promoStatus?.valid
-                                    ? <CheckCircle2 className="w-5 h-5" />
-                                    : (isAr ? "تطبيق" : "Apply")}
-                        </Button>
-                    </div>
-
-                    {/* Promo Status Feedback */}
-                    {promoStatus && (
-                        <div className={cn(
-                            "mt-3 p-3 rounded-xl border text-sm font-bold flex items-start gap-2",
-                            promoStatus.valid
-                                ? "bg-green-500/10 border-green-500/30 text-green-400"
-                                : "bg-red-500/10 border-red-500/30 text-red-400"
-                        )}>
-                            {promoStatus.valid
-                                ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                                : <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />}
-                            <div>
-                                <p>{promoStatus.message}</p>
-                                {promoStatus.valid && discountAmount > 0 && (
-                                    <p className="text-gold-400 font-black mt-1">
-                                        {isAr
-                                            ? `💰 تم تطبيق خصم ${discountPct > 0 ? `${discountPct}%` : ''} — وفّرت ${isEg
-                                                ? new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(discountAmount)
-                                                : `$${discountAmount.toFixed(2)}`}`
-                                            : `💰 ${discountPct > 0 ? `${discountPct}% off` : ''} applied — You saved ${isEg
-                                                ? new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(discountAmount)
-                                                : `$${discountAmount.toFixed(2)}`}`
-                                        }
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            <CheckoutPromoCard isAr={isAr} isEg={isEgProp} checkout={checkout} />
 
             {/* ════════════════════════════════════════════════════════════
                 3. CONDITIONAL PAYMOB PAYMENT GATEWAYS (بوابة Paymob)
@@ -675,9 +135,9 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
 
                 <Card id="checkout-payment-methods" className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl border-2 overflow-hidden shadow-2xl scroll-mt-32">
                     <CardContent className="p-6 space-y-5">
-                        
+
                         {/* LOCAL EGYPT PAYMENT METHODS (داخل مصر 🇪🇬) */}
-                        {isEg ? (
+                        {isEgProp ? (
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs font-black uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
@@ -720,274 +180,17 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
 
                                 {/* HIDING PAYMOB METHODS TEMPORARILY */}
                                 {false && (
-                                    <>
-                                        {/* Option 2: Paymob Card (5573815) */}
-                                <motion.div
-                                    id="checkout-method-card"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('card')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
-                                        paymobMethod === 'card'
-                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'card' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                            <CreditCard className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-sm">
-                                                {isAr ? "بطاقة بنكية / أونلاين (Paymob Card)" : "Online Credit / Debit Card (Paymob)"}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "فيزا / ماستركارد بالجنيه المصري عبر Paymob" : "Visa & Mastercard online in EGP via Paymob"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
-                                            Paymob
-                                        </span>
-                                        {paymobMethod === 'card' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
-                                    </div>
-                                </motion.div>
-
-                                {/* Option 2: Mobile Wallet (5792309) */}
-                                <motion.div
-                                    id="checkout-method-wallet"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('wallet')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col gap-3",
-                                        paymobMethod === 'wallet'
-                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-3.5">
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'wallet' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                                <Smartphone className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="font-black text-white text-sm">
-                                                    {isAr ? "محفظة إلكترونية (Mobile Wallets)" : "Mobile Wallets (Vodafone Cash / Orange / Etisalat)"}
-                                                </p>
-                                                <p className="text-xs text-zinc-400 font-medium">
-                                                    {isAr ? "فودافون كاش، اتصالات، أورنج، وي كاش (ID: 5792309)" : "Vodafone Cash, Etisalat Cash, Orange Money"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
-                                                Paymob
-                                            </span>
-                                            {paymobMethod === 'wallet' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
-                                        </div>
-                                    </div>
-
-                                    {/* Required Wallet Phone Number Input */}
-                                    {paymobMethod === 'wallet' && (
-                                        <div className="pt-2 border-t border-gold-500/20 space-y-2">
-                                            <Label className="text-xs text-gold-400 font-bold mb-1 block">
-                                                {isAr ? '⚡ رقم المحفظة الإلكترونية (مطلوب)' : '⚡ Wallet Phone Number (Required)'}
-                                            </Label>
-                                            <div className="relative">
-                                                <Phone className="absolute start-3 top-3 w-4 h-4 text-zinc-500" />
-                                                <Input
-                                                    id="checkout-wallet-phone"
-                                                    value={watch("phoneNumber") || ""}
-                                                    onChange={(e) => setValue("phoneNumber", e.target.value, { shouldValidate: true })}
-                                                    className="ps-10 bg-black/60 border-zinc-700 text-sm focus:border-gold-500"
-                                                    placeholder={isAr ? '01010101010' : '01010101010'}
-                                                    maxLength={12}
-                                                    dir="ltr"
-                                                />
-                                            </div>
-                                            <p className="text-[10px] text-zinc-600 font-mono">
-                                                {isAr
-                                                    ? 'اختبار: 01010101010 | MPin: 123456 | OTP: 123456'
-                                                    : 'Test: 01010101010 · MPin: 123456 · OTP: 123456'}
-                                            </p>
-                                        </div>
-                                    )}
-                                </motion.div>
-
-                                {/* Option 3: Accept Kiosk / Cash (5792311) */}
-                                <motion.div
-                                    id="checkout-method-kiosk"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('kiosk')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
-                                        paymobMethod === 'kiosk'
-                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'kiosk' ? "bg-gold-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                            <Store className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-sm">
-                                                {isAr ? "أمان / مصاري / كاش (Accept Kiosk)" : "Accept Kiosk Cash (Aman / Masary)"}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "دفع نقدي بمنافذ أمان ومصاري بسلسلة كود مرجعي (ID: 5792311)" : "Pay cash via Aman or Masary kiosk codes"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
-                                            Paymob
-                                        </span>
-                                        {paymobMethod === 'kiosk' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
-                                    </div>
-                                </motion.div>
-                                    </>
+                                    <CheckoutPaymobHiddenMethods
+                                        isAr={isAr}
+                                        checkout={checkout}
+                                        cardId="checkout-method-card"
+                                        walletId="checkout-method-wallet"
+                                        kioskId="checkout-method-kiosk"
+                                    />
                                 )}
 
                                 {/* Option 4: InstaPay Instant Bank Transfer (إنستاباي) */}
-                                <motion.div
-                                    id="checkout-method-instapay"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('instapay')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col gap-3",
-                                        paymobMethod === 'instapay'
-                                            ? "border-emerald-500 bg-emerald-950/20 shadow-[0_0_25px_rgba(16,185,129,0.2)] ring-1 ring-emerald-500/40"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-3.5">
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'instapay' ? "bg-emerald-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                                <QrCode className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-black text-white text-sm">
-                                                        {isAr ? "تحويل إنستاباي الفوري (InstaPay IPN)" : "InstaPay Instant Transfer"}
-                                                    </p>
-                                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                                        {isAr ? "فوري ومباشر ⚡" : "Direct & Fast"}
-                                                    </span>
-                                                </div>
-                                                <p className="text-xs text-zinc-400 font-medium mt-0.5">
-                                                    {isAr ? "تحويل فوري عبر تطبيق إنستاباي باستخدام العنوان أو مسح الـ QR" : "Instant transfer via InstaPay address or QR scan"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                                                InstaPay
-                                            </span>
-                                            {paymobMethod === 'instapay' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-                                        </div>
-                                    </div>
-
-                                    {/* Expanded InstaPay Details & QR Code */}
-                                    {paymobMethod === 'instapay' && (
-                                        <div className="pt-3 border-t border-emerald-500/20 space-y-4">
-                                            <div className="bg-zinc-950/90 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
-                                                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-900/80 p-3 rounded-xl border border-zinc-800">
-                                                    <div>
-                                                        <span className="text-[10px] font-black uppercase text-zinc-400 block">
-                                                            {isAr ? "عنوان الدفع اللحظي (IPA Handle):" : "InstaPay Address (IPA):"}
-                                                        </span>
-                                                        <span className="text-sm font-black text-emerald-400 font-mono tracking-wide select-all">
-                                                            jan.ghattas@instapay
-                                                        </span>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleCopyInstapay}
-                                                        className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                                                    >
-                                                        {copiedInstapay ? (
-                                                            <>
-                                                                <Check className="w-4 h-4 text-emerald-400" />
-                                                                <span>{isAr ? "تم النسخ!" : "Copied!"}</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Copy className="w-4 h-4" />
-                                                                <span>{isAr ? "نسخ المعرف" : "Copy Handle"}</span>
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-
-                                                {/* QR Code Container */}
-                                                <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-inner text-center">
-                                                    <img
-                                                        src="/images/instapay-qr.jpg"
-                                                        alt="InstaPay QR Code"
-                                                        className="w-48 h-48 object-contain rounded-lg"
-                                                    />
-                                                    <span className="text-xs font-black text-zinc-900 mt-2 font-mono">
-                                                        jan.ghattas@instapay
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-zinc-600 mt-0.5">
-                                                        {isAr ? "امسح الرمز من تطبيق InstaPay للتحويل السريع" : "Scan from your InstaPay mobile app"}
-                                                    </span>
-                                                </div>
-
-                                                {/* Instructions */}
-                                                <div className="text-[11px] text-zinc-300 space-y-1.5 bg-zinc-900/60 p-3 rounded-xl border border-zinc-800">
-                                                    <p className="font-bold text-emerald-400 flex items-center gap-1">
-                                                        <span>📌</span> {isAr ? "خطوات التحويل والتفعيل:" : "Quick Steps:"}
-                                                    </p>
-                                                    <p>{isAr ? "1. افتح تطبيق إنستاباي وحوّل المبلغ المطلوب إلى jan.ghattas@instapay" : "1. Open InstaPay app and send amount to jan.ghattas@instapay"}</p>
-                                                    <p>{isAr ? "2. اكتب اسم صاحب الحساب أو رقم المرجع في الحقل أدناه (اختياري)" : "2. Enter your sender account name or reference below (optional)"}</p>
-                                                    <p>{isAr ? "3. اضغط تأكيد الطلب لتسجيل الفاتورة وتفعيل حسابك" : "3. Click Submit to record your invoice & activate your access"}</p>
-                                                </div>
-                                            </div>
-
-{/* Optional Reference Input */}
-                                            <div className="space-y-1.5">
-                                                <Label className="text-xs text-emerald-400 font-bold block">
-                                                    {isAr ? "اسم صاحب الحساب المحول منه أو رقم العملية (اختياري للتأكيد)" : "Sender Account Name / Transfer Ref (Optional)"}
-                                                </Label>
-                                                <Input
-                                                    value={instapayRef}
-                                                    onChange={(e) => setInstapayRef(e.target.value)}
-                                                    placeholder={isAr ? "مثال: تحويل باسم أحمد محمود / Ref: 98124" : "e.g. Sent by John Doe / Ref: 98124"}
-                                                    className="bg-black/60 border-zinc-700 text-xs focus:border-emerald-500"
-                                                />
-                                            </div>
-
-                                            {/* Required Receipt Upload */}
-                                            <div className="space-y-1.5">
-                                                <Label className="text-xs text-emerald-400 font-bold block">
-                                                    {isAr ? "🔍 رفع إيصال التحويل (مطلوب للتأكيد)" : "🔍 Upload Transfer Receipt (Required)"}
-                                                </Label>
-                                                <label className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/60 border-2 border-dashed border-zinc-700 hover:border-emerald-500/50 cursor-pointer transition-all text-center">
-                                                    <Upload className="w-5 h-5 text-emerald-400" />
-                                                    <span className="text-[11px] font-bold text-zinc-300">
-                                                        {instapayFile
-                                                            ? instapayFile.name
-                                                            : isAr
-                                                                ? "اضغط لاختيار صورة أو PDF للإيصال — PNG, JPG, WEBP, PDF (حتى 10MB)"
-                                                                : "Tap to select receipt image or PDF — PNG, JPG, WEBP, PDF (up to 10MB)"}
-                                                    </span>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/png,image/jpeg,image/webp,application/pdf"
-                                                        onChange={handleInstapayFileChange}
-                                                        className="hidden"
-                                                    />
-                                                </label>
-                                                {instapayFileError && (
-                                                    <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">{instapayFileError}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </motion.div>
+                                <CheckoutInstapayMethod isAr={isAr} checkout={checkout} receipt={instapayReceipt} />
                             </div>
                         ) : (
                             /* INTERNATIONAL PAYMENT METHOD (خارج مصر 🌍) */
@@ -1000,106 +203,10 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
 
                                 {/* HIDING PAYMOB METHODS TEMPORARILY */}
                                 {false && (
-                                    <>
-                                        <motion.div
-                                            id="checkout-method-paypal"
-                                            whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('paypal')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
-                                        paymobMethod === 'paypal'
-                                            ? "border-gold-500 bg-gold-500/10 shadow-[0_0_20px_rgba(234,179,8,0.15)] ring-1 ring-gold-500/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <div className="w-10 h-10 rounded-xl bg-gold-500 text-black font-bold flex items-center justify-center shrink-0">
-                                            <CreditCard className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-sm">
-                                                {isAr ? "PayPal / بطاقة دولية (Paymob PayPal)" : "PayPal & Global Credit Cards"}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "دفع آمن دولياً بالدولار الأمريكي (ID: 5792310)" : "Secure international payment in USD"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full border border-gold-500/20">
-                                            Paymob PayPal
-                                        </span>
-                                        {paymobMethod === 'paypal' && <CheckCircle2 className="w-5 h-5 text-gold-500" />}
-                                    </div>
-                                        </motion.div>
-                                    </>
+                                    <CheckoutHiddenPaypalMethod isAr={isAr} checkout={checkout} id="checkout-method-paypal" />
                                 )}
 
-                                {/* Option 2: Link by Stripe (embedded PaymentElement) */}
-                                <motion.div
-                                    id="checkout-method-stripe"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('stripe')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
-                                        paymobMethod === 'stripe'
-                                            ? "border-[#635bff] bg-[#635bff]/10 shadow-[0_0_20px_rgba(99,91,255,0.2)] ring-1 ring-[#635bff]/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'stripe' ? "bg-[#635bff] text-white font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                            <Zap className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-sm">
-                                                {isAr ? "بطاقة دولية / Link by Stripe" : "Card / Link by Stripe"}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "دفع مضمّن آمن بدون إعادة توجيه — PCI-DSS" : "Secure embedded checkout — no redirect, PCI-DSS"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-[#635bff] bg-[#635bff]/10 px-2 py-0.5 rounded-full border border-[#635bff]/20">
-                                            Stripe
-                                        </span>
-                                        {paymobMethod === 'stripe' && <CheckCircle2 className="w-5 h-5 text-[#635bff]" />}
-                                    </div>
-                                </motion.div>
-
-                                {/* Option 3: Kashier Global (كاشير الدولي) */}
-                                <motion.div
-                                    id="checkout-method-kashier-global"
-                                    whileHover={{ scale: 1.01 }}
-                                    onClick={() => setPaymobMethod('kashier')}
-                                    className={cn(
-                                        "p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4",
-                                        paymobMethod === 'kashier'
-                                            ? "border-amber-500 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30"
-                                            : "border-zinc-800 bg-black/30 hover:border-zinc-700"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", paymobMethod === 'kashier' ? "bg-amber-500 text-black font-bold" : "bg-zinc-800 text-zinc-400")}>
-                                            <Globe className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-sm">
-                                                {isAr ? "كاشير الدولي / بطاقات ائتمان (Kashier Global)" : "Kashier Global (USD Credit Cards)"}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-medium">
-                                                {isAr ? "دفع دولي سريع وآمن ببطاقات فيزا وماستركارد (USD)" : "Fast & secure international card checkout in USD"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                                            Kashier
-                                        </span>
-                                        {paymobMethod === 'kashier' && <CheckCircle2 className="w-5 h-5 text-amber-500" />}
-                                    </div>
-                                </motion.div>
+                                <CheckoutGlobalMethods isAr={isAr} checkout={checkout} />
                             </div>
                         )}
 
@@ -1155,125 +262,14 @@ const stripePaymentRef = useRef<StripePaymentElementHandle>(null);
                         </div>
                     </CardContent>
 
-                    <CardFooter className="bg-black/20 p-8 flex flex-col gap-6">
-                        {paymentError && (
-                            <div className="w-full p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3 text-red-400 text-xs font-bold mb-2">
-                                <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
-                                <span>{paymentError}</span>
-                            </div>
-                        )}
-
-                        <div className="space-y-4 p-4 bg-zinc-900/40 border border-zinc-800 rounded-2xl w-full">
-                            <div className="flex items-start space-x-3 rtl:space-x-reverse">
-                                <Checkbox
-                                    id="agreeToTerms"
-                                    checked={watch("agreeToTerms")}
-                                    onCheckedChange={(checked) => setValue('agreeToTerms', checked as boolean)}
-                                    className="mt-1 border-zinc-700 data-[state=checked]:bg-gold-500 data-[state=checked]:text-black"
-                                    />
-                                <div className="space-y-1">
-                                    <label htmlFor="agreeToTerms" className="text-xs font-bold text-zinc-400 cursor-pointer leading-relaxed">
-                                        {renderAgreeText(content.checkoutAgree)}
-                                    </label>
-                                    {errors.agreeToTerms && <p className="text-[10px] text-red-500 font-black uppercase tracking-tighter">{errors.agreeToTerms.message}</p>}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Paymob / Stripe / Kashier Submit Button */}
-                        <Button
-                            id="checkout-submit-btn"
-                            type="submit"
-                            disabled={isProcessing || isRedirecting || (isStripeSelected && !!stripeClientSecret && !isStripeReady)}
-                            onClick={(e) => {
-                                // Stripe embedded flow: when a client secret is already ready,
-                                // confirm the payment via PaymentElement instead of re-submitting the form.
-                                if (isStripeSelected && stripeClientSecret) {
-                                    e.preventDefault();
-                                    if (!stripePaymentRef.current) {
-                                        setPaymentError(isAr ? "عنصر الدفع لم يكتمل تحميله بعد" : "Payment element not ready yet");
-                                        return;
-                                    }
-                                    setPaymentError(null);
-                                    setIsProcessing(true);
-                                    stripePaymentRef.current.confirmPayment()
-                                        .then(({ success, error }) => {
-                                            setIsProcessing(false);
-                                            if (!success) {
-                                                setPaymentError(error || (isAr ? "فشل تأكيد الدفع" : "Payment confirmation failed"));
-                                            } else {
-                                                onSuccess?.();
-                                            }
-                                        })
-                                        .catch((err: Error) => {
-                                            setIsProcessing(false);
-                                            setPaymentError(err.message || (isAr ? "فشل تأكيد الدفع" : "Payment confirmation failed"));
-                                        });
-                                }
-                            }}
-                            className={cn(
-                                "w-full py-8 text-black font-black text-xl rounded-2xl transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70",
-                                isStripeSelected
-                                    ? "bg-[#635bff] hover:bg-[#7a73ff] text-white shadow-[0_0_30px_rgba(99,91,255,0.35)]"
-                                    : paymobMethod === 'instapay'
-                                        ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-                                        : paymobMethod === 'kashier'
-                                            ? "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_30px_rgba(245,158,11,0.25)]"
-                                            : "bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.25)]"
-                            )}
-                        >
-                            <span className="flex items-center justify-center gap-2">
-                                {isProcessing || isRedirecting ? (
-                                    <Loader2 className="w-6 h-6 animate-spin" />
-                                ) : (
-                                    <Lock className="w-5 h-5" />
-                                )}
-                                <span>
-                                    {isStripeSelected
-                                        ? (isRedirecting
-                                            ? (isAr ? "جاري التحويل..." : "Redirecting...")
-                                            : isProcessing
-                                                ? (isAr ? "جاري معالجة الدفع..." : "Processing Payment...")
-                                                : isStripeReady
-                                                    ? `${content.payNow} ${formattedTotal}`
-                                                    : (isAr ? `تجهيز الدفع الآمن (${formattedTotal})` : `Start Secure Checkout (${formattedTotal})`))
-                                        : paymobMethod === 'instapay'
-                                            ? (isRedirecting
-                                                ? (isAr ? "جاري تجهيز التأكيد..." : "Preparing Confirmation...")
-                                                : isProcessing
-                                                    ? (isAr ? "جاري تسجيل الطلب..." : "Recording Order...")
-                                                    : (isAr ? `تأكيد طلب إنستاباي (${formattedTotal})` : `Confirm InstaPay Order (${formattedTotal})`))
-                                            : paymobMethod === 'kashier'
-                                                ? (isRedirecting
-                                                    ? (isAr ? "جاري التحويل لكاشير..." : "Redirecting to Kashier...")
-                                                    : isProcessing
-                                                        ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
-                                                        : (isAr ? `دفع آمن عبر كاشير (${formattedTotal})` : `Pay with Kashier (${formattedTotal})`))
-                                            : paymobMethod === 'wallet'
-                                                ? (isRedirecting
-                                                    ? (isAr ? "جاري التحويل لـ Paymob..." : "Redirecting...")
-                                                    : isProcessing
-                                                        ? (isAr ? "جاري معالجة المحفظة..." : "Processing Wallet...")
-                                                        : (isAr ? `دفع بالمحفظة الإلكترونية (${formattedTotal})` : `Pay with Mobile Wallet (${formattedTotal})`))
-                                                : paymobMethod === 'kiosk'
-                                                    ? (isRedirecting
-                                                        ? (isAr ? "جاري إصدار الكود..." : "Generating Code...")
-                                                        : isProcessing
-                                                            ? (isAr ? "جاري إصدار كود الدفع..." : "Generating Code...")
-                                                            : (isAr ? `إصدار كود أمان ومصاري (${formattedTotal})` : `Generate Kiosk Code (${formattedTotal})`))
-                                                    : (isRedirecting
-                                                        ? (isAr ? "جاري التحويل لبوابة الدفع..." : "Redirecting...")
-                                                        : isProcessing
-                                                            ? (isAr ? "جاري معالجة الطلب..." : "Processing Order...")
-                                                            : `${content.payNow} ${formattedTotal}`)}
-                                </span>
-                            </span>
-                        </Button>
-
-                        <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 font-bold tracking-widest uppercase">
-                            <div className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-green-500" />{content.secureCheckout}</div>
-                        </div>
-                    </CardFooter>
+                    <CheckoutPaymentFooter
+                        content={content}
+                        isAr={isAr}
+                        checkout={checkout}
+                        stripePaymentRef={stripePaymentRef}
+                        onSuccess={onSuccess}
+                        openLegal={openLegal}
+                    />
                 </Card>
             </div>
         </form>
