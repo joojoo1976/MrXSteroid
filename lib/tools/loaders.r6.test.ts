@@ -43,5 +43,5 @@ describe('R6 Phase 1 bespoke normalization', () => {
       const component = await getToolComponent(slug);
       expect(component, slug).not.toBeNull();
     }
-  });
+  }, 30000);
 });

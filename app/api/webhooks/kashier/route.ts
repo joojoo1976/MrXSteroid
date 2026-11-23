@@ -11,12 +11,26 @@
  *   6. Server-side affiliate attribution retrieval from invoices.
  *   7. Commission calculation & atomic PostgreSQL RPC (`affiliate_create_commission`).
  *   8. Financial ledger journals and revenue splits.
+ *
+ * PROVIDER PINNING (Phase B follow-up)
+ * ------------------------------------
+ * This endpoint must never verify a non-Kashier payload. It is restricted to
+ * the Kashier provider family — `KASHIER_EGYPT` and `KASHIER_GLOBAL` — rather
+ * than a single account, because Kashier runs two merchant identities and the
+ * handler still needs its EG/GLOBAL cross-account routing to accept both.
+ * A request signed for Stripe/Paymob/SpaceRemit/Fourthwall is rejected with
+ * 401 before any signature check, exactly like the other dedicated routes.
  */
 
 import handler from '../../../../server/payments/webhook';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
-    const result = await handler(req);
+    const result = await handler(req, undefined, {
+        allowedGateways: ['KASHIER_EGYPT', 'KASHIER_GLOBAL'],
+    });
     if (result instanceof Response) {
         return result;
     }

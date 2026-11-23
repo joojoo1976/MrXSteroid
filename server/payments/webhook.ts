@@ -20,7 +20,7 @@ import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
 import { applyProviderVerdict } from './fulfillmentService';
 import { ingestRefundEvent } from './refund/refundEvent';
-import type { GatewayName } from './gateways/IPaymentGateway';
+import type { GatewayName, IPaymentGateway } from './gateways/IPaymentGateway';
 
 /**
  * Admin Supabase client for the webhook handler.
@@ -128,6 +128,13 @@ export interface ProcessWebhookOptions {
      * never be verified as — or silently fall back to — another provider.
      */
     forcedGateway?: GatewayName;
+    /**
+     * Restricts which providers this endpoint may verify, WITHOUT pinning a
+     * single account. Used by /api/webhooks/kashier: only Kashier may be
+     * verified there, but EG/GLOBAL cross-account routing must still run
+     * (a pinned `forcedGateway` would disable it).
+     */
+    allowedGateways?: GatewayName[];
 }
 
 async function processWebhook(
@@ -141,9 +148,19 @@ async function processWebhook(
 
         // Detect gateway from request headers/params — or use the pinned one.
         const normalized = normalizeRequest(req);
-        let gateway = options.forcedGateway
+        let gateway: IPaymentGateway | null = options.forcedGateway
             ? PaymentFactory.getGatewayByName(options.forcedGateway)
             : PaymentFactory.detectGatewayFromRequest(normalized);
+
+        // A dedicated endpoint may also constrain the provider family without
+        // pinning one account (Kashier EG/GLOBAL). Out-of-family requests are
+        // rejected here, before any signature verification is attempted.
+        if (gateway && options.allowedGateways && !options.allowedGateways.includes(gateway.getGatewayName())) {
+            console.warn(
+                `[Webhook] Rejected ${gateway.getGatewayName()} on an endpoint restricted to ${options.allowedGateways.join(', ')}`
+            );
+            gateway = null;
+        }
 
         if (!gateway) {
             console.warn('[Webhook] No verifiable gateway signal on the request — rejecting');

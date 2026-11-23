@@ -59,20 +59,22 @@ describe('Extra Webhook Integration Scenarios', () => {
         return POST(req);
     }
 
-    it('returns 401 for malformed JSON payload due to failed signature verification', async () => {
+    it('returns 401 for malformed JSON payload with no provider signal (no silent fallback)', async () => {
         const res = await postWebhook('{"invalid": "json"', {});
         expect(res.status).toBe(401);
         const data = await res.json();
-        expect(data.error).toContain('Invalid webhook signature');
+        // Phase B removed the SpaceRemit fallback: an unidentifiable request is
+        // rejected before any provider signature verification is attempted.
+        expect(data.error).toBe('Unknown webhook provider');
     });
 
-    it('returns 401 for unknown gateway signature headers', async () => {
+    it('returns 401 for unknown gateway signature headers (no silent fallback)', async () => {
         const res = await postWebhook('{"some":"data"}', {
             'x-unknown-signature': 'xyz123'
         });
         expect(res.status).toBe(401);
         const data = await res.json();
-        expect(data.error).toContain('Invalid webhook signature');
+        expect(data.error).toBe('Unknown webhook provider');
     });
 
     it('returns 401 if Stripe signature is present but invalid', async () => {

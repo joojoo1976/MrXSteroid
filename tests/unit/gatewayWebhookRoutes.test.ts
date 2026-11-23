@@ -332,6 +332,110 @@ describe('/api/webhooks/spaceremit', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  /api/webhooks/kashier — provider-restricted, account-agnostic
+//  (only Kashier may be verified here; EG/GLOBAL routing must still work)
+// ─────────────────────────────────────────────────────────────────────────────
+describe('/api/webhooks/kashier', () => {
+    const EG = {
+        merchantId: 'MID_EG_PHASE_B',
+        apiKey: 'APIKEY_EG_PHASE_B',
+    };
+    const GLOBAL = {
+        merchantId: 'MID_GL_PHASE_B',
+        apiKey: 'APIKEY_GL_PHASE_B',
+    };
+
+    beforeEach(() => {
+        process.env.KASHIER_MODE = 'test';
+        process.env.KASHIER_EGYPT_MERCHANT_ID = EG.merchantId;
+        process.env.KASHIER_EGYPT_PAYMENT_API_KEY = EG.apiKey;
+        process.env.KASHIER_EGYPT_SECRET_KEY = 'SECRET_EG_PHASE_B';
+        process.env.KASHIER_GLOBAL_MERCHANT_ID = GLOBAL.merchantId;
+        process.env.KASHIER_GLOBAL_PAYMENT_API_KEY = GLOBAL.apiKey;
+        process.env.KASHIER_GLOBAL_SECRET_KEY = 'SECRET_GL_PHASE_B';
+    });
+
+    function kashierBody(fields: Record<string, string>, apiKey: string): string {
+        const keys = Object.keys(fields).sort();
+        const input = keys.map((k) => `${k}=${fields[k]}`).join('&');
+        const signature = crypto.createHmac('sha256', apiKey).update(input).digest('hex');
+        return JSON.stringify({ ...fields, signatureKeys: keys.join(','), signature });
+    }
+
+    const post = async (body: string, headers: Record<string, string> = {}) => {
+        const { POST } = await import('../../app/api/webhooks/kashier/route');
+        return POST(new Request('http://localhost/api/webhooks/kashier', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-kashier-signature': 'present', ...headers },
+            body,
+        }));
+    };
+
+    it('verifies a genuine Kashier (Egypt) signature', async () => {
+        const body = kashierBody({
+            merchantId: EG.merchantId,
+            orderId: 'inv-k-001',
+            orderStatus: 'SUCCESS',
+            amount: '100.00',
+            currency: 'EGP',
+            transactionId: 'txn-k-001',
+        }, EG.apiKey);
+
+        const res = await post(body);
+
+        expect(res.status).toBe(200);
+        expect(h.applyProviderVerdict).toHaveBeenCalledTimes(1);
+        expect(h.applyProviderVerdict.mock.calls[0][0]).toMatchObject({ gatewayName: 'KASHIER_EGYPT' });
+    });
+
+    it('still cross-routes a GLOBAL Kashier webhook to the GLOBAL account', async () => {
+        const body = kashierBody({
+            merchantId: GLOBAL.merchantId,
+            orderId: 'inv-k-002',
+            orderStatus: 'SUCCESS',
+            amount: '49.99',
+            currency: 'USD',
+            transactionId: 'txn-k-002',
+        }, GLOBAL.apiKey);
+
+        const res = await post(body);
+
+        expect(res.status).toBe(200);
+        expect(h.applyProviderVerdict).toHaveBeenCalledTimes(1);
+        expect(h.applyProviderVerdict.mock.calls[0][0]).toMatchObject({ gatewayName: 'KASHIER_GLOBAL' });
+    });
+
+    it('rejects a Paymob-HMAC request on the Kashier endpoint', async () => {
+        const res = await post(JSON.stringify({ obj: { order: { merchant_order_id: 'inv-k-003' } } }), {
+            'x-kashier-signature': '',
+            hmac: 'paymob-hmac',
+        });
+
+        expect(res.status).toBe(401);
+        const body = await res.json();
+        expect(body.error).toBe('Unknown webhook provider');
+        expect(h.applyProviderVerdict).not.toHaveBeenCalled();
+    });
+
+    it('rejects a Stripe-signed request on the Kashier endpoint', async () => {
+        const res = await post(JSON.stringify({ id: 'evt_1', type: 'charge.refunded' }), {
+            'x-kashier-signature': '',
+            'stripe-signature': 't=1,v1=deadbeef',
+        });
+
+        expect(res.status).toBe(401);
+        expect(h.applyProviderVerdict).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unsigned request on the Kashier endpoint', async () => {
+        const res = await post(JSON.stringify({ orderId: 'inv-k-004' }), { 'x-kashier-signature': '' });
+
+        expect(res.status).toBe(401);
+        expect(h.applyProviderVerdict).not.toHaveBeenCalled();
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  GENERIC CALLBACK — no silent SpaceRemit fallback
 // ─────────────────────────────────────────────────────────────────────────────
 describe('/api/payments/callback — unknown provider', () => {

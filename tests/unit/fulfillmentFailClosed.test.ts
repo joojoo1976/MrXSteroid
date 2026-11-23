@@ -163,6 +163,30 @@ const triggerAffiliateCommission = vi.fn(() => Promise.resolve());
 
 vi.mock('./../../server/payments/entitlementService', () => ({
     grantEntitlement: (...a: unknown[]) => grantEntitlement(...(a as [])),
+    // Phase 7 moved fulfillment from a direct `grantEntitlement` call to
+    // `grantEntitlementsFromInvoice` (invoice lines first, legacy tier as the
+    // fallback product). This suite asserts the SAME contract — a settlement
+    // that applies the verdict must grant exactly one entitlement — so the
+    // invoice-derived entry point delegates to the same spy. Without it the
+    // dynamic import resolves to `undefined` and the grant never happens.
+    grantEntitlementsFromInvoice: async (params: {
+        userId: string;
+        invoiceId: string;
+        paymentIntentId?: string | null;
+        fallbackProductId?: string;
+    }) => {
+        const granted = (await grantEntitlement({
+            userId: params.userId,
+            productId: params.fallbackProductId,
+            invoiceId: params.invoiceId,
+            paymentIntentId: params.paymentIntentId ?? null,
+        })) as { entitlementId?: string } | undefined;
+        return {
+            success: true,
+            entitlementIds: [granted?.entitlementId ?? 'ent-fc-001'],
+            source: 'legacy_fallback',
+        };
+    },
 }));
 vi.mock('./../../server/payments/splitEngine', () => ({
     freezeOrderSplits: (...a: unknown[]) => freezeOrderSplits(...(a as [])),

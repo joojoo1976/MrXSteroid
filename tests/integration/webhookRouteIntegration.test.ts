@@ -81,9 +81,21 @@ function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insert
     chain.gt = vi.fn().mockReturnValue(chain);
     chain.select = vi.fn((columns?: string) => { lastSelect = columns || ''; return chain; });
     chain.update = vi.fn().mockReturnValue(chain);
-    chain.insert = vi.fn()
-        .mockResolvedValueOnce({ data: [{ id: 'wh-001' }], error: insertError })
-        .mockResolvedValue({ data: [{ id: 'financial-row' }], error: null });
+    // `insert` must stay chainable (`.insert(...).select('id').single()`) for the
+    // refund recorder, while remaining awaitable for the settlement path. Only
+    // the FIRST insert carries `insertError`, mirroring the original mock: the
+    // best-effort dedup suite relies on later inserts (order_splits) succeeding.
+    let insertCallCount = 0;
+    chain.insert = vi.fn((_row: Record<string, unknown>) => {
+        insertCallCount += 1;
+        const result = insertCallCount === 1
+            ? { data: [{ id: 'wh-001' }], error: insertError }
+            : { data: [{ id: 'financial-row' }], error: null };
+        return {
+            select: () => chain,
+            then: (onFulfilled: any, onRejected: any) => Promise.resolve(result).then(onFulfilled, onRejected),
+        };
+    });
     chain.upsert = vi.fn().mockReturnValue(chain);
     chain.single = vi.fn(async () => {
         if (activeTable === 'payment_intents') {
@@ -93,6 +105,7 @@ function buildSupaMock(invoiceRow: Record<string, unknown> | null = null, insert
         return singleResult;
     });
     chain.maybeSingle = vi.fn(async () => {
+        if (activeTable === 'invoices') return { data: invoiceRow, error: null };
         if (activeTable === 'payment_intents') return { data: paymentIntent, error: null };
         if (activeTable === 'webhook_events') return { data: { status: 'duplicate' }, error: null };
         return { data: null, error: null };
@@ -304,9 +317,16 @@ describe('Integration test for /api/payments/webhook (v5.1 compliance)', () => {
         expect(res?.status).toBe(405);
     });
 
-    it('Processes REFUNDED webhook — invoice marked failed (refund lifecycle)', async () => {
+    it('Records a REFUNDED webhook as a refund instead of failing the invoice', async () => {
         supabaseMock = buildSupaMock(
-            { id: 'inv-int-008', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            {
+                id: 'inv-int-008',
+                status: 'completed',
+                payment_status: 'paid',
+                amount: 100,
+                currency: 'EGP',
+                user_id: 'user-int-008',
+            },
             null
         );
 
@@ -320,14 +340,32 @@ describe('Integration test for /api/payments/webhook (v5.1 compliance)', () => {
         };
         const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
         expect(res.status).toBe(200);
-        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+
+        // Refund-like events are intercepted before settlement: they never
+        // demote the invoice to a failed payment.
+        expect(supabaseMock.chain.update).not.toHaveBeenCalledWith(
             expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+
+        const insertCalls = supabaseMock.chain.insert.mock.calls.map((c: any[]) => c[0]);
+        expect(insertCalls).toContainEqual(
+            expect.objectContaining({ provider_operation: 'refund', invoice_id: 'inv-int-008' })
+        );
+        expect(insertCalls).toContainEqual(
+            expect.objectContaining({ invoice_id: 'inv-int-008', amount_minor: 10000 })
         );
     });
 
-    it('Processes VOIDED webhook — invoice marked failed', async () => {
+    it('Records a VOIDED webhook as a void instead of failing the invoice', async () => {
         supabaseMock = buildSupaMock(
-            { id: 'inv-int-009', status: 'pending', payment_status: 'pending', amount: 100, currency: 'EGP' },
+            {
+                id: 'inv-int-009',
+                status: 'completed',
+                payment_status: 'paid',
+                amount: 100,
+                currency: 'EGP',
+                user_id: 'user-int-009',
+            },
             null
         );
 
@@ -341,8 +379,14 @@ describe('Integration test for /api/payments/webhook (v5.1 compliance)', () => {
         };
         const res = await postWebhook(buildKashierBody(fields, API_KEY_EG));
         expect(res.status).toBe(200);
-        expect(supabaseMock.chain.update).toHaveBeenCalledWith(
+
+        expect(supabaseMock.chain.update).not.toHaveBeenCalledWith(
             expect.objectContaining({ status: 'failed', payment_status: 'failed' })
+        );
+
+        const insertCalls = supabaseMock.chain.insert.mock.calls.map((c: any[]) => c[0]);
+        expect(insertCalls).toContainEqual(
+            expect.objectContaining({ provider_operation: 'void', invoice_id: 'inv-int-009' })
         );
     });
 
