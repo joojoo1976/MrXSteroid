@@ -4,7 +4,7 @@
  * surface for /smarttools/injection-formulation/tool-036-injection-schedule.
  * Heavy widgets (dnd-kit calendar, recharts chart) are lazy via next/dynamic
  * with ssr:false so neither enters First Load JS. */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useToolDisplayPreferences } from './useToolDisplayPreferences';
 import dynamic from 'next/dynamic';
 import {
@@ -117,7 +117,11 @@ export default function Tool036InjectionSchedule() {
     snapshotType: 'draft',
   };
 
-  const inputs = { compounds, rotation_sites: rotationSites };
+  // A fresh object literal here makes the pipeline effect below re-run on every
+  // render (reference comparison): render -> new inputs -> effect -> setState ->
+  // render -> ... That loop pegged the browser CPU and crashed the jsdom worker
+  // for every component test run. A stable reference recomputes only on change.
+  const inputs = useMemo(() => ({ compounds, rotation_sites: rotationSites }), [compounds, rotationSites]);
 
   useEffect(() => {
     if (!compounds.length || !rotationSites.length) {

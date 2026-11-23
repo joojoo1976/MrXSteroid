@@ -97,7 +97,18 @@ function createStatefulSupaMock(invoiceRow: Record<string, unknown> | null) {
     });
     chain.order = vi.fn(() => chain);
     chain.limit = vi.fn(() => chain);
-    chain.insert = vi.fn(async () => ({ data: null, error: null }));
+    chain.single = vi.fn(async () => ({
+        data: { id: 'ref-1', status: 'completed' },
+        error: null,
+    }));
+    // `insert` must stay chainable: the refund recorder does
+    // `.insert(row).select('id, status').single()`.
+    chain.insert = vi.fn((row: Record<string, unknown>) => ({
+        select: () => chain,
+        then: (onFulfilled: any, onRejected: any) =>
+            Promise.resolve({ data: [{ id: `ref-${String(row?.invoice_id ?? 'x')}`, status: row?.status ?? 'completed' }], error: null })
+                .then(onFulfilled, onRejected),
+    }));
     chain.upsert = vi.fn(async (row: Record<string, unknown>) => {
         const eventId = String(row.provider_event_id ?? '');
         events.set(eventId, {
@@ -288,12 +299,13 @@ describe('POST /api/webhooks/fourthwall (official contract)', () => {
         const rawBody = JSON.stringify(makeEnvelope({ eventId: 'weve_cancel_0001', status: 'CANCELLED' }));
         const res = await post(rawBody);
         expect(res.status).toBe(200);
-        // Phase A: CANCELLED is routed to the refund recorder. This fixture has
-        // no payment_intents row, so the recorder acknowledges it as unlinked
-        // instead of failing the invoice. The payment pipeline is never reached.
+        // Phase A routes CANCELLED to the refund recorder. This fixture has no
+        // payment_intents row, so the refund is recorded against the invoice
+        // alone (intentLinked: false, migration 20261123120000) instead of being
+        // dropped, and the payment pipeline is never reached.
         expect(await res.json()).toEqual(expect.objectContaining({
-            message: 'Refund event acknowledged (unlinked)',
-            code: 'unlinked',
+            message: 'Refund event recorded',
+            code: 'recorded',
         }));
         expect(applyProviderVerdictMock).not.toHaveBeenCalled();
     });

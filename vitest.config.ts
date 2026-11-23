@@ -99,6 +99,13 @@ export default defineConfig({
                     // `vitest.setup.ts` touches `window`; it must run in this
                     // project ONLY, never in the node project.
                     setupFiles: ['./vitest.setup.ts'],
+                    // DOM suites leave browser-ish handles behind (timers,
+                    // observers, listeners). Under the default `threads` pool the
+                    // run printed its summary and then never exited, so CI had to
+                    // kill it. The `forks` pool reaps those workers and the
+                    // process exits by itself; it also isolates `window` state
+                    // between files, which is what these suites actually want.
+                    pool: 'forks',
                     include: [
                         'app/**/*.test.tsx',
                         'components/**/*.test.tsx',

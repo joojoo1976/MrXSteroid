@@ -142,8 +142,26 @@ describe('Merchant Resolver — v5.1 §4.1 + §51', () => {
         expect(resolveKashierSku('MRX-SMART-PRO', 'GLOBAL')).toBe('MRX-GL-SMART-PRO');
     });
 
-    it('exposes exactly three canonical products', () => {
-        expect(Object.keys(CANONICAL_PRODUCTS).sort()).toEqual(['MRX-PROTOCOL', 'MRX-SMART-PRO', 'MRX-TACTICAL']);
+    it('exposes three purchasable products plus two add-on entries', () => {
+        // The catalog always carried five ids; only three are sellable on their
+        // own. The old assertion only knew about three, so it failed as soon as
+        // the coaching add-on and the consultation service were added.
+        expect(Object.keys(CANONICAL_PRODUCTS).sort()).toEqual([
+            'MRX-COACHING-ADDON',
+            'MRX-CONSULTATION',
+            'MRX-PROTOCOL',
+            'MRX-SMART-PRO',
+            'MRX-TACTICAL',
+        ]);
+
+        // Add-ons are never priced as standalone Egypt products.
+        expect(CANONICAL_PRODUCTS['MRX-COACHING-ADDON'].egyptAmount).toBe(0);
+        expect(CANONICAL_PRODUCTS['MRX-CONSULTATION'].egyptAmount).toBe(0);
+
+        // The three sellable products each carry a positive Egypt price.
+        for (const id of ['MRX-PROTOCOL', 'MRX-TACTICAL', 'MRX-SMART-PRO'] as const) {
+            expect(CANONICAL_PRODUCTS[id].egyptAmount, id).toBeGreaterThan(0);
+        }
     });
 
     it('BlockedGateError carries the exact blocked item (v5.1 §2)', () => {

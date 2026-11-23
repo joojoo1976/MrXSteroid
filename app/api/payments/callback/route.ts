@@ -197,6 +197,7 @@ export async function POST(req: Request) {
                     ? {
                         id: refundResult.refundId,
                         status: refundResult.status,
+                        intentLinked: refundResult.intentLinked,
                         fullRefund: refundResult.fullRefund,
                         accessRevoked: refundResult.accessRevoked,
                         hasPaidCleared: refundResult.hasPaidCleared,

@@ -96,6 +96,11 @@ export interface RefundReconciliationCounts {
     refundsWithoutEvent: number;
     /** Refund rows carrying provider event metadata. */
     providerRefunds: number;
+    /**
+     * Refund rows with NO payment intent (Stripe-embedded / Paymob / SpaceRemit
+     * collection paths). Recorded, not dropped — see migration 20261123120000.
+     */
+    refundsWithoutIntent: number;
     /** Operator-recorded refunds (no webhook event is expected). */
     adminRefunds: number;
     /** Refund rows with neither provider metadata nor the admin marker. */
@@ -180,6 +185,7 @@ export function buildRefundReconciliationReport(
         eventsWithoutRefundRow: 0,
         refundsWithoutEvent: 0,
         providerRefunds: 0,
+        refundsWithoutIntent: 0,
         adminRefunds: 0,
         legacyRefunds: 0,
     };
@@ -255,6 +261,8 @@ export function buildRefundReconciliationReport(
 
     for (const refund of refunds) {
         const key = refundRowEventKey(refund);
+
+        if (!refund.payment_intent_id) counts.refundsWithoutIntent += 1;
 
         if (isAdminRecorded(refund)) {
             counts.adminRefunds += 1;

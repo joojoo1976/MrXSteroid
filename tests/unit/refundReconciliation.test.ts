@@ -189,6 +189,21 @@ describe('buildRefundReconciliationReport', () => {
         expect(report.ok).toBe(false);
     });
 
+    it('counts intent-less refunds separately (recorded, never dropped)', () => {
+        const report = buildRefundReconciliationReport(
+            [event({ provider: 'stripe', provider_event_id: 'evt-s-1' })],
+            [refund({
+                payment_intent_id: null,
+                raw_response: { provider: 'stripe', provider_event_id: 'evt-s-1' },
+            })]
+        );
+
+        expect(report.counts.refundsWithoutIntent).toBe(1);
+        expect(report.counts.matched).toBe(1);
+        expect(report.counts.refundsWithoutEvent).toBe(0);
+        expect(report.ok).toBe(true);
+    });
+
     it('marks the report truncated when the caller says the read was capped', () => {
         const report = buildRefundReconciliationReport([event()], [refund()], { truncated: true });
         expect(report.truncated).toBe(true);

@@ -328,7 +328,9 @@ describe('Refund event ingestion — refund / void / cancel / dispute', () => {
         expect(db.tables.webhook_events[0].processing_status).toBe('refund_duplicate');
     });
 
-    it('records the event but stays unlinked when no payment intent exists', async () => {
+    it('records an intent-less refund against the invoice (no invented intent)', async () => {
+        // Migration 20261123120000 relaxes refunds.payment_intent_id: a provider
+        // path that never created an intent must still produce a refund row.
         const db = createFakeDb({
             seed: { invoices: [invoice()], payment_intents: [] },
         });
@@ -341,11 +343,19 @@ describe('Refund event ingestion — refund / void / cancel / dispute', () => {
             providerEventId: 'evt-unlinked-1',
         });
 
-        expect(result.code).toBe('unlinked');
-        expect(db.tables.refunds).toHaveLength(0);
+        expect(result.code).toBe('recorded');
+        expect(result.intentLinked).toBe(false);
+        expect(db.tables.refunds).toHaveLength(1);
+        expect(db.tables.refunds[0]).toMatchObject({
+            invoice_id: 'inv-1',
+            payment_intent_id: null,
+            amount_minor: 49900,
+            status: 'completed',
+        });
         expect(db.tables.webhook_events[0]).toMatchObject({
-            status: 'skipped',
-            processing_status: 'refund_unlinked',
+            status: 'processed',
+            processing_status: 'refund_recorded_unlinked',
+            invoice_id: 'inv-1',
         });
     });
 

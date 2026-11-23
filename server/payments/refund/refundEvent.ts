@@ -82,6 +82,12 @@ export interface RefundIngestResult {
     code: RefundIngestCode;
     refundId?: string;
     status?: RecordedRefundStatus;
+    /**
+     * False when the collection path created no `payment_intents` row and the
+     * refund was therefore recorded against the invoice alone
+     * (`refunds.payment_intent_id` NULL — see migration 20261123120000).
+     */
+    intentLinked?: boolean;
     fullRefund?: boolean;
     accessRevoked?: boolean;
     hasPaidCleared?: boolean;
@@ -316,17 +322,13 @@ export async function ingestRefundEvent(
 
     await markEvent(supabase, provider, providerEventId, { invoice_id: invoice.id });
 
+    // Stripe-embedded / Paymob / SpaceRemit never create a `payment_intents` row.
+    // Migration 20261123120000 relaxes `refunds.payment_intent_id`, so the refund
+    // is recorded against the invoice alone instead of being dropped as
+    // "unlinked" — money the provider says it returned must stay visible. A real
+    // intent is never invented to fill the column.
     const paymentIntentId = await resolvePaymentIntentId(supabase, invoice.id, input.paymentIntentId);
-    if (!paymentIntentId) {
-        // `refunds.payment_intent_id` is NOT NULL: never invent an attempt row.
-        await markEvent(supabase, provider, providerEventId, {
-            status: 'skipped',
-            processing_status: 'refund_unlinked',
-            error_message: 'No payment intent exists for the invoice (provider path creates none yet)',
-            processed_at: nowIso(),
-        });
-        return { code: 'unlinked', error: 'payment_intent_not_found' };
-    }
+    const intentLinked = paymentIntentId !== null;
 
     // ── 3. Amount + currency.
     const invoiceAmountMinor = toMinor(Number(invoice.amount ?? 0));
@@ -401,7 +403,7 @@ export async function ingestRefundEvent(
 
     await markEvent(supabase, provider, providerEventId, {
         status: 'processed',
-        processing_status: 'refund_recorded',
+        processing_status: intentLinked ? 'refund_recorded' : 'refund_recorded_unlinked',
         invoice_id: invoice.id,
         processed_at: nowIso(),
     });
@@ -409,6 +411,7 @@ export async function ingestRefundEvent(
     return {
         code: 'recorded',
         refundId: (refundRow as { id?: string } | null)?.id,
+        intentLinked,
         status,
         fullRefund,
         accessRevoked,

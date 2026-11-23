@@ -98,7 +98,11 @@ export interface PaymentContext {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CANONICAL PRODUCT CATALOG (v5.1 §29–§31)
-//  THREE canonical products ONLY. Egypt prices are authoritative (owner-signed).
+//  THREE purchasable products + TWO non-standalone entries:
+//    products: MRX-PROTOCOL · MRX-TACTICAL · MRX-SMART-PRO
+//    add-ons : MRX-COACHING-ADDON · MRX-CONSULTATION  (egyptAmount = 0; never
+//              sold on their own, they ride on a product bundle)
+//  Egypt prices are authoritative (owner-signed).
 //  Global prices use placeholders — NEVER invented.
 // ─────────────────────────────────────────────────────────────────────────────
 

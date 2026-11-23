@@ -262,7 +262,7 @@ describe('Generic callback — Stripe refund / dispute interception', () => {
         expect(db.tables.profiles[0].has_paid).toBe(false);
     });
 
-    it('acknowledges a refund whose invoice has no payment intent (unlinked)', async () => {
+    it('records a refund whose invoice has no payment intent (intent-less, not dropped)', async () => {
         const db = fakeDb({
             invoices: [{ id: 'inv-s-2', amount: 49.9, currency: 'USD', user_id: 'user-s', payment_status: 'paid', status: 'success' }],
             payment_intents: [],
@@ -273,11 +273,16 @@ describe('Generic callback — Stripe refund / dispute interception', () => {
         const body = await res.json() as Record<string, unknown>;
 
         expect(res.status).toBe(200);
-        expect(body.code).toBe('unlinked');
-        expect(db.tables.refunds).toHaveLength(0);
+        expect(body.code).toBe('recorded');
+        expect(body.refund).toMatchObject({ intentLinked: false });
+        expect(db.tables.refunds).toHaveLength(1);
+        expect(db.tables.refunds[0]).toMatchObject({
+            invoice_id: 'inv-s-2',
+            payment_intent_id: null,
+        });
         expect(db.tables.webhook_events[0]).toMatchObject({
-            status: 'skipped',
-            processing_status: 'refund_unlinked',
+            status: 'processed',
+            processing_status: 'refund_recorded_unlinked',
         });
     });
 
