@@ -379,6 +379,28 @@ export async function ingestRefundEvent(
         .single();
 
     if (refundError) {
+        // SAFETY BEFORE MIGRATION 20261123120000 IS APPLIED.
+        // The intent-less insert above only succeeds once that migration has
+        // dropped the NOT NULL on refunds.payment_intent_id. Until then Postgres
+        // raises 23502; keep the previous, honest behaviour (acknowledge the
+        // event as unlinked, never invent an intent, never 5xx the provider) and
+        // point the operator at the pending migration instead of retrying
+        // forever.
+        const intentColumnRejectsNull =
+            !intentLinked &&
+            (refundError.code === '23502' || /payment_intent_id/i.test(refundError.message || ''));
+
+        if (intentColumnRejectsNull) {
+            await markEvent(supabase, provider, providerEventId, {
+                status: 'skipped',
+                processing_status: 'refund_unlinked',
+                error_message:
+                    'refunds.payment_intent_id is NOT NULL in the deployed schema — apply migration 20261123120000 to record intent-less refunds',
+                processed_at: nowIso(),
+            });
+            return { code: 'unlinked', error: 'payment_intent_not_found' };
+        }
+
         await markEvent(supabase, provider, providerEventId, {
             status: 'failed',
             processing_status: `refund_insert_failed: ${refundError.message}`.slice(0, 200),

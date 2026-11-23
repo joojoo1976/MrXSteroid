@@ -416,6 +416,38 @@ describe('Refund event ingestion — refund / void / cancel / dispute', () => {
         expect(db.tables.refunds).toHaveLength(0);
         expect(db.tables.webhook_events[0].status).toBe('failed');
     });
+
+    it('stays on the safe unlinked behaviour while the NOT NULL migration is pending', async () => {
+        // Deployed schema still has refunds.payment_intent_id NOT NULL: the
+        // intent-less insert raises 23502. The recorder must acknowledge the
+        // event as unlinked (no invented intent, no 5xx) and name the migration.
+        const db = createFakeDb({
+            seed: { invoices: [invoice()], payment_intents: [] },
+            insertErrors: {
+                refunds: {
+                    code: '23502',
+                    message: 'null value in column "payment_intent_id" violates not-null constraint',
+                },
+            },
+        });
+
+        const result = await ingestRefundEvent(db.client, {
+            provider: 'stripe',
+            kind: 'refund',
+            invoiceId: 'inv-1',
+            amountMajor: 499,
+            providerEventId: 'evt-pre-migration',
+        });
+
+        expect(result.code).toBe('unlinked');
+        expect(result.intentLinked).toBeUndefined();
+        expect(db.tables.refunds).toHaveLength(0);
+        expect(db.tables.webhook_events[0]).toMatchObject({
+            status: 'skipped',
+            processing_status: 'refund_unlinked',
+        });
+        expect(String(db.tables.webhook_events[0].error_message)).toContain('20261123120000');
+    });
 });
 
 describe('Full-refund access policy', () => {
