@@ -19,6 +19,14 @@
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { z } from 'zod';
 import {
+    PENDING_TAX_POLICY,
+    allocateTax,
+    computeTaxAmount,
+    computeTaxableBase,
+    validateTaxPolicy,
+    type TaxPolicy,
+} from './tax';
+import {
     DEFAULT_EGYPT_SHIPPING_PROVIDER,
     PRICING_VERSION,
     ShippingConfigurationError,
@@ -322,6 +330,12 @@ export interface BuildQuoteOptions {
      * callers/tests, which intentionally use env/defaults.
      */
     pricing?: PricingConfig;
+    /**
+     * Tax policy for this quote. Defaults to PENDING_TAX_POLICY (rate 0), which
+     * reproduces the pre-tax behaviour exactly. The rate is an owner/legal
+     * decision; see server/payments/tax.ts.
+     */
+    taxPolicy?: TaxPolicy;
 }
 
 export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {}): QuoteResult {
@@ -558,7 +572,33 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
         });
     }
 
-    const tax = 0;
+    const taxPolicy = validateTaxPolicy(options.taxPolicy ?? PENDING_TAX_POLICY);
+    const taxableBase = computeTaxableBase({ subtotal, discount, shipping, policy: taxPolicy });
+    const tax = computeTaxAmount(taxableBase, taxPolicy);
+
+    if (tax > 0) {
+        // Tax-exclusive: each line carries its share of tax and the line totals
+        // grow by it, so Σ(line_total) stays equal to `total` — the invariant the
+        // invoice path and invoice_lines enforce. Tax-inclusive: the tax portion
+        // is carved out of the existing totals and `total` must not move.
+        const allocations = allocateTax(lines, tax, { appliesToShipping: taxPolicy.appliesToShipping });
+        for (let index = 0; index < lines.length; index += 1) {
+            const share = allocations[index];
+            if (share <= 0) continue;
+            lines[index] = {
+                ...lines[index],
+                tax_amount: share,
+                line_total: taxPolicy.mode === 'exclusive'
+                    ? round2(lines[index].line_total + share)
+                    : lines[index].line_total,
+            };
+        }
+        if (taxPolicy.mode === 'inclusive') {
+            // `tax` is informational: it is already inside line_total.
+            // total is recomputed from the untouched lines below.
+        }
+    }
+
     const total = round2(lines.reduce((sum, line) => sum + line.line_total, 0));
 
     const cartHash = hashCart({
@@ -576,6 +616,8 @@ export function buildQuote(input: QuoteRequest, options: BuildQuoteOptions = {})
         shippingProviderId: input.shippingProviderId ?? null,
         shippingAddress: input.shippingAddress ?? null,
         pricing_version: PRICING_VERSION,
+        // A rate change must not let an old quote token be re-priced silently.
+        tax_policy: taxPolicy.version,
     });
 
     const now = options.now ?? Math.floor(Date.now() / 1000);
