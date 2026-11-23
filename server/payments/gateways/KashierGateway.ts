@@ -496,7 +496,22 @@ export class KashierGateway implements IPaymentGateway {
             providerStatus: rawProviderStatus || resolution.detailedStatus || undefined,
             replay: isReplay || undefined,
             isReconciled: resolution.isReconciled,
-            providerOperation: rawEvent || "pay",
+            providerOperation:
+                detailedStatus === 'REFUNDED'
+                    ? 'refund'
+                    : detailedStatus === 'VOIDED'
+                        ? 'void'
+                        : rawEvent || 'pay',
+            // Refund-like events are recorded by the refund-domain recorder and
+            // never by the settlement pipeline (which would swallow them).
+            refundKind: detailedStatus === 'REFUNDED'
+                ? 'refund'
+                : detailedStatus === 'VOIDED'
+                    ? 'void'
+                    : undefined,
+            refundAmount: detailedStatus === 'REFUNDED' || detailedStatus === 'VOIDED'
+                ? paidAmount
+                : undefined,
         };
     }
 

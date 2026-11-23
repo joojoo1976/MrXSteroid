@@ -95,6 +95,9 @@ function createStatefulSupaMock(invoiceRow: Record<string, unknown> | null) {
         }
         return { data: null, error: null };
     });
+    chain.order = vi.fn(() => chain);
+    chain.limit = vi.fn(() => chain);
+    chain.insert = vi.fn(async () => ({ data: null, error: null }));
     chain.upsert = vi.fn(async (row: Record<string, unknown>) => {
         const eventId = String(row.provider_event_id ?? '');
         events.set(eventId, {
@@ -281,11 +284,17 @@ describe('POST /api/webhooks/fourthwall (official contract)', () => {
         }
     });
 
-    it('CANCELLED is acknowledged as a refund/cancel and NOT fulfilled', async () => {
+    it('CANCELLED is recorded as a refund-domain event and NOT fulfilled', async () => {
         const rawBody = JSON.stringify(makeEnvelope({ eventId: 'weve_cancel_0001', status: 'CANCELLED' }));
         const res = await post(rawBody);
         expect(res.status).toBe(200);
-        expect(await res.json()).toEqual(expect.objectContaining({ message: 'Refund/cancel acknowledged' }));
+        // Phase A: CANCELLED is routed to the refund recorder. This fixture has
+        // no payment_intents row, so the recorder acknowledges it as unlinked
+        // instead of failing the invoice. The payment pipeline is never reached.
+        expect(await res.json()).toEqual(expect.objectContaining({
+            message: 'Refund event acknowledged (unlinked)',
+            code: 'unlinked',
+        }));
         expect(applyProviderVerdictMock).not.toHaveBeenCalled();
     });
 

@@ -230,6 +230,17 @@ describe('FourthwallGateway', () => {
             expect(result.status).toBe('failed');
             expect(result.detailedStatus).toBe('REFUNDED');
             expect(result.isReconciled).toBe(false);
+            // Phase A: the webhook handler routes on refundKind and records the
+            // cancellation in the refund domain instead of failing the invoice.
+            expect(result.refundKind).toBe('cancel');
+            expect(result.providerOperation).toBe('refund');
+        });
+
+        it('does not mark a normal settled order as a refund', async () => {
+            const rawBody = JSON.stringify(makeOrderEvent({ status: 'CONFIRMED' }));
+            const result = await gateway.verifyWebhook(makeSignedReq(rawBody, 'whsec_test_secret_123'), rawBody);
+            expect(result.refundKind).toBeUndefined();
+            expect(result.providerOperation).toBe('pay');
         });
 
         it('fails closed on an unknown / not-yet-settled status (IN_PRODUCTION)', async () => {

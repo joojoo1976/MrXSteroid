@@ -232,6 +232,49 @@ export class StripeGateway implements IPaymentGateway {
             };
         }
 
+        // ── Refund / dispute events (Phase A) ────────────────────────────────
+        // These MUST NOT be treated as failed payments: the invoice is already
+        // captured and settled. `status` is left undefined on purpose so that a
+        // handler which does not understand refunds cannot mutate the invoice;
+        // the refund-domain recorder handles them via `refundKind`.
+        if (event.type === 'charge.refunded') {
+            const charge = event.data.object as Stripe.Charge;
+            const paymentIntentRef = typeof charge.payment_intent === 'string'
+                ? charge.payment_intent
+                : charge.payment_intent?.id;
+            return {
+                valid: true,
+                invoiceId: (charge.metadata as Record<string, string> | undefined)?.invoice_id || undefined,
+                externalReferenceId: paymentIntentRef || charge.id,
+                providerOperation: 'refund',
+                providerStatus: 'refunded',
+                refundKind: 'refund',
+                refundAmount: charge.amount_refunded != null ? charge.amount_refunded / 100 : undefined,
+                currency: charge.currency ? charge.currency.toUpperCase() : undefined,
+                eventId: event.id,
+                eventType: event.type,
+            };
+        }
+
+        if (event.type === 'charge.dispute.created' || event.type === 'charge.dispute.closed') {
+            const dispute = event.data.object as Stripe.Dispute;
+            const paymentIntentRef = typeof dispute.payment_intent === 'string'
+                ? dispute.payment_intent
+                : dispute.payment_intent?.id;
+            return {
+                valid: true,
+                invoiceId: (dispute.metadata as Record<string, string> | undefined)?.invoice_id || undefined,
+                externalReferenceId: paymentIntentRef || String(dispute.charge),
+                providerOperation: 'dispute',
+                providerStatus: dispute.status,
+                refundKind: event.type === 'charge.dispute.created' ? 'dispute_opened' : 'dispute_closed',
+                refundAmount: dispute.amount != null ? dispute.amount / 100 : undefined,
+                currency: dispute.currency ? dispute.currency.toUpperCase() : undefined,
+                eventId: event.id,
+                eventType: event.type,
+            };
+        }
+
         // Acknowledge but don't process other event types
         console.log(`ℹ️ [Stripe] Unhandled event type: ${event.type}`);
         return {

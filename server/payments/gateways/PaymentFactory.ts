@@ -13,6 +13,7 @@ import { StripeGateway } from './StripeGateway';
 import { KashierGateway } from './KashierGateway';
 import { FourthwallGateway } from './FourthwallGateway';
 import { getMerchantConfig } from '../merchantResolver';
+import type { GatewayName } from './IPaymentGateway';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //                          COUNTRY ROUTING SCHEMA
@@ -106,9 +107,13 @@ export class PaymentFactory {
      *   3. stripe-signature → Stripe
      *   4. hmac header/query → Paymob
      *   5. x-spaceremit-signature / SP_payment_code → SpaceRemit
-     *   6. Fallback → SpaceRemit
+     *   6. No reliable signal → null (NO silent fallback)
+     *
+     * The previous SpaceRemit fallback meant any unsigned/unknown request was
+     * verified as a SpaceRemit webhook. Callers must now reject an undetected
+     * provider explicitly; dedicated routes pin their own gateway instead.
      */
-    static detectGatewayFromRequest(req: { headers: Record<string, string | string[] | undefined>; query: Record<string, string | string[] | undefined> }): IPaymentGateway {
+    static detectGatewayFromRequest(req: { headers: Record<string, string | string[] | undefined>; query: Record<string, string | string[] | undefined> }): IPaymentGateway | null {
         // 1. Kashier (checked BEFORE generic HMAC to avoid false-positive with Paymob)
         if (req.headers['x-kashier-signature']) {
             console.log('💳 [PaymentFactory] Kashier webhook detected via x-kashier-signature');
@@ -136,9 +141,32 @@ export class PaymentFactory {
             return PaymentFactory.getSpaceRemit();
         }
 
-        // 6. Fallback
-        console.warn('⚠️ [PaymentFactory] Could not detect gateway from request, using SpaceRemit fallback');
-        return PaymentFactory.getSpaceRemit();
+        // 6. No authenticated signal.
+        console.warn('⚠️ [PaymentFactory] Could not detect a webhook gateway from the request — rejecting');
+        return null;
+    }
+
+    /**
+     * Resolve a gateway by its canonical name.
+     * Used by dedicated webhook routes so `/api/webhooks/stripe` can never be
+     * verified as any other provider, regardless of the headers it receives.
+     */
+    static getGatewayByName(name: GatewayName): IPaymentGateway {
+        switch (name) {
+            case 'KASHIER_EGYPT':
+                return PaymentFactory.getKashierEgypt();
+            case 'KASHIER_GLOBAL':
+                return PaymentFactory.getKashierGlobal();
+            case 'STRIPE':
+                return PaymentFactory.getStripe();
+            case 'PAYMOB':
+                return PaymentFactory.getPaymob();
+            case 'FOURTHWALL':
+                return PaymentFactory.getFourthwall();
+            case 'SPACEREMIT':
+            default:
+                return PaymentFactory.getSpaceRemit();
+        }
     }
 
     /**

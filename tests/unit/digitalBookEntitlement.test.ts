@@ -25,13 +25,22 @@ vi.mock('@supabase/supabase-js', () => ({
         auth: {
             getUser: mockGetUser,
         },
-        from: () => ({
-            select: () => ({
-                eq: () => ({
-                    maybeSingle: mockMaybeSingle,
-                }),
-            }),
-        }),
+        // The download route now asks `entitlements` first (Phase B) and only
+        // falls back to `profiles.has_paid` when there are no entitlement rows.
+        // These invariants represent accounts with no entitlements.
+        from: (table: string) => {
+            const query: Record<string, unknown> = {
+                select: () => query,
+                eq: () => query,
+                maybeSingle: mockMaybeSingle,
+                then: (resolve: (value: unknown) => unknown) =>
+                    Promise.resolve({
+                        data: table === 'entitlements' ? [] : null,
+                        error: null,
+                    }).then(resolve),
+            };
+            return query;
+        },
     }),
 }));
 

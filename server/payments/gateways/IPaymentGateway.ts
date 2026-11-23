@@ -14,6 +14,29 @@ import type { VercelRequest } from './vercel-types';
 export type GatewayName = 'SPACEREMIT' | 'PAYMOB' | 'STRIPE' | 'KASHIER_EGYPT' | 'KASHIER_GLOBAL' | 'FOURTHWALL';
 
 /**
+ * Refund-like provider events. `refund`/`void` mean money was returned; a
+ * cancellation or a dispute is recorded but never treated as a settled refund.
+ */
+export type GatewayRefundKind = 'refund' | 'void' | 'cancel' | 'dispute_opened' | 'dispute_closed';
+
+export interface RefundRequest {
+    invoiceId: string;
+    paymentIntentId?: string | null;
+    /** Amount to refund, in major units. */
+    amount: number;
+    currency: string;
+    reason?: string;
+    metadata?: Record<string, unknown>;
+}
+
+export interface RefundResult {
+    success: boolean;
+    providerRefundId?: string;
+    status: 'pending' | 'completed' | 'failed' | 'unknown';
+    raw?: unknown;
+}
+
+/**
  * Granular payment status codes — primarily used by Kashier but shared across all gateways.
  * TIMED_OUT and UNKNOWN must never trigger fulfillment or permanent failure.
  */
@@ -82,6 +105,14 @@ export interface WebhookVerificationResult {
     eventType?: string;
     /** Currency reported by the provider (Fourthwall: OrderV1 amounts.currency). */
     currency?: string;
+    /**
+     * Set when this event is a refund/void/cancellation/dispute rather than a
+     * payment. Handlers MUST route it to the refund-domain recorder and must
+     * never run the settlement pipeline for it.
+     */
+    refundKind?: GatewayRefundKind;
+    /** Refunded amount in major units, when the provider reports it. */
+    refundAmount?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -113,6 +144,16 @@ export interface IPaymentGateway {
      * Each gateway has its own signature verification mechanism.
      */
     verifyWebhook(req: VercelRequest, rawBody: string): Promise<WebhookVerificationResult>;
+
+    /**
+     * Issue a refund at the provider (optional, provider-specific).
+     *
+     * NOT IMPLEMENTED by any gateway in Phase A: refund events are recorded
+     * from provider webhooks and operator actions only, with no outbound call.
+     * The contract exists so a future adapter can implement it behind an
+     * explicit feature gate.
+     */
+    refund?(params: RefundRequest): Promise<RefundResult>;
 
     /**
      * Return the standardized gateway name for logging and DB records.

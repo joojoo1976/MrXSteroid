@@ -11,6 +11,7 @@ import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { applyProviderVerdict } from '../../../../server/payments/fulfillmentService';
+import { ingestRefundEvent } from '../../../../server/payments/refund/refundEvent';
 import { corsPreflightResponse } from '../../../../server/cors/corsConfig';
 
 
@@ -135,6 +136,14 @@ export async function POST(req: Request) {
         const rawBody = await req.text();
         const normalized = normalizeRequest(req);
         const gateway = PaymentFactory.detectGatewayFromRequest(normalized);
+
+        // No silent SpaceRemit fallback: an unidentifiable request is rejected
+        // before any signature check or database write.
+        if (!gateway) {
+            console.warn('[Callback] No verifiable gateway signal on the request — rejecting');
+            return json({ error: 'Unknown webhook provider' }, 401);
+        }
+
         const gatewayName = gateway.getGatewayName();
 
         console.log(`📥 [Callback:POST] ${gatewayName} webhook, body length: ${rawBody.length}`);
@@ -151,6 +160,50 @@ export async function POST(req: Request) {
         }
 
         const invoiceId = verification.invoiceId;
+
+        // ── Refund / void / cancel / dispute interception (Phase A) ──────────
+        // Recorded in `refunds` + `webhook_events`, never settled as a payment.
+        if (verification.refundKind) {
+            let refundPayload: Record<string, unknown> = {};
+            try { refundPayload = rawBody.length > 0 ? JSON.parse(rawBody) : {}; } catch { /* ignore */ }
+
+            const refundResult = await ingestRefundEvent(getSupabaseAdmin(), {
+                provider: gatewayName.toLowerCase(),
+                kind: verification.refundKind,
+                invoiceId: invoiceId || null,
+                amountMajor: verification.refundAmount ?? verification.paidAmount ?? null,
+                currency: verification.currency || null,
+                providerReference: verification.externalReferenceId || null,
+                providerEventId: verification.eventId || verification.externalReferenceId || invoiceId || '',
+                providerStatus: verification.providerStatus || verification.detailedStatus || null,
+                merchantAccount: verification.merchantId || null,
+                rawPayload: refundPayload,
+            });
+
+            if (refundResult.code === 'error') {
+                console.error(`❌ [Callback] Refund event could not be recorded: ${refundResult.error}`);
+                return json({ error: 'Refund event could not be recorded' }, 500);
+            }
+
+            return json({
+                success: true,
+                message: refundResult.code === 'duplicate'
+                    ? 'Duplicate refund event'
+                    : refundResult.code === 'recorded'
+                        ? 'Refund event recorded'
+                        : 'Refund event acknowledged (unlinked)',
+                code: refundResult.code,
+                refund: refundResult.code === 'recorded'
+                    ? {
+                        id: refundResult.refundId,
+                        status: refundResult.status,
+                        fullRefund: refundResult.fullRefund,
+                        accessRevoked: refundResult.accessRevoked,
+                        hasPaidCleared: refundResult.hasPaidCleared,
+                    }
+                    : undefined,
+            });
+        }
         if (!verification.status || !invoiceId) {
             return json({ success: true, message: 'Event acknowledged' });
         }

@@ -281,7 +281,12 @@ export class FourthwallGateway implements IPaymentGateway {
             providerStatus: orderStatus,
             replay: false,
             isReconciled: mappedStatus === "success",
-            providerOperation: "pay",
+            providerOperation: orderStatus === "CANCELLED" ? "refund" : "pay",
+            // A cancelled Fourthwall order is a refund-like event: it must be
+            // recorded in the refund domain instead of marking the paid invoice
+            // failed (which the terminal-state guard would swallow anyway).
+            refundKind: orderStatus === "CANCELLED" ? "cancel" : undefined,
+            refundAmount: orderStatus === "CANCELLED" && Number.isFinite(paidAmount) ? paidAmount : undefined,
         };
     }
 

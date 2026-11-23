@@ -16,6 +16,7 @@ import crypto from 'crypto';
 import { FourthwallGateway } from '../../../../server/payments/gateways/FourthwallGateway';
 import type { VercelRequest } from '../../../../server/payments/gateways/vercel-types';
 import { applyProviderVerdict } from '../../../../server/payments/fulfillmentService';
+import { ingestRefundEvent } from '../../../../server/payments/refund/refundEvent';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const gateway = new FourthwallGateway();
@@ -64,6 +65,52 @@ export async function POST(req: NextRequest) {
     if (!invoice) {
         console.warn(`[FourthwallWebhook] No invoice found for checkout: ${checkoutSessionId}`);
         return NextResponse.json({ status: 'ok', message: 'Invoice not found' }, { status: 200 });
+    }
+
+    // ── Refund / cancellation interception (Phase A) ─────────────────────────
+    // Fourthwall CANCELLED orders are refund-like events. They must be recorded
+    // in the refund domain instead of being marked as a failed payment (the
+    // paid invoice would swallow that verdict via the terminal-state guard).
+    if (result.refundKind) {
+        let refundPayload: Record<string, unknown> = {};
+        try { refundPayload = rawBody.length > 0 ? JSON.parse(rawBody) : {}; } catch { /* ignore */ }
+
+        const refundResult = await ingestRefundEvent(supabase, {
+            provider: 'fourthwall',
+            kind: result.refundKind,
+            invoiceId: invoice.id,
+            amountMajor: result.refundAmount ?? result.paidAmount ?? null,
+            currency: result.currency || null,
+            providerReference: result.externalReferenceId || null,
+            providerEventId: eventId || '',
+            providerStatus,
+            merchantAccount: result.merchantId || null,
+            rawPayload: refundPayload,
+        });
+
+        if (refundResult.code === 'error') {
+            console.error(`[FourthwallWebhook] Refund event could not be recorded: ${refundResult.error}`);
+            return NextResponse.json({ error: 'Refund event could not be recorded' }, { status: 500 });
+        }
+
+        return NextResponse.json({
+            status: 'ok',
+            message: refundResult.code === 'duplicate'
+                ? 'Duplicate refund event'
+                : refundResult.code === 'recorded'
+                    ? 'Refund event recorded'
+                    : 'Refund event acknowledged (unlinked)',
+            code: refundResult.code,
+            refund: refundResult.code === 'recorded'
+                ? {
+                    id: refundResult.refundId,
+                    status: refundResult.status,
+                    fullRefund: refundResult.fullRefund,
+                    accessRevoked: refundResult.accessRevoked,
+                    hasPaidCleared: refundResult.hasPaidCleared,
+                }
+                : undefined,
+        }, { status: 200 });
     }
 
     // Idempotency: deduplicate by the webhook EVENT id (per official contract)

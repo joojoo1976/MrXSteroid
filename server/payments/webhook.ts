@@ -19,6 +19,8 @@ import type { VercelRequest, VercelResponse } from './gateways/vercel-types';
 import { createClient } from '@supabase/supabase-js';
 import { PaymentFactory } from './gateways/PaymentFactory';
 import { applyProviderVerdict } from './fulfillmentService';
+import { ingestRefundEvent } from './refund/refundEvent';
+import type { GatewayName } from './gateways/IPaymentGateway';
 
 /**
  * Admin Supabase client for the webhook handler.
@@ -119,28 +121,51 @@ async function readRawBody(req: VercelRequest | Request): Promise<string> {
 
 type RespondFn = (status: number, body: unknown) => Response | void;
 
+export interface ProcessWebhookOptions {
+    /**
+     * Pins verification to one gateway. Dedicated routes
+     * (/api/webhooks/stripe|paymob|spaceremit) use this so their endpoint can
+     * never be verified as — or silently fall back to — another provider.
+     */
+    forcedGateway?: GatewayName;
+}
+
 async function processWebhook(
     req: VercelRequest | Request,
     rawBody: string,
-    respond: RespondFn
+    respond: RespondFn,
+    options: ProcessWebhookOptions = {}
 ): Promise<Response | void> {
     try {
         const supabase = getSupabaseAdmin();
 
-        // Detect gateway from request headers/params
+        // Detect gateway from request headers/params — or use the pinned one.
         const normalized = normalizeRequest(req);
-        let gateway = PaymentFactory.detectGatewayFromRequest(normalized);
+        let gateway = options.forcedGateway
+            ? PaymentFactory.getGatewayByName(options.forcedGateway)
+            : PaymentFactory.detectGatewayFromRequest(normalized);
+
+        if (!gateway) {
+            console.warn('[Webhook] No verifiable gateway signal on the request — rejecting');
+            return respond(401, { error: 'Unknown webhook provider' });
+        }
+
         let gatewayName = gateway.getGatewayName();
 
         console.log(`ðŸ“¥ [Webhook] ${gatewayName} webhook received`);
 
+        // Paymob's verifier reads `req.body` (it validates the HMAC over the
+        // callback object). The normalized request only carries headers/query,
+        // so attach the exact raw body for verifiers that need it.
+        const verifyReq = Object.assign(normalized, { body: rawBody }) as unknown as VercelRequest;
+
         // Verify the webhook signature (initial attempt)
-        let verification = await gateway.verifyWebhook(normalized as unknown as VercelRequest, rawBody);
+        let verification = await gateway.verifyWebhook(verifyReq, rawBody);
 
         // â”€â”€â”€ KASHIER CROSS-ACCOUNT ROUTING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // If initial gateway was KASHIER_EGYPT but merchant ID didn't match,
         // retry with KASHIER_GLOBAL before rejecting.
-        if (!verification.valid && (gatewayName === 'KASHIER_EGYPT' || gatewayName === 'KASHIER_GLOBAL')) {
+        if (!options.forcedGateway && !verification.valid && (gatewayName === 'KASHIER_EGYPT' || gatewayName === 'KASHIER_GLOBAL')) {
             // Extract merchantId from payload to route to the correct account
             let payloadMerchantId: string | undefined;
             try { payloadMerchantId = (JSON.parse(rawBody) as Record<string, string>)?.merchantId; } catch { /* ignore */ }
@@ -151,7 +176,7 @@ async function processWebhook(
                     console.log(`ðŸ”„ [Webhook] Cross-account routing: ${gatewayName} â†’ ${correctGateway.getGatewayName()}`);
                     gateway = correctGateway;
                     gatewayName = gateway.getGatewayName();
-                    verification = await gateway.verifyWebhook(normalized as unknown as VercelRequest, rawBody);
+                    verification = await gateway.verifyWebhook(verifyReq, rawBody);
                 }
             }
         }
@@ -177,6 +202,54 @@ async function processWebhook(
         const isReplay = verification.replay === true
             || parsedRawPayload.event === 'idempotency'
             || String(parsedRawPayload.orderStatus ?? '').toUpperCase() === 'ORDER_PAID_BEFORE';
+
+        // ── REFUND / VOID / CANCEL / DISPUTE INTERCEPTION (Phase A) ───────────
+        // These are NOT payment verdicts. If they reached applyProviderVerdict
+        // they would be treated as a failed payment — and, once the invoice is
+        // paid/fulfilled, swallowed by the terminal-state guard — so the refund
+        // would never be recorded. The refund-domain recorder owns them.
+        if (verification.refundKind) {
+            const refundEventId = verification.eventId
+                || verification.externalReferenceId
+                || invoiceId
+                || '';
+            const refundResult = await ingestRefundEvent(supabase, {
+                provider: gatewayName.toLowerCase(),
+                kind: verification.refundKind,
+                invoiceId: invoiceId || null,
+                amountMajor: verification.refundAmount ?? verification.paidAmount ?? null,
+                currency: verification.currency || null,
+                providerReference: verification.externalReferenceId || null,
+                providerEventId: refundEventId,
+                providerStatus: providerStatus,
+                merchantAccount: verification.merchantId || null,
+                rawPayload: parsedRawPayload,
+            });
+
+            if (refundResult.code === 'error') {
+                console.error(`❌ [Webhook] Refund event could not be recorded: ${refundResult.error}`);
+                return respond(500, { error: 'Refund event could not be recorded' });
+            }
+
+            return respond(200, {
+                status: 'ok',
+                message: refundResult.code === 'duplicate'
+                    ? 'Duplicate refund event'
+                    : refundResult.code === 'recorded'
+                        ? 'Refund event recorded'
+                        : 'Refund event acknowledged (unlinked)',
+                code: refundResult.code,
+                refund: refundResult.code === 'recorded'
+                    ? {
+                        id: refundResult.refundId,
+                        status: refundResult.status,
+                        fullRefund: refundResult.fullRefund,
+                        accessRevoked: refundResult.accessRevoked,
+                        hasPaidCleared: refundResult.hasPaidCleared,
+                    }
+                    : undefined,
+            });
+        }
 
         // Resolve the invoice's LATEST PaymentIntent try so the webhook can persist
         // the provider verdict on the attempt row and enforce the late-arrival guard.
@@ -433,7 +506,8 @@ async function processWebhook(
 
 export default async function handler(
     req: VercelRequest | Request,
-    res?: VercelResponse
+    res?: VercelResponse,
+    options: ProcessWebhookOptions = {}
 ): Promise<Response | void> {
     const isWebHandler = !res;
 
@@ -449,5 +523,5 @@ export default async function handler(
     }
 
     const rawBody = await readRawBody(req);
-    return processWebhook(req, rawBody, respond);
+    return processWebhook(req, rawBody, respond, options);
 }
