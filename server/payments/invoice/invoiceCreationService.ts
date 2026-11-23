@@ -18,6 +18,7 @@ import {
     type QuoteRequest,
     type QuoteResult,
 } from '../quote';
+import { isSchemaNotReadyError } from '../schemaReadiness';
 import { loadPricing, type PricingConfig } from '../pricing';
 
 export class InvoiceCreationError extends Error {
@@ -235,6 +236,15 @@ export async function createInvoiceFromQuote(
     });
 
     if (error) {
+        // A missing function/table/column is not a transient failure: the code is
+        // ahead of the schema. Say so instead of reporting a generic 500 that an
+        // operator would retry forever.
+        if (isSchemaNotReadyError(error)) {
+            throw new InvoiceCreationError(
+                'SCHEMA_NOT_READY',
+                `[CreateInvoice] create_invoice_atomic is unavailable (${error.code ?? 'schema'}): ${error.message}`
+            );
+        }
         throw new InvoiceCreationError(
             'ATOMIC_WRITE_FAILED',
             `[CreateInvoice] Atomic write failed: ${error.message}`

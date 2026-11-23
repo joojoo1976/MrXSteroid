@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { PaymentFactory } from '../../../../server/payments/gateways/PaymentFactory';
 import { loadPricing, computeAmount, computePromoDiscount, resolveShippingForCheckout, ShippingConfigurationError, isAmountValid, PRICING_VERSION } from '../../../../server/payments/pricing';
 import { resolveRegion } from '../../../../server/payments/merchantResolver';
+import { isSchemaNotReadyError, billingUnavailableMessage, BILLING_MIGRATION_PENDING } from '../../../../server/payments/schemaReadiness';
 import { loadGatewayConfig, isOperationallyAllowed, isCustomerRenderable } from '../../../../server/payments/gatewayConfig';
 import { corsPreflightResponse, buildCorsHeaders } from '../../../../server/cors/corsConfig';
 import { resolveEffectiveUserId } from '../../../../server/auth/resolveUser';
@@ -220,6 +221,14 @@ async function handleInvoiceFirst(body: unknown, req: Request): Promise<Response
         if (error instanceof InvoiceCreationError) {
             if (error.code === 'IDEMPOTENCY_KEY_REQUIRED') {
                 return json({ success: false, error: error.message, code: error.code }, 400, req);
+            }
+            if (error.code === 'SCHEMA_NOT_READY') {
+                console.error('[CreateInvoice] billing schema behind code:', error.message);
+                return json({
+                    success: false,
+                    error: billingUnavailableMessage('checkout'),
+                    code: BILLING_MIGRATION_PENDING,
+                }, 503, req);
             }
             console.error('[CreateInvoice] invoice-first write failed:', error.message);
             return json({ success: false, error: 'Failed to create invoice', code: error.code }, 500, req);
@@ -585,6 +594,13 @@ export async function POST(req: Request) {
                 .single();
 
             if (insertError || !invoice) {
+                if (isSchemaNotReadyError(insertError)) {
+                    console.error('❌ [CreateInvoice] invoices table behind code:', insertError?.message);
+                    return json({
+                        error: billingUnavailableMessage('checkout'),
+                        code: BILLING_MIGRATION_PENDING,
+                    }, 503, req);
+                }
                 console.error('❌ [CreateInvoice] Failed to create invoice:', insertError);
                 return json({ error: 'Failed to create invoice record' }, 500, req);
             }
@@ -617,6 +633,13 @@ export async function POST(req: Request) {
                 // does not become permanently idempotent on a broken row.
                 await supabase.from('invoices').delete().eq('id', invoiceId);
                 const lineMessage = lineError instanceof Error ? lineError.message : String(lineError);
+                if (isSchemaNotReadyError(lineError as { code?: string; message?: string })) {
+                    console.error('❌ [CreateInvoice] invoice_lines is unavailable:', lineMessage);
+                    return json({
+                        error: billingUnavailableMessage('checkout'),
+                        code: BILLING_MIGRATION_PENDING,
+                    }, 503, req);
+                }
                 console.error('❌ [CreateInvoice] Failed to write invoice lines:', lineMessage);
                 return json({ error: 'Failed to create invoice lines' }, 500, req);
             }

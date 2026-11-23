@@ -116,6 +116,48 @@ describe('Phase 4 — atomic invoice creation service', () => {
         expect(args.p_lines.reduce((sum: number, line: any) => sum + line.line_total, 0)).toBe(948);
     });
 
+    it('reports SCHEMA_NOT_READY (not a generic write failure) when the RPC is missing', async () => {
+        // Pre-migration database: create_invoice_atomic does not exist yet.
+        const quote = buildQuote(CART as never);
+        rpcMock.mockResolvedValue({
+            data: null,
+            error: {
+                code: 'PGRST202',
+                message: 'Could not find the function public.create_invoice_atomic(p_amount, p_lines) in the schema cache',
+            },
+        });
+
+        await expect(
+            createInvoiceFromQuote({
+                quoteToken: quote.quote_token,
+                cart: CART as never,
+                customer: CUSTOMER,
+                idempotencyKey: 'idem-schema-behind',
+            }, { supabase: fakeSupabase() })
+        ).rejects.toMatchObject({
+            code: 'SCHEMA_NOT_READY',
+        });
+    });
+
+    it('still reports ATOMIC_WRITE_FAILED for a real write failure', async () => {
+        const quote = buildQuote(CART as never);
+        rpcMock.mockResolvedValue({
+            data: null,
+            error: { code: '40001', message: 'could not serialize access due to concurrent update' },
+        });
+
+        await expect(
+            createInvoiceFromQuote({
+                quoteToken: quote.quote_token,
+                cart: CART as never,
+                customer: CUSTOMER,
+                idempotencyKey: 'idem-serialization',
+            }, { supabase: fakeSupabase() })
+        ).rejects.toMatchObject({
+            code: 'ATOMIC_WRITE_FAILED',
+        });
+    });
+
     it('returns the existing invoice on an idempotent replay', async () => {
         const quote = buildQuote(CART as never);
         rpcMock.mockResolvedValue(rpcRow(quote, { idempotent: true }));

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { requireAdmin } from '../../../../../server/auth/require-admin';
+import { isSchemaNotReadyError, billingUnavailableMessage, BILLING_MIGRATION_PENDING } from '../../../../../server/payments/schemaReadiness';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -179,6 +180,19 @@ export async function PATCH(
 
             if (approvalError) {
                 console.error('[PaymentReceipts] Approval RPC error:', approvalError);
+                // The receipt is untouched when the RPC cannot run, so this is a
+                // "migration pending" condition, not an approval failure: the admin
+                // must not retry blind, and nothing has been settled.
+                if (isSchemaNotReadyError(approvalError)) {
+                    return NextResponse.json(
+                        {
+                            error: billingUnavailableMessage('approval'),
+                            code: BILLING_MIGRATION_PENDING,
+                            missing: 'approve_instapay_receipt',
+                        },
+                        { status: 503 }
+                    );
+                }
                 return NextResponse.json(
                     { error: 'Approval failed: ' + approvalError.message },
                     { status: 500 }

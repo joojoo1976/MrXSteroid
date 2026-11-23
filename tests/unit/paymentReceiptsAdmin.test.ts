@@ -205,6 +205,53 @@ describe('Payment Receipts Admin API', () => {
         });
     });
 
+    it('answers 503 + BILLING_MIGRATION_PENDING when approve_instapay_receipt is missing', async () => {
+        // Pre-migration database: the RPC (or entitlements.tier_id it writes) is absent.
+        // Nothing is settled, so this must not look like a plain approval failure.
+        configTable('payment_receipts', () => ({
+            select: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                    maybeSingle: vi.fn(async () => ({
+                        data: {
+                            id: 'rc-1',
+                            order_id: 'o-1',
+                            status: 'under_review',
+                            payment_method: 'instapay',
+                            amount: 1150,
+                            currency: 'EGP',
+                        },
+                        error: null,
+                    })),
+                })),
+            })),
+        }));
+
+        (createClient as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            from: vi.fn((table: string) => {
+                const b = tableBehaviors.get(table);
+                return b ? b() : {};
+            }),
+            rpc: vi.fn(async () => ({
+                data: null,
+                error: {
+                    code: 'PGRST202',
+                    message: 'Could not find the function public.approve_instapay_receipt(p_receipt_id) in the schema cache',
+                },
+            })),
+            storage: { from: vi.fn() },
+        });
+
+        const res = await PATCH(makePatchReq({ status: 'approved', instapayReference: 'IP-REF-1' }), {
+            params: Promise.resolve({ id: 'rc-1' }),
+        });
+
+        expect(res.status).toBe(503);
+        const body = await res.json();
+        expect(body.code).toBe('BILLING_MIGRATION_PENDING');
+        expect(body.missing).toBe('approve_instapay_receipt');
+        expect(body.error).toMatch(/migration/i);
+    });
+
     it('rejects a receipt and settles order to cancelled + payment_status=failed', async () => {
         let orderUpdate: Record<string, unknown> | null = null;
         configTable('payment_receipts', () => ({
