@@ -75,6 +75,15 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
     const [shippingCost, setShippingCost] = useState(0);
     const [discountAmount, setDiscountAmount] = useState(0);
 
+    // Direct `/checkout#plans` visits may arrive before the client selector is
+    // hydrated. Re-apply the real package-selector anchor after mount.
+    React.useEffect(() => {
+        if (window.location.hash !== '#plans') return;
+        requestAnimationFrame(() => {
+            document.getElementById('plans')?.scrollIntoView({ block: 'start' });
+        });
+    }, []);
+
     // ── Region state — driven from: selectedTier (initial) > geo > default ──
     const [isEg, setIsEg] = useState<boolean>(() => {
         if (query.region) return query.region.toUpperCase() === 'EG';
@@ -188,7 +197,11 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                         className="lg:col-span-8 space-y-8"
                     >
                         {/* 01 + 02. Product Selection with Region Toggle */}
-                        <ProductSelector
+                        <section id="plans" aria-labelledby="checkout-plans-heading" className="scroll-mt-24">
+                            <h2 id="checkout-plans-heading" className="sr-only">
+                                {isAr ? 'اختر باقتك' : 'Choose your plan'}
+                            </h2>
+                            <ProductSelector
                             selectedVariant={variant}
                             onSelectVariant={setVariant}
                             quantity={quantity}
@@ -197,8 +210,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ content, selectedTier, navi
                             isEg={isEg}
                             onRegionChange={handleRegionChange}
                             bookLanguage={bookLanguage}
-                            onBookLanguageChange={setBookLanguage}
-                        />
+                                onBookLanguageChange={setBookLanguage}
+                            />
+                        </section>
 
                         {/* 02-b. Quick plan selection — stays in the invoice-first checkout. */}
                         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-3">

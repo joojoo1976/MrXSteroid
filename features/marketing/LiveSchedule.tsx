@@ -4,6 +4,7 @@ import EliteTable, { EliteTableColumn } from '../../shared/ui/EliteTable';
 import { Activity, Zap, Lock, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { ContentStrings } from '@/shared/types/types';
 import { usePreferences } from '../../context/PreferencesContext';
+import PlansLink from './PlansLink';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 
 interface LiveScheduleProps {
@@ -218,14 +219,7 @@ const LiveSchedule: React.FC<LiveScheduleProps> = ({ content }) => {
                         </div>
 
                         <div className="mt-8 flex justify-center">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="flex items-center gap-2 px-8 py-3 rounded-full border border-gold-500/30 text-gold-500 hover:bg-gold-500/10 transition-all text-sm font-black uppercase tracking-widest group"
-                            >
-                                <Zap className={`w-4 h-4 group-hover:text-gold-400 transition-colors ${isRTL ? 'rotate-180' : ''}`} />
-                                {content.viewFullDatabase || (isRTL ? 'عرض قاعدة البيانات الكاملة' : 'View Full Database')}
-                            </motion.button>
+                            <PlansLink />
                         </div>
                     </div>
                 </RevealOnScroll>

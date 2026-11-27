@@ -8,6 +8,7 @@ import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useReadinessQuiz } from './hooks/useReadinessQuiz';
 import { usePreferences } from '../../context/PreferencesContext';
+import PlansLink from '../marketing/PlansLink';
 
 const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () => void }> = ({ content, onComplete }) => {
     const { isRTL: isAr } = usePreferences();
@@ -307,6 +308,10 @@ const SteroidReadinessQuiz: React.FC<{ content: ContentStrings; onComplete?: () 
                             )}
                         </AnimatePresence>
                     </motion.div>
+
+                    <div className="mt-6 flex justify-center">
+                        <PlansLink />
+                    </div>
 
                     {/* Footer Info */}
                     <div className="mt-6 flex justify-center items-center gap-6 opacity-40">

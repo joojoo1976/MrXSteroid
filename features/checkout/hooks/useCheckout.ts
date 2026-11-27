@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -9,11 +9,11 @@ import {
     ShippingProvider, 
     calculateShippingRates,
 } from '../../../shared/lib/logic';
-import { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
-import { usePreferences } from '../../../context/PreferencesContext';
+import type { ContentStrings, Language, ProductVariant, PricingTier } from '@/shared/types/types';
 import { buildCheckoutSchema } from '../lib/checkoutSchema';
 import { calculateCheckoutTotals } from '../lib/checkoutTotals';
 import { usePromoCode } from './usePromoCode';
+import { usePreferences } from '../../../context/PreferencesContext';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -62,8 +62,6 @@ export type RegionOption = 'EG' | 'GLOBAL';
 
 export const useCheckout = (options: useCheckoutOptions) => {
     const { content, lang, selectedTier, totalAmount, productVariant, isEg: isEgProp, onLocationChange, onDiscountChange, quantity, userId, userEmail, userName, instapayRef, instapayFile, onInstaPaySuccess } = options;
-    const { currency, formatPrice: globalFormatPrice } = usePreferences();
-    
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -71,6 +69,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [submissionCount, setSubmissionCount] = useState(0);
     const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
     const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+    const shippingRequestId = useRef(0);
 
     // Region & Paymob Payment Method Selection
     // Single source of truth: `isEg` prop (from CheckoutPage). regionOption is
@@ -89,6 +88,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const [isStripeReady, setIsStripeReady] = useState(false);
 
     const isAr = lang === 'ar';
+    const { currency, formatPrice: globalFormatPrice } = usePreferences();
     const { promoCode, setPromoCode, promoStatus, isPromoLoading, handleApplyPromo } = usePromoCode(isAr);
     const DIGITAL_VARIANTS: ProductVariant[] = ['digital', 'digital_plus'];
     const isPhysical = !DIGITAL_VARIANTS.includes(productVariant);
@@ -115,6 +115,28 @@ export const useCheckout = (options: useCheckoutOptions) => {
 
     const selectedCountry = form.watch('country');
     const selectedShippingId = form.watch('shippingProvider');
+    const currentSelectionSignature = JSON.stringify([
+        selectedTier.id,
+        productVariant,
+        totalAmount,
+        quantity ?? 1,
+        selectedCountry,
+        selectedShippingId,
+        regionOption,
+        paymobMethod,
+    ]);
+    const selectionSignatureRef = useRef(currentSelectionSignature);
+    selectionSignatureRef.current = currentSelectionSignature;
+
+    // A quote, invoice, or embedded Stripe session is specific to the current
+    // plan, amount, country, and region. Invalidate it as soon as any input to
+    // that selection changes; late responses are compared to the live signature.
+    useEffect(() => {
+        setStripeClientSecret(null);
+        setStripeInvoiceId(null);
+        setIsStripeReady(false);
+        setRedirectUrl(null);
+    }, [selectedTier.id, productVariant, totalAmount, quantity, selectedCountry, selectedShippingId, regionOption, paymobMethod]);
 
     // Reset Stripe embedded state whenever the payment method changes
     useEffect(() => {
@@ -136,32 +158,77 @@ export const useCheckout = (options: useCheckoutOptions) => {
         onLocationChange(isEgyptRegion);
     };
 
+    // Region is owned by the page (`isEg` prop) and by the country field. Those
+    // two must not both write it, or they fight: `regionOption` is derived from
+    // `isEg` and this effect used to OR it with the country, so selecting
+    // "Outside Egypt" re-asserted EG on the next render and the toggle reverted
+    // instantly. The country field is now the only thing this effect reports.
+    const prevIsEgProp = useRef(isEgProp);
+    useEffect(() => {
+        if (prevIsEgProp.current === isEgProp) return;
+        prevIsEgProp.current = isEgProp;
+        // Only correct the country when it contradicts the new region, so a
+        // concrete country picked by the user (SA, AE, ...) is never overwritten.
+        const countryIsEg = form.getValues('country') === 'EG';
+        if (countryIsEg !== isEgProp) {
+            form.setValue('country', isEgProp ? 'EG' : 'US');
+        }
+
+        // Country selection can change the parent region without going through
+        // the region cards. Keep the gateway aligned with that externally-owned
+        // region and discard any embedded Stripe session from the old region.
+        setPaymobMethod(isEgProp ? 'kashier' : 'stripe');
+        setStripeClientSecret(null);
+        setStripeInvoiceId(null);
+        setIsStripeReady(false);
+    }, [isEgProp, form]);
+
     // Handle Country Change & Auto Shipping Provider Selection
     useEffect(() => {
-        const isEg = selectedCountry === 'EG' || regionOption === 'EG';
-        onLocationChange(isEg);
+        const requestId = ++shippingRequestId.current;
+        const isEgFromCountry = selectedCountry === 'EG';
+        onLocationChange(isEgFromCountry);
 
-        if (selectedTier.requiresShipping && selectedCountry) {
-            const fetchShipping = async () => {
-                setIsLoadingShipping(true);
-                try {
-                    const providers = await calculateShippingRates({ country: selectedCountry });
-                    setShippingProviders(providers);
-                    // Automatically set first available shipping provider if not set
-                    if (providers.length > 0) {
-                        form.setValue('shippingProvider', providers[0].id, { shouldValidate: true });
-                    }
-                } catch {
+        // A shipping provider and its price belong to one country only. Drop
+        // the previous selection immediately, before requesting rates for the
+        // new country, so neither the summary nor invoice can reuse stale data.
+        setShippingProviders([]);
+        form.setValue('shippingProvider', '', { shouldValidate: true });
+
+        if (!selectedTier.requiresShipping || !selectedCountry) {
+            setIsLoadingShipping(false);
+            return;
+        }
+
+        const fetchShipping = async () => {
+            setIsLoadingShipping(true);
+            try {
+                const providers = await calculateShippingRates({ country: selectedCountry });
+                if (requestId !== shippingRequestId.current) return;
+                setShippingProviders(providers);
+                if (providers.length > 0) {
+                    form.setValue('shippingProvider', providers[0].id, { shouldValidate: true });
+                }
+            } catch {
+                if (requestId === shippingRequestId.current) {
                     toast.error("Failed to load shipping rates");
-                } finally {
+                }
+            } finally {
+                if (requestId === shippingRequestId.current) {
                     setIsLoadingShipping(false);
                 }
-            };
-            fetchShipping();
-        }
-    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, regionOption, form]);
+            }
+        };
+        void fetchShipping();
 
-    const isEg = regionOption === 'EG' || selectedCountry === 'EG';
+        return () => {
+            // Prevent an older country request from replacing the latest rates
+            // even when the transport cannot be aborted.
+            if (shippingRequestId.current === requestId) shippingRequestId.current++;
+        };
+    }, [selectedCountry, selectedTier.requiresShipping, onLocationChange, form]);
+
+    const isEg = regionOption === 'EG';
     // totalAmount already includes quantity × unit price + add-ons (passed from CheckoutPage).
     // Use it directly so the sent total matches what the user sees and what the server recomputes.
     const baseAmount = totalAmount;
@@ -204,6 +271,7 @@ export const useCheckout = (options: useCheckoutOptions) => {
     const formattedTotal = formatAmount(finalTotal);
 
     const onSubmit = async (data: CheckoutFormData) => {
+        const activeSelectionSignature = currentSelectionSignature;
         if (submissionCount >= 5) {
             setPaymentError(isAr ? "لقد تجاوزت عدد محاولات الدفع المسموح بها. يرجى المحاولة لاحقاً." : "Too many payment attempts. Please try again later.");
             return;
@@ -258,6 +326,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
                         locale: isAr ? 'ar' : 'en',
                     },
                 });
+
+                if (activeSelectionSignature !== selectionSignatureRef.current) {
+                    setIsProcessing(false);
+                    return;
+                }
 
                 if (result.success && result.orderRef) {
                     console.log('🚀 InstaPay order recorded:', result.orderRef);
@@ -324,6 +397,11 @@ export const useCheckout = (options: useCheckoutOptions) => {
                 },
             });
 
+            if (activeSelectionSignature !== selectionSignatureRef.current) {
+                setIsProcessing(false);
+                return;
+            }
+
             // Stripe embedded flow: keep client secret for PaymentElement, no redirect
             if (isStripeFlow && result.success && result.clientSecret) {
                 setStripeClientSecret(result.clientSecret);
@@ -344,6 +422,10 @@ export const useCheckout = (options: useCheckoutOptions) => {
             }
 
         } catch (error) {
+            if (activeSelectionSignature !== selectionSignatureRef.current) {
+                setIsProcessing(false);
+                return;
+            }
             console.error('❌ Payment error:', error);
             const msg = (error as Error).message;
             setPaymentError(isAr ? (msg || "حدث خطأ أثناء بدء الدفع.") : (msg || "Error initiating payment."));

@@ -10,6 +10,7 @@ import DynamicBrandLogo from './DynamicBrandLogo';
 
 import { usePreferences } from '../../context/PreferencesContext';
 import { LiveKeywordSection } from '../../components/seo/LiveKeywordSection';
+import { buildCheckoutPlansHref } from '../lib/checkoutPlan';
 
 interface FooterProps {
   content: ContentStrings;
@@ -43,6 +44,7 @@ const PAYMENT_METHODS_DATA = [
 const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
   const { isRTL, language } = usePreferences();
   const isAr = language === 'ar';
+  const plansHref = buildCheckoutPlansHref(isAr ? 'ar' : 'en');
 
   return (
     <footer className={`bg-black text-white pt-24 pb-16 border-t-8 border-gold-500/20 relative overflow-hidden ${isRTL ? 'font-cairo' : ''}`}>
@@ -158,7 +160,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
               {[
                 { label: content.homeLink, action: () => navigateTo(Page.HOME) },
                 { label: content.nav?.about || "About Us", action: () => navigateTo(Page.ABOUT) },
-                { label: content.pricingTitle || "Choose Your Plan", action: () => navigateTo(Page.CHECKOUT) },
+                { label: content.pricingTitle || (isAr ? 'اختر خطتك' : 'Choose your plan'), action: () => { window.location.href = plansHref; } },
                 { label: content.blogTitle, action: () => navigateTo(Page.BLOG) },
                 { label: content.careersTitle, action: () => navigateTo(Page.CAREERS) },
                 { label: content.nav?.sitemap || "Sitemap", action: () => navigateTo(Page.SITEMAP) }
@@ -180,7 +182,7 @@ const Footer: React.FC<FooterProps> = ({ content, navigateTo, pool }) => {
             </h3>
             <ul className="space-y-3.5">
               {[
-                { label: content.nav?.signup || "Cart / Checkout", action: () => navigateTo(Page.CHECKOUT) },
+                { label: isAr ? 'الباقات' : 'Plans', action: () => { window.location.href = plansHref; } },
                 { label: content.shippingPolicyTitle, action: () => navigateTo(Page.SHIPPING_POLICY) },
                 { label: content.returnPolicyTitle, action: () => navigateTo(Page.RETURN_POLICY) },
                 { label: content.refundTitle, action: () => navigateTo(Page.REFUND) }

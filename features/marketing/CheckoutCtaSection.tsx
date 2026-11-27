@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lock, Zap, ShieldCheck, CreditCard } from 'lucide-react';
 import { usePreferences } from '../../context/PreferencesContext';
+import { buildCheckoutPlansHref } from '../../shared/lib/checkoutPlan';
 
 /**
  * CheckoutCtaSection
@@ -16,7 +17,7 @@ import { usePreferences } from '../../context/PreferencesContext';
  * CTA, the readiness quiz and AuthGuard still resolve to a visible section.
  */
 const CheckoutCtaSection: React.FC = () => {
-    const { content, isRTL, t } = usePreferences();
+    const { content, isRTL, language, t } = usePreferences();
 
     const title = t('pricingTitle') || (isRTL ? 'اختر باقتك' : 'Choose Your Plan');
     const subtitle =
@@ -58,8 +59,8 @@ const CheckoutCtaSection: React.FC = () => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                         <Link
-                            href="/checkout"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black font-black text-lg shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] transition-all"
+                            href={buildCheckoutPlansHref(language === 'ar' ? 'ar' : 'en')}
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-black font-black text-lg shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_rgba(234,179,8,0.6)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                         >
                             {isRTL ? 'الانتقال إلى صفحة الدفع' : 'Go to Checkout'}
                             <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />

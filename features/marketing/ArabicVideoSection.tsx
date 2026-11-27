@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
+import PlansLink from './PlansLink';
 
 export const ArabicVideoSection: React.FC = () => {
     return (
@@ -72,6 +73,9 @@ export const ArabicVideoSection: React.FC = () => {
                         {/* Interactive overlay (subtle) */}
                         <div className="absolute inset-0 border-[1px] border-white/5 rounded-[2rem] pointer-events-none z-30"></div>
                     </motion.div>
+                </div>
+                <div className="mt-8 flex justify-center">
+                    <PlansLink />
                 </div>
             </motion.div>
         </section>

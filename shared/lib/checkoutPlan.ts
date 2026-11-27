@@ -3,10 +3,19 @@
  *
  * Phase 5 replaces direct gateway links in the UI with a first-party
  * `/checkout?plan=...` URL. The checkout surface then runs the invoice-first
- * flow (quote → create-invoice → create-session). Keeping this helper free of
+ * flow (quote → create-invoice → create-session). Marketing links target
+ * `/checkout#plans`, the real package selector, without starting payment.
+ * Keeping this helper free of
  * server imports lets both server and client components use the exact same
  * URL shape.
  */
+
+export const CHECKOUT_PLANS_HREF = '/checkout#plans';
+
+/** Locale-prefixed link keeps marketing language consistent through checkout. */
+export function buildCheckoutPlansHref(language: 'ar' | 'en'): string {
+    return `/${language}/checkout#plans`;
+}
 
 export type CheckoutPlanId =
     | 'digital'

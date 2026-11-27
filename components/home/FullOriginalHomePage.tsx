@@ -29,6 +29,7 @@ import LegalModal from '../../features/modal/LegalModal';
 import PreferencesModal from '../../features/modal/PreferencesModal';
 import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 import { useIntroAudio } from '../../features/marketing/hooks/useIntroAudio';
+import { buildCheckoutPlansHref } from '../../shared/lib/checkoutPlan';
 
 export default function FullOriginalHomePage() {
     const { content, isRTL, language: lang } = usePreferences();
@@ -60,7 +61,7 @@ export default function FullOriginalHomePage() {
 
     // Every buy CTA leaves the marketing page and enters the standalone checkout.
     const goToCheckout = () => {
-        window.location.href = '/checkout';
+        window.location.href = buildCheckoutPlansHref(lang === Language.AR ? 'ar' : 'en');
     };
 
     const openLegal = (key: 'privacy' | 'terms' | 'refund' | 'disclaimer') => {

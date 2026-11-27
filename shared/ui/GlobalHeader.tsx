@@ -16,6 +16,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Menu,
@@ -50,6 +51,7 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeSwitcher from './ThemeSwitcher';
 import { useTheme } from '../../hooks/useTheme';
 import { DROPDOWN_CONFIGS, MenuItem } from '@/shared/config/menuConfig';
+import { buildCheckoutPlansHref } from '../lib/checkoutPlan';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -117,6 +119,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
     disableThemeSwitcher = false,
 }) => {
     const { language: lang, isRTL, setLanguage, unitSystem, setUnitSystem } = usePreferences();
+    const plansHref = buildCheckoutPlansHref(lang === Language.AR ? 'ar' : 'en');
     const { theme: currentTheme, setTheme: applyTheme } = useTheme();
     const { profileData } = useAuth();
     const profilePic = getProfilePic(user, profileData?.avatar_url);
@@ -300,11 +303,12 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
                             ))}
                         </DesktopDropdown>
 
-                        <NavLink
-                            active={currentPage === Page.CHECKOUT}
-                            onClick={() => navigateTo(Page.CHECKOUT)}
-                            label={content.pricingTitle || (isRTL ? 'الأسعار' : 'Pricing')}
-                        />
+                        <Link
+                            href={plansHref}
+                            className="mx-1 inline-flex min-h-9 items-center justify-center rounded-xl bg-gold-500 px-4 text-xs font-black text-black shadow-sm transition-colors hover:bg-gold-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        >
+                            {isRTL ? 'اختر خطتك' : 'Choose your plan'}
+                        </Link>
                         <NavLink
                             active={currentPage === Page.CONTACT}
                             onClick={() => navigateTo(Page.CONTACT)}
@@ -543,8 +547,12 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
 
                             <MobileSectionLabel label="" />
                             <MobileNavButton
-                                onClick={() => { navigateTo(Page.CHECKOUT); setIsMobileMenuOpen(false); }}
-                                label={content.pricingTitle || (isRTL ? 'الأسعار' : 'Pricing')}
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    window.location.href = plansHref;
+                                }}
+                                label={isRTL ? 'اختر خطتك' : 'Choose your plan'}
+                                emphasized
                             />
                             <MobileNavButton
                                 onClick={() => { navigateTo(Page.CONTACT); setIsMobileMenuOpen(false); }}
@@ -760,15 +768,18 @@ const MobileNavButton: React.FC<{
     active?: boolean;
     icon?: React.ReactNode;
     indented?: boolean;
-}> = ({ onClick, label, active, icon, indented }) => (
+    emphasized?: boolean;
+}> = ({ onClick, label, active, icon, indented, emphasized }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-2 py-2.5 text-sm font-bold text-start rounded-lg px-3 ${
+        className={`w-full flex items-center gap-2 py-2.5 text-sm font-bold text-start rounded-lg px-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 ${
             indented ? 'ps-6' : ''
         } ${
-            active
-                ? 'bg-gold-500/10 text-gold-500'
-                : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+            emphasized
+                ? 'bg-gold-500 text-black hover:bg-gold-400'
+                : active
+                    ? 'bg-gold-500/10 text-gold-500'
+                    : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
         }`}
     >
         {icon}

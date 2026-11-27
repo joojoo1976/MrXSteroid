@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import { errorHandler } from '../../shared/lib/error-handler';
 import { usePreferences } from '../../context/PreferencesContext';
+import PlansLink from './PlansLink';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import DynamicBrandLogo from '../../shared/ui/DynamicBrandLogo';
 import { ContentStrings } from '@/shared/types/types';
@@ -543,6 +544,9 @@ const ContactSection: React.FC<ContactSectionProps> = ({ content }) => {
                     <div className="text-[10px] font-mono text-zinc-500 text-center md:text-right">
                         {content.contactSystemStatusLabel || "System Status: 100% Operational // Encryption: AES-256"}
                     </div>
+                </div>
+                <div className="mt-8 flex justify-center">
+                    <PlansLink />
                 </div>
             </div>
         </section>

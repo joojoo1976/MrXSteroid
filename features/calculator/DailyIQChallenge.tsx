@@ -3,6 +3,7 @@ import { CheckCircle, Copy, X } from 'lucide-react';
 import { ContentStrings } from '@/shared/types/types';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { useDailyIQChallenge } from './hooks/useDailyIQChallenge';
+import PlansLink from '../marketing/PlansLink';
 
 const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }> = ({ content, onWin }) => {
     const {
@@ -70,6 +71,9 @@ const DailyIQChallenge: React.FC<{ content: ContentStrings, onWin: () => void }>
                             </div>
                         </div>
                     )}
+                </div>
+                <div className="mt-8 flex justify-center">
+                    <PlansLink />
                 </div>
             </div>
         </section>

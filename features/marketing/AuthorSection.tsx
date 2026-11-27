@@ -5,6 +5,7 @@ import AuthorImage from './AuthorImage';
 
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
+import PlansLink from './PlansLink';
 
 const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => {
     const { isRTL } = usePreferences();
@@ -40,10 +41,13 @@ const AuthorSection: React.FC<{ content: ContentStrings }> = ({ content }) => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-center md:justify-start gap-2">
-                            <div className="h-1 w-12 bg-gold-500 rounded-full"></div>
-                            <div className="h-1 w-2 bg-gold-500/50 rounded-full"></div>
-                            <div className="h-1 w-1 bg-gold-500/30 rounded-full"></div>
+                        <div className="flex flex-col items-center md:items-start gap-5">
+                            <div className="flex items-center justify-center md:justify-start gap-2">
+                                <div className="h-1 w-12 bg-gold-500 rounded-full"></div>
+                                <div className="h-1 w-2 bg-gold-500/50 rounded-full"></div>
+                                <div className="h-1 w-1 bg-gold-500/30 rounded-full"></div>
+                            </div>
+                            <PlansLink />
                         </div>
                     </div>
                 </div>

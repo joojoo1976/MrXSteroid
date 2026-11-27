@@ -6,6 +6,7 @@ import RevealOnScroll from '../../shared/ui/RevealOnScroll';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
+import PlansLink from './PlansLink';
 
 interface BenefitsSectionProps {
     content: ContentStrings;
@@ -143,6 +144,10 @@ const BenefitsSection: React.FC<BenefitsSectionProps> = ({ content }) => {
                         </div>
                     </div>
                 </RevealOnScroll>
+
+                <div className="mt-10 flex justify-center">
+                    <PlansLink />
+                </div>
             </div>
         </section>
     );

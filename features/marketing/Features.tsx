@@ -6,6 +6,7 @@ import { IconRenderer } from '../../utils/icon-utils';
 import { StyledBrandName } from '../../shared/ui/StyledBrandName';
 import { usePreferences } from '../../context/PreferencesContext';
 import { ChevronDown, Sparkles } from 'lucide-react';
+import PlansLink from './PlansLink';
 
 interface FeaturesProps {
   content: ContentStrings;
@@ -185,6 +186,9 @@ const Features: React.FC<FeaturesProps> = ({ content }) => {
           </div>
         </RevealOnScroll>
 
+        <div className="mt-12 flex justify-center">
+          <PlansLink />
+        </div>
       </div>
     </section>
   );
